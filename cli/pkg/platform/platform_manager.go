@@ -32,17 +32,14 @@ type PlatformManager struct {
 }
 
 // NewPlatformManager creates a new manager for the provided platform
-func NewPlatformManager(platformIdentifier string) (*PlatformManager, error) {
-
-	switch strings.ToLower(platformIdentifier) {
-	case OpenShiftIdentifier:
-		return &PlatformManager{platform: newOpenShiftPlatform()}, nil
-	case KubernetesIdentifier:
-		return &PlatformManager{platform: newKubernetesPlatform()}, nil
-	default:
-		return nil, errors.New("Unsupported platform '" + platformIdentifier +
-			"'. The following platforms are supported: OpenShiftIdentifier and KubernetesIdentifier")
+func NewPlatformManager(isOpenShiftEnabled bool) *PlatformManager {
+	var platform platform
+	if isOpenShiftEnabled {
+		platform = newOpenShiftPlatform()
+	} else {
+		platform = newKubernetesPlatform()
 	}
+	return &PlatformManager{platform}
 }
 
 // CheckRequirements checks the platform's requirements

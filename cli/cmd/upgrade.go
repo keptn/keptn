@@ -27,9 +27,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/helm"
-	"github.com/keptn/keptn/cli/pkg/platform"
-
-	"github.com/keptn/keptn/cli/pkg/kube"
 	"helm.sh/helm/v3/pkg/chart"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -40,8 +37,10 @@ const keptnReleaseName = "keptn"
 
 var upgradeParams installUpgradeParams
 var keptnUpgradeChart *chart.Chart
+var upgradeValues map[string]interface{}
 
-// installCmd represents the version command
+
+// upgraderCmd represents the upgrade command
 var upgraderCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "Upgrades Keptn on a Kubernetes cluster",
@@ -49,12 +48,7 @@ var upgraderCmd = &cobra.Command{
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
 `,
-	Example: `keptn upgrade                                                        # upgrades Keptn
-
-keptn upgrade --platform=openshift # upgrades Keptn on Openshift
-
-keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
-`,
+	Example: `keptn upgrade --values=./my-values.yaml`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
@@ -80,44 +74,21 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 
 		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
 
-		platformManager, err := platform.NewPlatformManager(*upgradeParams.PlatformIdentifier)
-		if err != nil {
-			return err
-		}
-
-		if !mocking {
-			if err := platformManager.CheckRequirements(); err != nil {
-				return err
-			}
-		}
-
-		if upgradeParams.ConfigFilePath != nil && *upgradeParams.ConfigFilePath != "" {
-			// Config was provided in form of a file
-			if err := platformManager.ParseConfig(*upgradeParams.ConfigFilePath); err != nil {
-				return err
-			}
-
-			// Check whether the authentication at the cluster is valid
-			if err := platformManager.CheckCreds(); err != nil {
-				return err
-			}
-		} else {
-			err = platformManager.ReadCreds()
+		var userValues map[string]interface{}
+		if upgradeParams.ValuesFile != nil && *upgradeParams.ValuesFile != "" {
+			err = getAndParseYaml(*upgradeParams.ValuesFile, &userValues)
 			if err != nil {
-				return err
+				return fmt.Errorf("Failed to read and parse values file - %s", err.Error())
 			}
 		}
+		latestReleaseValues, err := getLatestKeptnReleaseValues()
+		if err != nil {
+			return fmt.Errorf("Failed to get values of installed release - %s", err.Error())
 
-		// check if Kubernetes server version is compatible (except OpenShift)
-		if *upgradeParams.PlatformIdentifier != platform.OpenShiftIdentifier {
-			if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
-				logging.PrintLog(err.Error(), logging.VerboseLevel)
-				logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
-				return fmt.Errorf("Failed to check kubernetes server version: %w", err)
-			}
 		}
+		upgradeValues = mergeMaps(latestReleaseValues, userValues)
 
-		return nil
+		return checkInput(upgradeParams, upgradeValues)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -150,6 +121,14 @@ func isUpgradeCompatible() (bool, error) {
 	return versionChecker.IsUpgradable(Version, installedVersion, getAppVersion(keptnUpgradeChart))
 }
 
+func getLatestKeptnReleaseValues() (map[string]interface{}, error) {
+	lastRelease, err := getLatestKeptnRelease()
+	if err != nil {
+		return nil, err
+	}
+	return helm.NewHelper().GetValues(lastRelease.Name, lastRelease.Namespace)
+}
+
 func getLatestKeptnRelease() (*release.Release, error) {
 	keptnNamespace := *upgradeParams.Namespace
 	releases, err := helm.NewHelper().GetHistory(keptnReleaseName, keptnNamespace)
@@ -167,15 +146,15 @@ func init() {
 	rootCmd.AddCommand(upgraderCmd)
 	upgradeParams = installUpgradeParams{}
 
-	upgradeParams.PlatformIdentifier = upgraderCmd.Flags().StringP("platform", "p", "kubernetes",
-		"The platform to run Keptn on ["+platform.KubernetesIdentifier+","+platform.OpenShiftIdentifier+"]")
-
 	upgradeParams.ChartRepoURL = upgraderCmd.Flags().StringP("chart-repo", "",
 		"", "URL of the Keptn Helm Chart repository")
 	upgraderCmd.Flags().MarkHidden("chart-repo")
 
 	upgradeParams.Namespace = upgraderCmd.Flags().StringP("namespace", "n", "keptn",
 		"Specify the namespace where Keptn should be upgraded (default keptn).")
+
+	upgradeParams.ValuesFile = upgraderCmd.Flags().StringP("values", "f", "",
+		"Specify values in a YAML file or a URL.")
 }
 
 func doUpgrade() error {
@@ -198,7 +177,7 @@ func doUpgrade() error {
 		return fmt.Errorf("Stopping upgrade.")
 	}
 
-	if err := helm.NewHelper().UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
+	if err := helm.NewHelper().UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, upgradeValues); err != nil {
 		logging.PrintLog("Could not complete Keptn upgrade: "+err.Error(), logging.InfoLevel)
 		return err
 	}

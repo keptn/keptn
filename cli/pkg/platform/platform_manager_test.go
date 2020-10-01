@@ -8,21 +8,23 @@ import (
 )
 
 var iskeptnVersions = []struct {
-	platform             string
+	isOpenShiftEnabled   bool
 	expectedPlatformType reflect.Type
-	expectedErr          error
 }{
-	{"OpenShift", reflect.TypeOf(newOpenShiftPlatform()), nil},
-	{"kubernetes", reflect.TypeOf(newKubernetesPlatform()), nil},
+	{true, reflect.TypeOf(newOpenShiftPlatform())},
+	{false, reflect.TypeOf(newKubernetesPlatform())},
 }
 
 func TestSetPlatform(t *testing.T) {
 	for _, tt := range iskeptnVersions {
-		t.Run(tt.platform, func(t *testing.T) {
-			p, err := NewPlatformManager(tt.platform)
-			if err != tt.expectedErr {
-				t.Errorf("got %t, want %t", err, tt.expectedErr)
-			}
+		var testName string
+		if tt.isOpenShiftEnabled {
+			testName = "OpenShift"
+		} else {
+			testName = "Kubernetes"
+		}
+		t.Run(testName, func(t *testing.T) {
+			p := NewPlatformManager(tt.isOpenShiftEnabled)
 			if reflect.TypeOf(p.platform) != tt.expectedPlatformType {
 				t.Error("wrong type")
 			}

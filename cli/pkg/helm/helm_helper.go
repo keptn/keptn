@@ -129,6 +129,26 @@ func (c Helper) GetHistory(releaseName, namespace string) ([]*release.Release, e
 	return histClient.Run(releaseName)
 }
 
+// GetValues returns the values for a Helm release
+func (c Helper) GetValues(releaseName, namespace string) (map[string]interface{}, error) {
+
+	logging.PrintLog(fmt.Sprintf("Check availability of Helm release %s in namespace %s", releaseName, namespace), logging.VerboseLevel)
+
+	config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
+	if err != nil {
+		return nil, err
+	}
+
+	cfg, err := newActionConfig(config, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	getValuesClient := action.NewGetValues(cfg)
+
+	return getValuesClient.Run(releaseName)
+}
+
 // UpgradeChart upgrades/installs the provided chart
 func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 

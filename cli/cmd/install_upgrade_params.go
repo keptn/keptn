@@ -5,9 +5,9 @@ import "github.com/keptn/keptn/cli/pkg/version"
 type installUpgradeParams struct {
 	ConfigFilePath     *string
 	KeptnVersion       *string
-	PlatformIdentifier *string
 	ChartRepoURL       *string
 	Namespace          *string
+	ValuesFile         *string
 }
 
 func getChartRepoURL(input *string) string {
