@@ -289,11 +289,10 @@ jobs:
 
   - stage: Check deprecated Kubernetes apiVersions
     os: linux
+    before_script:
+      - source ./travis-scripts/install_pluto.sh
     script:
       - set -e # fail the whole script whenever any command fails
-      - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-      - export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin/
-      - brew install FairwindsOps/tap/pluto
       - pluto detect-files -owide
       - set +e # revert set -e from above
 
