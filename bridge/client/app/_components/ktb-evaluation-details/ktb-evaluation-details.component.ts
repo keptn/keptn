@@ -314,9 +314,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         let categories = series.data
           .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())
           .map((item, index, items) => {
-            let uniqueIndex = items.filter(c => c.evaluationData.getHeatmapLabel() == item.evaluationData.getHeatmapLabel()).indexOf(item);
-            if(uniqueIndex > 0)
-              item.label = `${item.evaluationData.getHeatmapLabel()} (${uniqueIndex})`;
+            let duplicateItems = items.filter(c => c.evaluationData.getHeatmapLabel() == item.evaluationData.getHeatmapLabel());
+            if(duplicateItems.length > 1)
+              item.label = `${item.evaluationData.getHeatmapLabel()} (${duplicateItems.indexOf(item)+1})`;
             else
               item.label = item.evaluationData.getHeatmapLabel();
             return item;
