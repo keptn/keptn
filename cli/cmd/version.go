@@ -15,14 +15,19 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/spf13/cobra"
+
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/keptn/keptn/cli/pkg/config"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -68,11 +73,12 @@ var versionCmd = &cobra.Command{
 		}
 
 		// Keptn
-		keptnVersion, err := getInstalledKeptnVersion()
+		fmt.Print("Keptn cluster version: ")
+		keptnVersion, err := getKeptnServerVersion()
 		if err != nil {
-			logging.PrintLog(err.Error(), logging.InfoLevel)
+			fmt.Println(err)
 		} else {
-			fmt.Println("\nKeptn cluster version: " + keptnVersion)
+			fmt.Println(keptnVersion)
 			if isLastCheckStale {
 				kvChecker := version.NewKeptnVersionChecker()
 				keptnChecked, _ = kvChecker.CheckKeptnVersion(Version, keptnVersion, false)
@@ -132,4 +138,20 @@ func updateLastVersionCheck() {
 	if err := configMng.StoreCLIConfig(cliConfig); err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
 	}
+}
+
+func getKeptnServerVersion() (string, error) {
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+	if err != nil {
+		return "", errors.New(authErrorMsg)
+	}
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
+	}
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	metadataData, errMetadata := apiHandler.GetMetadata()
+	if errMetadata != nil {
+		return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
+	}
+	return metadataData.Keptnversion, nil
 }

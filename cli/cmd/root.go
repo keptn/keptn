@@ -115,7 +115,7 @@ func runDailyVersionCheck() {
 	vChecker := version.NewVersionChecker()
 	cliChecked, cliMsgPrinted = vChecker.CheckCLIVersion(Version, true)
 
-	keptnVersion, err := getInstalledKeptnVersion()
+	keptnVersion, err := getKeptnServerVersion()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
 	} else {
