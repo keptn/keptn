@@ -42,4 +42,7 @@ func TestVersionCmd(t *testing.T) {
 	if !strings.Contains(out, "CLI version: 0.6.1") {
 		t.Errorf("unexpected used version: %s", out)
 	}
+	if !strings.Contains(out, "cluster version") {
+		t.Error("expected cluster version")
+	}
 }
