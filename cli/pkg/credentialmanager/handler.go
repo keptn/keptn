@@ -79,7 +79,7 @@ func getCreds(h credentials.Helper) (url.URL, string, error) {
 	return *url, apiToken, err
 }
 
-func HandleCustomCreds(configLocation string) (url.URL, string, error) {
+func handleCustomCreds(configLocation string) (url.URL, string, error) {
 	fd, err := os.Open(configLocation)
 	if err != nil {
 		return url.URL{}, "", err
