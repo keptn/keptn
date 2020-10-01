@@ -17,6 +17,7 @@ class Trace {
   time: Date;
   type: string;
   label: string;
+  heatmapLabel: string;
   icon: string;
   image: string;
   plainEvent: string;
@@ -234,7 +235,14 @@ class Trace {
   }
 
   getHeatmapLabel(): string {
-    return this.getChartLabel();
+    if(!this.heatmapLabel) {
+      this.heatmapLabel = this.getChartLabel();
+    }
+    return this.heatmapLabel;
+  }
+
+  setHeatmapLabel(label: string) {
+    this.heatmapLabel = label;
   }
 
   static fromJSON(data: any) {

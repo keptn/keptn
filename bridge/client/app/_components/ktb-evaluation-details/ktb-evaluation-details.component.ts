@@ -313,8 +313,18 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       if(series.name == "Score") {
         let categories = series.data
           .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())
-          .map((item) => item.evaluationData.getHeatmapLabel())
-          .map((category, index, categories) => categories.indexOf(category) != index ? category+" ("+index+")" : category);
+          .map((item, index, items) => {
+            let uniqueIndex = items.filter(c => c.evaluationData.getHeatmapLabel() == item.evaluationData.getHeatmapLabel()).indexOf(item);
+            if(uniqueIndex > 0)
+              item.label = `${item.evaluationData.getHeatmapLabel()} (${uniqueIndex})`;
+            else
+              item.label = item.evaluationData.getHeatmapLabel();
+            return item;
+          })
+          .map((item) => {
+            item.evaluationData.setHeatmapLabel(item.label);
+            return item.evaluationData.getHeatmapLabel();
+          });
 
         console.log("categories", categories);
         this._heatmapOptions.xAxis[0].categories = categories;
@@ -351,7 +361,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         className: 'highlight-primary',
         from: highlightIndex-0.5,
         to: highlightIndex+0.5,
-        zIndex: 20
+        zIndex: 100
       });
     secondaryHighlightIndexes?.forEach(highlightIndex => {
       if(highlightIndex >= 0)
@@ -359,7 +369,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           className: 'highlight-secondary',
           from: highlightIndex-0.5,
           to: highlightIndex+0.5,
-          zIndex: 20
+          zIndex: 100
         });
     });
     this._heatmapOptions.xAxis[0].plotBands = plotBands;
