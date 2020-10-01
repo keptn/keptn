@@ -371,9 +371,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           to: highlightIndex+0.5,
           zIndex: 100,
           events: {
-            click: function (event) {
+            click: function () {
               let index = this.options.from+0.5;
-              _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+              setTimeout(() => {
+                _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+              });
             }
           }
         });
