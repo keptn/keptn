@@ -1,3 +1,5 @@
+import * as moment from 'moment';
+
 import {EventTypes} from "./event-types";
 import {ResultTypes} from "./result-types";
 import {ApprovalStates} from "./approval-states";
@@ -15,6 +17,7 @@ class Trace {
   time: Date;
   type: string;
   label: string;
+  heatmapLabel: string;
   icon: string;
   image: string;
   plainEvent: string;
@@ -228,7 +231,18 @@ class Trace {
   }
 
   getChartLabel(): string {
-    return this.data.labels?.["buildId"] ?? this.time;
+    return this.data.labels?.["buildId"] ?? moment(this.time).format("YYYY-MM-DD HH:mm");
+  }
+
+  getHeatmapLabel(): string {
+    if(!this.heatmapLabel) {
+      this.heatmapLabel = this.getChartLabel();
+    }
+    return this.heatmapLabel;
+  }
+
+  setHeatmapLabel(label: string) {
+    this.heatmapLabel = label;
   }
 
   static fromJSON(data: any) {

@@ -76,7 +76,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     xAxis: {
       type: 'category',
       labels: {
-        rotation: 90
+        rotation: -45
       }
     },
     yAxis: [
@@ -126,7 +126,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       categories: [],
       plotBands: [],
       labels: {
-        enabled: false
+        rotation: -45
       },
     }],
 
@@ -273,15 +273,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           rowsize: 0.85,
           turboThreshold: 0,
           data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
-            let time = moment(s.evaluationData.time).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
-            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
             return {
               x: x,
               y: index,
               z: s.y,
               evaluation: s.evaluationData,
-              color: this._evaluationColor[s.evaluationData.data.result]
+              color: this._evaluationColor[s.evaluationData.data.result],
             };
           })
         },
@@ -290,9 +289,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           type: 'heatmap',
           turboThreshold: 0,
           data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
-            let time = moment(s.evaluationData.time).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
-            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
             return {
               x: x,
               y: index,
@@ -309,17 +307,30 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   updateHeatmapOptions(chartSeries) {
-    chartSeries.forEach((d) =>
-      d.data.forEach((s) => {
-        let time = moment(s.evaluationData.time).format();
-        if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
-          this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
-        if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
-          this._heatmapOptions.xAxis[0].categories.splice(SearchUtil.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
-      })
-    );
+    chartSeries.forEach((series) => {
+      if(this._heatmapOptions.yAxis[0].categories.indexOf(series.name) === -1)
+        this._heatmapOptions.yAxis[0].categories.unshift(series.name);
+      if(series.name == "Score") {
+        let categories = series.data
+          .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())
+          .map((item, index, items) => {
+            let duplicateItems = items.filter(c => c.evaluationData.getHeatmapLabel() == item.evaluationData.getHeatmapLabel());
+            if(duplicateItems.length > 1)
+              item.label = `${item.evaluationData.getHeatmapLabel()} (${duplicateItems.indexOf(item)+1})`;
+            else
+              item.label = item.evaluationData.getHeatmapLabel();
+            return item;
+          })
+          .map((item) => {
+            item.evaluationData.setHeatmapLabel(item.label);
+            return item.evaluationData.getHeatmapLabel();
+          });
 
-    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 60;
+        this._heatmapOptions.xAxis[0].categories = categories;
+      }
+    });
+
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 160;
   }
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
@@ -341,7 +352,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   highlightHeatmap() {
-    let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(moment(this._selectedEvaluationData.time).format());
+    let _this = this;
+    let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
     let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
     let plotBands = [];
     if(highlightIndex >= 0)
@@ -349,7 +361,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         className: 'highlight-primary',
         from: highlightIndex-0.5,
         to: highlightIndex+0.5,
-        zIndex: 20
+        zIndex: 100
       });
     secondaryHighlightIndexes?.forEach(highlightIndex => {
       if(highlightIndex >= 0)
@@ -357,7 +369,15 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           className: 'highlight-secondary',
           from: highlightIndex-0.5,
           to: highlightIndex+0.5,
-          zIndex: 20
+          zIndex: 100,
+          events: {
+            click: function () {
+              let index = this.options.from+0.5;
+              setTimeout(() => {
+                _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+              });
+            }
+          }
         });
     });
     this._heatmapOptions.xAxis[0].plotBands = plotBands;
