@@ -16,7 +16,7 @@ Heatmap(Highcharts);
 Treemap(Highcharts);
 
 import * as moment from 'moment';
-import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {DtChart, DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
@@ -25,6 +25,7 @@ import {Trace} from "../../_models/trace";
 import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -35,6 +36,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   @Input() public showChart = true;
+
+  @ViewChild('sloDialog')
+  public sloDialog: TemplateRef<any>;
+  public sloDialogRef: MatDialogRef<any, any>;
 
   private heatmapChart: DtChart;
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
@@ -117,16 +122,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       height: 400
     },
 
-    title: {
-      text: 'Heatmap',
-      align: 'left'
-    },
-
-    subtitle: {
-      text: 'Evalution results',
-      align: 'left'
-    },
-
     xAxis: [{
       categories: [],
       plotBands: [],
@@ -173,13 +168,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog) { }
 
   ngOnInit() {
-    if(this._evaluationData)
+    if(this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
-    if(!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
-      this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+      if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+    }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((event) => {
@@ -190,11 +186,22 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  private parseSloFile(evaluationData) {
+    if(evaluationData.data && evaluationData.data.evaluationdetails.sloFileContent && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
+      evaluationData.data.evaluationdetails.sloFileContentParsed = atob(evaluationData.data.evaluationdetails.sloFileContent);
+      evaluationData.data.evaluationdetails.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split("\"")[1]?.split("%")[0];
+      evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split("\"")[1]?.split("%")[0];
+      evaluationData.data.evaluationdetails.compare_with = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split("\"")[1];
+      evaluationData.data.evaluationdetails.include_result_with_score = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split("\"")[1];
+      evaluationData.data.evaluationdetails.number_of_comparison_results = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("number_of_comparison_results:")[1]?.split(" ")[1];
+    }
+  }
+
   updateChartData(evaluationHistory) {
     let chartSeries = [];
 
     if(!this._selectedEvaluationData && evaluationHistory)
-      this.selectEvaluationData(evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+      this.selectEvaluationData(evaluationHistory.find(h => h.id === this._evaluationData.id));
 
     if(this.showChart) {
       evaluationHistory.forEach((evaluation) => {
@@ -312,7 +319,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       })
     );
 
-    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 60;
   }
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
@@ -328,6 +335,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   selectEvaluationData(evaluation) {
+    this.parseSloFile(evaluation);
     this._selectedEvaluationData = evaluation;
     this.highlightHeatmap();
   }
@@ -363,6 +371,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   getDuration(start, end) {
     return DateUtil.getDurationFormatted(start, end);
+  }
+
+  showSloDialog() {
+    this.sloDialogRef = this.dialog.open(this.sloDialog, { data: this._selectedEvaluationData.data.evaluationdetails.sloFileContentParsed });
+  }
+
+  closeSloDialog() {
+    if (this.sloDialogRef) {
+      this.sloDialogRef.close();
+    }
   }
 
   ngOnDestroy(): void {
