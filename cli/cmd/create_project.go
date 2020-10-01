@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -105,10 +106,21 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		return checkGitCredentials()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-		if err != nil {
-			return errors.New(authErrorMsg)
+		var endPoint url.URL
+		var apiToken string
+
+		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
+			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
+		} else {
+			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
 		}
+
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
 		content, _ := file.ReadFile(*createProjectParams.Shipyard)

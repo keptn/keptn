@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"os"
 	"path"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -44,9 +46,19 @@ var bridgeCmd = &cobra.Command{
 		return verifyConfigureBridgeParams(configureBridgeParams)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-		if err != nil {
-			return errors.New(authErrorMsg)
+		var endPoint url.URL
+		var apiToken string
+
+		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
+			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
+		} else {
+			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
 		}
 
 		endpoint.Path = path.Join(endpoint.Path, "/v1/config/bridge")

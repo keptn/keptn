@@ -63,7 +63,20 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds()
+		var endPoint url.URL
+		var apiToken string
+
+		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
+			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
+		} else {
+			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
+		}
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr

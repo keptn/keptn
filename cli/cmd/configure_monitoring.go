@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -78,9 +79,19 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
-		if err != nil {
-			return errors.New(authErrorMsg)
+		var endPoint url.URL
+		var apiToken string
+
+		if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
+			endPoint, apiToken, err := credentialmanager.HandleCustomCreds(customCredsLocation)
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
+		} else {
+			endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+			if err != nil {
+				return errors.New(authErrorMsg)
+			}
 		}
 
 		configureMonitoringEventData := &keptn.ConfigureMonitoringEventData{
