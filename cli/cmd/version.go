@@ -149,9 +149,12 @@ func getKeptnServerVersion() (string, error) {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	metadataData, errMetadata := apiHandler.GetMetadata()
-	if errMetadata != nil {
-		return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
+	if !mocking {
+		metadataData, errMetadata := apiHandler.GetMetadata()
+		if errMetadata != nil {
+			return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
+		}
+		return metadataData.Keptnversion, nil
 	}
-	return metadataData.Keptnversion, nil
+	return "", nil
 }
