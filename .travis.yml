@@ -290,9 +290,11 @@ jobs:
   - stage: Check deprecated Kubernetes apiVersions
     os: linux
     before_script:
+      - source ./travis-scripts/install_helm.sh
       - source ./travis-scripts/install_pluto.sh
     script:
       - set -e # fail the whole script whenever any command fails
+      - helm template ${INSTALLER_FOLDER}/manifests/keptn | pluto detect-files -owide
       - pluto detect-files -owide
       - set +e # revert set -e from above
 
