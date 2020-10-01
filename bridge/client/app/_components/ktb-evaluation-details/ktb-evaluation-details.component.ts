@@ -307,15 +307,19 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   updateHeatmapOptions(chartSeries) {
-    chartSeries.forEach((d) =>
-      d.data.sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix()).forEach((s) => {
-        let time = moment(s.evaluationData.time).format();
-        if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
-          this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
-        if(this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel()) == -1)
-          this._heatmapOptions.xAxis[0].categories.push(s.evaluationData.getHeatmapLabel());
-      })
-    );
+    chartSeries.forEach((series) => {
+      if(this._heatmapOptions.yAxis[0].categories.indexOf(series.name) === -1)
+        this._heatmapOptions.yAxis[0].categories.unshift(series.name);
+      if(series.name == "Score") {
+        let categories = series.data
+          .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())
+          .map((item) => item.evaluationData.getHeatmapLabel())
+          .map((category, index, categories) => categories.indexOf(category) != index ? category+" ("+index+")" : category);
+
+        console.log("categories", categories);
+        this._heatmapOptions.xAxis[0].categories = categories;
+      }
+    });
 
     this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 160;
   }
