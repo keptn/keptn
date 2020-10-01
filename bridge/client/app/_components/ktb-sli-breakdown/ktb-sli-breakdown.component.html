@@ -3,7 +3,7 @@
   <ng-container *ngFor="let result of _indicatorResultsFail">
     <dt-key-value-list-item>
       <dt-key-value-list-key>
-        <p class="m-0 fail" [textContent]="result.value.metric"></p>
+        <p class="m-0 fail" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
       </dt-key-value-list-key>
       <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
@@ -27,7 +27,7 @@
   <ng-container *ngFor="let result of _indicatorResultsWarning">
     <dt-key-value-list-item>
       <dt-key-value-list-key>
-        <p class="m-0 warning" [textContent]="result.value.metric"></p>
+        <p class="m-0 warning" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
       </dt-key-value-list-key>
       <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
@@ -50,7 +50,9 @@
   </ng-container>
   <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
     <dt-key-value-list-item *ngIf="i < (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
-      <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+      <dt-key-value-list-key>
+        <p class="m-0" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
+      </dt-key-value-list-key>
       <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
         <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
             <span [textContent]="formatNumber(result.value.value)"></span>
@@ -75,7 +77,9 @@
   <dt-key-value-list [columns]="1">
     <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
       <dt-key-value-list-item *ngIf="i >= (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
-        <dt-key-value-list-key [textContent]="result.value.metric"></dt-key-value-list-key>
+        <dt-key-value-list-key>
+          <p class="m-0" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
+        </dt-key-value-list-key>
         <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
           <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
               <span [textContent]="formatNumber(result.value.value)"></span>
