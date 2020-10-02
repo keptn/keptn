@@ -4,11 +4,9 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/go-version"
 
-	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/magiconair/properties/assert"
 )
 
@@ -81,10 +79,7 @@ func TestCheckCLIVersion(t *testing.T) {
 	versionChecker.versionFetcherClient.httpClient = httpClient
 	versionChecker.versionFetcherClient.versionUrl = url
 
-	lastChecked := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
-
-	cliConfig := config.CLIConfig{AutomaticVersionCheck: true, LastVersionCheck: &lastChecked}
-	res, err := versionChecker.getNewerCLIVersion(cliConfig, "0.6.0")
+	res, err := versionChecker.getNewerCLIVersion("0.6.0")
 
 	expectedRes := availableVersionInitHelper("0.6.1", "", "", "")
 

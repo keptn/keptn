@@ -15,14 +15,19 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/spf13/cobra"
+
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/keptn/keptn/cli/pkg/config"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -34,11 +39,13 @@ const versionCheckInfo = `Daily version check is %s.
 Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/0.7.x/reference/version_check
 ---------------------------------------------------
 `
-const enableVersionCheckMsg = `* To %s the daily version check, please execute:
+const setVersionCheckMsg = `* To %s the daily version check, please execute:
  - keptn set config AutomaticVersionCheck %s
 
 `
 const keptnReleaseDocsURL = "0.7.x"
+
+const disableVersionCheckMsg = "To disable this notice, run: '%s set config AutomaticVersionCheck false'"
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
@@ -46,33 +53,108 @@ var KubeServerVersionConstraints string
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:     "version",
-	Short:   "Shows the CLI version of Keptn",
-	Long:    `Shows the CLI version of Keptn and a note when a new version is available.`,
+	Short:   "Shows the version of Keptn and Keptn CLI",
+	Long:    `Shows the version of Keptn and Keptn CLI, and a note when a new version is available.`,
 	Example: `keptn version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("\nKeptn CLI version: " + Version + "\n")
-
-		configMng := config.NewCLIConfigManager()
-		cliConfig, err := configMng.LoadCLIConfig()
+		isLastCheckStale, err := isLastCheckStale()
 		if err != nil {
 			logging.PrintLog(err.Error(), logging.InfoLevel)
 			return
 		}
-		checkTime := time.Now()
-		if cliConfig.LastVersionCheck == nil || checkTime.Sub(*cliConfig.LastVersionCheck) >= time.Second {
+
+		var cliChecked, keptnChecked bool
+
+		// Keptn CLI
+		fmt.Println("\nKeptn CLI version: " + Version)
+		if isLastCheckStale {
 			vChecker := version.NewVersionChecker()
-			vChecker.CheckCLIVersion(Version, false)
+			cliChecked, _ = vChecker.CheckCLIVersion(Version, false)
 		}
-		if cliConfig.AutomaticVersionCheck {
-			fmt.Printf(versionCheckInfo, "enabled", "", "")
-			fmt.Printf(enableVersionCheckMsg, "disable", "false")
+
+		// Keptn
+		fmt.Print("Keptn cluster version: ")
+		keptnVersion, err := getKeptnServerVersion()
+		if err != nil {
+			fmt.Println(err)
 		} else {
-			fmt.Printf(versionCheckInfo, "disabled", " not", " not")
-			fmt.Printf(enableVersionCheckMsg, "enable", "true")
+			fmt.Println(keptnVersion)
+			if isLastCheckStale {
+				kvChecker := version.NewKeptnVersionChecker()
+				keptnChecked, _ = kvChecker.CheckKeptnVersion(Version, keptnVersion, false)
+			}
+		}
+
+		if cliChecked || keptnChecked {
+			updateLastVersionCheck()
+		}
+
+		if err := printDailyVersionCheckInfo(); err != nil {
+			logging.PrintLog(err.Error(), logging.InfoLevel)
+			return
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
+}
+
+func isLastCheckStale() (bool, error) {
+	configMng := config.NewCLIConfigManager()
+	cliConfig, err := configMng.LoadCLIConfig()
+	if err != nil {
+		return false, err
+	}
+	return cliConfig.LastVersionCheck == nil || time.Now().Sub(*cliConfig.LastVersionCheck) >= time.Second, nil
+}
+
+func printDailyVersionCheckInfo() error {
+	configMng := config.NewCLIConfigManager()
+	cliConfig, err := configMng.LoadCLIConfig()
+	if err != nil {
+		return err
+	}
+	fmt.Println()
+	if cliConfig.AutomaticVersionCheck {
+		fmt.Printf(versionCheckInfo, "enabled", "", "")
+		fmt.Printf(setVersionCheckMsg, "disable", "false")
+	} else {
+		fmt.Printf(versionCheckInfo, "disabled", " not", " not")
+		fmt.Printf(setVersionCheckMsg, "enable", "true")
+	}
+	return nil
+}
+
+func updateLastVersionCheck() {
+	configMng := config.NewCLIConfigManager()
+	cliConfig, err := configMng.LoadCLIConfig()
+	if err != nil {
+		logging.PrintLog(err.Error(), logging.InfoLevel)
+		return
+	}
+	currentTime := time.Now()
+	cliConfig.LastVersionCheck = &currentTime
+	if err := configMng.StoreCLIConfig(cliConfig); err != nil {
+		logging.PrintLog(err.Error(), logging.InfoLevel)
+	}
+}
+
+func getKeptnServerVersion() (string, error) {
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+	if err != nil {
+		return "", errors.New(authErrorMsg)
+	}
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
+	}
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	if !mocking {
+		metadataData, errMetadata := apiHandler.GetMetadata()
+		if errMetadata != nil {
+			return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
+		}
+		return metadataData.Keptnversion, nil
+	}
+	return "", nil
 }

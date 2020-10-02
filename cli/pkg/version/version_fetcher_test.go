@@ -79,6 +79,10 @@ const versionJSONTest = `{
             {
               "version": "0.8.0",
               "upgradableVersions": [ "0.7.0", "0.7.1" ]
+            },
+            {
+              "version": "0.9.0",
+              "upgradableVersions": [ "0.8.0" ]
             }
         ]
     }
@@ -101,7 +105,7 @@ func TestGetKeptnVersionInfo(t *testing.T) {
 
 	keptnVersionInfo, err := client.getKeptnVersionInfo("0.6.0")
 	assert.Equal(t, err, nil, "Received unexpected error")
-	assert.Equal(t, len(keptnVersionInfo.Stable), 2, "Received unexpected content")
+	assert.Equal(t, len(keptnVersionInfo.Stable), 3, "Received unexpected content")
 	assert.Equal(t, keptnVersionInfo.Stable[0].Version, "0.7.1", "Received unexpected content")
 	assert.Equal(t, keptnVersionInfo.Stable[0].UpgradableVersions, []string{"0.7.0"}, "Received unexpected content")
 }
