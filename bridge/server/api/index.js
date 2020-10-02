@@ -30,7 +30,7 @@ module.exports = (params) => {
     try {
       const result = await axios({
         method: req.method,
-        url: `${apiUrl}/${req.url}`,
+        url: `${apiUrl}${req.url}`,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -63,7 +63,7 @@ module.exports = (params) => {
     try {
       const result = await axios({
         method: req.method,
-        url: `${apiUrl}/${req.url}`,
+        url: `${apiUrl}${req.url}`,
         ...req.method!='GET' && { data: req.body },
         headers: {
           'x-token': apiToken,
