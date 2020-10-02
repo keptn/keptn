@@ -24,7 +24,6 @@ import (
 
 func TestVersionCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
 	mocking = true
 
 	cmd := fmt.Sprintf("version")
