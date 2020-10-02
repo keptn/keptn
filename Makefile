@@ -24,6 +24,12 @@ build-cli:
 	@cp ./cli/keptn $(GOBIN)/
 	@printf "👍 Done\n"
 
+## Build all docker images
+build-docker:
+	@printf "🔨 Building docker images\n"
+	@./make-scripts/build/build-docker.sh
+	@printf "👍 Done\n"
+
 ## Start the bridge
 start-bridge:
 	@printf "🚀 Starting Bridge\n" 
@@ -83,6 +89,7 @@ help:
 	@echo "KEPTN"
 	@echo ""
 	@echo "* build-cli: Build the keptn cli and save it in bin/"
+	@echo "* build-docker: Build the keptn docker images"
 	@echo "* start-bridge: Start the bridge server"
 	@echo "* install-helm: Install the helm binary in your local"
 	@echo "* install-golint: Install golint for linting the code"
