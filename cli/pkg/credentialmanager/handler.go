@@ -71,6 +71,11 @@ func getCreds(h credentials.Helper) (url.URL, string, error) {
 	if MockAuthCreds {
 		return url.URL{}, "", nil
 	}
+
+	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
+		return handleCustomCreds(customCredsLocation)
+	}
+
 	endPointStr, apiToken, err := h.Get(serverURL)
 	if err != nil {
 		return url.URL{}, "", err
