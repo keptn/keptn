@@ -4,13 +4,11 @@ Keptn 0.7.2 improves the capabilities of the 0.7.0 release by adding ...
 
 **The key announcements of Keptn 0.7.2**:
 
-:rocket: *UX improvements for working with Quality Gates*:
+:rocket: *Improved UX for Quality Gates*: This release introduces an `evaluation` endpoint that brings the same user-experience as used from the CLI to the API. Easily trigger a quality gate evaluation based on a small set of parameters, like `start`, `end`, and `timeframe`. 
 
-:tada: *Usage Statistics for Keptn Installation*
+:sparkles: *Focused UI enhancements for Quality Gates*: The evaluation tile that displays the quality gate evaluation result has been improved in various ways. First, the Heatmap in this tile now highlights the currently selected evaluation result. Second, it also displays the evaluation results that were used for comparisons giving the user more insights into the quality gate. 
 
-:star: *asdf*: 
-
-:sparkles: *asdf*:
+:tada: *Usage statistics for Keptn installation*: If you want to get more insights into your Keptn installation, feel free to deploy the [statistics-service](https://github.com/keptn-sandbox/statistics-service) from the Keptn sandbox. This service provides usage statistics based on events and service executions.
 
 ## Keptn Specification
 
