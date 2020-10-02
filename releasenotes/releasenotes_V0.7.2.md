@@ -63,6 +63,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
+- Show `buildId` label on xAxis in Heatmap [#2131](https://github.com/keptn/keptn/issues/2131)
 - Evaluation tile rework [#2305](https://github.com/keptn/keptn/issues/2305)
 - Heatmap highlights evaluation results that are used for comparison [#2389](https://github.com/keptn/keptn/issues/2389)
 - Show the actual state of the approval in approval finished events [#2371](https://github.com/keptn/keptn/issues/2371)
