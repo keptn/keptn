@@ -29,8 +29,8 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>API</summary>
 <p>
 
-- API endpoint `\evaluation` for triggering evaluations [#2387](https://github.com/keptn/keptn/issues/2387)
-- Swagger-UI: Swagger automatically determine the scheme [#2325](https://github.com/keptn/keptn/issues/2325)
+- Introduced API endpoint `\evaluation` for triggering evaluations [#2387](https://github.com/keptn/keptn/issues/2387)
+- Swagger automatically determines the scheme (https or http) [#2325](https://github.com/keptn/keptn/issues/2325)
 
 </p>
 </details>
@@ -38,8 +38,8 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
-- Improve robustness and user-experience of generate support-archive [#2340](https://github.com/keptn/keptn/issues/2340)
-- Point user to upgrade docs, fix bug in update project [#2293](https://github.com/keptn/keptn/issues/2293)
+- Improve robustness and UX of `keptn generate support-archive` [#2340](https://github.com/keptn/keptn/issues/2340)
+- Point user to upgrade docs, fixed bug in `keptn update project` [#2293](https://github.com/keptn/keptn/issues/2293)
 
 </p>
 </details>
@@ -54,9 +54,9 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 
 - *lighthouse-service*:
   - *Behavior change*: `include_result_with_score` just works on SLO-level and `sh.keptn.events.evaluation-done` returns compared evaluation results [#2388](https://github.com/keptn/keptn/issues/2388)
-  - Send evaluation-done events with error information when service/stage/project could not be found [#2365](https://github.com/keptn/keptn/issues/2365)
-  - Looks into `lighthouse-config` which refers to a default SLI provider [#2317](https://github.com/keptn/keptn/issues/2317)
-  - Triggers SLI retrieval even though the SLO is empty or not available [#2318](https://github.com/keptn/keptn/issues/2318)
+  - Send `sh.keptn.events.evaluation-done` events with error information when service/stage/project not found [#2365](https://github.com/keptn/keptn/issues/2365)
+  - Use the ConfigMap `lighthouse-config` which refers to a default SLI provider [#2317](https://github.com/keptn/keptn/issues/2317)
+  - Trigger SLI retrieval even though the SLO is empty or not available [#2318](https://github.com/keptn/keptn/issues/2318)
 
 </p>
 </details>
@@ -67,11 +67,11 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 - Evaluation tile rework [#2305](https://github.com/keptn/keptn/issues/2305)
 - Heatmap highlights evaluation results that are used for comparison [#2389](https://github.com/keptn/keptn/issues/2389)
 - Show the actual state of the approval in approval finished events [#2371](https://github.com/keptn/keptn/issues/2371)
-- Enable highlighting of currently selected evaluation result in Heatmap chart [#1640](https://github.com/keptn/keptn/issues/1640)
+- Enable highlighting of the currently selected evaluation result in Heatmap [#1640](https://github.com/keptn/keptn/issues/1640)
 - Enable caching for static files in express [#2408](https://github.com/keptn/keptn/issues/2408)
 - Provide access to up-stream configuration repository per project [#1335](https://github.com/keptn/keptn/issues/1335)
-- Hide the API token and keptn auth command per default [#2257](https://github.com/keptn/keptn/issues/2257)
-- Feature toggle for version check and api token info [#2320](https://github.com/keptn/keptn/issues/2320)
+- Hide the API token and `keptn auth` command per default [#2257](https://github.com/keptn/keptn/issues/2257)
+- Feature toggle for version check and API token info [#2320](https://github.com/keptn/keptn/issues/2320)
 - Show a download link for Keptn CLI [#2319](https://github.com/keptn/keptn/issues/2319)
 
 </p>
