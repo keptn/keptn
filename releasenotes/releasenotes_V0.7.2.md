@@ -36,6 +36,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
+- The output of `keptn auth` shows the Keptn endpoint [#2445](https://github.com/keptn/keptn/issues/2445)
 - The output of `keptn version` shows the Keptn API version [#2412](https://github.com/keptn/keptn/issues/2412)
 - Improve robustness and UX of `keptn generate support-archive` [#2340](https://github.com/keptn/keptn/issues/2340)
 - Point user to upgrade docs, fixed bug in `keptn update project` [#2293](https://github.com/keptn/keptn/issues/2293)
