@@ -72,8 +72,11 @@ func getCreds(h credentials.Helper) (url.URL, string, error) {
 		return url.URL{}, "", nil
 	}
 
+	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
-		return handleCustomCreds(customCredsLocation)
+		if customCredsLocation != "" {
+			return handleCustomCreds(customCredsLocation)
+		}
 	}
 
 	endPointStr, apiToken, err := h.Get(serverURL)
