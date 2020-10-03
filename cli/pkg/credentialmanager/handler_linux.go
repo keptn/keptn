@@ -60,7 +60,9 @@ func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
 
 	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
-		return handleCustomCreds(customCredsLocation)
+		if customCredsLocation != "" {
+			return handleCustomCreds(customCredsLocation)
+		}
 	}
 
 	// try to read credentials from password-store
