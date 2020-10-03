@@ -49,5 +49,6 @@ for dockerfile in "${DOCKERFILE_LIST[@]}"; do
 
   DOCKER_TAG="$DOCKER_ORG_NAME/$DOCKER_NAME:$DOCKER_VERSION"
 
+  echo "Building docker image $DOCKER_TAG using $dockerfile"
   docker build -t $DOCKER_TAG "$DOCKER_PATH"
 done
