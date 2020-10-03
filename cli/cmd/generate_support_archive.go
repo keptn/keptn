@@ -575,7 +575,7 @@ func getKeptnMetadata() *errorableMetadataResult {
 	metadataHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	metadataData, errMetadata := metadataHandler.GetMetadata()
 	if errMetadata != nil {
-		err = errors.New("Error occurred with response code " + string(errMetadata.Code) + " with message " + *errMetadata.Message)
+		err = errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
 	}
 	return newErrorableMetadataResult(metadataData, err)
 }
