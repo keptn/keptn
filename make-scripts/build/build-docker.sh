@@ -2,7 +2,7 @@
 
 set -e
 
-DOCKER_ORG_NAME="kept"
+DOCKER_ORG_NAME="keptn"
 DOCKER_VERSION=$(git describe --abbrev=1 --tags)
 DOCKER_ROOT_PATH="./"
 
