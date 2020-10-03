@@ -35,11 +35,13 @@ for dockerfile in "${DOCKERFILE_LIST[@]}"; do
   DOCKER_DIR=${DOCKERFILE_PATH[$TOKENS_SIZE-2]}
   DOCKER_PARENT_DIR=${DOCKERFILE_PATH[$TOKENS_SIZE-3]}
 
+  # Apply Dockerfile exclusions
   if printf '%s\n' "${DOCKERFILE_EXCLUSIONS[@]}" | grep -q -P "^$DOCKER_PARENT_DIR$"; then
     echo "Excluded $dockerfile"
     continue
   fi
 
+  # Apply Dockerfile name overrides
   if [[ -v OVERRIDES[${DOCKER_DIR}] ]]; then
     DOCKER_NAME="${OVERRIDES[${DOCKER_DIR}]}"
     echo "Overridden docker tag $DOCKER_DIR -> $DOCKER_NAME"
@@ -47,6 +49,7 @@ for dockerfile in "${DOCKERFILE_LIST[@]}"; do
     DOCKER_NAME=$DOCKER_DIR
   fi
 
+  # Build docker image
   DOCKER_TAG="$DOCKER_ORG_NAME/$DOCKER_NAME:$DOCKER_VERSION"
 
   echo "Building docker image $DOCKER_TAG using $dockerfile"
