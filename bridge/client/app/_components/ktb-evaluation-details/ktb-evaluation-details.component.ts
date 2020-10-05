@@ -26,6 +26,7 @@ import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import { ClipboardService } from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -168,7 +169,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService) { }
 
   ngOnInit() {
     if(this._evaluationData) {
@@ -401,6 +402,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if (this.sloDialogRef) {
       this.sloDialogRef.close();
     }
+  }
+
+  copySloPayload(plainEvent: string): void {
+    this.clipboard.copy(plainEvent, 'slo payload');
   }
 
   ngOnDestroy(): void {

@@ -82,6 +82,7 @@
     <pre [textContent]="data"></pre>
   </div>
   <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="copySloPayload(data)">Copy</button>
     <button dt-button (click)="closeSloDialog()">Close</button>
   </div>
 </ng-template>
