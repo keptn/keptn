@@ -79,7 +79,8 @@ keptn add-resource --project=rockshop --stage=production --service=shop --resour
 
 		endPoint.Path = path.Join(endPoint.Path, "configuration-service")
 
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+			ClientCertPath, ClientKeyPath, RootCertPath)
 
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Resource %s could not be uploaded: %s"+endPointErrorReasons,

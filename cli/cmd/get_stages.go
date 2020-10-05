@@ -67,7 +67,8 @@ staging        2020-04-06T14:37:45.210Z
 				endPointErr)
 		}
 
-		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+			ClientCertPath, ClientKeyPath, RootCertPath)
 		if !mocking {
 			stages, err := stagesHandler.GetAllStages(*stageParameter.project)
 			if err != nil {

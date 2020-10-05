@@ -68,7 +68,8 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			url.Path = "/api"
 		}
 
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *authParams.apiToken, "x-token", nil, url.Scheme)
+		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *authParams.apiToken, "x-token", nil, url.Scheme,
+			ClientCertPath, ClientKeyPath, RootCertPath)
 
 		if !mocking {
 			authenticated := false

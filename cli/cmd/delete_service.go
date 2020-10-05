@@ -43,7 +43,8 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 
 		logging.PrintLog("Starting to delete service", logging.InfoLevel)
 
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+			ClientCertPath, ClientKeyPath, RootCertPath)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {

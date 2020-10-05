@@ -56,6 +56,15 @@ var setConfigCmd = &cobra.Command{
 			}
 			cliConfig.LastVersionCheck = &val
 			newConfig = true
+		case "clientcertificate":
+			cliConfig.ClientCertPath = args[1]
+			newConfig = true
+		case "clientkey":
+			cliConfig.ClientKeyPath = args[1]
+			newConfig = true
+		case "rootcert":
+			cliConfig.RootCertPath = args[1]
+			newConfig = true
 		default:
 			return fmt.Errorf("Unsupported key %s", args[0])
 		}

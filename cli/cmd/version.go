@@ -148,7 +148,8 @@ func getKeptnServerVersion() (string, error) {
 	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+		ClientCertPath, ClientKeyPath, RootCertPath)
 	if !mocking {
 		metadataData, errMetadata := apiHandler.GetMetadata()
 		if errMetadata != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/version"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -19,6 +20,11 @@ var mocking bool
 
 // SuppressWSCommunication suppresses the WebSocket communication if it is true
 var SuppressWSCommunication bool
+
+// Certificate and key paths to configure mTLS for the CLI
+var ClientCertPath string = ""
+var ClientKeyPath string = ""
+var RootCertPath string = ""
 
 var insecureSkipTLSVerify bool
 var kubectlOptions string
@@ -45,6 +51,19 @@ func Execute() {
 	logging.LogLevel = logging.QuietLevel
 
 	runDailyVersionCheck()
+
+	configMng := config.NewCLIConfigManager()
+	cliConfig, err := configMng.LoadCLIConfig()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	if cliConfig.ClientCertPath != "" && cliConfig.ClientKeyPath != "" && cliConfig.RootCertPath != "" {
+		ClientCertPath = cliConfig.ClientCertPath
+		ClientKeyPath = cliConfig.ClientKeyPath
+		RootCertPath = cliConfig.RootCertPath
+	}
 
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel

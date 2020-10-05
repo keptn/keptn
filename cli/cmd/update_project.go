@@ -80,7 +80,8 @@ For more information about updating projects or upstream repositories, please go
 			project.GitRemoteURI = *updateProjectParams.RemoteURL
 		}
 
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+			ClientCertPath, ClientKeyPath, RootCertPath)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {

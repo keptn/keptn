@@ -80,7 +80,8 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			endPointErr)
 	}
 
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+		ClientCertPath, ClientKeyPath, RootCertPath)
 
 	events, modErr := eventHandler.GetEvents(&apiutils.EventFilter{
 		KeptnContext:  *eventStruct.KeptnContext,

@@ -94,7 +94,8 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 				endPointErr)
 		}
 
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme,
+			ClientCertPath, ClientKeyPath, RootCertPath)
 
 		if !mocking {
 
