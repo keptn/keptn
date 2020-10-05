@@ -16,6 +16,9 @@ import (
 type CLIConfig struct {
 	AutomaticVersionCheck bool       `json:"automatic_version_check"`
 	LastVersionCheck      *time.Time `json:"last_version_check"`
+	ClientCertPath        string     `json:"client_cert_path"`
+	ClientKeyPath         string     `json:"client_key_path"`
+	RootCertPath          string     `json:"root_cert_path"`
 }
 
 // CLIConfigManager manages the path of the CLI config
