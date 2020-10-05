@@ -15,7 +15,7 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.3-0.20200929122933-df294e7a41c5
+	github.com/keptn/go-utils v0.7.2-alpha
 	github.com/keptn/kubernetes-utils v0.2.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1
