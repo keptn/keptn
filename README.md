@@ -16,14 +16,35 @@ In addition, you can find the roadmap of the Keptn project [here](https://github
 an overview of user stories that are currently in the focus of development for the next release.
 
 ## Usage
+To get started with keptn you need a Kubernetes cluster. Supported Kubernetes engines and versions can be found [in the documentation](https://keptn.sh/docs/0.7.x/operate/k8s_support/).  
+<br>
+Here is a quick guide on how to get started with keptn on [k3s](https://k3s.io/):  
 
-**Download CLI (Linux and Mac OS)**:
+**Install K3s**  
+Download, install and run K3s (tested with versions 1.16 to 1.18):
+``` console
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.18.3+k3s1 K3S_KUBECONFIG_MODE="644" sh -s - --no-deploy=traefik
+```
+Export the Kubernetes config using:
+``` console
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+```  
+<br>
+
+**Download keptn CLI (Linux and Mac OS)**:
 ```console
 curl -sL https://get.keptn.sh | sudo -E bash
 ```
 or download a release for your platform from the [release page](https://github.com/keptn/keptn/releases)
 
-You can find documentation on how to get started with Keptn in our [Quick Start Guide](https://keptn.sh/docs/quickstart/) and the [Installation instructions](https://keptn.sh/docs/0.6.0/installation/setup-keptn/). 
+<br>
+
+**Install keptn**:
+```console
+keptn install --endpoint-service-type=ClusterIP --use-case=continuous-delivery
+```
+
+You can find documentation on how to get started with Keptn in our [Quick Start Guide](https://keptn.sh/docs/quickstart/) and the [Installation instructions](https://keptn.sh/docs/0.7.x/operate/install/). 
 We recommend using the [latest stable release](https://github.com/keptn/keptn/releases) as provided in the [release section](https://github.com/keptn/keptn/releases).
 
 ## Community
