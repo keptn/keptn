@@ -35,6 +35,18 @@ install-helm:
 	@./make-scripts/install_helm.sh
 	@printf "👍 Done\n"
 
+## Install pre-commit-hooks
+install-pre-commit-hooks:
+	@printf "🔨 Installing pre-commit-hooks\n"
+	@./make-scripts/install_pre_commit_hooks.sh
+	@printf "👍 Done\n"
+
+## Uninstall pre-commit-hooks
+uninstall-pre-commit-hooks:
+	@printf "🔨 Uninstalling pre-commit-hooks\n"
+	@./make-scripts/uninstall_pre_commit_hooks.sh
+	@printf "👍 Done\n"
+
 ## Lint the code
 install-golint:
 	@printf "🔨 Installing golint\n" 
@@ -84,6 +96,8 @@ help:
 	@echo ""
 	@echo "* build-cli: Build the keptn cli and save it in bin/"
 	@echo "* start-bridge: Start the bridge server"
+	@echo "* install-pre-commit-hooks: Install the pre-commit-hooks binary"
+	@echo "* uninstall-pre-commit-hooks: Uninstall the pre-commit-hooks binary"
 	@echo "* install-helm: Install the helm binary in your local"
 	@echo "* install-golint: Install golint for linting the code"
 	@echo "* fmt: Formats the codebase"
