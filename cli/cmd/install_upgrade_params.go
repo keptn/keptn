@@ -8,6 +8,7 @@ type installUpgradeParams struct {
 	ChartRepoURL       *string
 	Namespace          *string
 	ValuesFile         *string
+	Values             *[]string
 }
 
 func getChartRepoURL(input *string) string {

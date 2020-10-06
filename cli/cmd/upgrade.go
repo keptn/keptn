@@ -22,15 +22,14 @@ import (
 	"os"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/release"
-
+	"github.com/keptn/keptn/cli/pkg/helm"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 
-	"github.com/keptn/keptn/cli/pkg/helm"
-	"helm.sh/helm/v3/pkg/chart"
-
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/strvals"
 )
 
 const keptnReleaseName = "keptn"
@@ -74,9 +73,9 @@ For more information, please follow the installation guide [Upgrade Keptn](https
 
 		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
 
-		var userValues map[string]interface{}
+		var valuesFile map[string]interface{}
 		if upgradeParams.ValuesFile != nil && *upgradeParams.ValuesFile != "" {
-			err = getAndParseYaml(*upgradeParams.ValuesFile, &userValues)
+			err = getAndParseYaml(*upgradeParams.ValuesFile, &valuesFile)
 			if err != nil {
 				return fmt.Errorf("Failed to read and parse values file - %s", err.Error())
 			}
@@ -86,7 +85,15 @@ For more information, please follow the installation guide [Upgrade Keptn](https
 			return fmt.Errorf("Failed to get values of installed release - %s", err.Error())
 
 		}
-		upgradeValues = mergeMaps(latestReleaseValues, userValues)
+		upgradeValues = mergeMaps(latestReleaseValues, valuesFile)
+
+		if upgradeParams.Values != nil {
+			for _, value := range *upgradeParams.Values {
+				if err := strvals.ParseInto(value, upgradeValues); err != nil {
+					return fmt.Errorf("Failed to parse --set data - %s", err.Error())
+				}
+			}
+		}
 
 		return checkInput(upgradeParams, upgradeValues)
 	},
@@ -155,6 +162,9 @@ func init() {
 
 	upgradeParams.ValuesFile = upgraderCmd.Flags().StringP("values", "f", "",
 		"Specify values in a YAML file or a URL.")
+
+	upgradeParams.Values = upgraderCmd.Flags().StringArrayP("set", "", []string{},
+		"Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 }
 
 func doUpgrade() error {

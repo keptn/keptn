@@ -22,18 +22,15 @@ import (
 	"os"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/chart"
-
-	"github.com/keptn/keptn/cli/pkg/platform"
-
 	"github.com/keptn/keptn/cli/pkg/helm"
-
 	"github.com/keptn/keptn/cli/pkg/kube"
-
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/pkg/platform"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/strvals"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -63,14 +60,22 @@ For more information, please follow the installation guide [Install Keptn](https
 
 		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
 
-		var userValues map[string]interface{}
+		var valuesFile map[string]interface{}
 		if installParams.ValuesFile != nil && *installParams.ValuesFile != "" {
-			err = getAndParseYaml(*installParams.ValuesFile, &userValues)
+			err = getAndParseYaml(*installParams.ValuesFile, &valuesFile)
 			if err != nil {
 				return fmt.Errorf("Failed to read and parse values file - %s", err.Error())
 			}
 		}
-		installValues = mergeMaps(installValues, userValues)
+		installValues = mergeMaps(installValues, valuesFile)
+
+		if installParams.Values != nil {
+			for _, value := range *installParams.Values {
+				if err := strvals.ParseInto(value, installValues); err != nil {
+					return fmt.Errorf("Failed to parse --set data - %s", err.Error())
+				}
+			}
+		}
 
 		return checkInput(installParams, installValues)
 	},
@@ -104,6 +109,9 @@ func init() {
 
 	installParams.ValuesFile = installCmd.Flags().StringP("values", "f", "",
 		"Specify values in a YAML file or a URL.")
+
+	installParams.Values = installCmd.Flags().StringArrayP("set", "", []string{},
+		"Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 }
 
 // Preconditions: 1. Already authenticated against the cluster.
