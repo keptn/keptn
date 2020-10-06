@@ -194,7 +194,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split("\"")[1]?.split("%")[0];
       evaluationData.data.evaluationdetails.compare_with = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split("\"")[1];
       evaluationData.data.evaluationdetails.include_result_with_score = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split("\"")[1];
-      evaluationData.data.evaluationdetails.number_of_comparison_results = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("number_of_comparison_results:")[1]?.split(" ")[1];
+      if (evaluationData.data.evaluationdetails.comparedEvents !== null) {
+        evaluationData.data.evaluationdetails.number_of_comparison_results = evaluationData.data.evaluationdetails.comparedEvents?.length;
+      } else {
+        evaluationData.data.evaluationdetails.number_of_comparison_results = 0;
+      }
     }
   }
 
