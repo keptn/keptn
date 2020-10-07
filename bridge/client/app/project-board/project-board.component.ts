@@ -295,7 +295,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   copyApiToken() {
-    this.clipboard.copy(this.keptnInfo.apiToken, 'API token');
+    this.clipboard.copy(this.keptnInfo.bridgeInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {
