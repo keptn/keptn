@@ -54,6 +54,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public filterEventType: string = null;
 
   public integrationsExternalDetails = null;
+  public triggerQualityGateEvaluationViaCli = `keptn send event start-evaluation
+    --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE}
+    --start=2020-12-31T11:59:59 --timeframe=5m`;
   public triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/{PROJECT}/stage/{STAGE}/service/{SERVICE}/evaluation"
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\

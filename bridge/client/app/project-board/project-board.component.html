@@ -281,9 +281,7 @@
       <ul>
         <li><a href="javascript:void(0);" (click)="exampleTriggerQualityGateCli.toggle()">Trigger a quality gate evaluation</a>
           <dt-expandable-panel #exampleTriggerQualityGateCli>
-            <pre class="code"><code class="lang-console">keptn send event start-evaluation
-    --project= --stage= --service=
-    --start=2020-12-31T11:59:59 --timeframe=5m</code></pre>
+            <pre class="code"><code class="lang-console" [innerHtml]="triggerQualityGateEvaluationViaCli"></code></pre>
           </dt-expandable-panel>
         </li>
       </ul>
