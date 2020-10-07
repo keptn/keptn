@@ -111,6 +111,14 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not initialize git repo")})
 		}
 	}
+
+	// make sure that master branch exists
+	err := common.EnsureMasterBranchAvailability(params.Project.ProjectName)
+	if err != nil {
+		logger.Info("Could not ensure that master branch is available for project " + params.Project.ProjectName + ": " + err.Error())
+		return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not ensure that master branch is available for project " + params.Project.ProjectName)})
+	}
+
 	////////////////////////////////////////////////////
 	newProjectMetadata := &projectMetadata{
 		ProjectName:       params.Project.ProjectName,
@@ -207,6 +215,12 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 					logger.Error(fmt.Sprintf("Could not delete credentials while updating project %s: %v", params.Project.ProjectName, credsErr))
 				}
 				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+			}
+			// make sure that master branch exists
+			err = common.EnsureMasterBranchAvailability(params.ProjectName)
+			if err != nil {
+				logger.Info("Could not ensure that master branch is available for project " + params.ProjectName + ": " + err.Error())
+				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not ensure that master branch is available for project " + params.ProjectName)})
 			}
 		} else {
 			logger.Info("Project " + params.ProjectName + " not updated as Git credentials were missing.")

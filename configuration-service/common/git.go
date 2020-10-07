@@ -78,14 +78,35 @@ func CheckoutBranch(project string, branch string, disableUpstreamSync bool) err
 	return nil
 }
 
-// CreateBranch creates a new branch
-func CreateBranch(project string, branch string, sourceBranch string) error {
+// CreateBranchFromSource creates a new branch
+func CreateBranchFromSource(project string, branch string, sourceBranch string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	err := CheckoutBranch(project, sourceBranch, false)
 	if err != nil {
 		return err
 	}
 	_, err = utils.ExecuteCommandInDirectory("git", []string{"checkout", "-b", branch}, projectConfigPath)
+	if err != nil {
+		return err
+	}
+
+	// if an upstream has been defined, push the new branch
+	credentials, err := GetCredentials(project)
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+		_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
+		if err != nil {
+			return obfuscateErrorMessage(err, credentials)
+		}
+	}
+
+	return nil
+}
+
+// CreateBranchFromCurrentBranch creates a new branch from the current branch
+func CreateBranchFromCurrentBranch(project string, branch string) error {
+	projectConfigPath := config.ConfigDir + "/" + project
+	_, err := utils.ExecuteCommandInDirectory("git", []string{"checkout", "-b", branch}, projectConfigPath)
 	if err != nil {
 		return err
 	}
@@ -123,6 +144,19 @@ func AddOrigin(project string) error {
 		}
 	}
 	return err
+}
+
+// EnsureMasterBranchAvailability makes sure that a branch called 'master' is available
+func EnsureMasterBranchAvailability(project string) error {
+	masterExists := StageExists(project, "master", true)
+
+	if !masterExists {
+		err := CreateBranchFromCurrentBranch(project, "master")
+		if err != nil {
+			return fmt.Errorf("Could not create master branch: %s", err.Error())
+		}
+	}
+	return nil
 }
 
 func removeRemoteOrigin(project string) error {
