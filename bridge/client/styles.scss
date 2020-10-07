@@ -45,6 +45,10 @@ span.small {
   font-size: 12px;
   color: $gray-700;
 }
+p.light,
+span.light {
+  color: $gray-500;
+}
 
 p.error,
 p.fail,
@@ -81,7 +85,7 @@ a {
   color: $gray-800;
 }
 a:hover {
-  color: $gray-700;
+  color: $primary-color;
 }
 
 .m-0 {
@@ -220,6 +224,15 @@ a:hover {
 
 .bold {
   font-weight: bold;
+}
+
+pre.code {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
 }
 
 .dt-icon.event-icon {

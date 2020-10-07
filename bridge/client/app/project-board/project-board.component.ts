@@ -52,6 +52,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public filterEventType: string = null;
 
+  public integrationsExternalDetails = null;
+  public triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/{PROJECT}/stage/{STAGE}/service/{SERVICE}/evaluation"
+    -H "accept: application/json; charset=utf-8" \\
+    -H "x-token: \${KEPTN_API_TOKEN}" \\
+    -H "Content-Type: application/json; charset=utf-8" \\
+    -d "{\\"start\\": \\"2020-09-28T07:00:00\\", \\"timeframe\\": \\"5m\\", \\"labels\\":{\\"buildId\\":\\"build-17\\",\\"owner\\":\\"JohnDoe\\",\\"testNo\\":\\"47-11\\"}"`;
+
   @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
@@ -265,6 +272,17 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   findProblemEvent(problemEvents: Root[], service: Service) {
     return problemEvents.find(root => root?.data.service == service.serviceName);
+  }
+
+  loadIntegrations() {
+    this.integrationsExternalDetails = "<p>Loading ...</p>";
+    this.apiService.getIntegrationsPage()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((result: string) => {
+        this.integrationsExternalDetails = result;
+      }, (err: Error) => {
+        this.integrationsExternalDetails = "<p>Couldn't load page. For more details see <a href='https://keptn.sh/docs/integrations/' target='_blank' rel='noopener noreferrer'>https://keptn.sh/docs/integrations/</a>";
+      });
   }
 
   ngOnDestroy(): void {

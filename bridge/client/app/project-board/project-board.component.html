@@ -35,6 +35,7 @@
     <dt-menu-group label="">
       <a (click)="selectView('environment')" [class.active]="view == 'environment'" dtMenuItem>Environment</a>
       <a (click)="selectView('services')" [class.active]="view == 'services'" dtMenuItem>Services</a>
+      <a (click)="selectView('integration')" [class.active]="view == 'integration'" dtMenuItem>Integration</a>
     </dt-menu-group>
   </dt-menu>
   <ng-container *ngIf="view == 'environment'">
@@ -266,6 +267,38 @@
           </dt-tag-list>
         </div>
       </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="view == 'integration'">
+    <div id="integration-container" class="container" fxFlex fxLayout="column">
+      <p>Integrate Keptn using the <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/">Keptn CLI</a> or <a href="https://keptn.sh/docs/0.7.x/reference/api/">Keptn API</a>.</p>
+      <h2>Keptn CLI:</h2>
+      <ol>
+        <li>Download CLI from user menu (see top right corner)</li>
+        <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/">keptn auth</a></li>
+      </ol>
+      <p>Example:</p>
+      <ul>
+        <li>Trigger a quality gate evaluation:
+          <pre class="code"><code class="lang-console">keptn send event start-evaluation
+    --project= --stage= --service=
+    --start=2020-12-31T11:59:59 --timeframe=5m</code></pre>
+        </li>
+      </ul>
+      <h2>Keptn API:</h2>
+      <ol>
+        <li>Copy API token from user menu (see top right corner)</li>
+        <li>Access Keptn API</li>
+      </ol>
+      <p>Example:</p>
+      <ul>
+        <li>Trigger a quality gate evaluation:
+          <pre class="code"><code class="lang-console" [innerHtml]="triggerQualityGateEvaluationViaApi"></code></pre>
+        </li>
+      </ul>
+      <p *ngIf="!integrationsExternalDetails"><button dt-button (click)="loadIntegrations()"><dt-icon name="xhr-load-action"></dt-icon> Load more information about integrations</button></p>
+      <ktb-markdown [html]="integrationsExternalDetails"></ktb-markdown>
+      <p class="small light">Additional information about integrations will be loaded from external sources and Keptn will collect statistical data. Details can be found at <a href="https://keptn.sh/docs/0.7.x/reference/load_information" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/0.7.x/reference/load_information</a></p>
     </div>
   </ng-container>
 </div>
