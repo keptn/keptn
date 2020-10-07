@@ -112,13 +112,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		}
 	}
 
-	// make sure that master branch exists
-	err := common.EnsureMasterBranchAvailability(params.Project.ProjectName)
-	if err != nil {
-		logger.Info("Could not ensure that master branch is available for project " + params.Project.ProjectName + ": " + err.Error())
-		return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not ensure that master branch is available for project " + params.Project.ProjectName)})
-	}
-
 	////////////////////////////////////////////////////
 	newProjectMetadata := &projectMetadata{
 		ProjectName:       params.Project.ProjectName,
@@ -157,6 +150,15 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 		}
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
+
+	// make sure that master branch exists
+	logger.Info("making sure that master branch exists")
+	err = common.EnsureBranchAvailability(params.Project.ProjectName, "master")
+	if err != nil {
+		logger.Info("Could not ensure that master branch is available for project " + params.Project.ProjectName + ": " + err.Error())
+		return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not ensure that master branch is available for project " + params.Project.ProjectName)})
+	}
+	logger.Info("master branch has been stored")
 
 	mv := common.GetProjectsMaterializedView()
 
@@ -217,7 +219,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 			}
 			// make sure that master branch exists
-			err = common.EnsureMasterBranchAvailability(params.ProjectName)
+			err = common.EnsureBranchAvailability(params.ProjectName, "master")
 			if err != nil {
 				logger.Info("Could not ensure that master branch is available for project " + params.ProjectName + ": " + err.Error())
 				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not ensure that master branch is available for project " + params.ProjectName)})

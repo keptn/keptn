@@ -107,7 +107,7 @@ func CreateBranchFromSource(project string, branch string, sourceBranch string) 
 func CreateBranchFromCurrentBranch(project string, branch string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"checkout", "-b", branch}, projectConfigPath)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "already exists") {
 		return err
 	}
 
@@ -146,12 +146,12 @@ func AddOrigin(project string) error {
 	return err
 }
 
-// EnsureMasterBranchAvailability makes sure that a branch called 'master' is available
-func EnsureMasterBranchAvailability(project string) error {
-	masterExists := StageExists(project, "master", true)
+// EnsureBranchAvailability makes sure that a branch called 'master' is available
+func EnsureBranchAvailability(project string, branch string) error {
+	masterExists := StageExists(project, "master", false)
 
 	if !masterExists {
-		err := CreateBranchFromCurrentBranch(project, "master")
+		err := CreateBranchFromCurrentBranch(project, branch)
 		if err != nil {
 			return fmt.Errorf("Could not create master branch: %s", err.Error())
 		}
