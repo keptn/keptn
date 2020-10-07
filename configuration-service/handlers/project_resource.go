@@ -165,7 +165,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	}
 	err = common.CheckoutBranch(params.ProjectName, defaultBranch, *params.DisableUpstreamSync)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could check out %s branch of project %s: %s", params.ProjectName, err.Error()))
+		logger.Error(fmt.Sprintf("Could check out %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
