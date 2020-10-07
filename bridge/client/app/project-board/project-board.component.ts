@@ -59,6 +59,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     -H "Content-Type: application/json; charset=utf-8" \\
     -d "{\\"start\\": \\"2020-09-28T07:00:00\\", \\"timeframe\\": \\"5m\\", \\"labels\\":{\\"buildId\\":\\"build-17\\",\\"owner\\":\\"JohnDoe\\",\\"testNo\\":\\"47-11\\"}"`;
 
+  public keptnInfo: any;
+
   @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
@@ -150,6 +152,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               });
             });
         }
+      });
+
+    this.dataService.keptnInfo
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(keptnInfo => {
+        this.keptnInfo = keptnInfo;
       });
   }
 

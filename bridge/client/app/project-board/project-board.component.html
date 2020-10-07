@@ -274,15 +274,17 @@
       <p>Integrate Keptn using the <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/">Keptn CLI</a> or <a href="https://keptn.sh/docs/0.7.x/reference/api/">Keptn API</a>.</p>
       <h2>Keptn CLI:</h2>
       <ol>
-        <li>Download CLI from user menu (see top right corner)</li>
+        <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
         <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/">keptn auth</a></li>
       </ol>
-      <p>Example:</p>
+      <p>Use Cases:</p>
       <ul>
-        <li>Trigger a quality gate evaluation:
-          <pre class="code"><code class="lang-console">keptn send event start-evaluation
+        <li><a href="javascript:void(0);" (click)="exampleTriggerQualityGateCli.toggle()">Trigger a quality gate evaluation</a>
+          <dt-expandable-panel #exampleTriggerQualityGateCli>
+            <pre class="code"><code class="lang-console">keptn send event start-evaluation
     --project= --stage= --service=
     --start=2020-12-31T11:59:59 --timeframe=5m</code></pre>
+          </dt-expandable-panel>
         </li>
       </ul>
       <h2>Keptn API:</h2>
@@ -290,10 +292,12 @@
         <li>Copy API token from user menu (see top right corner)</li>
         <li>Access Keptn API</li>
       </ol>
-      <p>Example:</p>
+      <p>Use Cases:</p>
       <ul>
-        <li>Trigger a quality gate evaluation:
-          <pre class="code"><code class="lang-console" [innerHtml]="triggerQualityGateEvaluationViaApi"></code></pre>
+        <li><a href="javascript:void(0);" (click)="exampleTriggerQualityGateApi.toggle()">Trigger a quality gate evaluation</a>
+          <dt-expandable-panel #exampleTriggerQualityGateApi>
+            <pre class="code"><code class="lang-console" [innerHtml]="triggerQualityGateEvaluationViaApi"></code></pre>
+          </dt-expandable-panel>
         </li>
       </ul>
       <p *ngIf="!integrationsExternalDetails"><button dt-button (click)="loadIntegrations()"><dt-icon name="xhr-load-action"></dt-icon> Load more information about integrations</button></p>
