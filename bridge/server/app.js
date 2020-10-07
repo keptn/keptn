@@ -10,6 +10,7 @@ const app = express();
 let apiUrl = process.env.API_URL;
 let apiToken = process.env.API_TOKEN;
 let cliDownloadLink = process.env.CLI_DOWNLOAD_LINK;
+let integrationsPageLink = process.env.INTEGRATIONS_PAGE_LINK;
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
@@ -18,7 +19,12 @@ if(!apiToken) {
 
 if (!cliDownloadLink) {
   console.log("CLI Download Link was not provided, defaulting to github.com/keptn/keptn releases")
-  cliDownloadLink = "https://github.com/keptn/keptn/releases"
+  cliDownloadLink = "https://github.com/keptn/keptn/releases";
+}
+
+if(!integrationsPageLink) {
+  console.log("Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.md")
+  integrationsPageLink = "https://get.keptn.sh/integrations.md";
 }
 
 const oneWeek       = 7*24*3600000;    // 3600000msec == 1hour
@@ -57,7 +63,7 @@ if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
 
 
 // everything starting with /api is routed to the api implementation
-app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink }));
+app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink }));
 
 // fallback: go to index.html
 app.use((req, res, next) => {
