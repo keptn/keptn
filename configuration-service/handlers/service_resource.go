@@ -286,7 +286,11 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	logger.Debug("Successfully updated resources")
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	defaultBranch, _ := common.GetDefaultBranch(params.ProjectName)
+	if defaultBranch == "" {
+		defaultBranch = "master"
+	}
+	metadata.Branch = defaultBranch
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(metadata)
 }
 
@@ -329,7 +333,11 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	defaultBranch, _ := common.GetDefaultBranch(params.ProjectName)
+	if defaultBranch == "" {
+		defaultBranch = "master"
+	}
+	metadata.Branch = defaultBranch
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated().
 		WithPayload(metadata)
 }

@@ -21,10 +21,14 @@ func getStages(params stage.GetProjectProjectNameStageParams) ([]*models.Stage, 
 		return nil, errors.New(404, "Project does not exist.")
 	}
 
-	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not determine default branch for project %s: %s", params.ProjectName, err.Error()))
+		return nil, errors.New(500, "Could not determine default branch")
+	}
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, *params.DisableUpstreamSync)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out default branch of project %s: %s", params.ProjectName, err.Error()))
 		return nil, errors.New(500, "Could not retrieve stages.")
 	}
 
@@ -69,7 +73,12 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	err := common.CreateBranch(params.ProjectName, params.Stage.StageName, "master")
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch for project %s: %s", params.ProjectName, err.Error()))
+		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create stage.")})
+	}
+	err = common.CreateBranch(params.ProjectName, params.Stage.StageName, defaultBranch)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not create %s branch for project %s", params.Stage.StageName, params.ProjectName))
 		logger.Error(err.Error())

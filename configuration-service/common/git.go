@@ -357,6 +357,17 @@ func GetResourceMetadata(project string) *models.Version {
 	return result
 }
 
+// GetDefaultBranch returns the name of the default branch of the repo
+func GetDefaultBranch(project string) (string, error) {
+	// git symbolic-ref --short HEAD
+	projectConfigPath := config.ConfigDir + "/" + project
+	out, err := utils.ExecuteCommandInDirectory("git", []string{"symbolic-ref", `--short`, "HEAD"}, projectConfigPath)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(out, "\n"), nil
+}
+
 func addRepoURIToMetadata(credentials *GitCredentials, metadata *models.Version) {
 	// the git token should not be included in the repo URI in the first place, but let's make sure it's hidden in any case
 	remoteURI := credentials.RemoteURI

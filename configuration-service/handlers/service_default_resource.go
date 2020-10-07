@@ -38,8 +38,12 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not get stages for project")})
 	}
 
+	defaultBranch, _ := common.GetDefaultBranch(params.ProjectName)
+	if defaultBranch == "" {
+		defaultBranch = "master"
+	}
 	for _, branch := range branches {
-		if branch == "master" {
+		if branch == defaultBranch {
 			continue
 		}
 		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {
