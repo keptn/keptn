@@ -23,8 +23,8 @@ if (!cliDownloadLink) {
 }
 
 if(!integrationsPageLink) {
-  console.log("Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.md")
-  integrationsPageLink = "https://get.keptn.sh/integrations.md";
+  console.log("Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.html")
+  integrationsPageLink = "https://get.keptn.sh/integrations.html";
 }
 
 const oneWeek       = 7*24*3600000;    // 3600000msec == 1hour

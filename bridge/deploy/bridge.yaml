@@ -41,7 +41,7 @@ spec:
          - name: CLI_DOWNLOAD_LINK
            value: "https://github.com/keptn/keptn/releases/tag/0.7.1"
          - name: INTEGRATIONS_PAGE_LINK
-           value: "https://get.keptn.sh/integrations.md"
+           value: "https://get.keptn.sh/integrations.html"
          - name: ENABLE_VERSION_CHECK
            value: "true"
          - name: SHOW_API_TOKEN
