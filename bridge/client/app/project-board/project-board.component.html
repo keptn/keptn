@@ -275,7 +275,7 @@
       <h2>Keptn CLI:</h2>
       <ol>
         <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
-        <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/">keptn auth</a></li>
+        <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth</a></li>
       </ol>
       <p>Use Cases:</p>
       <ul>
@@ -289,8 +289,14 @@
       </ul>
       <h2>Keptn API:</h2>
       <ol>
-        <li>Copy API token from user menu (see top right corner)</li>
-        <li>Access Keptn API</li>
+        <ng-container *ngIf="keptnInfo?.bridgeInfo?.showApiToken; else noApiToken">
+          <li><a href="javascript:void(0);" (click)="copyApiToken()">Copy API token to clipboard</a></li>
+          <li>Access <a [href]="keptnInfo.bridgeInfo.apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a></li>
+        </ng-container>
+        <ng-template #noApiToken>
+          <li><a href="https://keptn.sh/docs/0.7.x/operate/api_token/" rel="noopener noreferrer" target="_blank">Retrieve API token</a></li>
+          <li>Access Keptn API</li>
+        </ng-template>
       </ol>
       <p>Use Cases:</p>
       <ul>

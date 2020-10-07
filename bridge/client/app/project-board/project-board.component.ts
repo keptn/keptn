@@ -19,6 +19,7 @@ import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {EVENT_LABELS} from "../_models/event-labels";
 import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
 import {DtToggleButtonItem} from "@dynatrace/barista-components/toggle-button-group";
+import {ClipboardService} from "../_services/clipboard.service";
 
 @Component({
   selector: 'app-project-board',
@@ -69,7 +70,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     pinnable: true
   };
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService, private clipboard: ClipboardService) { }
 
   ngOnInit() {
     this.route.params
@@ -291,6 +292,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       }, (err: Error) => {
         this.integrationsExternalDetails = "<p>Couldn't load page. For more details see <a href='https://keptn.sh/docs/integrations/' target='_blank' rel='noopener noreferrer'>https://keptn.sh/docs/integrations/</a>";
       });
+  }
+
+  copyApiToken() {
+    this.clipboard.copy(this.keptnInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {
