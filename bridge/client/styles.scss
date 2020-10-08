@@ -81,6 +81,11 @@ span.italic {
   font-style: italic;;
 }
 
+ul.list-style-none {
+  list-style: none;
+  padding-left: 20px;
+}
+
 a {
   color: $gray-800;
 }
@@ -253,6 +258,20 @@ pre.code {
 
   &.highlight {
     fill: $blue-400;
+  }
+}
+
+.dt-show-more {
+  &.small {
+    vertical-align: sub;
+    .dt-icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  &.inline {
+    width: auto;
+    display: inline-block;
   }
 }
 
