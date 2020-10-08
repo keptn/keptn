@@ -171,7 +171,7 @@
 }
 
 #integration-container {
-  p, ul, ol {
+  ::ng-deep p, ul, ol {
     margin: 0;
   }
   h2 {

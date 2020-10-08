@@ -272,12 +272,12 @@
   <ng-container *ngIf="view == 'integration'">
     <div id="integration-container" class="container" fxFlex fxLayout="column">
       <p>Integrate Keptn using the <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/">Keptn CLI</a> or <a href="https://keptn.sh/docs/0.7.x/reference/api/">Keptn API</a>.</p>
-      <h2>Keptn CLI:</h2>
+      <h2>Keptn CLI</h2>
       <ol>
         <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
         <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth</a></li>
       </ol>
-      <p>Use Cases:</p>
+      <p class="bold mt-2">Use Cases:</p>
       <ul>
         <li><a href="javascript:void(0);" (click)="exampleTriggerQualityGateCli.toggle()">Trigger a quality gate evaluation</a>
           <dt-expandable-panel #exampleTriggerQualityGateCli>
@@ -285,7 +285,7 @@
           </dt-expandable-panel>
         </li>
       </ul>
-      <h2>Keptn API:</h2>
+      <h2>Keptn API</h2>
       <ol>
         <ng-container *ngIf="keptnInfo?.bridgeInfo?.showApiToken; else noApiToken">
           <li><a href="javascript:void(0);" (click)="copyApiToken()">Copy API token to clipboard</a></li>
@@ -296,7 +296,7 @@
           <li>Access Keptn API</li>
         </ng-template>
       </ol>
-      <p>Use Cases:</p>
+      <p class="bold mt-2">Use Cases:</p>
       <ul>
         <li><a href="javascript:void(0);" (click)="exampleTriggerQualityGateApi.toggle()">Trigger a quality gate evaluation</a>
           <dt-expandable-panel #exampleTriggerQualityGateApi>
