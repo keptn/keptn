@@ -78,10 +78,10 @@ func PostProjectProjectNameStageHandlerFunc(params stage.PostProjectProjectNameS
 		logger.Error(fmt.Sprintf("Could not determine default branch for project %s: %s", params.ProjectName, err.Error()))
 		return stage.NewPostProjectProjectNameStageDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not create stage.")})
 	}
+	logger.Info(fmt.Sprintf("creating stage %s from base %s", params.Stage.StageName, defaultBranch))
 	err = common.CreateBranch(params.ProjectName, params.Stage.StageName, defaultBranch)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not create %s branch for project %s", params.Stage.StageName, params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not create %s branch for project %s: %s", params.Stage.StageName, params.ProjectName, err.Error()))
 		return stage.NewPostProjectProjectNameStageBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not create stage.")})
 	}
 

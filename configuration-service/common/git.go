@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/configuration-service/models"
-	"net/url"
-	"os"
-	"strings"
-
 	"github.com/keptn/keptn/configuration-service/config"
+	"github.com/keptn/keptn/configuration-service/models"
 	utils "github.com/keptn/kubernetes-utils/pkg"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"net/url"
+	"os"
+	"strings"
+	"time"
 )
 
 // GitCredentials contains git ccredentials info
@@ -359,13 +359,34 @@ func GetResourceMetadata(project string) *models.Version {
 
 // GetDefaultBranch returns the name of the default branch of the repo
 func GetDefaultBranch(project string) (string, error) {
-	// git symbolic-ref --short HEAD
 	projectConfigPath := config.ConfigDir + "/" + project
-	out, err := utils.ExecuteCommandInDirectory("git", []string{"symbolic-ref", `--short`, "HEAD"}, projectConfigPath)
-	if err != nil {
-		return "", err
+
+	credentials, err := GetCredentials(project)
+	if err == nil && credentials != nil {
+		retries := 5
+
+		for i := 0; i < retries; i = i + 1 {
+			out, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "show", "origin"}, projectConfigPath)
+			if err != nil {
+				return "", err
+			}
+			lines := strings.Split(out, "\n")
+
+			for _, line := range lines {
+				if strings.Contains(line, "HEAD branch") {
+					split := strings.Split(line, ":")
+					if len(split) > 1 {
+						defaultBranch := strings.TrimSpace(split[1])
+						if defaultBranch != "(unknown)" {
+							return defaultBranch, nil
+						}
+					}
+				}
+			}
+			<-time.After(3 * time.Second)
+		}
 	}
-	return strings.Trim(out, "\n"), nil
+	return "master", nil
 }
 
 func addRepoURIToMetadata(credentials *GitCredentials, metadata *models.Version) {
