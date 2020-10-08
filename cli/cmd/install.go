@@ -186,7 +186,7 @@ func init() {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 	keptnNamespace := *installParams.Namespace
-	var errorFlag bool
+	showFallbackConnectMessage := true
 
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
@@ -240,13 +240,12 @@ func doInstallation() error {
 		endpoint, err := getAPIEndpoint(keptnNamespace, installParams.EndPointServiceType.String())
 		apiToken, _ := getAPITokenFromSecret(keptnNamespace)
 		if err == nil {
+			showFallbackConnectMessage = false
 			fmt.Println("* To quickly access Keptn, you can authenticate your Keptn CLI (in a Linux shell):\n" +
 				" - keptn auth --endpoint=" + endpoint + " --api-token=" + apiToken + "\n")
-		} else {
-			errorFlag = true
 		}
 	}
-	if errorFlag {
+	if showFallbackConnectMessage {
 		fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n" +
 			" - kubectl -n " + keptnNamespace + " port-forward service/api-gateway-nginx 8080:80\n" +
 			" - keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
@@ -276,7 +275,9 @@ func checkIstioInstallation() error {
 
 func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 	var endpoint, port string
-	if serviceType == "NodePort" {
+	switch serviceType {
+	case "NodePort":
+		// Fetching external and internal node IP
 		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "nodes", "-o", "jsonpath='{ $.items[0].status.addresses[?(@.type==\"ExternalIP\")].address }'"})
 		internal, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "nodes", "-o", "jsonpath='{ $.items[0].status.addresses[?(@.type==\"InternalIP\")].address }'"})
 		if err != nil {
@@ -284,20 +285,23 @@ func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 		}
 		endpoint = strings.Trim(external, "'")
 		internal = strings.Trim(internal, "'")
+		// Fetching mapped port of the api-gateway-nginx nodeport service
 		port, _ = keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.spec.ports[?(@.name==\"http\")].nodePort}'"})
 		port = strings.Trim(port, "'")
 		if endpoint == "" {
 			endpoint = internal
 		}
-	} else if serviceType == "LoadBalancer" {
+		return "http://" + endpoint + ":" + port + "/api", nil
+	case "LoadBalancer":
+		// Fetching the EXTERNAL-IP of the api-gateway-ngix loadbalancer service
 		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.status.loadBalancer.ingress[0].ip}'"})
 		if err != nil {
 			return "", err
 		}
 		endpoint = strings.Trim(external, "'")
-		port = "80"
+		return "http://" + endpoint + "/api", nil
 	}
-	return "http://" + endpoint + ":" + port + "/api", nil
+	return "", errors.New("Unknown service-type: " + serviceType)
 }
 
 func getAPITokenFromSecret(keptnNamespace string) (string, error) {
