@@ -33,9 +33,18 @@ export class KtbMarkdownComponent implements OnChanges {
     return `<code class="hljs ${language}">${result}</code>`;
   }
 
+  static addTargetAndNoopener(node) {
+    // set all elements owning href to target=_blank and rel=noopener
+    if ('href' in node) {
+      node.setAttribute('target', '_blank');
+      node.setAttribute('rel', 'noopener');
+    }
+  }
+
   constructor(private sanitizer: DomSanitizer) {
     const renderer = new Renderer();
     renderer.code = KtbMarkdownComponent.highlightCode;
+    DOMPurify.addHook('afterSanitizeAttributes', KtbMarkdownComponent.addTargetAndNoopener);
     this.md = marked.setOptions({ renderer });
   }
 
