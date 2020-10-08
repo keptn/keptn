@@ -38,6 +38,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
+- Allow all monitoring types for the `keptn configure monitoring` command [#2483](https://github.com/keptn/keptn/issues/2483)
 - The output of `keptn auth` shows the Keptn endpoint [#2445](https://github.com/keptn/keptn/issues/2445)
 - The output of `keptn version` shows the Keptn API version [#2412](https://github.com/keptn/keptn/issues/2412)
 - Improve robustness and UX of `keptn generate support-archive` [#2340](https://github.com/keptn/keptn/issues/2340)
@@ -52,6 +53,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 - Increased password and token entropy [#2295](https://github.com/keptn/keptn/issues/2295)
 
 - *configuration-service*: 
+  - Ensure availability of master branch in Git repo [#2487](https://github.com/keptn/keptn/issues/2487)
   - Allow non-HTTPS connections to Git-upstream [#2336](https://github.com/keptn/keptn/issues/2336)
 
 - *lighthouse-service*:
@@ -66,6 +68,8 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
+- Introduced integrations page to show usage of CLI/API and loading external information about integrations [#2429](https://github.com/keptn/keptn/issues/2429)
+- Show true number of compared events [#2457](https://github.com/keptn/keptn/issues/2457)
 - Show `buildId` label on xAxis in Heatmap [#2131](https://github.com/keptn/keptn/issues/2131)
 - Evaluation tile rework [#2305](https://github.com/keptn/keptn/issues/2305)
 - Heatmap highlights evaluation results that are used for comparison [#2389](https://github.com/keptn/keptn/issues/2389)
