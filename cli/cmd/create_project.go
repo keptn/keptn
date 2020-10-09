@@ -4,19 +4,24 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"time"
 
-	"github.com/keptn/keptn/cli/pkg/file"
-
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/logging"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+
+	"github.com/keptn/keptn/cli/pkg/file"
+	"github.com/keptn/keptn/cli/pkg/websockethelper"
+
+	"github.com/asaskevich/govalidator"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -75,19 +80,10 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		if _, err := os.Stat(keptnutils.ExpandTilde(*createProjectParams.Shipyard)); os.IsNotExist(err) {
-			return fmt.Errorf("Cannot find shipyard file %s", *createProjectParams.Shipyard)
-		}
-
-		// validate shipyard file
-		content, err := file.ReadFile(*createProjectParams.Shipyard)
+		shipyard := keptn.Shipyard{}
+		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
 		if err != nil {
-			return err
-		}
-
-		shipyard, err := parseShipyard(content)
-		if err != nil {
-			return fmt.Errorf("Invalid shipyard file because parsing failed: %s", err.Error())
+			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
 		}
 
 		// check stage names
@@ -121,6 +117,11 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			project.GitUser = *createProjectParams.GitUser
 			project.GitToken = *createProjectParams.GitToken
 			project.GitRemoteURL = *createProjectParams.RemoteURL
+		}
+
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
 		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
@@ -158,19 +159,51 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func parseShipyard(shipyardContent string) (*keptn.Shipyard, error) {
-	shipyard := keptn.Shipyard{}
-	err := yaml.Unmarshal([]byte(shipyardContent), &shipyard)
-	if err != nil {
-		return nil, err
+func getAndParseYaml(arg string, out interface{}) error {
+	var content string
+	var err error
+	if govalidator.IsURL(arg) {
+		content, err = getYamlFromURL(arg)
+	} else {
+		content, err = getYamlFromFile(arg)
 	}
-	return &shipyard, nil
+	if err != nil {
+		return err
+	}
+	err = yaml.Unmarshal([]byte(content), out)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getYamlFromURL(arg string) (string, error) {
+	c := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := c.Get(arg)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+func getYamlFromFile(arg string) (string, error) {
+	if _, err := os.Stat(keptnutils.ExpandTilde(arg)); os.IsNotExist(err) {
+		return "", fmt.Errorf("Cannot find file %s", arg)
+	}
+	return file.ReadFile(arg)
 }
 
 func init() {
 	createCmd.AddCommand(crProjectCmd)
 	createProjectParams = &createProjectCmdParams{}
-	createProjectParams.Shipyard = crProjectCmd.Flags().StringP("shipyard", "s", "", "The shiypard file specifying the environment")
+	createProjectParams.Shipyard = crProjectCmd.Flags().StringP("shipyard", "s", "", "The path or URL to the shipyard file specifying the environment")
 	crProjectCmd.MarkFlagRequired("shipyard")
 
 	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")

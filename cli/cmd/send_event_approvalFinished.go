@@ -75,6 +75,11 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+			endPointErr)
+	}
+
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 

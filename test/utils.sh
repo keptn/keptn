@@ -32,6 +32,16 @@ function auth_at_keptn() {
   fi
 }
 
+function send_start_evaluation_request() {
+  PROJECT=$1
+  STAGE=$2
+  SERVICE=$3
+
+  response=$(keptn send event start-evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m 2>&1)
+
+  echo "$response"
+}
+
 function send_start_evaluation_event() {
   PROJECT=$1
   STAGE=$2
@@ -46,6 +56,13 @@ function send_start_evaluation_event() {
 function get_evaluation_done_event() {
   keptn_context_id=$1
   keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
+}
+
+function get_event() {
+  event_type=$1
+  keptn_context_id=$2
+  project=$3
+  keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project}
 }
 
 function send_evaluation_done_event() {

@@ -1,4 +1,5 @@
 import {EventTypes} from "./event-types";
+import {ApprovalStates} from "./approval-states";
 
 export const EVENT_ICONS = {
   [EventTypes.CONFIGURATION_CHANGE]: "duplicate",
@@ -12,5 +13,8 @@ export const EVENT_ICONS = {
   [EventTypes.PROBLEM_DETECTED]: "criticalevent",
   [EventTypes.PROBLEM_CLOSED]: "applicationhealth",
   [EventTypes.APPROVAL_TRIGGERED]: "unknown",
-  [EventTypes.APPROVAL_FINISHED]: "checkmark"
+  [EventTypes.APPROVAL_FINISHED]: {
+    [ApprovalStates.APPROVED]: "checkmark",
+    [ApprovalStates.DECLINED]: "abort",
+  }
 };

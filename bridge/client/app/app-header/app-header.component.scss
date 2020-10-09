@@ -43,15 +43,10 @@ dt-top-bar-navigation {
     color: lighten($primary-color, 55%);
   }
 
-  .dt-icon {
+  .dt-icon.error {
     width: 20px;
     height: 20px;
     fill: $error-color;
-  }
-
-  .dt-copy-to-clipboard-btn-button {
-    min-width: 50px !important;
-    padding: 0px 6px;
   }
 }
 

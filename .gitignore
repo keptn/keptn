@@ -40,3 +40,5 @@ configuration-service/cmd/configuration-service-server/__debug_bin
 !.idea/runConfigurations/
 
 vendor/
+
+bin/

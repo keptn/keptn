@@ -1,10 +1,10 @@
-{{- $apiToken := (randAlphaNum 20) | b64enc | quote }}
+{{- $apiToken := (randAlphaNum 45) | b64enc | quote }}
 {{- $apisecret := (lookup "v1" "Secret" .Release.Namespace "keptn-api-token") }}
 {{- if $apisecret }}
 {{- $apiToken = index $apisecret.data "keptn-api-token" }}
 {{- end -}}
 
-{{- $bridgePassword := (randAlphaNum 16) | b64enc | quote }}
+{{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
 {{- if $bridgesecret }}
 {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
@@ -26,6 +26,7 @@ type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
 ---
+{{- if .Values.bridge.secret.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -42,6 +43,7 @@ data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -103,24 +105,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-        - name: distributor
-          image: { { .Values.distributor.image.repository } }:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-          env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: ''
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
@@ -186,6 +170,12 @@ spec:
                 secretKeyRef:
                   name: keptn-api-token
                   key: keptn-api-token
+            - name: CLI_DOWNLOAD_LINK
+              value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
+            - name: ENABLE_VERSION_CHECK
+              value: "{{ .Values.bridge.versionCheck.enabled }}"
+            - name: SHOW_API_TOKEN
+              value: "{{ .Values.bridge.showApiToken.enabled }}"
           envFrom:
             - secretRef:
                 name: bridge-credentials

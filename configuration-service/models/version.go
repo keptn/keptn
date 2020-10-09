@@ -6,16 +6,22 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Version version
+//
 // swagger:model Version
 type Version struct {
 
-	// Version identifier
+	// branch in git repo containing the resource
+	Branch string `json:"branch,omitempty"`
+
+	// Upstream repository containing the resource
+	UpstreamURL string `json:"upstreamURL,omitempty"`
+
+	// version/git commit id of the resource
 	Version string `json:"version,omitempty"`
 }
 

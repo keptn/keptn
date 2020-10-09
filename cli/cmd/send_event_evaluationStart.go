@@ -71,6 +71,11 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		logging.PrintLog("Starting to send a start-evaluation event to evaluate the service "+
 			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
+		}
+
 		startPoint := ""
 		if evaluationStart.Start != nil {
 			startPoint = *evaluationStart.Start
@@ -123,13 +128,23 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			responseEvent, err := apiHandler.SendEvent(apiEvent)
+			response, err := apiHandler.TriggerEvaluation(
+				*evaluationStart.Project,
+				*evaluationStart.Stage,
+				*evaluationStart.Service,
+				apimodels.Evaluation{
+					Start:  start.Format("2006-01-02T15:04:05"),
+					End:    end.Format("2006-01-02T15:04:05"),
+					Labels: *evaluationStart.Labels,
+				},
+			)
+
 			if err != nil {
 				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
 			}
 
-			if responseEvent == nil {
+			if response == nil {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
 			}

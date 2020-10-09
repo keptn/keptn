@@ -3,7 +3,6 @@ package version
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -115,8 +114,8 @@ func NewVersionChecker() *VersionChecker {
 	return &versionChecker
 }
 
-// getNewerCLIVersion checks for newer CLI versions if the automatic version check is enabled in the config
-func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVersionString string) (availableNewestVersions, error) {
+// getNewerCLIVersion checks for newer CLI versions
+func (v *VersionChecker) getNewerCLIVersion(usedVersionString string) (availableNewestVersions, error) {
 
 	cliVersionInfo, err := v.versionFetcherClient.getCLIVersionInfo(usedVersionString)
 	if err != nil {
@@ -130,59 +129,56 @@ func (v *VersionChecker) getNewerCLIVersion(cliConfig config.CLIConfig, usedVers
 	return res, nil
 }
 
-const newCompatibleVersionMsg = `keptn version %s is available! Please visit https://keptn.sh for more information.`
-const newIncompatibleVersionMsg = `keptn version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
-	`version and requires to update the cluster too. Please visit https://keptn.sh for more information.`
-const disableMsg = `To disable this notice, run: '%s set config AutomaticVersionCheck false'`
+const newCompatibleVersionMsg = `* Keptn CLI version %s is available! Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
+const newIncompatibleVersionMsg = `* Keptn CLI version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
+	`version and requires to update the cluster too. Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
 
 // CheckCLIVersion checks whether there is a new CLI version available and prints corresponding
 // messages to the stdout
-func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bool) {
+func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bool) (bool, bool) {
 
 	configMng := config.NewCLIConfigManager()
 	cliConfig, err := configMng.LoadCLIConfig()
 	if err != nil {
 		logging.PrintLog(err.Error(), logging.InfoLevel)
-		return
+		return false, false
 	}
 
+	msgPrinted := false
 	if cliConfig.AutomaticVersionCheck && IsOfficialKeptnVersion(cliVersion) {
 		checkTime := time.Now()
 		if !considerPrevCheck || cliConfig.LastVersionCheck == nil ||
 			checkTime.Sub(*cliConfig.LastVersionCheck) >= checkInterval {
-			newVersions, err := v.getNewerCLIVersion(cliConfig, cliVersion)
+			newVersions, err := v.getNewerCLIVersion(cliVersion)
 			if err != nil {
 				logging.PrintLog(err.Error(), logging.InfoLevel)
-				return
+				return false, false
 			}
-			msgPrinted := false
 			if newVersions.stable.newestCompatible != nil {
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String())
+				segments := newVersions.stable.newestCompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String(),
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if newVersions.prerelease.newestCompatible != nil {
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible)
+				segments := newVersions.prerelease.newestCompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible.String(),
+					majorMinorXVersion)
 				msgPrinted = true
 			}
 			if newVersions.stable.newestIncompatible != nil {
-				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String())
+				segments := newVersions.stable.newestIncompatible.Segments()
+				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String(),
+					majorMinorXVersion)
 				msgPrinted = true
 			}
-			if msgPrinted && considerPrevCheck {
-				if len(os.Args) > 0 {
-					fmt.Printf(disableMsg+"\n", os.Args[0])
-				} else {
-					fmt.Printf(disableMsg+"\n", "keptn")
-				}
-			}
-
-			cliConfig.LastVersionCheck = &checkTime
-			if err := configMng.StoreCLIConfig(cliConfig); err != nil {
-				logging.PrintLog(err.Error(), logging.InfoLevel)
-				return
-			}
+			return true, msgPrinted
 		}
 	}
+	return false, msgPrinted
 }
 
 // IsOfficialKeptnVersion checks whether the provided version string follows a Keptn version pattern

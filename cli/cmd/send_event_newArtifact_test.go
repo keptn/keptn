@@ -18,6 +18,7 @@ func init() {
 func TestNewArtifact(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("send event new-artifact --project=%s --service=%s "+
 		"--image=%s --tag=%s  --mock", "sockshop", "carts", "docker.io/keptnexamples/carts", "0.9.1")
@@ -45,6 +46,7 @@ func TestCheckImageAvailability(t *testing.T) {
 		{"httpd", ""}}
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
@@ -67,6 +69,7 @@ func TestCheckImageNonAvailability(t *testing.T) {
 	invalidImgs := []DockerImg{{"docker.io/keptnexamples/carts:0.7.5", ""}}
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 

@@ -81,6 +81,11 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		logging.PrintLog("Starting to send a new-artifact-event to deploy the service "+
 			*newArtifact.Service+" in project "+*newArtifact.Project+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, logging.InfoLevel)
 
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
+		}
+
 		valuesCanary := make(map[string]interface{})
 		valuesCanary["image"] = *newArtifact.Image + ":" + *newArtifact.Tag
 		canary := keptnevents.Canary{Action: keptnevents.Set, Value: 100}

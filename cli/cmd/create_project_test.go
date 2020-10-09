@@ -18,7 +18,7 @@ func init() {
 
 // testShipyard writes a default shipyard file or uses the value from the shipyard parameter.
 // It returns a function to delete the shipyard file.
-func testShipyard(t *testing.T, shipyardFileName string, shipyard string) func() {
+func testShipyard(t *testing.T, shipyardFilePath string, shipyard string) func() {
 	if shipyard == "" {
 		shipyard = `stages:
   - name: dev
@@ -29,24 +29,25 @@ func testShipyard(t *testing.T, shipyardFileName string, shipyard string) func()
     deployment_strategy: blue_green_service`
 	}
 
-	ioutil.WriteFile(shipyardFileName, []byte(shipyard), 0644)
+	ioutil.WriteFile(shipyardFilePath, []byte(shipyard), 0644)
 
 	buf := new(bytes.Buffer)
 	rootCmd.SetOutput(buf)
 
 	return func() {
-		os.Remove(shipyardFileName)
+		os.Remove(shipyardFilePath)
 	}
 }
 
 // TestCreateProjectCmd tests the default use of the create project command
 func TestCreateProjectCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
-	shipyardFileName := "shipyard.yaml"
-	defer testShipyard(t, shipyardFileName, "")()
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
 
-	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --mock", shipyardFileName)
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --mock", shipyardFilePath)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
@@ -57,11 +58,12 @@ func TestCreateProjectCmd(t *testing.T) {
 // due to a project name with upper case character
 func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
-	shipyardFileName := "shipyard.yaml"
-	defer testShipyard(t, shipyardFileName, "")()
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
 
-	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFileName)
+	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFilePath)
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
@@ -73,8 +75,9 @@ func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
 // due to a stage name, which contains a special character (-)
 func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
-	shipyardFileName := "shipyard.yaml"
+	shipyardFilePath := "./shipyard.yaml"
 	shipyardContent := `stages:
 - name: dev
   deployment_strategy: direct
@@ -83,9 +86,9 @@ func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 - name: production
   deployment_strategy: blue_green_service`
 
-	defer testShipyard(t, shipyardFileName, shipyardContent)()
+	defer testShipyard(t, shipyardFilePath, shipyardContent)()
 
-	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFileName)
+	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFilePath)
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
@@ -97,12 +100,13 @@ func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
 // due to a missing flag for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
-	shipyardFileName := "shipyard.yaml"
-	defer testShipyard(t, shipyardFileName, "")()
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
 
 	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --mock",
-		shipyardFileName, "user", "token")
+		shipyardFilePath, "user", "token")
 	_, err := executeActionCommandC(cmd)
 
 	if !errorContains(err, gitErrMsg) {
@@ -114,12 +118,13 @@ func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {
 // command with git upstream parameters
 func TestCreateProjectCmdWithGit(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
-	shipyardFileName := "shipyard.yaml"
-	defer testShipyard(t, shipyardFileName, "")()
+	shipyardFilePath := "./shipyard.yaml"
+	defer testShipyard(t, shipyardFilePath, "")()
 
 	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --git-user=%s --git-token=%s --git-remote-url=%s --mock",
-		shipyardFileName, "user", "token", "https://")
+		shipyardFilePath, "user", "token", "https://")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {

@@ -65,6 +65,11 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 
 	logging.PrintLog("Starting to get approval.triggered events", logging.InfoLevel)
 
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+			endPointErr)
+	}
+
 	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 

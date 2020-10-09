@@ -17,6 +17,7 @@ func init() {
 // TestCreateProjectCmd tests the default use of the create project command
 func TestCreateServiceCmd(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("create service carts --project=%s --mock", "sockshop")
 	_, err := executeActionCommandC(cmd)

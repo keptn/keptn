@@ -92,10 +92,52 @@ keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} - failed"
 sleep 10
 
+########################################################################################################################
+# Testcase 0.a: Send a start-evaluation event for a service that does not exist
+########################################################################################################################
+
+echo "Sending start-evaluation event for service 'wrong-service' in stage hardening"
+
+response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
+
+# check if the error response tells us that the service does not exist
+if [[ $response != *"Service not found"* ]]; then
+  echo "Did not receive expected response from Keptn API"
+  exit 1
+fi
+
+
+########################################################################################################################
+# Testcase 0.b: Send a start-evaluation event for a stage that does not exist
+########################################################################################################################
+
+echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-stage'"
+
+response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
+
+# check if the error response tells us that the stage does not exist
+if [[ $response != *"Stage not found"* ]]; then
+  echo "Did not receive expected response from Keptn API"
+  exit 1
+fi
+
+########################################################################################################################
+# Testcase 0.c: Send a start-evaluation event for a project that does not exist
+########################################################################################################################
+
+echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-service' in project 'wrong-project'"
+
+response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
+
+# check if the error response tells us that the project does not exist
+if [[ $response != *"Project not found"* ]]; then
+  echo "Did not receive expected response from Keptn API"
+  exit 1
+fi
 
 ########################################################################################################################
 # Testcase 1:
-# Project and service should have been created, but no SLO file added and no SLI provider configured
+# Project and service should have been created, but no SLO file available and no SLI provider configured
 # Sending a start-evaluation event now should pass with an appropriate message
 ########################################################################################################################
 
@@ -117,14 +159,44 @@ verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
-verify_using_jq "$response" ".data.result" ""
-verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation performed by lighthouse because no SLO found for service ${SERVICE}"
+verify_using_jq "$response" ".data.result" "pass"
+verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
 verify_using_jq "$response" ".data.evaluationdetails.score" "0"
 verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 
+########################################################################################################################
+# Testcase 2:
+# Project and service should have been created, default SLI provider available, but no SLO file available
+# Should send a get-sli event
+########################################################################################################################
+
+echo "Sending start-evaluation event for service $SERVICE in stage hardening"
+
+# Create a config map containing the default sli-provider for the lighthouse service
+kubectl create configmap -n ${KEPTN_NAMESPACE} lighthouse-config --from-literal=sli-provider=dynatrace
+
+keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+sleep 10
+
+# try to fetch a get-sli event
+echo "Getting get-sli event with context-id: ${keptn_context_id}"
+response=$(get_event sh.keptn.internal.event.get-sli ${keptn_context_id} ${PROJECT})
+
+# print the response
+echo $response | jq .
+
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.internal.event.get-sli"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "${SERVICE}"
+verify_using_jq "$response" ".data.sliProvider" "dynatrace"
+
+kubectl delete configmap -n ${KEPTN_NAMESPACE} lighthouse-config
 
 ########################################################################################################################
-# Testcase 2: Send a start-evaluation event with an SLO file specified, but without an SLI provider configured
+# Testcase 3: Send a start-evaluation event with an SLO file specified, but without an SLI provider configured
 ########################################################################################################################
 
 # add SLO file for service
@@ -155,14 +227,14 @@ verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
-verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.result" "pass"
 verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
 verify_using_jq "$response" ".data.evaluationdetails.score" "0"
 verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
 
 
 ########################################################################################################################
-# Testcase 3: Send a start-evaluation event with an SLO file specified and with an SLI provider set, but no Dynatrace
+# Testcase 4: Send a start-evaluation event with an SLO file specified and with an SLI provider set, but no Dynatrace
 #             Tenant/API Token configured
 ########################################################################################################################
 echo "Install dynatrace-sli-service from: ${DYNATRACE_SLI_SERVICE_VERSION}"
@@ -225,7 +297,7 @@ verify_using_jq "$response" ".data.result" "fail"
 
 
 ########################################################################################################################
-# Testcase 4: Run tests with Dynatrace credentials (Tenant and API token)
+# Testcase 5: Run tests with Dynatrace credentials (Tenant and API token)
 ########################################################################################################################
 
 # create secret from file
@@ -309,7 +381,7 @@ fi
 
 
 ########################################################################################################################
-# Testcase 5: Run the test again
+# Testcase 6: Run the test again
 ########################################################################################################################
 sleep 30
 
@@ -388,7 +460,7 @@ fi
 
 
 ########################################################################################################################
-# Testcase 6: Add slo step2 which contains values that are not handled by dynatrace-sli-service
+# Testcase 7: Add slo step2 which contains values that are not handled by dynatrace-sli-service
 ########################################################################################################################
 echo "Adding SLO file: test/assets/quality_gates_standalone_slo_step2.yaml"
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_slo_step2.yaml --resourceUri=slo.yaml
@@ -469,7 +541,7 @@ fi
 
 
 ########################################################################################################################
-# Testcase 7: Also add sli step2 such that dynatrace-sli-service finally has the correct sli configs
+# Testcase 8: Also add sli step2 such that dynatrace-sli-service finally has the correct sli configs
 ########################################################################################################################
 
 # add SLI file for service

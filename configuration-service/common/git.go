@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/configuration-service/models"
 	"net/url"
 	"os"
 	"strings"
@@ -26,15 +27,17 @@ var namespace = os.Getenv("POD_NAMESPACE")
 
 // CloneRepo clones an upstream repository into a local folder "project" and returns
 // whether the Git repo is already initialized.
-func CloneRepo(project string, user string, token string, uri string) (bool, error) {
-	uri = getRepoURI(uri, user, token)
+func CloneRepo(project string, credentials GitCredentials) (bool, error) {
+	uri := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
 
 	msg, err := utils.ExecuteCommandInDirectory("git", []string{"clone", uri, project}, config.ConfigDir)
 	const emptyRepoWarning = "warning: You appear to have cloned an empty repository."
 	if strings.Contains(msg, emptyRepoWarning) {
-		return false, err
+		return false, obfuscateErrorMessage(err, &credentials)
+	} else if err != nil {
+		return false, obfuscateErrorMessage(err, &credentials)
 	}
-	return true, err
+	return true, nil
 }
 
 func getRepoURI(uri string, user string, token string) string {
@@ -45,11 +48,11 @@ func getRepoURI(uri string, user string, token string) string {
 	}
 
 	if strings.Contains(uri, user+"@") {
-		uri = strings.Replace(uri, "https://"+user+"@", "https://"+user+":"+token+"@", 1)
+		uri = strings.Replace(uri, "://"+user+"@", "://"+user+":"+token+"@", 1)
 	}
 
 	if !strings.Contains(uri, user+":"+token+"@") {
-		uri = strings.Replace(uri, "https://", "https://"+user+":"+token+"@", 1)
+		uri = strings.Replace(uri, "://", "://"+user+":"+token+"@", 1)
 	}
 
 	return uri
@@ -177,7 +180,7 @@ func StageAndCommitAll(project string, message string, withPull bool) error {
 }
 
 func obfuscateErrorMessage(err error, credentials *GitCredentials) error {
-	if credentials.Token != "" {
+	if err != nil && credentials != nil && credentials.Token != "" {
 		errorMessage := strings.ReplaceAll(err.Error(), credentials.Token, "********")
 		return errors.New(errorMessage)
 	}
@@ -339,4 +342,31 @@ func GetBranches(project string) ([]string, error) {
 	branches := strings.Split(strings.TrimSpace(out), "\n")
 
 	return branches, nil
+}
+
+// GetResourceMetadata godoc
+func GetResourceMetadata(project string) *models.Version {
+	result := &models.Version{}
+
+	credentials, err := GetCredentials(project)
+
+	if err == nil && credentials != nil {
+		addRepoURIToMetadata(credentials, result)
+	}
+	addVersionToMetadata(project, result)
+	return result
+}
+
+func addRepoURIToMetadata(credentials *GitCredentials, metadata *models.Version) {
+	// the git token should not be included in the repo URI in the first place, but let's make sure it's hidden in any case
+	remoteURI := credentials.RemoteURI
+	remoteURI = strings.Replace(remoteURI, credentials.Token, "********", -1)
+	metadata.UpstreamURL = remoteURI
+}
+
+func addVersionToMetadata(project string, metadata *models.Version) {
+	version, err := GetCurrentVersion(project)
+	if err == nil {
+		metadata.Version = version
+	}
 }

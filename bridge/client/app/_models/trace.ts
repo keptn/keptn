@@ -1,3 +1,5 @@
+import * as moment from 'moment';
+
 import {EventTypes} from "./event-types";
 import {ResultTypes} from "./result-types";
 import {ApprovalStates} from "./approval-states";
@@ -15,6 +17,7 @@ class Trace {
   time: Date;
   type: string;
   label: string;
+  heatmapLabel: string;
   icon: string;
   image: string;
   plainEvent: string;
@@ -50,12 +53,20 @@ class Trace {
     };
 
     evaluationdetails: {
+      comparedEvents: string[];
       indicatorResults: any;
       result: string;
       score: number;
       sloFileContent: string;
       timeEnd: Date;
       timeStart: Date;
+
+      score_pass: any;
+      score_warning: any;
+      compare_with: string;
+      include_result_with_score: string;
+      number_of_comparison_results: number;
+      sloFileContentParsed: string;
     };
 
     evaluationHistory: Trace[];
@@ -177,6 +188,8 @@ class Trace {
     if(!this.label) {
       if(this.isProblem() && this.isProblemResolvedOrClosed()) {
         this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
+      } else if(this.isApprovalFinished()) {
+        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.type;
       } else {
         this.label = EVENT_LABELS[this.type] || this.type;
       }
@@ -187,7 +200,11 @@ class Trace {
 
   getIcon() {
     if(!this.icon) {
-      this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
+      if(this.isApprovalFinished()) {
+        this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
+      } else {
+        this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
+      }
     }
     return this.icon;
   }
@@ -214,7 +231,18 @@ class Trace {
   }
 
   getChartLabel(): string {
-    return this.data.labels?.["buildId"] ?? this.time;
+    return this.data.labels?.["buildId"] ?? moment(this.time).format("YYYY-MM-DD HH:mm");
+  }
+
+  getHeatmapLabel(): string {
+    if(!this.heatmapLabel) {
+      this.heatmapLabel = this.getChartLabel();
+    }
+    return this.heatmapLabel;
+  }
+
+  setHeatmapLabel(label: string) {
+    this.heatmapLabel = label;
   }
 
   static fromJSON(data: any) {

@@ -28,17 +28,11 @@ type configureMonitoringCmdParams struct {
 
 var params *configureMonitoringCmdParams
 
-var allowedMonitoringTypes = []string{
-	"prometheus",
-	"dynatrace",
-}
-
 var monitoringCmd = &cobra.Command{
 	// Use:          "monitoring <monitoring_provider> --project=<project> --service=<service> --service-indicators=<service_indicators_file_path> --service-objectives=<service_objectives_file_path> --remediation=<remediation_file_path>",
 	Use:   "monitoring <monitoring_provider> --project=<project> --service=<service>",
 	Short: "Configures a monitoring provider",
-	Long: `Configure a monitoring solution for the deployments managed by Keptn. 
-Before executing the command, the dynatrace-service or prometheus-service has to be deployed.
+	Long: `Configure a monitoring solution for the deployments managed by Keptn.
 
 **Note:** If you are executing *keptn configure monitoring dynatrace*, the service flag is optional since Keptn automatically detects the services of a project. 
 See https://keptn.sh/docs/` + keptnReleaseDocsURL + `/monitoring/dynatrace/install/ for more information.
@@ -52,18 +46,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			return errors.New("Requires a monitoring provider as argument")
 		}
 
-		for _, monitoringType := range allowedMonitoringTypes {
-			if monitoringType == args[0] {
-				return nil
-			}
-		}
-
-		errorMsg := "Invalid monitoring type. Must be one of: "
-		for _, monitoringType := range allowedMonitoringTypes {
-			errorMsg = errorMsg + "\n - " + monitoringType
-		}
-
-		return errors.New(errorMsg)
+		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if args[0] == "prometheus" {
@@ -97,6 +80,11 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		sdkEvent.SetSource(source.String())
 		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 		sdkEvent.SetData(cloudevents.ApplicationJSON, configureMonitoringEventData)
+
+		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+				endPointErr)
+		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)

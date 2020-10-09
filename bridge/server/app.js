@@ -9,14 +9,21 @@ const apiRouter = require('./api');
 const app = express();
 let apiUrl = process.env.API_URL;
 let apiToken = process.env.API_TOKEN;
+let cliDownloadLink = process.env.CLI_DOWNLOAD_LINK;
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
   apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
 }
 
+if (!cliDownloadLink) {
+  console.log("CLI Download Link was not provided, defaulting to github.com/keptn/keptn releases")
+  cliDownloadLink = "https://github.com/keptn/keptn/releases"
+}
+
+const oneWeek       = 7*24*3600000;    // 3600000msec == 1hour
 // host static files (angular app)
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(path.join(__dirname, '../dist'), { maxAge: oneWeek }));
 
 // add some middlewares
 app.use(logger('dev'));
@@ -50,7 +57,7 @@ if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
 
 
 // everything starting with /api is routed to the api implementation
-app.use('/api', apiRouter({ apiUrl, apiToken }));
+app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink }));
 
 // fallback: go to index.html
 app.use((req, res, next) => {

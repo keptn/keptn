@@ -47,7 +47,9 @@ span.small {
 }
 
 p.error,
+p.fail,
 span.error,
+span.fail,
 h1.error,
 h2.error,
 h3.error,
@@ -55,14 +57,14 @@ h4.error {
   color: $error-color;
 }
 
-p.error, p.fail,
-span.error, span.fail {
-  color: $error-color;
-}
-
 p.warning,
 span.warning {
   color: $warning-color;
+}
+
+p.success,
+span.success {
+  color: $cta-color-active;
 }
 
 p.error-line,
@@ -73,6 +75,13 @@ span.error-line {
 p.italic,
 span.italic {
   font-style: italic;;
+}
+
+a {
+  color: $gray-800;
+}
+a:hover {
+  color: $gray-700;
 }
 
 .m-0 {

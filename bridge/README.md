@@ -82,7 +82,7 @@ kubectl delete -f deploy/bridge.yaml
    API_TOKEN=1234-exam-ple
    ```
    **Note**: On Windows, use `set API_...=...`. On Linux, use `export API_...=...`
-1. Run `npm start:dev` to start the express server and the Angular app.
+1. Run `npm run start:dev` to start the express server and the Angular app.
 1. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ## Production deployment

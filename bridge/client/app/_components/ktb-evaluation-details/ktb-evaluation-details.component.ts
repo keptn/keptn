@@ -16,8 +16,8 @@ Heatmap(Highcharts);
 Treemap(Highcharts);
 
 import * as moment from 'moment';
-import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {DtChart, DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
 import {DataService} from "../../_services/data.service";
 import DateUtil from "../../_utils/date.utils";
@@ -25,6 +25,8 @@ import {Trace} from "../../_models/trace";
 import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import { ClipboardService } from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -35,6 +37,15 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   @Input() public showChart = true;
+
+  @ViewChild('sloDialog')
+  public sloDialog: TemplateRef<any>;
+  public sloDialogRef: MatDialogRef<any, any>;
+
+  private heatmapChart: DtChart;
+  @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
+    this.heatmapChart = heatmap;
+  }
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -66,7 +77,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     xAxis: {
       type: 'category',
       labels: {
-        rotation: 90
+        rotation: -45
       }
     },
     yAxis: [
@@ -112,20 +123,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       height: 400
     },
 
-    title: {
-      text: 'Heatmap',
-      align: 'left'
-    },
-
-    subtitle: {
-      text: 'Evalution results',
-      align: 'left'
-    },
-
     xAxis: [{
       categories: [],
+      plotBands: [],
       labels: {
-        enabled: false
+        rotation: -45
       },
     }],
 
@@ -167,13 +169,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService) { }
 
   ngOnInit() {
-    if(this._evaluationData)
+    if(this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
-    if(!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
-      this._selectedEvaluationData = this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
+      if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+    }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((event) => {
@@ -184,12 +187,26 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  private parseSloFile(evaluationData) {
+    if(evaluationData.data && evaluationData.data.evaluationdetails.sloFileContent && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
+      evaluationData.data.evaluationdetails.sloFileContentParsed = atob(evaluationData.data.evaluationdetails.sloFileContent);
+      evaluationData.data.evaluationdetails.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split("\"")[1]?.split("%")[0];
+      evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split("\"")[1]?.split("%")[0];
+      evaluationData.data.evaluationdetails.compare_with = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split("\"")[1];
+      evaluationData.data.evaluationdetails.include_result_with_score = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split("\"")[1];
+      if (evaluationData.data.evaluationdetails.comparedEvents !== null) {
+        evaluationData.data.evaluationdetails.number_of_comparison_results = evaluationData.data.evaluationdetails.comparedEvents?.length;
+      } else {
+        evaluationData.data.evaluationdetails.number_of_comparison_results = 0;
+      }
+    }
+  }
+
   updateChartData(evaluationHistory) {
     let chartSeries = [];
 
-    if(!this._selectedEvaluationData && evaluationHistory) {
-      this._selectedEvaluationData = evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext);
-    }
+    if(!this._selectedEvaluationData && evaluationHistory)
+      this.selectEvaluationData(evaluationHistory.find(h => h.id === this._evaluationData.id));
 
     if(this.showChart) {
       evaluationHistory.forEach((evaluation) => {
@@ -261,15 +278,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           rowsize: 0.85,
           turboThreshold: 0,
           data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
-            let time = moment(s.evaluationData.time).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
-            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
             return {
               x: x,
               y: index,
               z: s.y,
               evaluation: s.evaluationData,
-              color: this._evaluationColor[s.evaluationData.data.result]
+              color: this._evaluationColor[s.evaluationData.data.result],
             };
           })
         },
@@ -278,9 +294,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           type: 'heatmap',
           turboThreshold: 0,
           data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
-            let time = moment(s.evaluationData.time).format();
             let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
-            let x = this._heatmapOptions.xAxis[0].categories.indexOf(time);
+            let x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
             return {
               x: x,
               y: index,
@@ -292,21 +307,35 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       ];
     }
 
+    this.highlightHeatmap();
     this._changeDetectorRef.markForCheck();
   }
 
   updateHeatmapOptions(chartSeries) {
-    chartSeries.forEach((d) =>
-      d.data.forEach((s) => {
-        let time = moment(s.evaluationData.time).format();
-        if(s.indicatorResult && this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric) == -1)
-          this._heatmapOptions.yAxis[0].categories.unshift(s.indicatorResult.value.metric);
-        if(this._heatmapOptions.xAxis[0].categories.indexOf(time) == -1)
-          this._heatmapOptions.xAxis[0].categories.splice(SearchUtil.binarySearch(this._heatmapOptions.xAxis[0].categories, time, (a, b) => moment(a).unix() - moment(b).unix()), 0, time);
-      })
-    )
+    chartSeries.forEach((series) => {
+      if(this._heatmapOptions.yAxis[0].categories.indexOf(series.name) === -1)
+        this._heatmapOptions.yAxis[0].categories.unshift(series.name);
+      if(series.name == "Score") {
+        let categories = series.data
+          .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())
+          .map((item, index, items) => {
+            let duplicateItems = items.filter(c => c.evaluationData.getHeatmapLabel() == item.evaluationData.getHeatmapLabel());
+            if(duplicateItems.length > 1)
+              item.label = `${item.evaluationData.getHeatmapLabel()} (${duplicateItems.indexOf(item)+1})`;
+            else
+              item.label = item.evaluationData.getHeatmapLabel();
+            return item;
+          })
+          .map((item) => {
+            item.evaluationData.setHeatmapLabel(item.label);
+            return item.evaluationData.getHeatmapLabel();
+          });
 
-    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 100;
+        this._heatmapOptions.xAxis[0].categories = categories;
+      }
+    });
+
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 160;
   }
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
@@ -314,11 +343,51 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   _chartSeriesClicked(event) {
-    this._selectedEvaluationData = event.point.evaluationData;
+    this.selectEvaluationData(event.point.evaluationData);
   }
 
   _heatmapTileClicked(event) {
-    this._selectedEvaluationData = this._heatmapSeries[0].data[event.point.x]['evaluation'];
+    this.selectEvaluationData(this._heatmapSeries[0].data[event.point.x]['evaluation']);
+  }
+
+  selectEvaluationData(evaluation) {
+    this.parseSloFile(evaluation);
+    this._selectedEvaluationData = evaluation;
+    this.highlightHeatmap();
+  }
+
+  highlightHeatmap() {
+    let _this = this;
+    let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
+    let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
+    let plotBands = [];
+    if(highlightIndex >= 0)
+      plotBands.push({
+        className: 'highlight-primary',
+        from: highlightIndex-0.5,
+        to: highlightIndex+0.5,
+        zIndex: 100
+      });
+    secondaryHighlightIndexes?.forEach(highlightIndex => {
+      if(highlightIndex >= 0)
+        plotBands.push({
+          className: 'highlight-secondary',
+          from: highlightIndex-0.5,
+          to: highlightIndex+0.5,
+          zIndex: 100,
+          events: {
+            click: function () {
+              let index = this.options.from+0.5;
+              setTimeout(() => {
+                _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+              });
+            }
+          }
+        });
+    });
+    this._heatmapOptions.xAxis[0].plotBands = plotBands;
+    this.heatmapChart?._update();
+    this._changeDetectorRef.markForCheck();
   }
 
   getCalendarFormat() {
@@ -327,6 +396,20 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   getDuration(start, end) {
     return DateUtil.getDurationFormatted(start, end);
+  }
+
+  showSloDialog() {
+    this.sloDialogRef = this.dialog.open(this.sloDialog, { data: this._selectedEvaluationData.data.evaluationdetails.sloFileContentParsed });
+  }
+
+  closeSloDialog() {
+    if (this.sloDialogRef) {
+      this.sloDialogRef.close();
+    }
+  }
+
+  copySloPayload(plainEvent: string): void {
+    this.clipboard.copy(plainEvent, 'slo payload');
   }
 
   ngOnDestroy(): void {

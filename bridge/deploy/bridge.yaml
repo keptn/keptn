@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bridge
-  namespace: keptn
+  namespace: keptndev
   labels:
     app.kubernetes.io/name: bridge
     app.kubernetes.io/instance: keptn
@@ -38,6 +38,12 @@ spec:
              secretKeyRef:
                name: keptn-api-token
                key: keptn-api-token
+         - name: CLI_DOWNLOAD_LINK
+           value: "https://github.com/keptn/keptn/releases/tag/0.7.1"
+         - name: ENABLE_VERSION_CHECK
+           value: "true"
+         - name: SHOW_API_TOKEN
+           value: "true"
         envFrom:
           - secretRef:
               name: bridge-credentials

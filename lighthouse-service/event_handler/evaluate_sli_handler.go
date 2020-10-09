@@ -26,6 +26,7 @@ type datastoreResult struct {
 	PageSize    int    `json:"pageSize"`
 	Events      []struct {
 		Data interface{} `json:"data"`
+		ID   string      `json:"id"`
 	}
 }
 
@@ -46,76 +47,9 @@ type EvaluateSLIHandler struct {
 func (eh *EvaluateSLIHandler) HandleEvent() error {
 	e := &keptn.InternalGetSLIDoneEventData{}
 
-	err := eh.Event.DataAs(&e)
-
-	if err != nil {
-		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
-		return err
-	}
-
-	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
-	// compare the results based on the evaluation strategy
-	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
-	if err != nil {
-		return err
-	}
-
-	// get results of previous evaluations from data store (mongodb-datastore)
-	numberOfPreviousResults := 3
-	if sloConfig.Comparison.CompareWith == "single_result" {
-		numberOfPreviousResults = 1
-	} else if sloConfig.Comparison.CompareWith == "several_results" {
-		numberOfPreviousResults = sloConfig.Comparison.NumberOfComparisonResults
-	}
-
-	previousEvaluationEvents, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
-	if err != nil {
-		return err
-	}
-
-	var filteredPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
-
-	// verify that we have enough evaluations
-	for _, val := range previousEvaluationEvents {
-		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
-	}
-
-	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
-	evaluationResult.Labels = e.Labels
-
-	// calculate the total score
-	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
-	if err != nil {
-		return err
-	}
-	eh.KeptnHandler.Logger.Debug("Evaluation result: " + string(evaluationResult.Result))
-
-	var sloFileContent []byte
-	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
-	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
-	if err != nil {
-		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
-		sloFileContent, _ = yaml.Marshal(sloConfig)
-	} else {
-		sloFileContent = []byte(sloFileContentTmp)
-	}
-	base64.StdEncoding.EncodeToString(sloFileContent)
-	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
-
-	// send the evaluation-done-event
 	var shkeptncontext string
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-
-	// #1289: check if test execution that preceded the evaluation was successful or failed
-	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e)
-	if testsFinishedEvent != nil {
-		if testsFinishedEvent.Result == keptnv2.ResultFailed {
-			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
-			evaluationResult.Result = keptnv2.ResultFailed
-			evaluationResult.Status = keptnv2.StatusErrored
-			evaluationResult.Evaluation.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
-		}
-	}
+	err := eh.Event.DataAs(&e)
 
 	triggeredEvents, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
@@ -128,6 +62,93 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
 		eh.KeptnHandler.Logger.Error(msg)
 		return errors.New(msg)
+	}
+	triggeredID := triggeredEvents[0].ID
+
+	if err != nil {
+		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
+		return err
+	}
+
+	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
+	// compare the results based on the evaluation strategy
+	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
+	if err != nil {
+		if err == ErrSLOFileNotFound {
+			evaluationDetails := keptnv2.EvaluationDetails{
+				IndicatorResults: nil,
+				TimeStart:        e.Start,
+				TimeEnd:          e.End,
+				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
+			}
+
+			evaluationResult := keptnv2.EvaluationFinishedEventData{
+				Evaluation: evaluationDetails,
+				EventData: keptnv2.EventData{
+					Result:  "pass",
+					Project: e.Project,
+					Service: e.Service,
+					Stage:   e.Stage,
+					Labels:  e.Labels,
+				},
+			}
+			return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationResult)
+		}
+		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), "", eh.KeptnHandler, e)
+	}
+
+	var sloFileContent []byte
+	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
+	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
+	if err != nil {
+		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		sloFileContent, _ = yaml.Marshal(sloConfig)
+	} else {
+		sloFileContent = []byte(sloFileContentTmp)
+	}
+
+	// get results of previous evaluations from data store (mongodb-datastore)
+	numberOfPreviousResults := 3
+	if sloConfig.Comparison.CompareWith == "single_result" {
+		numberOfPreviousResults = 1
+	} else if sloConfig.Comparison.CompareWith == "several_results" {
+		numberOfPreviousResults = sloConfig.Comparison.NumberOfComparisonResults
+	}
+
+	previousEvaluationEvents, comparisonEventIDs, err := eh.getPreviousEvaluations(e, numberOfPreviousResults, sloConfig.Comparison.IncludeResultWithScore)
+	if err != nil {
+		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
+	}
+
+	var filteredPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
+
+	// verify that we have enough evaluations
+	for _, val := range previousEvaluationEvents {
+		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
+	}
+
+	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
+	evaluationResult.Labels = e.Labels
+	evaluationResult.Evaluation.ComparedEvents = comparisonEventIDs
+
+	// calculate the total score
+	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
+	if err != nil {
+		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
+	}
+	eh.KeptnHandler.Logger.Debug("Evaluation result: " + string(evaluationResult.Result))
+
+	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
+
+	// #1289: check if test execution that preceded the evaluation was successful or failed
+	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e)
+	if testsFinishedEvent != nil {
+		if testsFinishedEvent.Result == keptnv2.ResultFailed {
+			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
+			evaluationResult.Result = keptnv2.ResultFailed
+			evaluationResult.Status = keptnv2.StatusErrored
+			evaluationResult.Evaluation.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
+		}
 	}
 
 	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, evaluationResult)
@@ -350,21 +371,9 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	}
 
 	for _, val := range previousResults {
-		if comparison.IncludeResultWithScore == "all" {
-			if val.Value.Success == true {
-				// always include
-				previousValues = append(previousValues, val.Value.Value)
-			}
-		} else if comparison.IncludeResultWithScore == "pass_or_warn" {
-			// only include warnings and passes
-			if (val.Status == "warning" || val.Status == "pass") && val.Value.Success == true {
-				previousValues = append(previousValues, val.Value.Value)
-			}
-		} else if comparison.IncludeResultWithScore == "pass" {
-			// only include passes
-			if val.Status == "pass" && val.Value.Success == true {
-				previousValues = append(previousValues, val.Value.Value)
-			}
+		if val.Value.Success == true {
+			// always include
+			previousValues = append(previousValues, val.Value.Value)
 		}
 	}
 
@@ -516,8 +525,9 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 }
 
 // gets previous evaluation-done events from mongodb-datastore
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptnv2.EvaluationFinishedEventData, error) {
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptnv2.EvaluationFinishedEventData, []string, error) {
 	var evaluationDoneEvents []*keptnv2.EvaluationFinishedEventData
+	var eventIDs []string
 
 	nextPageKey := ""
 	for {
@@ -532,17 +542,17 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := eh.HTTPClient.Do(req)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		if resp.StatusCode != 200 {
-			return nil, errors.New("could not retrieve previous evaluation-done events")
+			return nil, nil, errors.New("could not retrieve previous evaluation-done events")
 		}
 		previousEvents := &datastoreResult{}
 		err = json.Unmarshal(body, previousEvents)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// iterate over previous events
@@ -561,19 +571,22 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 			case "pass":
 				if strings.ToLower(string(evaluationDoneEvent.Result)) == "pass" {
 					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+					eventIDs = append(eventIDs, event.ID)
 				}
 				break
 			case "pass_or_warn":
 				if strings.ToLower(string(evaluationDoneEvent.Result)) == "pass" || strings.ToLower(string(evaluationDoneEvent.Result)) == "warning" {
 					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+					eventIDs = append(eventIDs, event.ID)
 				}
 				break
 			default:
 				evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+				eventIDs = append(eventIDs, event.ID)
 				break
 			}
 			if len(evaluationDoneEvents) == numberOfPreviousResults {
-				return evaluationDoneEvents, nil
+				return evaluationDoneEvents, eventIDs, nil
 			}
 		}
 
@@ -582,7 +595,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 		}
 		nextPageKey = previousEvents.NextPageKey
 	}
-	return evaluationDoneEvents, nil
+	return evaluationDoneEvents, eventIDs, nil
 }
 
 func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGetSLIDoneEventData) (*keptnv2.TestFinishedEventData, error) {

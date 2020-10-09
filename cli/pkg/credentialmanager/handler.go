@@ -1,8 +1,11 @@
 package credentialmanager
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/url"
+	"os"
 
 	"github.com/docker/docker-credential-helpers/credentials"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -17,6 +20,11 @@ const serverURL = "https://keptn.sh"
 const installCredsKey = "https://keptn-install.sh"
 
 var MockAuthCreds bool
+
+type credsConfig struct {
+	APIToken string `json:"api_token"`
+	Endpoint string `json:"endpoint"`
+}
 
 func init() {
 
@@ -63,10 +71,40 @@ func getCreds(h credentials.Helper) (url.URL, string, error) {
 	if MockAuthCreds {
 		return url.URL{}, "", nil
 	}
+
+	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
+	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
+		if customCredsLocation != "" {
+			return handleCustomCreds(customCredsLocation)
+		}
+	}
+
 	endPointStr, apiToken, err := h.Get(serverURL)
 	if err != nil {
 		return url.URL{}, "", err
 	}
 	url, err := url.Parse(endPointStr)
 	return *url, apiToken, err
+}
+
+func handleCustomCreds(configLocation string) (url.URL, string, error) {
+	fd, err := os.Open(configLocation)
+	if err != nil {
+		return url.URL{}, "", err
+	}
+
+	defer fd.Close()
+
+	byteValue, _ := ioutil.ReadAll(fd)
+
+	var credsConfig credsConfig
+
+	json.Unmarshal(byteValue, &credsConfig)
+
+	parsedURL, err := url.Parse(credsConfig.Endpoint)
+	if err != nil {
+		return url.URL{}, "", err
+	}
+
+	return *parsedURL, credsConfig.APIToken, nil
 }

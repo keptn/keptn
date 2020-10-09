@@ -17,6 +17,7 @@ func init() {
 func TestGetService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("get service carts --project=sockshop --mock")
 	_, err := executeActionCommandC(cmd)
@@ -28,6 +29,7 @@ func TestGetService(t *testing.T) {
 func TestGetServiceOutput(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("get service carts  --project=sockshop --output=error --mock")
 	_, err := executeActionCommandC(cmd)

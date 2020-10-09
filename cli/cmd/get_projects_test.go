@@ -17,6 +17,7 @@ func init() {
 func TestGetProject(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("get project sockshop --mock")
 	_, err := executeActionCommandC(cmd)
@@ -28,6 +29,7 @@ func TestGetProject(t *testing.T) {
 func TestGetProjectOutput(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("get project sockshop --output=error --mock")
 	_, err := executeActionCommandC(cmd)

@@ -17,6 +17,7 @@ func init() {
 func TestEvaluationDoneGetEvent(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
 
 	cmd := fmt.Sprintf("get event evaluation-done --keptn-context=%s --mock", "8929e5e5-3826-488f-9257-708bfa974909")
 	_, err := executeActionCommandC(cmd)
