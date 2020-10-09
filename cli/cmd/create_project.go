@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -14,14 +15,12 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
 
-	"github.com/asaskevich/govalidator"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -79,38 +78,33 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-
-		shipyard := keptn.Shipyard{}
-		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
-		if err != nil {
-			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
-		}
-
-		// check stage names
-		for _, stage := range shipyard.Stages {
-			if !keptncommon.ValidateKeptnEntityName(stage.Name) {
-				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
-				errorMsg += "Keptn relies on the following conventions: "
-				errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
-				errorMsg += "Please update stage name in your shipyard and try again."
-				return errors.New(errorMsg)
-			}
-		}
-
 		return checkGitCredentials()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logging.PrintLog("Starting to create project", logging.InfoLevel)
+
+		shipyardStr, err := getYamlAsStringFrom(*createProjectParams.Shipyard)
+		if err != nil {
+			return err
+		}
+
+		shipyard := keptn.Shipyard{}
+		if err := parseYaml(shipyardStr, &shipyard); err != nil {
+			return err
+		}
+
+		if err := validateStages(&shipyard); err != nil {
+			return err
+		}
+
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		content, _ := file.ReadFile(*createProjectParams.Shipyard)
-		shipyard := base64.StdEncoding.EncodeToString([]byte(content))
 		project := apimodels.CreateProject{
 			Name:     &args[0],
-			Shipyard: &shipyard,
+			Shipyard: &shipyardStr,
 		}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {
@@ -147,6 +141,19 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 	},
 }
 
+func validateStages(shipyard *keptn.Shipyard) error {
+	for _, stage := range shipyard.Stages {
+		if !keptncommon.ValidateKeptnEntityName(stage.Name) {
+			errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
+			errorMsg += "Keptn relies on the following conventions: "
+			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
+			errorMsg += "Please update stage name in your shipyard and try again."
+			return errors.New(errorMsg)
+		}
+	}
+	return nil
+}
+
 func checkGitCredentials() error {
 	if *createProjectParams.GitUser == "" && *createProjectParams.GitToken == "" && *createProjectParams.RemoteURL == "" {
 		fmt.Println(gitMissingUpstream)
@@ -159,19 +166,29 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func getAndParseYaml(arg string, out interface{}) error {
+func getYamlAsStringFrom(location string) (string, error) {
 	var content string
 	var err error
-	if govalidator.IsURL(arg) {
-		content, err = getYamlFromURL(arg)
+	if isUrl(location) {
+		content, err = getYamlFromURL(location)
 	} else {
-		content, err = getYamlFromFile(arg)
+		content, err = getYamlFromFile(location)
 	}
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = yaml.Unmarshal([]byte(content), out)
-	if err != nil {
+	return content, nil
+}
+
+func isUrl(raw string) bool {
+	if _, err := url.ParseRequestURI(raw); err != nil {
+		return false
+	}
+	return true
+}
+
+func parseYaml(yamlSrc string, out interface{}) error {
+	if err := yaml.Unmarshal([]byte(yamlSrc), out); err != nil {
 		return err
 	}
 	return nil

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -11,6 +13,14 @@ import (
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
+
+const dummyShipyard = `stages:
+  - name: dev
+    deployment_strategy: direct
+  - name: staging
+    deployment_strategy: blue_green_service
+  - name: production
+    deployment_strategy: blue_green_service`
 
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
@@ -20,13 +30,7 @@ func init() {
 // It returns a function to delete the shipyard file.
 func testShipyard(t *testing.T, shipyardFilePath string, shipyard string) func() {
 	if shipyard == "" {
-		shipyard = `stages:
-  - name: dev
-    deployment_strategy: direct
-  - name: staging
-    deployment_strategy: blue_green_service
-  - name: production
-    deployment_strategy: blue_green_service`
+		shipyard = dummyShipyard
 	}
 
 	ioutil.WriteFile(shipyardFilePath, []byte(shipyard), 0644)
@@ -37,6 +41,16 @@ func testShipyard(t *testing.T, shipyardFilePath string, shipyard string) func()
 	return func() {
 		os.Remove(shipyardFilePath)
 	}
+}
+
+func serveMock(path string, handlerFunc http.HandlerFunc) *httptest.Server {
+	handler := http.NewServeMux()
+	handler.HandleFunc(path, handlerFunc)
+	return httptest.NewServer(handler)
+}
+
+func shipyardMock(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte(dummyShipyard))
 }
 
 // TestCreateProjectCmd tests the default use of the create project command
@@ -50,6 +64,22 @@ func TestCreateProjectCmd(t *testing.T) {
 	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --mock", shipyardFilePath)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestCreatePojectCmdWithRemoteShipyardFile tests the create project command with a URL given by the --shipyard flag
+func TestCreateProjectCmdWithRemoteShipyardFile(t *testing.T) {
+	srv := serveMock("/path/to/shipyard.yaml", shipyardMock)
+	defer srv.Close()
+
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+
+	shipyardFilePath := srv.URL + "/path/to/shipyard.yaml"
+
+	cmd := fmt.Sprintf("create project sockshop --shipyard=%s --mock", shipyardFilePath)
+	if _, err := executeActionCommandC(cmd); err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
 }
