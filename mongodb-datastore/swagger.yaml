@@ -105,6 +105,57 @@ paths:
           description: error
           schema:
             "$ref": "#/definitions/error"
+
+  /event/type/{eventType}:
+    parameters:
+      - name: eventType
+        in: path
+        type: string
+        required: true
+    get:
+      tags:
+        - event
+      operationId: getEventsByType
+      summary: Gets events by their type from the mongodb
+      parameters:
+        - name: filter
+          in: query
+          required: true
+          type: string
+        - name: excludeInvalidated
+          in: query
+          type: boolean
+        - name: fromTime
+          in: query
+          type: string
+          required: false
+        - "$ref": "#/parameters/pagesizeParam"
+        - "$ref": "#/parameters/pageParam"
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            properties:
+              nextPageKey:
+                type: string
+                description: Pointer to the next page
+              totalCount:
+                type: integer
+                description: Total number of events
+              pageSize:
+                type: integer
+                description: Size of the returned page
+              events:
+                type: array
+                items:
+                  "$ref": "#/definitions/KeptnContextExtendedCE"
+        default:
+          description: error
+          schema:
+            "$ref": "#/definitions/error"
+
+
 parameters:
   pagesizeParam:
     name: pageSize

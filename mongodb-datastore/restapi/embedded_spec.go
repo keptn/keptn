@@ -167,6 +167,81 @@ func init() {
           }
         }
       }
+    },
+    "/event/type/{eventType}": {
+      "get": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Gets events by their type from the mongodb",
+        "operationId": "getEventsByType",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "filter",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "name": "excludeInvalidated",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "$ref": "#/parameters/pagesizeParam"
+          },
+          {
+            "$ref": "#/parameters/pageParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
+                  }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of events",
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "eventType",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
@@ -384,6 +459,90 @@ func init() {
           }
         }
       }
+    },
+    "/event/type/{eventType}": {
+      "get": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Gets events by their type from the mongodb",
+        "operationId": "getEventsByType",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "filter",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "name": "excludeInvalidated",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "Page size to be returned",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Key of the page to be returned",
+            "name": "nextPageKey",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
+                  }
+                },
+                "nextPageKey": {
+                  "description": "Pointer to the next page",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Size of the returned page",
+                  "type": "integer"
+                },
+                "totalCount": {
+                  "description": "Total number of events",
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "eventType",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
