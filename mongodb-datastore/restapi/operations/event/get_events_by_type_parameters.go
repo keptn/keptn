@@ -50,10 +50,9 @@ type GetEventsByTypeParams struct {
 	*/
 	ExcludeInvalidated *bool
 	/*
-	  Required: true
 	  In: query
 	*/
-	Filter string
+	Filter *string
 	/*
 	  In: query
 	*/
@@ -157,21 +156,18 @@ func (o *GetEventsByTypeParams) bindExcludeInvalidated(rawData []string, hasKey 
 
 // bindFilter binds and validates parameter Filter from query.
 func (o *GetEventsByTypeParams) bindFilter(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("filter", "query", rawData)
-	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: true
+	// Required: false
 	// AllowEmptyValue: false
-	if err := validate.RequiredString("filter", "query", raw); err != nil {
-		return err
+	if raw == "" { // empty values pass all other validations
+		return nil
 	}
 
-	o.Filter = raw
+	o.Filter = &raw
 
 	return nil
 }

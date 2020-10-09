@@ -120,7 +120,6 @@ paths:
       parameters:
         - name: filter
           in: query
-          required: true
           type: string
         - name: excludeInvalidated
           in: query
