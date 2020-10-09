@@ -18,9 +18,6 @@ import (
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
-
-
-
 func check(e error, t *testing.T) {
 	if e != nil {
 		t.Error(e)
@@ -108,6 +105,7 @@ func GetTemplateByName(chart *chart.Chart, templateName string) *chart.File {
 	return nil
 }
 
+// GetTestGeneratedChart returns a sample chart representing a "generated-chart"
 func GetTestGeneratedChart() chart.Chart {
 	return chart.Chart{
 		Raw: nil,
@@ -146,6 +144,7 @@ func GetTestGeneratedChart() chart.Chart {
 	}
 }
 
+// GetTestUserChart returns a sample chart representing a chart provided by the user
 func GetTestUserChart() chart.Chart {
 	return chart.Chart{
 		Raw: nil,

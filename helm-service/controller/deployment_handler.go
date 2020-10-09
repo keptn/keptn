@@ -6,7 +6,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/pkg/configuration_changer"
+	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
@@ -65,8 +65,8 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(k
 	gitVersion := ""
 	if len(e.ConfigurationChange.Values) > 0 {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Updating values for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
-		valuesUpdater := configuration_changer.NewValuesManipulator(e.ConfigurationChange.Values)
-		userChart, gitVersion, err = configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
+		valuesUpdater := configurationchanger.NewValuesManipulator(e.ConfigurationChange.Values)
+		userChart, gitVersion, err = configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
 			false, valuesUpdater)
 		if err != nil {
 			err = fmt.Errorf("failed to update values: %v", err)
@@ -120,8 +120,8 @@ func (h *DeploymentHandler) upgradeGeneratedChart(deploymentStrategy keptnevents
 
 	if deploymentStrategy == keptnevents.Duplicate {
 		// Route the traffic to the user-chart
-		weightUpdater := configuration_changer.NewCanaryWeightManipulator(h.mesh, 100)
-		genChart, _, err = configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateLoadedChart(genChart, e.EventData,
+		weightUpdater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 100)
+		genChart, _, err = configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateLoadedChart(genChart, e.EventData,
 			true, weightUpdater)
 		if err != nil {
 			return fmt.Errorf("failed to update canary weight: %v", err)
@@ -129,7 +129,7 @@ func (h *DeploymentHandler) upgradeGeneratedChart(deploymentStrategy keptnevents
 	}
 
 	// Upgrade generated chart
-	return h.upgradeChartWithReplicas(genChart, e.EventData, deploymentStrategy, 0)
+	return h.upgradeChart(genChart, e.EventData, deploymentStrategy)
 }
 
 // catchupGeneratedChartOnboarding checks if generated chart already exists and if not, it onboards the chart
@@ -143,16 +143,16 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 
 	if exists {
 		return h.getGeneratedChart(event)
-	} else {
-		// Chart does not exist yet, onboard it now
-		userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
-			event.Project+"-"+event.Stage)
-		if err != nil {
-			return nil, err
-		}
-		onboarder := NewOnboarder(h.getKeptnHandler(), h.mesh, h.getConfigServiceURL())
-		return onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 	}
+
+	// Chart does not exist yet, onboard it now
+	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
+		event.Project+"-"+event.Stage)
+	if err != nil {
+		return nil, err
+	}
+	onboarder := NewOnboarder(h.getKeptnHandler(), h.mesh, h.getConfigServiceURL())
+	return onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 }
 
 func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {

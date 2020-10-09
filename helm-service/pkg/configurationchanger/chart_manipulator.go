@@ -1,4 +1,4 @@
-package configuration_changer
+package configurationchanger
 
 import "helm.sh/helm/v3/pkg/chart"
 

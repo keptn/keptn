@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/keptn/keptn/helm-service/pkg/namespace_manager"
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -81,7 +81,7 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 	}
 
 	// Initialize Namespace
-	namespaceMng := namespace_manager.NewNamespaceManager(o.getKeptnHandler().Logger)
+	namespaceMng := namespacemanager.NewNamespaceManager(o.getKeptnHandler().Logger)
 	if err := namespaceMng.InitNamespaces(e.Project, stages); err != nil {
 		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -213,7 +213,7 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 			return nil, err
 		}
 		// inject Istio to the namespace for blue-green deployments
-		namespaceMng := namespace_manager.NewNamespaceManager(o.getKeptnHandler().Logger)
+		namespaceMng := namespacemanager.NewNamespaceManager(o.getKeptnHandler().Logger)
 		if err := namespaceMng.InjectIstio(event.Project, event.Stage); err != nil {
 			return nil, err
 		}

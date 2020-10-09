@@ -1,4 +1,4 @@
-package configuration_changer
+package configurationchanger
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func NewCanaryWeightManipulator(mesh mesh.Mesh, canaryWeight int32) *CanaryWeigh
 	}
 }
 
-// Update updates the provided traffic weight in the VirtualService contained in the chart
+// Manipulate updates the provided traffic weight in the VirtualService contained in the chart
 func (c *CanaryWeightManipulator) Manipulate(ch *chart.Chart) error {
 
 	// Set weights in all virtualservices

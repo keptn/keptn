@@ -1,4 +1,4 @@
-package configuration_changer
+package configurationchanger
 
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"

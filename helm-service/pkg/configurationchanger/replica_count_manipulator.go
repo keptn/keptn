@@ -1,4 +1,4 @@
-package configuration_changer
+package configurationchanger
 
 import (
 	"bytes"

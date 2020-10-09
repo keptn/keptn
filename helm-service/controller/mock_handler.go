@@ -11,61 +11,63 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
-type TestHandlerBase struct {
+// MockHandler mocks typical tasks of a handler
+type MockHandler struct {
 	keptnHandler     *keptnv2.Keptn
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
 }
 
-func NewTestHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *TestHandlerBase {
+// NewMockHandler creates a MockHandler
+func NewMockHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) *MockHandler {
 	helmExecutor := helm.NewHelmMockExecutor()
-	return &TestHandlerBase{
+	return &MockHandler{
 		keptnHandler:     keptnHandler,
 		helmExecutor:     helmExecutor,
 		configServiceURL: configServiceURL,
 	}
 }
 
-func (h TestHandlerBase) getKeptnHandler() *keptnv2.Keptn {
+func (h *MockHandler) getKeptnHandler() *keptnv2.Keptn {
 	return h.keptnHandler
 }
 
-func (h TestHandlerBase) getHelmExecutor() helm.HelmExecutor {
+func (h *MockHandler) getHelmExecutor() helm.HelmExecutor {
 	return h.helmExecutor
 }
 
-func (h TestHandlerBase) getConfigServiceURL() string {
+func (h *MockHandler) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h TestHandlerBase) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *MockHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
 	ch := helm.GetTestGeneratedChart()
 	return &ch, nil
 }
 
-func (h TestHandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *MockHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
 	ch := helm.GetTestUserChart()
 	return &ch, nil
 }
 
-func (h TestHandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
+func (h *MockHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
 	return true, nil
 }
 
 // HandleError logs the error and sends a finished-event
-func (h TestHandlerBase) handleError(triggerId string, err error, taskName string, finishedEventData interface{}) {
+func (h *MockHandler) handleError(triggerID string, err error, taskName string, finishedEventData interface{}) {
 	fmt.Println("HandleError: " + err.Error())
 }
 
 var sentCloudEvents []cloudevents.Event
 
-func (h TestHandlerBase) sendEvent(triggerId, ceType string, data interface{}) error {
+func (h *MockHandler) sendEvent(triggerID, ceType string, data interface{}) error {
 	event := cloudevents.NewEvent()
 	event.SetType(ceType)
 	event.SetSource("helm-service")
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 
-	event.SetExtension("triggeredid", triggerId)
+	event.SetExtension("triggeredid", triggerID)
 	event.SetExtension("shkeptncontext", h.keptnHandler.KeptnContext)
 	event.SetData(cloudevents.ApplicationJSON, data)
 
@@ -76,13 +78,13 @@ func (h TestHandlerBase) sendEvent(triggerId, ceType string, data interface{}) e
 	return nil
 }
 
-func (h TestHandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
+func (h *MockHandler) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) error {
 
 	return nil
 }
 
-func (h TestHandlerBase) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
+func (h *MockHandler) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy, replicas int) error {
 
 	return nil

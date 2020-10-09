@@ -59,20 +59,20 @@ func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
 }
 
 // HandleError logs the error and sends a finished-event
-func (h *HandlerBase) handleError(triggerId string, err error, taskName string, finishedEventData interface{}) {
+func (h *HandlerBase) handleError(triggerID string, err error, taskName string, finishedEventData interface{}) {
 	h.keptnHandler.Logger.Error(err.Error())
-	if err := h.sendEvent(triggerId, keptnv2.GetFinishedEventType(taskName), finishedEventData); err != nil {
+	if err := h.sendEvent(triggerID, keptnv2.GetFinishedEventType(taskName), finishedEventData); err != nil {
 		h.keptnHandler.Logger.Error(err.Error())
 	}
 }
 
-func (h *HandlerBase) sendEvent(triggerId, ceType string, data interface{}) error {
+func (h *HandlerBase) sendEvent(triggerID, ceType string, data interface{}) error {
 	event := cloudevents.NewEvent()
 	event.SetType(ceType)
 	event.SetSource("helm-service")
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 
-	event.SetExtension("triggeredid", triggerId)
+	event.SetExtension("triggeredid", triggerID)
 	event.SetExtension("shkeptncontext", h.keptnHandler.KeptnContext)
 	event.SetData(cloudevents.ApplicationJSON, data)
 	return h.keptnHandler.SendCloudEvent(event)

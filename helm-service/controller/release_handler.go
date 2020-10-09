@@ -6,7 +6,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/pkg/configuration_changer"
+	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -83,7 +83,7 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(kept
 
 	// Send finished event
 	data := h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished release", gitVersion)
-	if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), data); err != nil {
+	if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), data); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
@@ -92,8 +92,8 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(kept
 
 func (h *ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error) {
 
-	canaryWeightTo0Updater := configuration_changer.NewCanaryWeightManipulator(h.mesh, 0)
-	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e,
+	canaryWeightTo0Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 0)
+	genChart, gitVersion, err := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e,
 		true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
@@ -116,10 +116,10 @@ func (h *ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error)
 
 func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) {
 
-	configChanger := configuration_changer.NewConfigurationChanger(h.getConfigServiceURL())
+	configChanger := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL())
 
 	// Switch weight to 100% canary, 0% primary
-	canaryWeightTo100Updater := configuration_changer.NewCanaryWeightManipulator(h.mesh, 100)
+	canaryWeightTo100Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 100)
 	genChart, _, err := configChanger.UpdateChart(e, true, canaryWeightTo100Updater)
 	if err != nil {
 		return "", err
@@ -134,7 +134,7 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) 
 	}
 
 	// Switch weight to 0% canary, 100% primary
-	canaryWeightTo0Updater := configuration_changer.NewCanaryWeightManipulator(h.mesh, 0)
+	canaryWeightTo0Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 0)
 	genChart, gitVersion, err := configChanger.UpdateChart(e, true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
@@ -156,7 +156,7 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) 
 
 func (h *ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 
-	canaryWeightTo100Updater := configuration_changer.NewCanaryWeightManipulator(h.mesh, 100)
+	canaryWeightTo100Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 100)
 	chartGenerator := helm.NewGeneratedChartGenerator(h.mesh, h.getKeptnHandler().Logger)
 	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 		e.Project+"-"+e.Stage)

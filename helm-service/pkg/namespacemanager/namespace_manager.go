@@ -1,4 +1,4 @@
-package namespace_manager
+package namespacemanager
 
 import (
 	"errors"

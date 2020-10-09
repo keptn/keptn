@@ -7,7 +7,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/pkg/configuration_changer"
+	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 )
 
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
@@ -127,9 +127,9 @@ func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventDat
 			keptnv2.ResultFailed, "could not parse action.value to int")
 	}
 
-	replicaCountUpdater := configuration_changer.NewReplicaCountManipulator(replicaIncrement)
+	replicaCountUpdater := configurationchanger.NewReplicaCountManipulator(replicaIncrement)
 	// Note: This action applies the scaling on the generated chart and therefore assumes a b/g deployment
-	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
+	genChart, gitVersion, err := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
 		true, replicaCountUpdater)
 	if err != nil {
 		return h.getFinishedEventDataForError(e.EventData, err)
