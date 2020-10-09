@@ -1,4 +1,4 @@
-package controller
+package namespace_manager
 
 import (
 	"errors"

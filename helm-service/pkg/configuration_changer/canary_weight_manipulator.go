@@ -9,20 +9,22 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
-type CanaryWeightUpdater struct {
+// CanaryWeightManipulator allows to manipulate the traffic weight for the canary in the VirtualService
+type CanaryWeightManipulator struct {
 	mesh         mesh.Mesh
 	canaryWeight int32
 }
 
-func NewCanaryWeightUpdater(mesh mesh.Mesh, canaryWeight int32) *CanaryWeightUpdater {
-	return &CanaryWeightUpdater{
+// NewCanaryWeightManipulator creates a CanaryWeightManipulator
+func NewCanaryWeightManipulator(mesh mesh.Mesh, canaryWeight int32) *CanaryWeightManipulator {
+	return &CanaryWeightManipulator{
 		mesh:         mesh,
 		canaryWeight: canaryWeight,
 	}
 }
 
 // Update updates the provided traffic weight in the VirtualService contained in the chart
-func (c *CanaryWeightUpdater) Update(ch *chart.Chart) error {
+func (c *CanaryWeightManipulator) Manipulate(ch *chart.Chart) error {
 
 	// Set weights in all virtualservices
 	for _, template := range ch.Templates {

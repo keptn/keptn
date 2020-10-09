@@ -2,11 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configuration_changer"
-	"strconv"
 )
 
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
@@ -18,54 +19,59 @@ type ActionTriggeredHandler struct {
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) ActionTriggeredHandler {
-	return ActionTriggeredHandler{
+func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) *ActionTriggeredHandler {
+	return &ActionTriggeredHandler{
 		Handler: NewHandlerBase(keptnHandler, configServiceURL),
 	}
 }
 
 // HandleEvent takes the sh.keptn.events.action.triggered event and performs the scaling action on the generated chart
 // Therefore, this scaling action only works if the service is deployed b/g
-func (h ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
+func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	defer closeLogger(h.Handler.GetKeptnHandler())
+	defer closeLogger(h.Handler.getKeptnHandler())
 
 	actionTriggeredEvent := keptnv2.ActionTriggeredEventData{}
 
 	err := ce.DataAs(&actionTriggeredEvent)
 	if err != nil {
 		err = fmt.Errorf("failed to unmarshal data: %v", err)
-		h.HandleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
+		h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
 		return
 	}
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {
 		// Send action.started event
-		if sendErr := h.SendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.ActionTaskName), h.getStartedEventData(actionTriggeredEvent.EventData)); sendErr != nil {
-			h.HandleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Start action scaling for service %s in stage %s of project %s",
+			actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
+		if sendErr := h.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.ActionTaskName),
+			h.getStartedEventData(actionTriggeredEvent.EventData)); sendErr != nil {
+			h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
 			return
 		}
 
 		resp := h.handleScaling(actionTriggeredEvent)
 		if resp.Status == keptnv2.StatusErrored {
-			h.GetKeptnHandler().Logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
+			h.getKeptnHandler().Logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
 		} else {
-			h.GetKeptnHandler().Logger.Info(fmt.Sprintf("Sucessfully finished action action %s", actionTriggeredEvent.Action.Action))
+			h.getKeptnHandler().Logger.Info(fmt.Sprintf("Finished action %s for service %s in stage %s of project %s",
+				actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 		}
 
 		// Send action.finished event
-		if err := h.SendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ActionTaskName), resp); err != nil {
-			h.HandleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
+		if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ActionTaskName), resp); err != nil {
+			h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
 			return
 		}
 	} else {
-		h.GetKeptnHandler().Logger.Info("Received unhandled action: " + actionTriggeredEvent.Action.Action + ". Exiting")
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Received unhandled action %s for service %s in stage %s of project %s",
+			actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 	}
 
 	return
 }
 
-func (h ActionTriggeredHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.ActionStartedEventData {
+func (h *ActionTriggeredHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.ActionStartedEventData {
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = ""
 	inEventData.Message = ""
@@ -74,7 +80,8 @@ func (h ActionTriggeredHandler) getStartedEventData(inEventData keptnv2.EventDat
 	}
 }
 
-func (h ActionTriggeredHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData, gitCommit string) keptnv2.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData,
+	gitCommit string) keptnv2.ActionFinishedEventData {
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = keptnv2.ResultPass
 	inEventData.Message = "Successfully executed scaling action"
@@ -86,7 +93,7 @@ func (h ActionTriggeredHandler) getFinishedEventDataForSuccess(inEventData keptn
 	}
 }
 
-func (h ActionTriggeredHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.ActionFinishedEventData {
 
 	eventData.Status = keptnv2.StatusErrored
 	eventData.Result = keptnv2.ResultFailed
@@ -96,7 +103,7 @@ func (h ActionTriggeredHandler) getFinishedEventDataForError(eventData keptnv2.E
 	}
 }
 
-func (h ActionTriggeredHandler) getFinishedEventData(eventData keptnv2.EventData, status keptnv2.StatusType,
+func (h *ActionTriggeredHandler) getFinishedEventData(eventData keptnv2.EventData, status keptnv2.StatusType,
 	result keptnv2.ResultType, msg string) keptnv2.ActionFinishedEventData {
 
 	eventData.Status = status
@@ -107,7 +114,7 @@ func (h ActionTriggeredHandler) getFinishedEventData(eventData keptnv2.EventData
 	}
 }
 
-func (h ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData) keptnv2.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData) keptnv2.ActionFinishedEventData {
 
 	value, ok := e.Action.Value.(string)
 	if !ok {
@@ -120,9 +127,9 @@ func (h ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData
 			keptnv2.ResultFailed, "could not parse action.value to int")
 	}
 
-	replicaCountUpdater := configuration_changer.NewReplicaCountUpdater(replicaIncrement)
+	replicaCountUpdater := configuration_changer.NewReplicaCountManipulator(replicaIncrement)
 	// Note: This action applies the scaling on the generated chart and therefore assumes a b/g deployment
-	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.GetConfigServiceURL()).UpdateChart(e.EventData,
+	genChart, gitVersion, err := configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
 		true, replicaCountUpdater)
 	if err != nil {
 		return h.getFinishedEventDataForError(e.EventData, err)

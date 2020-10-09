@@ -1,11 +1,11 @@
 package configuration_changer
 
 import (
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/helm-service/pkg/helm"
-	"helm.sh/helm/v3/pkg/chart"
 	"reflect"
 	"testing"
+
+	"github.com/keptn/keptn/helm-service/pkg/helm"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 func TestIncreaseReplicaCount(t *testing.T) {
@@ -43,7 +43,6 @@ status: {}
 		Metadata: &chart.Metadata{
 			Name:       "carts-generated",
 			Version:    "0.1.0",
-			Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
 			APIVersion: "v2",
 		},
 		Lock: nil,
@@ -76,8 +75,8 @@ status: {}
 	}
 
 	inputChart := helm.GetTestGeneratedChart()
-	updater := NewReplicaCountUpdater(2)
-	updater.Update(&inputChart)
+	updater := NewReplicaCountManipulator(2)
+	updater.Manipulate(&inputChart)
 
 	if !reflect.DeepEqual(inputChart, expectedChart) {
 		t.Error("inputChart does not match expected chart")

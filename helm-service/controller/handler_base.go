@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -13,12 +12,14 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
+// HandlerBase provides basic functionality for all handlers
 type HandlerBase struct {
 	keptnHandler     *keptnv2.Keptn
 	helmExecutor     helm.HelmExecutor
 	configServiceURL string
 }
 
+// NewHandlerBase creates a new HandlerBase
 func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *HandlerBase {
 	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
 	return &HandlerBase{
@@ -28,44 +29,44 @@ func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *Handl
 	}
 }
 
-func (h HandlerBase) GetKeptnHandler() *keptnv2.Keptn {
+func (h *HandlerBase) getKeptnHandler() *keptnv2.Keptn {
 	return h.keptnHandler
 }
 
-func (h HandlerBase) GetHelmExecutor() helm.HelmExecutor {
+func (h *HandlerBase) getHelmExecutor() helm.HelmExecutor {
 	return h.helmExecutor
 }
 
-func (h HandlerBase) GetConfigServiceURL() string {
+func (h *HandlerBase) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h HandlerBase) GetGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
 	helmChartName := helm.GetChartName(e.Service, true)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
 }
 
-func (h HandlerBase) GetUserChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *HandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
 	helmChartName := helm.GetChartName(e.Service, false)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
 }
 
-func (h HandlerBase) ExistsGeneratedChart(e keptnv2.EventData) (bool, error) {
+func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
 	genChartName := helm.GetChartName(e.Service, true)
-	return helm.DoesChartExist(e, genChartName, h.GetConfigServiceURL())
+	return helm.DoesChartExist(e, genChartName, h.getConfigServiceURL())
 }
 
 // HandleError logs the error and sends a finished-event
-func (h HandlerBase) HandleError(triggerId string, err error, taskName string, finishedEventData interface{}) {
+func (h *HandlerBase) handleError(triggerId string, err error, taskName string, finishedEventData interface{}) {
 	h.keptnHandler.Logger.Error(err.Error())
-	if err := h.SendEvent(triggerId, keptnv2.GetFinishedEventType(taskName), finishedEventData); err != nil {
+	if err := h.sendEvent(triggerId, keptnv2.GetFinishedEventType(taskName), finishedEventData); err != nil {
 		h.keptnHandler.Logger.Error(err.Error())
 	}
 }
 
-func (h HandlerBase) SendEvent(triggerId, ceType string, data interface{}) error {
+func (h *HandlerBase) sendEvent(triggerId, ceType string, data interface{}) error {
 	event := cloudevents.NewEvent()
 	event.SetType(ceType)
 	event.SetSource("helm-service")
@@ -89,27 +90,22 @@ func getDeploymentName(strategy keptnevents.DeploymentStrategy, generatedChart b
 	return ""
 }
 
-func (h HandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
+func (h *HandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) error {
 	generated := strings.HasSuffix(ch.Name(), "-generated")
 	releasename := helm.GetReleaseName(event.Project, event.Stage, event.Service, generated)
 	namespace := event.Project + "-" + event.Stage
-
-	h.keptnHandler.Logger.Info(fmt.Sprintf("Start upgrading release %s in namespace %s", releasename, namespace))
 
 	return h.helmExecutor.UpgradeChart(ch, releasename, namespace,
 		getKeptnValues(event.Project, event.Stage, event.Service,
 			getDeploymentName(strategy, generated)))
 }
 
-func (h HandlerBase) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
+func (h *HandlerBase) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy, replicas int) error {
 	generated := strings.HasSuffix(ch.Name(), "-generated")
 	releasename := helm.GetReleaseName(event.Project, event.Stage, event.Service, generated)
 	namespace := event.Project + "-" + event.Stage
-
-	h.keptnHandler.Logger.Info(fmt.Sprintf("Start upgrading release %s in namespace %s with replicas %d",
-		releasename, namespace, replicas))
 
 	return h.helmExecutor.UpgradeChart(ch, releasename, namespace,
 		addReplicas(getKeptnValues(event.Project, event.Stage, event.Service,

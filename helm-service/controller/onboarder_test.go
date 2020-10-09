@@ -3,8 +3,9 @@ package controller
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"testing"
+
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -56,7 +57,7 @@ func createTestProject(t *testing.T) {
 
 func TestCheckAndSetServiceName(t *testing.T) {
 
-	mockHandler := HandlerBase{
+	mockHandler := &HandlerBase{
 		keptnHandler:     nil,
 		helmExecutor:     nil,
 		configServiceURL: configBaseURL,
@@ -64,23 +65,23 @@ func TestCheckAndSetServiceName(t *testing.T) {
 
 	o := Onboarder{
 		Handler: mockHandler,
-		mesh: nil,
+		mesh:    nil,
 	}
 	data := helm.CreateTestHelmChartData(t)
 
 	testCases := []struct {
 		name        string
-		event       *keptnv2.ServiceCreateTriggeredEventData
+		event       *keptnv2.ServiceCreateFinishedEventData
 		error       error
 		serviceName string
 	}{
-		{"Mismatch", &keptnv2.ServiceCreateTriggeredEventData{EventData: keptnv2.EventData{Service: "carts-1"},
+		{"Mismatch", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts-1"},
 			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			errors.New("Provided Keptn service name \"carts-1\" does not match Kubernetes service name \"carts\""), "carts-1"},
-		{"Match", &keptnv2.ServiceCreateTriggeredEventData{EventData: keptnv2.EventData{Service: "carts"},
+		{"Match", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts"},
 			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
-		{"Set", &keptnv2.ServiceCreateTriggeredEventData{EventData: keptnv2.EventData{Service: ""},
+		{"Set", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: ""},
 			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
 	}

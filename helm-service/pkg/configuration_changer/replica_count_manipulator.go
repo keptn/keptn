@@ -3,26 +3,29 @@ package configuration_changer
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+
 	"github.com/ghodss/yaml"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
-	"io"
 	appsv1 "k8s.io/api/apps/v1"
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
-type ReplicaCountUpdater struct {
+// ReplicaCountManipulator allows to manipulate the replica count of Deployments contained in a chart
+type ReplicaCountManipulator struct {
 	replicaIncrement int
 }
 
-func NewReplicaCountUpdater(replicaIncrement int) *ReplicaCountUpdater {
-	return &ReplicaCountUpdater{
+// NewReplicaCountManipulator creates a new ReplicaCountManipulator
+func NewReplicaCountManipulator(replicaIncrement int) *ReplicaCountManipulator {
+	return &ReplicaCountManipulator{
 		replicaIncrement: replicaIncrement,
 	}
 }
 
-// Update increases the replica count in the deployments by the provided replicaIncrement
-func (u *ReplicaCountUpdater) Update(ch *chart.Chart) error {
+// Manipulate increases the replica count in the deployments by the provided replicaIncrement
+func (u *ReplicaCountManipulator) Manipulate(ch *chart.Chart) error {
 
 	for _, template := range ch.Templates {
 		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(template.Data))

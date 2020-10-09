@@ -21,10 +21,10 @@ type DeploymentHandler struct {
 }
 
 // NewDeploymentHandler creates a new DeploymentHandler
-func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) DeploymentHandler {
+func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) *DeploymentHandler {
 	generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
-	return DeploymentHandler{
-		Handler:           NewHandlerBase(keptnHandler, configServiceURL),
+	return &DeploymentHandler{
+		Handler:               NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:                  mesh,
 		generatedChartHandler: generatedChartHandler,
 	}
@@ -32,20 +32,31 @@ func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configSer
 
 // HandleEvent handles deployment.triggered events by first changing the new configuration and
 // afterwards applying the configuration in the cluster
-func (h DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
+func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	defer closeLogger(h.GetKeptnHandler())
+	defer closeLogger(h.getKeptnHandler())
 
 	e := keptnv2.DeploymentTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("failed to unmarshal data: %v", err)
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
 
 	// Send deployment started event
-	if err := h.SendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName), h.getStartedEventData(e.EventData)); err != nil {
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting deployment for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
+	if err := h.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName), h.getStartedEventData(e.EventData)); err != nil {
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+		return
+	}
+
+	if e.Result == keptnv2.ResultFailed {
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("No deployment done for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
+		data := h.getFinishedEventDataForNoDeployment(e.EventData)
+		if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), data); err != nil {
+			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+			return
+		}
 		return
 	}
 
@@ -53,82 +64,98 @@ func (h DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(ke
 	var err error
 	gitVersion := ""
 	if len(e.ConfigurationChange.Values) > 0 {
-		valuesUpdater := configuration_changer.NewValuesUpdater(e.ConfigurationChange.Values)
-		userChart, gitVersion, err = configuration_changer.NewConfigurationChanger(h.GetConfigServiceURL()).UpdateChart(e.EventData,
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Updating values for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
+		valuesUpdater := configuration_changer.NewValuesManipulator(e.ConfigurationChange.Values)
+		userChart, gitVersion, err = configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
 			false, valuesUpdater)
 		if err != nil {
 			err = fmt.Errorf("failed to update values: %v", err)
-			h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 			return
 		}
 	} else {
 		// Read chart
 		// TODO set gitVersion
-		userChart, err = h.GetUserChart(e.EventData)
+		userChart, err = h.getUserChart(e.EventData)
 		if err != nil {
 			err = fmt.Errorf("failed to load chart: %v", err)
-			h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 			return
 		}
 	}
 
 	deploymentStrategy, err := keptnevents.GetDeploymentStrategy(e.Deployment.DeploymentStrategy)
 	if err != nil {
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
 
 	// Upgrade user chart
 	if err := h.upgradeChart(userChart, e.EventData, deploymentStrategy); err != nil {
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
 
-	genChart, err := h.catchupGeneratedChartOnboarding(deploymentStrategy, e.EventData)
-	if err != nil {
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
-		return
-	}
-
-	// Upgrade generated chart
-	if err := h.upgradeChart(genChart, e.EventData, deploymentStrategy); err != nil {
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+	if err := h.upgradeGeneratedChart(deploymentStrategy, e); err != nil {
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
 
 	// Send finished event
 	data := h.getFinishedEventDataForSuccess(e.EventData, gitVersion,
 		getDeploymentName(deploymentStrategy, false), deploymentStrategy)
-	if err := h.SendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), data); err != nil {
-		h.HandleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+	if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), data); err != nil {
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
+	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Deployment finished for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
+}
+
+func (h *DeploymentHandler) upgradeGeneratedChart(deploymentStrategy keptnevents.DeploymentStrategy, e keptnv2.DeploymentTriggeredEventData) error {
+
+	genChart, err := h.catchupGeneratedChartOnboarding(deploymentStrategy, e.EventData)
+	if err != nil {
+		return err
+	}
+
+	if deploymentStrategy == keptnevents.Duplicate {
+		// Route the traffic to the user-chart
+		weightUpdater := configuration_changer.NewCanaryWeightManipulator(h.mesh, 100)
+		genChart, _, err = configuration_changer.NewConfigurationChanger(h.getConfigServiceURL()).UpdateLoadedChart(genChart, e.EventData,
+			true, weightUpdater)
+		if err != nil {
+			return fmt.Errorf("failed to update canary weight: %v", err)
+		}
+	}
+
+	// Upgrade generated chart
+	return h.upgradeChartWithReplicas(genChart, e.EventData, deploymentStrategy, 0)
 }
 
 // catchupGeneratedChartOnboarding checks if generated chart already exists and if not, it onboards the chart
-func (h DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy keptnevents.DeploymentStrategy,
+func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy keptnevents.DeploymentStrategy,
 	event keptnv2.EventData) (*chart.Chart, error) {
 
-	exists, err := h.ExistsGeneratedChart(event)
+	exists, err := h.existsGeneratedChart(event)
 	if err != nil {
 		return nil, err
 	}
 
 	if exists {
-		return h.GetGeneratedChart(event)
+		return h.getGeneratedChart(event)
 	} else {
 		// Chart does not exist yet, onboard it now
-		userChartManifest, err := h.GetHelmExecutor().GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
+		userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(event.Project, event.Stage, event.Service, false),
 			event.Project+"-"+event.Stage)
 		if err != nil {
 			return nil, err
 		}
-		onboarder := NewOnboarder(h.GetKeptnHandler(), h.mesh, h.GetConfigServiceURL())
+		onboarder := NewOnboarder(h.getKeptnHandler(), h.mesh, h.getConfigServiceURL())
 		return onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 	}
 }
 
-func (h DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {
+func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {
 
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = ""
@@ -136,7 +163,7 @@ func (h DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) ke
 	return keptnv2.DeploymentStartedEventData{EventData: inEventData}
 }
 
-func (h DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData, gitCommit string,
+func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData, gitCommit string,
 	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy) keptnv2.DeploymentFinishedEventData {
 
 	inEventData.Status = keptnv2.StatusSucceeded
@@ -154,11 +181,21 @@ func (h DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.Ev
 	}
 }
 
-func (h DeploymentHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.DeploymentFinishedEventData {
+func (h *DeploymentHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.DeploymentFinishedEventData {
 
 	eventData.Status = keptnv2.StatusErrored
 	eventData.Result = keptnv2.ResultFailed
 	eventData.Message = err.Error()
+	return keptnv2.DeploymentFinishedEventData{
+		EventData: eventData,
+	}
+}
+
+func (h *DeploymentHandler) getFinishedEventDataForNoDeployment(eventData keptnv2.EventData) keptnv2.DeploymentFinishedEventData {
+
+	eventData.Status = keptnv2.StatusSucceeded
+	eventData.Result = keptnv2.ResultFailed
+	eventData.Message = "No deployment has been executed"
 	return keptnv2.DeploymentFinishedEventData{
 		EventData: eventData,
 	}

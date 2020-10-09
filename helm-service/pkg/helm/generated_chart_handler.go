@@ -13,11 +13,13 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// GeneratedChartGenerator allows to generate the generated-chart
 type GeneratedChartGenerator struct {
 	mesh   mesh.Mesh
 	logger keptncommon.LoggerInterface
 }
 
+// NewGeneratedChartGenerator creates a new GeneratedChartGenerator
 func NewGeneratedChartGenerator(mesh mesh.Mesh, logger keptncommon.LoggerInterface) *GeneratedChartGenerator {
 	return &GeneratedChartGenerator{
 		mesh:   mesh,
@@ -143,7 +145,8 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
 	httpRouteDestinations := []mesh.HTTPRouteDestination{destCanary, destPrimary}
 
-	c.logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + mesh.GetIngressProtocol() + "://" + svc.Name + "." + mesh.GetIngressHostnameSuffix() + ":" + mesh.GetIngressPort())
+	c.logger.Info("Generating VirtualService for service " + svc.Name + ". URL = " + mesh.GetIngressProtocol() +
+		"://" + hosts[0] + ":" + mesh.GetIngressPort())
 	vs, err := c.mesh.GenerateVirtualService(svc.Name, gws, hosts, httpRouteDestinations)
 	if err != nil {
 		c.logger.Error("Error while generating VirtualService for service " + svc.Name + ": " + err.Error())

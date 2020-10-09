@@ -9,16 +9,19 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
+// ConfigurationChanger supports to update a Chart in the Git repo
 type ConfigurationChanger struct {
 	configServiceURL string
 }
 
+// NewConfigurationChanger creates a ConfigurationChanger
 func NewConfigurationChanger(configServiceURL string) *ConfigurationChanger {
 	return &ConfigurationChanger{configServiceURL: configServiceURL}
 }
 
+// UpdateChart reads, edits, and stores the chart referenced in the event
 func (c *ConfigurationChanger) UpdateChart(event keptnv2.EventData, generated bool,
-	chartUpdater ChartUpdater) (*chart.Chart, string, error) {
+	chartUpdater ChartManipulator) (*chart.Chart, string, error) {
 
 	helmChartName := helm.GetChartName(event.Service, generated)
 
@@ -28,8 +31,17 @@ func (c *ConfigurationChanger) UpdateChart(event keptnv2.EventData, generated bo
 		return nil, "", err
 	}
 
+	return c.UpdateLoadedChart(chart, event, generated, chartUpdater)
+}
+
+// UpdateLoadedChart updates the passed chart and stores it in Git
+func (c *ConfigurationChanger) UpdateLoadedChart(chart *chart.Chart, event keptnv2.EventData, generated bool,
+	chartUpdater ChartManipulator) (*chart.Chart, string, error) {
+
+	helmChartName := helm.GetChartName(event.Service, generated)
+
 	// Edit chart
-	err = chartUpdater.Update(chart)
+	err := chartUpdater.Manipulate(chart)
 	if err != nil {
 		return nil, "", err
 	}

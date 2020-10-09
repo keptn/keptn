@@ -6,6 +6,5 @@ import (
 )
 
 type EventHandler interface {
-	Handler
 	HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn))
 }

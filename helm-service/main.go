@@ -11,7 +11,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/controller"
@@ -67,15 +66,18 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		configChanger := controller.NewDeploymentHandler(keptnHandler, mesh, url.String())
-		go configChanger.HandleEvent(event, closeLogger)
-	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
+		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, url.String())
+		go deploymentHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
+		releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, url.String())
+		go releaseHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName){
 		onboarder := controller.NewOnboarder(keptnHandler, mesh, url.String())
 		go onboarder.HandleEvent(event, closeLogger)
-	} else if event.Type() == keptnevents.ActionTriggeredEventType {
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
 		go actionHandler.HandleEvent(event, closeLogger)
-	} else if event.Type() == keptnevents.InternalServiceDeleteEventType {
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
 		go deleteHandler.HandleEvent(event, closeLogger)
 	} else {

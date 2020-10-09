@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -25,40 +26,40 @@ func NewTestHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *T
 	}
 }
 
-func (h TestHandlerBase) GetKeptnHandler() *keptnv2.Keptn {
+func (h TestHandlerBase) getKeptnHandler() *keptnv2.Keptn {
 	return h.keptnHandler
 }
 
-func (h TestHandlerBase) GetHelmExecutor() helm.HelmExecutor {
+func (h TestHandlerBase) getHelmExecutor() helm.HelmExecutor {
 	return h.helmExecutor
 }
 
-func (h TestHandlerBase) GetConfigServiceURL() string {
+func (h TestHandlerBase) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h TestHandlerBase) GetGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h TestHandlerBase) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
 	ch := helm.GetTestGeneratedChart()
 	return &ch, nil
 }
 
-func (h TestHandlerBase) GetUserChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h TestHandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
 	ch := helm.GetTestUserChart()
 	return &ch, nil
 }
 
-func (h TestHandlerBase) ExistsGeneratedChart(e keptnv2.EventData) (bool, error) {
+func (h TestHandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
 	return true, nil
 }
 
 // HandleError logs the error and sends a finished-event
-func (h TestHandlerBase) HandleError(triggerId string, err error, taskName string, finishedEventData interface{}) {
+func (h TestHandlerBase) handleError(triggerId string, err error, taskName string, finishedEventData interface{}) {
 	fmt.Println("HandleError: " + err.Error())
 }
 
 var sentCloudEvents []cloudevents.Event
 
-func (h TestHandlerBase) SendEvent(triggerId, ceType string, data interface{}) error {
+func (h TestHandlerBase) sendEvent(triggerId, ceType string, data interface{}) error {
 	event := cloudevents.NewEvent()
 	event.SetType(ceType)
 	event.SetSource("helm-service")

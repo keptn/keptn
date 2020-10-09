@@ -136,7 +136,7 @@ func TestHandleScaling(t *testing.T) {
 
 			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-			mockHandler := HandlerBase{
+			mockHandler := &HandlerBase{
 				keptnHandler:     keptnHandler,
 				helmExecutor:     helm.NewHelmMockExecutor(),
 				configServiceURL: ts.URL,

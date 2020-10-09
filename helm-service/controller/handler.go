@@ -7,16 +7,17 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
+// Handler provides methods for handling received Keptn events
 type Handler interface {
-	GetKeptnHandler() *keptnv2.Keptn
-	GetHelmExecutor() helm.HelmExecutor
-	GetConfigServiceURL() string
+	getKeptnHandler() *keptnv2.Keptn
+	getHelmExecutor() helm.HelmExecutor
+	getConfigServiceURL() string
 
-	GetGeneratedChart(e keptnv2.EventData) (*chart.Chart, error)
-	GetUserChart(e keptnv2.EventData) (*chart.Chart, error)
-	ExistsGeneratedChart(e keptnv2.EventData) (bool, error)
-	HandleError(triggerId string, err error, taskName string, finishedEventData interface{})
-	SendEvent(triggerId, ceType string, data interface{}) error
+	getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error)
+	getUserChart(e keptnv2.EventData) (*chart.Chart, error)
+	existsGeneratedChart(e keptnv2.EventData) (bool, error)
+	handleError(triggerId string, err error, taskName string, finishedEventData interface{})
+	sendEvent(triggerId, ceType string, data interface{}) error
 	upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 		strategy keptnevents.DeploymentStrategy) error
 	upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
