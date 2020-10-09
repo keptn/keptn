@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -334,59 +335,63 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		return nil, err
 	}
 
-	collectionName := eventsCollectionName
-
 	searchOptions := getSearchOptions(params)
 
-	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
-		// if a project has been specified, query the collection for that project
-		collectionName = searchOptions["data.project"].(string)
-	} else if params.KeptnContext != nil && *params.KeptnContext != "" {
-		var err error
-		collectionName, err = getProjectForContext(*params.KeptnContext)
-		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				logger.Info("no project found for shkeptkontext")
-				return &event.GetEventsOKBody{
-					Events:      nil,
-					NextPageKey: "0",
-					PageSize:    0,
-					TotalCount:  0,
-				}, nil
-			}
-			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
-			return nil, err
-		}
+	onlyRootEvents := params.Root != nil
+	result, err := getEventsFromDB(*params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions, logger)
+	if err != nil {
+		return nil, err
+	}
+	return (*event.GetEventsOKBody)(result), nil
+}
+
+type getEventsResult struct {
+	// Events
+	Events []*models.KeptnContextExtendedCE `json:"events"`
+
+	// Pointer to the next page
+	NextPageKey string `json:"nextPageKey,omitempty"`
+
+	// Size of the returned page
+	PageSize int64 `json:"pageSize,omitempty"`
+
+	// Total number of events
+	TotalCount int64 `json:"totalCount,omitempty"`
+}
+
+func getEventsFromDB(pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptnutils.Logger) (*getEventsResult, error) {
+	collectionName, err := getCollectionNameForQuery(searchOptions, logger)
+	if err != nil {
+		return nil, err
+	} else if collectionName == "" {
+		return &getEventsResult{
+			Events:      nil,
+			NextPageKey: "0",
+			PageSize:    0,
+			TotalCount:  0,
+		}, nil
 	}
 
 	var newNextPageKey int64
 	var nextPageKey int64 = 0
-	if params.NextPageKey != nil {
-		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
+	if nextPageKeyStr != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*nextPageKeyStr)
 		nextPageKey = int64(tmpNextPageKey)
-		newNextPageKey = nextPageKey + *params.PageSize
+		newNextPageKey = nextPageKey + pageSize
 	} else {
-		newNextPageKey = *params.PageSize
+		newNextPageKey = pageSize
 	}
 
-	pageSize := *params.PageSize
-
 	var sortOptions *options.FindOptions
-	/*
-		if params.Root != nil {
-			collectionName = collectionName + rootEventCollectionSuffix
-			sortOptions = options.Find().SetSort(bson.D{{"time", 1}}).SetSkip(nextPageKey).SetLimit(pageSize)
-		} else {
-		}
-	*/
-	if params.Root != nil {
+
+	if onlyRootEvents {
 		collectionName = collectionName + rootEventCollectionSuffix
 	}
 	sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
-	var result event.GetEventsOKBody
+	var result getEventsResult
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -436,6 +441,26 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	}
 
 	return &result, nil
+}
+
+func getCollectionNameForQuery(searchOptions bson.M, logger *keptnutils.Logger) (string, error) {
+	collectionName := eventsCollectionName
+	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
+		// if a project has been specified, query the collection for that project
+		collectionName = searchOptions["data.project"].(string)
+	} else if searchOptions["shkeptncontext"] != nil && searchOptions["shkeptncontext"] != "" {
+		var err error
+		collectionName, err = getProjectForContext(searchOptions["shkeptncontext"].(string))
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				logger.Info("no project found for shkeptkontext")
+				return "", nil
+			}
+			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			return "", err
+		}
+	}
+	return collectionName, nil
 }
 
 func getProjectForContext(keptnContext string) (string, error) {
@@ -520,4 +545,58 @@ func flattenRecursively(i interface{}, logger *keptnutils.Logger) (interface{}, 
 		return a, nil
 	}
 	return i, nil
+}
+
+// MinimumFilterNotProvided indicates that the minimum requirements for the filter have not been met
+var MinimumFilterNotProvided = errors.New("must provide a filter containing at least one of the following properties: 'data.project' or 'shkeptncontext'")
+
+// GetEventsByTypeHandlerFunc gets events by their type
+func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByTypeOKBody, error) {
+	logger := keptnutils.NewLogger("", "", serviceName)
+	logger.Debug(fmt.Sprintf("getting %s events from the data store", params.EventType))
+
+	if params.Filter == nil {
+		return nil, MinimumFilterNotProvided
+	}
+
+	searchOptions := parseFilter(*params.Filter)
+	if !validateFilter(searchOptions) {
+		return nil, MinimumFilterNotProvided
+	}
+
+	searchOptions["type"] = params.EventType
+
+	if params.FromTime != nil {
+		searchOptions["time"] = bson.M{
+			"$gt": *params.FromTime,
+		}
+	}
+
+	result, err := getEventsFromDB(*params.PageSize, params.NextPageKey, false, searchOptions, logger)
+	if err != nil {
+		return nil, err
+	}
+	return (*event.GetEventsByTypeOKBody)(result), nil
+}
+
+func validateFilter(searchOptions bson.M) bool {
+	if (searchOptions["data.project"] == nil || searchOptions["data.project"] == "") && (searchOptions["shkeptncontext"] == nil || searchOptions["shkeptncontext"] == "") {
+		return false
+	}
+
+	return true
+}
+
+func parseFilter(filter string) bson.M {
+	filterObject := bson.M{}
+	keyValues := strings.Split(filter, ",")
+
+	for _, keyValuePair := range keyValues {
+		split := strings.Split(keyValuePair, ":")
+		if len(split) == 2 {
+			filterObject[split[0]] = split[1]
+		}
+	}
+
+	return filterObject
 }

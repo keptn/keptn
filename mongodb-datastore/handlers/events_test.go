@@ -217,3 +217,108 @@ func Test_transformEventToInterface(t *testing.T) {
 		})
 	}
 }
+
+func Test_parseFilter(t *testing.T) {
+	type args struct {
+		filter string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bson.M
+	}{
+		{
+			name: "get key values",
+			args: args{
+				filter: "data.project:sockshop,shkeptncontext:test-context",
+			},
+			want: bson.M{
+				"data.project":   "sockshop",
+				"shkeptncontext": "test-context",
+			},
+		},
+		{
+			name: "empty input",
+			args: args{
+				filter: "",
+			},
+			want: bson.M{},
+		},
+		{
+			name: "nonsense input",
+			args: args{
+				filter: "bla",
+			},
+			want: bson.M{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := parseFilter(tt.args.filter); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_validateFilter(t *testing.T) {
+	type args struct {
+		searchOptions bson.M
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "data.project provided",
+			args: args{
+				searchOptions: bson.M{
+					"data.project": "test",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "data.project empty string",
+			args: args{
+				searchOptions: bson.M{
+					"data.project": "",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "shkeptncontext provided",
+			args: args{
+				searchOptions: bson.M{
+					"shkeptncontext": "test",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "shkeptncontext empty string",
+			args: args{
+				searchOptions: bson.M{
+					"shkeptncontext": "",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "empty",
+			args: args{
+				searchOptions: bson.M{},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := validateFilter(tt.args.searchOptions); got != tt.want {
+				t.Errorf("validateFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

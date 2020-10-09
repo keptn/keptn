@@ -14,6 +14,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.7.1
 	github.com/magiconair/properties v1.8.1
+	github.com/mitchellh/mapstructure v1.3.2
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.4
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
