@@ -19,6 +19,7 @@ import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {EVENT_LABELS} from "../_models/event-labels";
 import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
 import {DtToggleButtonItem} from "@dynatrace/barista-components/toggle-button-group";
+import {ClipboardService} from "../_services/clipboard.service";
 
 @Component({
   selector: 'app-project-board',
@@ -52,6 +53,16 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public filterEventType: string = null;
 
+  public integrationsExternalDetails = null;
+  public triggerQualityGateEvaluationViaCli = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=2020-12-31T09:00:00 --timeframe=5m`;
+  public triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/{PROJECT}/stage/{STAGE}/service/{SERVICE}/evaluation" \\
+    -H "accept: application/json; charset=utf-8" \\
+    -H "x-token: \${KEPTN_API_TOKEN}" \\
+    -H "Content-Type: application/json; charset=utf-8" \\
+    -d "{"start": "2020-09-28T07:00:00", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
+
+  public keptnInfo: any;
+
   @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
@@ -60,7 +71,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     pinnable: true
   };
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService, private clipboard: ClipboardService) { }
 
   ngOnInit() {
     this.route.params
@@ -143,6 +154,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               });
             });
         }
+      });
+
+    this.dataService.keptnInfo
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(keptnInfo => {
+        this.keptnInfo = keptnInfo;
       });
   }
 
@@ -265,6 +282,21 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   findProblemEvent(problemEvents: Root[], service: Service) {
     return problemEvents.find(root => root?.data.service == service.serviceName);
+  }
+
+  loadIntegrations() {
+    this.integrationsExternalDetails = "<p>Loading ...</p>";
+    this.apiService.getIntegrationsPage()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((result: string) => {
+        this.integrationsExternalDetails = result;
+      }, (err: Error) => {
+        this.integrationsExternalDetails = "<p>Couldn't load page. For more details see <a href='https://keptn.sh/docs/integrations/' target='_blank' rel='noopener noreferrer'>https://keptn.sh/docs/integrations/</a>";
+      });
+  }
+
+  copyApiToken() {
+    this.clipboard.copy(this.keptnInfo.bridgeInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {
