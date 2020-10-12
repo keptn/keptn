@@ -693,7 +693,16 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 		matchStage := bson.D{
 			{"$match", matchFields},
 		}
-		allEvents, err = aggregateFromDB(collectionName, *params.PageSize, params.NextPageKey, mongo.Pipeline{lookupStage, matchStage}, logger)
+		var aggregationPipeline mongo.Pipeline
+		if params.PageSize != nil && *params.PageSize > 0 {
+			limitStage := bson.D{
+				{"$limit", params.PageSize},
+			}
+			aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, limitStage}
+		} else {
+			aggregationPipeline = mongo.Pipeline{lookupStage, matchStage}
+		}
+		allEvents, err = aggregateFromDB(collectionName, *params.PageSize, params.NextPageKey, aggregationPipeline, logger)
 	} else {
 		allEvents, err = findInDB(collectionName, *params.PageSize, params.NextPageKey, false, matchFields, logger)
 	}
