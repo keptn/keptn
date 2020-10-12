@@ -59,7 +59,7 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/mongodb/data
               name: mongodata
-      restartPolicy: Always
+      restartPolicy: IfNotPresent
       volumes:
         - name: mongodata
           persistentVolumeClaim:

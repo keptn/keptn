@@ -66,7 +66,7 @@ spec:
         - name: gatekeeper-service
           image: {{ .Values.gatekeeperService.image.repository }}:{{ .Values.gatekeeperService.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8080
           resources:
@@ -84,7 +84,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -155,7 +155,7 @@ spec:
         - name: helm-service
           image: {{ .Values.helmService.image.repository }}:{{ .Values.helmService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -205,7 +205,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -278,7 +278,7 @@ spec:
         - name: jmeter-service
           image: {{ .Values.jmeterService.image.repository }}:{{ .Values.jmeterService.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8080
           env:
@@ -289,7 +289,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
