@@ -230,11 +230,23 @@ func Test_parseFilter(t *testing.T) {
 		{
 			name: "get key values",
 			args: args{
-				filter: "data.project:sockshop,shkeptncontext:test-context",
+				filter: "data.project:sockshop;shkeptncontext:test-context",
 			},
 			want: bson.M{
 				"data.project":   "sockshop",
 				"shkeptncontext": "test-context",
+			},
+		},
+		{
+			name: "get key values",
+			args: args{
+				filter: "data.project:sockshop;data.result:pass,warn",
+			},
+			want: bson.M{
+				"data.project": "sockshop",
+				"data.result": bson.M{
+					"$in": []string{"pass", "warn"},
+				},
 			},
 		},
 		{

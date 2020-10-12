@@ -701,12 +701,19 @@ func validateFilter(searchOptions bson.M) bool {
 
 func parseFilter(filter string) bson.M {
 	filterObject := bson.M{}
-	keyValues := strings.Split(filter, ",")
+	keyValues := strings.Split(filter, ";")
 
 	for _, keyValuePair := range keyValues {
 		split := strings.Split(keyValuePair, ":")
 		if len(split) == 2 {
-			filterObject[split[0]] = split[1]
+			splitValue := strings.Split(split[1], ",")
+			if len(splitValue) == 1 {
+				filterObject[split[0]] = split[1]
+			} else {
+				filterObject[split[0]] = bson.M{
+					"$in": splitValue,
+				}
+			}
 		}
 	}
 
