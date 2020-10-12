@@ -338,7 +338,18 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	searchOptions := getSearchOptions(params)
 
 	onlyRootEvents := params.Root != nil
-	result, err := getEventsFromDB(*params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions, logger)
+	collectionName, err := getCollectionNameForQuery(searchOptions, logger)
+	if err != nil {
+		return nil, err
+	} else if collectionName == "" {
+		return &event.GetEventsOKBody{
+			Events:      nil,
+			NextPageKey: "0",
+			PageSize:    0,
+			TotalCount:  0,
+		}, nil
+	}
+	result, err := findInDB(collectionName, *params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -359,18 +370,72 @@ type getEventsResult struct {
 	TotalCount int64 `json:"totalCount,omitempty"`
 }
 
-func getEventsFromDB(pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptnutils.Logger) (*getEventsResult, error) {
-	collectionName, err := getCollectionNameForQuery(searchOptions, logger)
-	if err != nil {
-		return nil, err
-	} else if collectionName == "" {
-		return &getEventsResult{
-			Events:      nil,
-			NextPageKey: "0",
-			PageSize:    0,
-			TotalCount:  0,
-		}, nil
+func aggregateFromDB(collectionName string, pageSize int64, nextPageKeyStr *string, pipeline mongo.Pipeline, logger *keptnutils.Logger) (*getEventsResult, error) {
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if nextPageKeyStr != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*nextPageKeyStr)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + pageSize
+	} else {
+		newNextPageKey = pageSize
 	}
+	collection := client.Database(mongoDBName).Collection(collectionName)
+
+	var result getEventsResult
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	totalCount, err := collection.CountDocuments(ctx, pipeline)
+	if err != nil {
+		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
+	}
+
+	cur, err := collection.Aggregate(ctx, pipeline)
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		return nil, err
+	}
+	// close the cursor after the function has completed to avoid memory leaks
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var outputEvent interface{}
+		err := cur.Decode(&outputEvent)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to decode event %v", err))
+			return nil, err
+		}
+		outputEvent, err = flattenRecursively(outputEvent, logger)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to flatten %v", err))
+			return nil, err
+		}
+
+		data, _ := json.Marshal(outputEvent)
+
+		var keptnEvent models.KeptnContextExtendedCE
+		err = keptnEvent.UnmarshalJSON(data)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			continue
+		}
+
+		result.Events = append(result.Events, &keptnEvent)
+	}
+
+	result.PageSize = pageSize
+	result.TotalCount = totalCount
+
+	if newNextPageKey < totalCount {
+		result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+	}
+
+	return &result, nil
+}
+
+func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptnutils.Logger) (*getEventsResult, error) {
 
 	var newNextPageKey int64
 	var nextPageKey int64 = 0
@@ -387,7 +452,11 @@ func getEventsFromDB(pageSize int64, nextPageKeyStr *string, onlyRootEvents bool
 	if onlyRootEvents {
 		collectionName = collectionName + rootEventCollectionSuffix
 	}
-	sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+	if pageSize > 0 {
+		sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+	} else {
+		sortOptions = options.Find().SetSort(bson.D{{"time", -1}})
+	}
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
@@ -402,6 +471,7 @@ func getEventsFromDB(pageSize int64, nextPageKeyStr *string, onlyRootEvents bool
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
+
 	if err != nil {
 		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
 		return nil, err
@@ -555,28 +625,88 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 	logger := keptnutils.NewLogger("", "", serviceName)
 	logger.Debug(fmt.Sprintf("getting %s events from the data store", params.EventType))
 
+	if err := ensureDBConnection(logger); err != nil {
+		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
+		logger.Error(err.Error())
+		return nil, err
+	}
+
 	if params.Filter == nil {
 		return nil, MinimumFilterNotProvided
 	}
 
-	searchOptions := parseFilter(*params.Filter)
-	if !validateFilter(searchOptions) {
+	matchFields := parseFilter(*params.Filter)
+	if !validateFilter(matchFields) {
 		return nil, MinimumFilterNotProvided
 	}
 
-	searchOptions["type"] = params.EventType
+	matchFields["type"] = params.EventType
 
 	if params.FromTime != nil {
-		searchOptions["time"] = bson.M{
+		matchFields["time"] = bson.M{
 			"$gt": *params.FromTime,
 		}
 	}
 
-	result, err := getEventsFromDB(*params.PageSize, params.NextPageKey, false, searchOptions, logger)
+	collectionName, err := getCollectionNameForQuery(matchFields, logger)
+	if err != nil {
+		return nil, err
+	} else if collectionName == "" {
+		return &event.GetEventsByTypeOKBody{
+			Events:      nil,
+			NextPageKey: "0",
+			PageSize:    0,
+			TotalCount:  0,
+		}, nil
+	}
+
+	var allEvents *getEventsResult
+
+	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated {
+		lookupStage := bson.D{
+			{"$lookup", bson.M{
+				"from": collectionName,
+				"let": bson.M{
+					"event_id":   "$id",
+					"event_type": "$type",
+				},
+				"pipeline": []bson.M{
+					{
+						"$match": bson.M{
+							"$expr": bson.M{
+								"$and": []bson.M{
+									{
+										"$eq": []string{"$triggeredid", "$$event_id"},
+									},
+								},
+							},
+						},
+					},
+				},
+				"as": "invalidated",
+			}},
+		}
+
+		matchFields["invalidated"] = bson.M{
+			"$size": 0,
+		}
+		matchStage := bson.D{
+			{"$match", matchFields},
+		}
+		allEvents, err = aggregateFromDB(collectionName, *params.PageSize, params.NextPageKey, mongo.Pipeline{lookupStage, matchStage}, logger)
+	} else {
+		allEvents, err = findInDB(collectionName, *params.PageSize, params.NextPageKey, false, matchFields, logger)
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	return (*event.GetEventsByTypeOKBody)(result), nil
+
+	if params.ExcludeInvalidated == nil || !*params.ExcludeInvalidated {
+		return (*event.GetEventsByTypeOKBody)(allEvents), nil
+	}
+
+	return (*event.GetEventsByTypeOKBody)(allEvents), nil
 }
 
 func validateFilter(searchOptions bson.M) bool {
