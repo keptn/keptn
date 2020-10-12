@@ -30,6 +30,7 @@ bridge:
   image:
     repository: docker.io/keptn/bridge2
   cliDownloadLink: null
+  integrationsPageLink: null
   secret:
     enabled: true
   versionCheck:
