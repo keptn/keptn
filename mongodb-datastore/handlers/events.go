@@ -370,27 +370,14 @@ type getEventsResult struct {
 	TotalCount int64 `json:"totalCount,omitempty"`
 }
 
-func aggregateFromDB(collectionName string, pageSize int64, nextPageKeyStr *string, pipeline mongo.Pipeline, logger *keptnutils.Logger) (*getEventsResult, error) {
-	var newNextPageKey int64
-	var nextPageKey int64 = 0
-	if nextPageKeyStr != nil {
-		tmpNextPageKey, _ := strconv.Atoi(*nextPageKeyStr)
-		nextPageKey = int64(tmpNextPageKey)
-		newNextPageKey = nextPageKey + pageSize
-	} else {
-		newNextPageKey = pageSize
-	}
+func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *keptnutils.Logger) (*getEventsResult, error) {
+
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	var result getEventsResult
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	totalCount, err := collection.CountDocuments(ctx, pipeline)
-	if err != nil {
-		logger.Error(fmt.Sprintf("error counting elements in events collection: %v", err))
-	}
 
 	cur, err := collection.Aggregate(ctx, pipeline)
 
@@ -423,13 +410,6 @@ func aggregateFromDB(collectionName string, pageSize int64, nextPageKeyStr *stri
 		}
 
 		result.Events = append(result.Events, &keptnEvent)
-	}
-
-	result.PageSize = pageSize
-	result.TotalCount = totalCount
-
-	if newNextPageKey < totalCount {
-		result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
 	}
 
 	return &result, nil
@@ -694,17 +674,17 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 			{"$match", matchFields},
 		}
 		var aggregationPipeline mongo.Pipeline
-		if params.PageSize != nil && *params.PageSize > 0 {
+		if params.Limit != nil && *params.Limit > 0 {
 			limitStage := bson.D{
-				{"$limit", params.PageSize},
+				{"$limit", params.Limit},
 			}
 			aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, limitStage}
 		} else {
 			aggregationPipeline = mongo.Pipeline{lookupStage, matchStage}
 		}
-		allEvents, err = aggregateFromDB(collectionName, *params.PageSize, params.NextPageKey, aggregationPipeline, logger)
+		allEvents, err = aggregateFromDB(collectionName, aggregationPipeline, logger)
 	} else {
-		allEvents, err = findInDB(collectionName, *params.PageSize, params.NextPageKey, false, matchFields, logger)
+		allEvents, err = findInDB(collectionName, *params.Limit, nil, false, matchFields, logger)
 	}
 
 	if err != nil {

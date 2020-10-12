@@ -23,11 +23,11 @@ func NewGetEventsByTypeParams() GetEventsByTypeParams {
 	var (
 		// initialize parameters with default values
 
-		pageSizeDefault = int64(20)
+		limitDefault = int64(20)
 	)
 
 	return GetEventsByTypeParams{
-		PageSize: &pageSizeDefault,
+		Limit: &limitDefault,
 	}
 }
 
@@ -57,17 +57,13 @@ type GetEventsByTypeParams struct {
 	  In: query
 	*/
 	FromTime *string
-	/*Key of the page to be returned
-	  In: query
-	*/
-	NextPageKey *string
 	/*Page size to be returned
 	  Maximum: 100
 	  Minimum: 1
 	  In: query
 	  Default: 20
 	*/
-	PageSize *int64
+	Limit *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -101,13 +97,8 @@ func (o *GetEventsByTypeParams) BindRequest(r *http.Request, route *middleware.M
 		res = append(res, err)
 	}
 
-	qNextPageKey, qhkNextPageKey, _ := qs.GetOK("nextPageKey")
-	if err := o.bindNextPageKey(qNextPageKey, qhkNextPageKey, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qPageSize, qhkPageSize, _ := qs.GetOK("pageSize")
-	if err := o.bindPageSize(qPageSize, qhkPageSize, route.Formats); err != nil {
+	qLimit, qhkLimit, _ := qs.GetOK("limit")
+	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -190,26 +181,8 @@ func (o *GetEventsByTypeParams) bindFromTime(rawData []string, hasKey bool, form
 	return nil
 }
 
-// bindNextPageKey binds and validates parameter NextPageKey from query.
-func (o *GetEventsByTypeParams) bindNextPageKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.NextPageKey = &raw
-
-	return nil
-}
-
-// bindPageSize binds and validates parameter PageSize from query.
-func (o *GetEventsByTypeParams) bindPageSize(rawData []string, hasKey bool, formats strfmt.Registry) error {
+// bindLimit binds and validates parameter Limit from query.
+func (o *GetEventsByTypeParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -224,25 +197,25 @@ func (o *GetEventsByTypeParams) bindPageSize(rawData []string, hasKey bool, form
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
-		return errors.InvalidType("pageSize", "query", "int64", raw)
+		return errors.InvalidType("limit", "query", "int64", raw)
 	}
-	o.PageSize = &value
+	o.Limit = &value
 
-	if err := o.validatePageSize(formats); err != nil {
+	if err := o.validateLimit(formats); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// validatePageSize carries on validations for parameter PageSize
-func (o *GetEventsByTypeParams) validatePageSize(formats strfmt.Registry) error {
+// validateLimit carries on validations for parameter Limit
+func (o *GetEventsByTypeParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("pageSize", "query", int64(*o.PageSize), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("pageSize", "query", int64(*o.PageSize), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
 		return err
 	}
 

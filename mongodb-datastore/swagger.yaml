@@ -128,8 +128,7 @@ paths:
           in: query
           type: string
           required: false
-        - "$ref": "#/parameters/pagesizeParam"
-        - "$ref": "#/parameters/pageParam"
+        - "$ref": "#/parameters/limitParam"
       responses:
         200:
           description: ok
@@ -156,6 +155,15 @@ paths:
 
 
 parameters:
+  limitParam:
+    name: limit
+    in: query
+    type: integer
+    required: false
+    default: 20
+    minimum: 1
+    maximum: 100
+    description: Page size to be returned
   pagesizeParam:
     name: pageSize
     in: query

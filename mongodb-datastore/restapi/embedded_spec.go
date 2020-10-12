@@ -192,10 +192,7 @@ func init() {
             "in": "query"
           },
           {
-            "$ref": "#/parameters/pagesizeParam"
-          },
-          {
-            "$ref": "#/parameters/pageParam"
+            "$ref": "#/parameters/limitParam"
           }
         ],
         "responses": {
@@ -282,6 +279,15 @@ func init() {
     }
   },
   "parameters": {
+    "limitParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "limit",
+      "in": "query"
+    },
     "pageParam": {
       "type": "string",
       "description": "Key of the page to be returned",
@@ -488,13 +494,7 @@ func init() {
             "type": "integer",
             "default": 20,
             "description": "Page size to be returned",
-            "name": "pageSize",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Key of the page to be returned",
-            "name": "nextPageKey",
+            "name": "limit",
             "in": "query"
           }
         ],
@@ -646,6 +646,15 @@ func init() {
     }
   },
   "parameters": {
+    "limitParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "limit",
+      "in": "query"
+    },
     "pageParam": {
       "type": "string",
       "description": "Key of the page to be returned",
