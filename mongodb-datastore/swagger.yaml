@@ -135,15 +135,6 @@ paths:
           schema:
             type: object
             properties:
-              nextPageKey:
-                type: string
-                description: Pointer to the next page
-              totalCount:
-                type: integer
-                description: Total number of events
-              pageSize:
-                type: integer
-                description: Size of the returned page
               events:
                 type: array
                 items:

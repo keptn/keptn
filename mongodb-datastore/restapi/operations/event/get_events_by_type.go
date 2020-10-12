@@ -70,15 +70,6 @@ type GetEventsByTypeOKBody struct {
 
 	// events
 	Events []*models.KeptnContextExtendedCE `json:"events"`
-
-	// Pointer to the next page
-	NextPageKey string `json:"nextPageKey,omitempty"`
-
-	// Size of the returned page
-	PageSize int64 `json:"pageSize,omitempty"`
-
-	// Total number of events
-	TotalCount int64 `json:"totalCount,omitempty"`
 }
 
 // Validate validates this get events by type o k body

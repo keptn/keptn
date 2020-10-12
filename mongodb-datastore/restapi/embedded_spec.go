@@ -206,18 +206,6 @@ func init() {
                   "items": {
                     "$ref": "#/definitions/KeptnContextExtendedCE"
                   }
-                },
-                "nextPageKey": {
-                  "description": "Pointer to the next page",
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Size of the returned page",
-                  "type": "integer"
-                },
-                "totalCount": {
-                  "description": "Total number of events",
-                  "type": "integer"
                 }
               }
             }
@@ -509,18 +497,6 @@ func init() {
                   "items": {
                     "$ref": "#/definitions/KeptnContextExtendedCE"
                   }
-                },
-                "nextPageKey": {
-                  "description": "Pointer to the next page",
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Size of the returned page",
-                  "type": "integer"
-                },
-                "totalCount": {
-                  "description": "Total number of events",
-                  "type": "integer"
                 }
               }
             }
