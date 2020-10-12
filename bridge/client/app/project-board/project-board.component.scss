@@ -6,10 +6,6 @@
   height: 100%;
 }
 
-.stage-overview {
-
-}
-
 .stage-state {
   border-top: 1px solid $gray-300;
   border-bottom: 1px solid $gray-300;
@@ -171,5 +167,15 @@
         height: 25px;
       }
     }
+  }
+}
+
+#integration-container {
+  ::ng-deep p, ul, ol {
+    margin: 0;
+  }
+  h2 {
+    margin-top: .3em;
+    margin-bottom: .3em;
   }
 }
