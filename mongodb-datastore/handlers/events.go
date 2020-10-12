@@ -633,10 +633,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 		return nil, err
 	} else if collectionName == "" {
 		return &event.GetEventsByTypeOKBody{
-			Events:      nil,
-			NextPageKey: "0",
-			PageSize:    0,
-			TotalCount:  0,
+			Events: nil,
 		}, nil
 	}
 
@@ -691,11 +688,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 		return nil, err
 	}
 
-	if params.ExcludeInvalidated == nil || !*params.ExcludeInvalidated {
-		return (*event.GetEventsByTypeOKBody)(allEvents), nil
-	}
-
-	return (*event.GetEventsByTypeOKBody)(allEvents), nil
+	return &event.GetEventsByTypeOKBody{Events: allEvents.Events}, nil
 }
 
 func validateFilter(searchOptions bson.M) bool {
