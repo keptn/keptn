@@ -55,13 +55,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public integrationsExternalDetails = null;
   public triggerQualityGateEvaluationViaCli = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=2020-12-31T09:00:00 --timeframe=5m`;
-  public triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/{PROJECT}/stage/{STAGE}/service/{SERVICE}/evaluation" \\
-    -H "accept: application/json; charset=utf-8" \\
-    -H "x-token: \${KEPTN_API_TOKEN}" \\
-    -H "Content-Type: application/json; charset=utf-8" \\
-    -d "{"start": "2020-09-28T07:00:00", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
+  public triggerQualityGateEvaluationViaApi;
 
   public keptnInfo: any;
+  public currentTime: String;
 
   @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
@@ -149,6 +146,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             )
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe(project => {
+              this.updateIntegrations();
               project.getServices().forEach(service => {
                 this.dataService.loadRoots(project, service);
               });
@@ -161,6 +159,15 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
       });
+  }
+
+  updateIntegrations() {
+    this.currentTime = moment().endOf('minute').format("YYYY-MM-DD HH:mm");
+    this.triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
+    -H "accept: application/json; charset=utf-8" \\
+    -H "x-token: \${KEPTN_API_TOKEN}" \\
+    -H "Content-Type: application/json; charset=utf-8" \\
+    -d "{"start": "${this.currentTime}", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
   }
 
   selectRoot(event: any): void {
