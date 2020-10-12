@@ -6,7 +6,7 @@ const router = express.Router();
 
 module.exports = (params) => {
   // fetch parameters for bridgeInfo endpoint
-  const { apiUrl, apiToken, cliDownloadLink } = params;
+  const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink } = params;
 
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== "false";
   const showApiToken = process.env.SHOW_API_TOKEN !== "false";
@@ -21,6 +21,19 @@ module.exports = (params) => {
   router.get('/bridgeInfo', async (req, res, next) => {
     try {
       return res.json({ bridgeVersion, apiUrl, ...showApiToken && { apiToken }, cliDownloadLink, enableVersionCheckFeature, showApiToken });
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  router.get('/integrationsPage', async (req, res, next) => {
+    try {
+      const result = await axios({
+        method: req.method,
+        url: `${integrationsPageLink}`,
+        httpsAgent: agent
+      });
+      return res.send(result.data);
     } catch (err) {
       return next(err);
     }
