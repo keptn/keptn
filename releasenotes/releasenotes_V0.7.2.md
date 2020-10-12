@@ -1,8 +1,6 @@
 # Release Notes 0.7.2
 
-Keptn 0.7.2 improves the capabilities of the 0.7.1 release by adding great UX/UI improvements in working with Quality Gates.
-
-> TODO: **Screenshot of Evaluation-tile**
+Keptn 0.7.2 enhances the 0.7.1 release with great UX/UI improvements; especially for working with Quality Gates. This release introduces a new API endpoint for triggering a quality gate evaluation and the Bridge shows more details about the evaluation result.
 
 **The key announcements of Keptn 0.7.2**:
 
@@ -11,6 +9,8 @@ Keptn 0.7.2 improves the capabilities of the 0.7.1 release by adding great UX/UI
 :sparkles: *Focused UI enhancements for Quality Gates*: The evaluation tile that displays the quality gate evaluation result has been improved in various ways. First, the Heatmap in this tile now highlights the currently selected evaluation result. Second, it also displays the evaluation results that were used for comparisons giving the user more insights into the quality gate. 
 
 :tada: *Usage statistics for Keptn installation*: If you want to get more insights into your Keptn installation, feel free to deploy the [statistics-service](https://github.com/keptn-sandbox/statistics-service) from the Keptn sandbox. This service provides usage statistics based on events and service executions.
+
+Last but not least, many thanks to the community for all their contributions!
 
 ## Keptn Specification
 
@@ -21,6 +21,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>Platform Support / Installer</summary>
 <p>
 
+- Set `imagePullPolicy` to `IfNotPresent` for Deployments in Helm Charts [#2518](https://github.com/keptn/keptn/issues/2518)
 - K8s 1.19 support [#2411](https://github.com/keptn/keptn/issues/2411)
 
 </p>
