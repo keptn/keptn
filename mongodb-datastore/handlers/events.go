@@ -640,45 +640,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 	var allEvents *getEventsResult
 
 	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated {
-		lookupStage := bson.D{
-			{"$lookup", bson.M{
-				"from": collectionName,
-				"let": bson.M{
-					"event_id":   "$id",
-					"event_type": "$type",
-				},
-				"pipeline": []bson.M{
-					{
-						"$match": bson.M{
-							"$expr": bson.M{
-								"$and": []bson.M{
-									{
-										"$eq": []string{"$triggeredid", "$$event_id"},
-									},
-								},
-							},
-						},
-					},
-				},
-				"as": "invalidated",
-			}},
-		}
-
-		matchFields["invalidated"] = bson.M{
-			"$size": 0,
-		}
-		matchStage := bson.D{
-			{"$match", matchFields},
-		}
-		var aggregationPipeline mongo.Pipeline
-		if params.Limit != nil && *params.Limit > 0 {
-			limitStage := bson.D{
-				{"$limit", params.Limit},
-			}
-			aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, limitStage}
-		} else {
-			aggregationPipeline = mongo.Pipeline{lookupStage, matchStage}
-		}
+		aggregationPipeline := getAggregationPipeline(params, collectionName, matchFields)
 		allEvents, err = aggregateFromDB(collectionName, aggregationPipeline, logger)
 	} else {
 		allEvents, err = findInDB(collectionName, *params.Limit, nil, false, matchFields, logger)
@@ -689,6 +651,49 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 	}
 
 	return &event.GetEventsByTypeOKBody{Events: allEvents.Events}, nil
+}
+
+func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
+	lookupStage := bson.D{
+		{"$lookup", bson.M{
+			"from": collectionName,
+			"let": bson.M{
+				"event_id":   "$id",
+				"event_type": "$type",
+			},
+			"pipeline": []bson.M{
+				{
+					"$match": bson.M{
+						"$expr": bson.M{
+							"$and": []bson.M{
+								{
+									"$eq": []string{"$triggeredid", "$$event_id"},
+								},
+							},
+						},
+					},
+				},
+			},
+			"as": "invalidated",
+		}},
+	}
+
+	matchFields["invalidated"] = bson.M{
+		"$size": 0,
+	}
+	matchStage := bson.D{
+		{"$match", matchFields},
+	}
+	var aggregationPipeline mongo.Pipeline
+	if params.Limit != nil && *params.Limit > 0 {
+		limitStage := bson.D{
+			{"$limit", *params.Limit},
+		}
+		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, limitStage}
+	} else {
+		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage}
+	}
+	return aggregationPipeline
 }
 
 func validateFilter(searchOptions bson.M) bool {

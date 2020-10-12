@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 	"testing"
 
@@ -330,6 +331,78 @@ func Test_validateFilter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := validateFilter(tt.args.searchOptions); got != tt.want {
 				t.Errorf("validateFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getAggregationPipeline(t *testing.T) {
+	limit := int64(2)
+	type args struct {
+		params         event.GetEventsByTypeParams
+		collectionName string
+		matchFields    bson.M
+	}
+	tests := []struct {
+		name string
+		args args
+		want mongo.Pipeline
+	}{
+		{
+			name: "",
+			args: args{
+				params: event.GetEventsByTypeParams{
+					Limit: &limit,
+				},
+				collectionName: "test-collection",
+				matchFields: bson.M{
+					"project": "test-project",
+				},
+			},
+			want: mongo.Pipeline{
+				bson.D{
+					{"$lookup", bson.M{
+						"from": "test-collection",
+						"let": bson.M{
+							"event_id":   "$id",
+							"event_type": "$type",
+						},
+						"pipeline": []bson.M{
+							{
+								"$match": bson.M{
+									"$expr": bson.M{
+										"$and": []bson.M{
+											{
+												"$eq": []string{"$triggeredid", "$$event_id"},
+											},
+										},
+									},
+								},
+							},
+						},
+						"as": "invalidated",
+					}},
+				},
+				bson.D{
+					{"$match", bson.M{
+						"invalidated": bson.M{
+							"$size": 0,
+						},
+						"project": "test-project",
+					}},
+				},
+				bson.D{
+					{
+						"$limit", limit,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getAggregationPipeline(tt.args.params, tt.args.collectionName, tt.args.matchFields); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getAggregationPipeline() = %v, want %v", got, tt.want)
 			}
 		})
 	}
