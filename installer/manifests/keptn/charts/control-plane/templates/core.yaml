@@ -77,7 +77,7 @@ spec:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -161,7 +161,7 @@ spec:
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: API_URL
               value: "http://api-gateway-nginx{{ .Values.prefixPath }}/api"
@@ -248,7 +248,7 @@ spec:
         - name: eventbroker-go
           image: {{ .Values.eventbroker.image.repository }}:{{ .Values.eventbroker.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -319,7 +319,7 @@ spec:
         - name: shipyard-service
           image: {{ .Values.shipyardService.image.repository }}:{{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -339,7 +339,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -436,7 +436,7 @@ spec:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
@@ -473,7 +473,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
