@@ -502,17 +502,17 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	var eventIDs []string
 
 	// previous results are fetched from mongodb datastore with source=lighthouse-service
-	queryString := fmt.Sprintf(getDatastoreURL()+"/event/type/%s?source=%s&limit=%d&excludeInvalidated=true&filter=data.project:%s;data.stage:%s;data.service:%s",
+	queryString := fmt.Sprintf(getDatastoreURL()+"/event/type/%s?source=%s&limit=%d&excludeInvalidated=true&filter=data.project:%s%3Bdata.stage:%s%3Bdata.service:%s",
 		keptn.EvaluationDoneEventType, "lighthouse-service", numberOfPreviousResults, e.Project, e.Stage, e.Service)
 
 	includeResult = strings.ToLower(includeResult)
 
 	switch includeResult {
 	case "pass":
-		queryString = queryString + ";data.result:pass"
+		queryString = queryString + "%3Bdata.result:pass"
 		break
 	case "pass_or_warn":
-		queryString = queryString + ";data.result:pass,warning"
+		queryString = queryString + "%3Bdata.result:pass,warning"
 		break
 	default:
 		break

@@ -374,7 +374,9 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *kep
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
-	var result getEventsResult
+	result := &getEventsResult{
+		Events: []*models.KeptnContextExtendedCE{},
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -412,7 +414,7 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *kep
 		result.Events = append(result.Events, &keptnEvent)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptnutils.Logger) (*getEventsResult, error) {
