@@ -368,7 +368,7 @@ func Test_getAggregationPipeline(t *testing.T) {
 				},
 				bson.D{
 					{"$lookup", bson.M{
-						"from": "test-collection",
+						"from": "test-collection-invalidatedEvents",
 						"let": bson.M{
 							"event_id":   "$id",
 							"event_type": "$type",

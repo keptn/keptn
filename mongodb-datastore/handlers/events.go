@@ -26,6 +26,7 @@ import (
 
 const contextToProjectCollection = "contextToProject"
 const rootEventCollectionSuffix = "-rootEvents"
+const invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 
 var client *mongo.Client
 var mutex sync.Mutex
@@ -150,6 +151,19 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 		return err
 	}
 
+	// additionally store "invalidated" events in a dedicated collection
+	if strings.HasSuffix(string(event.Type), ".invalidated") {
+		invalidatedCollectionName := getInvalidatedCollectionName(collectionName)
+		logger.Debug("Storing invalidated event to dedicated collection " + invalidatedCollectionName)
+		invalidatedCollection := client.Database(mongoDBName).Collection(invalidatedCollectionName)
+		_, err := invalidatedCollection.InsertOne(ctx, eventInterface)
+		if err != nil {
+			err := fmt.Errorf("failed to insert into collection: %v", err)
+			logger.Error(err.Error())
+			return err
+		}
+
+	}
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		err := fmt.Errorf("failed to insert into collection: %v", err)
@@ -170,6 +184,11 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 
 	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
 	return nil
+}
+
+func getInvalidatedCollectionName(collectionName string) string {
+	invalidatedCollectionName := collectionName + invalidatedEventsCollectionSuffix
+	return invalidatedCollectionName
 }
 
 func storeRootEvent(logger *keptnutils.Logger, collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
@@ -664,7 +683,7 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 
 	lookupStage := bson.D{
 		{"$lookup", bson.M{
-			"from": collectionName,
+			"from": getInvalidatedCollectionName(collectionName),
 			"let": bson.M{
 				"event_id":   "$id",
 				"event_type": "$type",
