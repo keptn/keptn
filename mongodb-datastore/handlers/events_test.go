@@ -362,6 +362,11 @@ func Test_getAggregationPipeline(t *testing.T) {
 			},
 			want: mongo.Pipeline{
 				bson.D{
+					{"$match", bson.M{
+						"project": "test-project",
+					}},
+				},
+				bson.D{
 					{"$lookup", bson.M{
 						"from": "test-collection",
 						"let": bson.M{
@@ -392,7 +397,6 @@ func Test_getAggregationPipeline(t *testing.T) {
 						"invalidated": bson.M{
 							"$size": 0,
 						},
-						"project": "test-project",
 					}},
 				},
 				bson.D{

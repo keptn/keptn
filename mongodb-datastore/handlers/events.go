@@ -655,6 +655,11 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 
 func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
 	invalidatedEventType := getInvalidatedEventType(params.EventType)
+
+	matchStage := bson.D{
+		{"$match", matchFields},
+	}
+
 	lookupStage := bson.D{
 		{"$lookup", bson.M{
 			"from": collectionName,
@@ -682,11 +687,12 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 		}},
 	}
 
-	matchFields["invalidated"] = bson.M{
-		"$size": 0,
-	}
-	matchStage := bson.D{
-		{"$match", matchFields},
+	matchInvalidatedStage := bson.D{
+		{"$match", bson.M{
+			"invalidated": bson.M{
+				"$size": 0,
+			},
+		}},
 	}
 	sortStage := bson.D{
 		{"$sort", bson.M{
@@ -698,9 +704,9 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 		limitStage := bson.D{
 			{"$limit", *params.Limit},
 		}
-		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, sortStage, limitStage}
+		aggregationPipeline = mongo.Pipeline{matchStage, lookupStage, matchInvalidatedStage, sortStage, limitStage}
 	} else {
-		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, sortStage}
+		aggregationPipeline = mongo.Pipeline{matchStage, lookupStage, matchInvalidatedStage, sortStage}
 	}
 	return aggregationPipeline
 }
