@@ -682,6 +682,9 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 						},
 					},
 				},
+				{
+					"$limit": 1,
+				},
 			},
 			"as": "invalidated",
 		}},

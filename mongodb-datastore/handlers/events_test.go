@@ -388,6 +388,9 @@ func Test_getAggregationPipeline(t *testing.T) {
 									},
 								},
 							},
+							{
+								"$limit": 1,
+							},
 						},
 						"as": "invalidated",
 					}},
