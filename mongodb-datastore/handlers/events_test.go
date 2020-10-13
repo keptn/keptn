@@ -444,7 +444,7 @@ func Test_getInvalidatedEventType(t *testing.T) {
 			args: args{
 				params: "my-type.foo.bar",
 			},
-			want: "my-type.foo.bar.invalidated",
+			want: "my-type.foo.invalidated",
 		},
 		{
 			name: "evaluation-done",
