@@ -654,6 +654,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 }
 
 func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
+	invalidatedEventType := getInvalidatedEventType(params.EventType)
 	lookupStage := bson.D{
 		{"$lookup", bson.M{
 			"from": collectionName,
@@ -668,6 +669,9 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 							"$and": []bson.M{
 								{
 									"$eq": []string{"$triggeredid", "$$event_id"},
+								},
+								{
+									"$eq": []string{"$type", invalidatedEventType},
 								},
 							},
 						},
@@ -684,16 +688,36 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 	matchStage := bson.D{
 		{"$match", matchFields},
 	}
+	sortStage := bson.D{
+		{"$sort", bson.M{
+			"time": -1,
+		}},
+	}
 	var aggregationPipeline mongo.Pipeline
 	if params.Limit != nil && *params.Limit > 0 {
 		limitStage := bson.D{
 			{"$limit", *params.Limit},
 		}
-		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, limitStage}
+		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, sortStage, limitStage}
 	} else {
-		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage}
+		aggregationPipeline = mongo.Pipeline{lookupStage, matchStage, sortStage}
 	}
 	return aggregationPipeline
+}
+
+func getInvalidatedEventType(eventType string) string {
+	var invalidatedEventType string
+	if eventType == keptnutils.EvaluationDoneEventType {
+		invalidatedEventType = "sh.keptn.events.evaluation.invalidated"
+	} else {
+		split := strings.Split(eventType, ".")
+		invalidatedEventType = split[0]
+		for i := 1; i < len(split)-1; i = i + 1 {
+			invalidatedEventType = invalidatedEventType + "." + split[i]
+		}
+		invalidatedEventType = invalidatedEventType + ".invalidated"
+	}
+	return invalidatedEventType
 }
 
 func validateFilter(searchOptions bson.M) bool {

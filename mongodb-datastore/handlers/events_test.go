@@ -352,7 +352,8 @@ func Test_getAggregationPipeline(t *testing.T) {
 			name: "",
 			args: args{
 				params: event.GetEventsByTypeParams{
-					Limit: &limit,
+					Limit:     &limit,
+					EventType: "my-type",
 				},
 				collectionName: "test-collection",
 				matchFields: bson.M{
@@ -375,6 +376,9 @@ func Test_getAggregationPipeline(t *testing.T) {
 											{
 												"$eq": []string{"$triggeredid", "$$event_id"},
 											},
+											{
+												"$eq": []string{"$type", "my-type.invalidated"},
+											},
 										},
 									},
 								},
@@ -392,6 +396,13 @@ func Test_getAggregationPipeline(t *testing.T) {
 					}},
 				},
 				bson.D{
+					{"$sort",
+						bson.M{
+							"time": -1,
+						},
+					},
+				},
+				bson.D{
 					{
 						"$limit", limit,
 					},
@@ -403,6 +414,46 @@ func Test_getAggregationPipeline(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getAggregationPipeline(tt.args.params, tt.args.collectionName, tt.args.matchFields); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getAggregationPipeline() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getInvalidatedEventType(t *testing.T) {
+	type args struct {
+		params string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "arbitrary event type",
+			args: args{
+				params: "my-type",
+			},
+			want: "my-type.invalidated",
+		},
+		{
+			name: "arbitrary event type",
+			args: args{
+				params: "my-type.foo.bar",
+			},
+			want: "my-type.foo.bar.invalidated",
+		},
+		{
+			name: "evaluation-done",
+			args: args{
+				params: keptnutils.EvaluationDoneEventType,
+			},
+			want: "sh.keptn.events.evaluation.invalidated",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getInvalidatedEventType(tt.args.params); got != tt.want {
+				t.Errorf("getInvalidatedEventType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
