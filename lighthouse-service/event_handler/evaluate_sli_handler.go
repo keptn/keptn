@@ -507,7 +507,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 
 	includeResult = strings.ToLower(includeResult)
 
-	filter := "filter=data.project:" + e.Project + "%20AND%20data.stage:" + e.Stage +"%20AND%20data.service:" + e.Service
+	filter := "filter=data.project:" + e.Project + "%20AND%20data.stage:" + e.Stage + "%20AND%20data.service:" + e.Service
 	switch includeResult {
 	case "pass":
 		filter = filter + "%20AND%20data.result:pass"
@@ -521,7 +521,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 
 	queryString = queryString + filter
 
-	req, err := http.NewRequest("GET", getDatastoreURL()+"/event/type/" + keptn.EvaluationDoneEventType + "?" + queryString, nil)
+	req, err := http.NewRequest("GET", getDatastoreURL()+"/event/type/"+keptn.EvaluationDoneEventType+"?"+queryString, nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := eh.HTTPClient.Do(req)
 	if err != nil {
@@ -529,7 +529,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(body))
+
 	if resp.StatusCode != 200 {
 		return nil, nil, errors.New("could not retrieve previous evaluation-done events")
 	}
