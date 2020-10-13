@@ -502,23 +502,26 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	var eventIDs []string
 
 	// previous results are fetched from mongodb datastore with source=lighthouse-service
-	queryString := fmt.Sprintf(getDatastoreURL()+"/event/type/%s?source=%s&limit=%d&excludeInvalidated=true&filter=data.project:%s%3Bdata.stage:%s%3Bdata.service:%s",
-		keptn.EvaluationDoneEventType, "lighthouse-service", numberOfPreviousResults, e.Project, e.Stage, e.Service)
+	queryString := fmt.Sprintf("source=%s&limit=%d&excludeInvalidated=true&",
+		"lighthouse-service", numberOfPreviousResults)
 
 	includeResult = strings.ToLower(includeResult)
 
+	filter := "filter=data.project:" + e.Project + "%20AND%20data.stage:" + e.Stage +"%20AND%20data.service:" + e.Service
 	switch includeResult {
 	case "pass":
-		queryString = queryString + "%3Bdata.result:pass"
+		filter = filter + "%20AND%20data.result:pass"
 		break
 	case "pass_or_warn":
-		queryString = queryString + "%3Bdata.result:pass,warning"
+		filter = filter + "%20AND%20data.result:pass,warning"
 		break
 	default:
 		break
 	}
 
-	req, err := http.NewRequest("GET", queryString, nil)
+	queryString = queryString + filter
+
+	req, err := http.NewRequest("GET", getDatastoreURL()+"/event/type/" + keptn.EvaluationDoneEventType + "?" + queryString, nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := eh.HTTPClient.Do(req)
 	if err != nil {
@@ -526,6 +529,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 	if resp.StatusCode != 200 {
 		return nil, nil, errors.New("could not retrieve previous evaluation-done events")
 	}

@@ -741,7 +741,7 @@ func validateFilter(searchOptions bson.M) bool {
 
 func parseFilter(filter string) bson.M {
 	filterObject := bson.M{}
-	keyValues := strings.Split(filter, ";")
+	keyValues := strings.Split(filter, " AND ")
 
 	for _, keyValuePair := range keyValues {
 		split := strings.Split(keyValuePair, ":")
