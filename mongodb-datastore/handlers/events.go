@@ -156,7 +156,22 @@ func insertEvent(logger *keptnutils.Logger, event *models.KeptnContextExtendedCE
 		invalidatedCollectionName := getInvalidatedCollectionName(collectionName)
 		logger.Debug("Storing invalidated event to dedicated collection " + invalidatedCollectionName)
 		invalidatedCollection := client.Database(mongoDBName).Collection(invalidatedCollectionName)
-		_, err := invalidatedCollection.InsertOne(ctx, eventInterface)
+
+		logger.Debug("ensuring index for " + invalidatedCollectionName + " exists")
+		indexDefinition := mongo.IndexModel{
+			Keys: bson.M{
+				"triggeredid": 1,
+				"type":        1,
+			},
+		}
+		// CreateOne() is idempotent - this operation checks if the index exists and only creates a new one when not available
+		_, err := invalidatedCollection.Indexes().CreateOne(ctx, indexDefinition)
+		if err != nil {
+			// log the error, but continue anyway - index is not required for the query to work
+			logger.Debug("could not create index for " + invalidatedCollectionName + ": " + err.Error())
+		}
+		logger.Debug("created index for " + invalidatedCollectionName)
+		_, err = invalidatedCollection.InsertOne(ctx, eventInterface)
 		if err != nil {
 			err := fmt.Errorf("failed to insert into collection: %v", err)
 			logger.Error(err.Error())
