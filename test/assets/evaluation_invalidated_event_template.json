@@ -1,0 +1,13 @@
+{
+  "type": "sh.keptn.events.evaluation.invalidated",
+  "specversion": "0.2",
+  "source": "travis-ci",
+  "contenttype": "application/json",
+  "triggeredid": "$TRIGGERED_ID",
+  "shkeptncontext": "$KEPTN_CONTEXT",
+  "data": {
+    "project": "$PROJECT",
+    "stage": "$STAGE",
+    "service": "$SERVICE",
+  }
+}
