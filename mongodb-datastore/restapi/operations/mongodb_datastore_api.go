@@ -150,11 +150,10 @@ func (o *MongodbDatastoreAPI) Validate() error {
 	}
 
 	if o.EventGetEventsHandler == nil {
-		unregistered = append(unregistered, "Event.GetEventsHandler")
+		unregistered = append(unregistered, "event.GetEventsHandler")
 	}
-
 	if o.EventSaveEventHandler == nil {
-		unregistered = append(unregistered, "Event.SaveEventHandler")
+		unregistered = append(unregistered, "event.SaveEventHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -171,16 +170,12 @@ func (o *MongodbDatastoreAPI) ServeErrorFor(operationID string) func(http.Respon
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *MongodbDatastoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *MongodbDatastoreAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -248,7 +243,6 @@ func (o *MongodbDatastoreAPI) Context() *middleware.Context {
 
 func (o *MongodbDatastoreAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -257,12 +251,10 @@ func (o *MongodbDatastoreAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/event"] = event.NewGetEvents(o.context, o.EventGetEventsHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewSaveEvent(o.context, o.EventSaveEventHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
