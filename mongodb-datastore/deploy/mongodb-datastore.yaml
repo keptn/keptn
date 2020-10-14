@@ -30,7 +30,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
-        image: keptn/mongodb-datastore:latest
+        image: keptn/mongodb-datastore:a22540f
         livenessProbe:
           httpGet:
             path: /health
@@ -47,6 +47,8 @@ spec:
             memory: "256Mi"
             cpu: "1000m"
         env:
+        - name: DT_CUSTOM_PROP
+          value: 'keptn_service=mongodb-datastore'
         - name: PREFIX_PATH
           value: ""
         - name: MONGODB_HOST
@@ -64,7 +66,7 @@ spec:
                 name: mongodb-credentials
                 key: password
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptn/distributor:0.7.2
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
