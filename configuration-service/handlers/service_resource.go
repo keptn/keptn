@@ -55,10 +55,14 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
 
 		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
+		if !common.FileExists(chartDir) {
+			return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().
+				WithPayload(&models.Error{Code: 404, Message: swag.String("Service resource not found")})
+		}
 		if err := archiver.Archive([]string{chartDir}, resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-				WithPayload(&models.Error{Code: 400, Message: swag.String("Could archive the Helm chart directory")})
+				WithPayload(&models.Error{Code: 400, Message: swag.String("Could not archive the Helm chart directory")})
 		}
 	}
 

@@ -3,20 +3,14 @@ package controller
 import (
 	"encoding/base64"
 	"errors"
-	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"net/http"
-	"os"
 	"testing"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
-	"github.com/keptn/keptn/helm-service/pkg/helmtest"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -61,50 +55,34 @@ func createTestProject(t *testing.T) {
 	}
 }
 
-// TestDoOnboard tests the onboarding of a new chart. Therefore, this test requires the configuration-service
-// on localhost:8080
-func TestDoOnboard(t *testing.T) {
-
-	_, err := http.Get("http://" + configBaseURL)
-	if err != nil {
-		t.Skip("Skipping test; no local configuration-service available")
-	}
-	os.Setenv("CONFIGURATION_SERVICE", configBaseURL)
-
-	createTestProject(t)
-
-	data := helmtest.CreateHelmChartData(t)
-	encodedChart := base64.StdEncoding.EncodeToString(data)
-	fmt.Println(encodedChart)
-	ce := cloudevents.NewEvent()
-	ce.SetData(cloudevents.ApplicationJSON, keptnevents.ServiceCreateEventData{Project: projectName, Service: serviceName, HelmChart: encodedChart})
-
-	keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	onboarder := NewOnboarder(mesh.NewIstioMesh(), keptnHandler, configBaseURL)
-	loggingDone := make(chan bool)
-	err = onboarder.DoOnboard(ce, loggingDone)
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func TestCheckAndSetServiceName(t *testing.T) {
 
-	o := NewOnboarder(nil, nil, configBaseURL)
-	data := helmtest.CreateHelmChartData(t)
+	mockHandler := &HandlerBase{
+		keptnHandler:     nil,
+		helmExecutor:     nil,
+		configServiceURL: configBaseURL,
+	}
+
+	o := Onboarder{
+		Handler: mockHandler,
+		mesh:    nil,
+	}
+	data := helm.CreateTestHelmChartData(t)
 
 	testCases := []struct {
 		name        string
-		event       *keptnevents.ServiceCreateEventData
+		event       *keptnv2.ServiceCreateFinishedEventData
 		error       error
 		serviceName string
 	}{
-		{"Mismatch", &keptnevents.ServiceCreateEventData{Service: "carts-1", HelmChart: base64.StdEncoding.EncodeToString(data)},
+		{"Mismatch", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts-1"},
+			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			errors.New("Provided Keptn service name \"carts-1\" does not match Kubernetes service name \"carts\""), "carts-1"},
-		{"Match", &keptnevents.ServiceCreateEventData{Service: "carts", HelmChart: base64.StdEncoding.EncodeToString(data)},
+		{"Match", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts"},
+			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
-		{"Set", &keptnevents.ServiceCreateEventData{Service: "", HelmChart: base64.StdEncoding.EncodeToString(data)},
+		{"Set", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: ""},
+			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
 	}
 
