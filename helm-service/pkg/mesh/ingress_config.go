@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"strings"
 )
@@ -35,4 +36,14 @@ func GetIngressGateway() string {
 		return os.Getenv("ISTIO_GATEWAY")
 	}
 	return "public-gateway.istio-system"
+}
+
+// GetLocalDeploymentURI returns URIs where a service is accessible from within the cluster
+func GetLocalDeploymentURI(event keptnv2.EventData) []string {
+	return []string{"http://" + event.Service + "." + event.Project + "-" + event.Stage}
+}
+
+// GetPublicDeploymentURI returns URIs where a service is exposed
+func GetPublicDeploymentURI(event keptnv2.EventData) []string {
+	return []string{GetIngressProtocol() + "://" + event.GetService() + "." + event.GetProject() + "-" + event.GetStage() + "." + GetIngressHostnameSuffix() + ":" + GetIngressPort()}
 }

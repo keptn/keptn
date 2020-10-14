@@ -2,9 +2,10 @@ package helm
 
 import (
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 	"path/filepath"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
 	"helm.sh/helm/v3/pkg/release"
 
@@ -113,7 +114,7 @@ func (h *HelmV3Executor) GetManifest(releaseName, namespace string) (string, err
 func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 
 	if len(ch.Templates) > 0 {
-		h.logger.Info(fmt.Sprintf("Start upgrading chart %s in namespace %s", releaseName, namespace))
+		h.logger.Info(fmt.Sprintf("Start upgrading release %s in namespace %s", releaseName, namespace))
 		config, err := h.getKubeRestConfig()
 		if err != nil {
 			return err
@@ -171,7 +172,7 @@ func (h *HelmV3Executor) waitForDeploymentsOfHelmRelease(helmManifest string) er
 // UninstallRelease uninstalls the specified release in the namespace
 func (h *HelmV3Executor) UninstallRelease(releaseName, namespace string) error {
 
-	h.logger.Debug(fmt.Sprintf("Start deleting Helm release %s in namespace %s", releaseName, namespace))
+	h.logger.Debug(fmt.Sprintf("Start uninstalling Helm release %s in namespace %s", releaseName, namespace))
 	config, err := h.getKubeRestConfig()
 	if err != nil {
 		return err

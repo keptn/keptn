@@ -1,0 +1,153 @@
+POST http://localhost:8090/
+Content-Type: application/cloudevents+json
+
+{
+  "type": "sh.keptn.event.service.create.finished",
+  "specversion": "1.0",
+  "source": "test",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79d",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50f",
+  "data": {
+    "project": "sockshop",
+    "service": "carts",
+    "labels": {
+      "testId": "4711",
+      "buildId": "build-17",
+      "owner": "JohnDoe"
+    },
+    "status": "succeeded",
+    "result": "pass",
+
+    "helm": {
+      "chart": "H4sIFAAAAAAA/ykAK2FIUjBjSE02THk5NWIzVjBkUzVpWlM5Nk9WVjZNV2xqYW5keVRRbz1IZWxtAOxYS2/jNhDOWb9i4Mu2B8uUH7sLAXsIHHc33dgxHCdAURQGI41jNpTIkpSxRur/XlAvy5adFGgeCOq5OJoXOdTMx08JqDK61V9QZdwVjfjJCwghhHzsdtNfQsjuL/HaH0+8zieP9Hrtttc5IV67QzonQF5iM7uSaEPVCfnPa+0W906ESnaDSjMR+7D0nBB1oJg06fMpfEMeQWCbA+ZCgUa1ZAFC2jROTCP087+XRQ7iei5x3rqqo/xbyeZ/SXmC+qUA4Kn5b3vt3fnvdXrH+X8NYRG9Qx9CEdyjcplo3aM0Mf6gkeSoW2l7+MT1PNdzFErOAtoXSWx88Bwn9fUdAKnEnxgYH7QI7vVCSAdAmywzLu1DhhwFXACEKLlYRWgzhUxhYN76JP6fks2/wUhyalC3Nu/l+dDgifnv2mHfnv9et0OO8/8a0mw2wamSACqlbi09557FoQ9nZTs4ERoaUkPtvFevfi0xsLocHbQPDw/g3mQ3ShUyYL1OYUFRg3crGwKgBOcsvruWITWYqQAi+uM6pkvKOL3l6ANJ9WYl0YdJNSAFFo6BESqLjagJFhf0FrkuklEpN6hT9HnuXVQEuS/fityJLVXufXKLKkaD2gJmdhaVmlNUdAuulBZ9KJbF2tDY4mLjkQTNmm0zpbBeNx5ZIBCRFHGKslSyRxwlVaYp5vs2koP7EytFNKZ3GDZvVz58t3GP+JZs8eEBftKSMwMNv1Eum95JP7szD/6GEOc04QYaKTyZRnGeRddZCURsKItRla+uudWhxUbyu65aYaraqizVjBPOx4KzYOXD+XwkzFihtkNQeElh78XysVhvYYwslem1aEQguA/T/riiLzc8Fsr48Jl8JqUV42U979l01r++ml4OZ+PJZTVTStx8aOQn+sWWln3M5QMN6zUoXLLSOkGOVKM7yZWZQ6qza235jGhkDwfSPpjlffDlkQbJPfPWrXtuerrwtCRhj5/JXkvutWn3uuuBUShObnx5NhudDge7Z/aLEpFfUQLMGfJwgvNtba4fU7PwoVEghmuT1xc7G4wvLn8bDkbTl1gzQ6ffP2wq/vBHfQ/9y9H09Hw0mMzOh6dfa3t4qv2LNN8H4+nIdtuvg/70QJKs0fImOZTiarpnF89w+lrSYM8ryBcdTG7O+/uKTxGhHnY9uhicXn1LAweT2fXkYk+snW6/1UpiOx0LN/9thrhsUck2STlbYoxaj5W4xWpBNsFXNNs1yrS41gIpN4ttSx0dAFjMDKP8DDldXWEg4lD78LHqIVExEZY2r2ozLEKRmI2xVxoV0pC9x21rkagAdXV7nEXM6N1eCmRi8xIS7RgijIRa+dAm3c9DVjEq/CtBfSBT73Aij7S7Q/Ye/g2yy/9zhH7WfwU8+f3/aZf/dz+R4/f/q0iN/5fU/yrrBGeLJdeIv1VmzLzPE21QnVt6ktEja6sxowIdsocaQTJU3aHZ4kUlxc9oeoWUv/XhHeUoRznKO5Z/AgAA///9mYwrABwAAA=="
+    }
+  }
+}
+
+###
+POST http://localhost:8090/
+Content-Type: application/cloudevents+json
+
+{
+  "type": "sh.keptn.event.deployment.triggered",
+  "specversion": "1.0",
+  "source": "test",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79a",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50g",
+  "data": {
+    "project": "sockshop",
+    "stage": "dev",
+    "service": "carts",
+    "labels": {
+      "testId": "4711",
+      "buildId": "build-17",
+      "owner": "JohnDoe"
+    },
+    "status": "succeeded",
+    "result": "pass",
+
+    "configurationChange": {
+      "values": {
+        "image": "docker.io/keptnexamples/carts:0.11.2"
+      }
+    },
+    "deployment": {
+      "deploymentstrategy": "blue_green_service"
+    }
+  }
+}
+
+###
+POST http://localhost:8090/
+Content-Type: application/cloudevents+json
+
+{
+  "type": "sh.keptn.event.release.triggered",
+  "specversion": "1.0",
+  "source": "test",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50h",
+  "data": {
+    "project": "sockshop",
+    "stage": "dev",
+    "service": "carts",
+    "labels": {
+      "testId": "4711",
+      "buildId": "build-17",
+      "owner": "JohnDoe"
+    },
+    "status": "succeeded",
+    "result": "pass",
+
+    "deployment": {
+      "deploymentstrategy": "blue_green_service"
+    }
+  }
+}
+
+###
+POST http://localhost:8090/
+Content-Type: application/cloudevents+json
+
+{
+  "type": "sh.keptn.event.action.triggered",
+  "specversion": "1.0",
+  "source": "test",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50i",
+  "data": {
+    "project": "sockshop",
+    "stage": "dev",
+    "service": "carts",
+    "labels": {
+      "testId": "4711",
+      "buildId": "build-17",
+      "owner": "JohnDoe"
+    },
+    "status": "succeeded",
+    "result": "pass",
+
+    "action": {
+      "name": "scaling",
+      "action": "scaling",
+      "description": "increments the replicas by 1",
+      "value" : "1"
+    },
+    "problem": {
+    }
+  }
+}
+
+###
+POST http://localhost:8090/
+Content-Type: application/cloudevents+json
+
+{
+  "type": "sh.keptn.event.service.delete.finished",
+  "specversion": "1.0",
+  "source": "test",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79b",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50j",
+  "data": {
+    "project": "sockshop",
+    "stage": "dev",
+    "service": "carts",
+    "labels": {
+      "testId": "4711",
+      "buildId": "build-17",
+      "owner": "JohnDoe"
+    },
+    "status": "succeeded",
+    "result": "pass"
+  }
+}

@@ -11,11 +11,10 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/controller"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	authorizationv1 "k8s.io/api/authorization/v1"
 )
@@ -55,44 +54,42 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	var logger keptncommon.LoggerInterface
-	loggingDone := make(chan bool)
-	go closeLogger(loggingDone, keptnHandler.Logger)
-
 	mesh := mesh.NewIstioMesh()
 
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
-		loggingDone <- true
+		closeLogger(keptnHandler)
 		return err
 	}
 
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
-	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, url.String())
-		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
-	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, keptnHandler, url.String())
-		go onboarder.DoOnboard(event, loggingDone)
-	} else if event.Type() == keptnevents.ActionTriggeredEventType {
+	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
+		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, url.String())
+		go deploymentHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
+		releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, url.String())
+		go releaseHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName){
+		onboarder := controller.NewOnboarder(keptnHandler, mesh, url.String())
+		go onboarder.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
-		go actionHandler.HandleEvent(event, loggingDone)
-	} else if event.Type() == keptnevents.InternalServiceDeleteEventType {
+		go actionHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
-		go deleteHandler.HandleEvent(event, loggingDone)
+		go deleteHandler.HandleEvent(event, closeLogger)
 	} else {
-		logger.Error("Received unexpected keptn event")
-		loggingDone <- true
+		keptnHandler.Logger.Error("Received unexpected keptn event")
+		closeLogger(keptnHandler)
 	}
 
 	return nil
 }
 
-func closeLogger(loggingDone chan bool, logger keptncommon.LoggerInterface) {
-	<-loggingDone
-	if combinedLogger, ok := logger.(*keptncommon.CombinedLogger); ok {
+func closeLogger(keptnHandler *keptnv2.Keptn) {
+	if combinedLogger, ok := keptnHandler.Logger.(*keptncommon.CombinedLogger); ok {
 		combinedLogger.Terminate("")
 	}
 }
