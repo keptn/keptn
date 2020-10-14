@@ -180,6 +180,9 @@ func init() {
           "properties": {
             "shkeptncontext": {
               "type": "string"
+            },
+            "triggeredid": {
+              "type": "string"
             }
           }
         }
@@ -396,6 +399,9 @@ func init() {
           "type": "object",
           "properties": {
             "shkeptncontext": {
+              "type": "string"
+            },
+            "triggeredid": {
               "type": "string"
             }
           }
