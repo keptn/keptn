@@ -9,9 +9,7 @@ import (
 	apiUtils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
-const (
-	maxHttpTimeout = 5
-)
+var maxHTTPTimeout = 5 * time.Second
 
 var endPointErrorReasons = `
 Possible reasons:
@@ -32,7 +30,7 @@ func checkEndPointStatus(endPoint string) error {
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), maxHttpTimeout*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), maxHTTPTimeout)
 	defer cancel()
 
 	req, err := http.NewRequest("HEAD", endPoint, nil)
