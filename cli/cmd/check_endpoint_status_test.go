@@ -7,6 +7,8 @@ import (
 )
 
 func Test_checkEndPointStatus(t *testing.T) {
+	checkEndPointStatusMock = false
+
 	ts := getTestAPI()
 
 	type args struct {
