@@ -64,6 +64,7 @@ import {KtbMarkdownComponent} from "./_components/ktb-markdown/ktb-markdown.comp
 
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
+import { HttpDefaultInterceptor } from "./_interceptors/http-default-interceptor";
 
 import { AtobPipe } from './_pipes/atob.pipe';
 import { AppHeaderComponent } from './app-header/app-header.component';
@@ -151,6 +152,11 @@ registerLocaleData(localeEn, 'en');
     BrowserAnimationsModule,
   ],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpDefaultInterceptor,
+      multi: true,
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpErrorInterceptor,
