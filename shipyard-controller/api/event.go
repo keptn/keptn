@@ -5,10 +5,8 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -324,7 +322,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 		sc.logger.Info("Task sequence related to eventID " + event.Triggeredid + ": " + eventToSequence.Stage + "." + eventToSequence.TaskSequenceName)
 		sc.logger.Info("Trying to fetch shipyard and get next task")
-		shipyard, err := sc.getShipyard(eventScope)
+		shipyard, err := common.GetShipyard(eventScope)
 		if err != nil {
 			msg := "Could not retrieve shipyard of project " + eventScope.Project + ": " + err.Error()
 			sc.logger.Error(msg)
@@ -491,7 +489,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		stageName = split[len(split)-3]
 	}
 
-	shipyard, err := sc.getShipyard(eventScope)
+	shipyard, err := common.GetShipyard(eventScope)
 	if err != nil {
 		sc.logger.Error("could not retrieve shipyard: " + err.Error())
 	}
@@ -578,33 +576,6 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 	}
 
 	return sc.sendTaskSequenceFinishedEvent(keptnContext, eventScope, taskSequenceName)
-}
-
-func (sc *shipyardController) getShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {
-	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
-	if err != nil {
-		sc.logger.Error("Could not get configuration-service URL: " + err.Error())
-		return nil, err
-	}
-	resourceHandler := keptnapi.NewResourceHandler(csEndpoint.String())
-	resource, err := resourceHandler.GetProjectResource(eventScope.Project, "shipyard.yaml")
-	if err != nil {
-		sc.logger.Error("Could not retrieve shipyard.yaml for project " + eventScope.Project + ": " + err.Error())
-		return nil, err
-	}
-
-	shipyard := &keptnv2.Shipyard{}
-	err = yaml.Unmarshal([]byte(resource.ResourceContent), shipyard)
-	if err != nil {
-		sc.logger.Error("Could not decode shipyard file: " + err.Error())
-		return nil, err
-	}
-
-	if shipyard.ApiVersion != "0.2.0" && shipyard.ApiVersion != "spec.keptn.sh/0.2.0" {
-		sc.logger.Error("Invalid shipyard APIVersion " + shipyard.ApiVersion)
-		return nil, err
-	}
-	return shipyard, err
 }
 
 var errNoFurtherTaskForSequence = errors.New("no further task for sequence")
