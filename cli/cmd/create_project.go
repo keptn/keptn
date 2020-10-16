@@ -27,11 +27,11 @@ import (
 )
 
 type createProjectCmdParams struct {
-	Shipyard  *string
-	GitUser   *string
-	GitToken  *string
-	RemoteURL *string
-	Content   string
+	Shipyard        *string
+	GitUser         *string
+	GitToken        *string
+	RemoteURL       *string
+	ShipyardContent string
 }
 
 var createProjectParams *createProjectCmdParams
@@ -107,7 +107,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		}
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		shipyard := base64.StdEncoding.EncodeToString([]byte(createProjectParams.Content))
+		shipyard := base64.StdEncoding.EncodeToString([]byte(createProjectParams.ShipyardContent))
 		project := apimodels.CreateProject{
 			Name:     &args[0],
 			Shipyard: &shipyard,
@@ -190,7 +190,7 @@ func getYamlFromURL(arg string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	createProjectParams.Content = string(body)
+	createProjectParams.ShipyardContent = string(body)
 	return string(body), nil
 }
 
@@ -202,8 +202,8 @@ func getYamlFromFile(arg string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	createProjectParams.Content = fileContent
-	return file.ReadFile(arg)
+	createProjectParams.ShipyardContent = fileContent
+	return fileContent, nil
 }
 
 func init() {
