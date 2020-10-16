@@ -279,6 +279,10 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 		return errProjectAlreadyExists
 	}
 
+	if err := pm.sendProjectCreateStartedEvent(params); err != nil {
+		return pm.logAndReturnError(err.Error())
+	}
+
 	// if available, create the upstream repository credentials secret.
 	// this has to be done before creating the project on the configuration sercice
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
@@ -331,7 +335,28 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	pm.logger.Info("uploaded shipyard.yaml of project " + *params.Name)
 
 	if err := pm.sendProjectCreateSuccessFinishedEvent(params); err != nil {
-		return pm.logAndReturnError("could not send create.project.finished event: " + err.Error())
+		return pm.logAndReturnError(err.Error())
+	}
+	return nil
+}
+
+func (pm *projectManager) sendProjectCreateStartedEvent(params *operations.CreateProjectParams) error {
+	eventPayload := keptnv2.ProjectCreateStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: *params.Name,
+		},
+	}
+	source, _ := url.Parse("shipyard-controller")
+	eventType := keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName)
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", uuid.New().String())
+	event.SetData(cloudevents.ApplicationJSON, eventPayload)
+
+	if err := common.SendEvent(event); err != nil {
+		return errors.New("could not send create.project.started event: " + err.Error())
 	}
 	return nil
 }
