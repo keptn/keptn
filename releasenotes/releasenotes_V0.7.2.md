@@ -4,7 +4,7 @@ Keptn 0.7.2 enhances the 0.7.1 release with great UX/UI improvements; especially
 
 **The key announcements of Keptn 0.7.2**:
 
-:rocket: *Improved UX for Quality Gates*: This release introduces an `/evaluation` endpoint that brings the same user-experience to the API as used from the Keptn CLI. Hence, easily trigger a quality gate evaluation based on the parameters `start`, `end`, and `timeframe` for a specific `service` in a particular `project`/`stage`.
+:rocket: *Improved UX for Quality Gates*: This release introduces an `/evaluation` endpoint that brings the same user-experience to the API as used from the Keptn CLI. Hence, you can now easily trigger a quality gate evaluation based on the parameters `start`, `end`, and `timeframe` for a specific `service` in a particular `project`/`stage`.
 
 :sparkles: *Focused UI enhancements for Quality Gates*: The evaluation tile that displays the quality gate evaluation result has been improved in various ways. First, the Heatmap in this tile now highlights the currently selected evaluation result. Second, it also displays the evaluation results that were used for comparisons giving the user more insights into the quality gate. 
 
