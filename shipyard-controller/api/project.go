@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -15,6 +17,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -199,23 +202,9 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	}
 
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
-		pm.logger.Info("Storing git credentials for project " + *params.Name)
-		credentials := &gitCredentials{
-			User:      params.GitUser,
-			Token:     params.GitToken,
-			RemoteURI: params.GitRemoteURL,
+		if err := pm.createUpstreamRepoCredentials(params); err != nil {
+			return pm.logAndReturnError(err.Error())
 		}
-
-		credsEncoded, err := json.Marshal(credentials)
-		if err != nil {
-			return pm.logAndReturnError(fmt.Sprintf("could not store git credentials: %s", err.Error()))
-		}
-		if err := pm.secretStore.CreateSecret("git-credentials-"+*params.Name, map[string][]byte{
-			"git-credentials": credsEncoded,
-		}); err != nil {
-			return pm.logAndReturnError(fmt.Sprintf("could not store git credentials: %s", err.Error()))
-		}
-		pm.logger.Info("stored git credentials for project " + *params.Name)
 	}
 
 	// create the project
@@ -261,7 +250,48 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	}
 	pm.logger.Info("uploaded shipyard.yaml of project " + *params.Name)
 
-	// TODO: send a sh.keptn.event.project.create.finished
+	finishedEventPayload := keptnv2.CreateProjectFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: *params.Name,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+		},
+		Project: keptnv2.CreateProjectData{},
+	}
+
+	source, _ := url.Parse("shipyard-controller")
+	eventType := keptnv2.GetFinishedEventType(keptnv2.CreateProjectTaskName)
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetExtension("shkeptncontext", uuid.New().String())
+	event.SetData(cloudevents.ApplicationJSON, finishedEventPayload)
+
+	if err := common.SendEvent(event); err != nil {
+		return pm.logAndReturnError("could not send create.project.finished event: " + err.Error())
+	}
+	return nil
+}
+
+func (pm *projectManager) createUpstreamRepoCredentials(params *operations.CreateProjectParams) error {
+	pm.logger.Info("Storing git credentials for project " + *params.Name)
+	credentials := &gitCredentials{
+		User:      params.GitUser,
+		Token:     params.GitToken,
+		RemoteURI: params.GitRemoteURL,
+	}
+
+	credsEncoded, err := json.Marshal(credentials)
+	if err != nil {
+		return fmt.Errorf("could not store git credentials: %s", err.Error())
+	}
+	if err := pm.secretStore.CreateSecret("git-credentials-"+*params.Name, map[string][]byte{
+		"git-credentials": credsEncoded,
+	}); err != nil {
+		return fmt.Errorf("could not store git credentials: %s", err.Error())
+	}
+	pm.logger.Info("stored git credentials for project " + *params.Name)
 	return nil
 }
 

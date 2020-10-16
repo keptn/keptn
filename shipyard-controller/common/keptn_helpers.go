@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -57,6 +58,26 @@ func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 		if !keptncommon.ValidateKeptnEntityName(stage.Name) {
 			return fmt.Errorf("name of stage '%s' is not a valid Keptn entity name", stage.Name)
 		}
+	}
+	return nil
+}
+
+// SendEvent godoc
+func SendEvent(event cloudevents.Event) error {
+	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
+	if err != nil {
+		return errors.New("Could not get eventbroker endpoint: " + err.Error())
+	}
+	k, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		EventBrokerURL: ebEndpoint.String(),
+	})
+	if err != nil {
+		return errors.New("Could not initialize Keptn handler: " + err.Error())
+	}
+
+	err = k.SendCloudEvent(event)
+	if err != nil {
+		return errors.New("Could not send CloudEvent: " + err.Error())
 	}
 	return nil
 }

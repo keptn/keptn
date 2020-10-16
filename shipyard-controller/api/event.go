@@ -655,7 +655,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	event.SetExtension("shkeptncontext", keptnContext)
 	event.SetData(cloudevents.ApplicationJSON, eventPayload)
 
-	return sc.sendEvent(event)
+	return common.SendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
@@ -669,7 +669,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string,
 	event.SetExtension("shkeptncontext", keptnContext)
 	event.SetData(cloudevents.ApplicationJSON, eventScope)
 
-	return sc.sendEvent(event)
+	return common.SendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string, task keptnv2.Task, previousFinishedEvents []interface{}) error {
@@ -730,26 +730,5 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 		return err
 	}
 
-	return sc.sendEvent(event)
-}
-
-func (sc *shipyardController) sendEvent(event cloudevents.Event) error {
-	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
-	if err != nil {
-		sc.logger.Error("Could not get eventbroker endpoint: " + err.Error())
-		return nil
-	}
-	k, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		EventBrokerURL: ebEndpoint.String(),
-	})
-	if err != nil {
-		sc.logger.Error("Could not initialize Keptn handler: " + err.Error())
-		return nil
-	}
-	err = k.SendCloudEvent(event)
-	if err != nil {
-		sc.logger.Error("Could not send CloudEvent: " + err.Error())
-		return err
-	}
-	return nil
+	return common.SendEvent(event)
 }
