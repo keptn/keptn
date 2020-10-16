@@ -28,7 +28,7 @@ func NewK8sSecretStore() (*K8sSecretStore, error) {
 }
 
 func (k *K8sSecretStore) CreateSecret(name string, content map[string][]byte) error {
-	namespace := os.Getenv("POD_NAMESPACE")
+	namespace := GetKeptnNamespace()
 	secret := &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",

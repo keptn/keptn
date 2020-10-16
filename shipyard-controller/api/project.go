@@ -83,6 +83,55 @@ func CreateProject(c *gin.Context) {
 	}
 }
 
+// UpdateProject godoc
+// @Summary Updates a project
+// @Description Updates project
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     body    operations.CreateProjectParams     true        "Project"
+// @Success 200 {object} operations.CreateProjectResponse	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project [put]
+func UpdateProject(c *gin.Context) {
+	// validate the input
+	createProjectParams := &operations.CreateProjectParams{}
+	if err := c.ShouldBindJSON(createProjectParams); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    400,
+			Message: stringp("Invalid request format: " + err.Error()),
+		})
+		return
+	}
+	if err := validateUpdateProjectParams(createProjectParams); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    400,
+			Message: stringp("Could not validate payload: " + err.Error()),
+		})
+		return
+	}
+
+	pm, err := newProjectManager()
+	if err != nil {
+
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    500,
+			Message: stringp("Could not process request: " + err.Error()),
+		})
+		return
+	}
+
+	if err := pm.updateProject(createProjectParams); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    http.StatusInternalServerError,
+			Message: stringp(err.Error()),
+		})
+		return
+	}
+}
+
 // DeleteProject godoc
 // @Summary Delete a project
 // @Description Delete a project
@@ -151,6 +200,18 @@ func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteP
 		result.Message = result.Message + fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitRemoteURI)
 	}
 
+	// check for an upstream repo secret
+	secret, err := pm.secretStore.GetSecret(getUpstreamRepoCredsSecretName(projectName))
+	if err == nil && secret != nil {
+		// try to delete the secret
+		if err := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(projectName)); err != nil {
+			// if anything goes wrong, log the error, but continue with deleting the remaining project resources
+			pm.logger.Error("could not delete git upstream credentials secret: " + err.Error())
+			result.Message = result.Message + "WARNING: Could not delete secret containing the git upstream repo credentials. \n"
+			result.Message = result.Message + fmt.Sprintf("Please make sure to delete the secret manually by executing 'kubectl delete secret %s -n %s' \n", getUpstreamRepoCredsSecretName(projectName), common.GetKeptnNamespace())
+		}
+	}
+
 	if _, errObj := pm.projectAPI.DeleteProject(keptnapimodels.Project{
 		ProjectName: projectName,
 	}); errObj != nil {
@@ -190,6 +251,23 @@ func (pm *projectManager) getDeleteInfoMessage(project string) string {
 	return strings.TrimSpace(msg)
 }
 
+func (pm *projectManager) updateProject(params *operations.CreateProjectParams) error {
+	pm.logger.Info(fmt.Sprintf("checking if project %s already exists before creating it", *params.Name))
+	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
+		if err := pm.createUpstreamRepoCredentials(params); err != nil {
+			return pm.logAndReturnError(err.Error())
+		}
+	}
+
+	pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
+		GitRemoteURI: params.GitRemoteURL,
+		GitToken:     params.GitToken,
+		GitUser:      params.GitUser,
+		ProjectName:  *params.Name,
+	})
+	return nil
+}
+
 func (pm *projectManager) createProject(params *operations.CreateProjectParams) error {
 	// check if the project already exists
 	pm.logger.Info(fmt.Sprintf("checking if project %s already exists before creating it", *params.Name))
@@ -201,6 +279,8 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 		return errProjectAlreadyExists
 	}
 
+	// if available, create the upstream repository credentials secret.
+	// this has to be done before creating the project on the configuration sercice
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
 		if err := pm.createUpstreamRepoCredentials(params); err != nil {
 			return pm.logAndReturnError(err.Error())
@@ -250,17 +330,27 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	}
 	pm.logger.Info("uploaded shipyard.yaml of project " + *params.Name)
 
-	finishedEventPayload := keptnv2.CreateProjectFinishedEventData{
+	if err := pm.sendProjectCreateSuccessFinishedEvent(params); err != nil {
+		return pm.logAndReturnError("could not send create.project.finished event: " + err.Error())
+	}
+	return nil
+}
+
+func (pm *projectManager) sendProjectCreateSuccessFinishedEvent(params *operations.CreateProjectParams) error {
+	finishedEventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 		},
-		Project: keptnv2.CreateProjectData{},
+		Project: keptnv2.ProjectCreateData{
+			ProjectName:  *params.Name,
+			GitRemoteURL: params.GitRemoteURL,
+			Shipyard:     *params.Shipyard,
+		},
 	}
-
 	source, _ := url.Parse("shipyard-controller")
-	eventType := keptnv2.GetFinishedEventType(keptnv2.CreateProjectTaskName)
+	eventType := keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName)
 	event := cloudevents.NewEvent()
 	event.SetType(eventType)
 	event.SetSource(source.String())
@@ -269,7 +359,7 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	event.SetData(cloudevents.ApplicationJSON, finishedEventPayload)
 
 	if err := common.SendEvent(event); err != nil {
-		return pm.logAndReturnError("could not send create.project.finished event: " + err.Error())
+		return errors.New("could not send create.project.finished event: " + err.Error())
 	}
 	return nil
 }
@@ -286,13 +376,17 @@ func (pm *projectManager) createUpstreamRepoCredentials(params *operations.Creat
 	if err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
-	if err := pm.secretStore.CreateSecret("git-credentials-"+*params.Name, map[string][]byte{
+	if err := pm.secretStore.CreateSecret(getUpstreamRepoCredsSecretName(*params.Name), map[string][]byte{
 		"git-credentials": credsEncoded,
 	}); err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
 	pm.logger.Info("stored git credentials for project " + *params.Name)
 	return nil
+}
+
+func getUpstreamRepoCredsSecretName(projectName string) string {
+	return "git-credentials-" + projectName
 }
 
 func (pm *projectManager) logAndReturnError(msg string) error {
@@ -328,6 +422,18 @@ func validateCreateProjectParams(createProjectParams *operations.CreateProjectPa
 
 	if err := common.ValidateShipyardStages(shipyard); err != nil {
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
+	}
+
+	return nil
+}
+
+func validateUpdateProjectParams(createProjectParams *operations.CreateProjectParams) error {
+
+	if createProjectParams.Name == nil || *createProjectParams.Name == "" {
+		return errors.New("project name missing")
+	}
+	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
+		return errors.New("provided project name is not a valid Keptn entity name")
 	}
 
 	return nil

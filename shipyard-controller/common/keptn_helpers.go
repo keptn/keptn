@@ -8,7 +8,19 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"os"
 )
+
+const defaultKeptnNamespace = "keptn"
+
+// GetKeptnNamespace godoc
+func GetKeptnNamespace() string {
+	ns := os.Getenv("POD_NAMESPACE")
+	if ns != "" {
+		return ns
+	}
+	return defaultKeptnNamespace
+}
 
 // GetShipyard godoc
 func GetShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {

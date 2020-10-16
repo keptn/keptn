@@ -36,6 +36,7 @@ func main() {
 	apiV1 := router.Group("/v1")
 
 	apiV1.POST("/project", api.CreateProject)
+	apiV1.PUT("/project", api.UpdateProject)
 	apiV1.DELETE("/project/:project", api.DeleteProject)
 
 	apiV1.GET("/event/triggered/:eventType", api.GetTriggeredEvents)
