@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"bufio"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -238,11 +237,10 @@ func doInstallation() error {
 
 	if installParams.EndPointServiceType.String() == "NodePort" || installParams.EndPointServiceType.String() == "LoadBalancer" {
 		endpoint, err := getAPIEndpoint(keptnNamespace, installParams.EndPointServiceType.String())
-		apiToken, _ := getAPITokenFromSecret(keptnNamespace)
 		if err == nil {
 			showFallbackConnectMessage = false
 			fmt.Println("* To quickly access Keptn, you can authenticate your Keptn CLI (in a Linux shell):\n" +
-				" - keptn auth --endpoint=" + endpoint + " --api-token=" + apiToken + "\n")
+				" - keptn auth --endpoint=" + endpoint + " --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
 		}
 	}
 	if showFallbackConnectMessage {
@@ -302,18 +300,4 @@ func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 		return "http://" + endpoint + "/api", nil
 	}
 	return "", errors.New("Unknown service-type: " + serviceType)
-}
-
-func getAPITokenFromSecret(keptnNamespace string) (string, error) {
-	apiToken, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "secret", "keptn-api-token", "-n", keptnNamespace, "-ojsonpath='{.data.keptn-api-token}'"})
-	apiToken = strings.Trim(apiToken, "'")
-	if err != nil {
-		return "", err
-	}
-	data, err := base64.StdEncoding.DecodeString(apiToken)
-	if err != nil {
-		return "", err
-	}
-	apiToken = string(data)
-	return apiToken, nil
 }
