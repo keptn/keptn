@@ -18,3 +18,4 @@ If you are not sure how to do this and if your organization should be listed her
 | Neotys                | https://www.neotys.com/neotys-keptn-webinar                                     | YES |
 | Citrix   | https://github.com/keptn-contrib/slackbot-service | YES | 
 | amasol AG   | https://www.amasol.de/blog/2020/05/19/autonomous-cloud-journey-at-amasol-with-keptn | YES |
+| Realdolmen / Inetum   | https://marketplace.visualstudio.com/items?itemName=RealdolmenDevOps.keptn-integration | YES |
