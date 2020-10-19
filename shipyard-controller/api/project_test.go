@@ -192,7 +192,6 @@ func (mcs *mockConfigurationService) post(body interface{}, path string) (interf
 				project.Stages = append(project.Stages, stage)
 			}
 		}
-
 	} else if strings.Contains(path, "/resource") {
 		resources := &keptnapimodels.Resources{}
 		_ = json.Unmarshal(marshal, resources)
@@ -219,6 +218,14 @@ func (mcs *mockConfigurationService) delete(path string) (interface{}, error) {
 	if strings.Contains(path, "/service") {
 		return nil, nil
 	} else if strings.Contains(path, "/project") {
+		newProjects := []*keptnapimodels.Project{}
+
+		for index, project := range mcs.projects {
+			if !strings.Contains(path, "/project/"+project.ProjectName) {
+				newProjects = append(newProjects, mcs.projects[index])
+			}
+		}
+		mcs.projects = newProjects
 		return nil, nil
 	}
 	return nil, nil
@@ -602,4 +609,72 @@ func Test_projectManager_CreateProjectScenario1(t *testing.T) {
 	if err != errProjectAlreadyExists {
 		t.Errorf("expected errProjectAlreadyExists")
 	}
+}
+
+func Test_projectManager_DeleteProject(t *testing.T) {
+	mockEV := newMockEventbroker(t, func(meb *mockEventBroker, event *models.Event) {
+		meb.receivedEvents = append(meb.receivedEvents, *event)
+	}, func(meb *mockEventBroker) {
+
+	})
+
+	defer mockEV.server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	mockCS := newSimpleMockConfigurationService()
+	defer mockCS.server.Close()
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.server.URL)
+
+	mockCS.projects = []*keptnapimodels.Project{
+		{
+			ProjectName: "my-project",
+			Stages: []*keptnapimodels.Stage{
+				{
+					StageName: "dev",
+				},
+				{
+					StageName: "hardening",
+				},
+				{
+					StageName: "production",
+				},
+			},
+		},
+	}
+
+	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+
+	pm := &projectManager{
+		apiBase: &apiBase{
+			projectAPI:  keptnapi.NewProjectHandler(csEndpoint.String()),
+			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
+			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
+			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
+			secretStore: &mockSecretStore{
+				create: func(name string, content map[string][]byte) error {
+					return nil
+				},
+				delete: func(name string) error {
+					return nil
+				},
+				get: func(name string) (map[string][]byte, error) {
+					return nil, nil
+				},
+			},
+			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
+		},
+	}
+
+	_, _ = pm.deleteProject("my-project")
+
+	// verify
+	expectedProjects := []*keptnapimodels.Project{}
+
+	if diff := deep.Equal(expectedProjects, mockCS.projects); len(diff) > 0 {
+		t.Errorf("project has not been created correctly")
+		for _, d := range diff {
+			t.Log(d)
+		}
+	}
+
 }
