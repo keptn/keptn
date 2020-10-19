@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/helm-service/controller"
+
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
 	"os"
@@ -15,7 +17,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/controller"
+
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -72,7 +74,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		projectHandler := keptnapi.NewProjectHandler(url.String())
 		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
 		stagesHandler := configutils.NewStageHandler(url.String())
-		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, url.String())
+		serviceHandler := configutils.NewServiceHandler(url.String())
+		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, url.String())
 		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
 		go deploymentHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
@@ -82,7 +85,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
 		projectHandler := keptnapi.NewProjectHandler(url.String())
 		stagesHandler := configutils.NewStageHandler(url.String())
-		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, url.String())
+		serviceHandler := configutils.NewServiceHandler(url.String())
+		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, url.String())
 		go onBoarder.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())

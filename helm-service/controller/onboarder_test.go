@@ -5,9 +5,9 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/helm-service/mocks"
-
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/keptn/keptn/helm-service/pkg/helm"
@@ -16,8 +16,6 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
-	configutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/stretchr/testify/assert"
 )
 
 const configBaseURL = "localhost:6060"
@@ -33,101 +31,181 @@ stages:
     - {deployment_strategy: blue_green_service, name: staging, test_strategy: performance}
     - {deployment_strategy: blue_green_service, name: production}`
 
-//go:ignore
-func TestHandleEvent(t *testing.T) {
-	//
-	//
+//MOCKS
+var mockedBaseHandler *MockHandler
+var mockedMesh *mocks.MockMesh
+var mockedProjectHandler *mocks.MockProjectOperator
+var mockedNamespaceManager *mocks.MockINamespaceManager
+var mockedStagesHandler *mocks.MockIStagesHandler
+var mockedServiceHandler *mocks.MockIServiceHandler
+var mockedChartStorer *mocks.MockChartStorer
+
+func createMocks(ctrl *gomock.Controller) {
+	mockedBaseHandler = NewMockHandler(ctrl)
+	mockedMesh = mocks.NewMockMesh(ctrl)
+	mockedProjectHandler = mocks.NewMockProjectOperator(ctrl)
+	mockedNamespaceManager = mocks.NewMockINamespaceManager(ctrl)
+	mockedStagesHandler = mocks.NewMockIStagesHandler(ctrl)
+	mockedServiceHandler = mocks.NewMockIServiceHandler(ctrl)
+	mockedChartStorer = mocks.NewMockChartStorer(ctrl)
+
+}
+
+func TestHandleEvent_WhenPassingUnparsableEvent_ThenHandleErrorIsCalled(t *testing.T) {
+	//PREPARE MOCKS
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	createMocks(ctrl)
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
+	mockedBaseHandler.EXPECT().handleError(gomock.Eq("EVENT_ID"), gomock.Any(), gomock.Eq("service.create"), gomock.Any())
 
-	//mockedHandler := mocks.NewMockHandler(ctrl)
-	mockedMesh := mocks.NewMockMesh(ctrl)
-	mockedProjectHandler := mocks.NewMockProjectOperator(ctrl)
-	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
-	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
-
-	onboarder := NewOnboarder(
-		keptn,
-		mockedMesh,
-		mockedProjectHandler,
-		mockedNamespaceManager,
-		mockedStagesHandler,
-		"",
-	)
-
-	eventData := keptnv2.EventData{
-		Project: "my-project",
-		Stage:   "dev",
-		Service: "carts",
-		Labels:  nil,
-		Status:  "some-status",
-		Result:  "some-result",
-		Message: "MESSAGE",
-	}
-
-	data := helm.CreateTestHelmChartData(t)
-
-	serviceCreateFinishedEventData := keptnv2.ServiceCreateFinishedEventData{
-		EventData: eventData,
-		Helm: keptnv2.Helm{
-			Chart: base64.StdEncoding.EncodeToString(data),
-		},
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
 	}
 
 	event := cloudevents.NewEvent()
-	event.SetType("test-type")
-	event.SetSource("test-source")
-	event.SetData("", serviceCreateFinishedEventData)
+	event.SetData(cloudevents.ApplicationJSON, "WEIRD_JSON_CONTENT")
+	event.SetID("EVENT_ID")
+	instance.HandleEvent(event, nilCloser)
+}
 
-	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, nil)
-	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{&models.Stage{
-		Services: []*models.Service{&models.Service{
-			CreationDate:   "",
-			DeployedImage:  "",
-			LastEventTypes: nil,
-			OpenApprovals:  nil,
-			ServiceName:    "",
-		}},
-		StageName: "dev",
-	}}, nil)
+func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
+	//PREPARE MOCKS
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	createMocks(ctrl)
 
-	onboarder.HandleEvent(event, nilCloser)
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
+	}
+
+	event := cloudevents.NewEvent()
+	instance.HandleEvent(event, nilCloser)
+}
+
+func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
+	//PREPARE MOCKS
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	createMocks(ctrl)
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, &models.Error{Message: stringp("")})
+	mockedBaseHandler.EXPECT().handleError(gomock.Eq("EVENT_ID"), gomock.Any(), gomock.Eq("service.create"), gomock.Any())
+
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
+	}
+
+	event := cloudevents.NewEvent()
+	event.SetID("EVENT_ID")
+	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "dev",
+			Service: "carts",
+		},
+		Helm: keptnv2.Helm{
+			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
+		},
+	})
+
+	instance.HandleEvent(event, nilCloser)
+}
+
+func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
+	//PREPARE MOCKS
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	createMocks(ctrl)
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{}, nil)
+	mockedBaseHandler.EXPECT().handleError(gomock.Eq("EVENT_ID"), gomock.Any(), gomock.Eq("service.create"), gomock.Any())
+
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
+	}
+
+	event := cloudevents.NewEvent()
+	event.SetID("EVENT_ID")
+	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "dev",
+			Service: "carts",
+		},
+		Helm: keptnv2.Helm{
+			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
+		},
+	})
+
+	instance.HandleEvent(event, nilCloser)
+
+}
+
+func TestHandleEvent_OnboardsService(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	createMocks(ctrl)
+
+	event := cloudevents.NewEvent()
+	event.SetID("EVENT_ID")
+	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "dev",
+			Service: "carts",
+		},
+		Helm: keptnv2.Helm{
+			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
+		},
+	})
+
+	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	mockedNamespaceManager.EXPECT().InitNamespaces(gomock.Eq("my-project"), gomock.Eq([]string{"dev"}))
+	mockedServiceHandler.EXPECT().GetService(gomock.Eq("my-project"), gomock.Eq("dev"), gomock.Eq("carts")).Return(nil, nil)
+	mockedBaseHandler.EXPECT().getConfigServiceURL().Return("")
+	mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
+	mockedBaseHandler.EXPECT().sendEvent(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
+		serviceHandler:   mockedServiceHandler,
+		chartStorer:      mockedChartStorer,
+	}
+
+	instance.HandleEvent(event, nilCloser)
 
 }
 
 func nilCloser(keptnHandler *keptnv2.Keptn) {
-
-}
-
-func createTestProject(t *testing.T) {
-
-	prjHandler := configutils.NewProjectHandler(configBaseURL)
-	prj := configmodels.Project{ProjectName: projectName}
-	respErr, err := prjHandler.CreateProject(prj)
-	check(err, t)
-	assert.Nil(t, respErr, "Creating a project failed")
-
-	// Send shipyard
-	rHandler := configutils.NewResourceHandler(configBaseURL)
-	shipyardURI := "shipyard.yaml"
-	shipyardResource := configmodels.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
-	resources := []*configmodels.Resource{&shipyardResource}
-	_, err2 := rHandler.CreateProjectResources(projectName, resources)
-	if err2 != nil {
-		t.Error(err)
-	}
-
-	// Create stages
-	stageHandler := configutils.NewStageHandler(configBaseURL)
-	for _, stage := range []string{stage1, stage2, stage3} {
-
-		respErr, err := stageHandler.CreateStage(projectName, stage)
-		check(err, t)
-		assert.Nil(t, respErr, "Creating a stage failed")
-	}
+	//No-op
 }
 
 func TestCheckAndSetServiceName(t *testing.T) {
@@ -186,5 +264,33 @@ func stringp(s string) *string {
 func check(e *configmodels.Error, t *testing.T) {
 	if e != nil {
 		t.Error(e.Message)
+	}
+}
+
+func createTestProject(t *testing.T) {
+
+	prjHandler := configutils.NewProjectHandler(configBaseURL)
+	prj := configmodels.Project{ProjectName: projectName}
+	respErr, err := prjHandler.CreateProject(prj)
+	check(err, t)
+	assert.Nil(t, respErr, "Creating a project failed")
+
+	// Send shipyard
+	rHandler := configutils.NewResourceHandler(configBaseURL)
+	shipyardURI := "shipyard.yaml"
+	shipyardResource := configmodels.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
+	resources := []*configmodels.Resource{&shipyardResource}
+	_, err2 := rHandler.CreateProjectResources(projectName, resources)
+	if err2 != nil {
+		t.Error(err)
+	}
+
+	// Create stages
+	stageHandler := configutils.NewStageHandler(configBaseURL)
+	for _, stage := range []string{stage1, stage2, stage3} {
+
+		respErr, err := stageHandler.CreateStage(projectName, stage)
+		check(err, t)
+		assert.Nil(t, respErr, "Creating a stage failed")
 	}
 }

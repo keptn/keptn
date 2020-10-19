@@ -40,3 +40,17 @@ type Mesh interface {
 	GetDestinationRuleSuffix() string
 	GetVirtualServiceSuffix() string
 }
+
+//go:generate mockgen -package mocks -destination=../../mocks/mock_service_handler.go . IServiceHandler
+
+type IServiceHandler interface {
+	// CreateService creates a new service
+	CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+	// DeleteServiceFromStage godoc
+	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
+	GetService(project, stage, service string) (*models.Service, error)
+	// GetAllServices returns a list of all services.
+	GetAllServices(project string, stage string) ([]*models.Service, error)
+}
+
+//go:generate mockgen -package mocks -destination=../../mocks/mock_chart_storer.go github.com/keptn/kubernetes-utils/pkg ChartStorer

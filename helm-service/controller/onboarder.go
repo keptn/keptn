@@ -18,7 +18,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
-	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
@@ -33,6 +32,8 @@ type Onboarder struct {
 	projectHandler   types.ProjectOperator
 	namespaceManager types.INamespaceManager
 	stagesHandler    types.IStagesHandler
+	serviceHandler   types.IServiceHandler
+	chartStorer      keptnutils.ChartStorer
 }
 
 // NewOnboarder creates a new Onboarder
@@ -42,6 +43,8 @@ func NewOnboarder(
 	projectHandler types.ProjectOperator,
 	namespaceManager types.INamespaceManager,
 	stagesHandler types.IStagesHandler,
+	serviceHandler types.IServiceHandler,
+	chartStorer keptnutils.ChartStorer,
 	configServiceURL string) *Onboarder {
 
 	return &Onboarder{
@@ -50,6 +53,8 @@ func NewOnboarder(
 		projectHandler:   projectHandler,
 		namespaceManager: namespaceManager,
 		stagesHandler:    stagesHandler,
+		serviceHandler:   serviceHandler,
+		chartStorer:      chartStorer,
 	}
 }
 
@@ -177,11 +182,11 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateFinishedE
 
 func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error {
 
-	serviceHandler := configutils.NewServiceHandler(o.getConfigServiceURL())
+	//serviceHandler := configutils.NewServiceHandler(o.getConfigServiceURL())
 	const retries = 2
 	var err error
 	for i := 0; i < retries; i++ {
-		_, err = serviceHandler.GetService(event.Project, stageName, event.Service)
+		_, err = o.serviceHandler.GetService(event.Project, stageName, event.Service)
 		if err == nil {
 			break
 		}
@@ -197,8 +202,8 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 		return err
 	}
 
-	o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
-	if _, err := keptnutils.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
+	//o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
+	if _, err := o.chartStorer.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
 		helmChartData, o.getConfigServiceURL()); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return err
