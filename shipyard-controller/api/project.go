@@ -64,7 +64,12 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	if err := pm.createProject(createProjectParams); err != nil {
+	if secretCreated, err := pm.createProject(createProjectParams); err != nil {
+		if secretCreated {
+			if err2 := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(*createProjectParams.Name)); err2 != nil {
+				pm.logger.Error(fmt.Sprintf("could not delete git credentials for project %s: %s", *createProjectParams.Name, err.Error()))
+			}
+		}
 		if err == errProjectAlreadyExists {
 			c.JSON(http.StatusConflict, models.Error{
 				Code:    http.StatusConflict,
@@ -273,7 +278,8 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 	return nil
 }
 
-func (pm *projectManager) createProject(params *operations.CreateProjectParams) error {
+func (pm *projectManager) createProject(params *operations.CreateProjectParams) (bool, error) {
+	secretCreated := false
 	keptnContext := uuid.New().String()
 	// check if the project already exists
 	pm.logger.Info(fmt.Sprintf("checking if project %s already exists before creating it", *params.Name))
@@ -282,19 +288,22 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	})
 	if project != nil {
 		pm.logger.Info(fmt.Sprintf("Project %s already exists", *params.Name))
-		return errProjectAlreadyExists
+		return secretCreated, errProjectAlreadyExists
 	}
 
 	if err := pm.sendProjectCreateStartedEvent(keptnContext, params); err != nil {
-		return pm.logAndReturnError(err.Error())
+		return secretCreated, pm.logAndReturnError(err.Error())
 	}
 
 	// if available, create the upstream repository credentials secret.
 	// this has to be done before creating the project on the configuration sercice
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
+		pm.logger.Info(fmt.Sprintf("Storing upstream repo credentials for project %s", *params.Name))
 		if err := pm.createUpstreamRepoCredentials(params); err != nil {
-			return pm.logAndReturnError(err.Error())
+			return secretCreated, pm.logAndReturnError(err.Error())
 		}
+		pm.logger.Info(fmt.Sprintf("Successfully stored upstream repo credentials for project %s", *params.Name))
+		secretCreated = true
 	}
 
 	// create the project
@@ -306,21 +315,21 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	})
 
 	if errObj != nil {
-		return pm.logAndReturnError(fmt.Sprintf("could not create project: %s", *errObj.Message))
+		return secretCreated, pm.logAndReturnError(fmt.Sprintf("could not create project: %s", *errObj.Message))
 	}
 	pm.logger.Info(fmt.Sprintf("Project %s created", *params.Name))
 
 	decodedShipyard, err := base64.StdEncoding.DecodeString(*params.Shipyard)
 	if err != nil {
 		// error should not occur at this stage because the shipyard content has been validated at this stage, but let's check anyways
-		return pm.logAndReturnError(fmt.Sprintf("could not decode shipyard: " + err.Error()))
+		return secretCreated, pm.logAndReturnError(fmt.Sprintf("could not decode shipyard: " + err.Error()))
 	}
 	shipyard, err := common.UnmarshalShipyard(string(decodedShipyard))
 
 	// create the stages
 	for _, shipyardStage := range shipyard.Spec.Stages {
 		if _, errorObj := pm.stagesAPI.CreateStage(*params.Name, shipyardStage.Name); err != nil {
-			return pm.logAndReturnError(fmt.Sprintf("Failed to create stage %s: %s", shipyardStage.Name, errorObj.Message))
+			return secretCreated, pm.logAndReturnError(fmt.Sprintf("Failed to create stage %s: %s", shipyardStage.Name, errorObj.Message))
 		}
 		pm.logger.Info(fmt.Sprintf("Stage %s created", shipyardStage.Name))
 	}
@@ -336,14 +345,14 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	})
 
 	if err != nil {
-		return pm.logAndReturnError(fmt.Sprintf("could not upload shipyard.yaml: %s", err.Error()))
+		return secretCreated, pm.logAndReturnError(fmt.Sprintf("could not upload shipyard.yaml: %s", err.Error()))
 	}
 	pm.logger.Info("uploaded shipyard.yaml of project " + *params.Name)
 
 	if err := pm.sendProjectCreateSuccessFinishedEvent(keptnContext, params); err != nil {
-		return pm.logAndReturnError(err.Error())
+		return secretCreated, pm.logAndReturnError(err.Error())
 	}
-	return nil
+	return secretCreated, nil
 }
 
 func (pm *projectManager) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
