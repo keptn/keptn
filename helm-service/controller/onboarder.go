@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/types"
 	"time"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
@@ -28,14 +29,27 @@ import (
 // Onboarder is a container of variables required for onboarding a new service
 type Onboarder struct {
 	Handler
-	mesh mesh.Mesh
+	mesh             mesh.Mesh
+	projectHandler   types.ProjectOperator
+	namespaceManager types.INamespaceManager
+	stagesHandler    types.IStagesHandler
 }
 
 // NewOnboarder creates a new Onboarder
-func NewOnboarder(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) *Onboarder {
+func NewOnboarder(
+	keptnHandler *keptnv2.Keptn,
+	mesh mesh.Mesh,
+	projectHandler types.ProjectOperator,
+	namespaceManager types.INamespaceManager,
+	stagesHandler types.IStagesHandler,
+	configServiceURL string) *Onboarder {
+
 	return &Onboarder{
-		Handler: NewHandlerBase(keptnHandler, configServiceURL),
-		mesh:    mesh,
+		Handler:          NewHandlerBase(keptnHandler, configServiceURL),
+		mesh:             mesh,
+		projectHandler:   projectHandler,
+		namespaceManager: namespaceManager,
+		stagesHandler:    stagesHandler,
 	}
 }
 
@@ -59,8 +73,8 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 	defer closeLogger(o.getKeptnHandler())
 
 	// Check if project exists
-	projHandler := configutils.NewProjectHandler(o.getConfigServiceURL())
-	if _, err := projHandler.GetProject(models.Project{ProjectName: e.Project}); err != nil {
+	//projHandler := configutils.NewProjectHandler(o.getConfigServiceURL())
+	if _, err := o.projectHandler.GetProject(models.Project{ProjectName: e.Project}); err != nil {
 		err := fmt.Errorf("failed not retrieve project %s: %s", e.Project, *err.Message)
 		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -81,8 +95,8 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 	}
 
 	// Initialize Namespace
-	namespaceMng := namespacemanager.NewNamespaceManager(o.getKeptnHandler().Logger)
-	if err := namespaceMng.InitNamespaces(e.Project, stages); err != nil {
+	//namespaceMng := namespacemanager.NewNamespaceManager(o.getKeptnHandler().Logger)
+	if err := o.namespaceManager.InitNamespaces(e.Project, stages); err != nil {
 		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
 		return
 	}
@@ -107,8 +121,8 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 // getStages returns a list of stages where the service should be onboarded
 // If the stage of the incoming event is empty, all available stages are returned
 func (o *Onboarder) getStages(e *keptnv2.ServiceCreateFinishedEventData) ([]string, error) {
-	stageHandler := configutils.NewStageHandler(o.getConfigServiceURL())
-	allStages, err := stageHandler.GetAllStages(e.Project)
+	//stageHandler := configutils.NewStageHandler(o.getConfigServiceURL())
+	allStages, err := o.stagesHandler.GetAllStages(e.Project)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retriev stages: %v", err.Error())
 	}

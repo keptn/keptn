@@ -3,12 +3,18 @@ package controller
 import (
 	"encoding/base64"
 	"errors"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/golang/mock/gomock"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/helm-service/mocks"
+
 	"testing"
 
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
+	"github.com/keptn/go-utils/pkg/api/models"
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/stretchr/testify/assert"
@@ -26,6 +32,75 @@ stages:
     - {deployment_strategy: direct, name: dev, test_strategy: functional}
     - {deployment_strategy: blue_green_service, name: staging, test_strategy: performance}
     - {deployment_strategy: blue_green_service, name: production}`
+
+//go:ignore
+func TestHandleEvent(t *testing.T) {
+	//
+	//
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ce := cloudevents.NewEvent()
+	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
+
+	//mockedHandler := mocks.NewMockHandler(ctrl)
+	mockedMesh := mocks.NewMockMesh(ctrl)
+	mockedProjectHandler := mocks.NewMockProjectOperator(ctrl)
+	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
+	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
+
+	onboarder := NewOnboarder(
+		keptn,
+		mockedMesh,
+		mockedProjectHandler,
+		mockedNamespaceManager,
+		mockedStagesHandler,
+		"",
+	)
+
+	eventData := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "dev",
+		Service: "carts",
+		Labels:  nil,
+		Status:  "some-status",
+		Result:  "some-result",
+		Message: "MESSAGE",
+	}
+
+	data := helm.CreateTestHelmChartData(t)
+
+	serviceCreateFinishedEventData := keptnv2.ServiceCreateFinishedEventData{
+		EventData: eventData,
+		Helm: keptnv2.Helm{
+			Chart: base64.StdEncoding.EncodeToString(data),
+		},
+	}
+
+	event := cloudevents.NewEvent()
+	event.SetType("test-type")
+	event.SetSource("test-source")
+	event.SetData("", serviceCreateFinishedEventData)
+
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{&models.Stage{
+		Services: []*models.Service{&models.Service{
+			CreationDate:   "",
+			DeployedImage:  "",
+			LastEventTypes: nil,
+			OpenApprovals:  nil,
+			ServiceName:    "",
+		}},
+		StageName: "dev",
+	}}, nil)
+
+	onboarder.HandleEvent(event, nilCloser)
+
+}
+
+func nilCloser(keptnHandler *keptnv2.Keptn) {
+
+}
 
 func createTestProject(t *testing.T) {
 

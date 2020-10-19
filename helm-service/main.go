@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -54,8 +56,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	mesh := mesh.NewIstioMesh()
-
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
@@ -63,17 +63,27 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
+	//create dependencies
+
+	mesh := mesh.NewIstioMesh()
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, url.String())
+		projectHandler := keptnapi.NewProjectHandler(url.String())
+		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
+		stagesHandler := configutils.NewStageHandler(url.String())
+		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, url.String())
+		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
 		go deploymentHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, url.String())
 		go releaseHandler.HandleEvent(event, closeLogger)
-	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName){
-		onboarder := controller.NewOnboarder(keptnHandler, mesh, url.String())
-		go onboarder.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
+		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
+		projectHandler := keptnapi.NewProjectHandler(url.String())
+		stagesHandler := configutils.NewStageHandler(url.String())
+		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, url.String())
+		go onBoarder.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
 		go actionHandler.HandleEvent(event, closeLogger)
