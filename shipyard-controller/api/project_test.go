@@ -7,6 +7,7 @@ import (
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"io/ioutil"
@@ -602,6 +603,14 @@ func Test_projectManager_CreateProjectScenario1(t *testing.T) {
 		for _, d := range diff {
 			t.Log(d)
 		}
+	}
+
+	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetStartedEventType(keptnv2.ProjectCreateTaskName), "", nil) {
+		t.Error("event broker did not receive project.create.started event")
+	}
+
+	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), "", nil) {
+		t.Error("event broker did not receive project.create.started event")
 	}
 
 	// create the project again - should return error

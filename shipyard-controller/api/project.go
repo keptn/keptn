@@ -376,7 +376,7 @@ func (pm *projectManager) sendProjectCreateSuccessFinishedEvent(keptnContext str
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 		},
-		Project: keptnv2.ProjectCreateData{
+		CreatedProject: keptnv2.ProjectCreateData{
 			ProjectName:  *params.Name,
 			GitRemoteURL: params.GitRemoteURL,
 			Shipyard:     *params.Shipyard,
