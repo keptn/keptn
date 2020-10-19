@@ -4,10 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/golang/mock/gomock"
-	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/helm-service/mocks"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/keptn/keptn/helm-service/pkg/helm"
@@ -18,19 +17,6 @@ import (
 	configmodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
-const configBaseURL = "localhost:6060"
-const projectName = "sockshop"
-const serviceName = "carts"
-const stage1 = "dev"
-const stage2 = "staging"
-const stage3 = "production"
-
-const shipyard = `project: sockshop
-stages:
-    - {deployment_strategy: direct, name: dev, test_strategy: functional}
-    - {deployment_strategy: blue_green_service, name: staging, test_strategy: performance}
-    - {deployment_strategy: blue_green_service, name: production}`
-
 //MOCKS
 var mockedBaseHandler *MockHandler
 var mockedMesh *mocks.MockMesh
@@ -40,7 +26,9 @@ var mockedStagesHandler *mocks.MockIStagesHandler
 var mockedServiceHandler *mocks.MockIServiceHandler
 var mockedChartStorer *mocks.MockChartStorer
 
-func createMocks(ctrl *gomock.Controller) {
+func createMocks(t *testing.T) *gomock.Controller {
+
+	ctrl := gomock.NewController(t)
 	mockedBaseHandler = NewMockHandler(ctrl)
 	mockedMesh = mocks.NewMockMesh(ctrl)
 	mockedProjectHandler = mocks.NewMockProjectOperator(ctrl)
@@ -48,14 +36,14 @@ func createMocks(ctrl *gomock.Controller) {
 	mockedStagesHandler = mocks.NewMockIStagesHandler(ctrl)
 	mockedServiceHandler = mocks.NewMockIServiceHandler(ctrl)
 	mockedChartStorer = mocks.NewMockChartStorer(ctrl)
+	return ctrl
 
 }
 
 func TestHandleEvent_WhenPassingUnparsableEvent_ThenHandleErrorIsCalled(t *testing.T) {
 	//PREPARE MOCKS
-	ctrl := gomock.NewController(t)
+	ctrl := createMocks(t)
 	defer ctrl.Finish()
-	createMocks(ctrl)
 
 	mockedBaseHandler.EXPECT().handleError(gomock.Eq("EVENT_ID"), gomock.Any(), gomock.Eq("service.create"), gomock.Any())
 
@@ -67,17 +55,13 @@ func TestHandleEvent_WhenPassingUnparsableEvent_ThenHandleErrorIsCalled(t *testi
 		stagesHandler:    mockedStagesHandler,
 	}
 
-	event := cloudevents.NewEvent()
-	event.SetData(cloudevents.ApplicationJSON, "WEIRD_JSON_CONTENT")
-	event.SetID("EVENT_ID")
-	instance.HandleEvent(event, nilCloser)
+	instance.HandleEvent(createUnparsableEvent(), nilCloser)
 }
 
 func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
 	//PREPARE MOCKS
-	ctrl := gomock.NewController(t)
+	ctrl := createMocks(t)
 	defer ctrl.Finish()
-	createMocks(ctrl)
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -93,9 +77,8 @@ func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
 
 func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
 	//PREPARE MOCKS
-	ctrl := gomock.NewController(t)
+	ctrl := createMocks(t)
 	defer ctrl.Finish()
-	createMocks(ctrl)
 
 	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
 	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, &models.Error{Message: stringp("")})
@@ -109,27 +92,13 @@ func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
 		stagesHandler:    mockedStagesHandler,
 	}
 
-	event := cloudevents.NewEvent()
-	event.SetID("EVENT_ID")
-	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
-		EventData: keptnv2.EventData{
-			Project: "my-project",
-			Stage:   "dev",
-			Service: "carts",
-		},
-		Helm: keptnv2.Helm{
-			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
-		},
-	})
-
-	instance.HandleEvent(event, nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 }
 
 func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 	//PREPARE MOCKS
-	ctrl := gomock.NewController(t)
+	ctrl := createMocks(t)
 	defer ctrl.Finish()
-	createMocks(ctrl)
 
 	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
 	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
@@ -144,40 +113,13 @@ func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 		stagesHandler:    mockedStagesHandler,
 	}
 
-	event := cloudevents.NewEvent()
-	event.SetID("EVENT_ID")
-	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
-		EventData: keptnv2.EventData{
-			Project: "my-project",
-			Stage:   "dev",
-			Service: "carts",
-		},
-		Helm: keptnv2.Helm{
-			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
-		},
-	})
-
-	instance.HandleEvent(event, nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 
 }
 
 func TestHandleEvent_OnboardsService(t *testing.T) {
-	ctrl := gomock.NewController(t)
+	ctrl := createMocks(t)
 	defer ctrl.Finish()
-	createMocks(ctrl)
-
-	event := cloudevents.NewEvent()
-	event.SetID("EVENT_ID")
-	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
-		EventData: keptnv2.EventData{
-			Project: "my-project",
-			Stage:   "dev",
-			Service: "carts",
-		},
-		Helm: keptnv2.Helm{
-			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
-		},
-	})
 
 	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
 
@@ -200,24 +142,14 @@ func TestHandleEvent_OnboardsService(t *testing.T) {
 		chartStorer:      mockedChartStorer,
 	}
 
-	instance.HandleEvent(event, nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 
-}
-
-func nilCloser(keptnHandler *keptnv2.Keptn) {
-	//No-op
 }
 
 func TestCheckAndSetServiceName(t *testing.T) {
 
-	mockHandler := &HandlerBase{
-		keptnHandler:     nil,
-		helmExecutor:     nil,
-		configServiceURL: configBaseURL,
-	}
-
 	o := Onboarder{
-		Handler: mockHandler,
+		Handler: &HandlerBase{},
 		mesh:    nil,
 	}
 	data := helm.CreateTestHelmChartData(t)
@@ -267,30 +199,29 @@ func check(e *configmodels.Error, t *testing.T) {
 	}
 }
 
-func createTestProject(t *testing.T) {
+func createEvent(t *testing.T, id string) event.Event {
+	event := cloudevents.NewEvent()
+	event.SetID(id)
+	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "dev",
+			Service: "carts",
+		},
+		Helm: keptnv2.Helm{
+			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
+		},
+	})
+	return event
+}
 
-	prjHandler := configutils.NewProjectHandler(configBaseURL)
-	prj := configmodels.Project{ProjectName: projectName}
-	respErr, err := prjHandler.CreateProject(prj)
-	check(err, t)
-	assert.Nil(t, respErr, "Creating a project failed")
+func createUnparsableEvent() event.Event {
+	event := cloudevents.NewEvent()
+	event.SetData(cloudevents.ApplicationJSON, "WEIRD_JSON_CONTENT")
+	event.SetID("EVENT_ID")
+	return event
+}
 
-	// Send shipyard
-	rHandler := configutils.NewResourceHandler(configBaseURL)
-	shipyardURI := "shipyard.yaml"
-	shipyardResource := configmodels.Resource{ResourceURI: &shipyardURI, ResourceContent: shipyard}
-	resources := []*configmodels.Resource{&shipyardResource}
-	_, err2 := rHandler.CreateProjectResources(projectName, resources)
-	if err2 != nil {
-		t.Error(err)
-	}
-
-	// Create stages
-	stageHandler := configutils.NewStageHandler(configBaseURL)
-	for _, stage := range []string{stage1, stage2, stage3} {
-
-		respErr, err := stageHandler.CreateStage(projectName, stage)
-		check(err, t)
-		assert.Nil(t, respErr, "Creating a stage failed")
-	}
+func nilCloser(keptnHandler *keptnv2.Keptn) {
+	//No-op
 }
