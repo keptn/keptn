@@ -667,7 +667,7 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 					return nil
 				},
 				get: func(name string) (map[string][]byte, error) {
-					return nil, nil
+					return map[string][]byte{}, nil
 				},
 			},
 			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
