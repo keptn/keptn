@@ -296,7 +296,7 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	}
 
 	// if available, create the upstream repository credentials secret.
-	// this has to be done before creating the project on the configuration sercice
+	// this has to be done before creating the project on the configuration service
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
 		pm.logger.Info(fmt.Sprintf("Storing upstream repo credentials for project %s", *params.Name))
 		if err := pm.createUpstreamRepoCredentials(params); err != nil {
@@ -329,7 +329,7 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	// create the stages
 	for _, shipyardStage := range shipyard.Spec.Stages {
 		if _, errorObj := pm.stagesAPI.CreateStage(*params.Name, shipyardStage.Name); err != nil {
-			return secretCreated, pm.logAndReturnError(fmt.Sprintf("Failed to create stage %s: %s", shipyardStage.Name, errorObj.Message))
+			return secretCreated, pm.logAndReturnError(fmt.Sprintf("Failed to create stage %s: %s", shipyardStage.Name, *errorObj.Message))
 		}
 		pm.logger.Info(fmt.Sprintf("Stage %s created", shipyardStage.Name))
 	}

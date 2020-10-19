@@ -127,7 +127,7 @@ func (sm *serviceManager) createService(projectName string, params *operations.C
 		sm.logger.Info(fmt.Sprintf("Creating service %s in project %s", *params.Name, projectName))
 		// if the service does not exist yet, continue with the service creation
 		if _, errObj := sm.servicesAPI.CreateServiceInStage(projectName, stage.StageName, *params.Name); errObj != nil {
-			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.Name, stage.StageName, projectName, errObj.Message))
+			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.Name, stage.StageName, projectName, *errObj.Message))
 		}
 		sm.logger.Info(fmt.Sprintf("Created service %s in stage %s of project %s", *params.Name, stage.StageName, projectName))
 	}
@@ -158,7 +158,7 @@ func (sm *serviceManager) deleteService(projectName, serviceName string) error {
 		sm.logger.Info(fmt.Sprintf("Deleting service %s from stage %s", serviceName, stage.StageName))
 		if _, errObj := sm.servicesAPI.DeleteServiceFromStage(projectName, stage.StageName, serviceName); errObj != nil {
 			_ = sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName)
-			return sm.logAndReturnError(fmt.Sprintf("could not delete service %s from stage %s: %s", serviceName, stage.StageName, errObj.Message))
+			return sm.logAndReturnError(fmt.Sprintf("could not delete service %s from stage %s: %s", serviceName, stage.StageName, *errObj.Message))
 		}
 	}
 	sm.logger.Info(fmt.Sprintf("deleted service %s from project %s", serviceName, projectName))
