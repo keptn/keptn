@@ -5,9 +5,11 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
+	"github.com/google/uuid"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"net/url"
 	"os"
 )
 
@@ -76,6 +78,41 @@ func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 
 // SendEvent godoc
 func SendEvent(event cloudevents.Event) error {
+	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
+	if err != nil {
+		return errors.New("Could not get eventbroker endpoint: " + err.Error())
+	}
+	k, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		EventBrokerURL: ebEndpoint.String(),
+	})
+	if err != nil {
+		return errors.New("Could not initialize Keptn handler: " + err.Error())
+	}
+
+	err = k.SendCloudEvent(event)
+	if err != nil {
+		return errors.New("Could not send CloudEvent: " + err.Error())
+	}
+	return nil
+}
+
+// SendEventWIthPayload godoc
+func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) error {
+	source, _ := url.Parse("shipyard-controller")
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	if keptnContext == "" {
+		event.SetExtension("shkeptncontext", uuid.New().String())
+	} else {
+		event.SetExtension("shkeptncontext", keptnContext)
+	}
+	if triggeredID != "" {
+		event.SetExtension("triggeredid", triggeredID)
+	}
+	event.SetData(cloudevents.ApplicationJSON, payload)
+
 	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
 	if err != nil {
 		return errors.New("Could not get eventbroker endpoint: " + err.Error())

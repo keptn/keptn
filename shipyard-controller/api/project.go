@@ -5,19 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -153,33 +150,41 @@ func DeleteProject(c *gin.Context) {
 			Message: stringp("Must provide a project name"),
 		})
 	}
+
+	pm, err := newProjectManager()
+	if err != nil {
+
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    500,
+			Message: stringp("Could not process request: " + err.Error()),
+		})
+		return
+	}
+
+	response, err := pm.deleteProject(projectName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    http.StatusInternalServerError,
+			Message: stringp(err.Error()),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, response)
 }
 
 var errProjectAlreadyExists = errors.New("project already exists")
 
 type projectManager struct {
-	projectAPI  *keptnapi.ProjectHandler
-	stagesAPI   *keptnapi.StageHandler
-	resourceAPI *keptnapi.ResourceHandler
-	logger      keptncommon.LoggerInterface
-	secretStore common.SecretStore
+	*apiBase
 }
 
 func newProjectManager() (*projectManager, error) {
-	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	base, err := newAPIBase()
 	if err != nil {
-		return nil, fmt.Errorf("could not get configuration-service URL: %s", err.Error())
-	}
-	secretStore, err := common.NewK8sSecretStore()
-	if err != nil {
-		return nil, fmt.Errorf("could not initilize secret store: " + err.Error())
+		return nil, err
 	}
 	return &projectManager{
-		projectAPI:  keptnapi.NewProjectHandler(csEndpoint.String()),
-		stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
-		resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-		logger:      keptncommon.NewLogger("", "", "shipyard-controller"),
-		secretStore: secretStore,
+		apiBase: base,
 	}, nil
 }
 
@@ -269,6 +274,7 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 }
 
 func (pm *projectManager) createProject(params *operations.CreateProjectParams) error {
+	keptnContext := uuid.New().String()
 	// check if the project already exists
 	pm.logger.Info(fmt.Sprintf("checking if project %s already exists before creating it", *params.Name))
 	project, _ := pm.projectAPI.GetProject(keptnapimodels.Project{
@@ -279,7 +285,7 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 		return errProjectAlreadyExists
 	}
 
-	if err := pm.sendProjectCreateStartedEvent(params); err != nil {
+	if err := pm.sendProjectCreateStartedEvent(keptnContext, params); err != nil {
 		return pm.logAndReturnError(err.Error())
 	}
 
@@ -334,35 +340,28 @@ func (pm *projectManager) createProject(params *operations.CreateProjectParams) 
 	}
 	pm.logger.Info("uploaded shipyard.yaml of project " + *params.Name)
 
-	if err := pm.sendProjectCreateSuccessFinishedEvent(params); err != nil {
+	if err := pm.sendProjectCreateSuccessFinishedEvent(keptnContext, params); err != nil {
 		return pm.logAndReturnError(err.Error())
 	}
 	return nil
 }
 
-func (pm *projectManager) sendProjectCreateStartedEvent(params *operations.CreateProjectParams) error {
+func (pm *projectManager) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
 		},
 	}
-	source, _ := url.Parse("shipyard-controller")
-	eventType := keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName)
-	event := cloudevents.NewEvent()
-	event.SetType(eventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", uuid.New().String())
-	event.SetData(cloudevents.ApplicationJSON, eventPayload)
 
-	if err := common.SendEvent(event); err != nil {
+	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ProjectCreateTaskName), eventPayload); err != nil {
 		return errors.New("could not send create.project.started event: " + err.Error())
 	}
+
 	return nil
 }
 
-func (pm *projectManager) sendProjectCreateSuccessFinishedEvent(params *operations.CreateProjectParams) error {
-	finishedEventPayload := keptnv2.ProjectCreateFinishedEventData{
+func (pm *projectManager) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
 			Status:  keptnv2.StatusSucceeded,
@@ -374,16 +373,8 @@ func (pm *projectManager) sendProjectCreateSuccessFinishedEvent(params *operatio
 			Shipyard:     *params.Shipyard,
 		},
 	}
-	source, _ := url.Parse("shipyard-controller")
-	eventType := keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName)
-	event := cloudevents.NewEvent()
-	event.SetType(eventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", uuid.New().String())
-	event.SetData(cloudevents.ApplicationJSON, finishedEventPayload)
 
-	if err := common.SendEvent(event); err != nil {
+	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload); err != nil {
 		return errors.New("could not send create.project.finished event: " + err.Error())
 	}
 	return nil
