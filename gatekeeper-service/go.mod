@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
-	github.com/keptn/kubernetes-utils v0.2.0
+	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
