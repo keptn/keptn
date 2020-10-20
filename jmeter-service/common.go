@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/ghodss/yaml"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
@@ -37,6 +37,47 @@ func getWorkload(jmeterconf *JMeterConf, teststrategy string) (*Workload, error)
 	return nil, errors.New("No workload configuration found for teststrategy: " + teststrategy)
 }
 
+func GetConfigurationServiceURL() string {
+	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") == "" {
+		return "configuration-service:8080"
+	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") != "" {
+		return os.Getenv("CONFIGURATION_SERVICE_URL")
+	}
+	return "localhost:8080"
+}
+
+/**
+ * Loads a Resource from the Keptn configuration repository
+ * returns:
+ * - fileContent if found or "" if no file found at all
+ * - error: in case there was an error
+ */
+func GetKeptnResource(project string, stage string, service string, resourceUri string) (string, error) {
+	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
+	resource, err := resourceHandler.GetServiceResource(project, stage, service, resourceUri)
+	if err != nil && err == configutils.ResourceNotFoundError {
+		// if not found on serivce level - lets try it on stage level
+		resource, err = resourceHandler.GetStageResource(project, stage, resourceUri)
+
+		if err != nil && err == configutils.ResourceNotFoundError {
+			// if not found on stage level we try project level
+			resource, err = resourceHandler.GetProjectResource(project, resourceUri)
+
+			if err != nil && err == configutils.ResourceNotFoundError {
+				return "", nil
+			} else if err != nil {
+				return "", err
+			}
+		} else if err != nil {
+			return "", err
+		}
+	} else if err != nil {
+		return "", err
+	}
+
+	return resource.ResourceContent, nil
+}
+
 //
 // Loads jmeter.conf for the current service
 //
@@ -52,14 +93,17 @@ func getJMeterConf(project string, stage string, service string, logger *keptn.L
 			return nil, errors.New(logMessage)
 		}
 	} else {
-		resourceHandler := keptnapi.NewResourceHandler("configuration-service:8080")
-		keptnResourceContent, err := resourceHandler.GetServiceResource(project, stage, service, JMeterConfFilename)
+
+		keptnResourceContent, err := GetKeptnResource(project, stage, service, JMeterConfFilename)
+
+		/* resourceHandler := keptnapi.NewResourceHandler(GetConfigurationServiceURL())
+		keptnResourceContent, err := resourceHandler.GetServiceResource(project, stage, service, JMeterConfFilename)*/
 		if err != nil {
-			logMessage := fmt.Sprintf("No %s file found for service %s in stage %s in project %s", JMeterConfFilename, service, stage, project)
+			logMessage := fmt.Sprintf("No %s file found for service %s on stage %s or project-level %s", JMeterConfFilename, service, stage, project)
 			logger.Info(logMessage)
 			return nil, errors.New(logMessage)
 		}
-		fileContent = []byte(keptnResourceContent.ResourceContent)
+		fileContent = []byte(keptnResourceContent /*keptnResourceContent.ResourceContent*/)
 	}
 
 	var jmeterConf *JMeterConf

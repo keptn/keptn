@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
 
@@ -26,15 +25,6 @@ type TestInfo struct {
 // ToString returns a string representation of a TestInfo object
 func (ti *TestInfo) ToString() string {
 	return "Project: " + ti.Project + ", Service: " + ti.Service + ", Stage: " + ti.Stage + ", TestStrategy: " + ti.TestStrategy
-}
-
-func getConfigurationServiceURL() string {
-	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") == "" {
-		return "configuration-service:8080"
-	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") != "" {
-		return os.Getenv("CONFIGURATION_SERVICE_URL")
-	}
-	return "localhost:8080"
 }
 
 /**
@@ -56,13 +46,17 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 
-	resourceHandler := configutils.NewResourceHandler(getConfigurationServiceURL())
+	// resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 
 	// =====================================
 	// implementing - https://github.com/keptn-contrib/jmeter-extended-service/issues/3
 	// trying to load script from service, then stage and last from project
 	// if test script cannot be found we skip execution
-	testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, workload.Script)
+	testScriptContent, err := GetKeptnResource(testInfo.Project, testInfo.Stage, testInfo.Service, workload.Script)
+	if err != nil {
+		logger.Error("Error loading file " + workload.Script + ": " + err.Error())
+	}
+	/* testScriptResource, err := resourceHandler.GetServiceResource(testInfo.Project, testInfo.Stage, testInfo.Service, workload.Script)
 	if err != nil && err == configutils.ResourceNotFoundError {
 		// if not found on serivce level - lets try it on stage level
 		testScriptResource, err = resourceHandler.GetStageResource(testInfo.Project, testInfo.Stage, workload.Script)
@@ -85,7 +79,7 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	} else if err != nil {
 		logger.Error("Could not fetch testing script: " + err.Error())
 		return false, err
-	}
+	}*/
 
 	os.RemoveAll(workload.Script)
 	pathArr := strings.Split(workload.Script, "/")
@@ -105,7 +99,7 @@ func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, ur
 	}
 	defer testScriptFile.Close()
 
-	_, err = testScriptFile.Write([]byte(testScriptResource.ResourceContent))
+	_, err = testScriptFile.Write([]byte(testScriptContent /*testScriptResource.ResourceContent*/))
 
 	if err != nil {
 		logger.Error(err.Error())
