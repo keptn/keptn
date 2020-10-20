@@ -249,7 +249,7 @@ spec:
         app.kubernetes.io/version: {{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
-      serviceAccountName: shipyard-controller
+      serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
           image: { { .Values.shipyardController.image.repository } }:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}

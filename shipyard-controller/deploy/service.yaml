@@ -28,7 +28,7 @@ spec:
         app.kubernetes.io/component: control-plane
         app.kubernetes.io/version: develop
     spec:
-      serviceAccountName: shipyard-controller
+      serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
         image: keptn/shipyard-controller:latest
