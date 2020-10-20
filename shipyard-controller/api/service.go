@@ -175,7 +175,7 @@ func sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName string
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
+	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), eventPayload); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil
@@ -191,7 +191,7 @@ func sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceNam
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
+	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), eventPayload); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil
@@ -207,7 +207,7 @@ func sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
+	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), eventPayload); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil

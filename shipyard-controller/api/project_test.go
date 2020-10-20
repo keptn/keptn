@@ -217,6 +217,19 @@ func (mcs *mockConfigurationService) put(body interface{}, path string) (interfa
 
 func (mcs *mockConfigurationService) delete(path string) (interface{}, error) {
 	if strings.Contains(path, "/service") {
+		for _, project := range mcs.projects {
+			if strings.Contains(path, "/project/"+project.ProjectName) {
+				for _, stage := range project.Stages {
+					newServices := []*keptnapimodels.Service{}
+					for svcI, svc := range stage.Services {
+						if !strings.Contains(path, "/service/"+svc.ServiceName) {
+							newServices = append(newServices, stage.Services[svcI])
+						}
+					}
+					stage.Services = newServices
+				}
+			}
+		}
 		return nil, nil
 	} else if strings.Contains(path, "/project") {
 		newProjects := []*keptnapimodels.Project{}

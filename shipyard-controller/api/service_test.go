@@ -128,3 +128,112 @@ func Test_serviceManager_createService(t *testing.T) {
 		t.Errorf("expected errProjectAlreadyExists")
 	}
 }
+
+func Test_serviceManager_deleteService(t *testing.T) {
+	projectName := "my-project"
+	serviceName := "my-service"
+	mockEV := newMockEventbroker(t, func(meb *mockEventBroker, event *models.Event) {
+		meb.receivedEvents = append(meb.receivedEvents, *event)
+	}, func(meb *mockEventBroker) {
+
+	})
+
+	defer mockEV.server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	mockCS := newSimpleMockConfigurationService()
+	defer mockCS.server.Close()
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.server.URL)
+
+	mockCS.projects = []*keptnapimodels.Project{
+		{
+			ProjectName: projectName,
+			Stages: []*keptnapimodels.Stage{
+				{
+					StageName: "dev",
+					Services: []*keptnapimodels.Service{
+						{
+							ServiceName: serviceName,
+						},
+					},
+				},
+				{
+					StageName: "hardening",
+					Services: []*keptnapimodels.Service{
+						{
+							ServiceName: serviceName,
+						},
+					},
+				},
+				{
+					StageName: "production",
+					Services: []*keptnapimodels.Service{
+						{
+							ServiceName: serviceName,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+
+	sm := &serviceManager{
+		apiBase: &apiBase{
+			projectAPI:  keptnapi.NewProjectHandler(csEndpoint.String()),
+			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
+			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
+			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
+			secretStore: &mockSecretStore{
+				create: func(name string, content map[string][]byte) error {
+					return nil
+				},
+				delete: func(name string) error {
+					return nil
+				},
+			},
+			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
+		},
+	}
+
+	if err := sm.deleteService(projectName, serviceName); err != nil {
+		t.Error("received error: " + err.Error())
+	}
+
+	expectedProjects := []*keptnapimodels.Project{
+		{
+			ProjectName: "my-project",
+			Stages: []*keptnapimodels.Stage{
+				{
+					StageName: "dev",
+					Services:  []*keptnapimodels.Service{},
+				},
+				{
+					StageName: "hardening",
+					Services:  []*keptnapimodels.Service{},
+				},
+				{
+					StageName: "production",
+					Services:  []*keptnapimodels.Service{},
+				},
+			},
+		},
+	}
+
+	if diff := deep.Equal(expectedProjects, mockCS.projects); len(diff) > 0 {
+		t.Errorf("project has not been created correctly")
+		for _, d := range diff {
+			t.Log(d)
+		}
+	}
+
+	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
+		t.Error("event broker did not receive service.delete.started event")
+	}
+
+	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
+		t.Error("event broker did not receive service.delete.finished event")
+	}
+
+}
