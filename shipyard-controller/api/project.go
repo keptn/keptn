@@ -83,6 +83,7 @@ func CreateProject(c *gin.Context) {
 		})
 		return
 	}
+	c.Status(http.StatusCreated)
 }
 
 // UpdateProject godoc

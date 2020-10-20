@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -14,14 +15,11 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
-	"github.com/keptn/keptn/cli/pkg/file"
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	"github.com/asaskevich/govalidator"
+	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -80,14 +78,14 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		shipyard := keptn.Shipyard{}
+		shipyard := keptnv2.Shipyard{}
 		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
 		if err != nil {
 			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
 		}
 
 		// check stage names
-		for _, stage := range shipyard.Stages {
+		for _, stage := range shipyard.Spec.Stages {
 			if !keptncommon.ValidateKeptnEntityName(stage.Name) {
 				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
 				errorMsg += "Keptn relies on the following conventions: "
@@ -128,16 +126,13 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := apiHandler.CreateProject(project)
+			_, err := apiHandler.CreateProject(project)
 			if err != nil {
 				fmt.Println("Create project was unsuccessful")
 				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-			}
+			fmt.Println("Project created successfully")
 
 			return nil
 		}

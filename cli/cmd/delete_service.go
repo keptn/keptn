@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -47,15 +45,16 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
+			deleteResp, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
 			if err != nil {
 				fmt.Println("Delete project was unsuccessful")
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
 			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			if deleteResp != nil {
+				fmt.Println("Project deleted successfully")
+				fmt.Println(deleteResp.Message)
 			}
 
 			return nil
