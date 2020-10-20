@@ -7,8 +7,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/types"
 	"time"
 
-	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
-
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -185,7 +183,6 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateFinishedE
 
 func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error {
 
-	//serviceHandler := configutils.NewServiceHandler(o.getConfigServiceURL())
 	const retries = 2
 	var err error
 	for i := 0; i < retries; i++ {
@@ -219,8 +216,6 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
-	//chartGenerator := helm.NewGeneratedChartGenerator(o.mesh, o.getKeptnHandler().Logger)
-
 	helmChartName := helm.GetChartName(event.Service, true)
 	o.getKeptnHandler().Logger.Debug(fmt.Sprintf("Generating the Keptn-managed Helm Chart %s for stage %s", helmChartName, event.Stage))
 
@@ -235,8 +230,7 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 			return nil, err
 		}
 		// inject Istio to the namespace for blue-green deployments
-		namespaceMng := namespacemanager.NewNamespaceManager(o.getKeptnHandler().Logger)
-		if err := namespaceMng.InjectIstio(event.Project, event.Stage); err != nil {
+		if err := o.namespaceManager.InjectIstio(event.Project, event.Stage); err != nil {
 			return nil, err
 		}
 	} else {
@@ -262,14 +256,6 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 		return nil, err
 	}
 	return generatedChart, nil
-}
-
-func (o *Onboarder) getStartedEventData(inEventData keptnv2.EventData) keptnv2.ServiceCreateStartedEventData {
-
-	inEventData.Status = keptnv2.StatusSucceeded
-	inEventData.Result = ""
-	inEventData.Message = ""
-	return keptnv2.ServiceCreateStartedEventData{EventData: inEventData}
 }
 
 func (o *Onboarder) getFinishedEventData(inEventData keptnv2.EventData, status keptnv2.StatusType, result keptnv2.ResultType,
