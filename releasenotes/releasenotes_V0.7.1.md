@@ -17,7 +17,7 @@ Keptn 0.7.1 improves the capabilities of the 0.7.0 release by adding more flexib
 
 :tada: *Keptn on OpenShift 4*: Thanks to the work of @marcredhat, Keptn has been successfully tested on an OpenShift 4 cluster. Two assets of this task are provided here: (1) Docu for [Automated install of OpenShift 4.5 and Keptn](https://github.com/marcredhat/crcdemos/tree/master/keptn) and (2) [YouTube - Deploy to OpenShift 4.5 / Service Mesh using Keptn](https://www.youtube.com/watch?v=ji03EjFx6CA). 
 
-*Additional note:* Added documentation of [GOVERNANCE](https://github.com/keptn/keptn/blob/0.7.1/GOVERNANCE.md) & [SECURITY](https://github.com/keptn/keptn/blob/0.7.1/GOVERNANCE.md) process
+*Additional note:* Added documentation of [GOVERNANCE](https://github.com/keptn/keptn/blob/0.7.1/GOVERNANCE.md) & [SECURITY](https://github.com/keptn/keptn/blob/0.7.1/SECURITY.md) process
 
 ## Keptn Specification
 

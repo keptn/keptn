@@ -47,6 +47,12 @@ export class ApiService {
       );
   }
 
+  public getIntegrationsPage(): Observable<any> {
+    let url = `${this._baseUrl}/integrationsPage`;
+    return this.http
+      .get<any>(url, { responseType: 'text' as 'json' });
+  }
+
   public isVersionCheckEnabled(): boolean {
     return JSON.parse(localStorage.getItem(this.VERSION_CHECK_COOKIE));
   }

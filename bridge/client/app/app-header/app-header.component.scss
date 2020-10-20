@@ -57,6 +57,9 @@ dt-select#projectSelect {
   font-size: 1.25rem;
   font-weight: 600;
 
+  ::ng-deep .dt-select-placeholder {
+    color: #fff;
+  }
   ::ng-deep .dt-select-trigger {
     padding: 0;
   }
