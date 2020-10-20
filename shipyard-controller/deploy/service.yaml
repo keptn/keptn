@@ -33,6 +33,10 @@ spec:
       - name: shipyard-controller
         image: keptn/shipyard-controller:latest
         env:
+          - name: CONFIGURATION_SERVICE
+            value: "http://configuration-service:8080"
+          - name: EVENTBROKER
+            value: http://localhost:8081/event
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
