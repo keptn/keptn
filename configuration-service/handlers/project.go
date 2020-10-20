@@ -176,10 +176,6 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 			err = common.AddOrigin(params.Project.ProjectName)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
-				// Cleanup credentials before we exit
-				if credsErr := common.DeleteCredentials(params.Project.ProjectName); credsErr != nil {
-					logger.Error(fmt.Sprintf("Could not delete credentials while updating project %s: %v", params.Project.ProjectName, credsErr))
-				}
 				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 			}
 		} else {
