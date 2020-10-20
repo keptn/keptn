@@ -13,6 +13,16 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+//go:generate mockgen -package mocks -destination=../../mocks/mock_chart_generator.go . ChartGenerator
+// ChartGenerator ...
+type ChartGenerator interface {
+	// GenerateDuplicateChart generates a duplicated chart which is managed by keptn and used for
+	// b/g and canary releases
+	GenerateDuplicateChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error)
+	// GenerateMeshChart generates a chart containing the required mesh setup
+	GenerateMeshChart(helmManifest string, project string, stageName string, service string) (*chart.Chart, error)
+}
+
 // GeneratedChartGenerator allows to generate the generated-chart
 type GeneratedChartGenerator struct {
 	mesh   mesh.Mesh

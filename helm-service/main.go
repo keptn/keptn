@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
@@ -75,7 +76,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
 		stagesHandler := configutils.NewStageHandler(url.String())
 		serviceHandler := configutils.NewServiceHandler(url.String())
-		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, url.String())
+		chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, chartGenerator, url.String())
 		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
 		go deploymentHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
@@ -86,7 +88,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		projectHandler := keptnapi.NewProjectHandler(url.String())
 		stagesHandler := configutils.NewStageHandler(url.String())
 		serviceHandler := configutils.NewServiceHandler(url.String())
-		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, url.String())
+		chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, chartGenerator, url.String())
 		go onBoarder.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
