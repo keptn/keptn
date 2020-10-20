@@ -277,7 +277,7 @@ jobs:
         cd ..
       - |
         cd "${LIGHTHOUSE_SVC_FOLDER}"
-        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        go test -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
       - |
         cd "${MONGODB_DS_FOLDER}"
