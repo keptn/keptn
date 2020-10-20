@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
 )
@@ -54,7 +52,7 @@ func addJMeterCommandLineArguments(testInfo *TestInfo, initialList []string) []s
 	return append(initialList, dtTenant, dtAPIToken, keptnProject, keptnStage, keptnService, keptnTestStrategy)
 }
 
-func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptncommon.Logger) (bool, error) {
+func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptnutils.Logger) (bool, error) {
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 
