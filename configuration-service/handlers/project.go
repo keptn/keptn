@@ -71,11 +71,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	////////////////////////////////////////////////////
 	var initializedGit bool
 	credentials, err := common.GetCredentials(params.Project.ProjectName)
-	if err != nil {
-		logger.Error("Could not check for git upstream repo credentials: " + err.Error())
-		return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check if git credentials are available")})
-	}
-	if credentials != nil {
+	if err == nil && credentials != nil {
 		// try to clone the repo
 		var err error
 
@@ -165,11 +161,7 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 		logger.Debug("Updating project " + params.ProjectName)
 
 		credentials, err := common.GetCredentials(params.Project.ProjectName)
-		if err != nil {
-			logger.Error("Could not check for git upstream repo credentials: " + err.Error())
-			return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check if git credentials are available")})
-		}
-		if credentials != nil {
+		if err == nil && credentials != nil {
 			logger.Debug("Storing Git credentials for project " + params.ProjectName)
 
 			logger.Debug("Add Git origin and push changes for project " + params.ProjectName)
