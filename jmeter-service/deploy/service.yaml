@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: jmeter-service
-        image: keptn/jmeter-service:latest
+        image: grabnerandi/jmeter-service:0.7.3
         livenessProbe:
           httpGet:
             path: /health
@@ -36,6 +36,16 @@ spec:
         ports:
         - containerPort: 8080
         env:
+        - name: DT_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: dynatrace
+              key: DT_API_TOKEN
+        - name: DT_TENANT
+          valueFrom:
+            secretKeyRef:
+              name: dynatrace
+              key: DT_TENANT
         - name: EVENTBROKER
           value: 'http://event-broker/keptn'
       - name: distributor

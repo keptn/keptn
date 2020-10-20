@@ -4,12 +4,24 @@ workloads:
   - teststrategy: performance
     vuser: 100
     loopcount: 10
-    script: jmeter/load.jmx
+    script: jmeter/basicload.jmx
     thinktime: 250
     acceptederrorrate: 1.0
   - teststrategy: performance_light
     vuser: 50
     loopcount: 10
     thinktime: 250
-    script: jmeter/load.jmx
+    script: jmeter/basicload.jmx
+    acceptederrorrate: 1.0
+  - teststrategy: performance_withdtmint
+    vuser: 100
+    loopcount: 10
+    script: jmeter/basicload_withdtmint.jmx
+    thinktime: 250
+    acceptederrorrate: 1.0
+  - teststrategy: performance_light_withdtmint
+    vuser: 50
+    loopcount: 10
+    thinktime: 250
+    script: jmeter/basicload_withdtmint.jmx
     acceptederrorrate: 1.0
