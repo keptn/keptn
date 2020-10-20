@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
+	"github.com/keptn/keptn/cli/pkg/config"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
@@ -37,22 +38,28 @@ func NewCredentialManager() (cm *CredentialManager) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	cliConfigManager := config.NewCLIConfigManager()
+	currentContext, err := getCurrentContextFromKubeConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	checkForContextChange(currentContext, cliConfigManager)
 	return &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token using pass or into a file in case
 // pass is unavailable.
-func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string) error {
+func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string, namespace string) error {
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		fmt.Println("Using a file-based storage for the key because the password-store seems to be not set up.")
-
-		return ioutil.WriteFile(cm.apiTokenFile, []byte(endPoint.String()+"\n"+apiToken), 0644)
+		apiTokenFile := cm.apiTokenFile + "__" + kubeConfigFile.CurrentContext + "__" + namespace
+		return ioutil.WriteFile(apiTokenFile, []byte(endPoint.String()+"\n"+apiToken), 0644)
 	}
-	return setCreds(pass.Pass{}, endPoint, apiToken)
+	return setCreds(pass.Pass{}, endPoint, apiToken, namespace)
 }
 
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
-func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
+func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error) {
 	// mock credentials if encessary
 	if MockAuthCreds {
 		return url.URL{}, "", nil
@@ -68,7 +75,8 @@ func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
 	// try to read credentials from password-store
 	if _, err := os.Stat(passwordStoreDirectory); os.IsNotExist(err) {
 		// password-store not found, read credentials from apiTokenFile
-		data, err := ioutil.ReadFile(cm.apiTokenFile)
+		apiTokenFile := cm.apiTokenFile + "__" + kubeConfigFile.CurrentContext + "__" + namespace
+		data, err := ioutil.ReadFile(apiTokenFile)
 		if err != nil {
 			return url.URL{}, "", err
 		}
@@ -80,7 +88,7 @@ func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
 		url, err := url.Parse(creds[0])
 		return *url, creds[1], err
 	}
-	return getCreds(pass.Pass{})
+	return getCreds(pass.Pass{}, namespace)
 }
 
 // SetInstallCreds sets the install credentials
