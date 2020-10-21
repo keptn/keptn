@@ -9,7 +9,8 @@
         "image": "$SERVICE",
         "tag" : "$VERSION",
         "labels": {
-            "user" : "$USER"
+            "user" : "$USER",
+            "buildId" : "$VERSION"
         }
     },
     "source": "performance-service",
