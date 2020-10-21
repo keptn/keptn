@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"helm.sh/helm/v3/pkg/chart"
 
@@ -186,6 +187,8 @@ func init() {
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
 	keptnNamespace := *installParams.Namespace
+	
+	timer := time.NewTimer(7 * time.Second)
 
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
@@ -227,7 +230,11 @@ func doInstallation() error {
 		},
 	}
 
-	if err := helm.NewHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
+	if err := helm.NewHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values);  err != nil {
+
+		<-timer.C
+	    logging.PrintLog("Timed out, waiting for error message")
+	
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}
