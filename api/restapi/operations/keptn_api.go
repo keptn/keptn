@@ -25,8 +25,6 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
-	"github.com/keptn/keptn/api/restapi/operations/project"
-	"github.com/keptn/keptn/api/restapi/operations/service"
 )
 
 // NewKeptnAPI creates a new Keptn instance
@@ -51,12 +49,6 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation project.DeleteProjectProjectName has not yet been implemented")
-		}),
-		ServiceDeleteProjectProjectNameServiceServiceNameHandler: service.DeleteProjectProjectNameServiceServiceNameHandlerFunc(func(params service.DeleteProjectProjectNameServiceServiceNameParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation service.DeleteProjectProjectNameServiceServiceName has not yet been implemented")
-		}),
 		ConfigurationGetConfigBridgeHandler: configuration.GetConfigBridgeHandlerFunc(func(params configuration.GetConfigBridgeParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation configuration.GetConfigBridge has not yet been implemented")
 		}),
@@ -68,12 +60,6 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 		}),
 		EventPostEventHandler: event.PostEventHandlerFunc(func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation event.PostEvent has not yet been implemented")
-		}),
-		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation project.PostProject has not yet been implemented")
-		}),
-		ServicePostProjectProjectNameServiceHandler: service.PostProjectProjectNameServiceHandlerFunc(func(params service.PostProjectProjectNameServiceParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation service.PostProjectProjectNameService has not yet been implemented")
 		}),
 		AuthAuthHandler: auth.AuthHandlerFunc(func(params auth.AuthParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation auth.Auth has not yet been implemented")
@@ -133,10 +119,6 @@ type KeptnAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
-	// ProjectDeleteProjectProjectNameHandler sets the operation handler for the delete project project name operation
-	ProjectDeleteProjectProjectNameHandler project.DeleteProjectProjectNameHandler
-	// ServiceDeleteProjectProjectNameServiceServiceNameHandler sets the operation handler for the delete project project name service service name operation
-	ServiceDeleteProjectProjectNameServiceServiceNameHandler service.DeleteProjectProjectNameServiceServiceNameHandler
 	// ConfigurationGetConfigBridgeHandler sets the operation handler for the get config bridge operation
 	ConfigurationGetConfigBridgeHandler configuration.GetConfigBridgeHandler
 	// EventGetEventHandler sets the operation handler for the get event operation
@@ -145,10 +127,6 @@ type KeptnAPI struct {
 	ConfigurationPostConfigBridgeHandler configuration.PostConfigBridgeHandler
 	// EventPostEventHandler sets the operation handler for the post event operation
 	EventPostEventHandler event.PostEventHandler
-	// ProjectPostProjectHandler sets the operation handler for the post project operation
-	ProjectPostProjectHandler project.PostProjectHandler
-	// ServicePostProjectProjectNameServiceHandler sets the operation handler for the post project project name service operation
-	ServicePostProjectProjectNameServiceHandler service.PostProjectProjectNameServiceHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
 	// MetadataMetadataHandler sets the operation handler for the metadata operation
@@ -235,12 +213,6 @@ func (o *KeptnAPI) Validate() error {
 		unregistered = append(unregistered, "XTokenAuth")
 	}
 
-	if o.ProjectDeleteProjectProjectNameHandler == nil {
-		unregistered = append(unregistered, "project.DeleteProjectProjectNameHandler")
-	}
-	if o.ServiceDeleteProjectProjectNameServiceServiceNameHandler == nil {
-		unregistered = append(unregistered, "service.DeleteProjectProjectNameServiceServiceNameHandler")
-	}
 	if o.ConfigurationGetConfigBridgeHandler == nil {
 		unregistered = append(unregistered, "configuration.GetConfigBridgeHandler")
 	}
@@ -252,12 +224,6 @@ func (o *KeptnAPI) Validate() error {
 	}
 	if o.EventPostEventHandler == nil {
 		unregistered = append(unregistered, "event.PostEventHandler")
-	}
-	if o.ProjectPostProjectHandler == nil {
-		unregistered = append(unregistered, "project.PostProjectHandler")
-	}
-	if o.ServicePostProjectProjectNameServiceHandler == nil {
-		unregistered = append(unregistered, "service.PostProjectProjectNameServiceHandler")
 	}
 	if o.AuthAuthHandler == nil {
 		unregistered = append(unregistered, "auth.AuthHandler")
@@ -369,14 +335,6 @@ func (o *KeptnAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
-	if o.handlers["DELETE"] == nil {
-		o.handlers["DELETE"] = make(map[string]http.Handler)
-	}
-	o.handlers["DELETE"]["/project/{projectName}"] = project.NewDeleteProjectProjectName(o.context, o.ProjectDeleteProjectProjectNameHandler)
-	if o.handlers["DELETE"] == nil {
-		o.handlers["DELETE"] = make(map[string]http.Handler)
-	}
-	o.handlers["DELETE"]["/project/{projectName}/service/{serviceName}"] = service.NewDeleteProjectProjectNameServiceServiceName(o.context, o.ServiceDeleteProjectProjectNameServiceServiceNameHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -393,14 +351,6 @@ func (o *KeptnAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewPostEvent(o.context, o.EventPostEventHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/project"] = project.NewPostProject(o.context, o.ProjectPostProjectHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/project/{projectName}/service"] = service.NewPostProjectProjectNameService(o.context, o.ServicePostProjectProjectNameServiceHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
