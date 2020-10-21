@@ -28,6 +28,7 @@ type CreateProjectParams struct {
 type CreateProjectResponse struct {
 }
 
+// DeleteProjectResponse contains information about the deleted project
 type DeleteProjectResponse struct {
 	Message string `json:"message"`
 }

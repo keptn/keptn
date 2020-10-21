@@ -8,12 +8,17 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// SecretStore godoc
 type SecretStore interface {
+	// CreateSecret godoc
 	CreateSecret(name string, content map[string][]byte) error
+	// DeleteSecret godoc
 	DeleteSecret(name string) error
+	// GetSecret godoc
 	GetSecret(name string) (map[string][]byte, error)
 }
 
+// K8sSecretStore godoc
 type K8sSecretStore struct {
 	client *kubernetes.Clientset
 }
@@ -27,6 +32,7 @@ func NewK8sSecretStore() (*K8sSecretStore, error) {
 	return &K8sSecretStore{client: client}, nil
 }
 
+// CreateSecret godoc
 func (k *K8sSecretStore) CreateSecret(name string, content map[string][]byte) error {
 	namespace := GetKeptnNamespace()
 	secret := &v1.Secret{
@@ -48,11 +54,13 @@ func (k *K8sSecretStore) CreateSecret(name string, content map[string][]byte) er
 	return nil
 }
 
+// DeleteSecret godoc
 func (k *K8sSecretStore) DeleteSecret(name string) error {
 	namespace := GetKeptnNamespace()
 	return k.client.CoreV1().Secrets(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 
+// GetSecret godoc
 func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
 	namespace := GetKeptnNamespace()
 	get, err := k.client.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{})
@@ -65,6 +73,7 @@ func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
 	return get.Data, nil
 }
 
+// GetKubeAPI godoc
 func GetKubeAPI() (*kubernetes.Clientset, error) {
 	var config *rest.Config
 	config, err := rest.InClusterConfig()

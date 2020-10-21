@@ -48,6 +48,7 @@ func GetShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {
 	return shipyard, err
 }
 
+// UnmarshalShipyard godoc
 func UnmarshalShipyard(shipyardString string) (*keptnv2.Shipyard, error) {
 	shipyard := &keptnv2.Shipyard{}
 	err := yaml.Unmarshal([]byte(shipyardString), shipyard)
@@ -57,6 +58,7 @@ func UnmarshalShipyard(shipyardString string) (*keptnv2.Shipyard, error) {
 	return shipyard, nil
 }
 
+// ValidateShipyardVersion godoc
 func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 	if shipyard.ApiVersion != "0.2.0" && shipyard.ApiVersion != "spec.keptn.sh/0.2.0" {
 		return errors.New("Invalid shipyard APIVersion " + shipyard.ApiVersion)
@@ -64,6 +66,7 @@ func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
 	return nil
 }
 
+// ValidateShipyardStages godoc
 func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 	for _, stage := range shipyard.Spec.Stages {
 		if stage.Name == "" {
@@ -96,7 +99,7 @@ func SendEvent(event cloudevents.Event) error {
 	return nil
 }
 
-// SendEventWIthPayload godoc
+// SendEventWithPayload godoc
 func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) error {
 	source, _ := url.Parse("shipyard-controller")
 	event := cloudevents.NewEvent()
