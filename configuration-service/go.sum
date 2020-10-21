@@ -365,6 +365,7 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.6.1-compat.0.20200414111241-846f2becaf21 h1:OM7GZMYc/A80JL+OQPPrStz/h+MNjWmPS3kLonFH0nU=
 github.com/keptn/go-utils v0.6.1-compat.0.20200414111241-846f2becaf21/go.mod h1:aDNFm3olvCZd7AE6/Xyir4g5Mw6E89mjhKt0zoJHC6g=
+github.com/keptn/go-utils v0.6.3-0.20200907143311-189e0ad20c27/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
 github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f h1:YU/mwHVC5wrtjxe1H96VkGCr/9JeleZZZ73P9Pj/zYo=
 github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
 github.com/keptn/go-utils v0.6.3-0.20200914141440-4641d285f58f h1:HhgK/WNbiNPJqkvIP3PGss5MR/Im/+5N1/QraFHK4M4=
@@ -373,6 +374,8 @@ github.com/keptn/go-utils v0.7.1 h1:qDViu8qhijdh7QK1+k+i4hEDtTwkHo2PxsomxKvxlpg=
 github.com/keptn/go-utils v0.7.1/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/keptn/kubernetes-utils v0.2.0 h1:DEjTzixk7TJ6i2HopTlw/d4b1perJR1gmyOOCrWX5cA=
 github.com/keptn/kubernetes-utils v0.2.0/go.mod h1:YoWRuV28Guz5/mzjo9jVxtMsWAEn0MDXwxK/ScAQlZc=
+github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794 h1:T41kP4+2NaZIZgu/RvIgKvs8RER8/VqA5CTHjPusLM0=
+github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794/go.mod h1:qM1RP1Xj+nNR9Fjw4CrrYk1x0JBSfiVbuDYEiaJn7es=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
