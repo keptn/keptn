@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/pkg/version"
-
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -43,8 +41,6 @@ func Execute() {
 	// Set LogLevel to QuietLevel
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
-
-	runDailyVersionCheck()
 
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel
@@ -106,31 +102,5 @@ type options []string
 func (s *options) appendIfNotEmpty(newOption string) {
 	if newOption != "" {
 		*s = append(*s, newOption)
-	}
-}
-
-func runDailyVersionCheck() {
-	var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
-
-	vChecker := version.NewVersionChecker()
-	cliChecked, cliMsgPrinted = vChecker.CheckCLIVersion(Version, true)
-
-	keptnVersion, err := getKeptnServerVersion()
-	if err != nil {
-		logging.PrintLog(err.Error(), logging.InfoLevel)
-	} else {
-		kvChecker := version.NewKeptnVersionChecker()
-		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, keptnVersion, true)
-	}
-
-	if cliMsgPrinted || keptnMsgPrinted {
-		if len(os.Args) > 0 {
-			fmt.Printf(disableVersionCheckMsg+"\n", os.Args[0])
-		} else {
-			fmt.Printf(disableVersionCheckMsg+"\n", "keptn")
-		}
-	}
-	if cliChecked || keptnChecked {
-		updateLastVersionCheck()
 	}
 }
