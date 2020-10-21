@@ -18,28 +18,30 @@ import {EventTypes} from "../_models/event-types";
 export class ApiService {
 
   private _baseUrl: string;
-  private defaultHeaders: HttpHeaders = new HttpHeaders({'Content-Type': 'application/json'});
-
   private VERSION_CHECK_COOKIE = 'keptn_versioncheck';
-
-  set baseUrl(value: string) {
-    this._baseUrl = value;
-  }
 
   constructor(private http: HttpClient) {
     this._baseUrl = `./api`;
   }
 
+  public set baseUrl(value: string) {
+    this._baseUrl = value;
+  }
+
+  public get baseUrl() {
+    return this._baseUrl;
+  }
+
   public getKeptnInfo(): Observable<any> {
     let url = `${this._baseUrl}/bridgeInfo`;
     return this.http
-      .get<any>(url, { headers: this.defaultHeaders })
+      .get<any>(url)
   }
 
   public getKeptnVersion(): Observable<any> {
     let url = `${this._baseUrl}/swagger-ui/swagger.yaml`;
     return this.http
-      .get<any>(url, { headers: this.defaultHeaders.append('Access-Control-Allow-Origin', '*') })
+      .get<any>(url, { headers: new HttpHeaders({'Access-Control-Allow-Origin': '*'}) })
       .pipe(
         map(res => res.toString()),
         map(res => res.substring(res.lastIndexOf("version: ")+9)),
@@ -65,7 +67,7 @@ export class ApiService {
     if(this.isVersionCheckEnabled()) {
       let url = `${this._baseUrl}/version.json`;
       return this.http
-        .get<any>(url, { headers: this.defaultHeaders });
+        .get<any>(url);
     } else {
       return of(null);
     }
@@ -74,25 +76,25 @@ export class ApiService {
   public getProjects(): Observable<ProjectResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
     return this.http
-      .get<ProjectResult>(url, { headers: this.defaultHeaders });
+      .get<ProjectResult>(url);
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
     return this.http
-      .get<Resource[]>(url, { headers: this.defaultHeaders });
+      .get<Resource[]>(url);
   }
 
   public getStages(projectName): Observable<Stage[]> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage`;
     return this.http
-      .get<Stage[]>(url, { headers: this.defaultHeaders });
+      .get<Stage[]>(url);
   }
 
   public getServices(projectName, stageName): Observable<ServiceResult> {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
     return this.http
-      .get<ServiceResult>(url, { headers: this.defaultHeaders });
+      .get<ServiceResult>(url);
   }
 
   public getRoots(projectName: string, serviceName: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
@@ -100,7 +102,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' });
+      .get<EventResult>(url, { observe: 'response' });
   }
 
   public getTraces(contextId: string, projectName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
@@ -110,7 +112,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<EventResult>(url, { headers: this.defaultHeaders, observe: 'response' });
+      .get<EventResult>(url, { observe: 'response' });
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {
@@ -118,7 +120,7 @@ export class ApiService {
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
-      .get<EventResult>(url, { headers: this.defaultHeaders });
+      .get<EventResult>(url);
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean) {
@@ -136,7 +138,7 @@ export class ApiService {
             "status": "succeeded"
           }
         })
-      }, { headers: this.defaultHeaders });
+      });
   }
 
 }
