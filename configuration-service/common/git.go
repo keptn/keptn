@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/models"
 	utils "github.com/keptn/kubernetes-utils/pkg"
 	v1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"net/url"
@@ -288,6 +289,9 @@ func GetCredentials(project string) (*GitCredentials, error) {
 	}
 
 	secret, err := clientSet.CoreV1().Secrets(namespace).Get("git-credentials-"+project, metav1.GetOptions{})
+	if err != nil && k8serrors.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +366,10 @@ func GetDefaultBranch(project string) (string, error) {
 	projectConfigPath := config.ConfigDir + "/" + project
 
 	credentials, err := GetCredentials(project)
-	if err == nil && credentials != nil {
+	if err != nil {
+		return "", errors.New("could not determine default branch: " + err.Error())
+	}
+	if credentials != nil {
 		retries := 5
 
 		for i := 0; i < retries; i = i + 1 {

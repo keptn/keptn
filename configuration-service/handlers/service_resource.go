@@ -286,7 +286,11 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	logger.Debug("Successfully updated resources")
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	defaultBranch, _ := common.GetDefaultBranch(params.ProjectName)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
 	if defaultBranch == "" {
 		defaultBranch = "master"
 	}
@@ -333,7 +337,11 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	defaultBranch, _ := common.GetDefaultBranch(params.ProjectName)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
 	if defaultBranch == "" {
 		defaultBranch = "master"
 	}
