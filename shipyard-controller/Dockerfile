@@ -48,6 +48,7 @@ RUN apk --update add --no-cache git=2.24.3-r0
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/main /shipyard-controller
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger.yaml /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

@@ -1,7 +1,5 @@
 package operations
 
-import keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-
 // CreateProjectParams contains all the bound params for the CreateProject operation
 // typically these are obtained from a http.Request
 //
@@ -13,7 +11,7 @@ type CreateServiceParams struct {
 
 	// shipyard
 	// Required: true
-	Helm keptnv2.Helm `json:"helm"`
+	HelmChart string `json:"helmChart"`
 }
 
 // CreateProjectResponse contains information about the result of the CreateProject operation

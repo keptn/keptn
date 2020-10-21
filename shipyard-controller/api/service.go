@@ -287,7 +287,7 @@ func sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName stri
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 		},
-		Helm: params.Helm,
+		Helm: keptnv2.Helm{Chart: params.HelmChart},
 	}
 	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
 		return errors.New("could not send create.service.finished event: " + err.Error())
