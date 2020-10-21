@@ -53,7 +53,7 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 
 			// if eventContext is available, open WebSocket communication
 			if deleteResp != nil {
-				fmt.Println("Project deleted successfully")
+				fmt.Println("Service deleted successfully")
 				fmt.Println(deleteResp.Message)
 			}
 

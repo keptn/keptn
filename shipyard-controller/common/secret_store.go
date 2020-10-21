@@ -5,7 +5,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
 )
 
 type SecretStore interface {
@@ -49,12 +48,17 @@ func (k *K8sSecretStore) CreateSecret(name string, content map[string][]byte) er
 }
 
 func (k *K8sSecretStore) DeleteSecret(name string) error {
-	namespace := os.Getenv("POD_NAMESPACE")
+	namespace := GetKeptnNamespace()
 	return k.client.CoreV1().Secrets(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 
-func (K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
-	panic("implement me")
+func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
+	namespace := GetKeptnNamespace()
+	get, err := k.client.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return get.Data, nil
 }
 
 func GetKubeAPI() (*kubernetes.Clientset, error) {
