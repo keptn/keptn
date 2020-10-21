@@ -123,6 +123,7 @@ func DeleteService(c *gin.Context) {
 		})
 		return
 	}
+	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
 }
 
 func validateCreateServiceParams(params *operations.CreateServiceParams) error {
