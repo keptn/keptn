@@ -2,10 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -38,8 +37,16 @@ func PostProjectProjectNameServiceServiceNameResourceHandlerFunc(params service_
 		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not get stages for project")})
 	}
 
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return service_default_resource.NewPostProjectProjectNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+	if defaultBranch == "" {
+		defaultBranch = "master"
+	}
 	for _, branch := range branches {
-		if branch == "master" {
+		if branch == defaultBranch {
 			continue
 		}
 		if !common.ServiceExists(params.ProjectName, branch, params.ServiceName, false) {

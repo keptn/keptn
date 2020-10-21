@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
+	utils "github.com/keptn/kubernetes-utils/pkg"
+	v1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/keptn/keptn/configuration-service/config"
-	utils "github.com/keptn/kubernetes-utils/pkg"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"time"
 )
 
 // GitCredentials contains git ccredentials info
@@ -288,6 +289,9 @@ func GetCredentials(project string) (*GitCredentials, error) {
 	}
 
 	secret, err := clientSet.CoreV1().Secrets(namespace).Get("git-credentials-"+project, metav1.GetOptions{})
+	if err != nil && k8serrors.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -355,6 +359,41 @@ func GetResourceMetadata(project string) *models.Version {
 	}
 	addVersionToMetadata(project, result)
 	return result
+}
+
+// GetDefaultBranch returns the name of the default branch of the repo
+func GetDefaultBranch(project string) (string, error) {
+	projectConfigPath := config.ConfigDir + "/" + project
+
+	credentials, err := GetCredentials(project)
+	if err != nil {
+		return "", errors.New("could not determine default branch: " + err.Error())
+	}
+	if credentials != nil {
+		retries := 5
+
+		for i := 0; i < retries; i = i + 1 {
+			out, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "show", "origin"}, projectConfigPath)
+			if err != nil {
+				return "", err
+			}
+			lines := strings.Split(out, "\n")
+
+			for _, line := range lines {
+				if strings.Contains(line, "HEAD branch") {
+					split := strings.Split(line, ":")
+					if len(split) > 1 {
+						defaultBranch := strings.TrimSpace(split[1])
+						if defaultBranch != "(unknown)" {
+							return defaultBranch, nil
+						}
+					}
+				}
+			}
+			<-time.After(3 * time.Second)
+		}
+	}
+	return "master", nil
 }
 
 func addRepoURIToMetadata(credentials *GitCredentials, metadata *models.Version) {
