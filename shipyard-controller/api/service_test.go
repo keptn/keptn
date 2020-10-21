@@ -67,8 +67,8 @@ func Test_serviceManager_createService(t *testing.T) {
 	}
 
 	params := &operations.CreateServiceParams{
-		Name: &serviceName,
-		Helm: keptnv2.Helm{},
+		ServiceName: &serviceName,
+		Helm:        keptnv2.Helm{},
 	}
 
 	if err := sm.createService(projectName, params); err != nil {

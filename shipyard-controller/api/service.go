@@ -126,7 +126,10 @@ func DeleteService(c *gin.Context) {
 }
 
 func validateCreateServiceParams(params *operations.CreateServiceParams) error {
-	if !keptncommon.ValididateUnixDirectoryName(*params.Name) {
+	if params.ServiceName == nil || *params.ServiceName == "" {
+		return errors.New("Must provide a service name")
+	}
+	if !keptncommon.ValididateUnixDirectoryName(*params.ServiceName) {
 		return errors.New("Service name contains special character(s). " +
 			"The service name has to be a valid Unix directory name. For details see " +
 			"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
@@ -152,7 +155,7 @@ func newServiceManager() (*serviceManager, error) {
 
 func (sm *serviceManager) createService(projectName string, params *operations.CreateServiceParams) error {
 	keptnContext := uuid.New().String()
-	sm.logger.Info(fmt.Sprintf("Received request to create service %s in project %s", *params.Name, projectName))
+	sm.logger.Info(fmt.Sprintf("Received request to create service %s in project %s", *params.ServiceName, projectName))
 	if err := sendServiceCreateStartedEvent(keptnContext, projectName, params); err != nil {
 		return sm.logAndReturnError(fmt.Sprintf("could not send create.service.started event: %s", err.Error()))
 	}
@@ -164,21 +167,21 @@ func (sm *serviceManager) createService(projectName string, params *operations.C
 	}
 
 	for _, stage := range stages {
-		sm.logger.Info(fmt.Sprintf("Checking if service %s already exists in project %s", *params.Name, projectName))
+		sm.logger.Info(fmt.Sprintf("Checking if service %s already exists in project %s", *params.ServiceName, projectName))
 		// check if the service exists, do not continue if yes
-		service, _ := sm.servicesAPI.GetService(projectName, stage.StageName, *params.Name)
+		service, _ := sm.servicesAPI.GetService(projectName, stage.StageName, *params.ServiceName)
 		if service != nil {
-			sm.logger.Info(fmt.Sprintf("Service %s already exists in project %s", *params.Name, projectName))
+			sm.logger.Info(fmt.Sprintf("Service %s already exists in project %s", *params.ServiceName, projectName))
 			_ = sendServiceCreateFailedFinishedEvent(keptnContext, projectName, params)
 			return errServiceAlreadyExists
 		}
 
-		sm.logger.Info(fmt.Sprintf("Creating service %s in project %s", *params.Name, projectName))
+		sm.logger.Info(fmt.Sprintf("Creating service %s in project %s", *params.ServiceName, projectName))
 		// if the service does not exist yet, continue with the service creation
-		if _, errObj := sm.servicesAPI.CreateServiceInStage(projectName, stage.StageName, *params.Name); errObj != nil {
-			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.Name, stage.StageName, projectName, *errObj.Message))
+		if _, errObj := sm.servicesAPI.CreateServiceInStage(projectName, stage.StageName, *params.ServiceName); errObj != nil {
+			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.ServiceName, stage.StageName, projectName, *errObj.Message))
 		}
-		sm.logger.Info(fmt.Sprintf("Created service %s in stage %s of project %s", *params.Name, stage.StageName, projectName))
+		sm.logger.Info(fmt.Sprintf("Created service %s in stage %s of project %s", *params.ServiceName, stage.StageName, projectName))
 	}
 
 	// send the finished event
@@ -266,7 +269,7 @@ func sendServiceCreateStartedEvent(keptnContext string, projectName string, para
 	eventPayload := keptnv2.ServiceCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
-			Service: *params.Name,
+			Service: *params.ServiceName,
 		},
 	}
 
@@ -280,7 +283,7 @@ func sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName stri
 	eventPayload := keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
-			Service: *params.Name,
+			Service: *params.ServiceName,
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 		},
@@ -296,7 +299,7 @@ func sendServiceCreateFailedFinishedEvent(keptnContext string, projectName strin
 	eventPayload := keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
-			Service: *params.Name,
+			Service: *params.ServiceName,
 			Status:  keptnv2.StatusErrored,
 			Result:  keptnv2.ResultFailed,
 		},
