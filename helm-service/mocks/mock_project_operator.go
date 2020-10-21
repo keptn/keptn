@@ -5,35 +5,36 @@
 package mocks
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/keptn/go-utils/pkg/api/models"
-	reflect "reflect"
 )
 
-// MockProjectOperator is a mock of ProjectOperator interface
+// MockProjectOperator is a mock of ProjectOperator interface.
 type MockProjectOperator struct {
 	ctrl     *gomock.Controller
 	recorder *MockProjectOperatorMockRecorder
 }
 
-// MockProjectOperatorMockRecorder is the mock recorder for MockProjectOperator
+// MockProjectOperatorMockRecorder is the mock recorder for MockProjectOperator.
 type MockProjectOperatorMockRecorder struct {
 	mock *MockProjectOperator
 }
 
-// NewMockProjectOperator creates a new mock instance
+// NewMockProjectOperator creates a new mock instance.
 func NewMockProjectOperator(ctrl *gomock.Controller) *MockProjectOperator {
 	mock := &MockProjectOperator{ctrl: ctrl}
 	mock.recorder = &MockProjectOperatorMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockProjectOperator) EXPECT() *MockProjectOperatorMockRecorder {
 	return m.recorder
 }
 
-// CreateProject mocks base method
+// CreateProject mocks base method.
 func (m *MockProjectOperator) CreateProject(arg0 models.Project) (*models.EventContext, *models.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateProject", arg0)
@@ -42,13 +43,13 @@ func (m *MockProjectOperator) CreateProject(arg0 models.Project) (*models.EventC
 	return ret0, ret1
 }
 
-// CreateProject indicates an expected call of CreateProject
+// CreateProject indicates an expected call of CreateProject.
 func (mr *MockProjectOperatorMockRecorder) CreateProject(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProject", reflect.TypeOf((*MockProjectOperator)(nil).CreateProject), arg0)
 }
 
-// DeleteProject mocks base method
+// DeleteProject mocks base method.
 func (m *MockProjectOperator) DeleteProject(arg0 models.Project) (*models.EventContext, *models.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteProject", arg0)
@@ -57,13 +58,13 @@ func (m *MockProjectOperator) DeleteProject(arg0 models.Project) (*models.EventC
 	return ret0, ret1
 }
 
-// DeleteProject indicates an expected call of DeleteProject
+// DeleteProject indicates an expected call of DeleteProject.
 func (mr *MockProjectOperatorMockRecorder) DeleteProject(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProject", reflect.TypeOf((*MockProjectOperator)(nil).DeleteProject), arg0)
 }
 
-// GetAllProjects mocks base method
+// GetAllProjects mocks base method.
 func (m *MockProjectOperator) GetAllProjects() ([]*models.Project, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllProjects")
@@ -72,13 +73,13 @@ func (m *MockProjectOperator) GetAllProjects() ([]*models.Project, error) {
 	return ret0, ret1
 }
 
-// GetAllProjects indicates an expected call of GetAllProjects
+// GetAllProjects indicates an expected call of GetAllProjects.
 func (mr *MockProjectOperatorMockRecorder) GetAllProjects() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProjects", reflect.TypeOf((*MockProjectOperator)(nil).GetAllProjects))
 }
 
-// GetProject mocks base method
+// GetProject mocks base method.
 func (m *MockProjectOperator) GetProject(arg0 models.Project) (*models.Project, *models.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProject", arg0)
@@ -87,13 +88,13 @@ func (m *MockProjectOperator) GetProject(arg0 models.Project) (*models.Project, 
 	return ret0, ret1
 }
 
-// GetProject indicates an expected call of GetProject
+// GetProject indicates an expected call of GetProject.
 func (mr *MockProjectOperatorMockRecorder) GetProject(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProject", reflect.TypeOf((*MockProjectOperator)(nil).GetProject), arg0)
 }
 
-// UpdateConfigurationServiceProject mocks base method
+// UpdateConfigurationServiceProject mocks base method.
 func (m *MockProjectOperator) UpdateConfigurationServiceProject(arg0 models.Project) (*models.EventContext, *models.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateConfigurationServiceProject", arg0)
@@ -102,7 +103,7 @@ func (m *MockProjectOperator) UpdateConfigurationServiceProject(arg0 models.Proj
 	return ret0, ret1
 }
 
-// UpdateConfigurationServiceProject indicates an expected call of UpdateConfigurationServiceProject
+// UpdateConfigurationServiceProject indicates an expected call of UpdateConfigurationServiceProject.
 func (mr *MockProjectOperatorMockRecorder) UpdateConfigurationServiceProject(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateConfigurationServiceProject", reflect.TypeOf((*MockProjectOperator)(nil).UpdateConfigurationServiceProject), arg0)

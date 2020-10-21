@@ -13,7 +13,6 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-//go:generate mockgen -package mocks -destination=../../mocks/mock_chart_generator.go . ChartGenerator
 // ChartGenerator ...
 type ChartGenerator interface {
 	// GenerateDuplicateChart generates a duplicated chart which is managed by keptn and used for

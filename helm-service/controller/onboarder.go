@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"github.com/keptn/keptn/helm-service/pkg/types"
 	"time"
 
@@ -28,7 +29,7 @@ type Onboarder struct {
 	Handler
 	mesh             mesh.Mesh
 	projectHandler   types.ProjectOperator
-	namespaceManager types.INamespaceManager
+	namespaceManager namespacemanager.INamespaceManager
 	stagesHandler    types.IStagesHandler
 	serviceHandler   types.IServiceHandler
 	chartStorer      keptnutils.ChartStorer
@@ -41,7 +42,7 @@ func NewOnboarder(
 	keptnHandler *keptnv2.Keptn,
 	mesh mesh.Mesh,
 	projectHandler types.ProjectOperator,
-	namespaceManager types.INamespaceManager,
+	namespaceManager namespacemanager.INamespaceManager,
 	stagesHandler types.IStagesHandler,
 	serviceHandler types.IServiceHandler,
 	chartStorer keptnutils.ChartStorer,

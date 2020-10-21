@@ -10,6 +10,11 @@ import (
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
+type INamespaceManager interface {
+	InitNamespaces(project string, stages []string) error
+	InjectIstio(project string, stage string) error
+}
+
 type NamespaceManager struct {
 	logger keptn.LoggerInterface
 }
