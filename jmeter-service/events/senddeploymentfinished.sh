@@ -19,7 +19,7 @@ fi
 if [[ -z "$PROJECT" || -z "$STAGE" || -z "$SERVICE" || -z "$URL" || -z "$TESTSTRATEGY" ]]; then
   echo "Please specify project, stage, service, test strategy and URL. Optionally specify your version and user:"
   echo "Usage: ./senddeployfinished.sh PROJECT STAGE SERVICE TESTSTRATEGY URL [VERSION] [USER]"
-  echo "Example: ./senddeployfinished.sh perfservice performance simplenodeservice performance 1.1 Andi"
+  echo "Example: ./senddeployfinished.sh perfservice performance simplenodeservice performance http://YOURURL 1.1 Andi"
   exit 1
 fi
 
