@@ -33,6 +33,7 @@ type Onboarder struct {
 	serviceHandler   types.IServiceHandler
 	chartStorer      keptnutils.ChartStorer
 	chartGenerator   helm.ChartGenerator
+	chartPackager    keptnutils.ChartPackager
 }
 
 // NewOnboarder creates a new Onboarder
@@ -45,6 +46,7 @@ func NewOnboarder(
 	serviceHandler types.IServiceHandler,
 	chartStorer keptnutils.ChartStorer,
 	chartGenerator helm.ChartGenerator,
+	chartPackager keptnutils.ChartPackager,
 	configServiceURL string) *Onboarder {
 
 	return &Onboarder{
@@ -56,6 +58,7 @@ func NewOnboarder(
 		serviceHandler:   serviceHandler,
 		chartStorer:      chartStorer,
 		chartGenerator:   chartGenerator,
+		chartPackager:    chartPackager,
 	}
 }
 
@@ -204,7 +207,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 
 	//o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
 	if _, err := o.chartStorer.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
-		helmChartData, o.getConfigServiceURL()); err != nil {
+		helmChartData); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return err
 	}
@@ -244,14 +247,14 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 	}
 
 	o.getKeptnHandler().Logger.Debug(fmt.Sprintf("Storing the Keptn-generated Helm Chart %s for stage %s", helmChartName, event.Stage))
-	generatedChartData, err := keptnutils.PackageChart(generatedChart)
+	generatedChartData, err := o.chartPackager.PackageChart(generatedChart)
 	if err != nil {
 		o.getKeptnHandler().Logger.Error("Error when packing the managed chart: " + err.Error())
 		return nil, err
 	}
 
 	if _, err := o.chartStorer.StoreChart(event.Project, event.Service, event.Stage, helmChartName,
-		generatedChartData, o.getConfigServiceURL()); err != nil {
+		generatedChartData); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return nil, err
 	}

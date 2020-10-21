@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+	"net/url"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
@@ -19,6 +20,7 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
+	utils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -72,24 +74,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		projectHandler := keptnapi.NewProjectHandler(url.String())
-		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
-		stagesHandler := configutils.NewStageHandler(url.String())
-		serviceHandler := configutils.NewServiceHandler(url.String())
-		chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
-		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, chartGenerator, url.String())
-		deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
+		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
 		go deploymentHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, url.String())
 		go releaseHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
-		namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
-		projectHandler := keptnapi.NewProjectHandler(url.String())
-		stagesHandler := configutils.NewStageHandler(url.String())
-		serviceHandler := configutils.NewServiceHandler(url.String())
-		chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
-		onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, keptnutils.ChartStorage{}, chartGenerator, url.String())
+		onBoarder := createOnboarder(keptnHandler, url, mesh)
 		go onBoarder.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
@@ -103,6 +94,31 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	return nil
+}
+
+func createOnboarder(keptnHandler *keptnv2.Keptn, url *url.URL, mesh *mesh.IstioMesh) *controller.Onboarder {
+	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
+	projectHandler := keptnapi.NewProjectHandler(url.String())
+	stagesHandler := configutils.NewStageHandler(url.String())
+	serviceHandler := configutils.NewServiceHandler(url.String())
+	chartStorer := keptnutils.NewChartStorage(utils.NewResourceHandler(url.String()))
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+	chartPackager := keptnutils.NewChartPackaging()
+	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
+	return onBoarder
+}
+
+func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
+	projectHandler := keptnapi.NewProjectHandler(url.String())
+	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
+	stagesHandler := configutils.NewStageHandler(url.String())
+	serviceHandler := configutils.NewServiceHandler(url.String())
+	chartStorer := keptnutils.NewChartStorage(utils.NewResourceHandler(url.String()))
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+	chartPackager := keptnutils.NewChartPackaging()
+	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
+	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
+	return deploymentHandler
 }
 
 func closeLogger(keptnHandler *keptnv2.Keptn) {

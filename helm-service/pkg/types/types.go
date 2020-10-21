@@ -43,5 +43,3 @@ type IServiceHandler interface {
 	GetService(project, stage, service string) (*models.Service, error)
 	GetAllServices(project string, stage string) ([]*models.Service, error)
 }
-
-//go:generate mockgen -package mocks -destination=../../mocks/mock_chart_storer.go github.com/keptn/kubernetes-utils/pkg ChartStorer
