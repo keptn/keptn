@@ -132,7 +132,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
 			}
 
-			fmt.Println("Project created successfully")
+			logging.PrintLog("Project created successfully", logging.InfoLevel)
 
 			return nil
 		}

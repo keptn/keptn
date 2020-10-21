@@ -69,11 +69,11 @@ var crServiceCmd = &cobra.Command{
 		if !mocking {
 			_, err := apiHandler.CreateService(*createServiceParams.Project, service)
 			if err != nil {
-				fmt.Println("Create service was unsuccessful")
+				logging.PrintLog("Create service was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Create service was unsuccessful. %s", *err.Message)
 			}
 
-			fmt.Println("Service created successfully")
+			logging.PrintLog("Service created successfully", logging.InfoLevel)
 
 			return nil
 		}

@@ -47,14 +47,14 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 		if !mocking {
 			deleteResp, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
 			if err != nil {
-				fmt.Println("Delete project was unsuccessful")
+				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
 			// if eventContext is available, open WebSocket communication
 			if deleteResp != nil {
-				fmt.Println("Service deleted successfully")
-				fmt.Println(deleteResp.Message)
+				logging.PrintLog("Service deleted successfully", logging.InfoLevel)
+				logging.PrintLog(deleteResp.Message, logging.InfoLevel)
 			}
 
 			return nil

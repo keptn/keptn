@@ -136,12 +136,12 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
 			}
 
-			fmt.Println("Service onboarded successfully")
+			logging.PrintLog("Service onboarded successfully", logging.InfoLevel)
 
 			return nil
 		}
 
-		fmt.Println("Skipping onboard service due to mocking flag set to true")
+		logging.PrintLog("Skipping onboard service due to mocking flag set to true", logging.InfoLevel)
 		return nil
 	},
 }

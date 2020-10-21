@@ -6,8 +6,6 @@ import (
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -70,30 +68,26 @@ For more information about updating projects or upstream repositories, please go
 				endPointErr)
 		}
 
-		project := apimodels.Project{
-			ProjectName: args[0],
+		project := apimodels.CreateProject{
+			Name: &args[0],
 		}
 
 		if *updateProjectParams.GitUser != "" && *updateProjectParams.GitToken != "" && *updateProjectParams.RemoteURL != "" {
 			project.GitUser = *updateProjectParams.GitUser
 			project.GitToken = *updateProjectParams.GitToken
-			project.GitRemoteURI = *updateProjectParams.RemoteURL
+			project.GitRemoteURL = *updateProjectParams.RemoteURL
 		}
 
-		projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := projectHandler.UpdateConfigurationServiceProject(project)
+			_, err := apiHandler.UpdateProject(project)
 			if err != nil {
 				return fmt.Errorf("Update project was unsuccessful. %s", *err.Message)
 			}
 
-			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-			}
-			logging.PrintLog("Project updated successful", logging.InfoLevel)
+			logging.PrintLog("Project updated successfuly", logging.InfoLevel)
 			return nil
 		}
 

@@ -98,12 +98,12 @@ var delProjectCmd = &cobra.Command{
 
 			deleteResp, err := apiHandler.DeleteProject(project)
 			if err != nil {
-				fmt.Println("Delete project was unsuccessful")
+				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 			if deleteResp != nil {
-				fmt.Println("Project deleted successfully")
-				fmt.Println(deleteResp.Message)
+				logging.PrintLog("Project deleted successfully", logging.InfoLevel)
+				logging.PrintLog(deleteResp.Message, logging.InfoLevel)
 			}
 
 			return nil
