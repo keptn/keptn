@@ -213,7 +213,10 @@ func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteP
 
 	// check for an upstream repo secret
 	secret, err := pm.secretStore.GetSecret(getUpstreamRepoCredsSecretName(projectName))
-	if err == nil && secret != nil {
+	if err != nil {
+		pm.logger.Error("could not delete git upstream credentials secret: " + err.Error())
+	}
+	if secret != nil {
 		// try to delete the secret
 		if err := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(projectName)); err != nil {
 			// if anything goes wrong, log the error, but continue with deleting the remaining project resources

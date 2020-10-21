@@ -2,6 +2,7 @@ package common
 
 import (
 	v1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -55,6 +56,9 @@ func (k *K8sSecretStore) DeleteSecret(name string) error {
 func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
 	namespace := GetKeptnNamespace()
 	get, err := k.client.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{})
+	if err != nil && k8serrors.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
