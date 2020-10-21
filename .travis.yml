@@ -71,8 +71,6 @@ before_install:
 - DISTRIBUTOR_FOLDER="distributor/"
 - EVENTBROKER_IMAGE="keptn/eventbroker-go"
 - EVENTBROKER_FOLDER="eventbroker/"
-- SHIPYARD_SVC_IMAGE="keptn/shipyard-service"
-- SHIPYARD_SVC_FOLDER="shipyard-service/"
 - SHIPYARD_CONTROLLER_IMAGE="keptn/shipyard-controller"
 - SHIPYARD_CONTROLLER_FOLDER="shipyard-controller/"
 - CONFIGURATION_SVC_IMAGE="keptn/configuration-service"
@@ -260,10 +258,6 @@ jobs:
         go test -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
       - |
-        cd ${SHIPYARD_SVC_FOLDER}
-        go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-        cd ..
-      - |
         cd ${SHIPYARD_CONTROLLER_FOLDER}
         go test -v -coverprofile=coverage.txt -covermode=atomic ./...
         cd ..
@@ -318,7 +312,6 @@ jobs:
     - source ./travis-scripts/build_develop.sh "${HELM_SVC_IMAGE}" "${HELM_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${GATEKEEPER_SVC_IMAGE}" "${GATEKEEPER_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${DATE}"
-    - source ./travis-scripts/build_develop.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
     - source ./travis-scripts/build_develop.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}"
@@ -433,10 +426,6 @@ jobs:
         source ./travis-scripts/build_feature.sh "${DISTRIBUTOR_IMAGE}" "${DISTRIBUTOR_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
     - |
-      if [[ $CHANGED_FILES == *"${SHIPYARD_SVC_FOLDER}"*  ]]; then
-        source ./travis-scripts/build_feature.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
-      fi
-    - |
       if [[ $CHANGED_FILES == *"${SHIPYARD_CONTROLLER_FOLDER}"*  ]]; then
         source ./travis-scripts/build_feature.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${TYPE}" "${NUMBER}" "${DATE}"
       fi
@@ -525,7 +514,6 @@ jobs:
       - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
       - export VERSION=${BRANCH#"release-"} # overwrite version for release branches based on the branch name
       - ./writeManifest.sh
-      - source ./travis-scripts/build_release.sh "${SHIPYARD_SVC_IMAGE}" "${SHIPYARD_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${SHIPYARD_CONTROLLER_IMAGE}" "${SHIPYARD_CONTROLLER_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${CONFIGURATION_SVC_IMAGE}" "${CONFIGURATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
       - source ./travis-scripts/build_release.sh "${REMEDIATION_SVC_IMAGE}" "${REMEDIATION_SVC_FOLDER}" "${GIT_SHA}" "${DATE}" "${VERSION}"
