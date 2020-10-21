@@ -20,7 +20,8 @@ import (
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.CreateServiceParams     true        "Project"
+// @Param   project     path    string     true        "Project"
+// @Param   service     body    operations.CreateServiceParams     true        "Project"
 // @Success 200 {object} operations.CreateServiceResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
@@ -68,6 +69,54 @@ func CreateService(c *gin.Context) {
 			})
 			return
 		}
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    http.StatusInternalServerError,
+			Message: stringp(err.Error()),
+		})
+		return
+	}
+}
+
+// DeleteService godoc
+// @Summary Delete a service
+// @Description Delete a service
+// @Tags Services
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     path    string     true        "Project"
+// @Param   service     path    string     true        "Service"
+// @Success 200 {object} operations.DeleteServiceResponse	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project/:project/service/:service [delete]
+func DeleteService(c *gin.Context) {
+	projectName := c.Param("project")
+	serviceName := c.Param("service")
+	if projectName == "" {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    http.StatusBadRequest,
+			Message: stringp("Must provide a project name"),
+		})
+	}
+	if serviceName == "" {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    http.StatusBadRequest,
+			Message: stringp("Must provide a service name"),
+		})
+	}
+
+	sm, err := newServiceManager()
+	if err != nil {
+
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    500,
+			Message: stringp("Could not process request: " + err.Error()),
+		})
+		return
+	}
+
+	if err := sm.deleteService(projectName, serviceName); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
 			Message: stringp(err.Error()),

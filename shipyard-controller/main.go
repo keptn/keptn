@@ -39,6 +39,9 @@ func main() {
 	apiV1.PUT("/project", api.UpdateProject)
 	apiV1.DELETE("/project/:project", api.DeleteProject)
 
+	apiV1.POST("/project/:project/service", api.CreateService)
+	apiV1.DELETE("/project/:project/service/:service", api.DeleteService)
+
 	apiV1.GET("/event/triggered/:eventType", api.GetTriggeredEvents)
 	apiV1.POST("/event", api.HandleEvent)
 
