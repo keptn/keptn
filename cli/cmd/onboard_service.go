@@ -8,8 +8,6 @@ import (
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -132,16 +130,13 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := apiHandler.CreateService(*onboardServiceParams.Project, service)
+			_, err := apiHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
 				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
 			}
 
-			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-			}
+			fmt.Println("Service onboarded successfully")
 
 			return nil
 		}
