@@ -227,6 +227,32 @@ func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 }
 
+func TestHandleEvent_WhenStagesCannotBeFetched_ThenHandleErrorIsCalled(t *testing.T) {
+	ctrl := createMocks(t)
+	defer ctrl.Finish()
+
+	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
+
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
+		serviceHandler:   mockedServiceHandler,
+		chartStorer:      mockedChartStorer,
+		chartGenerator:   mockedChartGenerator,
+		chartPackager:    mockedChartPackager,
+	}
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(nil, errors.New("unable to fetch stages"))
+	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+
+	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+}
+
 func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
@@ -582,7 +608,10 @@ func TestCheckAndSetServiceName(t *testing.T) {
 		{"Mismatch", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts-1"},
 			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			errors.New("Provided Keptn service name \"carts-1\" does not match Kubernetes service name \"carts\""), "carts-1"},
-		{"Match", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts"},
+		{"Mismatch2", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: "carts-1"},
+			Helm: keptnv2.Helm{Chart: "%%%"}},
+			errors.New("Error when decoding the Helm Chart: illegal base64 data at input byte 0"), "carts-1"},
+		{"Match", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: ""},
 			Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(data)}},
 			nil, "carts"},
 		{"Set", &keptnv2.ServiceCreateFinishedEventData{EventData: keptnv2.EventData{Service: ""},
