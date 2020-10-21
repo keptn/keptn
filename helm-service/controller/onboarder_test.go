@@ -18,7 +18,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	"github.com/keptn/go-utils/pkg/api/models"
-	configmodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 const helmManifestResource = `
@@ -119,22 +118,6 @@ var mockedChartStorer *mocks.MockChartStorer
 var mockedChartGenerator *mocks.MockChartGenerator
 var mockedChartPackager *mocks.MockChartPackager
 
-func createMocks(t *testing.T) *gomock.Controller {
-
-	ctrl := gomock.NewController(t)
-	mockedBaseHandler = NewMockHandler(ctrl)
-	mockedMesh = mocks.NewMockMesh(ctrl)
-	mockedProjectHandler = mocks.NewMockProjectOperator(ctrl)
-	mockedNamespaceManager = mocks.NewMockINamespaceManager(ctrl)
-	mockedStagesHandler = mocks.NewMockIStagesHandler(ctrl)
-	mockedServiceHandler = mocks.NewMockIServiceHandler(ctrl)
-	mockedChartStorer = mocks.NewMockChartStorer(ctrl)
-	mockedChartGenerator = mocks.NewMockChartGenerator(ctrl)
-	mockedChartPackager = mocks.NewMockChartPackager(ctrl)
-	return ctrl
-
-}
-
 func TestCreateOnboarder(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
@@ -194,8 +177,7 @@ func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
 		chartPackager:    mockedChartPackager,
 	}
 
-	event := cloudevents.NewEvent()
-	instance.HandleEvent(event, nilCloser)
+	instance.HandleEvent(cloudevents.NewEvent(), nilCloser)
 }
 
 func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
@@ -225,11 +207,6 @@ func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
-	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{}, nil)
-	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
-
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
 		mesh:             mockedMesh,
@@ -241,6 +218,11 @@ func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 		chartGenerator:   mockedChartGenerator,
 		chartPackager:    mockedChartPackager,
 	}
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{}, nil)
+	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 }
@@ -249,13 +231,7 @@ func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
-
-	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"}).Return(errors.New("Namespace initialization failed :("))
-	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -268,6 +244,12 @@ func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.
 		chartGenerator:   mockedChartGenerator,
 		chartPackager:    mockedChartPackager,
 	}
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"}).Return(errors.New("namespace initialization failed"))
+	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 }
@@ -276,11 +258,7 @@ func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *te
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
-
-	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -293,6 +271,10 @@ func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *te
 		chartGenerator:   mockedChartGenerator,
 		chartPackager:    mockedChartPackager,
 	}
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
 
 	instance.HandleEvent(createEventWith(t, "EVENT_ID", keptnv2.EventData{Project: "my-project", Stage: "dev", Service: "!§$%&/"}), nilCloser)
 }
@@ -301,18 +283,7 @@ func TestHandleEvent_WhenUnableToStoreChart_ThenHandleErrorIsCalled(t *testing.T
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
-
-	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mockedNamespaceManager.EXPECT().InitNamespaces(gomock.Any(), gomock.Any())
-	mockedServiceHandler.EXPECT().GetService(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.New("Unable to store chart :("))
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-	mockedBaseHandler.EXPECT().getKeptnHandler().Return(keptn)
-	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -325,6 +296,15 @@ func TestHandleEvent_WhenUnableToStoreChart_ThenHandleErrorIsCalled(t *testing.T
 		chartGenerator:   mockedChartGenerator,
 		chartPackager:    mockedChartPackager,
 	}
+
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	mockedNamespaceManager.EXPECT().InitNamespaces(gomock.Any(), gomock.Any())
+	mockedServiceHandler.EXPECT().GetService(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+	mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.New("unable to store chart"))
+	mockedBaseHandler.EXPECT().getKeptnHandler().Return(createKeptn())
+	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 }
@@ -333,16 +313,7 @@ func TestHandleEvent_WhenSendingFinishedEventFails_ThenHandleErrorisCalled(t *te
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
-
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes()
-	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"})
-	mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
-	mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
-	mockedBaseHandler.EXPECT().sendEvent(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("Failed to send finished event :("))
-	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -356,15 +327,35 @@ func TestHandleEvent_WhenSendingFinishedEventFails_ThenHandleErrorisCalled(t *te
 		chartPackager:    mockedChartPackager,
 	}
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes()
+	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"})
+	mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
+	mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
+	mockedBaseHandler.EXPECT().sendEvent(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to send finished event"))
+	mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
 
+	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
 }
 
 func TestHandleEvent_OnboardsService(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	stages := []*models.Stage{&models.Stage{Services: []*models.Service{&models.Service{}}, StageName: "dev"}}
+	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
+
+	instance := Onboarder{
+		Handler:          mockedBaseHandler,
+		mesh:             mockedMesh,
+		projectHandler:   mockedProjectHandler,
+		namespaceManager: mockedNamespaceManager,
+		stagesHandler:    mockedStagesHandler,
+		serviceHandler:   mockedServiceHandler,
+		chartStorer:      mockedChartStorer,
+		chartGenerator:   mockedChartGenerator,
+		chartPackager:    mockedChartPackager,
+	}
 
 	mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
 	mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
@@ -374,43 +365,14 @@ func TestHandleEvent_OnboardsService(t *testing.T) {
 	mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
 	mockedBaseHandler.EXPECT().sendEvent(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	instance := Onboarder{
-		Handler:          mockedBaseHandler,
-		mesh:             mockedMesh,
-		projectHandler:   mockedProjectHandler,
-		namespaceManager: mockedNamespaceManager,
-		stagesHandler:    mockedStagesHandler,
-		serviceHandler:   mockedServiceHandler,
-		chartStorer:      mockedChartStorer,
-		chartGenerator:   mockedChartGenerator,
-		chartPackager:    mockedChartPackager,
-	}
-
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
-
 }
 
 func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	chart := chart.Chart{
-		Metadata: &chart.Metadata{
-			APIVersion: "v2",
-			Name:       "myservice-generated",
-			Keywords:   []string{"deployment_strategy=" + keptnevents.Direct.String()},
-			Version:    "0.1.0",
-		},
-	}
-
-	expectedChartAsBytes := []byte("chart_as_bytes")
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
-	mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&chart, nil)
-	mockedChartPackager.EXPECT().PackageChart(&chart).Return(expectedChartAsBytes, nil)
+	testChart := createChart()
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -424,10 +386,14 @@ func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
+	expectedChartAsBytes := []byte("chart_as_bytes")
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
+	mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
+	mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
 
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Direct)
-	assert.Equal(t, &chart, generatedChart)
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Direct)
+	assert.Equal(t, &testChart, generatedChart)
 	assert.Nil(t, err)
 }
 
@@ -438,9 +404,6 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartGenerationFails(t *testin
 	ce := cloudevents.NewEvent()
 	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("Chart generation failed"))
-
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
 		mesh:             mockedMesh,
@@ -453,10 +416,10 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartGenerationFails(t *testin
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
+	mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
 
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Direct)
-
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Direct)
 	assert.NotNil(t, err)
 	assert.Nil(t, generatedChart)
 }
@@ -465,21 +428,7 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartPackagingFails(t *testing
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	chart := chart.Chart{
-		Metadata: &chart.Metadata{
-			APIVersion: "v2",
-			Name:       "myservice-generated",
-			Keywords:   []string{"deployment_strategy=" + keptnevents.Direct.String()},
-			Version:    "0.1.0",
-		},
-	}
-
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&chart, nil)
-	mockedChartPackager.EXPECT().PackageChart(&chart).Return(nil, errors.New("Chart packaging failed :("))
+	testChart := createChart()
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -493,9 +442,10 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartPackagingFails(t *testing
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
-
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Direct)
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
+	mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	mockedChartPackager.EXPECT().PackageChart(&testChart).Return(nil, errors.New("chart packaging failed"))
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Direct)
 
 	assert.Nil(t, generatedChart)
 	assert.NotNil(t, err)
@@ -505,24 +455,7 @@ func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	chart := chart.Chart{
-		Metadata: &chart.Metadata{
-			APIVersion: "v2",
-			Name:       "myservice-generated",
-			Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-			Version:    "0.1.0",
-		},
-	}
-
-	expectedChartAsBytes := []byte("chart_as_bytes")
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&chart, nil)
-	mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
-	mockedChartPackager.EXPECT().PackageChart(&chart).Return(expectedChartAsBytes, nil)
-	mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
+	testChart := createChart()
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -536,10 +469,15 @@ func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
+	expectedChartAsBytes := []byte("chart_as_bytes")
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
+	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
+	mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
+	mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
 
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Duplicate)
-	assert.Equal(t, &chart, generatedChart)
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
+	assert.Equal(t, &testChart, generatedChart)
 	assert.Nil(t, err)
 }
 
@@ -547,21 +485,7 @@ func TestOnboardGeneratedChart_injectingIstioConfigFails(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	chart := chart.Chart{
-		Metadata: &chart.Metadata{
-			APIVersion: "v2",
-			Name:       "myservice-generated",
-			Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-			Version:    "0.1.0",
-		},
-	}
-
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&chart, nil)
-	mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev").Return(errors.New("Failed to inject istio :("))
+	testChart := createChart()
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -575,9 +499,11 @@ func TestOnboardGeneratedChart_injectingIstioConfigFails(t *testing.T) {
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
+	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev").Return(errors.New("failed to inject istio"))
 
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Duplicate)
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
 	assert.Nil(t, generatedChart)
 }
@@ -589,9 +515,6 @@ func TestOnboardGeneratedChart_chartGenerationFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("Chart generation failed"))
-
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
 		mesh:             mockedMesh,
@@ -604,10 +527,10 @@ func TestOnboardGeneratedChart_chartGenerationFails(t *testing.T) {
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
+	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
 
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Duplicate)
-
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
 	assert.Nil(t, generatedChart)
 }
@@ -616,24 +539,7 @@ func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
 	ctrl := createMocks(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	chart := chart.Chart{
-		Metadata: &chart.Metadata{
-			APIVersion: "v2",
-			Name:       "myservice-generated",
-			Keywords:   []string{"deployment_strategy=" + keptnevents.Duplicate.String()},
-			Version:    "0.1.0",
-		},
-	}
-
-	expectedChartAsBytes := []byte("chart_as_bytes")
-	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&chart, nil)
-	mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
-	mockedChartPackager.EXPECT().PackageChart(&chart).Return(expectedChartAsBytes, nil)
-	mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes)).Return("", errors.New("Storing chart failed :("))
+	testChart := createChart()
 
 	instance := Onboarder{
 		Handler:          mockedBaseHandler,
@@ -647,9 +553,14 @@ func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
 		chartPackager:    mockedChartPackager,
 	}
 
-	eventData := keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}
+	expectedChartAsBytes := []byte("chart_as_bytes")
+	mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
+	mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
+	mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
+	mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes)).Return("", errors.New("storing chart failed"))
 
-	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, eventData, keptnevents.Duplicate)
+	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
 	assert.Nil(t, generatedChart)
 }
@@ -701,28 +612,37 @@ func stringp(s string) *string {
 	return &s
 }
 
-func check(e *configmodels.Error, t *testing.T) {
-	if e != nil {
-		t.Error(e.Message)
-	}
+func createMocks(t *testing.T) *gomock.Controller {
+
+	ctrl := gomock.NewController(t)
+	mockedBaseHandler = NewMockHandler(ctrl)
+	mockedMesh = mocks.NewMockMesh(ctrl)
+	mockedProjectHandler = mocks.NewMockProjectOperator(ctrl)
+	mockedNamespaceManager = mocks.NewMockINamespaceManager(ctrl)
+	mockedStagesHandler = mocks.NewMockIStagesHandler(ctrl)
+	mockedServiceHandler = mocks.NewMockIServiceHandler(ctrl)
+	mockedChartStorer = mocks.NewMockChartStorer(ctrl)
+	mockedChartGenerator = mocks.NewMockChartGenerator(ctrl)
+	mockedChartPackager = mocks.NewMockChartPackager(ctrl)
+	return ctrl
 }
 
 func createEventWith(t *testing.T, id string, eventData keptnv2.EventData) event.Event {
-	event := cloudevents.NewEvent()
-	event.SetID(id)
-	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
+	testEvent := cloudevents.NewEvent()
+	testEvent.SetID(id)
+	_ = testEvent.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
 		EventData: eventData,
 		Helm: keptnv2.Helm{
 			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
 		},
 	})
-	return event
+	return testEvent
 }
 
 func createEvent(t *testing.T, id string) event.Event {
-	event := cloudevents.NewEvent()
-	event.SetID(id)
-	event.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
+	testEvent := cloudevents.NewEvent()
+	testEvent.SetID(id)
+	_ = testEvent.SetData(cloudevents.ApplicationJSON, keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "dev",
@@ -732,16 +652,33 @@ func createEvent(t *testing.T, id string) event.Event {
 			Chart: base64.StdEncoding.EncodeToString(helm.CreateTestHelmChartData(t)),
 		},
 	})
-	return event
+	return testEvent
 }
 
 func createUnparsableEvent() event.Event {
-	event := cloudevents.NewEvent()
-	event.SetData(cloudevents.ApplicationJSON, "WEIRD_JSON_CONTENT")
-	event.SetID("EVENT_ID")
-	return event
+	testEvent := cloudevents.NewEvent()
+	_ = testEvent.SetData(cloudevents.ApplicationJSON, "WEIRD_JSON_CONTENT")
+	testEvent.SetID("EVENT_ID")
+	return testEvent
 }
 
 func nilCloser(keptnHandler *keptnv2.Keptn) {
 	//No-op
+}
+
+func createChart() chart.Chart {
+	return chart.Chart{
+		Metadata: &chart.Metadata{
+			APIVersion: "v2",
+			Name:       "myservice-generated",
+			Keywords:   []string{"deployment_strategy=" + keptnevents.Direct.String()},
+			Version:    "0.1.0",
+		},
+	}
+}
+
+func createKeptn() *keptnv2.Keptn {
+	ce := cloudevents.NewEvent()
+	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
+	return keptn
 }
