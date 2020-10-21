@@ -47,7 +47,7 @@ spec:
         - name: CONFIGURATION_SERVICE
           value: 'http://configuration-service:8080'
         - name: EVENTBROKER
-          value: 'http://event-broker/keptn'
+          value: 'http://localhost:8081/event'
         - name: API
           value: 'ws://api-service:8080/websocket'
         - name: ENVIRONMENT
