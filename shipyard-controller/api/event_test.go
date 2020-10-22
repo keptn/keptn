@@ -981,7 +981,23 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		return
 	}
 
-	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), "hardening", nil)
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), "hardening", func(t *testing.T, event models.Event) bool {
+		marshal, _ := json.Marshal(event.Data)
+		triggeredEvent := map[string]interface{}{}
+
+		err := json.Unmarshal(marshal, &triggeredEvent)
+
+		if err != nil {
+			t.Errorf("Expected hardening.artifact-delivery.triggered data but could not convert: %v: %s", event.Data, err.Error())
+			return true
+		}
+
+		if triggeredEvent["configurationChange"] == nil {
+			t.Error("expected 'configurationChange' property to be present")
+			return true
+		}
+		return false
+	})
 	if done {
 		return
 	}
