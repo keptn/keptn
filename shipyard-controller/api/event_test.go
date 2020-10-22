@@ -831,15 +831,18 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 			marshal, _ := json.Marshal(event.Data)
 			if err := json.Unmarshal(marshal, deploymentEvent); err != nil {
 				t.Error("could not parse incoming deployment.triggered event: " + err.Error())
+				return true
 			}
 
 			if deploymentEvent.Deployment.DeploymentStrategy != "direct" {
 				t.Error(fmt.Sprintf("did not receive correct deployment strategy. Expected 'direct' but got '%s'", deploymentEvent.Deployment.DeploymentStrategy))
+				return true
 			}
 			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
 				t.Error(fmt.Sprintf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"]))
+				return true
 			}
-			return true
+			return false
 		},
 	)
 	if done {
