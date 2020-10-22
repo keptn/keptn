@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-test/deep"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -564,8 +565,24 @@ func Test_eventManager_getEvents(t *testing.T) {
 
 func getArtifactDeliveryTriggeredEvent() models.Event {
 	return models.Event{
-		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
+		Contenttype: "application/json",
+		Data: keptnv2.DeploymentTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: "test-project",
+				Stage:   "dev",
+				Service: "carts",
+			},
+			ConfigurationChange: struct {
+				Values map[string]interface{} `json:"values"`
+			}{
+				Values: map[string]interface{}{
+					"image": "carts",
+				},
+			},
+			Deployment: keptnv2.DeploymentData{
+				DeploymentStrategy: "direct",
+			},
+		},
 		Extensions:     nil,
 		ID:             "artifact-delivery-triggered-id",
 		Shkeptncontext: "test-context",
@@ -804,7 +821,27 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
 		return
 	}
-	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	done = shouldContainEvent(t,
+		mockEV.receivedEvents,
+		keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		"",
+		func(t *testing.T, event models.Event) bool {
+			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+
+			marshal, _ := json.Marshal(event.Data)
+			if err := json.Unmarshal(marshal, deploymentEvent); err != nil {
+				t.Error("could not parse incoming deployment.triggered event: " + err.Error())
+			}
+
+			if deploymentEvent.Deployment.DeploymentStrategy != "direct" {
+				t.Error(fmt.Sprintf("did not receive correct deployment strategy. Expected 'direct' but got '%s'", deploymentEvent.Deployment.DeploymentStrategy))
+			}
+			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
+				t.Error(fmt.Sprintf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"]))
+			}
+			return true
+		},
+	)
 	if done {
 		return
 	}
@@ -1557,4 +1594,45 @@ func filterEvents(eventsCollection []models.Event, filter db.EventFilter) ([]mod
 		result = append(result, event)
 	}
 	return result, nil
+}
+
+func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
+	type fields struct {
+		projectRepo      db.ProjectRepo
+		eventRepo        db.EventRepo
+		taskSequenceRepo db.TaskSequenceRepo
+		logger           *keptncommon.Logger
+	}
+	type args struct {
+		stageName        string
+		taskSequenceName string
+		shipyard         *keptnv2.Shipyard
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *keptnv2.Sequence
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sc := &shipyardController{
+				projectRepo:      tt.fields.projectRepo,
+				eventRepo:        tt.fields.eventRepo,
+				taskSequenceRepo: tt.fields.taskSequenceRepo,
+				logger:           tt.fields.logger,
+			}
+			got, err := sc.getTaskSequenceInStage(tt.args.stageName, tt.args.taskSequenceName, tt.args.shipyard)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getTaskSequenceInStage() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getTaskSequenceInStage() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

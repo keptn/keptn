@@ -507,7 +507,19 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	eventScope.Stage = stageName
 
-	return sc.proceedTaskSequence(eventScope, taskSequence, event, shipyard, nil, "")
+	eventMap := map[string]interface{}{}
+
+	marshal, err := json.Marshal(event.Data)
+	if err != nil {
+		sc.logger.Info("could not marshal incoming event: " + err.Error())
+		return err
+	}
+	if err := json.Unmarshal(marshal, &eventMap); err != nil {
+		sc.logger.Info("could not convert incoming event to map[string]interface{}: " + err.Error())
+		return err
+	}
+
+	return sc.proceedTaskSequence(eventScope, taskSequence, event, shipyard, []interface{}{eventMap}, "")
 }
 
 func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}, previousTask string) error {
@@ -528,6 +540,8 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(event models.Event, eventScope *keptnv2.EventData, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard) error {
+
+	// TODO: merge payload from last .finished event of previous task sequence into next .triggered event
 	nextSequences := sc.getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
 
 	for _, sequence := range nextSequences {
@@ -636,6 +650,18 @@ func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName
 					sc.logger.Info("Found matching task sequence " + taskSequence.Name + " in stage " + stage.Name)
 					return &taskSequence, nil
 				}
+			}
+			// provide built-int task sequence for evaluation
+			if taskSequenceName == keptnv2.EvaluationTaskName {
+				return &keptnv2.Sequence{
+					Name:     "evaluation",
+					Triggers: nil,
+					Tasks: []keptnv2.Task{
+						{
+							Name: keptnv2.EvaluationTaskName,
+						},
+					},
+				}, nil
 			}
 			return nil, errNoTaskSequence
 		}
