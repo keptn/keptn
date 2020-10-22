@@ -98,7 +98,7 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
-	if event.Type == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
+	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
 		return dropProjectEvents(logger, event)
 	}
 	return insertEvent(logger, event)
