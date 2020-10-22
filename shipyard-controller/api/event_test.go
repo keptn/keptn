@@ -1698,6 +1698,62 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "get user-defined evaluation task sequence",
+			fields: fields{
+				projectRepo:      nil,
+				eventRepo:        nil,
+				taskSequenceRepo: nil,
+				logger:           keptncommon.NewLogger("", "", ""),
+			},
+			args: args{
+				stageName:        "dev",
+				taskSequenceName: "evaluation",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: "0.2.0",
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:     "evaluation",
+										Triggers: nil,
+										Tasks: []keptnv2.Task{
+											{
+												Name:       "evaluation",
+												Properties: nil,
+											},
+											{
+												Name:       "notify",
+												Properties: nil,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &keptnv2.Sequence{
+				Name:     "evaluation",
+				Triggers: nil,
+				Tasks: []keptnv2.Task{
+					{
+						Name:       "evaluation",
+						Properties: nil,
+					},
+					{
+						Name:       "notify",
+						Properties: nil,
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
