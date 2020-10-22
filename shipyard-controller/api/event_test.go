@@ -749,24 +749,28 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 }
 
 func shouldContainEvent(t *testing.T, events []models.Event, eventType string, stage string, eval func(t *testing.T, event models.Event) bool) bool {
-	for _, event := range events {
+	var foundEvent *models.Event
+	for index, event := range events {
 		scope, _ := getEventScope(event)
 		if *event.Type == eventType {
-			done := true
 			if stage == "" {
-				done = false
+				foundEvent = &events[index]
+				break
 			} else if stage != "" && scope.Stage == stage {
-				done = false
+				foundEvent = &events[index]
+				break
 			}
-			if !done && eval != nil {
-				return eval(t, event)
-			}
-			return done
 		}
 	}
 
-	t.Errorf("event list does not contain event of type " + eventType)
-	return true
+	if foundEvent == nil {
+		t.Errorf("event list does not contain event of type " + eventType)
+		return true
+	}
+	if eval != nil {
+		return eval(t, *foundEvent)
+	}
+	return false
 }
 
 func shouldNotContainEvent(t *testing.T, events []models.Event, eventType string, stage string) bool {
@@ -973,6 +977,45 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// check if dev.artifact-delivery.finished has been sent
 	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "dev", nil)
+	if done {
+		return
+	}
+
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), "hardening", nil)
+	if done {
+		return
+	}
+
+	done = shouldContainEvent(
+		t,
+		mockEV.receivedEvents,
+		keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		"hardening",
+		func(t *testing.T, event models.Event) bool {
+			marshal, _ := json.Marshal(event.Data)
+			testData := &keptnv2.DeploymentTriggeredEventData{}
+
+			err := json.Unmarshal(marshal, testData)
+
+			if err != nil {
+				t.Errorf("Expected test.triggered data but could not convert: %v: %s", event.Data, err.Error())
+				return true
+			}
+
+			if len(testData.Deployment.DeploymentURIsLocal) != 2 {
+				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			if len(testData.Deployment.DeploymentURIsPublic) != 2 {
+				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			return false
+		},
+	)
+	if done {
+		return
+	}
 
 	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
 		Stage: stringp("dev"),

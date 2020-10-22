@@ -531,7 +531,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 			sc.logger.Error("Could not complete task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
 			return err
 		}
-		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard)
+		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents)
 	} else if err != nil {
 		sc.logger.Error("Could not get next task of sequence: " + err.Error())
 		return err
@@ -539,9 +539,8 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 	return sc.sendTaskTriggeredEvent(event.Shkeptncontext, eventScope, taskSequence.Name, *task, previousFinishedEvents)
 }
 
-func (sc *shipyardController) triggerNextTaskSequences(event models.Event, eventScope *keptnv2.EventData, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard) error {
+func (sc *shipyardController) triggerNextTaskSequences(event models.Event, eventScope *keptnv2.EventData, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}) error {
 
-	// TODO: merge payload from last .finished event of previous task sequence into next .triggered event
 	nextSequences := sc.getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
 
 	for _, sequence := range nextSequences {
@@ -555,7 +554,7 @@ func (sc *shipyardController) triggerNextTaskSequences(event models.Event, event
 			sc.logger.Error("could not send event " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
 			continue
 		}
-		err = sc.proceedTaskSequence(newScope, &sequence.Sequence, event, shipyard, nil, "")
+		err = sc.proceedTaskSequence(newScope, &sequence.Sequence, event, shipyard, previousFinishedEvents, "")
 		if err != nil {
 			sc.logger.Error("could not proceed task sequence " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
 			continue
@@ -704,7 +703,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	eventType := eventScope.Stage + "." + taskSequenceName
 
 	event := cloudevents.NewEvent()
-	event.SetType(eventType)
+	event.SetType(keptnv2.GetTriggeredEventType(eventType))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", keptnContext)
