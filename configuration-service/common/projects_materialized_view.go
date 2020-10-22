@@ -56,6 +56,21 @@ func (mv *projectsMaterializedView) CreateProject(prj *models.Project) error {
 	return nil
 }
 
+// UpdateUpstreamInfo updates the Upstream Repository URL and git user of a project
+func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, user string) error {
+	existingProject, err := mv.GetProject(projectName)
+	if err != nil {
+		return err
+	}
+
+	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
+		existingProject.GitRemoteURI = uri
+		existingProject.GitUser = user
+		return mv.updateProject(existingProject)
+	}
+	return nil
+}
+
 // UpdatedShipyard updates the shipyard of a project
 func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardContent string) error {
 	existingProject, err := mv.GetProject(projectName)
