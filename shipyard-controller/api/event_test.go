@@ -993,21 +993,25 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		"hardening",
 		func(t *testing.T, event models.Event) bool {
 			marshal, _ := json.Marshal(event.Data)
-			testData := &keptnv2.DeploymentTriggeredEventData{}
+			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
 
-			err := json.Unmarshal(marshal, testData)
+			err := json.Unmarshal(marshal, deploymentEvent)
 
 			if err != nil {
 				t.Errorf("Expected test.triggered data but could not convert: %v: %s", event.Data, err.Error())
 				return true
 			}
 
-			if len(testData.Deployment.DeploymentURIsLocal) != 2 {
+			if len(deploymentEvent.Deployment.DeploymentURIsLocal) != 2 {
 				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
 				return true
 			}
-			if len(testData.Deployment.DeploymentURIsPublic) != 2 {
+			if len(deploymentEvent.Deployment.DeploymentURIsPublic) != 2 {
 				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
+				t.Error(fmt.Sprintf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"]))
 				return true
 			}
 			return false
