@@ -9,6 +9,11 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
+type IConfigurationChanger interface {
+	UpdateLoadedChart(chart *chart.Chart, event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)
+	UpdateChart(event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)
+}
+
 // ConfigurationChanger supports to update a Chart in the Git repo
 type ConfigurationChanger struct {
 	configServiceURL string

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"net/url"
 
@@ -83,7 +84,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		onBoarder := createOnboarder(keptnHandler, url, mesh)
 		go onBoarder.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
-		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
+		configChanger := configurationchanger.NewConfigurationChanger(url.String())
+		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, configChanger, url.String())
 		go actionHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
