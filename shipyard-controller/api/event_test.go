@@ -1661,7 +1661,43 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 		want    *keptnv2.Sequence
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "get built-in evaluation task sequence",
+			fields: fields{
+				projectRepo:      nil,
+				eventRepo:        nil,
+				taskSequenceRepo: nil,
+				logger:           keptncommon.NewLogger("", "", ""),
+			},
+			args: args{
+				stageName:        "dev",
+				taskSequenceName: "evaluation",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: "0.2.0",
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name:      "dev",
+								Sequences: []keptnv2.Sequence{},
+							},
+						},
+					},
+				},
+			},
+			want: &keptnv2.Sequence{
+				Name:     "evaluation",
+				Triggers: nil,
+				Tasks: []keptnv2.Task{
+					{
+						Name:       "evaluation",
+						Properties: nil,
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1676,8 +1712,11 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				t.Errorf("getTaskSequenceInStage() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
 				t.Errorf("getTaskSequenceInStage() got = %v, want %v", got, tt.want)
+				for _, d := range diff {
+					t.Log(d)
+				}
 			}
 		})
 	}
