@@ -494,6 +494,8 @@ github.com/keptn/kubernetes-utils v0.2.0 h1:DEjTzixk7TJ6i2HopTlw/d4b1perJR1gmyOO
 github.com/keptn/kubernetes-utils v0.2.0/go.mod h1:YoWRuV28Guz5/mzjo9jVxtMsWAEn0MDXwxK/ScAQlZc=
 github.com/keptn/kubernetes-utils v0.2.1-0.20201023074709-bf60500e4d04 h1:OR3mx/ZEG3U8T0wekYAOFepUH0PHoV/UZvOuNWhpSbM=
 github.com/keptn/kubernetes-utils v0.2.1-0.20201023074709-bf60500e4d04/go.mod h1:qM1RP1Xj+nNR9Fjw4CrrYk1x0JBSfiVbuDYEiaJn7es=
+github.com/keptn/kubernetes-utils v0.2.1-0.20201023093247-d74fe9c6b4b7 h1:6ax2t5qzGvYlV4LPPKe3QaLmasnKPbr/LeYlGHIzUHc=
+github.com/keptn/kubernetes-utils v0.2.1-0.20201023093247-d74fe9c6b4b7/go.mod h1:qM1RP1Xj+nNR9Fjw4CrrYk1x0JBSfiVbuDYEiaJn7es=
 github.com/kinbiko/jsonassert v1.0.1 h1:8gdLmUaPWuxk2TzQSofKRqatFH6zwTF6AsUH4bugJYY=
 github.com/kinbiko/jsonassert v1.0.1/go.mod h1:QRwBwiAsrcJpjw+L+Q4WS8psLxuUY+HylVZS/4j74TM=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
