@@ -1,28 +1,42 @@
-stages:
-  - name: "combi1"
-    approval_strategy:     # approve based on evaluation result from dev
-      pass: "automatic"
-      warning: "automatic"
-    deployment_strategy: "blue_green_service"
-    test_strategy: "performance"
-  - name: "combi2"
-    approval_strategy:     # approve based on evaluation result from combi1
-      pass: "manual"
-      warning: "automatic"
-    deployment_strategy: "blue_green_service"
-    test_strategy: "performance"
-  - name: "combi3"
-    approval_strategy:     # approve based on evaluation result from combi2
-      pass: "automatic"
-      warning: "manual"
-    deployment_strategy: "blue_green_service"
-    test_strategy: "performance"
-  - name: "combi4"
-    approval_strategy:     # approve based on evaluation result from combi3
-      pass: "manual"
-      warning: "manual"
-    deployment_strategy: "blue_green_service"
-    test_strategy: "performance"
-  - name: "production"
-    deployment_strategy: "blue_green_service"
-    remediation_strategy: "automated"
+apiVersion: "spec.keptn.sh/0.2.0"
+kind: "Shipyard"
+metadata:
+  name: "shipyard-sockshop"
+spec:
+  stages:
+    - name: "combi1"
+      sequences:
+        - name: "artifact-delivery"
+          tasks:
+            - name: "approval"
+              properties:
+                pass: "automatic"
+                warning: "automatic"
+
+    - name: "combi2"
+      sequences:
+        - name: "artifact-delivery"
+          tasks:
+            - name: "approval"
+              properties:
+                pass: "manual"
+                warning: "automatic"
+
+    - name: "combi3"
+      sequences:
+        - name: "artifact-delivery"
+          tasks:
+            - name: "approval"
+              properties:
+                pass: "automatic"
+                warning: "manual"
+
+    - name: "combi4"
+      sequences:
+        - name: "artifact-delivery"
+          tasks:
+            - name: "approval"
+              properties:
+                pass: "manual"
+                warning: "manual"
+
