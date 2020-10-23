@@ -125,7 +125,8 @@ type testOnboarderCreator struct {
 }
 
 //Create creates an instance of testOnboarderCreator which full of mocks
-func (toc testOnboarderCreator) Create(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *Onboarder, *mocksCollection) {
+func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *Onboarder, *mocksCollection) {
+
 	ctrl := gomock.NewController(t)
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
 	mockedMesh := mocks.NewMockMesh(ctrl)
@@ -196,15 +197,13 @@ func TestCreateOnboarder(t *testing.T) {
 
 func TestHandleEvent_WhenPassingUnparsableEvent_ThenHandleErrorIsCalled(t *testing.T) {
 
-	toc := testOnboarderCreator{}
-	ctrl, instance, _ := toc.Create(t)
+	ctrl, instance, _ := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 	instance.HandleEvent(createUnparsableEvent(), nilCloser)
 }
 
 func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	instance.HandleEvent(cloudevents.NewEvent(), nilCloser)
@@ -213,8 +212,7 @@ func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
 }
 
 func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, &models.Error{Message: stringp("")})
@@ -224,8 +222,7 @@ func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
 }
 
 func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
@@ -236,8 +233,7 @@ func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 }
 
 func TestHandleEvent_WhenStagesCannotBeFetched_ThenHandleErrorIsCalled(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
@@ -250,8 +246,7 @@ func TestHandleEvent_WhenStagesCannotBeFetched_ThenHandleErrorIsCalled(t *testin
 }
 
 func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
@@ -265,8 +260,7 @@ func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.
 }
 
 func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
@@ -278,8 +272,7 @@ func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *te
 }
 
 func TestHandleEvent_WhenUnableToStoreChart_ThenHandleErrorIsCalled(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
@@ -305,8 +298,7 @@ func TestHandleEvent_WhenSendingFinishedEventFails_ThenHandleErrorisCalled(t *te
 		}
 	}
 
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t, opt)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t, opt)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
@@ -322,8 +314,7 @@ func TestHandleEvent_WhenSendingFinishedEventFails_ThenHandleErrorisCalled(t *te
 }
 
 func TestHandleEvent_OnboardsService(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
@@ -339,8 +330,7 @@ func TestHandleEvent_OnboardsService(t *testing.T) {
 }
 
 func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
@@ -356,8 +346,7 @@ func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
 }
 
 func TestOnboardGeneratedChart_withDirectStrategy_chartGenerationFails(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	moqs.mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
@@ -368,8 +357,7 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartGenerationFails(t *testin
 }
 
 func TestOnboardGeneratedChart_withDirectStrategy_chartPackagingFails(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, mocksCol := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
@@ -383,8 +371,7 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartPackagingFails(t *testing
 }
 
 func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
@@ -401,8 +388,7 @@ func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
 }
 
 func TestOnboardGeneratedChart_injectingIstioConfigFails(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
@@ -416,8 +402,7 @@ func TestOnboardGeneratedChart_injectingIstioConfigFails(t *testing.T) {
 }
 
 func TestOnboardGeneratedChart_chartGenerationFails(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	moqs.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
@@ -428,8 +413,7 @@ func TestOnboardGeneratedChart_chartGenerationFails(t *testing.T) {
 }
 
 func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
-	toc := testOnboarderCreator{}
-	ctrl, instance, moqs := toc.Create(t)
+	ctrl, instance, moqs := NewTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
