@@ -331,6 +331,9 @@ func GetCredentials(project string) (*GitCredentials, error) {
 		return nil, err
 	}
 	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+		mv := GetProjectsMaterializedView()
+		// try to update the materialized view. If this fails, it should not prevent the further execution
+		_ = mv.UpdateUpstreamInfo(project, credentials.RemoteURI, credentials.User)
 		return &credentials, nil
 	}
 	return nil, nil
