@@ -8,7 +8,6 @@ import (
 )
 
 // Handler provides methods for handling received Keptn events
-//go:generate mockgen -package controller -destination=./mock_handler.go . Handler
 type Handler interface {
 	getKeptnHandler() *keptnv2.Keptn
 	getHelmExecutor() helm.HelmExecutor

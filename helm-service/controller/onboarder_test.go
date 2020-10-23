@@ -109,7 +109,7 @@ spec:
 
 //mockColleciton holds all the mocks
 type mocksCollection struct {
-	mockedBaseHandler      *MockHandler
+	mockedBaseHandler      *MockedHandler
 	mockedMesh             *mocks.MockMesh
 	mockedProjectHandler   *mocks.MockProjectOperator
 	mockedNamespaceManager *mocks.MockINamespaceManager
@@ -125,9 +125,9 @@ type testOnboarderCreator struct {
 }
 
 //Create creates an instance of testOnboarderCreator which full of mocks
-func (toc testOnboarderCreator) Create(t *testing.T) (*gomock.Controller, *Onboarder, *mocksCollection) {
+func (toc testOnboarderCreator) Create(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *Onboarder, *mocksCollection) {
 	ctrl := gomock.NewController(t)
-	mockedBaseHandler := NewMockHandler(ctrl)
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
 	mockedMesh := mocks.NewMockMesh(ctrl)
 	mockedProjectHandler := mocks.NewMockProjectOperator(ctrl)
 	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
@@ -197,160 +197,158 @@ func TestCreateOnboarder(t *testing.T) {
 func TestHandleEvent_WhenPassingUnparsableEvent_ThenHandleErrorIsCalled(t *testing.T) {
 
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, _ := toc.Create(t)
 	defer ctrl.Finish()
-
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
-
 	instance.HandleEvent(createUnparsableEvent(), nilCloser)
 }
 
 func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, _ := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	instance.HandleEvent(cloudevents.NewEvent(), nilCloser)
+	assert.Empty(t, moqs.mockedBaseHandler.sentCloudEvents)
+	assert.Empty(t, moqs.mockedBaseHandler.handledErrorEvents)
 }
 
 func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, &models.Error{Message: stringp("")})
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, &models.Error{Message: stringp("")})
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
-	mocksCol.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{}, nil)
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
+	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{}, nil)
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_WhenStagesCannotBeFetched_ThenHandleErrorIsCalled(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mocksCol.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(nil, errors.New("unable to fetch stages"))
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(nil, errors.New("unable to fetch stages"))
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mocksCol.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"}).Return(errors.New("namespace initialization failed"))
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	moqs.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"}).Return(errors.New("namespace initialization failed"))
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
 
 	instance.HandleEvent(createEventWith(t, "EVENT_ID", keptnv2.EventData{Project: "my-project", Stage: "dev", Service: "!§$%&/"}), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_WhenUnableToStoreChart_ThenHandleErrorIsCalled(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mocksCol.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InitNamespaces(gomock.Any(), gomock.Any())
-	mocksCol.mockedServiceHandler.EXPECT().GetService(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	mocksCol.mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.New("unable to store chart"))
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(createKeptn())
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	moqs.mockedNamespaceManager.EXPECT().InitNamespaces(gomock.Any(), gomock.Any())
+	moqs.mockedServiceHandler.EXPECT().GetService(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+	moqs.mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.New("unable to store chart"))
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_WhenSendingFinishedEventFails_ThenHandleErrorisCalled(t *testing.T) {
+
+	opt := func(o *MockedHandlerOptions) {
+		o.SendEventBehavior = func(eventType string) bool {
+			if eventType == "sh.keptn.event.service.create.finished" {
+				return false
+			}
+			return true
+		}
+	}
+
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t, opt)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes()
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mocksCol.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"})
-	mocksCol.mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
-	mocksCol.mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
-	mocksCol.mockedBaseHandler.EXPECT().sendEvent(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to send finished event"))
-	mocksCol.mockedBaseHandler.EXPECT().handleError("EVENT_ID", gomock.Any(), "service.create", gomock.Any())
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	moqs.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"})
+	moqs.mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
+	moqs.mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
 func TestHandleEvent_OnboardsService(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().Return(nil)
-	mocksCol.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	mocksCol.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"})
-	mocksCol.mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
-	mocksCol.mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
-	mocksCol.mockedBaseHandler.EXPECT().sendEvent(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
+	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
+	moqs.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"})
+	moqs.mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
+	moqs.mockedChartStorer.EXPECT().StoreChart(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil)
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	assert.Equal(t, 1, len(moqs.mockedBaseHandler.sentCloudEvents))
 }
 
 func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
 
 	expectedChartAsBytes := []byte("chart_as_bytes")
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
-	mocksCol.mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
-	mocksCol.mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
-	mocksCol.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
+	moqs.mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
+	moqs.mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	moqs.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
 
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Direct)
 	assert.Equal(t, &testChart, generatedChart)
@@ -359,14 +357,10 @@ func TestOnboardGeneratedChart_withDirectStrategy(t *testing.T) {
 
 func TestOnboardGeneratedChart_withDirectStrategy_chartGenerationFails(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mocksCol.mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
+	moqs.mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
 
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Direct)
 	assert.NotNil(t, err)
@@ -380,7 +374,6 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartPackagingFails(t *testing
 
 	testChart := createChart()
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
 	mocksCol.mockedChartGenerator.EXPECT().GenerateMeshChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
 	mocksCol.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(nil, errors.New("chart packaging failed"))
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Direct)
@@ -391,17 +384,16 @@ func TestOnboardGeneratedChart_withDirectStrategy_chartPackagingFails(t *testing
 
 func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
 
 	expectedChartAsBytes := []byte("chart_as_bytes")
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
-	mocksCol.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
-	mocksCol.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
-	mocksCol.mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
+	moqs.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	moqs.mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
+	moqs.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
+	moqs.mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes))
 
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.Equal(t, &testChart, generatedChart)
@@ -410,14 +402,13 @@ func TestOnboardGeneratedChart_withDuplicateStrategy(t *testing.T) {
 
 func TestOnboardGeneratedChart_injectingIstioConfigFails(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
 
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
-	mocksCol.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev").Return(errors.New("failed to inject istio"))
+	moqs.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	moqs.mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev").Return(errors.New("failed to inject istio"))
 
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
@@ -426,14 +417,10 @@ func TestOnboardGeneratedChart_injectingIstioConfigFails(t *testing.T) {
 
 func TestOnboardGeneratedChart_chartGenerationFails(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(keptn)
-	mocksCol.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
+	moqs.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(nil, errors.New("chart generation failed"))
 
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
@@ -442,17 +429,16 @@ func TestOnboardGeneratedChart_chartGenerationFails(t *testing.T) {
 
 func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
 	toc := testOnboarderCreator{}
-	ctrl, instance, mocksCol := toc.Create(t)
+	ctrl, instance, moqs := toc.Create(t)
 	defer ctrl.Finish()
 
 	testChart := createChart()
 
 	expectedChartAsBytes := []byte("chart_as_bytes")
-	mocksCol.mockedBaseHandler.EXPECT().getKeptnHandler().AnyTimes().Return(createKeptn())
-	mocksCol.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
-	mocksCol.mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
-	mocksCol.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
-	mocksCol.mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes)).Return("", errors.New("storing chart failed"))
+	moqs.mockedChartGenerator.EXPECT().GenerateDuplicateChart(helmManifestResource, "myproject", "mydev", "myservice").Return(&testChart, nil)
+	moqs.mockedNamespaceManager.EXPECT().InjectIstio("myproject", "mydev")
+	moqs.mockedChartPackager.EXPECT().PackageChart(&testChart).Return(expectedChartAsBytes, nil)
+	moqs.mockedChartStorer.EXPECT().StoreChart("myproject", "myservice", "mydev", "myservice-generated", gomock.Eq(expectedChartAsBytes)).Return("", errors.New("storing chart failed"))
 
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
