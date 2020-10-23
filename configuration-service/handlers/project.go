@@ -168,7 +168,13 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 			err = common.AddOrigin(params.Project.ProjectName)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
-				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+			}
+
+			mv := common.GetProjectsMaterializedView()
+			if err := mv.UpdateUpstreamInfo(params.Project.ProjectName, credentials.RemoteURI, credentials.User); err != nil {
+				logger.Error(fmt.Sprintf("Could not add upstream repository info for project %s: %v", params.Project.ProjectName, err))
+				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 			}
 		} else {
 			logger.Info("Project " + params.ProjectName + " not updated as Git credentials were missing.")
