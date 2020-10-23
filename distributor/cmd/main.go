@@ -71,7 +71,16 @@ func main() {
 		fmt.Println("Failed to process env var: " + err.Error())
 		os.Exit(1)
 	}
-	go keptnapi.RunHealthEndpoint("10999")
+	//go keptnapi.RunHealthEndpoint("10999")
+
+	var wg sync.WaitGroup
+	   wg.Add(2)
+	   go connectionHTTP(connectionTypeHTTP, &wg)
+	   go connectionNATS(connectionTypeNATS, &wg)
+
+	   wg.Wait()
+
+
 	os.Exit(_main(os.Args[1:], env))
 }
 
@@ -83,9 +92,9 @@ func _main(args []string, env envConfig) int {
 	createEventForwardingEndpoint(env)
 
 	// initialize the http client
-	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
+	//connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
-	switch connectionType {
+/*	switch connectionType {
 	case "":
 		createNATSClientConnection()
 		break
@@ -98,16 +107,38 @@ func _main(args []string, env envConfig) int {
 	default:
 		createNATSClientConnection()
 	}
-
+*/
 	return 0
 }
+
+  func connectionHTTP(connectionType string,  wg *sync.WaitGroup) {
+	  defer wg.Done()
+	  fmt.Printf("Type HTTP connection starting\n" )	
+	http.HandleFunc("/event", EventForwardHandler)
+	http.ListenAndServe("localhost:8081", nil)
+	createHTTPConnection()
+	 fmt.Printf("Type HTTP connection done at %d \n", time.Now())
+
+
+}
+
+
+  func connectionNATS(connectionType string, wg *sync.WaitGroup){
+	defer wg.Done()
+	fmt.Printf("Type NAT connection starting\n" )
+	keptnapi.RunHealthEndpoint("10999")
+	createNATSClientConnection()
+	fmt.Printf("Type NAT connection done at %d \n", time.Now())
+}
+
 
 func createEventForwardingEndpoint(env envConfig) {
 	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")
 
-	http.HandleFunc("/event", EventForwardHandler)
-	go http.ListenAndServe("localhost:8081", nil)
+	//http.HandleFunc("/event", EventForwardHandler)
+	//go http.ListenAndServe("localhost:8081", nil)
+//	http.ListenAndServe("localhost:8081", nil)
 
 }
 
