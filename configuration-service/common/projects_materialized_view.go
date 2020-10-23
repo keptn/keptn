@@ -66,7 +66,10 @@ func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
-		return mv.updateProject(existingProject)
+		if err := mv.updateProject(existingProject); err != nil {
+			mv.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+			return err
+		}
 	}
 	return nil
 }
