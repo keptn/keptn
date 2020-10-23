@@ -10,9 +10,9 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.7.1
-	github.com/keptn/kubernetes-utils v0.2.0
+	github.com/keptn/kubernetes-utils v0.2.1-0.20201023074709-bf60500e4d04
 	github.com/kinbiko/jsonassert v1.0.1
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.1.2
 	k8s.io/api v0.17.2
