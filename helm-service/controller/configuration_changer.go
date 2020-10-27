@@ -313,7 +313,7 @@ func (c *ConfigurationChanger) updateChart(e *keptnevents.ConfigurationChangeEve
 	if err != nil {
 		return nil, err
 	}
-	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, c.configServiceURL); err != nil {
+	if _, err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helmChartName, chartData, c.configServiceURL); err != nil {
 		return nil, err
 	}
 	c.keptnHandler.Logger.Info(fmt.Sprintf("Finished updating chart %s of stage %s", helmChartName, e.Stage))
@@ -346,7 +346,7 @@ func (c *ConfigurationChanger) setCanaryWeight(e *keptnevents.ConfigurationChang
 	if err != nil {
 		return nil, err
 	}
-	if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
+	if _, err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), chartData, c.configServiceURL); err != nil {
 		return nil, err
 	}
 	c.keptnHandler.Logger.Info(fmt.Sprintf("Finished updating canary weight to %d for service %s of project %s in stage %s",
@@ -422,7 +422,7 @@ func (c *ConfigurationChanger) changeCanary(e *keptnevents.ConfigurationChangeEv
 		if err != nil {
 			return err
 		}
-		if err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
+		if _, err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, c.configServiceURL); err != nil {
 			return err
 		}
 		if err := c.upgradeChart(genChart, *e, deploymentStrategy); err != nil {
