@@ -488,8 +488,12 @@ func Test__main(t *testing.T) {
 	os.Setenv("PUBSUB_URL", natsURL)
 
 	natsPublisher, _ := nats.Connect(natsURL)
-
-	go _main(nil, envConfig{})
+	var env envConfig
+	if err := envconfig.Process("", &env); err != nil {
+		t.Errorf("Failed to process env var: %s", err)
+	}
+	env.Port = TEST_PORT + 1
+	go _main(nil, env)
 
 	<-time.After(2 * time.Second)
 
@@ -504,32 +508,27 @@ func Test__main(t *testing.T) {
 
 	select {
 	case <-messageReceived:
-		return
+		t.Logf("Received event!")
 	case <-time.After(5 * time.Second):
 		t.Error("SubscribeToTopics(): timed out waiting for messages")
 	}
 
-	close <- true
-
 	receivedMessage := make(chan bool)
-	var env envConfig
-	if err := envconfig.Process("", &env); err != nil {
-		t.Errorf("Failed to process env var: %s", err)
-	}
 
 	_ = os.Setenv("PUBSUB_URL", natsURL)
 
-	natsClient, _ := nats.Connect(natsURL)
+	natsClient, err := nats.Connect(natsURL)
+	if err != nil {
+		t.Errorf("could not initialize nats client: %s", err.Error())
+	}
 	defer natsClient.Close()
 
 	_, _ = natsClient.Subscribe("sh.keptn.events.deployment-finished", func(m *nats.Msg) {
 		receivedMessage <- true
 	})
 
-	go main()
-
 	<-time.After(2 * time.Second)
-	_, err := http.Post("http://127.0.0.1:"+strconv.Itoa(env.Port), "application/cloudevents+json", bytes.NewBuffer([]byte(`{
+	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.Port)+"/event", "application/cloudevents+json", bytes.NewBuffer([]byte(`{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
@@ -547,4 +546,6 @@ func Test__main(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Errorf("Message did not make it to the receiver")
 	}
+
+	close <- true
 }

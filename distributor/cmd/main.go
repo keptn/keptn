@@ -80,8 +80,19 @@ const connectionTypeHTTP = "http"
 
 func _main(args []string, env envConfig) int {
 
-	createEventForwardingEndpoint(env)
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
 
+	go startEventForwarder(env, wg)
+	go startEventReceiver(wg)
+
+	wg.Wait()
+
+	return 0
+}
+
+func startEventReceiver(waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
 	// initialize the http client
 	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
@@ -98,17 +109,16 @@ func _main(args []string, env envConfig) int {
 	default:
 		createNATSClientConnection()
 	}
-
-	return 0
 }
 
-func createEventForwardingEndpoint(env envConfig) {
+func startEventForwarder(env envConfig, wg *sync.WaitGroup) {
+	defer wg.Done()
 	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")
 
 	http.HandleFunc("/event", EventForwardHandler)
-	go http.ListenAndServe("localhost:8081", nil)
-
+	serverURL := fmt.Sprintf("localhost:%d", env.Port)
+	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 
 // EventForwardHandler godoc
@@ -116,7 +126,7 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		fmt.Printf("Failed to read body from requst: %s", err)
+		fmt.Printf("Failed to read body from requst: %s\n", err)
 		return
 	}
 
@@ -184,16 +194,6 @@ func createPubSubConnection(topic string) (*cenats.Sender, error) {
 		if err != nil {
 			fmt.Printf("Failed to create nats protocol, %s", err.Error())
 		}
-		/*
-			natsConnection, err := cloudeventsnats.New(
-				pubSubURL,
-				topic,
-			)
-			if err != nil {
-				fmt.Printf("Failed to create NATS connection, " + err.Error())
-				return nil, err
-			}
-		*/
 		pubSubConnections[topic] = p
 	}
 
@@ -437,7 +437,7 @@ func stringp(s string) *string {
 
 func createNATSClientConnection() {
 	if os.Getenv("PUBSUB_RECIPIENT") == "" {
-		fmt.Printf("No pubsub recipient defined")
+		fmt.Println("No pubsub recipient defined")
 		return
 	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
@@ -534,10 +534,10 @@ func sendEvent(event cloudevents.Event) error {
 	ctx := cloudevents.ContextWithTarget(context.Background(), recipientURL)
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
-		fmt.Printf("failed to send: %s", result.Error())
+		fmt.Printf("failed to send: %s\n", result.Error())
 		return errors.New(result.Error())
 	}
-	fmt.Printf("sent: %s", event.ID())
+	fmt.Printf("sent: %s\n", event.ID())
 	return nil
 }
 
