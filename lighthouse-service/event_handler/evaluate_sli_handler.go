@@ -501,72 +501,63 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	var evaluationDoneEvents []*keptn.EvaluationDoneEventData
 	var eventIDs []string
 
-	nextPageKey := ""
-	for {
-		// previous results are fetched from mongodb datastore with source=lighthouse-service
-		queryString := fmt.Sprintf(getDatastoreURL()+"/event?type=%s&source=%s&project=%s&stage=%s&service=%s&pageSize=%d&nextPageKey=%s",
-			keptn.EvaluationDoneEventType, "lighthouse-service",
-			e.Project, e.Stage, e.Service, numberOfPreviousResults, nextPageKey)
+	// previous results are fetched from mongodb datastore with source=lighthouse-service
+	queryString := fmt.Sprintf("source=%s&limit=%d&excludeInvalidated=true&",
+		"lighthouse-service", numberOfPreviousResults)
 
-		includeResult = strings.ToLower(includeResult)
+	includeResult = strings.ToLower(includeResult)
 
-		req, err := http.NewRequest("GET", queryString, nil)
-		req.Header.Set("Content-Type", "application/json")
-		resp, err := eh.HTTPClient.Do(req)
-		if err != nil {
-			return nil, nil, err
-		}
-		defer resp.Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
-		if resp.StatusCode != 200 {
-			return nil, nil, errors.New("could not retrieve previous evaluation-done events")
-		}
-		previousEvents := &datastoreResult{}
-		err = json.Unmarshal(body, previousEvents)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		// iterate over previous events
-		for _, event := range previousEvents.Events {
-			bytes, err := json.Marshal(event.Data)
-			if err != nil {
-				continue
-			}
-			var evaluationDoneEvent keptn.EvaluationDoneEventData
-			err = json.Unmarshal(bytes, &evaluationDoneEvent)
-
-			if err != nil {
-				continue
-			}
-			switch includeResult {
-			case "pass":
-				if strings.ToLower(evaluationDoneEvent.Result) == "pass" {
-					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
-					eventIDs = append(eventIDs, event.ID)
-				}
-				break
-			case "pass_or_warn":
-				if strings.ToLower(evaluationDoneEvent.Result) == "pass" || strings.ToLower(evaluationDoneEvent.Result) == "warning" {
-					evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
-					eventIDs = append(eventIDs, event.ID)
-				}
-				break
-			default:
-				evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
-				eventIDs = append(eventIDs, event.ID)
-				break
-			}
-			if len(evaluationDoneEvents) == numberOfPreviousResults {
-				return evaluationDoneEvents, eventIDs, nil
-			}
-		}
-
-		if previousEvents.NextPageKey == "" || previousEvents.NextPageKey == "0" {
-			break
-		}
-		nextPageKey = previousEvents.NextPageKey
+	filter := "filter=data.project:" + e.Project + "%20AND%20data.stage:" + e.Stage + "%20AND%20data.service:" + e.Service
+	switch includeResult {
+	case "pass":
+		filter = filter + "%20AND%20data.result:pass"
+		break
+	case "pass_or_warn":
+		filter = filter + "%20AND%20data.result:pass,warning"
+		break
+	default:
+		break
 	}
+
+	queryString = queryString + filter
+
+	req, err := http.NewRequest("GET", getDatastoreURL()+"/event/type/"+keptn.EvaluationDoneEventType+"?"+queryString, nil)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := eh.HTTPClient.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != 200 {
+		return nil, nil, errors.New("could not retrieve previous evaluation-done events")
+	}
+	previousEvents := &datastoreResult{}
+	err = json.Unmarshal(body, previousEvents)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// iterate over previous events
+	for _, event := range previousEvents.Events {
+		bytes, err := json.Marshal(event.Data)
+		if err != nil {
+			continue
+		}
+		var evaluationDoneEvent keptn.EvaluationDoneEventData
+		err = json.Unmarshal(bytes, &evaluationDoneEvent)
+
+		if err != nil {
+			continue
+		}
+		evaluationDoneEvents = append(evaluationDoneEvents, &evaluationDoneEvent)
+		eventIDs = append(eventIDs, event.ID)
+		if len(evaluationDoneEvents) == numberOfPreviousResults {
+			return evaluationDoneEvents, eventIDs, nil
+		}
+	}
+
 	return evaluationDoneEvents, eventIDs, nil
 }
 
