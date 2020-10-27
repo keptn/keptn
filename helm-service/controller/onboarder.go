@@ -83,7 +83,6 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 	defer closeLogger(o.getKeptnHandler())
 
 	// Check if project exists
-	//projHandler := configutils.NewProjectHandler(o.getConfigServiceURL())
 	if _, err := o.projectHandler.GetProject(models.Project{ProjectName: e.Project}); err != nil {
 		err := fmt.Errorf("failed not retrieve project %s: %s", e.Project, *err.Message)
 		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
@@ -105,7 +104,6 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 	}
 
 	// Initialize Namespace
-	//namespaceMng := namespacemanager.NewNamespaceManager(o.getKeptnHandler().Logger)
 	if err := o.namespaceManager.InitNamespaces(e.Project, stages); err != nil {
 		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -131,7 +129,6 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 // getStages returns a list of stages where the service should be onboarded
 // If the stage of the incoming event is empty, all available stages are returned
 func (o *Onboarder) getStages(e *keptnv2.ServiceCreateFinishedEventData) ([]string, error) {
-	//stageHandler := configutils.NewStageHandler(o.getConfigServiceURL())
 	allStages, err := o.stagesHandler.GetAllStages(e.Project)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retriev stages: %v", err.Error())
@@ -206,7 +203,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 		return err
 	}
 
-	//o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
+	o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
 	if _, err := o.chartStorer.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
 		helmChartData); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())

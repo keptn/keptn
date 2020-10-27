@@ -13,6 +13,14 @@ import (
 	"testing"
 )
 
+func TestCreateDeleteHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
+	instance := NewDeleteHandler(createKeptn(), mockedStagesHandler, "")
+	assert.NotNil(t, instance)
+}
+
 func TestHandleDeleteEvent(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -30,10 +38,7 @@ func TestHandleDeleteEvent(t *testing.T) {
 		stagesHandler: mockedStagesHandler,
 	}
 
-	eventData := keptn.ServiceDeleteEventData{
-		Project: "my-project",
-		Service: "my-service",
-	}
+	eventData := keptn.ServiceDeleteEventData{Project: "my-project", Service: "my-service"}
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, eventData)
@@ -81,7 +86,7 @@ func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
 
 }
 
-func TestWhenGettingStagesFails_ThenErrorMessageIsSent(t *testing.T) {
+func TestWhenGettingStagesFails_Then(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -106,7 +111,7 @@ func TestWhenGettingStagesFails_ThenErrorMessageIsSent(t *testing.T) {
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 }
 
-func TestWhenUninstallingReleaseFails(t *testing.T) {
+func TestWhenUninstallingReleaseFails_FinishedEventIsStillSent(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -154,6 +159,6 @@ func TestWhenUninstallingReleaseFails(t *testing.T) {
 
 	instance.HandleEvent(ce, nilCloser)
 
-	//require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
-	//assert.Equal(t, expectedDeleteFinishedEvent, mockedBaseHandler.sentCloudEvents[0])
+	require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
+	assert.Equal(t, expectedDeleteFinishedEvent, mockedBaseHandler.sentCloudEvents[0])
 }

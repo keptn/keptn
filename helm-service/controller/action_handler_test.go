@@ -61,10 +61,7 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 			Project: "sockshop",
 			Stage:   "production",
 			Service: "carts",
-			Labels:  nil,
 			Status:  keptnv2.StatusSucceeded,
-			Result:  "",
-			Message: "",
 		},
 	})
 
@@ -79,7 +76,6 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 			Project: "sockshop",
 			Stage:   "production",
 			Service: "carts",
-			Labels:  nil,
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 			Message: "Successfully executed scaling action",
@@ -136,10 +132,7 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 			Project: "sockshop",
 			Stage:   "production",
 			Service: "carts",
-			Labels:  nil,
 			Status:  keptnv2.StatusSucceeded,
-			Result:  "",
-			Message: "",
 		},
 	})
 
@@ -154,7 +147,6 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 			Project: "sockshop",
 			Stage:   "production",
 			Service: "carts",
-			Labels:  nil,
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultFailed,
 			Message: "could not parse action.value to int",
@@ -248,9 +240,7 @@ func TestHandleEvent_SendStartEventFails(t *testing.T) {
 			Result:  "fail",
 			Message: "Failed at sending event of type sh.keptn.event.action.started",
 		},
-		Action: keptnv2.ActionData{
-			GitCommit: "",
-		},
+		Action: keptnv2.ActionData{},
 	}
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
@@ -308,9 +298,7 @@ func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 			Result:  "fail",
 			Message: "Failed at sending event of type sh.keptn.event.action.finished",
 		},
-		Action: keptnv2.ActionData{
-			GitCommit: "",
-		},
+		Action: keptnv2.ActionData{},
 	}
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)

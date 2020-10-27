@@ -40,7 +40,6 @@ func (h *DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting uninstalling releases for service %s of project %s",
 		serviceDeleteEvent.Service, serviceDeleteEvent.Project))
 
-	//stageHandler := configutils.NewStageHandler(h.getConfigServiceURL())
 	stages, err := h.stagesHandler.GetAllStages(serviceDeleteEvent.Project)
 	if err != nil {
 		err = fmt.Errorf("error when getting all stages: %v", err)
@@ -48,7 +47,7 @@ func (h *DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 		return
 	}
 
-	allReleasesSuccessfullyUnistalled := true
+	allReleasesSuccessfullyUninstalled := true
 	for _, stage := range stages {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Uninstalling Helm releases for service %s in "+
 			"stage %s and project %s", serviceDeleteEvent.Service, stage.StageName, serviceDeleteEvent.Project))
@@ -57,15 +56,15 @@ func (h *DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 		releaseName := namespace + "-" + serviceDeleteEvent.Service
 		if err := h.getHelmExecutor().UninstallRelease(releaseName, namespace); err != nil {
 			h.getKeptnHandler().Logger.Error(err.Error())
-			allReleasesSuccessfullyUnistalled = false
+			allReleasesSuccessfullyUninstalled = false
 		}
 		if err := h.getHelmExecutor().UninstallRelease(releaseName+"-generated", namespace); err != nil {
 			h.getKeptnHandler().Logger.Error(err.Error())
-			allReleasesSuccessfullyUnistalled = false
+			allReleasesSuccessfullyUninstalled = false
 		}
 	}
 
-	if allReleasesSuccessfullyUnistalled {
+	if allReleasesSuccessfullyUninstalled {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("All Helm releases for service %s in project %s successfully uninstalled",
 			serviceDeleteEvent.Service, serviceDeleteEvent.Project))
 	}

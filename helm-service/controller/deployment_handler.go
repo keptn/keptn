@@ -153,7 +153,7 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 	if err != nil {
 		return nil, err
 	}
-	//onboarder := NewOnboarder(h.getKeptnHandler(), h.mesh, h.getConfigServiceURL())
+
 	return h.onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 }
 
