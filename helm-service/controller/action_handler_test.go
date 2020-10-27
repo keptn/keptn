@@ -21,7 +21,7 @@ func TestCreateActionHandler(t *testing.T) {
 	assert.NotNil(t, instance)
 }
 
-func TestHandleEvent(t *testing.T) {
+func TestHandleActionTriggeredEvent(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

@@ -78,7 +78,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
 		go deploymentHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
-		releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, url.String())
+		configChanger := configurationchanger.NewConfigurationChanger(url.String())
+		chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+		chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
+		chartPackager := keptnutils.NewChartPackager()
+		releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, configChanger, chartGenerator, chartStorer, chartPackager, url.String())
 		go releaseHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
 		onBoarder := createOnboarder(keptnHandler, url, mesh)
@@ -88,7 +92,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, configChanger, url.String())
 		go actionHandler.HandleEvent(event, closeLogger)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
-		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
+		stagesHandler := configutils.NewStageHandler(url.String())
+		deleteHandler := controller.NewDeleteHandler(keptnHandler, stagesHandler, url.String())
 		go deleteHandler.HandleEvent(event, closeLogger)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")
@@ -103,9 +108,9 @@ func createOnboarder(keptnHandler *keptnv2.Keptn, url *url.URL, mesh *mesh.Istio
 	projectHandler := keptnapi.NewProjectHandler(url.String())
 	stagesHandler := configutils.NewStageHandler(url.String())
 	serviceHandler := configutils.NewServiceHandler(url.String())
-	chartStorer := keptnutils.NewChartStorage(utils.NewResourceHandler(url.String()))
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
-	chartPackager := keptnutils.NewChartPackaging()
+	chartPackager := keptnutils.NewChartPackager()
 	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
 	return onBoarder
 }
@@ -115,9 +120,9 @@ func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *me
 	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
 	stagesHandler := configutils.NewStageHandler(url.String())
 	serviceHandler := configutils.NewServiceHandler(url.String())
-	chartStorer := keptnutils.NewChartStorage(utils.NewResourceHandler(url.String()))
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
-	chartPackager := keptnutils.NewChartPackaging()
+	chartPackager := keptnutils.NewChartPackager()
 	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
 	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
 	return deploymentHandler

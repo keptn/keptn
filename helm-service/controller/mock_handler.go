@@ -82,7 +82,7 @@ func (h *MockedHandler) handleError(triggerID string, err error, taskName string
 }
 
 func (h *MockedHandler) sendEvent(triggerID, ceType string, data interface{}) error {
-	if !h.options.SendEventBehavior(ceType) {
+	if h.options.SendEventBehavior != nil && !h.options.SendEventBehavior(ceType) {
 		return errors.New("Failed at sending event of type " + ceType)
 	}
 
