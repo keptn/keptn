@@ -157,7 +157,7 @@ func (a *ActionTriggeredHandler) handleScaling(actionTriggeredEvent keptn.Action
 	if err != nil {
 		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
 	}
-	if err := keptnutils.StoreChart(actionTriggeredEvent.Project, actionTriggeredEvent.Service, actionTriggeredEvent.Stage,
+	if _, err := keptnutils.StoreChart(actionTriggeredEvent.Project, actionTriggeredEvent.Service, actionTriggeredEvent.Stage,
 		helmChartName, chartData, a.configServiceURL); err != nil {
 		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
 	}
