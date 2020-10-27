@@ -167,6 +167,65 @@ func init() {
           }
         }
       }
+    },
+    "/event/type/{eventType}": {
+      "get": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Gets events by their type from the mongodb",
+        "operationId": "getEventsByType",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "name": "excludeInvalidated",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "$ref": "#/parameters/limitParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "eventType",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
@@ -211,6 +270,15 @@ func init() {
     }
   },
   "parameters": {
+    "limitParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "limit",
+      "in": "query"
+    },
     "pageParam": {
       "type": "string",
       "description": "Key of the page to be returned",
@@ -387,6 +455,71 @@ func init() {
           }
         }
       }
+    },
+    "/event/type/{eventType}": {
+      "get": {
+        "tags": [
+          "event"
+        ],
+        "summary": "Gets events by their type from the mongodb",
+        "operationId": "getEventsByType",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "name": "excludeInvalidated",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20,
+            "description": "Page size to be returned",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeptnContextExtendedCE"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "eventType",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
@@ -495,6 +628,15 @@ func init() {
     }
   },
   "parameters": {
+    "limitParam": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer",
+      "default": 20,
+      "description": "Page size to be returned",
+      "name": "limit",
+      "in": "query"
+    },
     "pageParam": {
       "type": "string",
       "description": "Key of the page to be returned",
