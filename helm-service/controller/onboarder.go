@@ -28,7 +28,7 @@ import (
 type Onboarder struct {
 	Handler
 	mesh             mesh.Mesh
-	projectHandler   types.ProjectOperator
+	projectHandler   types.IProjectHandler
 	namespaceManager namespacemanager.INamespaceManager
 	stagesHandler    types.IStagesHandler
 	serviceHandler   types.IServiceHandler
@@ -41,7 +41,7 @@ type Onboarder struct {
 func NewOnboarder(
 	keptnHandler *keptnv2.Keptn,
 	mesh mesh.Mesh,
-	projectHandler types.ProjectOperator,
+	projectHandler types.IProjectHandler,
 	namespaceManager namespacemanager.INamespaceManager,
 	stagesHandler types.IStagesHandler,
 	serviceHandler types.IServiceHandler,

@@ -111,7 +111,7 @@ spec:
 type mocksCollection struct {
 	mockedBaseHandler      *MockedHandler
 	mockedMesh             *mocks.MockMesh
-	mockedProjectHandler   *mocks.MockProjectOperator
+	mockedProjectHandler   *mocks.MockIProjectHandler
 	mockedNamespaceManager *mocks.MockINamespaceManager
 	mockedStagesHandler    *mocks.MockIStagesHandler
 	mockedServiceHandler   *mocks.MockIServiceHandler
@@ -130,7 +130,7 @@ func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHan
 	ctrl := gomock.NewController(t)
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
 	mockedMesh := mocks.NewMockMesh(ctrl)
-	mockedProjectHandler := mocks.NewMockProjectOperator(ctrl)
+	mockedProjectHandler := mocks.NewMockIProjectHandler(ctrl)
 	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
 	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
 	mockedServiceHandler := mocks.NewMockIServiceHandler(ctrl)
@@ -169,7 +169,7 @@ func TestCreateOnboarder(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedMesh := mocks.NewMockMesh(ctrl)
-	mockedProjectHandler := mocks.NewMockProjectOperator(ctrl)
+	mockedProjectHandler := mocks.NewMockIProjectHandler(ctrl)
 	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
 	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
 	mockedServiceHandler := mocks.NewMockIServiceHandler(ctrl)

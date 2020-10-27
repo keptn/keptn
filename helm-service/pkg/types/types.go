@@ -1,11 +1,11 @@
 package types
 
-import (
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/helm-service/pkg/mesh"
-)
+import "github.com/keptn/go-utils/pkg/api/models"
 
-type ProjectOperator interface {
+//This package contains interface definitions for external code
+
+//IProjectHandler defines operations to create/delete/get keptn projects
+type IProjectHandler interface {
 	CreateProject(project models.Project) (*models.EventContext, *models.Error)
 	DeleteProject(project models.Project) (*models.EventContext, *models.Error)
 	GetProject(project models.Project) (*models.Project, *models.Error)
@@ -13,19 +13,13 @@ type ProjectOperator interface {
 	UpdateConfigurationServiceProject(project models.Project) (*models.EventContext, *models.Error)
 }
 
+//IStagesHandler defines operations to create or get deployment stages
 type IStagesHandler interface {
 	CreateStage(project string, stageName string) (*models.EventContext, *models.Error)
 	GetAllStages(project string) ([]*models.Stage, error)
 }
 
-type Mesh interface {
-	GenerateDestinationRule(name string, host string) ([]byte, error)
-	GenerateVirtualService(name string, gateways []string, hosts []string, httpRouteDestinations []mesh.HTTPRouteDestination) ([]byte, error)
-	UpdateWeights(virtualService []byte, canaryWeight int32) ([]byte, error)
-	GetDestinationRuleSuffix() string
-	GetVirtualServiceSuffix() string
-}
-
+//IServiceHandler defines operations to create/delete/get keptn services
 type IServiceHandler interface {
 	CreateServiceInStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
 	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
