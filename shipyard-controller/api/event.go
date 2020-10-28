@@ -506,7 +506,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	}
 
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, db.TriggeredEvent); err != nil {
-		sc.logger.Info("could not store event that triggered tas sequence: " + err.Error())
+		sc.logger.Info("could not store event that triggered task sequence: " + err.Error())
 	}
 
 	eventScope.Stage = stageName
