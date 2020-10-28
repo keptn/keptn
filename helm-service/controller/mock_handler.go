@@ -11,7 +11,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
-// MockHandler mocks typical tasks of a handler
+// MockedHandler mocks typical tasks of a handler
 type MockedHandler struct {
 	keptnHandler       *keptnv2.Keptn
 	helmExecutor       helm.HelmExecutor
@@ -21,10 +21,10 @@ type MockedHandler struct {
 	handledErrorEvents []interface{}
 }
 
-//MockHandlerOption function is used to configure the mock
+// MockedHandlerOption function is used to configure the mock
 type MockedHandlerOption func(*MockedHandlerOptions)
 
-//MockHandlerOptions contains configuration items for the mock
+// MockedHandlerOptions contains configuration items for the mock
 type MockedHandlerOptions struct {
 	SendEventBehavior func(eventType string) bool
 }
@@ -33,7 +33,7 @@ func sendingEventSucceeds(eventType string) bool {
 	return true
 }
 
-// NewMockHandler creates a MockHandler
+// NewMockedHandler creates a MockedHandler
 func NewMockedHandler(keptnHandler *keptnv2.Keptn, configServiceURL string, options ...MockedHandlerOption) *MockedHandler {
 	helmExecutor := helm.NewHelmMockExecutor()
 	opt := MockedHandlerOptions{
