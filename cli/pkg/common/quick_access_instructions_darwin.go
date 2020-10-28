@@ -2,6 +2,7 @@ package common
 
 import "fmt"
 
+// PrintQuickAccessInstructions prints instructions on how to access Keptn via the CLI
 func PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL string) {
 	fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI:\n" +
 		" - kubectl -n " + keptnNamespace + " port-forward service/api-gateway-nginx 8080:80\n" +
