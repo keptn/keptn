@@ -10,7 +10,7 @@ require (
 	github.com/golang/mock v1.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.3-0.20201008173953-84d1386b6a35
-	github.com/keptn/kubernetes-utils v0.2.1-0.20201023093247-d74fe9c6b4b7
+	github.com/keptn/kubernetes-utils v0.2.1-0.20201028073840-0750ebb3521b
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.5.1
 	gotest.tools v2.2.0+incompatible
@@ -27,5 +27,4 @@ require (
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
-	github.com/keptn/kubernetes-utils => ../../kubernetes-utils
 )
