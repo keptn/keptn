@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/types"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -9,7 +10,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // ReleaseHandler is a handler for releasing a service
@@ -18,8 +18,8 @@ type ReleaseHandler struct {
 	mesh                  mesh.Mesh
 	generatedChartHandler helm.ChartGenerator
 	configurationChanger  configurationchanger.IConfigurationChanger
-	chartStorer           keptnutils.ChartStorer
-	chartPackager         keptnutils.ChartPackager
+	chartStorer           types.IChartStorer
+	chartPackager         types.IChartPackager
 }
 
 // NewReleaseHandler creates a ReleaseHandler
@@ -27,8 +27,8 @@ func NewReleaseHandler(keptnHandler *keptnv2.Keptn,
 	mesh mesh.Mesh,
 	configurationChanger configurationchanger.IConfigurationChanger,
 	chartGenerator helm.ChartGenerator,
-	chartStorer keptnutils.ChartStorer,
-	chartPackager keptnutils.ChartPackager,
+	chartStorer types.IChartStorer,
+	chartPackager types.IChartPackager,
 	configServiceURL string) *ReleaseHandler {
 	//generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return &ReleaseHandler{
@@ -182,11 +182,11 @@ func (h *ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 	if err := canaryWeightTo100Updater.Manipulate(newGenChart); err != nil {
 		return err
 	}
-	genChartData, err := h.chartPackager.PackageChart(newGenChart)
+	genChartData, err := h.chartPackager.Package(newGenChart)
 	if err != nil {
 		return err
 	}
-	if _, err := h.chartStorer.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData); err != nil {
+	if _, err := h.chartStorer.Store(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData); err != nil {
 		return err
 	}
 	return h.upgradeChart(newGenChart, e, keptnevents.Duplicate)

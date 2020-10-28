@@ -1,6 +1,9 @@
 package types
 
-import "github.com/keptn/go-utils/pkg/api/models"
+import (
+	"github.com/keptn/go-utils/pkg/api/models"
+	"helm.sh/helm/v3/pkg/chart"
+)
 
 //This package contains interface definitions for external code
 
@@ -25,4 +28,12 @@ type IServiceHandler interface {
 	DeleteServiceFromStage(project string, stage string, serviceName string) (*models.EventContext, *models.Error)
 	GetService(project, stage, service string) (*models.Service, error)
 	GetAllServices(project string, stage string) ([]*models.Service, error)
+}
+
+type IChartStorer interface {
+	Store(project string, service string, stage string, chartName string, helmChart []byte) (string, error)
+}
+
+type IChartPackager interface {
+	Package(ch *chart.Chart) ([]byte, error)
 }

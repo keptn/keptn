@@ -32,9 +32,9 @@ type Onboarder struct {
 	namespaceManager namespacemanager.INamespaceManager
 	stagesHandler    types.IStagesHandler
 	serviceHandler   types.IServiceHandler
-	chartStorer      keptnutils.ChartStorer
+	chartStorer      types.IChartStorer
 	chartGenerator   helm.ChartGenerator
-	chartPackager    keptnutils.ChartPackager
+	chartPackager    types.IChartPackager
 }
 
 // NewOnboarder creates a new Onboarder
@@ -45,9 +45,9 @@ func NewOnboarder(
 	namespaceManager namespacemanager.INamespaceManager,
 	stagesHandler types.IStagesHandler,
 	serviceHandler types.IServiceHandler,
-	chartStorer keptnutils.ChartStorer,
+	chartStorer types.IChartStorer,
 	chartGenerator helm.ChartGenerator,
-	chartPackager keptnutils.ChartPackager,
+	chartPackager types.IChartPackager,
 	configServiceURL string) *Onboarder {
 
 	return &Onboarder{
@@ -204,7 +204,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 	}
 
 	o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
-	if _, err := o.chartStorer.StoreChart(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
+	if _, err := o.chartStorer.Store(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
 		helmChartData); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return err
@@ -245,13 +245,13 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 	}
 
 	o.getKeptnHandler().Logger.Debug(fmt.Sprintf("Storing the Keptn-generated Helm Chart %s for stage %s", helmChartName, event.Stage))
-	generatedChartData, err := o.chartPackager.PackageChart(generatedChart)
+	generatedChartData, err := o.chartPackager.Package(generatedChart)
 	if err != nil {
 		o.getKeptnHandler().Logger.Error("Error when packing the managed chart: " + err.Error())
 		return nil, err
 	}
 
-	if _, err := o.chartStorer.StoreChart(event.Project, event.Service, event.Stage, helmChartName,
+	if _, err := o.chartStorer.Store(event.Project, event.Service, event.Stage, helmChartName,
 		generatedChartData); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return nil, err
