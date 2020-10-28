@@ -30,7 +30,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
-        image: bacherfl/mongodb-datastore:invalidated2
+        image: keptn/mongodb-datastore:latest
         livenessProbe:
           httpGet:
             path: /health
@@ -66,7 +66,7 @@ spec:
                 name: mongodb-credentials
                 key: password
       - name: distributor
-        image: keptn/distributor:0.7.2
+        image: keptn/distributor:latest
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
