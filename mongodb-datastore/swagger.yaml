@@ -8,7 +8,6 @@ consumes:
   - application/cloudevents+json
   - application/json
 produces:
-  - application/cloudevents+json
   - application/json
 paths:
   /event:
