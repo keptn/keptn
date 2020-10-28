@@ -301,11 +301,8 @@ func Test_validateUpdateProjectParams(t *testing.T) {
 			name: "should contain valid Keptn entity name",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     nil,
+					Name:     stringp("my-project"),
+					Shipyard: nil,
 				},
 			},
 			wantErr: false,
@@ -314,11 +311,8 @@ func Test_validateUpdateProjectParams(t *testing.T) {
 			name: "should contain valid Keptn entity name",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my@project"),
-					Shipyard:     nil,
+					Name:     stringp("my@project"),
+					Shipyard: nil,
 				},
 			},
 			wantErr: true,
@@ -346,11 +340,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "invalid entity name",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my@project"),
-					Shipyard:     nil,
+					Name:     stringp("my@project"),
+					Shipyard: nil,
 				},
 			},
 			wantErr: true,
@@ -359,11 +350,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "no shipyard provided",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     nil,
+					Name:     stringp("my-project"),
+					Shipyard: nil,
 				},
 			},
 			wantErr: true,
@@ -372,11 +360,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "no shipyard provided 2",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     stringp(""),
+					Name:     stringp("my-project"),
+					Shipyard: stringp(""),
 				},
 			},
 			wantErr: true,
@@ -385,11 +370,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "no base64 encoded shipyard",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     stringp(testShipyardFile),
+					Name:     stringp("my-project"),
+					Shipyard: stringp(testShipyardFile),
 				},
 			},
 			wantErr: true,
@@ -398,11 +380,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "base64 encoded shipyard with invalid version",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     stringp(testBase64EncodedShipyardContentWithInvalidVersion),
+					Name:     stringp("my-project"),
+					Shipyard: stringp(testBase64EncodedShipyardContentWithInvalidVersion),
 				},
 			},
 			wantErr: true,
@@ -411,11 +390,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "base64 encoded shipyard with invalid stage",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     stringp(testBase64EncodedShipyardContentWithInvalidStage),
+					Name:     stringp("my-project"),
+					Shipyard: stringp(testBase64EncodedShipyardContentWithInvalidStage),
 				},
 			},
 			wantErr: true,
@@ -424,11 +400,8 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			name: "base64 encoded shipyard with valid version",
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
-					GitRemoteURL: "",
-					GitToken:     "",
-					GitUser:      "",
-					Name:         stringp("my-project"),
-					Shipyard:     stringp(testBase64EncodedShipyardContent),
+					Name:     stringp("my-project"),
+					Shipyard: stringp(testBase64EncodedShipyardContent),
 				},
 			},
 			wantErr: false,

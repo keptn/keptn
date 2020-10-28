@@ -73,25 +73,25 @@ var delProjectCmd = &cobra.Command{
 				apiProject, err := projectsHandler.GetProject(project)
 
 				if err != nil {
-					fmt.Println("Could not retrieve information about project " + project.ProjectName + ": " + *err.Message)
+					logging.PrintLog("Could not retrieve information about project "+project.ProjectName+": "+*err.Message, logging.InfoLevel)
 					return fmt.Errorf("Could not retrieve information about project %s: %s", project.ProjectName, *err.Message)
 				} else if apiProject == nil {
 					msg := "Project " + project.ProjectName + " not found"
-					fmt.Println(msg)
+					logging.PrintLog(msg, logging.InfoLevel)
 					return fmt.Errorf(msg)
 				}
 
 				if len(apiProject.Stages) > 0 {
 					fmt.Println("Deleting services of project " + project.ProjectName + "...")
 					for _, service := range apiProject.Stages[0].Services {
-						fmt.Println("Deleting service " + service.ServiceName)
+						logging.PrintLog("Deleting service "+service.ServiceName, logging.InfoLevel)
 						deleteResp, err := apiHandler.DeleteService(project.ProjectName, service.ServiceName)
 						if err != nil {
-							fmt.Println("Delete project was unsuccessful")
+							logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 							return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 						}
-						fmt.Println("Project deleted successfully")
-						fmt.Println(deleteResp.Message)
+						logging.PrintLog("Project deleted successfully", logging.InfoLevel)
+						logging.PrintLog(deleteResp.Message, logging.InfoLevel)
 					}
 				}
 			}

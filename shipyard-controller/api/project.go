@@ -266,7 +266,20 @@ func (pm *projectManager) getDeleteInfoMessage(project string) string {
 }
 
 func (pm *projectManager) updateProject(params *operations.CreateProjectParams) error {
-	pm.logger.Info(fmt.Sprintf("checking if project %s already exists before creating it", *params.Name))
+	pm.logger.Info(fmt.Sprintf("checking if project %s exists before updating it", *params.Name))
+	project, err := pm.projectAPI.GetProject(keptnapimodels.Project{
+		ProjectName: *params.Name,
+	})
+	if err != nil {
+		msg := fmt.Sprintf("Could not check if project %s exists; %s", *params.Name, err.Message)
+		pm.logger.Error(msg)
+		return errors.New(msg)
+	}
+	if project == nil {
+		msg := fmt.Sprintf("Project %s does not exist", *params.Name)
+		pm.logger.Error(msg)
+		return errors.New(msg)
+	}
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
 		if err := pm.createUpstreamRepoCredentials(params); err != nil {
 			return pm.logAndReturnError(err.Error())

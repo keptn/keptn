@@ -87,7 +87,7 @@ For more information about updating projects or upstream repositories, please go
 				return fmt.Errorf("Update project was unsuccessful. %s", *err.Message)
 			}
 
-			logging.PrintLog("Project updated successfuly", logging.InfoLevel)
+			logging.PrintLog("Project updated successfully", logging.InfoLevel)
 			return nil
 		}
 
