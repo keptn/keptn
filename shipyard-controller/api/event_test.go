@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-test/deep"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -839,11 +838,11 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 			}
 
 			if deploymentEvent.Deployment.DeploymentStrategy != "direct" {
-				t.Error(fmt.Sprintf("did not receive correct deployment strategy. Expected 'direct' but got '%s'", deploymentEvent.Deployment.DeploymentStrategy))
+				t.Errorf("did not receive correct deployment strategy. Expected 'direct' but got '%s'", deploymentEvent.Deployment.DeploymentStrategy)
 				return true
 			}
 			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
-				t.Error(fmt.Sprintf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"]))
+				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
 				return true
 			}
 			return false
@@ -1027,7 +1026,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 				return true
 			}
 			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
-				t.Error(fmt.Sprintf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"]))
+				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
 				return true
 			}
 			return false
