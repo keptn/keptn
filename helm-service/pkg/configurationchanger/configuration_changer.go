@@ -9,6 +9,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
+// IConfigurationChanger defines operations to change the configuration of a helm chart
 type IConfigurationChanger interface {
 	UpdateLoadedChart(chart *chart.Chart, event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)
 	UpdateChart(event keptnv2.EventData, generated bool, chartUpdater ChartManipulator) (*chart.Chart, string, error)

@@ -21,7 +21,10 @@ type MockedHandler struct {
 	handledErrorEvents []interface{}
 }
 
+//MockHandlerOption function is used to configure the mock
 type MockedHandlerOption func(*MockedHandlerOptions)
+
+//MockHandlerOptions contains configuration items for the mock
 type MockedHandlerOptions struct {
 	SendEventBehavior func(eventType string) bool
 }

@@ -125,7 +125,7 @@ type mocksCollection struct {
 type testOnboarderCreator struct {
 }
 
-//Create creates an instance of testOnboarderCreator which full of mocks
+//NewTestOnboarderCreator creates an instance of testOnboarderCreator which uses only mocks
 func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *Onboarder, *mocksCollection) {
 
 	ctrl := gomock.NewController(t)
