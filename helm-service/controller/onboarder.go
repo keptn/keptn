@@ -204,8 +204,16 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 	}
 
 	o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
-	if _, err := o.chartStorer.Store(event.Project, event.Service, stageName, helm.GetChartName(event.Service, false),
-		helmChartData); err != nil {
+
+	storeOpts := keptnutils.StoreChartOptions{
+		Project:   event.Project,
+		Service:   event.Service,
+		Stage:     stageName,
+		ChartName: helm.GetChartName(event.Service, false),
+		HelmChart: helmChartData,
+	}
+
+	if _, err := o.chartStorer.Store(storeOpts); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return err
 	}
@@ -251,8 +259,15 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 		return nil, err
 	}
 
-	if _, err := o.chartStorer.Store(event.Project, event.Service, event.Stage, helmChartName,
-		generatedChartData); err != nil {
+	storeOpts := keptnutils.StoreChartOptions{
+		Project:   event.Project,
+		Service:   event.Service,
+		Stage:     event.Stage,
+		ChartName: helmChartName,
+		HelmChart: generatedChartData,
+	}
+
+	if _, err := o.chartStorer.Store(storeOpts); err != nil {
 		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
 		return nil, err
 	}

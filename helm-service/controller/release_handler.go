@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/keptn/keptn/helm-service/pkg/types"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -186,7 +187,16 @@ func (h *ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 	if err != nil {
 		return err
 	}
-	if _, err := h.chartStorer.Store(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData); err != nil {
+
+	storeOpts := keptnutils.StoreChartOptions{
+		Project:   e.Project,
+		Service:   e.Service,
+		Stage:     e.Stage,
+		ChartName: helm.GetChartName(e.Service, true),
+		HelmChart: genChartData,
+	}
+
+	if _, err := h.chartStorer.Store(storeOpts); err != nil {
 		return err
 	}
 	return h.upgradeChart(newGenChart, e, keptnevents.Duplicate)

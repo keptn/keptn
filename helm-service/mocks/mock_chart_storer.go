@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // MockIChartStorer is a mock of IChartStorer interface.
@@ -34,16 +35,16 @@ func (m *MockIChartStorer) EXPECT() *MockIChartStorerMockRecorder {
 }
 
 // Store mocks base method.
-func (m *MockIChartStorer) Store(arg0, arg1, arg2, arg3 string, arg4 []byte) (string, error) {
+func (m *MockIChartStorer) Store(arg0 keptnkubeutils.StoreChartOptions) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Store", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "Store", arg0)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Store indicates an expected call of Store.
-func (mr *MockIChartStorerMockRecorder) Store(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockIChartStorerMockRecorder) Store(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockIChartStorer)(nil).Store), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockIChartStorer)(nil).Store), arg0)
 }

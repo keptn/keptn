@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 )
 
@@ -30,10 +31,12 @@ type IServiceHandler interface {
 	GetAllServices(project string, stage string) ([]*models.Service, error)
 }
 
+//IChartStorer defines opration to store a halem chart
 type IChartStorer interface {
-	Store(project string, service string, stage string, chartName string, helmChart []byte) (string, error)
+	Store(storeChartOpts keptnutils.StoreChartOptions) (string, error)
 }
 
+//IChartPackages defines the operation to package a helm chart
 type IChartPackager interface {
 	Package(ch *chart.Chart) ([]byte, error)
 }
