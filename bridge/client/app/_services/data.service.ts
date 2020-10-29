@@ -21,7 +21,7 @@ export class DataService {
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
-  private _keptnInfo = new BehaviorSubject<Object>({});
+  private _keptnInfo = new BehaviorSubject<Object>(null);
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
