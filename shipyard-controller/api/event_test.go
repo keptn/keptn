@@ -578,7 +578,7 @@ func getArtifactDeliveryTriggeredEvent() models.Event {
 					"image": "carts",
 				},
 			},
-			Deployment: keptnv2.DeploymentData{
+			Deployment: keptnv2.DeploymentWithStrategy{
 				DeploymentStrategy: "direct",
 			},
 		},
@@ -1017,14 +1017,6 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 				return true
 			}
 
-			if len(deploymentEvent.Deployment.DeploymentURIsLocal) != 2 {
-				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
-				return true
-			}
-			if len(deploymentEvent.Deployment.DeploymentURIsPublic) != 2 {
-				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
-				return true
-			}
 			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
 				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
 				return true
