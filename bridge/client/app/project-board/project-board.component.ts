@@ -54,8 +54,17 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public filterEventType: string = null;
 
   public integrationsExternalDetails = null;
-  public triggerQualityGateEvaluationViaCli;
-  public triggerQualityGateEvaluationViaApi;
+
+  public useCaseExamples = {
+    'cli': [{
+      label: 'Trigger a quality gate evaluation',
+      code: ''
+    }],
+    'api': [{
+      label: 'Trigger a quality gate evaluation',
+      code: ''
+    }]
+  };
 
   public keptnInfo: any;
   public currentTime: String;
@@ -155,20 +164,52 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       });
 
     this.dataService.keptnInfo
+      .pipe(filter(keptnInfo => !!keptnInfo))
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
+        if(this.keptnInfo.bridgeInfo.keptnInstallationType != "QUALITY_GATES_ONLY") {
+          this.addDeploymentUseCaseToIntegrations();
+          this.addRemediationUseCaseToIntegrations();
+        }
       });
   }
 
   updateIntegrations() {
     this.currentTime = moment.utc().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
-    this.triggerQualityGateEvaluationViaCli = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
-    this.triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
+    this.useCaseExamples['cli'].find(e => e.label == 'Trigger a quality gate evaluation').code = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
+    this.useCaseExamples['api'].find(e => e.label == 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\
     -H "Content-Type: application/json; charset=utf-8" \\
     -d "{"start": "${this.currentTime}", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
+  }
+
+  addDeploymentUseCaseToIntegrations() {
+    this.useCaseExamples['cli'].unshift({
+      label: 'Trigger deployment with a new artifact',
+      code: `keptn send event new-artifact --project=\${PROJECT} --service=\${SERVICE}--image=\${IMAGE} --tag=\${TAG}`
+    });
+    this.useCaseExamples['api'].unshift({
+      label: 'Trigger deployment with a new artifact',
+      code: `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/event" \\
+      -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
+      -d "{"type":"sh.keptn.event.configuration.change","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}","valuesCanary":{"image":"\${IMAGE}"}}}"`
+    });
+  }
+
+  addRemediationUseCaseToIntegrations() {
+    this.useCaseExamples['cli'].push({
+      label: 'Trigger remediation with a dummy problem event (Note: Linux/mac OS only)',
+      code: `echo '{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}' > dummy_problem.json \\
+      keptn send event -f=dummy_problem.json`
+    });
+    this.useCaseExamples['api'].push({
+      label: 'Trigger remediation with a dummy problem event',
+      code: `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/event" \\
+      -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
+      -d "{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}"`
+    });
   }
 
   selectRoot(event: any): void {
@@ -293,13 +334,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   loadIntegrations() {
-    this.integrationsExternalDetails = "<p>Loading ...</p>";
+    this.integrationsExternalDetails = '<p>Loading ...</p>';
     this.apiService.getIntegrationsPage()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((result: string) => {
         this.integrationsExternalDetails = result;
       }, (err: Error) => {
-        this.integrationsExternalDetails = "<p>Couldn't load page. For more details see <a href='https://keptn.sh/docs/integrations/' target='_blank' rel='noopener noreferrer'>https://keptn.sh/docs/integrations/</a>";
+        this.integrationsExternalDetails = '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
       });
   }
 
