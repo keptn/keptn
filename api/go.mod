@@ -19,7 +19,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
-	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
+	github.com/keptn/kubernetes-utils v0.2.1-0.20201029154415-2daed53d088b
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/magiconair/properties v1.8.1
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9

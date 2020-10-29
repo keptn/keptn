@@ -9,7 +9,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.6.3-0.20201008173953-84d1386b6a35
-	github.com/keptn/kubernetes-utils v0.2.1-0.20201023093247-d74fe9c6b4b7
+	github.com/keptn/kubernetes-utils v0.2.1-0.20201029154415-2daed53d088b
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.5.1
 	gotest.tools v2.2.0+incompatible
