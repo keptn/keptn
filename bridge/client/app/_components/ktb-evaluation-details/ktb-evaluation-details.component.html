@@ -38,10 +38,10 @@
     </dt-chart>
   </div>
   <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData" (click)="$event.stopPropagation();">
-    <div fxLayout="row" *ngIf="_selectedEvaluationData.data.evaluationdetails.sloFileContentParsed">
+    <div fxLayout="row">
       <div fxFlex></div>
       <div fxLayout="row" fxLayoutAlign="start end">
-        <button dt-button variant="nested" (click)="showSloDialog()">Show SLO</button>
+        <button dt-button variant="nested" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluationdetails.sloFileContentParsed">Show SLO</button>
         <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()">Ignore for comparison</button>
       </div>
     </div>
