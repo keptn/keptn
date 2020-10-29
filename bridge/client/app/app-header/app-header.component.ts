@@ -47,6 +47,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       });
 
     this.dataService.keptnInfo
+      .pipe(filter(keptnInfo => !!keptnInfo))
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
