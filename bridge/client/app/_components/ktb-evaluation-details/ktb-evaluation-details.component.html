@@ -40,8 +40,9 @@
   <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData" (click)="$event.stopPropagation();">
     <div fxLayout="row" *ngIf="_selectedEvaluationData.data.evaluationdetails.sloFileContentParsed">
       <div fxFlex></div>
-      <div fxLayout="column" fxLayoutAlign="start end">
-        <p class="m-0"><a class="dt-link" (click)="showSloDialog()">Show SLO</a></p>
+      <div fxLayout="row" fxLayoutAlign="start end">
+        <button dt-button variant="nested" (click)="showSloDialog()">Show SLO</button>
+        <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()">Ignore for comparison</button>
       </div>
     </div>
     <dt-consumption [max]="_selectedEvaluationData.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.data.evaluationdetails.score" [color]="_evaluationState[_selectedEvaluationData.data.result]">
@@ -85,4 +86,16 @@
     <button dt-button (click)="closeSloDialog()">Close</button>
   </div>
 </ng-template>
-
+<ng-template #invalidateEvaluationDialog let-data>
+  <h1 mat-dialog-title>Invalidate evaluation</h1>
+  <div mat-dialog-content>
+    <dt-form-field>
+      <dt-label>Reason</dt-label>
+      <input #reasonInput class="wide-input" type="text" dtInput placeholder="Place for a comment why it has been invalidated (optional)" />
+    </dt-form-field>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="invalidateEvaluation(data, reasonInput.value)">Invalidate</button>
+    <button dt-button (click)="closeInvalidateEvaluationDialog()">Close</button>
+  </div>
+</ng-template>

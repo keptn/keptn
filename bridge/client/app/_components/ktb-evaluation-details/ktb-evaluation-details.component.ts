@@ -26,6 +26,7 @@ import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import { ClipboardService } from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -40,6 +41,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   @ViewChild('sloDialog')
   public sloDialog: TemplateRef<any>;
   public sloDialogRef: MatDialogRef<any, any>;
+
+  @ViewChild('invalidateEvaluationDialog')
+  public invalidateEvaluationDialog: TemplateRef<any>;
+  public invalidateEvaluationDialogRef: MatDialogRef<any, any>;
 
   private heatmapChart: DtChart;
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
@@ -168,7 +173,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService) { }
 
   ngOnInit() {
     if(this._evaluationData) {
@@ -178,9 +183,18 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((event) => {
-        if(this.evaluationData === event) {
-          this.updateChartData(event.data.evaluationHistory);
+      .subscribe((results) => {
+        if(results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
+          this.evaluationData.data.evaluationHistory = [...results.traces||[], ...this.evaluationData.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+          this.updateChartData(this.evaluationData.data.evaluationHistory);
+          this._changeDetectorRef.markForCheck();
+        } else if(results.type == "invalidateEvaluation" &&
+          this.evaluationData.data.project == results.triggerEvent.data.project &&
+          this.evaluationData.data.service == results.triggerEvent.data.service &&
+          this.evaluationData.data.stage == results.triggerEvent.data.stage) {
+          this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
+          this._selectedEvaluationData = null;
+          this.updateChartData(this.evaluationData.data.evaluationHistory);
           this._changeDetectorRef.markForCheck();
         }
       });
@@ -405,6 +419,24 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if (this.sloDialogRef) {
       this.sloDialogRef.close();
     }
+  }
+
+  copySloPayload(plainEvent: string): void {
+    this.clipboard.copy(plainEvent, 'slo payload');
+  }
+
+  invalidateEvaluationTrigger() {
+    this.invalidateEvaluationDialogRef = this.dialog.open(this.invalidateEvaluationDialog, { data: this._selectedEvaluationData });
+  }
+
+  invalidateEvaluation(evaluation, reason) {
+    this.dataService.invalidateEvaluation(evaluation, reason);
+    this.closeInvalidateEvaluationDialog();
+  }
+
+  closeInvalidateEvaluationDialog() {
+    if (this.invalidateEvaluationDialogRef)
+      this.invalidateEvaluationDialogRef.close();
   }
 
   ngOnDestroy(): void {
