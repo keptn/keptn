@@ -42,6 +42,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public sloDialog: TemplateRef<any>;
   public sloDialogRef: MatDialogRef<any, any>;
 
+  @ViewChild('invalidateEvaluationDialog')
+  public invalidateEvaluationDialog: TemplateRef<any>;
+  public invalidateEvaluationDialogRef: MatDialogRef<any, any>;
+
   private heatmapChart: DtChart;
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
     this.heatmapChart = heatmap;
@@ -179,9 +183,18 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((event) => {
-        if(this.evaluationData === event) {
-          this.updateChartData(event.data.evaluationHistory);
+      .subscribe((results) => {
+        if(results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
+          this.evaluationData.data.evaluationHistory = [...results.traces||[], ...this.evaluationData.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+          this.updateChartData(this.evaluationData.data.evaluationHistory);
+          this._changeDetectorRef.markForCheck();
+        } else if(results.type == "invalidateEvaluation" &&
+          this.evaluationData.data.project == results.triggerEvent.data.project &&
+          this.evaluationData.data.service == results.triggerEvent.data.service &&
+          this.evaluationData.data.stage == results.triggerEvent.data.stage) {
+          this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
+          this._selectedEvaluationData = null;
+          this.updateChartData(this.evaluationData.data.evaluationHistory);
           this._changeDetectorRef.markForCheck();
         }
       });
@@ -410,6 +423,20 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   copySloPayload(plainEvent: string): void {
     this.clipboard.copy(plainEvent, 'slo payload');
+  }
+
+  invalidateEvaluationTrigger() {
+    this.invalidateEvaluationDialogRef = this.dialog.open(this.invalidateEvaluationDialog, { data: this._selectedEvaluationData });
+  }
+
+  invalidateEvaluation(evaluation, reason) {
+    this.dataService.invalidateEvaluation(evaluation, reason);
+    this.closeInvalidateEvaluationDialog();
+  }
+
+  closeInvalidateEvaluationDialog() {
+    if (this.invalidateEvaluationDialogRef)
+      this.invalidateEvaluationDialogRef.close();
   }
 
   ngOnDestroy(): void {
