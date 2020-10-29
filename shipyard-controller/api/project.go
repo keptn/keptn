@@ -271,7 +271,7 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 		ProjectName: *params.Name,
 	})
 	if err != nil {
-		msg := fmt.Sprintf("Could not check if project %s exists; %s", *params.Name, err.Message)
+		msg := fmt.Sprintf("Could not check if project %s exists; %s", *params.Name, *err.Message)
 		pm.logger.Error(msg)
 		return errors.New(msg)
 	}
