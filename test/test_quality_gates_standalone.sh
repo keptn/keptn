@@ -652,7 +652,7 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-first_event_id=$(echo "${$response}" | jq -r "id")
+first_event_id=$(echo "${response}" | jq -r ".id")
 
 second_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
