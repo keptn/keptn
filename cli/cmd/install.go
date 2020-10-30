@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -44,6 +45,7 @@ type installCmdParams struct {
 	UseCase                  usecase
 	EndPointServiceTypeInput *string
 	EndPointServiceType      endpointServiceType
+	HideSensitiveData        *bool
 }
 
 var installParams installCmdParams
@@ -62,6 +64,8 @@ For more information, please follow the installation guide [Install Keptn](https
 keptn install --platform=openshift --use-case=continuous-delivery    # install continuous delivery on Openshift
 
 keptn install --platform=kubernetes --endpoint-service-type=NodePort # install on Kubernetes with gateway NodePort
+
+keptn install --hide-sensitive-data  # install on kubernetes and hides sensitive data like api-token and endpoint in post-installation output
 `,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -180,6 +184,9 @@ func init() {
 
 	installParams.Namespace = installCmd.Flags().StringP("namespace", "n", "keptn",
 		"Specify the namespace where Keptn should be installed in (default keptn).")
+	installParams.HideSensitiveData = installCmd.Flags().BoolP("hide-sensitive-data", "", false,
+		"Hide the sensitive data like api-tokens and endpoints in post-installation output.")
+
 }
 
 // Preconditions: 1. Already authenticated against the cluster.
@@ -233,20 +240,31 @@ func doInstallation() error {
 	}
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
+
+	// Hide sensitive information like api-token and endpoint in post-installation output
+	if *installParams.HideSensitiveData {
+		return nil
+	}
+
 	logging.PrintLog("---------------------------------------------------", logging.InfoLevel)
+
+	apiToken, err := getAPITokenFromSecret(keptnNamespace)
+	if err != nil {
+		apiToken = "$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)"
+	}
 
 	if installParams.EndPointServiceType.String() == "NodePort" || installParams.EndPointServiceType.String() == "LoadBalancer" {
 		endpoint, err := getAPIEndpoint(keptnNamespace, installParams.EndPointServiceType.String())
 		if err == nil {
 			showFallbackConnectMessage = false
 			fmt.Println("* To quickly access Keptn, you can authenticate your Keptn CLI (in a Linux shell):\n" +
-				" - keptn auth --endpoint=" + endpoint + " --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
+				" - keptn auth --endpoint=" + endpoint + " --api-token=" + apiToken + "\n")
 		}
 	}
 	if showFallbackConnectMessage {
 		fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n" +
 			" - kubectl -n " + keptnNamespace + " port-forward service/api-gateway-nginx 8080:80\n" +
-			" - keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
+			" - keptn auth --endpoint=http://localhost:8080/api --api-token=" + apiToken + "\n")
 	}
 	fmt.Println("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n" +
 		" - https://keptn.sh/docs/" + keptnReleaseDocsURL + "/operate/install#install-keptn\n")
@@ -300,4 +318,18 @@ func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 		return "http://" + endpoint + "/api", nil
 	}
 	return "", errors.New("Unknown service-type: " + serviceType)
+}
+
+func getAPITokenFromSecret(keptnNamespace string) (string, error) {
+	apiToken, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "secret", "keptn-api-token", "-n", keptnNamespace, "-ojsonpath='{.data.keptn-api-token}'"})
+	apiToken = strings.Trim(apiToken, "'")
+	if err != nil {
+		return "", err
+	}
+	data, err := base64.StdEncoding.DecodeString(apiToken)
+	if err != nil {
+		return "", err
+	}
+	apiToken = string(data)
+	return apiToken, nil
 }
