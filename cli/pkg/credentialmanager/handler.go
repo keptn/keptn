@@ -124,6 +124,12 @@ func handleCustomCreds(configLocation string) (url.URL, string, error) {
 }
 
 func getCurrentContextFromKubeConfig() (string, error) {
+	if MockAuthCreds {
+		// Do nothing
+		kubeConfigFile.CurrentContext = ""
+		return "", nil
+	}
+
 	var kubeconfig string
 	if os.Getenv("KUBECONFIG") != "" {
 		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
@@ -146,6 +152,11 @@ func getCurrentContextFromKubeConfig() (string, error) {
 }
 
 func checkForContextChange(currentContext string, cliConfigManager *config.CLIConfigManager) error {
+
+	if MockAuthCreds {
+		// Do nothing
+		return nil
+	}
 	cliConfig, err := cliConfigManager.LoadCLIConfig()
 	if err != nil {
 		log.Fatal(err)
