@@ -3,6 +3,7 @@ package credentialmanager
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -21,12 +22,14 @@ import (
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
 
 const testAPIToken = "super-secret"
+const testNamespace = "keptn-test-namespace"
 
 const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
 const installCredsKey = "https://keptn-install.sh"
 
 var MockAuthCreds bool
+var MockKubeConfigCheck bool
 
 type credsConfig struct {
 	APIToken string `json:"api_token"`
@@ -40,12 +43,6 @@ type kubeConfigFileType struct {
 var kubeConfigFile kubeConfigFileType
 
 func init() {
-	cliConfigManager := config.NewCLIConfigManager()
-	currentContext, err := getCurrentContextFromKubeConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	checkForContextChange(currentContext, cliConfigManager)
 	credentials.SetCredsLabel(credsLab)
 }
 
@@ -123,8 +120,18 @@ func handleCustomCreds(configLocation string) (url.URL, string, error) {
 	return *parsedURL, credsConfig.APIToken, nil
 }
 
+// initChecks needs to be run when credentialManager is called or initilized
+func initChecks() {
+	cliConfigManager := config.NewCLIConfigManager()
+	currentContext, err := getCurrentContextFromKubeConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	checkForContextChange(currentContext, cliConfigManager)
+}
+
 func getCurrentContextFromKubeConfig() (string, error) {
-	if MockAuthCreds {
+	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
 		kubeConfigFile.CurrentContext = ""
 		return "", nil
@@ -153,7 +160,7 @@ func getCurrentContextFromKubeConfig() (string, error) {
 
 func checkForContextChange(currentContext string, cliConfigManager *config.CLIConfigManager) error {
 
-	if MockAuthCreds {
+	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
 		return nil
 	}
@@ -172,7 +179,8 @@ func checkForContextChange(currentContext string, cliConfigManager *config.CLICo
 		}
 		in = strings.ToLower(strings.TrimSpace(in))
 		if !(in == "y" || in == "yes") {
-			return fmt.Errorf("stopping installation")
+			err := errors.New("stopping installation")
+			log.Fatal(err)
 		}
 		cliConfig.CurrentContext = currentContext
 		err = cliConfigManager.StoreCLIConfig(cliConfig)

@@ -10,6 +10,7 @@ type CredentialManager struct {
 }
 
 func NewCredentialManager() (cm *CredentialManager) {
+	initChecks()
 	return &CredentialManager{}
 }
 

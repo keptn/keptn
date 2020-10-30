@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/docker-credential-helpers/pass"
-	"github.com/keptn/keptn/cli/pkg/config"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
@@ -38,12 +37,7 @@ func NewCredentialManager() (cm *CredentialManager) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cliConfigManager := config.NewCLIConfigManager()
-	currentContext, err := getCurrentContextFromKubeConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	checkForContextChange(currentContext, cliConfigManager)
+	initChecks()
 	return &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
 }
 
