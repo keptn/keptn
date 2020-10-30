@@ -18,14 +18,16 @@ type DeploymentHandler struct {
 	Handler
 	mesh                  mesh.Mesh
 	generatedChartHandler *helm.GeneratedChartGenerator
+	onboarder             Onboarder
 }
 
 // NewDeploymentHandler creates a new DeploymentHandler
-func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) *DeploymentHandler {
+func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, onboarder Onboarder, configServiceURL string) *DeploymentHandler {
 	generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return &DeploymentHandler{
 		Handler:               NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:                  mesh,
+		onboarder:             onboarder,
 		generatedChartHandler: generatedChartHandler,
 	}
 }
@@ -151,8 +153,8 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 	if err != nil {
 		return nil, err
 	}
-	onboarder := NewOnboarder(h.getKeptnHandler(), h.mesh, h.getConfigServiceURL())
-	return onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
+
+	return h.onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 }
 
 func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {

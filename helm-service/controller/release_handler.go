@@ -2,6 +2,8 @@ package controller
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/types"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -9,23 +11,34 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
 // ReleaseHandler is a handler for releasing a service
 type ReleaseHandler struct {
 	Handler
 	mesh                  mesh.Mesh
-	generatedChartHandler *helm.GeneratedChartGenerator
+	generatedChartHandler helm.ChartGenerator
+	configurationChanger  configurationchanger.IConfigurationChanger
+	chartStorer           types.IChartStorer
+	chartPackager         types.IChartPackager
 }
 
 // NewReleaseHandler creates a ReleaseHandler
-func NewReleaseHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, configServiceURL string) *ReleaseHandler {
-	generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+func NewReleaseHandler(keptnHandler *keptnv2.Keptn,
+	mesh mesh.Mesh,
+	configurationChanger configurationchanger.IConfigurationChanger,
+	chartGenerator helm.ChartGenerator,
+	chartStorer types.IChartStorer,
+	chartPackager types.IChartPackager,
+	configServiceURL string) *ReleaseHandler {
+	//generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return &ReleaseHandler{
 		Handler:               NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:                  mesh,
-		generatedChartHandler: generatedChartHandler,
+		generatedChartHandler: chartGenerator,
+		configurationChanger:  configurationChanger,
+		chartStorer:           chartStorer,
+		chartPackager:         chartPackager,
 	}
 }
 
@@ -116,11 +129,11 @@ func (h *ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error)
 
 func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) {
 
-	configChanger := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL())
+	//configChanger := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL())
 
 	// Switch weight to 100% canary, 0% primary
 	canaryWeightTo100Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 100)
-	genChart, _, err := configChanger.UpdateChart(e, true, canaryWeightTo100Updater)
+	genChart, _, err := h.configurationChanger.UpdateChart(e, true, canaryWeightTo100Updater)
 	if err != nil {
 		return "", err
 	}
@@ -135,7 +148,7 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) 
 
 	// Switch weight to 0% canary, 100% primary
 	canaryWeightTo0Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 0)
-	genChart, gitVersion, err := configChanger.UpdateChart(e, true, canaryWeightTo0Updater)
+	genChart, gitVersion, err := h.configurationChanger.UpdateChart(e, true, canaryWeightTo0Updater)
 	if err != nil {
 		return "", err
 	}
@@ -157,24 +170,33 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) 
 func (h *ReleaseHandler) updateGeneratedChart(e keptnv2.EventData) error {
 
 	canaryWeightTo100Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 100)
-	chartGenerator := helm.NewGeneratedChartGenerator(h.mesh, h.getKeptnHandler().Logger)
+	//chartGenerator := helm.NewGeneratedChartGenerator(h.mesh, h.getKeptnHandler().Logger)
 	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 		e.Project+"-"+e.Stage)
 	if err != nil {
 		return err
 	}
-	newGenChart, err := chartGenerator.GenerateDuplicateChart(userChartManifest, e.Project, e.Stage, e.Service)
+	newGenChart, err := h.generatedChartHandler.GenerateDuplicateChart(userChartManifest, e.Project, e.Stage, e.Service)
 	if err != nil {
 		return err
 	}
 	if err := canaryWeightTo100Updater.Manipulate(newGenChart); err != nil {
 		return err
 	}
-	genChartData, err := keptnutils.PackageChart(newGenChart)
+	genChartData, err := h.chartPackager.Package(newGenChart)
 	if err != nil {
 		return err
 	}
-	if _, err := keptnutils.StoreChart(e.Project, e.Service, e.Stage, helm.GetChartName(e.Service, true), genChartData, h.getConfigServiceURL()); err != nil {
+
+	storeOpts := keptnutils.StoreChartOptions{
+		Project:   e.Project,
+		Service:   e.Service,
+		Stage:     e.Stage,
+		ChartName: helm.GetChartName(e.Service, true),
+		HelmChart: genChartData,
+	}
+
+	if _, err := h.chartStorer.Store(storeOpts); err != nil {
 		return err
 	}
 	return h.upgradeChart(newGenChart, e, keptnevents.Duplicate)
