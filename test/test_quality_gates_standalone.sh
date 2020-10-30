@@ -2,6 +2,8 @@
 
 source test/utils.sh
 
+set_keptn_contrib_service_versions
+
 # test configuration
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
@@ -631,7 +633,7 @@ fi
 ########################################################################################################################
 
 # add SLI file for service
-echo "Adding SLI File: test/assets/quality_gates_standalone_sli_dynatrace_step2.yaml"
+echo "Adding SLI File: test/assets/quality_gates_standalone_sli_dynatrace_step4.yaml"
 keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_slo_step4.yaml --resourceUri=slo.yaml
 verify_test_step $? "keptn add-resource slo.yaml - failed"
 
