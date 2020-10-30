@@ -19,7 +19,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
+	github.com/keptn/go-utils v0.6.3-0.20201021140127-a974f80c5982
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/mitchellh/mapstructure v1.2.2
 	github.com/stretchr/testify v1.5.1
@@ -33,4 +33,7 @@ require (
 	golang.org/x/tools v0.0.0-20200811215021-48a8ffc5b207 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
+	k8s.io/api v0.17.2
+	k8s.io/apimachinery v0.17.2
+	k8s.io/client-go v0.17.2
 )

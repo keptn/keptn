@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -75,44 +73,37 @@ var delProjectCmd = &cobra.Command{
 				apiProject, err := projectsHandler.GetProject(project)
 
 				if err != nil {
-					fmt.Println("Could not retrieve information about project " + project.ProjectName + ": " + *err.Message)
+					logging.PrintLog("Could not retrieve information about project "+project.ProjectName+": "+*err.Message, logging.InfoLevel)
 					return fmt.Errorf("Could not retrieve information about project %s: %s", project.ProjectName, *err.Message)
 				} else if apiProject == nil {
 					msg := "Project " + project.ProjectName + " not found"
-					fmt.Println(msg)
+					logging.PrintLog(msg, logging.InfoLevel)
 					return fmt.Errorf(msg)
 				}
 
 				if len(apiProject.Stages) > 0 {
 					fmt.Println("Deleting services of project " + project.ProjectName + "...")
 					for _, service := range apiProject.Stages[0].Services {
-						fmt.Println("Deleting service " + service.ServiceName)
-						eventContext, err := apiHandler.DeleteService(project.ProjectName, service.ServiceName)
+						logging.PrintLog("Deleting service "+service.ServiceName, logging.InfoLevel)
+						deleteResp, err := apiHandler.DeleteService(project.ProjectName, service.ServiceName)
 						if err != nil {
-							fmt.Println("Delete project was unsuccessful")
+							logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 							return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 						}
-
-						// if eventContext is available, open WebSocket communication
-						if eventContext != nil && !SuppressWSCommunication {
-							err := websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-							if err != nil {
-								fmt.Println("Could not delete service " + service.ServiceName + ", but continuing with project deletion.")
-							}
-						}
+						logging.PrintLog("Project deleted successfully", logging.InfoLevel)
+						logging.PrintLog(deleteResp.Message, logging.InfoLevel)
 					}
 				}
 			}
 
-			eventContext, err := apiHandler.DeleteProject(project)
+			deleteResp, err := apiHandler.DeleteProject(project)
 			if err != nil {
-				fmt.Println("Delete project was unsuccessful")
+				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
-
-			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			if deleteResp != nil {
+				logging.PrintLog("Project deleted successfully", logging.InfoLevel)
+				logging.PrintLog(deleteResp.Message, logging.InfoLevel)
 			}
 
 			return nil

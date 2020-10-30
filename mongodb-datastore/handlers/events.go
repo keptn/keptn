@@ -6,14 +6,13 @@ import (
 	"errors"
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/jeremywohl/flatten"
-
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
 
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
@@ -101,7 +100,7 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
-	if event.Type == keptnutils.InternalProjectDeleteEventType {
+	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
 		return dropProjectEvents(logger, event)
 	}
 	return insertEvent(logger, event)

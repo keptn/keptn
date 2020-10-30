@@ -49,6 +49,9 @@ RUN apk --update add --no-cache git=2.24.3-r0
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/main /shipyard-controller
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui
 
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml
+
 EXPOSE 8080
 
 # required for external tools to detect this as a go binary

@@ -22,6 +22,18 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }} 
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-shipyard-controller
+  labels:
+    app.kubernetes.io/name: keptn-shipyard-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 
 ---
 apiVersion: v1
@@ -228,5 +240,25 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-configuration-service
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-shipyard-controller-manage-secrets
+  labels:
+    app.kubernetes.io/name: keptn-shipyard-controller-manage-secrets
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-manage-secrets
+subjects:
+  - kind: ServiceAccount
+    name: keptn-shipyard-controller
 
 

@@ -29,8 +29,6 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
-	"github.com/keptn/keptn/api/restapi/operations/project"
-	"github.com/keptn/keptn/api/restapi/operations/service"
 )
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
@@ -82,14 +80,6 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	// Metadata endpoint
 	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
-
-	// Project endpoints
-	api.ProjectDeleteProjectProjectNameHandler = project.DeleteProjectProjectNameHandlerFunc(handlers.DeleteProjectProjectNameHandlerFunc)
-	api.ProjectPostProjectHandler = project.PostProjectHandlerFunc(handlers.PostProjectHandlerFunc)
-
-	// Service endpoints
-	api.ServicePostProjectProjectNameServiceHandler = service.PostProjectProjectNameServiceHandlerFunc(handlers.PostServiceHandlerFunc)
-	api.ServiceDeleteProjectProjectNameServiceServiceNameHandler = service.DeleteProjectProjectNameServiceServiceNameHandlerFunc(handlers.DeleteServiceHandlerFunc)
 
 	api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 

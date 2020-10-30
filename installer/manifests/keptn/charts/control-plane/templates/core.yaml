@@ -214,43 +214,76 @@ spec:
     app.kubernetes.io/name: bridge
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
-# shipyard-service
+# shipyard-controller
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shipyard-service
+  name: shipyard-controller
   labels:
-    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/name: shipyard-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    app.kubernetes.io/version: {{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}      
+    app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: shipyard-service
-      app.kubernetes.io/instance: {{ .Release.Name }}      
+      app.kubernetes.io/name: shipyard-controller
+      app.kubernetes.io/instance: {{ .Release.Name }}
   replicas: 1
+  # recreate the deployment if anything changes (we can not do a rolling upgrade of this deployment as we use a volume)
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: shipyard-service
+        app.kubernetes.io/name: shipyard-controller
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
-        app.kubernetes.io/version: {{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}   
+        app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      serviceAccountName: keptn-shipyard-controller
       containers:
-        - name: shipyard-service
-          image: {{ .Values.shipyardService.image.repository }}:{{ .Values.shipyardService.image.tag | default .Chart.AppVersion }}
+        - name: shipyard-controller
+          image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
+          env:
+            - name: CONFIGURATION_SERVICE
+              value: "http://configuration-service:8080"
+            - name: EVENTBROKER
+              value: http://localhost:8081/event
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MONGODB_HOST
+              value: 'mongodb:27017'
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: password
+            - name: MONGO_DB_NAME
+              value: 'keptn'
           ports:
             - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 5
+            periodSeconds: 5
           resources:
             requests:
               memory: "32Mi"
@@ -258,19 +291,18 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
-          env:
-            - name: CONFIGURATION_SERVICE
-              value: 'http://configuration-service:8080'
-            - name: EVENTBROKER
-              value: 'http://localhost:8081/event'
-            - name: API
-              value: 'ws://api-service:8080/websocket'
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 5
+            periodSeconds: 5
           resources:
             requests:
               memory: "32Mi"
@@ -282,28 +314,31 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.internal.event.project.create,sh.keptn.internal.event.project.delete,sh.keptn.internal.event.service.create,sh.keptn.internal.event.service.delete'
+              value: 'sh.keptn.>'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
-      serviceAccountName: keptn-default
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/v1/event'
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: shipyard-service
+  name: shipyard-controller
+  namespace: keptn
   labels:
-    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/name: shipyard-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}   
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080
+      targetPort: 8080
       protocol: TCP
   selector:
-    app.kubernetes.io/name: shipyard-service
+    app.kubernetes.io/name: shipyard-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # configuration-service
