@@ -41,13 +41,13 @@ func (h *HandlerBase) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *HandlerBase) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	helmChartName := helm.GetChartName(e.Service, true)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
 }
 
-func (h *HandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *HandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	helmChartName := helm.GetChartName(e.Service, false)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)

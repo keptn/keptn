@@ -118,7 +118,7 @@ func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptnHandler *kept
 	return releaseHandler
 }
 
-func createOnboarder(keptnHandler *keptnv2.Keptn, url *url.URL, mesh *mesh.IstioMesh) *controller.Onboarder {
+func createOnboarder(keptnHandler *keptnv2.Keptn, url *url.URL, mesh *mesh.IstioMesh) controller.Onboarder {
 	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
 	projectHandler := keptnapi.NewProjectHandler(url.String())
 	stagesHandler := configutils.NewStageHandler(url.String())
@@ -139,7 +139,7 @@ func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *me
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	chartPackager := keptnutils.NewChartPackager()
 	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
-	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, *onBoarder, url.String())
+	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, onBoarder, chartGenerator, url.String())
 	return deploymentHandler
 }
 

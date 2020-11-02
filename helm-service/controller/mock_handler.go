@@ -13,12 +13,13 @@ import (
 
 // MockedHandler mocks typical tasks of a handler
 type MockedHandler struct {
-	keptnHandler       *keptnv2.Keptn
-	helmExecutor       helm.HelmExecutor
-	configServiceURL   string
-	options            MockedHandlerOptions
-	sentCloudEvents    []cloudevents.Event
-	handledErrorEvents []interface{}
+	keptnHandler            *keptnv2.Keptn
+	helmExecutor            helm.HelmExecutor
+	configServiceURL        string
+	options                 MockedHandlerOptions
+	sentCloudEvents         []cloudevents.Event
+	handledErrorEvents      []interface{}
+	upgradeChartInvocations []upgradeChartData
 }
 
 // MockedHandlerOption function is used to configure the mock
@@ -45,10 +46,11 @@ func NewMockedHandler(keptnHandler *keptnv2.Keptn, configServiceURL string, opti
 	}
 
 	return &MockedHandler{
-		keptnHandler:     keptnHandler,
-		helmExecutor:     helmExecutor,
-		configServiceURL: configServiceURL,
-		options:          opt,
+		keptnHandler:            keptnHandler,
+		helmExecutor:            helmExecutor,
+		configServiceURL:        configServiceURL,
+		options:                 opt,
+		upgradeChartInvocations: []upgradeChartData{},
 	}
 }
 
@@ -64,14 +66,14 @@ func (h *MockedHandler) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	ch := helm.GetTestGeneratedChart()
-	return &ch, nil
+	return &ch, "GENERATED_CHART_GIT_ID", nil
 }
 
-func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	ch := helm.GetTestUserChart()
-	return &ch, nil
+	return &ch, "USER_CHART_GIT_ID", nil
 }
 
 func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
@@ -105,8 +107,20 @@ func (h *MockedHandler) sendEvent(triggerID, ceType string, data interface{}) er
 	return nil
 }
 
+type upgradeChartData struct {
+	ch       *chart.Chart
+	event    keptnv2.EventData
+	strategy keptnevents.DeploymentStrategy
+}
+
 func (h *MockedHandler) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) error {
+	ucd := upgradeChartData{
+		ch:       ch,
+		event:    event,
+		strategy: strategy,
+	}
+	h.upgradeChartInvocations = append(h.upgradeChartInvocations, ucd)
 
 	return nil
 }
