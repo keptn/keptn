@@ -126,7 +126,7 @@ type testOnboarderCreator struct {
 }
 
 //NewTestOnboarderCreator creates an instance of testOnboarderCreator which uses only mocks
-func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *Onboarder, *mocksCollection) {
+func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *onboarder, *mocksCollection) {
 
 	ctrl := gomock.NewController(t)
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
@@ -139,7 +139,7 @@ func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHan
 	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
 	mockedChartPackager := mocks.NewMockIChartPackager(ctrl)
 
-	onboarder := Onboarder{
+	onboarder := onboarder{
 		Handler:          mockedBaseHandler,
 		mesh:             mockedMesh,
 		projectHandler:   mockedProjectHandler,
@@ -450,7 +450,7 @@ func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
 
 func TestCheckAndSetServiceName(t *testing.T) {
 
-	o := Onboarder{
+	o := onboarder{
 		Handler: &HandlerBase{},
 		mesh:    nil,
 	}

@@ -64,14 +64,14 @@ func (h *MockedHandler) getConfigServiceURL() string {
 	return h.configServiceURL
 }
 
-func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	ch := helm.GetTestGeneratedChart()
-	return &ch, nil
+	return &ch, "GENERATED_CHART_GIT_ID", nil
 }
 
-func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, error) {
+func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	ch := helm.GetTestUserChart()
-	return &ch, nil
+	return &ch, "USER_CHART_GIT_ID", nil
 }
 
 func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
