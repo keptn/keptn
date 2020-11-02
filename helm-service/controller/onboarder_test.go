@@ -121,12 +121,12 @@ type mocksCollection struct {
 	mockedChartPackager    *mocks.MockIChartPackager
 }
 
-//testOnboarderCreator is an oboarder which has only mocked dependencies
+// testOnboarderCreator is an oboarder which has only mocked dependencies
 type testOnboarderCreator struct {
 }
 
-//NewTestOnboarderCreator creates an instance of testOnboarderCreator which uses only mocks
-func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, *onboarder, *mocksCollection) {
+// NewTestOnboarderCreator creates an instance of testOnboarderCreator which uses only mocks
+func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, Onboarder, *mocksCollection) {
 
 	ctrl := gomock.NewController(t)
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
