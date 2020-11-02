@@ -12,17 +12,16 @@ import (
 	"testing"
 )
 
-func TestHandleEvent(t *testing.T) {
+func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
-	mockedMesh := mocks.NewMockMesh(ctrl)
 	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
 	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
 
 	deploymentHandler := DeploymentHandler{
 		Handler:               mockedBaseHandler,
-		mesh:                  mockedMesh,
+		mesh:                  mocks.NewMockMesh(ctrl),
 		generatedChartHandler: mockedChartGenerator,
 		onboarder:             mockedOnboarder,
 	}
@@ -69,5 +68,11 @@ func TestHandleEvent(t *testing.T) {
 
 	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
 	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
-
+	require.Equal(t, 2, len(mockedBaseHandler.upgradeChartInvocations))
+	assert.Equal(t, "carts", mockedBaseHandler.upgradeChartInvocations[0].ch.Metadata.Name)
+	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[0].event)
+	assert.Equal(t, keptn.Direct, mockedBaseHandler.upgradeChartInvocations[0].strategy)
+	assert.Equal(t, "carts-generated", mockedBaseHandler.upgradeChartInvocations[1].ch.Metadata.Name)
+	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[1].event)
+	assert.Equal(t, keptn.Direct, mockedBaseHandler.upgradeChartInvocations[1].strategy)
 }
