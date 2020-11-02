@@ -46,8 +46,7 @@ var crProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME --shipyard=FILEPATH",
 	Short: "Creates a new project",
 	Long: `Creates a new project with the provided name and Shipyard. 
-The shipyard file describes the used stages. These stages are defined by name, 
-deployment-, test-, and remediation strategy.
+The shipyard file describes the used stages. These stages are defined by name, as well as their task sequences.
 
 By executing the *create project* command, Keptn initializes an internal Git repository that is used to maintain all project-related resources. 
 To upstream this internal Git repository to a remote repository, the Git user (*--git-user*), an access token (*--git-token*), and the remote URL (*--git-remote-url*) are required.

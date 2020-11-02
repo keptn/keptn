@@ -10,7 +10,6 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/validator"
@@ -19,9 +18,8 @@ import (
 )
 
 type onboardServiceCmdParams struct {
-	Project            *string
-	ChartFilePath      *string
-	DeploymentStrategy *string
+	Project       *string
+	ChartFilePath *string
 }
 
 var onboardServiceParams *onboardServiceCmdParams
@@ -54,11 +52,6 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
 		if err != nil {
 			return errors.New(authErrorMsg)
-		}
-
-		// validate deployment strategy flag
-		if *onboardServiceParams.DeploymentStrategy != "" && (*onboardServiceParams.DeploymentStrategy != "direct" && *onboardServiceParams.DeploymentStrategy != "blue_green_service") {
-			return errors.New("The provided deployment strategy is not supported. Select: [direct|blue_green_service]")
 		}
 
 		// validate chart flag
@@ -112,20 +105,6 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 			HelmChart:   helmChart,
 		}
 
-		if *onboardServiceParams.DeploymentStrategy != "" {
-			deplStrategies := make(map[string]string)
-
-			if *onboardServiceParams.DeploymentStrategy == "direct" {
-				deplStrategies["*"] = keptn.Direct.String()
-			} else if *onboardServiceParams.DeploymentStrategy == "blue_green_service" {
-				deplStrategies["*"] = keptn.Duplicate.String()
-			} else {
-				return fmt.Errorf("The provided deployment strategy %s is not supported. Select: [direct|blue_green_service]", *onboardServiceParams.DeploymentStrategy)
-			}
-
-			service.DeploymentStrategies = deplStrategies
-		}
-
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
@@ -154,6 +133,4 @@ func init() {
 
 	onboardServiceParams.ChartFilePath = serviceCmd.Flags().StringP("chart", "", "", "A path to a Helm chart folder or an already archived Helm chart")
 	serviceCmd.MarkFlagRequired("chart")
-
-	onboardServiceParams.DeploymentStrategy = serviceCmd.Flags().StringP("deployment-strategy", "", "", "Allows to define a deployment strategy that overrides the shipyard definition for this service")
 }
