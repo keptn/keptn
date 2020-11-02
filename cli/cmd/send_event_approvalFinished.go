@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"net/url"
 	"os"
 	"strconv"
@@ -15,7 +17,6 @@ import (
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/mitchellh/mapstructure"
@@ -87,14 +88,14 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	var keptnContext string
 	var triggeredID string
-	var approvalFinishedEvent *keptnevents.ApprovalFinishedEventData
+	var approvalFinishedEvent *keptnv2.ApprovalFinishedEventData
 
 	if *sendApprovalFinishedOptions.ID != "" {
 		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForID(eventHandler, sendApprovalFinishedOptions)
 	} else if *sendApprovalFinishedOptions.Service != "" {
-		serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		scHandler := apiutils.NewAuthenticatedShipyardControllerHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		keptnContext, triggeredID, approvalFinishedEvent, err = getApprovalFinishedForService(eventHandler,
-			serviceHandler, sendApprovalFinishedOptions)
+			scHandler, sendApprovalFinishedOptions)
 	}
 	if err != nil {
 		return err
@@ -104,33 +105,14 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return nil
 	}
 
-	ID := uuid.New().String()
-	source, _ := url.Parse("https://github.com/keptn/keptn/cli#approval.finished")
-
-	sdkEvent := cloudevents.NewEvent()
-	sdkEvent.SetID(ID)
-	sdkEvent.SetType(keptnevents.ApprovalFinishedEventType)
-	sdkEvent.SetSource(source.String())
-	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	sdkEvent.SetExtension("shkeptncontext", keptnContext)
-	sdkEvent.SetExtension("triggeredid", triggeredID)
-	sdkEvent.SetData(cloudevents.ApplicationJSON, approvalFinishedEvent)
-
-	eventByte, err := json.Marshal(sdkEvent)
-	if err != nil {
-		return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+	// TODO send approval.started event
+	startedEvent := getApprovalStartedEvent(approvalFinishedEvent.EventData)
+	if _, err := sendEvent(keptnContext, triggeredID, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), startedEvent, apiHandler); err != nil {
+		return err
 	}
-
-	apiEvent := apimodels.KeptnContextExtendedCE{}
-	err = json.Unmarshal(eventByte, &apiEvent)
+	responseEvent, err := sendEvent(keptnContext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEvent, apiHandler)
 	if err != nil {
-		return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
-	}
-
-	responseEvent, errorObj := apiHandler.SendEvent(apiEvent)
-	if errorObj != nil {
-		logging.PrintLog("Send approval.triggered was unsuccessful", logging.QuietLevel)
-		return fmt.Errorf("Send approval.triggered was unsuccessful. %s", *errorObj.Message)
+		return err
 	}
 
 	if responseEvent == nil {
@@ -141,87 +123,113 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	return nil
 }
 
-func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, serviceHandler *apiutils.ServiceHandler,
-	approvalFinishedOptions sendApprovalFinishedStruct) (string, string, *keptnevents.ApprovalFinishedEventData, error) {
-	svc, err := serviceHandler.GetService(*approvalFinishedOptions.Project, *approvalFinishedOptions.Stage, *approvalFinishedOptions.Service)
+func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEvent interface{}, apiHandler *apiutils.APIHandler) (*apimodels.EventContext, error) {
+	ID := uuid.New().String()
+	source, _ := url.Parse("https://github.com/keptn/keptn/cli#" + eventType)
+
+	sdkEvent := cloudevents.NewEvent()
+	sdkEvent.SetID(ID)
+	sdkEvent.SetType(eventType)
+	sdkEvent.SetSource(source.String())
+	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	sdkEvent.SetExtension("shkeptncontext", keptnContext)
+	sdkEvent.SetExtension("triggeredid", triggeredID)
+	sdkEvent.SetData(cloudevents.ApplicationJSON, approvalFinishedEvent)
+
+	eventByte, err := json.Marshal(sdkEvent)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
+	}
+
+	apiEvent := apimodels.KeptnContextExtendedCE{}
+	err = json.Unmarshal(eventByte, &apiEvent)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+	}
+
+	responseEvent, errorObj := apiHandler.SendEvent(apiEvent)
+	if errorObj != nil {
+		logging.PrintLog("Send "+eventType+" was unsuccessful", logging.QuietLevel)
+		return nil, fmt.Errorf("Send %s was unsuccessful. %s", eventType, *errorObj.Message)
+	}
+	return responseEvent, nil
+}
+
+func getApprovalStartedEvent(inputEvent keptnv2.EventData) *keptnv2.ApprovalStartedEventData {
+	startedEvent := &keptnv2.ApprovalStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: inputEvent.Project,
+			Stage:   inputEvent.Stage,
+			Service: inputEvent.Service,
+			Labels:  inputEvent.Labels,
+			Status:  inputEvent.Status,
+		},
+	}
+	return startedEvent
+}
+
+func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, scHandler *apiutils.ShipyardControllerHandler,
+	approvalFinishedOptions sendApprovalFinishedStruct) (string, string, *keptnv2.ApprovalFinishedEventData, error) {
+
+	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
+		Project:   *approvalFinishedOptions.Project,
+		Stage:     *approvalFinishedOptions.Stage,
+		Service:   *approvalFinishedOptions.Service,
+		EventType: keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName),
+	})
 	if err != nil {
 		logging.PrintLog("Open approval.triggered event for service "+*approvalFinishedOptions.Service+" could not be retrieved: "+err.Error(), logging.InfoLevel)
 		return "", "", nil, err
 	}
-	if svc == nil {
-		logging.PrintLog("Service "+*approvalFinishedOptions.Service+" could not be found", logging.InfoLevel)
-		return "", "", nil, nil
-	}
-
-	if len(svc.OpenApprovals) == 0 {
+	if len(allEvents) == 0 {
 		logging.PrintLog("No open approval.triggered event for service "+*approvalFinishedOptions.Service+" has been found", logging.InfoLevel)
 		return "", "", nil, nil
 	}
 
 	// print all available options
-	printApprovalOptions(svc.OpenApprovals, eventHandler, approvalFinishedOptions)
+	printApprovalOptions(allEvents, eventHandler, approvalFinishedOptions)
 
 	// select option
-	nrOfOptions := len(svc.OpenApprovals)
+	nrOfOptions := len(allEvents)
 	selectedOption, err := selectApprovalOption(nrOfOptions)
 	if err != nil {
 		return "", "", nil, err
 	}
 
 	index := selectedOption - 1
-	eventToBeApproved := svc.OpenApprovals[index]
+	eventToBeApproved := allEvents[index]
 
 	// approve or decline?
 	approve := approveOrDecline()
 
-	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
-		Project:   *approvalFinishedOptions.Project,
-		Stage:     *approvalFinishedOptions.Stage,
-		EventType: keptnevents.ApprovalTriggeredEventType,
-		EventID:   eventToBeApproved.EventID,
-	})
+	approvalTriggeredEvent := &keptnv2.ApprovalTriggeredEventData{}
 
-	if errorObj != nil {
-		logging.PrintLog("Cannot retrieve approval.triggered event with ID "+*approvalFinishedOptions.ID+": "+*errorObj.Message, logging.InfoLevel)
-		return "", "", nil, errors.New(*errorObj.Message)
-	}
-
-	if len(events) == 0 {
-		logging.PrintLog("No open approval.triggered event with the ID "+*approvalFinishedOptions.ID+" has been found", logging.InfoLevel)
-		return "", "", nil, nil
-	}
-
-	approvalTriggeredEvent := &keptnevents.ApprovalTriggeredEventData{}
-
-	err = mapstructure.Decode(events[0].Data, approvalTriggeredEvent)
+	err = mapstructure.Decode(eventToBeApproved.Data, approvalTriggeredEvent)
 	if err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
 		return "", "", nil, err
 	}
 
-	var approvalResult string
+	var approvalResult keptnv2.ResultType
 	if approve {
-		approvalResult = "pass"
+		approvalResult = keptnv2.ResultPass
 	} else {
-		approvalResult = "failed"
+		approvalResult = keptnv2.ResultFailed
 	}
 
-	approvalFinishedEvent := &keptnevents.ApprovalFinishedEventData{
-		Project:            approvalTriggeredEvent.Project,
-		Service:            approvalTriggeredEvent.Service,
-		Stage:              approvalTriggeredEvent.Stage,
-		TestStrategy:       approvalTriggeredEvent.TestStrategy,
-		DeploymentStrategy: approvalTriggeredEvent.DeploymentStrategy,
-		Tag:                approvalTriggeredEvent.Tag,
-		Image:              approvalTriggeredEvent.Image,
-		Labels:             approvalTriggeredEvent.Labels,
-		Approval: keptnevents.ApprovalData{
-			Result: approvalResult,
-			Status: "succeeded",
+	approvalFinishedEvent := &keptnv2.ApprovalFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: approvalTriggeredEvent.Project,
+			Stage:   approvalTriggeredEvent.Stage,
+			Service: approvalTriggeredEvent.Service,
+			Labels:  approvalTriggeredEvent.Labels,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  approvalResult,
+			Message: "",
 		},
 	}
 
-	return eventToBeApproved.KeptnContext, eventToBeApproved.EventID, approvalFinishedEvent, nil
+	return eventToBeApproved.Shkeptncontext, eventToBeApproved.ID, approvalFinishedEvent, nil
 }
 
 func approveOrDecline() bool {
@@ -273,7 +281,7 @@ func selectApprovalOption(nrOfOptions int) (int, error) {
 	return selectedOption, nil
 }
 
-func printApprovalOptions(approvals []*apimodels.Approval, eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) {
+func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct) {
 	// initialize tabwriter
 	w := new(tabwriter.Writer)
 
@@ -282,28 +290,28 @@ func printApprovalOptions(approvals []*apimodels.Approval, eventHandler *apiutil
 
 	defer w.Flush()
 
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "VERSION", "EVALUATION")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "GIT COMMIT", "EVALUATION")
 
 	for index, approval := range approvals {
 		score := getScoreForApprovalTriggeredEvent(eventHandler, approvalFinishedOptions, approval)
-
-		appendOptionToWriter(w, index, approval, score)
+		commitID := getCommitIDOfConfigurationChangeEvent(eventHandler, approvalFinishedOptions, approval)
+		appendOptionToWriter(w, index, commitID, score)
 	}
 	fmt.Fprintf(w, "\n")
 }
 
-func appendOptionToWriter(w *tabwriter.Writer, index int, approval *apimodels.Approval, score string) {
-	fmt.Fprintf(w, "\n (%d)\t%s\t%s\t", index+1, approval.Tag, score)
+func appendOptionToWriter(w *tabwriter.Writer, index int, commitID, score string) {
+	fmt.Fprintf(w, "\n (%d)\t%s\t%s\t", index+1, commitID, score)
 }
 
-func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.Approval) string {
+func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
 	score := "n/a"
 	evaluationDoneEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:      *approvalFinishedOptions.Project,
 		Stage:        *approvalFinishedOptions.Stage,
 		Service:      *approvalFinishedOptions.Service,
-		EventType:    keptnevents.EvaluationDoneEventType,
-		KeptnContext: approval.KeptnContext,
+		EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+		KeptnContext: approval.Shkeptncontext,
 	})
 	if errorObj != nil {
 		return score
@@ -311,25 +319,52 @@ func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, appr
 	if len(evaluationDoneEvents) == 0 {
 		return score
 	}
-	evaluationDoneData := &keptnevents.EvaluationDoneEventData{}
+	evaluationDoneData := &keptnv2.EvaluationFinishedEventData{}
 
 	err := mapstructure.Decode(evaluationDoneEvents[0].Data, evaluationDoneData)
 	if err != nil {
 		return score
 	}
 
-	if evaluationDoneData.EvaluationDetails != nil {
-		score = fmt.Sprintf("%f", evaluationDoneData.EvaluationDetails.Score)
-	}
+	score = fmt.Sprintf("%f", evaluationDoneData.Evaluation.Score)
 	return score
 }
 
+func getCommitIDOfConfigurationChangeEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
+	unknownCommitID := "n/a"
+	deploymentFinishedEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
+		Project:      *approvalFinishedOptions.Project,
+		Stage:        *approvalFinishedOptions.Stage,
+		Service:      *approvalFinishedOptions.Service,
+		EventType:    keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
+		KeptnContext: approval.Shkeptncontext,
+	})
+	if errorObj != nil {
+		return unknownCommitID
+	}
+	if len(deploymentFinishedEvents) == 0 {
+		return unknownCommitID
+	}
+	deploymentFinishedData := &keptnv2.DeploymentFinishedEventData{}
+
+	err := common.DecodeKeptnEventData(deploymentFinishedEvents[0].Data, deploymentFinishedData)
+
+	if err != nil {
+		return unknownCommitID
+	}
+
+	if deploymentFinishedData.Deployment.GitCommit == "" {
+		return unknownCommitID
+	}
+	return deploymentFinishedData.Deployment.GitCommit
+}
+
 func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
-	string, *keptnevents.ApprovalFinishedEventData, error) {
+	string, *keptnv2.ApprovalFinishedEventData, error) {
 	events, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
 		Project:   *sendApprovalFinishedOptions.Project,
 		Stage:     *sendApprovalFinishedOptions.Stage,
-		EventType: keptnevents.ApprovalTriggeredEventType,
+		EventType: keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName),
 		EventID:   *sendApprovalFinishedOptions.ID,
 	})
 
@@ -343,26 +378,22 @@ func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalF
 		return "", "", nil, nil
 	}
 
-	approvalTriggeredEvent := &keptnevents.ApprovalTriggeredEventData{}
+	approvalTriggeredEvent := &keptnv2.ApprovalTriggeredEventData{}
 
-	err := mapstructure.Decode(events[0].Data, approvalTriggeredEvent)
-	if err != nil {
+	if err := common.DecodeKeptnEventData(events[0].Data, approvalTriggeredEvent); err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
 		return "", "", nil, err
 	}
 
-	approvalFinishedEvent := &keptnevents.ApprovalFinishedEventData{
-		Project:            approvalTriggeredEvent.Project,
-		Service:            approvalTriggeredEvent.Service,
-		Stage:              approvalTriggeredEvent.Stage,
-		TestStrategy:       approvalTriggeredEvent.TestStrategy,
-		DeploymentStrategy: approvalTriggeredEvent.DeploymentStrategy,
-		Tag:                approvalTriggeredEvent.Tag,
-		Image:              approvalTriggeredEvent.Image,
-		Labels:             approvalTriggeredEvent.Labels,
-		Approval: keptnevents.ApprovalData{
-			Result: "pass",
-			Status: "succeeded",
+	approvalFinishedEvent := &keptnv2.ApprovalFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: approvalTriggeredEvent.Project,
+			Stage:   approvalTriggeredEvent.Stage,
+			Service: approvalTriggeredEvent.Service,
+			Labels:  approvalTriggeredEvent.Labels,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+			Message: "",
 		},
 	}
 	return events[0].Shkeptncontext, events[0].ID, approvalFinishedEvent, nil
