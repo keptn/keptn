@@ -126,7 +126,7 @@ type testOnboarderCreator struct {
 }
 
 // NewTestOnboarderCreator creates an instance of testOnboarderCreator which uses only mocks
-func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, Onboarder, *mocksCollection) {
+func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHandlerOption) (*gomock.Controller, Onboarder, mocksCollection) {
 
 	ctrl := gomock.NewController(t)
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
@@ -162,7 +162,7 @@ func NewTestOnboarderCreator(t *testing.T, mockedBaseHandlerOptions ...MockedHan
 		mockedChartGenerator:   mockedChartGenerator,
 		mockedChartPackager:    mockedChartPackager,
 	}
-	return ctrl, &onboarder, &mocksCol
+	return ctrl, &onboarder, mocksCol
 
 }
 
