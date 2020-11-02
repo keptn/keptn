@@ -24,6 +24,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 )
 
+//Onboarder is responsible for onboarding a service
 type Onboarder interface {
 	// HandleEvent onboards a new service
 	HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn))
@@ -32,7 +33,7 @@ type Onboarder interface {
 	OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error)
 }
 
-// onboarder is a container of variables required for onboarding a new service
+//onboarder is an implemntation of Onboarder
 type onboarder struct {
 	Handler
 	mesh             mesh.Mesh
@@ -45,7 +46,7 @@ type onboarder struct {
 	chartPackager    types.IChartPackager
 }
 
-// NewOnboarder creates a new onboarder
+// NewOnboarder creates a new onboarder instance
 func NewOnboarder(
 	keptnHandler *keptnv2.Keptn,
 	mesh mesh.Mesh,
