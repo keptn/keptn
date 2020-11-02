@@ -21,7 +21,7 @@ To get started with keptn you need a Kubernetes cluster. Supported Kubernetes en
 Here is a quick guide on how to get started with keptn on [k3s](https://k3s.io/):  
 
 **Install K3s**  
-Download, install and run K3s (tested with versions 1.16 to 1.18):
+Download, install and run K3s (tested with versions 1.16 to 1.19):
 ``` console
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.18.3+k3s1 K3S_KUBECONFIG_MODE="644" sh -s - --no-deploy=traefik
 ```
