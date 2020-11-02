@@ -6,7 +6,6 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 	"testing"
@@ -146,7 +145,7 @@ func Test_getSearchOptions(t *testing.T) {
 				"data.service":   "carts",
 				"source":         "test-service",
 				"type":           "test-event",
-				"shkeptncontext": primitive.Regex{Pattern: "test-context", Options: ""},
+				"shkeptncontext": "test-context",
 				"time": bson.M{
 					"$gt": "1",
 				},

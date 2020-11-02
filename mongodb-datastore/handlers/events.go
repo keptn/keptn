@@ -18,7 +18,6 @@ import (
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -546,7 +545,7 @@ func getProjectForContext(keptnContext string) (string, error) {
 func getSearchOptions(params event.GetEventsParams) bson.M {
 	searchOptions := bson.M{}
 	if params.KeptnContext != nil {
-		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
+		searchOptions["shkeptncontext"] = *params.KeptnContext
 	}
 	if params.Type != nil {
 		searchOptions["type"] = *params.Type
