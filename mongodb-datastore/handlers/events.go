@@ -302,6 +302,7 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 		logger.Error(err.Error())
 		return err
 	}
+
 	return nil
 }
 

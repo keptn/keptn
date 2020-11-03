@@ -6,7 +6,7 @@ spec:
   stages:
     - name: "combi1"
       sequences:
-        - name: "artifact-delivery"
+        - name: "approval"
           tasks:
             - name: "approval"
               properties:
@@ -15,7 +15,7 @@ spec:
 
     - name: "combi2"
       sequences:
-        - name: "artifact-delivery"
+        - name: "approval"
           tasks:
             - name: "approval"
               properties:
@@ -24,7 +24,7 @@ spec:
 
     - name: "combi3"
       sequences:
-        - name: "artifact-delivery"
+        - name: "approval"
           tasks:
             - name: "approval"
               properties:
@@ -33,7 +33,7 @@ spec:
 
     - name: "combi4"
       sequences:
-        - name: "artifact-delivery"
+        - name: "approval"
           tasks:
             - name: "approval"
               properties:

@@ -424,9 +424,11 @@ func merge(in1, in2 interface{}) interface{} {
 }
 
 func (sc *shipyardController) getEvents(project string, filter db.EventFilter, status db.EventStatus, nrRetries int) ([]models.Event, error) {
+	sc.logger.Info(string("Trying to get " + status + " events"))
 	for i := 0; i <= nrRetries; i++ {
 		startedEvents, err := sc.eventRepo.GetEvents(project, filter, status)
 		if err != nil && err == db.ErrNoEventFound {
+			sc.logger.Info(string("No matching" + status + " events found. Retrying in 2s."))
 			<-time.After(2 * time.Second)
 		} else {
 			return startedEvents, err
@@ -437,6 +439,7 @@ func (sc *shipyardController) getEvents(project string, filter db.EventFilter, s
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 
+	sc.logger.Info("Received .started event: " + *event.Type)
 	eventScope, err := getEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())

@@ -61,25 +61,21 @@ verify_test_step $? "keptn create service ${SERVICE} - failed"
 
 # Send 3 evaluation-done events (result: pass, warning, failed) for each stage (dev, combi1, combi2, combi3) using the CLI
 
-send_approval_triggered_event $PROJECT dev $SERVICE pass
-send_approval_triggered_event $PROJECT dev $SERVICE warning
-send_approval_triggered_event $PROJECT dev $SERVICE failed
-
 send_approval_triggered_event $PROJECT combi1 $SERVICE pass
-send_approval_triggered_event $PROJECT combi1 $SERVICE warning
-send_approval_triggered_event $PROJECT combi1 $SERVICE failed
-
-send_approval_triggered_event $PROJECT combi2 $SERVICE pass
-send_approval_triggered_event $PROJECT combi2 $SERVICE warning
-send_approval_triggered_event $PROJECT combi2 $SERVICE failed
-
-send_approval_triggered_event $PROJECT combi3 $SERVICE pass
-send_approval_triggered_event $PROJECT combi3 $SERVICE warning
-send_approval_triggered_event $PROJECT combi3 $SERVICE failed
-
-send_approval_triggered_event $PROJECT combi4 $SERVICE pass
-send_approval_triggered_event $PROJECT combi4 $SERVICE warning
-send_approval_triggered_event $PROJECT combi4 $SERVICE failed
+#send_approval_triggered_event $PROJECT combi1 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi1 $SERVICE failed
+#
+#send_approval_triggered_event $PROJECT combi2 $SERVICE pass
+#send_approval_triggered_event $PROJECT combi2 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi2 $SERVICE failed
+#
+#send_approval_triggered_event $PROJECT combi3 $SERVICE pass
+#send_approval_triggered_event $PROJECT combi3 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi3 $SERVICE failed
+#
+#send_approval_triggered_event $PROJECT combi4 $SERVICE pass
+#send_approval_triggered_event $PROJECT combi4 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi4 $SERVICE failed
 
 # verify the number of open approval events
 check_no_open_approvals $PROJECT combi1

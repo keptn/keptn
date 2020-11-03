@@ -20,11 +20,13 @@ import (
 type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
 type insertEventMock func(project string, event models.Event, status db.EventStatus) error
 type deleteEventMock func(project string, eventID string, status db.EventStatus) error
+type deleteEventCollectionsMock func(project string) error
 
 type mockEventRepo struct {
-	getEvents   getEventsMock
-	insertEvent insertEventMock
-	deleteEvent deleteEventMock
+	getEvents         getEventsMock
+	insertEvent       insertEventMock
+	deleteEvent       deleteEventMock
+	deleteCollections deleteEventCollectionsMock
 }
 
 func (t mockEventRepo) GetEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
@@ -39,10 +41,15 @@ func (t mockEventRepo) DeleteEvent(project string, eventID string, status db.Eve
 	return t.deleteEvent(project, eventID, status)
 }
 
+func (t mockEventRepo) DeleteEventCollections(project string) error {
+	return t.deleteCollections(project)
+}
+
 type mockTaskSequenceRepo struct {
-	getTaskSequence           func(project, triggeredID string) (*models.TaskSequenceEvent, error)
-	createTaskSequenceMapping func(project string, taskSequenceEvent models.TaskSequenceEvent) error
-	deleteTaskSequenceMapping func(keptnContext, project, stage, taskSequenceName string) error
+	getTaskSequence              func(project, triggeredID string) (*models.TaskSequenceEvent, error)
+	createTaskSequenceMapping    func(project string, taskSequenceEvent models.TaskSequenceEvent) error
+	deleteTaskSequenceMapping    func(keptnContext, project, stage, taskSequenceName string) error
+	deleteTaskSequenceCollection func(project string) error
 }
 
 // GetTaskSequence godoc
@@ -58,6 +65,10 @@ func (mts mockTaskSequenceRepo) CreateTaskSequenceMapping(project string, taskSe
 // DeleteTaskSequenceMapping godoc
 func (mts mockTaskSequenceRepo) DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error {
 	return mts.deleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName)
+}
+
+func (mts mockTaskSequenceRepo) DeleteTaskSequenceCollection(project string) error {
+	return mts.deleteTaskSequenceCollection(project)
 }
 
 type getProjectsMock func() ([]string, error)

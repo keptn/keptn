@@ -658,6 +658,16 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 			},
 			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
 		},
+		eventRepo: &mockEventRepo{
+			deleteCollections: func(project string) error {
+				return nil
+			},
+		},
+		taskSequenceRepo: &mockTaskSequenceRepo{
+			deleteTaskSequenceCollection: func(project string) error {
+				return nil
+			},
+		},
 	}
 
 	_, _ = pm.deleteProject("my-project")

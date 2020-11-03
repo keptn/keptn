@@ -12,6 +12,7 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
@@ -182,6 +183,8 @@ var errProjectAlreadyExists = errors.New("project already exists")
 
 type projectManager struct {
 	*apiBase
+	eventRepo        db.EventRepo
+	taskSequenceRepo db.TaskSequenceRepo
 }
 
 func newProjectManager() (*projectManager, error) {
@@ -191,6 +194,12 @@ func newProjectManager() (*projectManager, error) {
 	}
 	return &projectManager{
 		apiBase: base,
+		eventRepo: &db.MongoDBEventsRepo{
+			Logger: base.logger,
+		},
+		taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
+			Logger: base.logger,
+		},
 	}, nil
 }
 
@@ -233,6 +242,14 @@ func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteP
 	}
 
 	result.Message = result.Message + pm.getDeleteInfoMessage(projectName)
+
+	if err := pm.taskSequenceRepo.DeleteTaskSequenceCollection(projectName); err != nil {
+		pm.logger.Error("could not delete task sequence collection: " + err.Error())
+	}
+
+	if err := pm.eventRepo.DeleteEventCollections(projectName); err != nil {
+		pm.logger.Error("could not delete event collections: " + err.Error())
+	}
 
 	return result, nil
 }
