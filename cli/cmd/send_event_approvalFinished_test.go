@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -8,8 +9,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-
-	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 const approvalTriggeredMockResponse = `{
@@ -41,13 +40,13 @@ const approvalTriggeredMockResponse = `{
     "totalCount": 1
 }`
 
-const evaluationDoneMockResponse = `{
+const evaluationFinishedMockResponse = `{
     "events": [
         {
 		  "contenttype": "application/json",
 		  "data": {
 			"deploymentstrategy": "blue_green_service",
-			"evaluationdetails": {
+			"evaluation": {
 			  "result": "pass",
 			  "score": 100,
 			},
@@ -62,7 +61,36 @@ const evaluationDoneMockResponse = `{
 		  "source": "lighthouse-service",
 		  "specversion": "1.0",
 		  "time": "2020-06-02T12:28:54.642Z",
-		  "type": "sh.keptn.events.evaluation-done",
+		  "type": "sh.keptn.event.evaluation.finished",
+		  "shkeptncontext": "test-event-context-1"
+		}
+    ],
+	"nextPageKey": "0",
+    "pageSize": 1,
+    "totalCount": 1
+}`
+
+const deploymentFinishedMockResponse = `{
+    "events": [
+        {
+		  "contenttype": "application/json",
+		  "data": {
+			"deploymentstrategy": "blue_green_service",
+			"deployment": {
+			  "gitCommit": "commit-id"
+			},
+			"labels": null,
+			"project": "sockshop",
+			"result": "pass",
+			"service": "carts",
+			"stage": "staging",
+			"teststrategy": "performance",
+		  },
+		  "id": "123",
+		  "source": "helm-service",
+		  "specversion": "1.0",
+		  "time": "2020-06-02T12:28:54.642Z",
+		  "type": "sh.keptn.event.deployment.finished",
 		  "shkeptncontext": "test-event-context-1"
 		}
     ],
@@ -97,15 +125,14 @@ func Test_sendApprovalFinishedEvent(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
-			if strings.Contains(r.RequestURI, keptn.ApprovalTriggeredEventType) {
+			if strings.Contains(r.RequestURI, keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName)) {
 				w.Write([]byte(approvalTriggeredMockResponse))
 				return
-			} else if strings.Contains(r.RequestURI, keptn.EvaluationDoneEventType) {
-				w.Write([]byte(evaluationDoneMockResponse))
+			} else if strings.Contains(r.RequestURI, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)) {
+				w.Write([]byte(evaluationFinishedMockResponse))
 				return
-			} else if strings.Contains(r.RequestURI, "/service") {
-				w.WriteHeader(200)
-				w.Write([]byte(serviceResponse))
+			} else if strings.Contains(r.RequestURI, keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)) {
+				w.Write([]byte(evaluationFinishedMockResponse))
 				return
 			}
 			return

@@ -105,7 +105,6 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return nil
 	}
 
-	// TODO send approval.started event
 	startedEvent := getApprovalStartedEvent(approvalFinishedEvent.EventData)
 	if _, err := sendEvent(keptnContext, triggeredID, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), startedEvent, apiHandler); err != nil {
 		return err
