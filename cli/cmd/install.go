@@ -20,9 +20,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/common"
 	"os"
 	"strings"
+
+	"github.com/keptn/keptn/cli/pkg/common"
 
 	"helm.sh/helm/v3/pkg/chart"
 
@@ -252,17 +253,13 @@ func doInstallation() error {
 		endpoint, err := getAPIEndpoint(keptnNamespace, installParams.EndPointServiceType.String())
 		if err == nil {
 			showFallbackConnectMessage = false
-			fmt.Println("* To quickly access Keptn, you can authenticate your Keptn CLI (in a Linux shell):\n" +
-				" - keptn auth --endpoint=" + endpoint + " --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
+			common.PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL, endpoint)
 		}
 	}
+
 	if showFallbackConnectMessage {
-		fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n" +
-			" - kubectl -n " + keptnNamespace + " port-forward service/api-gateway-nginx 8080:80\n" +
-			" - keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
+		common.PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL, "http://localhost:8080/api")
 	}
-	fmt.Println("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n" +
-		" - https://keptn.sh/docs/" + keptnReleaseDocsURL + "/operate/install#install-keptn\n")
 
 	return nil
 }
