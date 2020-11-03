@@ -60,13 +60,13 @@ var installCmd = &cobra.Command{
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
 `,
-	Example: `keptn install                                                        # install on Kubernetes
+	Example: `keptn install                                                          # install on Kubernetes
 
-keptn install --platform=openshift --use-case=continuous-delivery    # install continuous delivery on Openshift
+keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on Openshift
 
-keptn install --platform=kubernetes --endpoint-service-type=NodePort # install on Kubernetes with gateway NodePort
+keptn install --platform=kubernetes --endpoint-service-type=NodePort   # install on Kubernetes with gateway NodePort
 
-keptn install --hide-sensitive-data  # install on kubernetes and hides sensitive data like api-token and endpoint in post-installation output
+keptn install --hide-sensitive-data                                    # install on Kubernetes and hides sensitive data like api-token and endpoint in post-installation output
 `,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
