@@ -46,6 +46,10 @@ func main() {
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	serviceName := serviceName
+
+	if event.Context.GetSource() == serviceName {
+		return nil
+	}
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
