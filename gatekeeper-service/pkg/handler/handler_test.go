@@ -1,6 +1,7 @@
 package handler
 
 import (
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"reflect"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -57,117 +58,58 @@ func getShipyardWithoutApproval() keptnevents.Shipyard {
 	}
 }
 
-func getShipyardWithApproval(approvalStrategyForPass keptnevents.ApprovalStrategy,
-	approvalStrategyForWarning keptnevents.ApprovalStrategy) keptnevents.Shipyard {
-
-	return keptnevents.Shipyard{
-		Stages: []struct {
-			Name                string                              `json:"name" yaml:"name"`
-			DeploymentStrategy  string                              `json:"deployment_strategy" yaml:"deployment_strategy"`
-			TestStrategy        string                              `json:"test_strategy,omitempty" yaml:"test_strategy"`
-			RemediationStrategy string                              `json:"remediation_strategy,omitempty" yaml:"remediation_strategy"`
-			ApprovalStrategy    *keptnevents.ApprovalStrategyStruct `json:"approval_strategy,omitempty" yaml:"approval_strategy"`
+func getApprovalTriggeredTestData(result keptnv2.ResultType, passStrategy, warningStrategy string) keptnv2.ApprovalTriggeredEventData {
+	return keptnv2.ApprovalTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Labels: map[string]string{
+				"l1": "lValue",
+			},
+			Status:  keptnv2.StatusSucceeded,
+			Result:  result,
+			Message: "",
+		},
+		Approval: struct {
+			Pass    string `json:"pass"`
+			Warning string `json:"warning"`
 		}{
-			{
-				Name:                "dev",
-				DeploymentStrategy:  "direct",
-				TestStrategy:        "functional",
-				RemediationStrategy: "",
-				ApprovalStrategy:    nil,
-			},
-			{
-				Name:                "hardening",
-				DeploymentStrategy:  "blue_green_service",
-				TestStrategy:        "performance",
-				RemediationStrategy: "",
-				ApprovalStrategy:    nil,
-			},
-			{
-				Name: "production",
-				ApprovalStrategy: &keptnevents.ApprovalStrategyStruct{
-					Pass:    approvalStrategyForPass,
-					Warning: approvalStrategyForWarning,
-				},
-				DeploymentStrategy:  "blue_green_service",
-				TestStrategy:        "",
-				RemediationStrategy: "",
-			},
+			Pass:    passStrategy,
+			Warning: warningStrategy,
 		},
 	}
 }
 
-func getShipyardWithoutDeploymentStrategy(approvalStrategyForPass keptnevents.ApprovalStrategy,
-	approvalStrategyForWarning keptnevents.ApprovalStrategy) keptnevents.Shipyard {
+func getApprovalFinishedTestData(result keptnv2.ResultType, status keptnv2.StatusType) keptnv2.ApprovalFinishedEventData {
 
-	return keptnevents.Shipyard{
-		Stages: []struct {
-			Name                string                              `json:"name" yaml:"name"`
-			DeploymentStrategy  string                              `json:"deployment_strategy" yaml:"deployment_strategy"`
-			TestStrategy        string                              `json:"test_strategy,omitempty" yaml:"test_strategy"`
-			RemediationStrategy string                              `json:"remediation_strategy,omitempty" yaml:"remediation_strategy"`
-			ApprovalStrategy    *keptnevents.ApprovalStrategyStruct `json:"approval_strategy,omitempty" yaml:"approval_strategy"`
-		}{
-			{
-				Name:                "dev",
-				DeploymentStrategy:  "direct",
-				TestStrategy:        "functional",
-				RemediationStrategy: "",
-				ApprovalStrategy:    nil,
+	return keptnv2.ApprovalFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Labels: map[string]string{
+				"l1": "lValue",
 			},
-			{
-				Name:                "hardening",
-				DeploymentStrategy:  "blue_green_service",
-				TestStrategy:        "performance",
-				RemediationStrategy: "",
-				ApprovalStrategy: &keptnevents.ApprovalStrategyStruct{
-					Pass:    approvalStrategyForPass,
-					Warning: approvalStrategyForWarning,
-				},
-			},
-			{
-				Name:                "production",
-				DeploymentStrategy:  "",
-				TestStrategy:        "",
-				RemediationStrategy: "",
-				ApprovalStrategy:    nil,
-			},
+			Status:  status,
+			Result:  result,
+			Message: "",
 		},
 	}
 }
 
-func getApprovalTriggeredTestData(evaluationResult string) keptnevents.ApprovalTriggeredEventData {
+func getApprovalStartedTestData(status keptnv2.StatusType) keptnv2.ApprovalStartedEventData {
 
-	return keptnevents.ApprovalTriggeredEventData{
-		Project:            "sockshop",
-		Service:            "carts",
-		Stage:              "production",
-		TestStrategy:       getPtr("performance"),
-		DeploymentStrategy: getPtr("blue_green_service"),
-		Tag:                "0.11.1",
-		Image:              "docker.io/keptnexamples/carts",
-		Labels: map[string]string{
-			"l1": "lValue",
-		},
-		Result: evaluationResult,
-	}
-}
-
-func getApprovalFinishedTestData(result, status string) keptnevents.ApprovalFinishedEventData {
-
-	return keptnevents.ApprovalFinishedEventData{
-		Project:            "sockshop",
-		Service:            "carts",
-		Stage:              "production",
-		TestStrategy:       getPtr("performance"),
-		DeploymentStrategy: getPtr("blue_green_service"),
-		Tag:                "0.11.1",
-		Image:              "docker.io/keptnexamples/carts",
-		Labels: map[string]string{
-			"l1": "lValue",
-		},
-		Approval: keptnevents.ApprovalData{
-			Result: result,
-			Status: status,
+	return keptnv2.ApprovalStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Labels: map[string]string{
+				"l1": "lValue",
+			},
+			Status:  status,
+			Message: "",
 		},
 	}
 }

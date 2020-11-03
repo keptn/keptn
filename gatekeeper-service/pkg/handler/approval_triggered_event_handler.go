@@ -39,35 +39,22 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 		inputEvent.Result == keptnv2.ResultWarning && inputEvent.Approval.Warning == keptnv2.ApprovalAutomatic {
 
 		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
-		if err := a.keptn.SendCloudEvent(*startedEvent); err != nil {
-			a.keptn.Logger.Error("Could not send approval.started event: " + err.Error())
-			return nil
-		}
-
+		outgoingEvents = append(outgoingEvents, *startedEvent)
 		a.keptn.Logger.Info(fmt.Sprintf("Automatically approve release of service %s of project %s and current stage %s",
 			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultPass, triggeredID, shkeptncontext)
-		if err := a.keptn.SendCloudEvent(*finishedEvent); err != nil {
-			a.keptn.Logger.Error("Could not send approval.finished event: " + err.Error())
-			return nil
-		}
+		outgoingEvents = append(outgoingEvents, *finishedEvent)
 	} else if inputEvent.Result == keptnv2.ResultFailed {
 		// Handle case if an ApprovalTriggered event was sent even the evaluation result is failed
 
 		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
-		if err := a.keptn.SendCloudEvent(*startedEvent); err != nil {
-			a.keptn.Logger.Error("Could not send approval.started event: " + err.Error())
-			return nil
-		}
+		outgoingEvents = append(outgoingEvents, *startedEvent)
 
 		a.keptn.Logger.Info(fmt.Sprintf("Disapprove release of service %s of project %s and current stage %s because"+
 			"the previous step failed", inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultFailed, triggeredID, shkeptncontext)
-		if err := a.keptn.SendCloudEvent(*finishedEvent); err != nil {
-			a.keptn.Logger.Error("Could not send approval.finished event: " + err.Error())
-			return nil
-		}
+		outgoingEvents = append(outgoingEvents, *finishedEvent)
 	}
 
 	return outgoingEvents
@@ -81,6 +68,7 @@ func (a *ApprovalTriggeredEventHandler) getApprovalStartedEvent(inputEvent keptn
 			Stage:   inputEvent.Stage,
 			Service: inputEvent.Service,
 			Labels:  inputEvent.Labels,
+			Status:  keptnv2.StatusSucceeded,
 			Message: "",
 		},
 	}
@@ -101,5 +89,5 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 			Message: "",
 		},
 	}
-	return getCloudEvent(approvalFinishedEvent, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
+	return getCloudEvent(approvalFinishedEvent, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
 }
