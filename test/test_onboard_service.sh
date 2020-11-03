@@ -10,7 +10,7 @@ git clone --branch master https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
 echo "Creating a new project without Git upstream"
-keptn create project $PROJECT --shipyard=./shipyard.yaml
+keptn create project $PROJECT --shipyard=../../test/assets/shipyard_onboard_service.yaml
 verify_test_step $? "keptn create project ${PROJECT} - failed."
 sleep 10
 

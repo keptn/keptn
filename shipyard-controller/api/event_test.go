@@ -564,8 +564,24 @@ func Test_eventManager_getEvents(t *testing.T) {
 
 func getArtifactDeliveryTriggeredEvent() models.Event {
 	return models.Event{
-		Contenttype:    "application/json",
-		Data:           eventScope{Project: "test-project", Stage: "dev", Service: "carts"},
+		Contenttype: "application/json",
+		Data: keptnv2.DeploymentTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: "test-project",
+				Stage:   "dev",
+				Service: "carts",
+			},
+			ConfigurationChange: struct {
+				Values map[string]interface{} `json:"values"`
+			}{
+				Values: map[string]interface{}{
+					"image": "carts",
+				},
+			},
+			Deployment: keptnv2.DeploymentWithStrategy{
+				DeploymentStrategy: "direct",
+			},
+		},
 		Extensions:     nil,
 		ID:             "artifact-delivery-triggered-id",
 		Shkeptncontext: "test-context",
@@ -732,24 +748,28 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 }
 
 func shouldContainEvent(t *testing.T, events []models.Event, eventType string, stage string, eval func(t *testing.T, event models.Event) bool) bool {
-	for _, event := range events {
+	var foundEvent *models.Event
+	for index, event := range events {
 		scope, _ := getEventScope(event)
 		if *event.Type == eventType {
-			done := true
 			if stage == "" {
-				done = false
+				foundEvent = &events[index]
+				break
 			} else if stage != "" && scope.Stage == stage {
-				done = false
+				foundEvent = &events[index]
+				break
 			}
-			if !done && eval != nil {
-				return eval(t, event)
-			}
-			return done
 		}
 	}
 
-	t.Errorf("event list does not contain event of type " + eventType)
-	return true
+	if foundEvent == nil {
+		t.Errorf("event list does not contain event of type " + eventType)
+		return true
+	}
+	if eval != nil {
+		return eval(t, *foundEvent)
+	}
+	return false
 }
 
 func shouldNotContainEvent(t *testing.T, events []models.Event, eventType string, stage string) bool {
@@ -804,7 +824,30 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
 		return
 	}
-	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	done = shouldContainEvent(t,
+		mockEV.receivedEvents,
+		keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		"",
+		func(t *testing.T, event models.Event) bool {
+			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+
+			marshal, _ := json.Marshal(event.Data)
+			if err := json.Unmarshal(marshal, deploymentEvent); err != nil {
+				t.Error("could not parse incoming deployment.triggered event: " + err.Error())
+				return true
+			}
+
+			if deploymentEvent.Deployment.DeploymentStrategy != "direct" {
+				t.Errorf("did not receive correct deployment strategy. Expected 'direct' but got '%s'", deploymentEvent.Deployment.DeploymentStrategy)
+				return true
+			}
+			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
+				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
+				return true
+			}
+			return false
+		},
+	)
 	if done {
 		return
 	}
@@ -933,6 +976,57 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// check if dev.artifact-delivery.finished has been sent
 	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "dev", nil)
+	if done {
+		return
+	}
+
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), "hardening", func(t *testing.T, event models.Event) bool {
+		marshal, _ := json.Marshal(event.Data)
+		triggeredEvent := map[string]interface{}{}
+
+		err := json.Unmarshal(marshal, &triggeredEvent)
+
+		if err != nil {
+			t.Errorf("Expected hardening.artifact-delivery.triggered data but could not convert: %v: %s", event.Data, err.Error())
+			return true
+		}
+
+		if triggeredEvent["configurationChange"] == nil {
+			t.Error("expected 'configurationChange' property to be present")
+			return true
+		}
+		return false
+	})
+	if done {
+		return
+	}
+
+	done = shouldContainEvent(
+		t,
+		mockEV.receivedEvents,
+		keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		"hardening",
+		func(t *testing.T, event models.Event) bool {
+			marshal, _ := json.Marshal(event.Data)
+			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+
+			err := json.Unmarshal(marshal, deploymentEvent)
+
+			if err != nil {
+				t.Errorf("Expected test.triggered data but could not convert: %v: %s", event.Data, err.Error())
+				return true
+			}
+
+			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
+				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
+				return true
+			}
+			return false
+		},
+	)
+	if done {
+		return
+	}
 
 	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
 		Stage: stringp("dev"),
@@ -1557,4 +1651,140 @@ func filterEvents(eventsCollection []models.Event, filter db.EventFilter) ([]mod
 		result = append(result, event)
 	}
 	return result, nil
+}
+
+func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
+	type fields struct {
+		projectRepo      db.ProjectRepo
+		eventRepo        db.EventRepo
+		taskSequenceRepo db.TaskSequenceRepo
+		logger           *keptncommon.Logger
+	}
+	type args struct {
+		stageName        string
+		taskSequenceName string
+		shipyard         *keptnv2.Shipyard
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *keptnv2.Sequence
+		wantErr bool
+	}{
+		{
+			name: "get built-in evaluation task sequence",
+			fields: fields{
+				projectRepo:      nil,
+				eventRepo:        nil,
+				taskSequenceRepo: nil,
+				logger:           keptncommon.NewLogger("", "", ""),
+			},
+			args: args{
+				stageName:        "dev",
+				taskSequenceName: "evaluation",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: "0.2.0",
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name:      "dev",
+								Sequences: []keptnv2.Sequence{},
+							},
+						},
+					},
+				},
+			},
+			want: &keptnv2.Sequence{
+				Name:     "evaluation",
+				Triggers: nil,
+				Tasks: []keptnv2.Task{
+					{
+						Name:       "evaluation",
+						Properties: nil,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "get user-defined evaluation task sequence",
+			fields: fields{
+				projectRepo:      nil,
+				eventRepo:        nil,
+				taskSequenceRepo: nil,
+				logger:           keptncommon.NewLogger("", "", ""),
+			},
+			args: args{
+				stageName:        "dev",
+				taskSequenceName: "evaluation",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: "0.2.0",
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:     "evaluation",
+										Triggers: nil,
+										Tasks: []keptnv2.Task{
+											{
+												Name:       "evaluation",
+												Properties: nil,
+											},
+											{
+												Name:       "notify",
+												Properties: nil,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &keptnv2.Sequence{
+				Name:     "evaluation",
+				Triggers: nil,
+				Tasks: []keptnv2.Task{
+					{
+						Name:       "evaluation",
+						Properties: nil,
+					},
+					{
+						Name:       "notify",
+						Properties: nil,
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sc := &shipyardController{
+				projectRepo:      tt.fields.projectRepo,
+				eventRepo:        tt.fields.eventRepo,
+				taskSequenceRepo: tt.fields.taskSequenceRepo,
+				logger:           tt.fields.logger,
+			}
+			got, err := sc.getTaskSequenceInStage(tt.args.stageName, tt.args.taskSequenceName, tt.args.shipyard)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getTaskSequenceInStage() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
+				t.Errorf("getTaskSequenceInStage() got = %v, want %v", got, tt.want)
+				for _, d := range diff {
+					t.Log(d)
+				}
+			}
+		})
+	}
 }

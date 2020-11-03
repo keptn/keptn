@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
+	utils "github.com/keptn/kubernetes-utils/pkg"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/keptn/keptn/configuration-service/config"
-	utils "github.com/keptn/kubernetes-utils/pkg"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"time"
 )
 
 // GitCredentials contains git ccredentials info
@@ -241,45 +241,6 @@ func ServiceExists(project string, stage string, service string, disableUpstream
 	return true
 }
 
-// StoreGitCredentials stores the specified git credentials as a secret in the cluster
-func StoreGitCredentials(project string, user string, token string, remoteURI string) error {
-
-	clientSet, err := getK8sClient()
-	if err != nil {
-		return err
-	}
-
-	credentials := &GitCredentials{
-		User:      user,
-		Token:     token,
-		RemoteURI: remoteURI,
-	}
-
-	credsEncoded, err := json.Marshal(credentials)
-	if err != nil {
-		return err
-	}
-	secret := &v1.Secret{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Secret",
-			APIVersion: "apps/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "git-credentials-" + project,
-			Namespace: namespace,
-		},
-		Data: map[string][]byte{
-			"git-credentials": credsEncoded,
-		},
-		Type: "Opaque",
-	}
-	_, err = clientSet.CoreV1().Secrets(namespace).Create(secret)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // GetCredentials returns the credentials for a given project, if available
 func GetCredentials(project string) (*GitCredentials, error) {
 	clientSet, err := getK8sClient()
@@ -288,6 +249,9 @@ func GetCredentials(project string) (*GitCredentials, error) {
 	}
 
 	secret, err := clientSet.CoreV1().Secrets(namespace).Get("git-credentials-"+project, metav1.GetOptions{})
+	if err != nil && k8serrors.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -298,6 +262,9 @@ func GetCredentials(project string) (*GitCredentials, error) {
 		return nil, err
 	}
 	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+		mv := GetProjectsMaterializedView()
+		// try to update the materialized view, but continue if it does not work for some reason
+		_ = mv.UpdateUpstreamInfo(project, credentials.RemoteURI, credentials.User)
 		return &credentials, nil
 	}
 	return nil, nil
@@ -316,20 +283,6 @@ func getK8sClient() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return clientSet, nil
-}
-
-// DeleteCredentials deletes the credentials of a given project
-func DeleteCredentials(project string) error {
-	clientSet, err := getK8sClient()
-	if err != nil {
-		return err
-	}
-
-	err = clientSet.CoreV1().Secrets(namespace).Delete("git-credentials-"+project, &metav1.DeleteOptions{})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // GetBranches returns a list of branches within the project
@@ -355,6 +308,41 @@ func GetResourceMetadata(project string) *models.Version {
 	}
 	addVersionToMetadata(project, result)
 	return result
+}
+
+// GetDefaultBranch returns the name of the default branch of the repo
+func GetDefaultBranch(project string) (string, error) {
+	projectConfigPath := config.ConfigDir + "/" + project
+
+	credentials, err := GetCredentials(project)
+	if err != nil {
+		return "", errors.New("could not determine default branch: " + err.Error())
+	}
+	if credentials != nil {
+		retries := 5
+
+		for i := 0; i < retries; i = i + 1 {
+			out, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "show", "origin"}, projectConfigPath)
+			if err != nil {
+				return "", err
+			}
+			lines := strings.Split(out, "\n")
+
+			for _, line := range lines {
+				if strings.Contains(line, "HEAD branch") {
+					split := strings.Split(line, ":")
+					if len(split) > 1 {
+						defaultBranch := strings.TrimSpace(split[1])
+						if defaultBranch != "(unknown)" {
+							return defaultBranch, nil
+						}
+					}
+				}
+			}
+			<-time.After(3 * time.Second)
+		}
+	}
+	return "master", nil
 }
 
 func addRepoURIToMetadata(credentials *GitCredentials, metadata *models.Version) {

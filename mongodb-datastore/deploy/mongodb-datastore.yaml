@@ -47,6 +47,8 @@ spec:
             memory: "256Mi"
             cpu: "1000m"
         env:
+        - name: DT_CUSTOM_PROP
+          value: 'keptn_service=mongodb-datastore'
         - name: PREFIX_PATH
           value: ""
         - name: MONGODB_HOST

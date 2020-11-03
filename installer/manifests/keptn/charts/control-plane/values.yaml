@@ -30,6 +30,7 @@ bridge:
   image:
     repository: docker.io/keptn/bridge2
   cliDownloadLink: null
+  integrationsPageLink: null
   secret:
     enabled: true
   versionCheck:
@@ -48,6 +49,10 @@ distributor:
 shipyardService:
   image:
     repository: docker.io/keptn/shipyard-service
+
+shipyardController:
+  image:
+    repository: docker.io/keptn/shipyard-controller
 
 configurationService:
   image:

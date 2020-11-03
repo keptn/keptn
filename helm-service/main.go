@@ -3,6 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/keptn/keptn/helm-service/controller"
+	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
+	"github.com/keptn/keptn/helm-service/pkg/helm"
+	"net/url"
+
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"log"
 	"os"
 
@@ -10,12 +16,13 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+	configutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/controller"
-	"github.com/keptn/keptn/helm-service/controller/mesh"
+
+	utils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"github.com/keptn/keptn/helm-service/pkg/serviceutils"
 	authorizationv1 "k8s.io/api/authorization/v1"
 )
@@ -55,44 +62,89 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	var logger keptncommon.LoggerInterface
-	loggingDone := make(chan bool)
-	go closeLogger(loggingDone, keptnHandler.Logger)
-
-	mesh := mesh.NewIstioMesh()
-
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
-		loggingDone <- true
+		closeLogger(keptnHandler)
 		return err
 	}
 
+	//create dependencies
+
+	mesh := mesh.NewIstioMesh()
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
-	if event.Type() == keptnevents.ConfigurationChangeEventType {
-		configChanger := controller.NewConfigurationChanger(mesh, keptnHandler, url.String())
-		go configChanger.ChangeAndApplyConfiguration(event, loggingDone)
-	} else if event.Type() == keptnevents.InternalServiceCreateEventType {
-		onboarder := controller.NewOnboarder(mesh, keptnHandler, url.String())
-		go onboarder.DoOnboard(event, loggingDone)
-	} else if event.Type() == keptnevents.ActionTriggeredEventType {
-		actionHandler := controller.NewActionTriggeredHandler(keptnHandler, url.String())
-		go actionHandler.HandleEvent(event, loggingDone)
-	} else if event.Type() == keptnevents.InternalServiceDeleteEventType {
-		deleteHandler := controller.NewDeleteHandler(keptnHandler, url.String())
-		go deleteHandler.HandleEvent(event, loggingDone)
+	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
+		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
+		go deploymentHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
+		releaseHandler := createReleaseHandler(url, mesh, keptnHandler)
+		go releaseHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
+		onBoarder := createOnboarder(keptnHandler, url, mesh)
+		go onBoarder.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
+		actionHandler := createActionTriggeredHandler(url, keptnHandler)
+		go actionHandler.HandleEvent(event, closeLogger)
+	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
+		deleteHandler := createDeleteHandler(url, keptnHandler)
+		go deleteHandler.HandleEvent(event, closeLogger)
 	} else {
-		logger.Error("Received unexpected keptn event")
-		loggingDone <- true
+		keptnHandler.Logger.Error("Received unexpected keptn event")
+		closeLogger(keptnHandler)
 	}
 
 	return nil
 }
 
-func closeLogger(loggingDone chan bool, logger keptncommon.LoggerInterface) {
-	<-loggingDone
-	if combinedLogger, ok := logger.(*keptncommon.CombinedLogger); ok {
+func createDeleteHandler(url *url.URL, keptnHandler *keptnv2.Keptn) *controller.DeleteHandler {
+	stagesHandler := configutils.NewStageHandler(url.String())
+	deleteHandler := controller.NewDeleteHandler(keptnHandler, stagesHandler, url.String())
+	return deleteHandler
+}
+
+func createActionTriggeredHandler(url *url.URL, keptnHandler *keptnv2.Keptn) *controller.ActionTriggeredHandler {
+	configChanger := configurationchanger.NewConfigurationChanger(url.String())
+	actionHandler := controller.NewActionTriggeredHandler(keptnHandler, configChanger, url.String())
+	return actionHandler
+}
+
+func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptnHandler *keptnv2.Keptn) *controller.ReleaseHandler {
+	configChanger := configurationchanger.NewConfigurationChanger(url.String())
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
+	chartPackager := keptnutils.NewChartPackager()
+	releaseHandler := controller.NewReleaseHandler(keptnHandler, mesh, configChanger, chartGenerator, chartStorer, chartPackager, url.String())
+	return releaseHandler
+}
+
+func createOnboarder(keptnHandler *keptnv2.Keptn, url *url.URL, mesh *mesh.IstioMesh) controller.Onboarder {
+	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
+	projectHandler := keptnapi.NewProjectHandler(url.String())
+	stagesHandler := configutils.NewStageHandler(url.String())
+	serviceHandler := configutils.NewServiceHandler(url.String())
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+	chartPackager := keptnutils.NewChartPackager()
+	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
+	return onBoarder
+}
+
+func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
+	projectHandler := keptnapi.NewProjectHandler(url.String())
+	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
+	stagesHandler := configutils.NewStageHandler(url.String())
+	serviceHandler := configutils.NewServiceHandler(url.String())
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+	chartPackager := keptnutils.NewChartPackager()
+	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
+	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, onBoarder, chartGenerator, url.String())
+	return deploymentHandler
+}
+
+func closeLogger(keptnHandler *keptnv2.Keptn) {
+	if combinedLogger, ok := keptnHandler.Logger.(*keptncommon.CombinedLogger); ok {
 		combinedLogger.Terminate("")
 	}
 }

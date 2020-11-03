@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
+	"time"
 
 	apiUtils "github.com/keptn/go-utils/pkg/api/utils"
 )
+
+var maxHTTPTimeout = 5 * time.Second
 
 var endPointErrorReasons = `
 Possible reasons:
@@ -25,11 +29,16 @@ func checkEndPointStatus(endPoint string) error {
 	if checkEndPointStatusMock {
 		return nil
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), maxHTTPTimeout)
+	defer cancel()
+
 	req, err := http.NewRequest("HEAD", endPoint, nil)
 	if err != nil {
 		return err
 	}
-	resp, err := client.Do(req)
+
+	resp, err := client.Do(req.WithContext(ctx))
 	if err != nil {
 		return err
 	}

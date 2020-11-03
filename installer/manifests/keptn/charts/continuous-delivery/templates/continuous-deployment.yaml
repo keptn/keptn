@@ -66,7 +66,7 @@ spec:
         - name: gatekeeper-service
           image: {{ .Values.gatekeeperService.image.repository }}:{{ .Values.gatekeeperService.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8080
           resources:
@@ -84,7 +84,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -155,7 +155,7 @@ spec:
         - name: helm-service
           image: {{ .Values.helmService.image.repository }}:{{ .Values.helmService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -169,13 +169,11 @@ spec:
             - name: CONFIGURATION_SERVICE
               value: 'http://configuration-service:8080'
             - name: EVENTBROKER
-              value: 'http://event-broker/keptn'
+              value: 'http://localhost:8081/event'
             - name: API
               value: 'ws://api-service:8080/websocket'
             - name: ENVIRONMENT
               value: 'production'
-            - name: PRE_WORKFLOW_ENGINE
-              value: 'true'
             - name: CANARY
               value: 'deployment'
             - name: INGRESS_HOSTNAME_SUFFIX
@@ -205,7 +203,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
@@ -219,7 +217,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.internal.event.service.create,sh.keptn.event.configuration.change,sh.keptn.event.action.triggered,sh.keptn.internal.event.service.delete'
+              value: 'sh.keptn.event.service.create.finished,sh.keptn.event.deployment.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.event.service.delete.finished'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
       serviceAccountName: keptn-helm-service
@@ -278,7 +276,7 @@ spec:
         - name: jmeter-service
           image: {{ .Values.jmeterService.image.repository }}:{{ .Values.jmeterService.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8080
           env:
@@ -289,7 +287,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:

@@ -60,9 +60,11 @@ import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import { KtbApprovalItemComponent } from "./_components/ktb-approval-item/ktb-approval-item.component";
 import {KtbCopyToClipboardComponent} from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
+import {KtbMarkdownComponent} from "./_components/ktb-markdown/ktb-markdown.component";
 
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
+import { HttpDefaultInterceptor } from "./_interceptors/http-default-interceptor";
 
 import { AtobPipe } from './_pipes/atob.pipe';
 import { AppHeaderComponent } from './app-header/app-header.component';
@@ -103,6 +105,7 @@ registerLocaleData(localeEn, 'en');
     KtbNotificationBarComponent,
     KtbApprovalItemComponent,
     KtbCopyToClipboardComponent,
+    KtbMarkdownComponent,
   ],
   imports: [
     BrowserModule,
@@ -149,6 +152,11 @@ registerLocaleData(localeEn, 'en');
     BrowserAnimationsModule,
   ],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpDefaultInterceptor,
+      multi: true,
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpErrorInterceptor,

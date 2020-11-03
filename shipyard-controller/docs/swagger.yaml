@@ -67,6 +67,55 @@ definitions:
         description: Total number of events
         type: number
     type: object
+  operations.CreateProjectParams:
+    properties:
+      gitRemoteURL:
+        description: git remote URL
+        type: string
+      gitToken:
+        description: git token
+        type: string
+      gitUser:
+        description: git user
+        type: string
+      name:
+        description: |-
+          name
+          Required: true
+        type: string
+      shipyard:
+        description: |-
+          shipyard
+          Required: true
+        type: string
+    type: object
+  operations.CreateProjectResponse:
+    type: object
+  operations.CreateServiceParams:
+    properties:
+      helm:
+        description: |-
+          shipyard
+          Required: true
+        type: string
+      name:
+        description: |-
+          name
+          Required: true
+        type: string
+    type: object
+  operations.CreateServiceResponse:
+    type: object
+  operations.DeleteProjectResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  operations.DeleteServiceResponse:
+    properties:
+      message:
+        type: string
+    type: object
 info:
   contact:
     name: Keptn Team
@@ -155,6 +204,173 @@ paths:
       summary: Get triggered events
       tags:
       - Events
+  /project:
+    post:
+      consumes:
+      - application/json
+      description: Create a new project
+      parameters:
+      - description: Project
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/operations.CreateProjectParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.CreateProjectResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new project
+      tags:
+      - Projects
+    put:
+      consumes:
+      - application/json
+      description: Updates project
+      parameters:
+      - description: Project
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/operations.CreateProjectParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.CreateProjectResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Updates a project
+      tags:
+      - Projects
+  /project/:project:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a project
+      parameters:
+      - description: Project name
+        in: path
+        name: project
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.DeleteProjectResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a project
+      tags:
+      - Projects
+  /project/:project/service:
+    post:
+      consumes:
+      - application/json
+      description: Create a new service
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Project
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/operations.CreateServiceParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.CreateServiceResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new service
+      tags:
+      - Services
+  /project/:project/service/:service:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a service
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Service
+        in: path
+        name: service
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.DeleteServiceResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a service
+      tags:
+      - Services
 securityDefinitions:
   ApiKeyAuth:
     in: header

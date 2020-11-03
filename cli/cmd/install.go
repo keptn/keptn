@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"os"
 	"strings"
 
@@ -168,7 +169,7 @@ func init() {
 		"Specify a JSON file containing cluster information needed for the installation. This allows skipping user prompts to execute a *silent* Keptn installation.")
 
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
-		"The use case to install Keptn for ["+ContinuousDelivery.String()+"]")
+		"Use --use-case=continuous-delivery to install the execution plane for continuous delivery. Without this flag, your Keptn is capable of the quality gate and automated remediations use-case.")
 
 	installParams.EndPointServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
 		ClusterIP.String(), "Installation options for the endpoint-service type ["+ClusterIP.String()+","+
@@ -262,6 +263,7 @@ func doInstallation() error {
 	}
 	fmt.Println("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n" +
 		" - https://keptn.sh/docs/" + keptnReleaseDocsURL + "/operate/install#install-keptn\n")
+
 	return nil
 }
 

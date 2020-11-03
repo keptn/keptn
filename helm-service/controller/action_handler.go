@@ -1,254 +1,147 @@
 package controller
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"io"
-	appsv1 "k8s.io/api/apps/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"net/url"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"strconv"
-	"strings"
-
-	"helm.sh/helm/v3/pkg/chart"
-
-	"github.com/ghodss/yaml"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptn "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/helm-service/controller/helm"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 )
 
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
 type ActionTriggeredHandler struct {
-	keptnHandler     *keptnv2.Keptn
-	helmExecutor     helm.HelmExecutor
-	configServiceURL string
+	Handler
+	configChanger configurationchanger.IConfigurationChanger
 }
 
 // ActionScaling is the identifier for the scaling action
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn,
-	configServiceURL string) *ActionTriggeredHandler {
-	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
-	return &ActionTriggeredHandler{keptnHandler: keptnHandler, helmExecutor: helmExecutor,
-		configServiceURL: configServiceURL}
+func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configChanger configurationchanger.IConfigurationChanger, configServiceURL string) *ActionTriggeredHandler {
+
+	return &ActionTriggeredHandler{
+		Handler:       NewHandlerBase(keptnHandler, configServiceURL),
+		configChanger: configChanger,
+	}
 }
 
-// HandleEvent takes the sh.keptn.events.action.triggered event and performs the scaling action
-func (a *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, loggingDone chan bool) error {
+// HandleEvent takes the sh.keptn.events.action.triggered event and performs the scaling action on the generated chart
+// Therefore, this scaling action only works if the service is deployed b/g
+func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
-	defer func() { loggingDone <- true }()
-	actionTriggeredEvent := keptn.ActionTriggeredEventData{}
+	defer closeLogger(h.Handler.getKeptnHandler())
+
+	actionTriggeredEvent := keptnv2.ActionTriggeredEventData{}
 
 	err := ce.DataAs(&actionTriggeredEvent)
 	if err != nil {
-		errMsg := "action.triggered event not well-formed: " + err.Error()
-		a.keptnHandler.Logger.Error(errMsg)
-		return errors.New(errMsg)
+		err = fmt.Errorf("failed to unmarshal data: %v", err)
+		h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
+		return
 	}
 
 	if actionTriggeredEvent.Action.Action == ActionScaling {
 		// Send action.started event
-		if sendErr := a.sendEvent(ce, keptn.ActionStartedEventType, a.getActionStartedEvent(actionTriggeredEvent)); sendErr != nil {
-			a.keptnHandler.Logger.Error(sendErr.Error())
-			return errors.New(sendErr.Error())
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Start action scaling for service %s in stage %s of project %s",
+			actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
+		if sendErr := h.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.ActionTaskName),
+			h.getStartedEventData(actionTriggeredEvent.EventData)); sendErr != nil {
+			h.handleError(ce.ID(), sendErr, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, sendErr))
+			return
 		}
 
-		resp := a.handleScaling(actionTriggeredEvent)
-		if resp.Action.Status == keptn.ActionStatusErrored {
-			a.keptnHandler.Logger.Error(fmt.Sprintf("action %s failed with result %s", actionTriggeredEvent.Action.Action, resp.Action.Result))
+		resp := h.handleScaling(actionTriggeredEvent)
+		if resp.Status == keptnv2.StatusErrored {
+			h.getKeptnHandler().Logger.Error(fmt.Sprintf("action %s errored with result %s", actionTriggeredEvent.Action.Action, resp.Message))
 		} else {
-			a.keptnHandler.Logger.Info(fmt.Sprintf("Finished action with status %s and result %s", resp.Action.Status, resp.Action.Result))
+			h.getKeptnHandler().Logger.Info(fmt.Sprintf("Finished action %s for service %s in stage %s of project %s",
+				actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 		}
 
 		// Send action.finished event
-		if sendErr := a.sendEvent(ce, keptn.ActionFinishedEventType, resp); sendErr != nil {
-			a.keptnHandler.Logger.Error(sendErr.Error())
-			return errors.New(sendErr.Error())
+		if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.ActionTaskName), resp); err != nil {
+			h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
+			return
 		}
 	} else {
-		a.keptnHandler.Logger.Info("Received unhandled action: " + actionTriggeredEvent.Action.Action + ". Exiting")
-		return nil
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Received unhandled action %s for service %s in stage %s of project %s",
+			actionTriggeredEvent.Action.Action, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 	}
 
-	return nil
+	return
 }
 
-func (a *ActionTriggeredHandler) getActionFinishedEvent(result keptn.ActionResultType, status keptn.ActionStatusType,
-	actionTriggeredEvent keptn.ActionTriggeredEventData) keptn.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.ActionStartedEventData {
+	inEventData.Status = keptnv2.StatusSucceeded
+	inEventData.Result = ""
+	inEventData.Message = ""
+	return keptnv2.ActionStartedEventData{
+		EventData: inEventData,
+	}
+}
 
-	return keptn.ActionFinishedEventData{
-		Project: actionTriggeredEvent.Project,
-		Service: actionTriggeredEvent.Service,
-		Stage:   actionTriggeredEvent.Stage,
-		Action: keptn.ActionResult{
-			Result: result,
-			Status: status,
+func (h *ActionTriggeredHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData,
+	gitCommit string) keptnv2.ActionFinishedEventData {
+	inEventData.Status = keptnv2.StatusSucceeded
+	inEventData.Result = keptnv2.ResultPass
+	inEventData.Message = "Successfully executed scaling action"
+	return keptnv2.ActionFinishedEventData{
+		EventData: inEventData,
+		Action: keptnv2.ActionData{
+			GitCommit: gitCommit,
 		},
-		Labels: actionTriggeredEvent.Labels,
 	}
 }
 
-func (a *ActionTriggeredHandler) getActionStartedEvent(actionTriggeredEvent keptn.ActionTriggeredEventData) keptn.ActionStartedEventData {
+func (h *ActionTriggeredHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.ActionFinishedEventData {
 
-	return keptn.ActionStartedEventData{
-		Project: actionTriggeredEvent.Project,
-		Service: actionTriggeredEvent.Service,
-		Stage:   actionTriggeredEvent.Stage,
-		Labels:  actionTriggeredEvent.Labels,
+	eventData.Status = keptnv2.StatusErrored
+	eventData.Result = keptnv2.ResultFailed
+	eventData.Message = err.Error()
+	return keptnv2.ActionFinishedEventData{
+		EventData: eventData,
 	}
 }
 
-func (a *ActionTriggeredHandler) handleScaling(actionTriggeredEvent keptn.ActionTriggeredEventData) keptn.ActionFinishedEventData {
+func (h *ActionTriggeredHandler) getFinishedEventData(eventData keptnv2.EventData, status keptnv2.StatusType,
+	result keptnv2.ResultType, msg string) keptnv2.ActionFinishedEventData {
 
-	value, ok := actionTriggeredEvent.Action.Value.(string)
+	eventData.Status = status
+	eventData.Result = result
+	eventData.Message = msg
+	return keptnv2.ActionFinishedEventData{
+		EventData: eventData,
+	}
+}
+
+func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventData) keptnv2.ActionFinishedEventData {
+
+	value, ok := e.Action.Value.(string)
 	if !ok {
-		return a.getActionFinishedEvent("could not parse action.value to string value",
-			keptn.ActionStatusErrored, actionTriggeredEvent)
+		return h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded,
+			keptnv2.ResultFailed, "could not parse action.value to string value")
 	}
 	replicaIncrement, err := strconv.Atoi(value)
 	if err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()),
-			keptn.ActionStatusErrored, actionTriggeredEvent)
+		return h.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded,
+			keptnv2.ResultFailed, "could not parse action.value to int")
 	}
 
-	// Get generated chart
-	helmChartName := helm.GetChartName(actionTriggeredEvent.Service, true)
-	a.keptnHandler.Logger.Info(fmt.Sprintf("Retrieve chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
-
-	ch, err := keptnutils.GetChart(actionTriggeredEvent.Project, actionTriggeredEvent.Service, actionTriggeredEvent.Stage, helmChartName, a.configServiceURL)
+	replicaCountUpdater := configurationchanger.NewReplicaCountManipulator(replicaIncrement)
+	// Note: This action applies the scaling on the generated chart and therefore assumes a b/g deployment
+	genChart, gitVersion, err := h.configChanger.UpdateChart(e.EventData,
+		true, replicaCountUpdater)
 	if err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
-	}
-	deploymentStrategy, err := getDeploymentStrategyOfService(ch)
-	if err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
-	}
-
-	// Edit chart
-	a.keptnHandler.Logger.Info(fmt.Sprintf("Edit chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
-	if err := a.increaseReplicaCount(ch, replicaIncrement); err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType("failed when editing deployment: "+err.Error()),
-			keptn.ActionStatusErrored, actionTriggeredEvent)
+		return h.getFinishedEventDataForError(e.EventData, err)
 	}
 
 	// Upgrade chart
-	a.keptnHandler.Logger.Info(fmt.Sprintf("Start upgrading chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
-	if err := a.upgradeChart(ch, actionTriggeredEvent, deploymentStrategy); err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
-	}
-	a.keptnHandler.Logger.Info(fmt.Sprintf("Finished upgrading chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
-
-	// Store chart
-	a.keptnHandler.Logger.Info(fmt.Sprintf("Store chart %s of stage %s", helmChartName, actionTriggeredEvent.Stage))
-	chartData, err := keptnutils.PackageChart(ch)
-	if err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
-	}
-	if err := keptnutils.StoreChart(actionTriggeredEvent.Project, actionTriggeredEvent.Service, actionTriggeredEvent.Stage,
-		helmChartName, chartData, a.configServiceURL); err != nil {
-		return a.getActionFinishedEvent(keptn.ActionResultType(err.Error()), keptn.ActionStatusErrored, actionTriggeredEvent)
+	if err := h.upgradeChart(genChart, e.EventData, keptn.Duplicate); err != nil {
+		return h.getFinishedEventDataForError(e.EventData, err)
 	}
 
-	return a.getActionFinishedEvent(keptn.ActionResultPass, keptn.ActionStatusSucceeded, actionTriggeredEvent)
-}
-
-func (a *ActionTriggeredHandler) upgradeChart(ch *chart.Chart, action keptn.ActionTriggeredEventData, strategy keptn.DeploymentStrategy) error {
-	generated := strings.HasSuffix(ch.Name(), "-generated")
-	return a.helmExecutor.UpgradeChart(ch,
-		helm.GetReleaseName(action.Project, action.Stage, action.Service, generated),
-		action.Project+"-"+action.Stage,
-		getKeptnValues(action.Project, action.Stage, action.Service,
-			getDeploymentName(strategy, generated)))
-}
-
-// increaseReplicaCount increases the replica count in the deployments by the provided replicaIncrement
-func (a *ActionTriggeredHandler) increaseReplicaCount(ch *chart.Chart, replicaIncrement int) error {
-
-	for _, template := range ch.Templates {
-		dec := kyaml.NewYAMLToJSONDecoder(bytes.NewReader(template.Data))
-		newContent := make([]byte, 0, 0)
-		containsDepl := false
-		for {
-			var document interface{}
-			err := dec.Decode(&document)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return err
-			}
-
-			doc, err := json.Marshal(document)
-			if err != nil {
-				return err
-			}
-
-			var depl appsv1.Deployment
-			if err := json.Unmarshal(doc, &depl); err == nil && keptnutils.IsDeployment(&depl) {
-				// Deployment found
-				containsDepl = true
-				depl.Spec.Replicas = getPtr(*depl.Spec.Replicas + int32(replicaIncrement))
-				newContent, err = appendAsYaml(newContent, depl)
-				if err != nil {
-					return err
-				}
-			} else {
-				newContent, err = appendAsYaml(newContent, document)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		if containsDepl {
-			template.Data = newContent
-		}
-	}
-
-	return nil
-}
-
-func getPtr(x int32) *int32 {
-	return &x
-}
-
-func appendAsYaml(content []byte, element interface{}) ([]byte, error) {
-
-	jsonData, err := json.Marshal(element)
-	if err != nil {
-		return nil, err
-	}
-	yamlData, err := yaml.JSONToYAML(jsonData)
-	if err != nil {
-		return nil, err
-	}
-	content = append(content, []byte("---\n")...)
-	return append(content, yamlData...), nil
-}
-
-func (a ActionTriggeredHandler) sendEvent(ce cloudevents.Event, eventType string, data interface{}) error {
-
-	source, _ := url.Parse("helm-service")
-
-	event := cloudevents.NewEvent()
-	event.SetType(eventType)
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetSource(source.String())
-	event.SetExtension("shkeptncontext", a.keptnHandler.KeptnContext)
-	event.SetExtension("triggeredid", ce.ID())
-	event.SetData(cloudevents.ApplicationJSON, data)
-
-	err := a.keptnHandler.SendCloudEvent(event)
-	if err != nil {
-		a.keptnHandler.Logger.Error("Could not send action.finished event: " + err.Error())
-		return err
-	}
-	return nil
+	return h.getFinishedEventDataForSuccess(e.EventData, gitVersion)
 }

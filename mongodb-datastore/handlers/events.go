@@ -6,25 +6,25 @@ import (
 	"errors"
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/jeremywohl/flatten"
 
-	keptnutils "github.com/keptn/go-utils/pkg/lib"
-
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const contextToProjectCollection = "contextToProject"
 const rootEventCollectionSuffix = "-rootEvents"
+const invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 
 var client *mongo.Client
 var mutex sync.Mutex
@@ -99,7 +99,7 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 		return err
 	}
 
-	if event.Type == keptnutils.InternalProjectDeleteEventType {
+	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
 		return dropProjectEvents(logger, event)
 	}
 	return insertEvent(logger, event)
@@ -127,6 +127,34 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 		return err
 	}
 
+	// additionally store "invalidated" events in a dedicated collection
+	if strings.HasSuffix(string(event.Type), ".invalidated") {
+		invalidatedCollectionName := getInvalidatedCollectionName(collectionName)
+		logger.Debug("Storing invalidated event to dedicated collection " + invalidatedCollectionName)
+		invalidatedCollection := client.Database(mongoDBName).Collection(invalidatedCollectionName)
+
+		logger.Debug("ensuring index for " + invalidatedCollectionName + " exists")
+		indexDefinition := mongo.IndexModel{
+			Keys: bson.M{
+				"triggeredid": 1,
+				"type":        1,
+			},
+		}
+		// CreateOne() is idempotent - this operation checks if the index exists and only creates a new one when not available
+		_, err := invalidatedCollection.Indexes().CreateOne(ctx, indexDefinition)
+		if err != nil {
+			// log the error, but continue anyway - index is not required for the query to work
+			logger.Debug("could not create index for " + invalidatedCollectionName + ": " + err.Error())
+		}
+		logger.Debug("created index for " + invalidatedCollectionName)
+		_, err = invalidatedCollection.InsertOne(ctx, eventInterface)
+		if err != nil {
+			err := fmt.Errorf("failed to insert into collection: %v", err)
+			logger.Error(err.Error())
+			return err
+		}
+
+	}
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		err := fmt.Errorf("failed to insert into collection: %v", err)
@@ -147,6 +175,11 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 
 	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
 	return nil
+}
+
+func getInvalidatedCollectionName(collectionName string) string {
+	invalidatedCollectionName := collectionName + invalidatedEventsCollectionSuffix
+	return invalidatedCollectionName
 }
 
 func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx context.Context, event *models.KeptnContextExtendedCE) error {
@@ -312,59 +345,114 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 		return nil, err
 	}
 
-	collectionName := eventsCollectionName
-
 	searchOptions := getSearchOptions(params)
 
-	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
-		// if a project has been specified, query the collection for that project
-		collectionName = searchOptions["data.project"].(string)
-	} else if params.KeptnContext != nil && *params.KeptnContext != "" {
-		var err error
-		collectionName, err = getProjectForContext(*params.KeptnContext)
-		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				logger.Info("no project found for shkeptkontext")
-				return &event.GetEventsOKBody{
-					Events:      nil,
-					NextPageKey: "0",
-					PageSize:    0,
-					TotalCount:  0,
-				}, nil
-			}
-			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
-			return nil, err
-		}
+	onlyRootEvents := params.Root != nil
+	collectionName, err := getCollectionNameForQuery(searchOptions, logger)
+	if err != nil {
+		return nil, err
+	} else if collectionName == "" {
+		return &event.GetEventsOKBody{
+			Events:      nil,
+			NextPageKey: "0",
+			PageSize:    0,
+			TotalCount:  0,
+		}, nil
 	}
-
-	var newNextPageKey int64
-	var nextPageKey int64 = 0
-	if params.NextPageKey != nil {
-		tmpNextPageKey, _ := strconv.Atoi(*params.NextPageKey)
-		nextPageKey = int64(tmpNextPageKey)
-		newNextPageKey = nextPageKey + *params.PageSize
-	} else {
-		newNextPageKey = *params.PageSize
+	result, err := findInDB(collectionName, *params.PageSize, params.NextPageKey, onlyRootEvents, searchOptions, logger)
+	if err != nil {
+		return nil, err
 	}
+	return (*event.GetEventsOKBody)(result), nil
+}
 
-	pageSize := *params.PageSize
+type getEventsResult struct {
+	// Events
+	Events []*models.KeptnContextExtendedCE `json:"events"`
 
-	var sortOptions *options.FindOptions
-	/*
-		if params.Root != nil {
-			collectionName = collectionName + rootEventCollectionSuffix
-			sortOptions = options.Find().SetSort(bson.D{{"time", 1}}).SetSkip(nextPageKey).SetLimit(pageSize)
-		} else {
-		}
-	*/
-	if params.Root != nil {
-		collectionName = collectionName + rootEventCollectionSuffix
-	}
-	sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+	// Pointer to the next page
+	NextPageKey string `json:"nextPageKey,omitempty"`
+
+	// Size of the returned page
+	PageSize int64 `json:"pageSize,omitempty"`
+
+	// Total number of events
+	TotalCount int64 `json:"totalCount,omitempty"`
+}
+
+func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *keptncommon.Logger) (*getEventsResult, error) {
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
-	var result event.GetEventsOKBody
+	result := &getEventsResult{
+		Events: []*models.KeptnContextExtendedCE{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cur, err := collection.Aggregate(ctx, pipeline)
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
+		return nil, err
+	}
+	// close the cursor after the function has completed to avoid memory leaks
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var outputEvent interface{}
+		err := cur.Decode(&outputEvent)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to decode event %v", err))
+			return nil, err
+		}
+		outputEvent, err = flattenRecursively(outputEvent, logger)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to flatten %v", err))
+			return nil, err
+		}
+
+		data, _ := json.Marshal(outputEvent)
+
+		var keptnEvent models.KeptnContextExtendedCE
+		err = keptnEvent.UnmarshalJSON(data)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
+			continue
+		}
+
+		result.Events = append(result.Events, &keptnEvent)
+	}
+
+	return result, nil
+}
+
+func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptncommon.Logger) (*getEventsResult, error) {
+
+	var newNextPageKey int64
+	var nextPageKey int64 = 0
+	if nextPageKeyStr != nil {
+		tmpNextPageKey, _ := strconv.Atoi(*nextPageKeyStr)
+		nextPageKey = int64(tmpNextPageKey)
+		newNextPageKey = nextPageKey + pageSize
+	} else {
+		newNextPageKey = pageSize
+	}
+
+	var sortOptions *options.FindOptions
+
+	if onlyRootEvents {
+		collectionName = collectionName + rootEventCollectionSuffix
+	}
+	if pageSize > 0 {
+		sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+	} else {
+		sortOptions = options.Find().SetSort(bson.D{{"time", -1}})
+	}
+
+	collection := client.Database(mongoDBName).Collection(collectionName)
+
+	var result getEventsResult
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -375,6 +463,7 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
+
 	if err != nil {
 		logger.Error(fmt.Sprintf("error finding elements in events collection: %v", err))
 		return nil, err
@@ -416,6 +505,26 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	return &result, nil
 }
 
+func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger) (string, error) {
+	collectionName := eventsCollectionName
+	if searchOptions["data.project"] != nil && searchOptions["data.project"] != "" {
+		// if a project has been specified, query the collection for that project
+		collectionName = searchOptions["data.project"].(string)
+	} else if searchOptions["shkeptncontext"] != nil && searchOptions["shkeptncontext"] != "" {
+		var err error
+		collectionName, err = getProjectForContext(searchOptions["shkeptncontext"].(string))
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				logger.Info("no project found for shkeptkontext")
+				return "", nil
+			}
+			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
+			return "", err
+		}
+	}
+	return collectionName, nil
+}
+
 func getProjectForContext(keptnContext string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -436,7 +545,7 @@ func getProjectForContext(keptnContext string) (string, error) {
 func getSearchOptions(params event.GetEventsParams) bson.M {
 	searchOptions := bson.M{}
 	if params.KeptnContext != nil {
-		searchOptions["shkeptncontext"] = primitive.Regex{Pattern: *params.KeptnContext, Options: ""}
+		searchOptions["shkeptncontext"] = *params.KeptnContext
 	}
 	if params.Type != nil {
 		searchOptions["type"] = *params.Type
@@ -498,4 +607,162 @@ func flattenRecursively(i interface{}, logger *keptncommon.Logger) (interface{},
 		return a, nil
 	}
 	return i, nil
+}
+
+// MinimumFilterNotProvided indicates that the minimum requirements for the filter have not been met
+var MinimumFilterNotProvided = errors.New("must provide a filter containing at least one of the following properties: 'data.project' or 'shkeptncontext'")
+
+// GetEventsByTypeHandlerFunc gets events by their type
+func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByTypeOKBody, error) {
+	logger := keptncommon.NewLogger("", "", serviceName)
+	logger.Debug(fmt.Sprintf("getting %s events from the data store", params.EventType))
+
+	if err := ensureDBConnection(logger); err != nil {
+		err := fmt.Errorf("failed to establish MongoDB connection: %v", err)
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	if params.Filter == nil {
+		return nil, MinimumFilterNotProvided
+	}
+
+	matchFields := parseFilter(*params.Filter)
+	if !validateFilter(matchFields) {
+		return nil, MinimumFilterNotProvided
+	}
+
+	matchFields["type"] = params.EventType
+
+	if params.FromTime != nil {
+		matchFields["time"] = bson.M{
+			"$gt": *params.FromTime,
+		}
+	}
+
+	collectionName, err := getCollectionNameForQuery(matchFields, logger)
+	if err != nil {
+		return nil, err
+	} else if collectionName == "" {
+		return &event.GetEventsByTypeOKBody{
+			Events: nil,
+		}, nil
+	}
+
+	var allEvents *getEventsResult
+
+	if params.ExcludeInvalidated != nil && *params.ExcludeInvalidated {
+		aggregationPipeline := getAggregationPipeline(params, collectionName, matchFields)
+		allEvents, err = aggregateFromDB(collectionName, aggregationPipeline, logger)
+	} else {
+		allEvents, err = findInDB(collectionName, *params.Limit, nil, false, matchFields, logger)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &event.GetEventsByTypeOKBody{Events: allEvents.Events}, nil
+}
+
+func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
+	invalidatedEventType := getInvalidatedEventType(params.EventType)
+
+	matchStage := bson.D{
+		{"$match", matchFields},
+	}
+
+	lookupStage := bson.D{
+		{"$lookup", bson.M{
+			"from": getInvalidatedCollectionName(collectionName),
+			"let": bson.M{
+				"event_id":   "$id",
+				"event_type": "$type",
+			},
+			"pipeline": []bson.M{
+				{
+					"$match": bson.M{
+						"$expr": bson.M{
+							"$and": []bson.M{
+								{
+									"$eq": []string{"$triggeredid", "$$event_id"},
+								},
+								{
+									"$eq": []string{"$type", invalidatedEventType},
+								},
+							},
+						},
+					},
+				},
+				{
+					"$limit": 1,
+				},
+			},
+			"as": "invalidated",
+		}},
+	}
+
+	matchInvalidatedStage := bson.D{
+		{"$match", bson.M{
+			"invalidated": bson.M{
+				"$size": 0,
+			},
+		}},
+	}
+	sortStage := bson.D{
+		{"$sort", bson.M{
+			"time": -1,
+		}},
+	}
+	var aggregationPipeline mongo.Pipeline
+	if params.Limit != nil && *params.Limit > 0 {
+		limitStage := bson.D{
+			{"$limit", *params.Limit},
+		}
+		aggregationPipeline = mongo.Pipeline{matchStage, lookupStage, matchInvalidatedStage, sortStage, limitStage}
+	} else {
+		aggregationPipeline = mongo.Pipeline{matchStage, lookupStage, matchInvalidatedStage, sortStage}
+	}
+	return aggregationPipeline
+}
+
+func getInvalidatedEventType(eventType string) string {
+	var invalidatedEventType string
+
+	split := strings.Split(eventType, ".")
+	invalidatedEventType = split[0]
+	for i := 1; i < len(split)-1; i = i + 1 {
+		invalidatedEventType = invalidatedEventType + "." + split[i]
+	}
+	invalidatedEventType = invalidatedEventType + ".invalidated"
+	return invalidatedEventType
+}
+
+func validateFilter(searchOptions bson.M) bool {
+	if (searchOptions["data.project"] == nil || searchOptions["data.project"] == "") && (searchOptions["shkeptncontext"] == nil || searchOptions["shkeptncontext"] == "") {
+		return false
+	}
+
+	return true
+}
+
+func parseFilter(filter string) bson.M {
+	filterObject := bson.M{}
+	keyValues := strings.Split(filter, " AND ")
+
+	for _, keyValuePair := range keyValues {
+		split := strings.Split(keyValuePair, ":")
+		if len(split) == 2 {
+			splitValue := strings.Split(split[1], ",")
+			if len(splitValue) == 1 {
+				filterObject[split[0]] = split[1]
+			} else {
+				filterObject[split[0]] = bson.M{
+					"$in": splitValue,
+				}
+			}
+		}
+	}
+
+	return filterObject
 }

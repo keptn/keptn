@@ -55,7 +55,6 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
-	credentialsCreated := false
 	logger := keptncommon.NewLogger("", "", "configuration-service")
 	projectConfigPath := config.ConfigDir + "/" + params.Project.ProjectName
 
@@ -71,29 +70,18 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	// clone existing repo
 	////////////////////////////////////////////////////
 	var initializedGit bool
-	if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
+	credentials, err := common.GetCredentials(params.Project.ProjectName)
+	if err == nil && credentials != nil {
 		// try to clone the repo
 		var err error
-		credentials := common.GitCredentials{
-			User:      params.Project.GitUser,
-			Token:     params.Project.GitToken,
-			RemoteURI: params.Project.GitRemoteURI,
-		}
-		initializedGit, err = common.CloneRepo(params.Project.ProjectName, credentials)
+
+		initializedGit, err = common.CloneRepo(params.Project.ProjectName, *credentials)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Could not clone git repository during creating project %s", params.Project.ProjectName))
 			logger.Error(err.Error())
 			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not clone git repository")})
 		}
 
-		// store credentials (e.g., as a kubernetes secret)
-		err = common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Could not store git credentials during creating project %s", params.Project.ProjectName))
-			logger.Error(err.Error())
-			return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
-		}
-		credentialsCreated = true
 	} else {
 		// if no remote URI has been specified, create a new repo
 		///////////////////////////////////////////////////
@@ -123,14 +111,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not write metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
-		// Cleanup credentials before we exit
-		if credentialsCreated {
-			err = common.DeleteCredentials(params.Project.ProjectName)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Could not delete credentials during creating project %s", params.Project.ProjectName))
-				logger.Error(err.Error())
-			}
-		}
 
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store project metadata")})
 	}
@@ -139,14 +119,6 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not commit metadata.yaml during creating project %s", params.Project.ProjectName))
 		logger.Error(err.Error())
-		// Cleanup credentials before we exit
-		if credentialsCreated {
-			err = common.DeleteCredentials(params.Project.ProjectName)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Could not delete credentials during creating project %s", params.Project.ProjectName))
-				logger.Error(err.Error())
-			}
-		}
 		return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 
@@ -188,25 +160,21 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 		logger.Debug("Updating project " + params.ProjectName)
 
-		if params.Project.GitUser != "" && params.Project.GitToken != "" && params.Project.GitRemoteURI != "" {
+		credentials, err := common.GetCredentials(params.Project.ProjectName)
+		if err == nil && credentials != nil {
 			logger.Debug("Storing Git credentials for project " + params.ProjectName)
-
-			// store credentials (e.g., as a kubernetes secret)
-			err := common.StoreGitCredentials(params.Project.ProjectName, params.Project.GitUser, params.Project.GitToken, params.Project.GitRemoteURI)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Could not store git credentials during creating project %s: %v", params.Project.ProjectName, err))
-				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not store git credentials")})
-			}
 
 			logger.Debug("Add Git origin and push changes for project " + params.ProjectName)
 			err = common.AddOrigin(params.Project.ProjectName)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
-				// Cleanup credentials before we exit
-				if credsErr := common.DeleteCredentials(params.Project.ProjectName); credsErr != nil {
-					logger.Error(fmt.Sprintf("Could not delete credentials while updating project %s: %v", params.Project.ProjectName, credsErr))
-				}
-				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
+				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+			}
+
+			mv := common.GetProjectsMaterializedView()
+			if err := mv.UpdateUpstreamInfo(params.Project.ProjectName, credentials.RemoteURI, credentials.User); err != nil {
+				logger.Error(fmt.Sprintf("Could not add upstream repository info for project %s: %v", params.Project.ProjectName, err))
+				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 			}
 		} else {
 			logger.Info("Project " + params.ProjectName + " not updated as Git credentials were missing.")
@@ -233,16 +201,6 @@ func DeleteProjectProjectNameHandlerFunc(params project.DeleteProjectProjectName
 		logger.Error(fmt.Sprintf("Could not delete directory during deleting project %s", params.ProjectName))
 		logger.Error(err.Error())
 		return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete project")})
-	}
-
-	creds, _ := common.GetCredentials(params.ProjectName)
-	if creds != nil {
-		err = common.DeleteCredentials(params.ProjectName)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Could not delete credentials during deleting project %s", params.ProjectName))
-			logger.Error(err.Error())
-			return project.NewDeleteProjectProjectNameBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not delete upstream credentials")})
-		}
 	}
 
 	mv := common.GetProjectsMaterializedView()

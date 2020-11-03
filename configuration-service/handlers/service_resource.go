@@ -55,10 +55,14 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 		logger.Debug("Archive the Helm chart: " + params.ResourceURI)
 
 		chartDir := strings.Replace(resourcePath, ".tgz", "", -1)
+		if !common.FileExists(chartDir) {
+			return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().
+				WithPayload(&models.Error{Code: 404, Message: swag.String("Service resource not found")})
+		}
 		if err := archiver.Archive([]string{chartDir}, resourcePath); err != nil {
 			logger.Error(err.Error())
 			return service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResourceBadRequest().
-				WithPayload(&models.Error{Code: 400, Message: swag.String("Could archive the Helm chart directory")})
+				WithPayload(&models.Error{Code: 400, Message: swag.String("Could not archive the Helm chart directory")})
 		}
 	}
 
@@ -286,7 +290,15 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	logger.Debug("Successfully updated resources")
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+	if defaultBranch == "" {
+		defaultBranch = "master"
+	}
+	metadata.Branch = defaultBranch
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceCreated().WithPayload(metadata)
 }
 
@@ -329,7 +341,15 @@ func PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+	if defaultBranch == "" {
+		defaultBranch = "master"
+	}
+	metadata.Branch = defaultBranch
 	return service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURICreated().
 		WithPayload(metadata)
 }

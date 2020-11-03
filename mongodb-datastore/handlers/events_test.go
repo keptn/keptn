@@ -2,10 +2,11 @@ package handlers
 
 import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 	"testing"
 
@@ -144,7 +145,7 @@ func Test_getSearchOptions(t *testing.T) {
 				"data.service":   "carts",
 				"source":         "test-service",
 				"type":           "test-event",
-				"shkeptncontext": primitive.Regex{Pattern: "test-context", Options: ""},
+				"shkeptncontext": "test-context",
 				"time": bson.M{
 					"$gt": "1",
 				},
@@ -213,6 +214,253 @@ func Test_transformEventToInterface(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("transformEventToInterface() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_parseFilter(t *testing.T) {
+	type args struct {
+		filter string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bson.M
+	}{
+		{
+			name: "get key values",
+			args: args{
+				filter: "data.project:sockshop AND shkeptncontext:test-context",
+			},
+			want: bson.M{
+				"data.project":   "sockshop",
+				"shkeptncontext": "test-context",
+			},
+		},
+		{
+			name: "get key values",
+			args: args{
+				filter: "data.project:sockshop AND data.result:pass,warn",
+			},
+			want: bson.M{
+				"data.project": "sockshop",
+				"data.result": bson.M{
+					"$in": []string{"pass", "warn"},
+				},
+			},
+		},
+		{
+			name: "empty input",
+			args: args{
+				filter: "",
+			},
+			want: bson.M{},
+		},
+		{
+			name: "nonsense input",
+			args: args{
+				filter: "bla",
+			},
+			want: bson.M{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := parseFilter(tt.args.filter); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_validateFilter(t *testing.T) {
+	type args struct {
+		searchOptions bson.M
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "data.project provided",
+			args: args{
+				searchOptions: bson.M{
+					"data.project": "test",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "data.project empty string",
+			args: args{
+				searchOptions: bson.M{
+					"data.project": "",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "shkeptncontext provided",
+			args: args{
+				searchOptions: bson.M{
+					"shkeptncontext": "test",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "shkeptncontext empty string",
+			args: args{
+				searchOptions: bson.M{
+					"shkeptncontext": "",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "empty",
+			args: args{
+				searchOptions: bson.M{},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := validateFilter(tt.args.searchOptions); got != tt.want {
+				t.Errorf("validateFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getAggregationPipeline(t *testing.T) {
+	limit := int64(2)
+	type args struct {
+		params         event.GetEventsByTypeParams
+		collectionName string
+		matchFields    bson.M
+	}
+	tests := []struct {
+		name string
+		args args
+		want mongo.Pipeline
+	}{
+		{
+			name: "",
+			args: args{
+				params: event.GetEventsByTypeParams{
+					Limit:     &limit,
+					EventType: "my-type",
+				},
+				collectionName: "test-collection",
+				matchFields: bson.M{
+					"project": "test-project",
+				},
+			},
+			want: mongo.Pipeline{
+				bson.D{
+					{"$match", bson.M{
+						"project": "test-project",
+					}},
+				},
+				bson.D{
+					{"$lookup", bson.M{
+						"from": "test-collection-invalidatedEvents",
+						"let": bson.M{
+							"event_id":   "$id",
+							"event_type": "$type",
+						},
+						"pipeline": []bson.M{
+							{
+								"$match": bson.M{
+									"$expr": bson.M{
+										"$and": []bson.M{
+											{
+												"$eq": []string{"$triggeredid", "$$event_id"},
+											},
+											{
+												"$eq": []string{"$type", "my-type.invalidated"},
+											},
+										},
+									},
+								},
+							},
+							{
+								"$limit": 1,
+							},
+						},
+						"as": "invalidated",
+					}},
+				},
+				bson.D{
+					{"$match", bson.M{
+						"invalidated": bson.M{
+							"$size": 0,
+						},
+					}},
+				},
+				bson.D{
+					{"$sort",
+						bson.M{
+							"time": -1,
+						},
+					},
+				},
+				bson.D{
+					{
+						"$limit", limit,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getAggregationPipeline(tt.args.params, tt.args.collectionName, tt.args.matchFields); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getAggregationPipeline() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getInvalidatedEventType(t *testing.T) {
+	type args struct {
+		params string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "arbitrary event type",
+			args: args{
+				params: "my-type",
+			},
+			want: "my-type.invalidated",
+		},
+		{
+			name: "arbitrary event type",
+			args: args{
+				params: "my-type.foo.bar",
+			},
+			want: "my-type.foo.invalidated",
+		},
+		{
+			name: "evaluation-done",
+			args: args{
+				params: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+			},
+			want: "sh.keptn.event.evaluation.invalidated",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getInvalidatedEventType(tt.args.params); got != tt.want {
+				t.Errorf("getInvalidatedEventType() = %v, want %v", got, tt.want)
 			}
 		})
 	}

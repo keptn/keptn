@@ -9,8 +9,8 @@ This folder contains docs for developers. If you are looking for the usage docum
   onboarded a service (etc...)
 * Kubernetes Cluster: 
   For testing your changes it is strongly recommended to have access to a (throwaway) Kubernetes Cluster on any of the 
-  supported platforms (e.g., Google Kubernetes Engine, Azure Kubernetes Service). 
-  You can also run Keptn on Minikube and Minishift, which is the recommended way for developing and running integration tests.
+  supported platforms (e.g., K3s, Google Kubernetes Engine). 
+  You can also run Keptn on K3s, Microk8s, KIND, Minikube and Minishift, which is the recommended way for developing and running integration tests.
   You can find more information in [here](integration_tests.md).
 * Kubernetes CLI tool [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * Docker
@@ -30,7 +30,7 @@ While this is not a requirement, we recommend you to use any of the following
 ## Where to go
 
 Keptn consists of multiple services. We recommend to take a look at the 
-[architecture of keptn](https://keptn.sh/docs/0.5.0/concepts/architecture/).
+[architecture of keptn](https://keptn.sh/docs/concepts/architecture/).
 
 The keptn core implementation as well as the *batteries-included* services are stored within this repository 
 ([keptn/keptn](https://github.com/keptn/keptn)). This includes (but is not limited to):
@@ -47,6 +47,9 @@ The keptn core implementation as well as the *batteries-included* services are s
 
 The `go-utils` package is available in [keptn/go-utils](https://github.com/keptn/go-utils/) and contains several 
  utility functions that we use in many services.
+ 
+Similarly, the `kubernetes-utils` package is available in [keptn/kubernetes-utils](https://github.com/keptn/kubernetes-utils/) and contains several 
+  utility functions that we use in many services.
 
 If you want to contribute to the website or docs provided on the website, the 
  [keptn/keptn.github.io](https://github.com/keptn/keptn.github.io/) is the way to go.
@@ -54,7 +57,9 @@ If you want to contribute to the website or docs provided on the website, the
 In addition, we have a collection of additional services at [github.com/keptn-contrib](https://github.com/keptn-contrib), e.g.:
 * [dynatrace-service](https://github.com/keptn-contrib/dynatrace-service)
 * [dynatrace-sli-service](https://github.com/keptn-contrib/dynatrace-sli-service)
+* [prometheus-service](https://github.com/keptn-contrib/prometheus-service)
 * [prometheus-sli-service](https://github.com/keptn-contrib/prometheus-sli-service)
+* [unleash-service](https://github.com/keptn-contrib/unleash-service)
 
 
 ## Branch Naming Convention

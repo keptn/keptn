@@ -11,8 +11,11 @@ var (
 	// Version information which is passed by ldflags
 	Version = "develop"
 
-	// KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
-	KubeServerVersionConstraints = ">= 1.14, <= 1.19"
+	// DefaultKubeServerVersionConstraints is used when no version is passed by ldflags
+	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.19"
+
+	//KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
+	KubeServerVersionConstraints = ""
 )
 
 func init() {
@@ -21,6 +24,12 @@ func init() {
 
 func main() {
 	cmd.Version = Version
-	cmd.KubeServerVersionConstraints = KubeServerVersionConstraints
+
+	if len(KubeServerVersionConstraints) > 0 {
+		cmd.KubeServerVersionConstraints = KubeServerVersionConstraints
+	} else {
+		cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints
+	}
+
 	cmd.Execute()
 }

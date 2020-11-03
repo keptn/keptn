@@ -69,6 +69,24 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 	return mv.updateProject(existingProject)
 }
 
+// UpdateUpstreamInfo updates the Upstream Repository URL and git user of a project
+func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, user string) error {
+	existingProject, err := mv.GetProject(projectName)
+	if err != nil {
+		return err
+	}
+
+	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
+		existingProject.GitRemoteURI = uri
+		existingProject.GitUser = user
+		if err := mv.updateProject(existingProject); err != nil {
+			mv.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+			return err
+		}
+	}
+	return nil
+}
+
 // GetProjects returns all projects
 func (mv *projectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
 	return mv.ProjectRepo.GetProjects()
@@ -86,7 +104,7 @@ func (mv *projectsMaterializedView) DeleteProject(projectName string) error {
 
 // CreateStage creates a stage
 func (mv *projectsMaterializedView) CreateStage(project string, stage string) error {
-	fmt.Println("Adding stage " + stage + " to project " + project)
+	mv.Logger.Info("Adding stage " + stage + " to project " + project)
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
