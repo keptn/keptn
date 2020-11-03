@@ -13,7 +13,7 @@ echo "{
 echo "Installing Keptn on Minishift cluster"
 
 # install keptn (using the develop version, which should point the :latest docker images)
-keptn install --platform=openshift --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose
+keptn install --platform=openshift --chart-repo="${KEPTN_INSTALLER_REPO}" --creds=creds.json --verbose --hide-sensitive-data
 verify_test_step $? "keptn install --platform=openshift --chart-repo=${KEPTN_INSTALLER_REPO} - failed"
 
 oc expose svc/api-gateway-nginx -n keptn --hostname=api.keptn.127.0.0.1.nip.io
