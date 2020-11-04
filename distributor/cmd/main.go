@@ -71,16 +71,7 @@ func main() {
 		fmt.Println("Failed to process env var: " + err.Error())
 		os.Exit(1)
 	}
-	//go keptnapi.RunHealthEndpoint("10999")
-
-	var wg sync.WaitGroup
-	   wg.Add(2)
-	   go connectionHTTP(connectionTypeHTTP, &wg)
-	   go connectionNATS(connectionTypeNATS, &wg)
-
-	   wg.Wait()
-
-
+	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
 
@@ -89,12 +80,23 @@ const connectionTypeHTTP = "http"
 
 func _main(args []string, env envConfig) int {
 
-	createEventForwardingEndpoint(env)
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
 
+	go startEventForwarder(env, wg)
+	go startEventReceiver(wg)
+
+	wg.Wait()
+
+	return 0
+}
+
+func startEventReceiver(waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
 	// initialize the http client
-	//connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
+	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
-/*	switch connectionType {
+	switch connectionType {
 	case "":
 		createNATSClientConnection()
 		break
@@ -107,39 +109,16 @@ func _main(args []string, env envConfig) int {
 	default:
 		createNATSClientConnection()
 	}
-*/
-	return 0
 }
 
-  func connectionHTTP(connectionType string,  wg *sync.WaitGroup) {
-	  defer wg.Done()
-	  fmt.Printf("Type HTTP connection starting\n" )	
-	http.HandleFunc("/event", EventForwardHandler)
-	http.ListenAndServe("localhost:8081", nil)
-	createHTTPConnection()
-	 fmt.Printf("Type HTTP connection done at %d \n", time.Now())
-
-
-}
-
-
-  func connectionNATS(connectionType string, wg *sync.WaitGroup){
+func startEventForwarder(env envConfig, wg *sync.WaitGroup) {
 	defer wg.Done()
-	fmt.Printf("Type NAT connection starting\n" )
-	keptnapi.RunHealthEndpoint("10999")
-	createNATSClientConnection()
-	fmt.Printf("Type NAT connection done at %d \n", time.Now())
-}
-
-
-func createEventForwardingEndpoint(env envConfig) {
 	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")
 
-	//http.HandleFunc("/event", EventForwardHandler)
-	//go http.ListenAndServe("localhost:8081", nil)
-//	http.ListenAndServe("localhost:8081", nil)
-
+	http.HandleFunc("/event", EventForwardHandler)
+	serverURL := fmt.Sprintf("localhost:%d", env.Port)
+	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 
 // EventForwardHandler godoc
@@ -147,7 +126,7 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		fmt.Printf("Failed to read body from requst: %s", err)
+		fmt.Printf("Failed to read body from requst: %s\n", err)
 		return
 	}
 
@@ -215,16 +194,6 @@ func createPubSubConnection(topic string) (*cenats.Sender, error) {
 		if err != nil {
 			fmt.Printf("Failed to create nats protocol, %s", err.Error())
 		}
-		/*
-			natsConnection, err := cloudeventsnats.New(
-				pubSubURL,
-				topic,
-			)
-			if err != nil {
-				fmt.Printf("Failed to create NATS connection, " + err.Error())
-				return nil, err
-			}
-		*/
 		pubSubConnections[topic] = p
 	}
 
@@ -468,7 +437,7 @@ func stringp(s string) *string {
 
 func createNATSClientConnection() {
 	if os.Getenv("PUBSUB_RECIPIENT") == "" {
-		fmt.Printf("No pubsub recipient defined")
+		fmt.Println("No pubsub recipient defined")
 		return
 	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
@@ -565,10 +534,10 @@ func sendEvent(event cloudevents.Event) error {
 	ctx := cloudevents.ContextWithTarget(context.Background(), recipientURL)
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
-		fmt.Printf("failed to send: %s", result.Error())
+		fmt.Printf("failed to send: %s\n", result.Error())
 		return errors.New(result.Error())
 	}
-	fmt.Printf("sent: %s", event.ID())
+	fmt.Printf("sent: %s\n", event.ID())
 	return nil
 }
 
