@@ -300,6 +300,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return errors.New(msg)
 		}
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
+		sc.logger.Info("triggered event will be deleted")
 		err = sc.eventRepo.DeleteEvent(eventScope.Project, triggeredEvents[0].ID, db.TriggeredEvent)
 		if err != nil {
 			msg := "Could not delete .triggered event with ID " + event.Triggeredid + ": " + err.Error()

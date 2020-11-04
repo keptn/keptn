@@ -88,6 +88,10 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, 
 
 // DeleteTaskSequenceCollection godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceCollection(project string) error {
+	err := mdbrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
 	taskSequenceCollection := mdbrepo.getTaskSequenceCollection(project)
 
 	if err := mdbrepo.deleteCollection(taskSequenceCollection); err != nil {
