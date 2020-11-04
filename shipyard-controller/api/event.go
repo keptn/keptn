@@ -126,12 +126,12 @@ func HandleEvent(c *gin.Context) {
 	sc := getShipyardControllerInstance()
 
 	err := sc.handleIncomingEvent(*event)
-
 	if err != nil {
 		sendInternalServerErrorResponse(err, c)
 		return
 	}
 	c.Status(http.StatusOK)
+
 }
 
 func sendInternalServerErrorResponse(err error, c *gin.Context) {
@@ -249,12 +249,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s: %s", *event.Type, printObject(eventScope)))
 
-	// persist the .finished event
-	err = sc.eventRepo.InsertEvent(eventScope.Project, event, db.FinishedEvent)
-	if err != nil {
-		sc.logger.Error("Could not store .finished event: " + err.Error())
-	}
-
 	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.FinishedEvent))
 	// get corresponding 'started' event for the incoming 'finished' event
 	filter := db.EventFilter{
@@ -271,6 +265,12 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		msg := "no matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		sc.logger.Error(msg)
 		return errors.New(msg)
+	}
+
+	// persist the .finished event
+	err = sc.eventRepo.InsertEvent(eventScope.Project, event, db.FinishedEvent)
+	if err != nil {
+		sc.logger.Error("Could not store .finished event: " + err.Error())
 	}
 
 	for _, startedEvent := range startedEvents {
