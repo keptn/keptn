@@ -50,14 +50,8 @@ fi
 # create service frontend                #
 ###########################################
 
-#rm -rf examples
-#git clone --branch master https://github.com/keptn/examples --single-branch
-#cd examples/onboarding-carts
-
 keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} - failed"
-
-#cd ../..
 
 # Send 3 evaluation-done events (result: pass, warning, failed) for each stage (dev, combi1, combi2, combi3) using the CLI
 
@@ -65,39 +59,42 @@ send_approval_triggered_event $PROJECT combi1 $SERVICE pass
 send_approval_triggered_event $PROJECT combi1 $SERVICE warning
 send_approval_triggered_event $PROJECT combi1 $SERVICE fail
 
-#send_approval_triggered_event $PROJECT combi2 $SERVICE pass
-#send_approval_triggered_event $PROJECT combi2 $SERVICE warning
-#send_approval_triggered_event $PROJECT combi2 $SERVICE fail
-#
-#send_approval_triggered_event $PROJECT combi3 $SERVICE pass
-#send_approval_triggered_event $PROJECT combi3 $SERVICE warning
-#send_approval_triggered_event $PROJECT combi3 $SERVICE fail
-#
-#send_approval_triggered_event $PROJECT combi4 $SERVICE pass
-#send_approval_triggered_event $PROJECT combi4 $SERVICE warning
-#send_approval_triggered_event $PROJECT combi4 $SERVICE fail
+send_approval_triggered_event $PROJECT combi2 $SERVICE pass
+send_approval_triggered_event $PROJECT combi2 $SERVICE warning
+send_approval_triggered_event $PROJECT combi2 $SERVICE fail
+
+send_approval_triggered_event $PROJECT combi3 $SERVICE pass
+send_approval_triggered_event $PROJECT combi3 $SERVICE warning
+send_approval_triggered_event $PROJECT combi3 $SERVICE fail
+
+send_approval_triggered_event $PROJECT combi4 $SERVICE pass
+send_approval_triggered_event $PROJECT combi4 $SERVICE warning
+send_approval_triggered_event $PROJECT combi4 $SERVICE fail
 
 
 sleep 20
 # verify the number of open approval events
 check_no_open_approvals $PROJECT combi1
 
+keptn get event approval.triggered --project=$PROJECT --stage=combi2
+
 check_number_open_approvals $PROJECT combi2 1
 
 combi2ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.id')
 keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.shkeptncontext')
+
+echo $combi2ApprovalId
 keptn send event approval.finished --id=${combi2ApprovalId} --project=delivery-assistant-project --stage=combi2
-sleep 5
+sleep 10
 check_no_open_approvals $PROJECT combi2
 
 # print the response
-echo "Resulting configuration.change event by approval:"
+echo "Resulting approval.finished event by approval:"
 
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.combi2.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 echo $response | jq .
 
 # validate the response
-verify_using_jq "$response" ".source" "gatekeeper-service"
 verify_using_jq "$response" ".data.project" "$PROJECT"
 verify_using_jq "$response" ".data.stage" "combi2"
 verify_using_jq "$response" ".data.service" "$SERVICE"
@@ -113,13 +110,12 @@ check_no_open_approvals $PROJECT combi3
 combi3EventLength=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}')
 
 # print the response
-echo "Resulting configuration.change event by approval:"
+echo "Resulting approval.finished event by approval:"
 
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.combi3.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 echo $response | jq .
 
 # validate the response
-verify_using_jq "$response" ".source" "gatekeeper-service"
 verify_using_jq "$response" ".data.project" "$PROJECT"
 verify_using_jq "$response" ".data.stage" "combi3"
 verify_using_jq "$response" ".data.service" "$SERVICE"
@@ -137,13 +133,12 @@ sleep 5
 check_number_open_approvals $PROJECT combi4 1
 
 # print the response
-echo "Resulting configuration.change event by approval:"
+echo "Resulting approval.finished event by approval:"
 
-response=$(get_keptn_event $PROJECT $keptn_context_id_1 sh.keptn.event.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT $keptn_context_id_1 sh.keptn.event.combi4.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 echo $response | jq .
 
 # validate the response
-verify_using_jq "$response" ".source" "gatekeeper-service"
 verify_using_jq "$response" ".data.project" "$PROJECT"
 verify_using_jq "$response" ".data.stage" "combi4"
 verify_using_jq "$response" ".data.service" "$SERVICE"
@@ -154,13 +149,12 @@ sleep 5
 check_no_open_approvals $PROJECT combi4
 
 # print the response
-echo "Resulting configuration.change event by approval:"
-response=$(get_keptn_event $PROJECT $keptn_context_id_2 sh.keptn.event.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+echo "Resulting approval.finished event by approval:"
+response=$(get_keptn_event $PROJECT $keptn_context_id_2 sh.keptn.event.combi4.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
 
 echo $response | jq .
 
 # validate the response
-verify_using_jq "$response" ".source" "gatekeeper-service"
 verify_using_jq "$response" ".data.project" "$PROJECT"
 verify_using_jq "$response" ".data.stage" "combi4"
 verify_using_jq "$response" ".data.service" "$SERVICE"

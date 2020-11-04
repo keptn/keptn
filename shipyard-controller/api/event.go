@@ -247,7 +247,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
-	sc.logger.Info(fmt.Sprintf("Context of event %s: %s", *event.Type, printObject(eventScope)))
+	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
 	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.FinishedEvent))
 	// get corresponding 'started' event for the incoming 'finished' event
@@ -455,7 +455,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
-	sc.logger.Info(fmt.Sprintf("Context of event %s: %s", *event.Type, printObject(eventScope)))
+	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
 	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.StartedEvent))
 	// get corresponding 'triggered' event for the incoming 'started' event
@@ -491,7 +491,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
-	sc.logger.Info(fmt.Sprintf("Context of event %s: %s", *event.Type, printObject(eventScope)))
+	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
 	sc.logger.Info("received event of type " + *event.Type + " from " + *event.Source)
 	split := strings.Split(*event.Type, ".")

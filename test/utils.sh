@@ -159,10 +159,10 @@ function check_number_open_approvals() {
   fi
 
   if [[ "$RESULT" != "$EXPECTED" ]]; then
-    echo "Received unexpected number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
+    echo "Received unexpected number of approval.triggered events: ${EXPECTED} (expected) = ${RESULT} (actual)"
     exit 2
   else
-    echo "Verified number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
+    echo "Verified number of approval.triggered events: ${EXPECTED} (expected) = ${RESULT} (actual)"
   fi
 }
 
