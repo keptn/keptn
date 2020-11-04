@@ -498,15 +498,17 @@ func createRecipientConnection() cloudevents.Client {
 }
 
 func handleMessage(m *nats.Msg) {
-	fmt.Printf("Received a message for topic [%s]\n", m.Subject)
-	e, err := decodeCloudEvent(m.Data)
+	go func() {
+		fmt.Printf("Received a message for topic [%s]\n", m.Subject)
+		e, err := decodeCloudEvent(m.Data)
 
-	if e != nil {
-		err = sendEvent(*e)
-		if err != nil {
-			fmt.Println("Could not send CloudEvent: " + err.Error())
+		if e != nil {
+			err = sendEvent(*e)
+			if err != nil {
+				fmt.Println("Could not send CloudEvent: " + err.Error())
+			}
 		}
-	}
+	}()
 }
 
 type ceVersion struct {

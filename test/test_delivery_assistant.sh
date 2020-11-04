@@ -5,7 +5,7 @@ source test/utils.sh
 function cleanup() {
   keptn delete project delivery-assistant-project
 }
-trap cleanup EXIT
+#trap cleanup EXIT
 
 # get keptn API details
 KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
@@ -65,17 +65,17 @@ send_approval_triggered_event $PROJECT combi1 $SERVICE pass
 send_approval_triggered_event $PROJECT combi1 $SERVICE warning
 send_approval_triggered_event $PROJECT combi1 $SERVICE fail
 
-send_approval_triggered_event $PROJECT combi2 $SERVICE pass
-send_approval_triggered_event $PROJECT combi2 $SERVICE warning
-send_approval_triggered_event $PROJECT combi2 $SERVICE fail
-
-send_approval_triggered_event $PROJECT combi3 $SERVICE pass
-send_approval_triggered_event $PROJECT combi3 $SERVICE warning
-send_approval_triggered_event $PROJECT combi3 $SERVICE fail
-
-send_approval_triggered_event $PROJECT combi4 $SERVICE pass
-send_approval_triggered_event $PROJECT combi4 $SERVICE warning
-send_approval_triggered_event $PROJECT combi4 $SERVICE fail
+#send_approval_triggered_event $PROJECT combi2 $SERVICE pass
+#send_approval_triggered_event $PROJECT combi2 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi2 $SERVICE fail
+#
+#send_approval_triggered_event $PROJECT combi3 $SERVICE pass
+#send_approval_triggered_event $PROJECT combi3 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi3 $SERVICE fail
+#
+#send_approval_triggered_event $PROJECT combi4 $SERVICE pass
+#send_approval_triggered_event $PROJECT combi4 $SERVICE warning
+#send_approval_triggered_event $PROJECT combi4 $SERVICE fail
 
 
 sleep 20
