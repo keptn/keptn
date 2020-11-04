@@ -131,7 +131,7 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status Ev
 	return nil
 }
 
-// DeleteTaskSequenceCollection godoc
+// DeleteEventCollections godoc
 func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {

@@ -15,10 +15,12 @@ func NewApprovalTriggeredEventHandler(keptn *keptnv2.Keptn) *ApprovalTriggeredEv
 	return &ApprovalTriggeredEventHandler{keptn: keptn}
 }
 
+// IsTypeHandled godoc
 func (a *ApprovalTriggeredEventHandler) IsTypeHandled(event cloudevents.Event) bool {
 	return event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName)
 }
 
+// Handle godoc
 func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn) {
 
 	data := &keptnv2.ApprovalTriggeredEventData{}
