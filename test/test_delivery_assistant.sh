@@ -5,7 +5,7 @@ source test/utils.sh
 function cleanup() {
   keptn delete project delivery-assistant-project
 }
-#trap cleanup EXIT
+trap cleanup EXIT
 
 # get keptn API details
 KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
