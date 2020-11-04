@@ -37,6 +37,7 @@ bridge:
     enabled: true
   showApiToken:
     enabled: true
+  installationType: null
 
 eventbroker:
   image:
