@@ -30,7 +30,7 @@ type nextTaskSequence struct {
 	StageName string
 }
 
-const maxRepoReadRetries = 5
+const maxRepoReadRetries = 30
 
 // GetTriggeredEvents godoc
 // @Summary Get triggered events
@@ -156,22 +156,20 @@ type shipyardController struct {
 }
 
 func getShipyardControllerInstance() *shipyardController {
-	if shipyardControllerInstance == nil {
-		logger := keptncommon.NewLogger("", "", "shipyard-controller")
-		shipyardControllerInstance = &shipyardController{
-			projectRepo: &db.ProjectMongoDBRepo{
-				Logger: logger,
-			},
-			eventRepo: &db.MongoDBEventsRepo{
-				Logger: logger,
-			},
-			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
-				Logger: logger,
-			},
-			logger: logger,
-		}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	sc := &shipyardController{
+		projectRepo: &db.ProjectMongoDBRepo{
+			Logger: logger,
+		},
+		eventRepo: &db.MongoDBEventsRepo{
+			Logger: logger,
+		},
+		taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
+			Logger: logger,
+		},
+		logger: logger,
 	}
-	return shipyardControllerInstance
+	return sc
 }
 
 func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
@@ -183,6 +181,7 @@ func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]mo
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
+		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events with filter: %v", filter))
 		events, err := sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
@@ -192,6 +191,7 @@ func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]mo
 }
 
 func (sc *shipyardController) getTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
+	sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events with filter: %v", filter))
 	return sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
 }
 
@@ -247,6 +247,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
+	sc.logger.Info(fmt.Sprintf("Context of event %s: %v", *event.Type, eventScope))
 
 	// persist the .finished event
 	err = sc.eventRepo.InsertEvent(eventScope.Project, event, db.FinishedEvent)
@@ -446,6 +447,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
+	sc.logger.Info(fmt.Sprintf("Context of event %s: %v", *event.Type, eventScope))
 
 	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.StartedEvent))
 	// get corresponding 'triggered' event for the incoming 'started' event
@@ -481,6 +483,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
 	}
+	sc.logger.Info(fmt.Sprintf("Context of event %s: %v", *event.Type, eventScope))
 
 	sc.logger.Info("received event of type " + *event.Type + " from " + *event.Source)
 	split := strings.Split(*event.Type, ".")
