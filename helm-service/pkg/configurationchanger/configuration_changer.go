@@ -32,7 +32,7 @@ func (c *ConfigurationChanger) UpdateChart(event keptnv2.EventData, generated bo
 	helmChartName := helm.GetChartName(event.Service, generated)
 
 	// Read chart
-	chart, err := keptnutils.GetChart(event.Project, event.Service, event.Stage, helmChartName, c.configServiceURL)
+	chart, _, err := keptnutils.GetChart(event.Project, event.Service, event.Stage, helmChartName, c.configServiceURL)
 	if err != nil {
 		return nil, "", err
 	}

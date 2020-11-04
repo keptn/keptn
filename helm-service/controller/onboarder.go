@@ -24,8 +24,17 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 )
 
-// Onboarder is a container of variables required for onboarding a new service
-type Onboarder struct {
+// Onboarder is responsible for onboarding a service
+type Onboarder interface {
+	// HandleEvent onboards a new service
+	HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn))
+	// OnboardGeneratedChart generates the generated chart using the Helm manifests of the user chart
+	// as well as the specified deployment strategy
+	OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error)
+}
+
+// onboarder is an implemntation of Onboarder
+type onboarder struct {
 	Handler
 	mesh             mesh.Mesh
 	projectHandler   types.IProjectHandler
@@ -37,7 +46,7 @@ type Onboarder struct {
 	chartPackager    types.IChartPackager
 }
 
-// NewOnboarder creates a new Onboarder
+// NewOnboarder creates a new onboarder instance
 func NewOnboarder(
 	keptnHandler *keptnv2.Keptn,
 	mesh mesh.Mesh,
@@ -48,9 +57,9 @@ func NewOnboarder(
 	chartStorer types.IChartStorer,
 	chartGenerator helm.ChartGenerator,
 	chartPackager types.IChartPackager,
-	configServiceURL string) *Onboarder {
+	configServiceURL string) Onboarder {
 
-	return &Onboarder{
+	return &onboarder{
 		Handler:          NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:             mesh,
 		projectHandler:   projectHandler,
@@ -64,7 +73,7 @@ func NewOnboarder(
 }
 
 // HandleEvent onboards a new service
-func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
+func (o *onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
 
 	e := &keptnv2.ServiceCreateFinishedEventData{}
 	if err := ce.DataAs(e); err != nil {
@@ -128,7 +137,7 @@ func (o *Onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 
 // getStages returns a list of stages where the service should be onboarded
 // If the stage of the incoming event is empty, all available stages are returned
-func (o *Onboarder) getStages(e *keptnv2.ServiceCreateFinishedEventData) ([]string, error) {
+func (o *onboarder) getStages(e *keptnv2.ServiceCreateFinishedEventData) ([]string, error) {
 	allStages, err := o.stagesHandler.GetAllStages(e.Project)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retriev stages: %v", err.Error())
@@ -146,7 +155,7 @@ func (o *Onboarder) getStages(e *keptnv2.ServiceCreateFinishedEventData) ([]stri
 	return stages, nil
 }
 
-func (o *Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateFinishedEventData) error {
+func (o *onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateFinishedEventData) error {
 
 	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +
 		"Keptn relies on the following conventions: " +
@@ -182,7 +191,7 @@ func (o *Onboarder) checkAndSetServiceName(event *keptnv2.ServiceCreateFinishedE
 	return nil
 }
 
-func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error {
+func (o *onboarder) onboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error {
 
 	const retries = 2
 	var err error
@@ -222,7 +231,7 @@ func (o *Onboarder) onboardService(stageName string, event *keptnv2.ServiceCreat
 
 // OnboardGeneratedChart generates the generated chart using the Helm manifests of the user chart
 // as well as the specified deployment strategy
-func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData,
+func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
 	helmChartName := helm.GetChartName(event.Service, true)
@@ -274,7 +283,7 @@ func (o *Onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 	return generatedChart, nil
 }
 
-func (o *Onboarder) getFinishedEventData(inEventData keptnv2.EventData, status keptnv2.StatusType, result keptnv2.ResultType,
+func (o *onboarder) getFinishedEventData(inEventData keptnv2.EventData, status keptnv2.StatusType, result keptnv2.ResultType,
 	message string) keptnv2.ServiceCreateFinishedEventData {
 
 	inEventData.Status = status
@@ -286,6 +295,6 @@ func (o *Onboarder) getFinishedEventData(inEventData keptnv2.EventData, status k
 	}
 }
 
-func (o *Onboarder) getFinishedEventDataForError(inEventData keptnv2.EventData, err error) keptnv2.ServiceCreateFinishedEventData {
+func (o *onboarder) getFinishedEventDataForError(inEventData keptnv2.EventData, err error) keptnv2.ServiceCreateFinishedEventData {
 	return o.getFinishedEventData(inEventData, keptnv2.StatusErrored, keptnv2.ResultFailed, err.Error())
 }

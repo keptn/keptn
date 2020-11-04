@@ -117,7 +117,7 @@ func (h *ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error)
 		return "", err
 	}
 
-	userChart, err := h.getUserChart(e)
+	userChart, _, err := h.getUserChart(e)
 	if err != nil {
 		return "", err
 	}
@@ -157,7 +157,7 @@ func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) 
 	}
 
 	// Scale down replicas of user chart
-	userChart, err := h.getUserChart(e)
+	userChart, _, err := h.getUserChart(e)
 	if err != nil {
 		return "", err
 	}

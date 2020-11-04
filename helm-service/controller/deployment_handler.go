@@ -17,18 +17,17 @@ import (
 type DeploymentHandler struct {
 	Handler
 	mesh                  mesh.Mesh
-	generatedChartHandler *helm.GeneratedChartGenerator
+	generatedChartHandler helm.ChartGenerator
 	onboarder             Onboarder
 }
 
 // NewDeploymentHandler creates a new DeploymentHandler
-func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, onboarder Onboarder, configServiceURL string) *DeploymentHandler {
-	generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
+func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, onboarder Onboarder, chartGenerator helm.ChartGenerator, configServiceURL string) *DeploymentHandler {
 	return &DeploymentHandler{
 		Handler:               NewHandlerBase(keptnHandler, configServiceURL),
 		mesh:                  mesh,
 		onboarder:             onboarder,
-		generatedChartHandler: generatedChartHandler,
+		generatedChartHandler: chartGenerator,
 	}
 }
 
@@ -77,8 +76,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(k
 		}
 	} else {
 		// Read chart
-		// TODO set gitVersion
-		userChart, err = h.getUserChart(e.EventData)
+		userChart, gitVersion, err = h.getUserChart(e.EventData)
 		if err != nil {
 			err = fmt.Errorf("failed to load chart: %v", err)
 			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
@@ -144,7 +142,8 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 	}
 
 	if exists {
-		return h.getGeneratedChart(event)
+		generatedChart, _, err := h.getGeneratedChart(event)
+		return generatedChart, err
 	}
 
 	// Chart does not exist yet, onboard it now
