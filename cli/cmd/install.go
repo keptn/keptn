@@ -232,6 +232,9 @@ func doInstallation() error {
 			"apiGatewayNginx": map[string]interface{}{
 				"type": installParams.EndPointServiceType.String(),
 			},
+			"bridge": map[string]interface{}{
+				"installationType": getInstallationTypeEnvVar(*installParams.UseCaseInput),
+			},
 		},
 	}
 
@@ -262,6 +265,13 @@ func doInstallation() error {
 	}
 
 	return nil
+}
+
+func getInstallationTypeEnvVar(useCase string) string {
+	if useCase == ContinuousDelivery.String() {
+		return "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
+	}
+	return "QUALITY_GATES,CONTINUOUS_OPERATIONS"
 }
 
 func checkIstioInstallation() error {
