@@ -403,10 +403,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           });
       });
       this._heatmapOptions.xAxis[0].plotBands = plotBands;
-      this._selectedEvaluationData?.data.evaluationdetails.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
+      this._selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
     } else {
       this._heatmapOptions.xAxis[0].plotBands = [];
-      this._selectedEvaluationData?.data.evaluationdetails.number_of_missing_comparison_results = 0;
+      this._selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results = 0;
     }
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
