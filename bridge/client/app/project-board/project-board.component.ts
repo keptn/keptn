@@ -162,20 +162,23 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
-        if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_DELIVERY") != -1) {
-          this.addDeploymentUseCaseToIntegrations();
-        }
-        if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES_ONLY") != -1) {
-          this.addEvaluationUseCaseToIntegrations();
-        }
-        if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_OPERATIONS") != -1) {
-          this.addRemediationUseCaseToIntegrations();
+        if(this.keptnInfo.bridgeInfo.keptnInstallationType) {
+          if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_DELIVERY") != -1) {
+            this.addDeploymentUseCaseToIntegrations();
+          }
+          if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES_ONLY") != -1) {
+            this.addEvaluationUseCaseToIntegrations();
+          }
+          if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_OPERATIONS") != -1) {
+            this.addRemediationUseCaseToIntegrations();
+          }
+          this.updateIntegrations();
         }
       });
   }
 
   updateIntegrations() {
-    if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES_ONLY") != -1) {
+    if(this.keptnInfo && this.keptnInfo.bridgeInfo.keptnInstallationType && this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES_ONLY") != -1) {
       this.currentTime = moment.utc().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
       this.useCaseExamples['cli'].find(e => e.label == 'Trigger a quality gate evaluation').code = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
       this.useCaseExamples['api'].find(e => e.label == 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
