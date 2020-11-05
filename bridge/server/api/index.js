@@ -11,6 +11,8 @@ module.exports = (params) => {
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== "false";
   const showApiToken = process.env.SHOW_API_TOKEN !== "false";
   const bridgeVersion = process.env.VERSION;
+  const projectsPageSize = process.env.PROJECTS_PAGE_SIZE;
+  const servicesPageSize = process.env.SERVICES_PAGE_SIZE;
   const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
 
   // accepts self-signed ssl certificate
@@ -21,7 +23,7 @@ module.exports = (params) => {
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
     try {
-      return res.json({ bridgeVersion, keptnInstallationType, apiUrl, ...showApiToken && { apiToken }, cliDownloadLink, enableVersionCheckFeature, showApiToken });
+      return res.json({ bridgeVersion, keptnInstallationType, apiUrl, ...showApiToken && { apiToken }, cliDownloadLink, enableVersionCheckFeature, showApiToken, projectsPageSize, servicesPageSize });
     } catch (err) {
       return next(err);
     }

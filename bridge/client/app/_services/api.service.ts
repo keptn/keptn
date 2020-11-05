@@ -73,8 +73,8 @@ export class ApiService {
     }
   }
 
-  public getProjects(): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
+  public getProjects(pageSize: number): Observable<ProjectResult> {
+    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
   }
@@ -91,8 +91,8 @@ export class ApiService {
       .get<Stage[]>(url);
   }
 
-  public getServices(projectName, stageName): Observable<ServiceResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
+  public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
+    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url);
   }

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
-import {debounce, map, mergeMap, take, toArray} from "rxjs/operators";
+import {debounce, map, mergeMap, take, takeUntil, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -29,7 +29,11 @@ export class DataService {
 
   constructor(private http: HttpClient, private apiService: ApiService) {
     this.loadKeptnInfo();
-    this.loadProjects();
+    this.keptnInfo
+      .pipe(take(1))
+      .subscribe(keptnInfo => {
+        this.loadProjects();
+      });
   }
 
   get projects(): Observable<Project[]> {
@@ -66,20 +70,19 @@ export class DataService {
       bridgeInfo: this.apiService.getKeptnInfo(),
       keptnVersion: this.apiService.getKeptnVersion(),
       versionCheckEnabled: of(this.apiService.isVersionCheckEnabled())
-    })
-    .subscribe((result) => {
-      if(result.bridgeInfo.showApiToken) {
-        if(window.location.href.indexOf('bridge') != -1)
-          result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf('/bridge'))}/api`;
-        else
-          result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf(window.location.pathname))}/api`;
+    }).subscribe((result) => {
+        if(result.bridgeInfo.showApiToken) {
+          if(window.location.href.indexOf('bridge') != -1)
+            result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf('/bridge'))}/api`;
+          else
+            result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf(window.location.pathname))}/api`;
 
-        result.bridgeInfo.authCommand = `keptn auth --endpoint=${result.bridgeInfo.apiUrl} --api-token=${result.bridgeInfo.apiToken}`;
-      }
-      this._keptnInfo.next(result);
-    }, (err) => {
-      this._keptnInfo.error(err);
-    });
+          result.bridgeInfo.authCommand = `keptn auth --endpoint=${result.bridgeInfo.apiUrl} --api-token=${result.bridgeInfo.apiToken}`;
+        }
+        this._keptnInfo.next(result);
+      }, (err) => {
+        this._keptnInfo.error(err);
+      });
   }
 
   public setVersionCheck(enabled: boolean) {
@@ -88,7 +91,8 @@ export class DataService {
   }
 
   public loadProjects() {
-    this.apiService.getProjects()
+    // @ts-ignore
+    this.apiService.getProjects(this._keptnInfo.getValue().bridgeInfo.projectsPageSize||50)
       .pipe(
         debounce(() => timer(10000)),
         map(result => result.projects),
@@ -97,7 +101,8 @@ export class DataService {
             mergeMap((project) =>
               from(project.stages).pipe(
                 mergeMap(
-                  stage => this.apiService.getServices(project.projectName, stage.stageName)
+                  // @ts-ignore
+                  stage => this.apiService.getServices(project.projectName, stage.stageName, this._keptnInfo.getValue().bridgeInfo.servicesPageSize||50)
                     .pipe(
                       map(result => result.services),
                       map(services => services.map(service => Service.fromJSON(service))),
@@ -118,10 +123,10 @@ export class DataService {
         ),
         map(projects => projects.map(project => Project.fromJSON(project)))
       ).subscribe((projects: Project[]) => {
-        this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
-      }, (err) => {
-        this._projects.next([]);
-      });
+      this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
+    }, (err) => {
+      this._projects.next([]);
+    });
   }
 
   public loadRoots(project: Project, service: Service) {
