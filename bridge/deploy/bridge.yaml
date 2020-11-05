@@ -47,9 +47,9 @@ spec:
          - name: SHOW_API_TOKEN
            value: "true"
          - name: KEPTN_INSTALLATION_TYPE
-           value: "FULL"
+           value: "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
            Description: >
-             Should be "FULL" or "QUALITY_GATES_ONLY". In case of "QUALITY_GATES_ONLY" the bridge will not show all use-case examples in the Integrations page.
+             Should contain the supported use cases as comma-separated string. "QUALITY_GATES", "CONTINUOUS_OPERATIONS" and "CONTINUOUS_DELIVERY" are valid values.
         envFrom:
           - secretRef:
               name: bridge-credentials
