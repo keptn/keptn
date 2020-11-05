@@ -373,7 +373,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   highlightHeatmap() {
-    if(this._selectedEvaluationData) {
+    if(this._selectedEvaluationData && !this.isInvalidated) {
       let _this = this;
       let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
       let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
