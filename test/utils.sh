@@ -65,6 +65,22 @@ function get_event() {
   keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project}
 }
 
+function send_approval_triggered_event() {
+  PROJECT=$1
+  STAGE=$2
+  SERVICE=$3
+  RESULT=$4
+  TYPE="sh.keptn.event.${STAGE}.approval.triggered"
+
+  cat ./test/assets/approval_triggered_event_template.json | jq -r --arg type $TYPE --arg project $PROJECT --arg stage $STAGE --arg service $SERVICE --arg result $RESULT '.type=$type | .data.project=$project | .data.stage=$stage | .data.service=$service | .data.result=$result' > tmp_approval_triggered_event.json
+
+  response=$(keptn send event --file=tmp_approval_triggered_event.json)
+  rm tmp_approval_triggered_event.json
+
+  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+  echo "$keptn_context_id"
+}
+
 function send_evaluation_done_event() {
   PROJECT=$1
   STAGE=$2
@@ -122,7 +138,7 @@ function check_no_open_approvals() {
     echo "Received ${result} approval.triggered events but expected 0"
     exit 2
   else
-    echo "Verified that there is no approval.triggered events"
+    echo "Verified that there is no approval.triggered event"
   fi
 }
 
@@ -143,10 +159,10 @@ function check_number_open_approvals() {
   fi
 
   if [[ "$RESULT" != "$EXPECTED" ]]; then
-    echo "Received unexpected number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
+    echo "Received unexpected number of approval.triggered events: ${EXPECTED} (expected) = ${RESULT} (actual)"
     exit 2
   else
-    echo "Verified number of approval.triggered events: ${EXPECTED} (expected) = ${result} (actual)"
+    echo "Verified number of approval.triggered events: ${EXPECTED} (expected) = ${RESULT} (actual)"
   fi
 }
 

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -80,6 +81,33 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, 
 	_, err = collection.DeleteMany(ctx, bson.M{"keptnContext": keptnContext, "stage": stage, "taskSequenceName": taskSequenceName})
 	if err != nil {
 		mdbrepo.Logger.Error("Could not delete entries for task " + taskSequenceName + " with context " + keptnContext + " in stage " + stage + ": " + err.Error())
+		return err
+	}
+	return nil
+}
+
+// DeleteTaskSequenceCollection godoc
+func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceCollection(project string) error {
+	err := mdbrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	taskSequenceCollection := mdbrepo.getTaskSequenceCollection(project)
+
+	if err := mdbrepo.deleteCollection(taskSequenceCollection); err != nil {
+		mdbrepo.Logger.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func (mdbrepo *TaskSequenceMongoDBRepo) deleteCollection(collection *mongo.Collection) error {
+	mdbrepo.Logger.Debug(fmt.Sprintf("Delete collection: %s", collection.Name()))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := collection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", collection.Name(), err)
 		return err
 	}
 	return nil

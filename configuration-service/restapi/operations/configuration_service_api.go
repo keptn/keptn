@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
@@ -24,7 +24,6 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/remediation"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/service_approval"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
@@ -41,163 +40,156 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		ProjectDeleteProjectProjectNameHandler: project.DeleteProjectProjectNameHandlerFunc(func(params project.DeleteProjectProjectNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectDeleteProjectProjectName has not yet been implemented")
+			return middleware.NotImplemented("operation project.DeleteProjectProjectName has not yet been implemented")
 		}),
 		ProjectResourceDeleteProjectProjectNameResourceResourceURIHandler: project_resource.DeleteProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.DeleteProjectProjectNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourceDeleteProjectProjectNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.DeleteProjectProjectNameResourceResourceURI has not yet been implemented")
 		}),
 		ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 		StageDeleteProjectProjectNameStageStageNameHandler: stage.DeleteProjectProjectNameStageStageNameHandlerFunc(func(params stage.DeleteProjectProjectNameStageStageNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageDeleteProjectProjectNameStageStageName has not yet been implemented")
+			return middleware.NotImplemented("operation stage.DeleteProjectProjectNameStageStageName has not yet been implemented")
 		}),
 		StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
 		}),
 		ServiceDeleteProjectProjectNameStageStageNameServiceServiceNameHandler: service.DeleteProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.DeleteProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDeleteProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+			return middleware.NotImplemented("operation service.DeleteProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
 		}),
 		ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 		ProjectGetProjectHandler: project.GetProjectHandlerFunc(func(params project.GetProjectParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectGetProject has not yet been implemented")
+			return middleware.NotImplemented("operation project.GetProject has not yet been implemented")
 		}),
 		ProjectGetProjectProjectNameHandler: project.GetProjectProjectNameHandlerFunc(func(params project.GetProjectProjectNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectGetProjectProjectName has not yet been implemented")
+			return middleware.NotImplemented("operation project.GetProjectProjectName has not yet been implemented")
 		}),
 		ProjectResourceGetProjectProjectNameResourceHandler: project_resource.GetProjectProjectNameResourceHandlerFunc(func(params project_resource.GetProjectProjectNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourceGetProjectProjectNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.GetProjectProjectNameResource has not yet been implemented")
 		}),
 		ProjectResourceGetProjectProjectNameResourceResourceURIHandler: project_resource.GetProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.GetProjectProjectNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourceGetProjectProjectNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.GetProjectProjectNameResourceResourceURI has not yet been implemented")
 		}),
 		ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.GetProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_default_resource.GetProjectProjectNameServiceServiceNameResource has not yet been implemented")
 		}),
 		ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 		StageGetProjectProjectNameStageHandler: stage.GetProjectProjectNameStageHandlerFunc(func(params stage.GetProjectProjectNameStageParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageGetProjectProjectNameStage has not yet been implemented")
+			return middleware.NotImplemented("operation stage.GetProjectProjectNameStage has not yet been implemented")
 		}),
 		StageGetProjectProjectNameStageStageNameHandler: stage.GetProjectProjectNameStageStageNameHandlerFunc(func(params stage.GetProjectProjectNameStageStageNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageGetProjectProjectNameStageStageName has not yet been implemented")
+			return middleware.NotImplemented("operation stage.GetProjectProjectNameStageStageName has not yet been implemented")
 		}),
 		StageResourceGetProjectProjectNameStageStageNameResourceHandler: stage_resource.GetProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourceGetProjectProjectNameStageStageNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.GetProjectProjectNameStageStageNameResource has not yet been implemented")
 		}),
 		StageResourceGetProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourceGetProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.GetProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
 		}),
 		ServiceGetProjectProjectNameStageStageNameServiceHandler: service.GetProjectProjectNameStageStageNameServiceHandlerFunc(func(params service.GetProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceGetProjectProjectNameStageStageNameService has not yet been implemented")
+			return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameService has not yet been implemented")
 		}),
 		ServiceGetProjectProjectNameStageStageNameServiceServiceNameHandler: service.GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.GetProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceGetProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+			return middleware.NotImplemented("operation service.GetProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
 		}),
 		ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
 		ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 		ProjectPostProjectHandler: project.PostProjectHandlerFunc(func(params project.PostProjectParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectPostProject has not yet been implemented")
+			return middleware.NotImplemented("operation project.PostProject has not yet been implemented")
 		}),
 		ProjectResourcePostProjectProjectNameResourceHandler: project_resource.PostProjectProjectNameResourceHandlerFunc(func(params project_resource.PostProjectProjectNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourcePostProjectProjectNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.PostProjectProjectNameResource has not yet been implemented")
 		}),
 		ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.PostProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.PostProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_default_resource.PostProjectProjectNameServiceServiceNameResource has not yet been implemented")
 		}),
 		StagePostProjectProjectNameStageHandler: stage.PostProjectProjectNameStageHandlerFunc(func(params stage.PostProjectProjectNameStageParams) middleware.Responder {
-			return middleware.NotImplemented("operation StagePostProjectProjectNameStage has not yet been implemented")
+			return middleware.NotImplemented("operation stage.PostProjectProjectNameStage has not yet been implemented")
 		}),
 		StageResourcePostProjectProjectNameStageStageNameResourceHandler: stage_resource.PostProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourcePostProjectProjectNameStageStageNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.PostProjectProjectNameStageStageNameResource has not yet been implemented")
 		}),
 		ServicePostProjectProjectNameStageStageNameServiceHandler: service.PostProjectProjectNameStageStageNameServiceHandlerFunc(func(params service.PostProjectProjectNameStageStageNameServiceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServicePostProjectProjectNameStageStageNameService has not yet been implemented")
+			return middleware.NotImplemented("operation service.PostProjectProjectNameStageStageNameService has not yet been implemented")
 		}),
 		ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
 		ProjectPutProjectProjectNameHandler: project.PutProjectProjectNameHandlerFunc(func(params project.PutProjectProjectNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectPutProjectProjectName has not yet been implemented")
+			return middleware.NotImplemented("operation project.PutProjectProjectName has not yet been implemented")
 		}),
 		ProjectResourcePutProjectProjectNameResourceHandler: project_resource.PutProjectProjectNameResourceHandlerFunc(func(params project_resource.PutProjectProjectNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourcePutProjectProjectNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.PutProjectProjectNameResource has not yet been implemented")
 		}),
 		ProjectResourcePutProjectProjectNameResourceResourceURIHandler: project_resource.PutProjectProjectNameResourceResourceURIHandlerFunc(func(params project_resource.PutProjectProjectNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ProjectResourcePutProjectProjectNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation project_resource.PutProjectProjectNameResourceResourceURI has not yet been implemented")
 		}),
 		ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceHandler: service_default_resource.PutProjectProjectNameServiceServiceNameResourceHandlerFunc(func(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_default_resource.PutProjectProjectNameServiceServiceNameResource has not yet been implemented")
 		}),
 		ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURIHandler: service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 		StagePutProjectProjectNameStageStageNameHandler: stage.PutProjectProjectNameStageStageNameHandlerFunc(func(params stage.PutProjectProjectNameStageStageNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation StagePutProjectProjectNameStageStageName has not yet been implemented")
+			return middleware.NotImplemented("operation stage.PutProjectProjectNameStageStageName has not yet been implemented")
 		}),
 		StageResourcePutProjectProjectNameStageStageNameResourceHandler: stage_resource.PutProjectProjectNameStageStageNameResourceHandlerFunc(func(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourcePutProjectProjectNameStageStageNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.PutProjectProjectNameStageStageNameResource has not yet been implemented")
 		}),
 		StageResourcePutProjectProjectNameStageStageNameResourceResourceURIHandler: stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(func(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation StageResourcePutProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation stage_resource.PutProjectProjectNameStageStageNameResourceResourceURI has not yet been implemented")
 		}),
 		ServicePutProjectProjectNameStageStageNameServiceServiceNameHandler: service.PutProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(func(params service.PutProjectProjectNameStageStageNameServiceServiceNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServicePutProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
+			return middleware.NotImplemented("operation service.PutProjectProjectNameStageStageNameServiceServiceName has not yet been implemented")
 		}),
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
 		}),
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
+			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
 		RemediationCloseRemediationsHandler: remediation.CloseRemediationsHandlerFunc(func(params remediation.CloseRemediationsParams) middleware.Responder {
-			return middleware.NotImplemented("operation RemediationCloseRemediations has not yet been implemented")
-		}),
-		ServiceApprovalCloseServiceApprovalHandler: service_approval.CloseServiceApprovalHandlerFunc(func(params service_approval.CloseServiceApprovalParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceApprovalCloseServiceApproval has not yet been implemented")
+			return middleware.NotImplemented("operation remediation.CloseRemediations has not yet been implemented")
 		}),
 		RemediationCreateRemediationHandler: remediation.CreateRemediationHandlerFunc(func(params remediation.CreateRemediationParams) middleware.Responder {
-			return middleware.NotImplemented("operation RemediationCreateRemediation has not yet been implemented")
-		}),
-		ServiceApprovalCreateServiceApprovalHandler: service_approval.CreateServiceApprovalHandlerFunc(func(params service_approval.CreateServiceApprovalParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceApprovalCreateServiceApproval has not yet been implemented")
+			return middleware.NotImplemented("operation remediation.CreateRemediation has not yet been implemented")
 		}),
 		ServicesGetServiceHandler: services.GetServiceHandlerFunc(func(params services.GetServiceParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServicesGetService has not yet been implemented")
+			return middleware.NotImplemented("operation services.GetService has not yet been implemented")
 		}),
 		ServicesGetServicesHandler: services.GetServicesHandlerFunc(func(params services.GetServicesParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServicesGetServices has not yet been implemented")
+			return middleware.NotImplemented("operation services.GetServices has not yet been implemented")
 		}),
 		RemediationGetRemediationsHandler: remediation.GetRemediationsHandlerFunc(func(params remediation.GetRemediationsParams) middleware.Responder {
-			return middleware.NotImplemented("operation RemediationGetRemediations has not yet been implemented")
+			return middleware.NotImplemented("operation remediation.GetRemediations has not yet been implemented")
 		}),
 		RemediationGetRemediationsForContextHandler: remediation.GetRemediationsForContextHandlerFunc(func(params remediation.GetRemediationsForContextParams) middleware.Responder {
-			return middleware.NotImplemented("operation RemediationGetRemediationsForContext has not yet been implemented")
-		}),
-		ServiceApprovalGetServiceApprovalHandler: service_approval.GetServiceApprovalHandlerFunc(func(params service_approval.GetServiceApprovalParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceApprovalGetServiceApproval has not yet been implemented")
-		}),
-		ServiceApprovalGetServiceApprovalsHandler: service_approval.GetServiceApprovalsHandlerFunc(func(params service_approval.GetServiceApprovalsParams) middleware.Responder {
-			return middleware.NotImplemented("operation ServiceApprovalGetServiceApprovals has not yet been implemented")
+			return middleware.NotImplemented("operation remediation.GetRemediationsForContext has not yet been implemented")
 		}),
 		EventHandleEventHandler: event.HandleEventHandlerFunc(func(params event.HandleEventParams) middleware.Responder {
-			return middleware.NotImplemented("operation EventHandleEvent has not yet been implemented")
+			return middleware.NotImplemented("operation event.HandleEvent has not yet been implemented")
 		}),
 	}
 }
@@ -213,6 +205,7 @@ type ConfigurationServiceAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -224,10 +217,13 @@ type ConfigurationServiceAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/cloudevents+json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/cloudevents+json
+	//   - application/json
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// ProjectDeleteProjectProjectNameHandler sets the operation handler for the delete project project name operation
@@ -310,12 +306,8 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
 	// RemediationCloseRemediationsHandler sets the operation handler for the close remediations operation
 	RemediationCloseRemediationsHandler remediation.CloseRemediationsHandler
-	// ServiceApprovalCloseServiceApprovalHandler sets the operation handler for the close service approval operation
-	ServiceApprovalCloseServiceApprovalHandler service_approval.CloseServiceApprovalHandler
 	// RemediationCreateRemediationHandler sets the operation handler for the create remediation operation
 	RemediationCreateRemediationHandler remediation.CreateRemediationHandler
-	// ServiceApprovalCreateServiceApprovalHandler sets the operation handler for the create service approval operation
-	ServiceApprovalCreateServiceApprovalHandler service_approval.CreateServiceApprovalHandler
 	// ServicesGetServiceHandler sets the operation handler for the get service operation
 	ServicesGetServiceHandler services.GetServiceHandler
 	// ServicesGetServicesHandler sets the operation handler for the get services operation
@@ -324,16 +316,15 @@ type ConfigurationServiceAPI struct {
 	RemediationGetRemediationsHandler remediation.GetRemediationsHandler
 	// RemediationGetRemediationsForContextHandler sets the operation handler for the get remediations for context operation
 	RemediationGetRemediationsForContextHandler remediation.GetRemediationsForContextHandler
-	// ServiceApprovalGetServiceApprovalHandler sets the operation handler for the get service approval operation
-	ServiceApprovalGetServiceApprovalHandler service_approval.GetServiceApprovalHandler
-	// ServiceApprovalGetServiceApprovalsHandler sets the operation handler for the get service approvals operation
-	ServiceApprovalGetServiceApprovalsHandler service_approval.GetServiceApprovalsHandler
 	// EventHandleEventHandler sets the operation handler for the handle event operation
 	EventHandleEventHandler event.HandleEventHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -344,6 +335,16 @@ type ConfigurationServiceAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *ConfigurationServiceAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *ConfigurationServiceAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -396,199 +397,138 @@ func (o *ConfigurationServiceAPI) Validate() error {
 	if o.ProjectDeleteProjectProjectNameHandler == nil {
 		unregistered = append(unregistered, "project.DeleteProjectProjectNameHandler")
 	}
-
 	if o.ProjectResourceDeleteProjectProjectNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "project_resource.DeleteProjectProjectNameResourceResourceURIHandler")
 	}
-
 	if o.ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_default_resource.DeleteProjectProjectNameServiceServiceNameResourceResourceURIHandler")
 	}
-
 	if o.StageDeleteProjectProjectNameStageStageNameHandler == nil {
 		unregistered = append(unregistered, "stage.DeleteProjectProjectNameStageStageNameHandler")
 	}
-
 	if o.StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIHandler")
 	}
-
 	if o.ServiceDeleteProjectProjectNameStageStageNameServiceServiceNameHandler == nil {
 		unregistered = append(unregistered, "service.DeleteProjectProjectNameStageStageNameServiceServiceNameHandler")
 	}
-
 	if o.ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
 	}
-
 	if o.ProjectGetProjectHandler == nil {
 		unregistered = append(unregistered, "project.GetProjectHandler")
 	}
-
 	if o.ProjectGetProjectProjectNameHandler == nil {
 		unregistered = append(unregistered, "project.GetProjectProjectNameHandler")
 	}
-
 	if o.ProjectResourceGetProjectProjectNameResourceHandler == nil {
 		unregistered = append(unregistered, "project_resource.GetProjectProjectNameResourceHandler")
 	}
-
 	if o.ProjectResourceGetProjectProjectNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "project_resource.GetProjectProjectNameResourceResourceURIHandler")
 	}
-
 	if o.ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_default_resource.GetProjectProjectNameServiceServiceNameResourceHandler")
 	}
-
 	if o.ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIHandler")
 	}
-
 	if o.StageGetProjectProjectNameStageHandler == nil {
 		unregistered = append(unregistered, "stage.GetProjectProjectNameStageHandler")
 	}
-
 	if o.StageGetProjectProjectNameStageStageNameHandler == nil {
 		unregistered = append(unregistered, "stage.GetProjectProjectNameStageStageNameHandler")
 	}
-
 	if o.StageResourceGetProjectProjectNameStageStageNameResourceHandler == nil {
 		unregistered = append(unregistered, "stage_resource.GetProjectProjectNameStageStageNameResourceHandler")
 	}
-
 	if o.StageResourceGetProjectProjectNameStageStageNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIHandler")
 	}
-
 	if o.ServiceGetProjectProjectNameStageStageNameServiceHandler == nil {
 		unregistered = append(unregistered, "service.GetProjectProjectNameStageStageNameServiceHandler")
 	}
-
 	if o.ServiceGetProjectProjectNameStageStageNameServiceServiceNameHandler == nil {
 		unregistered = append(unregistered, "service.GetProjectProjectNameStageStageNameServiceServiceNameHandler")
 	}
-
 	if o.ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
 	}
-
 	if o.ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
 	}
-
 	if o.ProjectPostProjectHandler == nil {
 		unregistered = append(unregistered, "project.PostProjectHandler")
 	}
-
 	if o.ProjectResourcePostProjectProjectNameResourceHandler == nil {
 		unregistered = append(unregistered, "project_resource.PostProjectProjectNameResourceHandler")
 	}
-
 	if o.ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_default_resource.PostProjectProjectNameServiceServiceNameResourceHandler")
 	}
-
 	if o.StagePostProjectProjectNameStageHandler == nil {
 		unregistered = append(unregistered, "stage.PostProjectProjectNameStageHandler")
 	}
-
 	if o.StageResourcePostProjectProjectNameStageStageNameResourceHandler == nil {
 		unregistered = append(unregistered, "stage_resource.PostProjectProjectNameStageStageNameResourceHandler")
 	}
-
 	if o.ServicePostProjectProjectNameStageStageNameServiceHandler == nil {
 		unregistered = append(unregistered, "service.PostProjectProjectNameStageStageNameServiceHandler")
 	}
-
 	if o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_resource.PostProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
 	}
-
 	if o.ProjectPutProjectProjectNameHandler == nil {
 		unregistered = append(unregistered, "project.PutProjectProjectNameHandler")
 	}
-
 	if o.ProjectResourcePutProjectProjectNameResourceHandler == nil {
 		unregistered = append(unregistered, "project_resource.PutProjectProjectNameResourceHandler")
 	}
-
 	if o.ProjectResourcePutProjectProjectNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "project_resource.PutProjectProjectNameResourceResourceURIHandler")
 	}
-
 	if o.ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_default_resource.PutProjectProjectNameServiceServiceNameResourceHandler")
 	}
-
 	if o.ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_default_resource.PutProjectProjectNameServiceServiceNameResourceResourceURIHandler")
 	}
-
 	if o.StagePutProjectProjectNameStageStageNameHandler == nil {
 		unregistered = append(unregistered, "stage.PutProjectProjectNameStageStageNameHandler")
 	}
-
 	if o.StageResourcePutProjectProjectNameStageStageNameResourceHandler == nil {
 		unregistered = append(unregistered, "stage_resource.PutProjectProjectNameStageStageNameResourceHandler")
 	}
-
 	if o.StageResourcePutProjectProjectNameStageStageNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIHandler")
 	}
-
 	if o.ServicePutProjectProjectNameStageStageNameServiceServiceNameHandler == nil {
 		unregistered = append(unregistered, "service.PutProjectProjectNameStageStageNameServiceServiceNameHandler")
 	}
-
 	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler == nil {
 		unregistered = append(unregistered, "service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler")
 	}
-
 	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
 	}
-
 	if o.RemediationCloseRemediationsHandler == nil {
 		unregistered = append(unregistered, "remediation.CloseRemediationsHandler")
 	}
-
-	if o.ServiceApprovalCloseServiceApprovalHandler == nil {
-		unregistered = append(unregistered, "service_approval.CloseServiceApprovalHandler")
-	}
-
 	if o.RemediationCreateRemediationHandler == nil {
 		unregistered = append(unregistered, "remediation.CreateRemediationHandler")
 	}
-
-	if o.ServiceApprovalCreateServiceApprovalHandler == nil {
-		unregistered = append(unregistered, "service_approval.CreateServiceApprovalHandler")
-	}
-
 	if o.ServicesGetServiceHandler == nil {
 		unregistered = append(unregistered, "services.GetServiceHandler")
 	}
-
 	if o.ServicesGetServicesHandler == nil {
 		unregistered = append(unregistered, "services.GetServicesHandler")
 	}
-
 	if o.RemediationGetRemediationsHandler == nil {
 		unregistered = append(unregistered, "remediation.GetRemediationsHandler")
 	}
-
 	if o.RemediationGetRemediationsForContextHandler == nil {
 		unregistered = append(unregistered, "remediation.GetRemediationsForContextHandler")
 	}
-
-	if o.ServiceApprovalGetServiceApprovalHandler == nil {
-		unregistered = append(unregistered, "service_approval.GetServiceApprovalHandler")
-	}
-
-	if o.ServiceApprovalGetServiceApprovalsHandler == nil {
-		unregistered = append(unregistered, "service_approval.GetServiceApprovalsHandler")
-	}
-
 	if o.EventHandleEventHandler == nil {
 		unregistered = append(unregistered, "event.HandleEventHandler")
 	}
@@ -607,31 +547,24 @@ func (o *ConfigurationServiceAPI) ServeErrorFor(operationID string) func(http.Re
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *ConfigurationServiceAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *ConfigurationServiceAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *ConfigurationServiceAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/cloudevents+json":
 			result["application/cloudevents+json"] = o.JSONConsumer
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -639,19 +572,16 @@ func (o *ConfigurationServiceAPI) ConsumersFor(mediaTypes []string) map[string]r
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *ConfigurationServiceAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -659,7 +589,6 @@ func (o *ConfigurationServiceAPI) ProducersFor(mediaTypes []string) map[string]r
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -689,7 +618,6 @@ func (o *ConfigurationServiceAPI) Context() *middleware.Context {
 
 func (o *ConfigurationServiceAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -698,252 +626,186 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}"] = project.NewDeleteProjectProjectName(o.context, o.ProjectDeleteProjectProjectNameHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/resource/{resourceURI}"] = project_resource.NewDeleteProjectProjectNameResourceResourceURI(o.context, o.ProjectResourceDeleteProjectProjectNameResourceResourceURIHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/service/{serviceName}/resource/{resourceURI}"] = service_default_resource.NewDeleteProjectProjectNameServiceServiceNameResourceResourceURI(o.context, o.ServiceDefaultResourceDeleteProjectProjectNameServiceServiceNameResourceResourceURIHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}"] = stage.NewDeleteProjectProjectNameStageStageName(o.context, o.StageDeleteProjectProjectNameStageStageNameHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/resource/{resourceURI}"] = stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURI(o.context, o.StageResourceDeleteProjectProjectNameStageStageNameResourceResourceURIHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}"] = service.NewDeleteProjectProjectNameStageStageNameServiceServiceName(o.context, o.ServiceDeleteProjectProjectNameStageStageNameServiceServiceNameHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project"] = project.NewGetProject(o.context, o.ProjectGetProjectHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}"] = project.NewGetProjectProjectName(o.context, o.ProjectGetProjectProjectNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/resource"] = project_resource.NewGetProjectProjectNameResource(o.context, o.ProjectResourceGetProjectProjectNameResourceHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/resource/{resourceURI}"] = project_resource.NewGetProjectProjectNameResourceResourceURI(o.context, o.ProjectResourceGetProjectProjectNameResourceResourceURIHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service/{serviceName}/resource"] = service_default_resource.NewGetProjectProjectNameServiceServiceNameResource(o.context, o.ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service/{serviceName}/resource/{resourceURI}"] = service_default_resource.NewGetProjectProjectNameServiceServiceNameResourceResourceURI(o.context, o.ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURIHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage"] = stage.NewGetProjectProjectNameStage(o.context, o.StageGetProjectProjectNameStageHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}"] = stage.NewGetProjectProjectNameStageStageName(o.context, o.StageGetProjectProjectNameStageStageNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/resource"] = stage_resource.NewGetProjectProjectNameStageStageNameResource(o.context, o.StageResourceGetProjectProjectNameStageStageNameResourceHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/resource/{resourceURI}"] = stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURI(o.context, o.StageResourceGetProjectProjectNameStageStageNameResourceResourceURIHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service"] = service.NewGetProjectProjectNameStageStageNameService(o.context, o.ServiceGetProjectProjectNameStageStageNameServiceHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}"] = service.NewGetProjectProjectNameStageStageNameServiceServiceName(o.context, o.ServiceGetProjectProjectNameStageStageNameServiceServiceNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource"] = service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResource(o.context, o.ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project"] = project.NewPostProject(o.context, o.ProjectPostProjectHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/resource"] = project_resource.NewPostProjectProjectNameResource(o.context, o.ProjectResourcePostProjectProjectNameResourceHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/service/{serviceName}/resource"] = service_default_resource.NewPostProjectProjectNameServiceServiceNameResource(o.context, o.ServiceDefaultResourcePostProjectProjectNameServiceServiceNameResourceHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/stage"] = stage.NewPostProjectProjectNameStage(o.context, o.StagePostProjectProjectNameStageHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/resource"] = stage_resource.NewPostProjectProjectNameStageStageNameResource(o.context, o.StageResourcePostProjectProjectNameStageStageNameResourceHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service"] = service.NewPostProjectProjectNameStageStageNameService(o.context, o.ServicePostProjectProjectNameStageStageNameServiceHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource"] = service_resource.NewPostProjectProjectNameStageStageNameServiceServiceNameResource(o.context, o.ServiceResourcePostProjectProjectNameStageStageNameServiceServiceNameResourceHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}"] = project.NewPutProjectProjectName(o.context, o.ProjectPutProjectProjectNameHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/resource"] = project_resource.NewPutProjectProjectNameResource(o.context, o.ProjectResourcePutProjectProjectNameResourceHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/resource/{resourceURI}"] = project_resource.NewPutProjectProjectNameResourceResourceURI(o.context, o.ProjectResourcePutProjectProjectNameResourceResourceURIHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/service/{serviceName}/resource"] = service_default_resource.NewPutProjectProjectNameServiceServiceNameResource(o.context, o.ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/service/{serviceName}/resource/{resourceURI}"] = service_default_resource.NewPutProjectProjectNameServiceServiceNameResourceResourceURI(o.context, o.ServiceDefaultResourcePutProjectProjectNameServiceServiceNameResourceResourceURIHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}"] = stage.NewPutProjectProjectNameStageStageName(o.context, o.StagePutProjectProjectNameStageStageNameHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/resource"] = stage_resource.NewPutProjectProjectNameStageStageNameResource(o.context, o.StageResourcePutProjectProjectNameStageStageNameResourceHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/resource/{resourceURI}"] = stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURI(o.context, o.StageResourcePutProjectProjectNameStageStageNameResourceResourceURIHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}"] = service.NewPutProjectProjectNameStageStageNameServiceServiceName(o.context, o.ServicePutProjectProjectNameStageStageNameServiceServiceNameHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResource(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}"] = remediation.NewCloseRemediations(o.context, o.RemediationCloseRemediationsHandler)
-
-	if o.handlers["DELETE"] == nil {
-		o.handlers["DELETE"] = make(map[string]http.Handler)
-	}
-	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewCloseServiceApproval(o.context, o.ServiceApprovalCloseServiceApprovalHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation"] = remediation.NewCreateRemediation(o.context, o.RemediationCreateRemediationHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval"] = service_approval.NewCreateServiceApproval(o.context, o.ServiceApprovalCreateServiceApprovalHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service/{serviceName}"] = services.NewGetService(o.context, o.ServicesGetServiceHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service"] = services.NewGetServices(o.context, o.ServicesGetServicesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation"] = remediation.NewGetRemediations(o.context, o.RemediationGetRemediationsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}"] = remediation.NewGetRemediationsForContext(o.context, o.RemediationGetRemediationsForContextHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}"] = service_approval.NewGetServiceApproval(o.context, o.ServiceApprovalGetServiceApprovalHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/approval"] = service_approval.NewGetServiceApprovals(o.context, o.ServiceApprovalGetServiceApprovalsHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/event"] = event.NewHandleEvent(o.context, o.EventHandleEventHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -972,4 +834,16 @@ func (o *ConfigurationServiceAPI) RegisterConsumer(mediaType string, consumer ru
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *ConfigurationServiceAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *ConfigurationServiceAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

@@ -39,4 +39,6 @@ type EventRepo interface {
 	InsertEvent(project string, event models.Event, status EventStatus) error
 	// DeleteEvent deletes an event from the collection
 	DeleteEvent(project string, eventID string, status EventStatus) error
+	// DeleteEventCollections godoc
+	DeleteEventCollections(project string) error
 }

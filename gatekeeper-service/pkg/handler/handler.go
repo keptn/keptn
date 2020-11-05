@@ -21,8 +21,7 @@ const SucceededResult = "succeeded"
 
 type Handler interface {
 	IsTypeHandled(event cloudevents.Event) bool
-	Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn,
-		shipyard *keptnevents.Shipyard)
+	Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn)
 }
 
 func sendEvents(keptnHandler *keptnv2.Keptn, events []cloudevents.Event, l keptncommon.LoggerInterface) {

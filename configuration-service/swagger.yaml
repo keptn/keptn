@@ -105,10 +105,6 @@ definitions:
       creationDate:
         type: string
         description: Creation date of the service
-      openApprovals:
-        type: array
-        items:
-          $ref: '#/definitions/Approval'
       openRemediations:
         type: array
         items:
@@ -117,41 +113,6 @@ definitions:
         type: object
         additionalProperties:
           $ref: '#/definitions/EventContext'
-
-  Approval:
-    type: object
-    properties:
-      keptnContext:
-        type: string
-        description: Keptn Context ID of the event
-      eventId:
-        type: string
-        description: ID of the event
-      time:
-        type: string
-        description: Time of the event
-      image:
-        type: string
-      tag:
-        type: string
-
-
-  Approvals:
-    type: object
-    properties:
-      nextPageKey:
-        type: string
-        description: Pointer to next page, base64 encoded
-      totalCount:
-        type: number
-        description: Total number of stages
-      pageSize:
-        type: number
-        description: Size of returned page
-      approvals:
-        type: array
-        items:
-          $ref: '#/definitions/Approval'
 
   Remediation:
     type: object
@@ -455,12 +416,6 @@ parameters:
     type: string
     description: Name of the service
 
-  approvalID:
-    in: path
-    name: approvalID
-    required: true
-    type: string
-    description: Approval Event ID
 
   keptnContext:
     in: path
@@ -1357,91 +1312,6 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
-
-  '/project/{projectName}/stage/{stageName}/service/{serviceName}/approval':
-    parameters:
-      - $ref: '#/parameters/projectName'
-      - $ref: '#/parameters/stageName'
-      - $ref: '#/parameters/serviceName'
-    post:
-      tags:
-        - Service approval
-      operationId: createServiceApproval
-      summary: Create service approval
-      parameters:
-        - name: approval
-          in: body
-          schema:
-            "$ref": "#/definitions/Approval"
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Approval'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Service approval
-      operationId: getServiceApprovals
-      summary: Get all open service approvals
-      parameters:
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/nextPageKey'
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Approvals'
-        '404':
-          description: Failed. Service could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
-
-  '/project/{projectName}/stage/{stageName}/service/{serviceName}/approval/{approvalID}':
-    parameters:
-      - $ref: '#/parameters/pageSize'
-      - $ref: '#/parameters/nextPageKey'
-      - $ref: '#/parameters/projectName'
-      - $ref: '#/parameters/stageName'
-      - $ref: '#/parameters/serviceName'
-      - $ref: '#/parameters/approvalID'
-    get:
-      tags:
-        - Service approval
-      operationId: getServiceApproval
-      summary: Get open service approvals by ID
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Approval'
-        '404':
-          description: Failed. Approval could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
-    delete:
-      tags:
-        - service approval
-      operationId: closeServiceApproval
-      summary: Close open service approval
-      responses:
-        200:
-          description: OK
-        default:
-          description: Error
-          schema:
-            "$ref": "#/definitions/Error"
 
   '/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation':
     parameters:

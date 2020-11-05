@@ -10,4 +10,6 @@ type TaskSequenceRepo interface {
 	CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error
 	// DeleteTaskSequenceMapping godoc
 	DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error
+	// DeleteTaskSequenceCollection godoc
+	DeleteTaskSequenceCollection(project string) error
 }

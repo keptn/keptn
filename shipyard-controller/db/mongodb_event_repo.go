@@ -131,6 +131,43 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status Ev
 	return nil
 }
 
+// DeleteEventCollections godoc
+func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
+	err := mdbrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	triggeredCollection := mdbrepo.getEventsCollection(project, TriggeredEvent)
+	startedCollection := mdbrepo.getEventsCollection(project, StartedEvent)
+	finishedCollection := mdbrepo.getEventsCollection(project, FinishedEvent)
+
+	if err := mdbrepo.deleteCollection(triggeredCollection); err != nil {
+		mdbrepo.Logger.Error(err.Error())
+		return err
+	}
+	if err := mdbrepo.deleteCollection(startedCollection); err != nil {
+		mdbrepo.Logger.Error(err.Error())
+		return err
+	}
+	if err := mdbrepo.deleteCollection(finishedCollection); err != nil {
+		mdbrepo.Logger.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+func (mdbrepo *MongoDBEventsRepo) deleteCollection(collection *mongo.Collection) error {
+	mdbrepo.Logger.Debug(fmt.Sprintf("Delete collection: %s", collection.Name()))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := collection.Drop(ctx)
+	if err != nil {
+		err := fmt.Errorf("failed to drop collection %s: %v", collection.Name(), err)
+		return err
+	}
+	return nil
+}
+
 func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string, status EventStatus) *mongo.Collection {
 	switch status {
 	case TriggeredEvent:
