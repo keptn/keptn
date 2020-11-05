@@ -5,7 +5,7 @@
     </ktb-horizontal-separator>
     <ktb-event-item [event]="event" [class.focused]="event.id == focusedEventId && scrollIntoView(eventRef)" (click)="focusEvent(event)">
       <ktb-event-item-detail>
-        <ktb-evaluation-details *ngIf="event.data.evaluationdetails" [evaluationData]="event"></ktb-evaluation-details>
+        <ktb-evaluation-details *ngIf="event.data.evaluationdetails" [evaluationData]="event" [isInvalidated]="isInvalidated(event)"></ktb-evaluation-details>
       </ktb-event-item-detail>
     </ktb-event-item>
   </div>
