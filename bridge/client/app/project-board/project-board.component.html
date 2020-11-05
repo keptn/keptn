@@ -277,7 +277,7 @@
         <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
         <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth</a></li>
       </ol>
-      <p class="bold mt-2">Use Cases:</p>
+      <p class="bold mt-2" *ngIf="useCaseExamples['cli'].length > 0">Use Cases:</p>
       <ul class="list-style-none">
         <li *ngFor="let example of useCaseExamples['cli']">
           <a href="javascript:void(0);" (click)="exampleCode.toggle()"><button class="inline small mr-2" dt-show-more [showLess]="exampleCode.expanded"></button> <span [textContent]="example.label"></span></a>
@@ -297,7 +297,7 @@
           <li>Access Keptn API</li>
         </ng-template>
       </ol>
-      <p class="bold mt-2">Use Cases:</p>
+      <p class="bold mt-2" *ngIf="useCaseExamples['api'].length > 0">Use Cases:</p>
       <ul class="list-style-none">
         <li *ngFor="let example of useCaseExamples['api']">
           <a href="javascript:void(0);" (click)="exampleCode.toggle()"><button class="inline small mr-2" dt-show-more [showLess]="exampleCode.expanded"></button> <span [textContent]="example.label"></span></a>
