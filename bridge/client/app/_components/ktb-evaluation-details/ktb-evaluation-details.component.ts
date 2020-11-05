@@ -37,6 +37,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   @Input() public showChart = true;
+  @Input() public isInvalidated = false;
 
   @ViewChild('sloDialog')
   public sloDialog: TemplateRef<any>;
@@ -178,7 +179,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     if(this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
-      if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+      if (this.isInvalidated)
+        this.selectEvaluationData(this._evaluationData);
+      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
         this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
     }
     this.dataService.evaluationResults
@@ -400,8 +403,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           });
       });
       this._heatmapOptions.xAxis[0].plotBands = plotBands;
+      this._selectedEvaluationData?.data.evaluationdetails.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
     } else {
       this._heatmapOptions.xAxis[0].plotBands = [];
+      this._selectedEvaluationData?.data.evaluationdetails.number_of_missing_comparison_results = 0;
     }
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
