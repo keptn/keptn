@@ -14,11 +14,11 @@ func init() {
 func TestSetAndGetCreds(t *testing.T) {
 
 	cm := NewCredentialManager()
-	if err := cm.SetCreds(testEndPoint, testAPIToken); err != nil {
+	if err := cm.SetCreds(testEndPoint, testAPIToken, ""); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := cm.GetCreds()
+	endPoint, apiToken, err := cm.GetCreds("")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,15 +30,15 @@ func TestSetAndGetCreds(t *testing.T) {
 func TestOverwriteCreds(t *testing.T) {
 
 	cm := NewCredentialManager()
-	if err := cm.SetCreds(testEndPoint, "old-secret"); err != nil {
+	if err := cm.SetCreds(testEndPoint, "old-secret", ""); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := cm.SetCreds(testEndPoint, testAPIToken); err != nil {
+	if err := cm.SetCreds(testEndPoint, testAPIToken, ""); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := cm.GetCreds()
+	endPoint, apiToken, err := cm.GetCreds("")
 	if err != nil {
 		t.Fatal(err)
 	}

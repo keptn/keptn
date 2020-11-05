@@ -14,13 +14,13 @@ func NewCredentialManager() (cm *CredentialManager) {
 }
 
 // SetCreds stores the credentials consisting of an endpoint and an api token in the keychain.
-func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string) error {
-	return setCreds(osxkeychain.Osxkeychain{}, endPoint, apiToken)
+func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string, namespace string) error {
+	return setCreds(osxkeychain.Osxkeychain{}, endPoint, apiToken, namespace)
 }
 
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
-func (cm *CredentialManager) GetCreds() (url.URL, string, error) {
-	return getCreds(osxkeychain.Osxkeychain{})
+func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error) {
+	return getCreds(osxkeychain.Osxkeychain{}, namespace)
 }
 
 // SetInstallCreds sets the install credentials

@@ -11,7 +11,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/file"
 )
 
-const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-02-20T00:00:00Z"}`
+const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-02-20T00:00:00Z","current-context":""}`
 
 var testTime time.Time
 

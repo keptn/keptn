@@ -182,9 +182,6 @@ func init() {
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
-
-	installParams.Namespace = installCmd.Flags().StringP("namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be installed in (default keptn).")
 	installParams.HideSensitiveData = installCmd.Flags().BoolP("hide-sensitive-data", "", false,
 		"Hide the sensitive data like api-tokens and endpoints in post-installation output.")
 
@@ -192,7 +189,7 @@ func init() {
 
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
-	keptnNamespace := *installParams.Namespace
+	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)

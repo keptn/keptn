@@ -1,14 +1,21 @@
 package credentialmanager
 
 import (
+	"bufio"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/docker/docker-credential-helpers/credentials"
+	"github.com/keptn/keptn/cli/pkg/config"
+	"github.com/keptn/keptn/cli/pkg/file"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"gopkg.in/yaml.v2"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
@@ -26,12 +33,19 @@ type credsConfig struct {
 	Endpoint string `json:"endpoint"`
 }
 
-func init() {
+type kubeConfigFileType struct {
+	CurrentContext string `yaml:"current-context"`
+}
 
-	_, err := keptnutils.GetKeptnDirectory()
+var kubeConfigFile kubeConfigFileType
+
+func init() {
+	cliConfigManager := config.NewCLIConfigManager()
+	currentContext, err := getCurrentContextFromKubeConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
+	checkForContextChange(currentContext, cliConfigManager)
 	credentials.SetCredsLabel(credsLab)
 }
 
@@ -52,34 +66,34 @@ func getInstallCreds(h credentials.Helper) (string, error) {
 	return creds, err
 }
 
-func setCreds(h credentials.Helper, endPoint url.URL, apiToken string) error {
+func setCreds(h credentials.Helper, endPoint url.URL, apiToken string, namespace string) error {
 	if MockAuthCreds {
 		// Do nothing
 		return nil
 	}
-
+	customServerURL := serverURL + "/" + kubeConfigFile.CurrentContext + "/" + namespace
 	c := &credentials.Credentials{
-		ServerURL: serverURL,
+		ServerURL: customServerURL,
 		Username:  endPoint.String(),
 		Secret:    apiToken,
 	}
 	return h.Add(c)
 }
 
-func getCreds(h credentials.Helper) (url.URL, string, error) {
+func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 
 	if MockAuthCreds {
 		return url.URL{}, "", nil
 	}
 
+	customServerURL := serverURL + "/" + kubeConfigFile.CurrentContext + "/" + namespace
 	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
 		if customCredsLocation != "" {
 			return handleCustomCreds(customCredsLocation)
 		}
 	}
-
-	endPointStr, apiToken, err := h.Get(serverURL)
+	endPointStr, apiToken, err := h.Get(customServerURL)
 	if err != nil {
 		return url.URL{}, "", err
 	}
@@ -107,4 +121,53 @@ func handleCustomCreds(configLocation string) (url.URL, string, error) {
 	}
 
 	return *parsedURL, credsConfig.APIToken, nil
+}
+
+func getCurrentContextFromKubeConfig() (string, error) {
+	var kubeconfig string
+	if os.Getenv("KUBECONFIG") != "" {
+		kubeconfig = keptnutils.ExpandTilde(os.Getenv("KUBECONFIG"))
+	} else {
+		kubeconfig = filepath.Join(
+			keptnutils.UserHomeDir(), ".kube", "config",
+		)
+	}
+
+	fileContent, err := file.ReadFile(kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	err = yaml.Unmarshal([]byte(fileContent), &kubeConfigFile)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+	return kubeConfigFile.CurrentContext, nil
+}
+
+func checkForContextChange(currentContext string, cliConfigManager *config.CLIConfigManager) error {
+	cliConfig, err := cliConfigManager.LoadCLIConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if cliConfig.CurrentContext != currentContext {
+		fmt.Printf("Kube context has been changed to %s", currentContext)
+		fmt.Println()
+		fmt.Println("Do you want to continue with this? (y/n)")
+		reader := bufio.NewReader(os.Stdin)
+		in, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		in = strings.ToLower(strings.TrimSpace(in))
+		if !(in == "y" || in == "yes") {
+			return fmt.Errorf("stopping installation")
+		}
+		cliConfig.CurrentContext = currentContext
+		err = cliConfigManager.StoreCLIConfig(cliConfig)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
