@@ -79,7 +79,11 @@
           <span *ngIf="_selectedEvaluationData.data.evaluationdetails.include_result_with_score == 'pass'">passed</span>
           <span *ngIf="_selectedEvaluationData.data.evaluationdetails.include_result_with_score == 'pass_or_warn'">passed or warned</span>
           evaluation<span *ngIf="_selectedEvaluationData.data.evaluationdetails.compare_with == 'several_results'">s</span>.
-          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results > 0">
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results == 1">
+            <span [textContent]="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results"></span>
+            result is not showing up in the Heatmap, because it has been either invalidated or is older.
+          </span>
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results > 1">
             <span [textContent]="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results"></span>
             results are not showing up in the Heatmap, because they have been either invalidated or are older results.
           </span>
