@@ -106,10 +106,12 @@
 <ng-template #invalidateEvaluationDialog let-data>
   <h1 mat-dialog-title>Invalidate evaluation</h1>
   <div mat-dialog-content>
-    <dt-form-field>
-      <dt-label>Reason</dt-label>
-      <input #reasonInput class="wide-input" type="text" dtInput placeholder="Place for a comment why it has been invalidated (optional)" />
-    </dt-form-field>
+    <div class="mb-1">
+      <dt-form-field>
+        <dt-label>Reason</dt-label>
+        <input #reasonInput class="wide-input" type="text" dtInput placeholder="Place for a comment why it has been invalidated (optional)" />
+      </dt-form-field>
+    </div>
   </div>
   <div mat-dialog-actions>
     <button dt-button variant="secondary" (click)="invalidateEvaluation(data, reasonInput.value)">Invalidate</button>
