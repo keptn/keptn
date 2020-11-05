@@ -56,14 +56,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public integrationsExternalDetails = null;
 
   public useCaseExamples = {
-    'cli': [{
-      label: 'Trigger a quality gate evaluation',
-      code: ''
-    }],
-    'api': [{
-      label: 'Trigger a quality gate evaluation',
-      code: ''
-    }]
+    'cli': [],
+    'api': []
   };
 
   public keptnInfo: any;
@@ -168,29 +162,47 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
-        if(this.keptnInfo.bridgeInfo.keptnInstallationType != "QUALITY_GATES_ONLY") {
+        if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_DELIVERY") != -1) {
           this.addDeploymentUseCaseToIntegrations();
+        }
+        if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES_ONLY") != -1) {
+          this.addEvaluationUseCaseToIntegrations();
+        }
+        if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_OPERATIONS") != -1) {
           this.addRemediationUseCaseToIntegrations();
         }
       });
   }
 
   updateIntegrations() {
-    this.currentTime = moment().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
-    this.useCaseExamples['cli'].find(e => e.label == 'Trigger a quality gate evaluation').code = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
-    this.useCaseExamples['api'].find(e => e.label == 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
+    if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES_ONLY") != -1) {
+      this.currentTime = moment().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
+      this.useCaseExamples['cli'].find(e => e.label == 'Trigger a quality gate evaluation').code = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
+      this.useCaseExamples['api'].find(e => e.label == 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\
     -H "Content-Type: application/json; charset=utf-8" \\
     -d "{"start": "${this.currentTime}", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
+    }
+  }
+
+  addEvaluationUseCaseToIntegrations() {
+    this.useCaseExamples['cli'].push({
+      label: 'Trigger a quality gate evaluation',
+      code: ''
+    });
+    this.useCaseExamples['api'].push({
+      label: 'Trigger a quality gate evaluation',
+      code: ''
+    });
   }
 
   addDeploymentUseCaseToIntegrations() {
-    this.useCaseExamples['cli'].unshift({
+    this.useCaseExamples['cli'].push({
       label: 'Trigger deployment with a new artifact',
       code: `keptn send event new-artifact --project=\${PROJECT} --service=\${SERVICE}--image=\${IMAGE} --tag=\${TAG}`
     });
-    this.useCaseExamples['api'].unshift({
+    this.useCaseExamples['api'].push({
       label: 'Trigger deployment with a new artifact',
       code: `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/event" \\
       -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
