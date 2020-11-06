@@ -62,7 +62,9 @@ func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	if err != nil {
 		return err
 	}
-
+	if existingProject == nil {
+		return nil
+	}
 	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
