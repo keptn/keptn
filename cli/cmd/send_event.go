@@ -52,7 +52,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		return json.Unmarshal([]byte(eventString), &body)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

@@ -34,7 +34,6 @@ import (
 
 type generateSupportArchiveCmdParams struct {
 	generateCmdParams
-	KeptnNamespace *string
 }
 
 var generateSupportArchiveParams *generateSupportArchiveCmdParams
@@ -101,7 +100,7 @@ keptn generate support-archive --dir=/some/directory`,
 		s.OperatingSystem = runtime.GOOS
 		s.KeptnCLIVersion = Version
 
-		keptnNS := *generateSupportArchiveParams.KeptnNamespace
+		keptnNS := namespace
 
 		// create temporary directory for storing log files
 		tmpDir, err := ioutil.TempDir("", "keptn-support-archive")
@@ -370,13 +369,13 @@ func newErrorableMetadataResult(result *models.Metadata, err error) *errorableMe
 
 func getKeptnAPIUrl() *errorableStringResult {
 	fmt.Println("Retrieving Keptn API")
-	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds()
+	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 	return newErrorableStringResult(endPoint.String(), err)
 }
 
 func getKeptnAPIReachable() *errorableBoolResult {
 	fmt.Println("Checking availability of Keptn API")
-	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds()
+	endPoint, _, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -546,7 +545,7 @@ func writePodLogs(namespace, dir string) {
 
 func getProjects() *errorableProjectResult {
 	fmt.Println("Retrieving list of Keptn projects")
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
@@ -568,7 +567,7 @@ func writeKeptnInstallerLog(logFileName string, dir string) {
 
 func getKeptnMetadata() *errorableMetadataResult {
 	fmt.Println("Retrieving Keptn Metadata from API Service")
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 	if err != nil {
 		return newErrorableMetadataResult(nil, err)
 	}
@@ -586,6 +585,4 @@ func init() {
 	generateSupportArchiveParams = &generateSupportArchiveCmdParams{}
 	generateSupportArchiveParams.Directory = generateSupportArchiveCmd.Flags().StringP("dir", "",
 		"./support-archive", "directory where the docs should be written to")
-	generateSupportArchiveParams.KeptnNamespace = generateSupportArchiveCmd.Flags().StringP("namespace", "n",
-		"keptn", "namespace where Keptn is installed")
 }

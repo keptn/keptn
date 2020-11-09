@@ -151,7 +151,7 @@ func isUpgradeCompatible() (bool, error) {
 }
 
 func getLatestKeptnRelease() (*release.Release, error) {
-	keptnNamespace := *upgradeParams.Namespace
+	keptnNamespace := namespace
 	releases, err := helm.NewHelper().GetHistory(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to check if Keptn release is available in namespace %s: %v", keptnNamespace, err)
@@ -173,13 +173,10 @@ func init() {
 	upgradeParams.ChartRepoURL = upgraderCmd.Flags().StringP("chart-repo", "",
 		"", "URL of the Keptn Helm Chart repository")
 	upgraderCmd.Flags().MarkHidden("chart-repo")
-
-	upgradeParams.Namespace = upgraderCmd.Flags().StringP("namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be upgraded (default keptn).")
 }
 
 func doUpgrade() error {
-	keptnNamespace := *upgradeParams.Namespace
+	keptnNamespace := namespace
 
 	installedKeptnVersion, err := getInstalledKeptnVersion()
 	if err != nil {

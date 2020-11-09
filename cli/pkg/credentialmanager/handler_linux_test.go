@@ -3,6 +3,7 @@ package credentialmanager
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -13,13 +14,13 @@ func init() {
 }
 
 func TestSetAndGetCreds(t *testing.T) {
-
+	MockKubeConfigCheck = true
 	cm := NewCredentialManager()
-	if err := cm.SetCreds(testEndPoint, testAPIToken); err != nil {
+	if err := cm.SetCreds(testEndPoint, testAPIToken, testNamespace); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := cm.GetCreds()
+	endPoint, apiToken, err := cm.GetCreds(testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,8 +32,8 @@ func TestSetAndGetCreds(t *testing.T) {
 }
 
 func TestGetCredsFromFile(t *testing.T) {
-
-	file, err := ioutil.TempFile("", "")
+	MockKubeConfigCheck = true
+	file, err := ioutil.TempFile("", "*__"+kubeConfigFile.CurrentContext+"__"+testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,9 +47,10 @@ func TestGetCredsFromFile(t *testing.T) {
 	}
 
 	cm := NewCredentialManager()
-	cm.apiTokenFile = file.Name()
+	tempFileName := strings.Split(file.Name(), "__")[0]
+	cm.apiTokenFile = tempFileName
 
-	url, token, err := cm.GetCreds()
+	url, token, err := cm.GetCreds(testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}

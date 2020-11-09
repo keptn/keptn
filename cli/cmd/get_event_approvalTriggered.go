@@ -54,7 +54,7 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr

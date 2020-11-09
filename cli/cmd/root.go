@@ -20,6 +20,7 @@ var SuppressWSCommunication bool
 
 var insecureSkipTLSVerify bool
 var kubectlOptions string
+var namespace string
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
@@ -56,6 +57,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
 		"Disables WebSocket communication to suppress info messages from services running inside Keptn")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
+		"Specify the namespace where Keptn should be installed, used and uninstalled in (default keptn).")
 	cobra.OnInitialize(initConfig)
 }
 
