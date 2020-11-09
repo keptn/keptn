@@ -162,7 +162,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   }
 
   updateIntegrations() {
-    this.currentTime = moment().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
+    this.currentTime = moment.utc().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
     this.triggerQualityGateEvaluationViaCli = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
     this.triggerQualityGateEvaluationViaApi = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
     -H "accept: application/json; charset=utf-8" \\
