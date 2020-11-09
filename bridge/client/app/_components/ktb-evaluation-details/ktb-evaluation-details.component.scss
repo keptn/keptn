@@ -16,3 +16,7 @@
 .dt-button + .dt-button {
   fill: $cta-color-active;	  margin-left: $gap-normal;
 }
+
+.wide-input {
+  min-width: 440px;
+}

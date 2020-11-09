@@ -200,8 +200,11 @@ export class DataService {
         map(traces => traces.map(trace => Trace.fromJSON(trace)))
       )
       .subscribe((traces: Trace[]) => {
-        event.data.evaluationHistory = [...traces||[], ...event.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-        this._evaluationResults.next(event);
+        this._evaluationResults.next({
+          type: "evaluationHistory",
+          triggerEvent: event,
+          traces: traces
+        });
       });
   }
 
@@ -220,5 +223,16 @@ export class DataService {
       if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
         this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort(DateUtil.compareTraceTimes));
     }
+  }
+
+  public invalidateEvaluation(evaluation: Trace, reason: string) {
+    this.apiService.sendEvaluationInvalidated(evaluation, reason)
+      .pipe(take(1))
+      .subscribe(() => {
+        this._evaluationResults.next({
+          type: "invalidateEvaluation",
+          triggerEvent: evaluation
+        });
+      });
   }
 }
