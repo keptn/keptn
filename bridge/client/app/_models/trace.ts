@@ -13,6 +13,7 @@ const DEFAULT_ICON = "information";
 class Trace {
   id: string;
   shkeptncontext: string;
+  triggeredid: string;
   source: string;
   time: Date;
   type: string;
@@ -66,6 +67,7 @@ class Trace {
       compare_with: string;
       include_result_with_score: string;
       number_of_comparison_results: number;
+      number_of_missing_comparison_results: number;
       sloFileContentParsed: string;
     };
 
@@ -177,6 +179,10 @@ class Trace {
 
   public isEvaluation(): string {
     return this.type === EventTypes.START_EVALUATION ? this.data.stage : null;
+  }
+
+  public isEvaluationInvalidation(): boolean {
+    return this.type === EventTypes.EVALUATION_INVALIDATED;
   }
 
   hasLabels(): boolean {

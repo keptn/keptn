@@ -1,5 +1,5 @@
 <div *ngIf="evaluationData">
-  <div class="mt-1 mb-1" *ngIf="showChart">
+  <div class="mt-1 mb-1" *ngIf="showChart && !isInvalidated">
     <div fxLayout="row" class="pr-2">
       <div fxFlex></div>
       <div fxLayout="column" fxLayoutAlign="start end">
@@ -10,7 +10,7 @@
       </div>
     </div>
   </div>
-  <div class="m-0 mr-2" *ngIf="showChart" (click)="$event.stopPropagation();">
+  <div class="m-0 mr-2" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
     <dt-chart #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'"
               [options]="_heatmapOptions"
               [series]="_heatmapSeries"
@@ -37,11 +37,15 @@
       </dt-chart-tooltip>
     </dt-chart>
   </div>
+  <div *ngIf="isInvalidated">
+    <p class="m-0 error">This evaluation result has been invalidated.</p>
+  </div>
   <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData" (click)="$event.stopPropagation();">
-    <div fxLayout="row" *ngIf="_selectedEvaluationData.data.evaluationdetails.sloFileContentParsed">
+    <div fxLayout="row">
       <div fxFlex></div>
-      <div fxLayout="column" fxLayoutAlign="start end">
-        <p class="m-0"><a class="dt-link" (click)="showSloDialog()">Show SLO</a></p>
+      <div fxLayout="row" fxLayoutAlign="start end">
+        <button dt-button variant="nested" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluationdetails.sloFileContentParsed">Show SLO</button>
+        <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">Ignore for comparison</button>
       </div>
     </div>
     <dt-consumption [max]="_selectedEvaluationData.data.evaluationdetails.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.data.evaluationdetails.score" [color]="_evaluationState[_selectedEvaluationData.data.result]">
@@ -69,7 +73,21 @@
       </dt-consumption-count>
       <dt-consumption-label>
         <p class="m-0 small"><span class="bold">Evaluation timeframe: </span><span [textContent]="_selectedEvaluationData.data.evaluationdetails.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="_selectedEvaluationData.data.evaluationdetails.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="getDuration(evaluationData.data.evaluationdetails.timeStart, evaluationData.data.evaluationdetails.timeEnd)"></span>)</p>
-        <p class="m-0" *ngIf="_selectedEvaluationData.data.result == _selectedEvaluationData.data.evaluationdetails.result">Compared with last <span *ngIf="_selectedEvaluationData.data.evaluationdetails.compare_with == 'several_results'" [textContent]="_selectedEvaluationData.data.evaluationdetails.number_of_comparison_results + ' '"></span> <span *ngIf="_selectedEvaluationData.data.evaluationdetails.include_result_with_score == 'pass'">passed</span><span *ngIf="_selectedEvaluationData.data.evaluationdetails.include_result_with_score == 'pass_or_warn'">passed or warned</span> evaluation<span *ngIf="_selectedEvaluationData.data.evaluationdetails.compare_with == 'several_results'">s</span>.</p>
+        <p class="m-0" *ngIf="_selectedEvaluationData.data.result == _selectedEvaluationData.data.evaluationdetails.result && _selectedEvaluationData.data.evaluationdetails.comparedEvents?.length > 0">
+          Compared with last
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.compare_with == 'several_results'" [textContent]="_selectedEvaluationData.data.evaluationdetails.comparedEvents?.length + ' '"></span>
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.include_result_with_score == 'pass'">passed</span>
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.include_result_with_score == 'pass_or_warn'">passed or warned</span>
+          evaluation<span *ngIf="_selectedEvaluationData.data.evaluationdetails.compare_with == 'several_results'">s</span>.
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results == 1">
+            <span [textContent]="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results"></span>
+            result is not showing up in the Heatmap, because it has been either invalidated or is older.
+          </span>
+          <span *ngIf="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results > 1">
+            <span [textContent]="_selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results"></span>
+            results are not showing up in the Heatmap, because they have been either invalidated or are older results.
+          </span>
+        </p>
         <p class="m-0" *ngIf="_selectedEvaluationData.data.result != _selectedEvaluationData.data.evaluationdetails.result" [textContent]="_selectedEvaluationData.data.evaluationdetails.result"></p>
       </dt-consumption-label>
     </dt-consumption>
@@ -85,4 +103,18 @@
     <button dt-button (click)="closeSloDialog()">Close</button>
   </div>
 </ng-template>
-
+<ng-template #invalidateEvaluationDialog let-data>
+  <h1 mat-dialog-title>Invalidate evaluation</h1>
+  <div mat-dialog-content>
+    <div class="mb-1">
+      <dt-form-field>
+        <dt-label>Reason</dt-label>
+        <input #reasonInput class="wide-input" type="text" dtInput placeholder="Place for a comment why it has been invalidated (optional)" />
+      </dt-form-field>
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="invalidateEvaluation(data, reasonInput.value)">Invalidate</button>
+    <button dt-button (click)="closeInvalidateEvaluationDialog()">Close</button>
+  </div>
+</ng-template>

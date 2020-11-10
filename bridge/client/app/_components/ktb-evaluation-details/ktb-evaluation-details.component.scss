@@ -12,3 +12,11 @@
   stroke: rgb(137, 137, 137);
   fill: rgba(137, 137, 137, 0.2);
 }
+
+.dt-button + .dt-button {
+  fill: $cta-color-active;	  margin-left: $gap-normal;
+}
+
+.wide-input {
+  min-width: 440px;
+}
