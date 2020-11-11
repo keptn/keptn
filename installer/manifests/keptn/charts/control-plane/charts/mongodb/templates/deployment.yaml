@@ -61,7 +61,7 @@ spec:
               cpu: "50m"
             limits:
               memory: "300Mi"
-              cpu: "500m"
+              cpu: "100m"
           volumeMounts:
             - mountPath: /var/lib/mongodb/data
               name: mongodata
