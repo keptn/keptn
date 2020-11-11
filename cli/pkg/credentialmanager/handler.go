@@ -91,7 +91,11 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
 		if customCredsLocation != "" {
-			return handleCustomCreds(customCredsLocation, namespace)
+			endPoint, apiToken, err := handleCustomCreds(customCredsLocation, namespace)
+			// If credential is not found in KEPTNCONFIG, use fallback credential manager
+			if apiToken != "" || err != nil {
+				return endPoint, apiToken, err
+			}
 		}
 	}
 	endPointStr, apiToken, err := h.Get(customServerURL)
@@ -126,7 +130,7 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 			return *parsedURL, context.APIToken, nil
 		}
 	}
-	return url.URL{}, "", errors.New("Credentials against current kubecontext isn't found")
+	return url.URL{}, "", nil
 }
 
 // initChecks needs to be run when credentialManager is called or initilized
