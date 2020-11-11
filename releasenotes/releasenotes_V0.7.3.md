@@ -1,10 +1,10 @@
 # Release Notes 0.7.3
 
-Keptn 0.7.3 
+Keptn 0.7.3 provides a new feature that allows invalidating a quality gate evaluation result. Besides, this release addresses minor bugs as well as UI/UX improvements. 
 
-**The key announcements of Keptn 0.7.3**:
+**The key announcement of Keptn 0.7.3**:
 
-:rocket: *Improved UX for Quality Gates*: 
+:rocket: *Invalidate a quality gate evaluation*: This feature allows a user to manually invalidate an evaluation result meaning that it will be ignored for future comparison. The original evaluation result (i.e., the `sh.keptn.events.evaluation-done` event) will not be changed or deleted and can still be fetched from the Keptn API.
 
 ## Keptn Specification
 
@@ -16,7 +16,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <p>
 
 - Added installation type as environment variable to Bridge [#2606](https://github.com/keptn/keptn/issues/2606)
-- Update NGNIX version to 1.19.4 [#2651](https://github.com/keptn/keptn/issues/2615)
+- Update NGNIX version to 1.19.4-alpha [#2651](https://github.com/keptn/keptn/issues/2615)
 
 </p>
 </details>
@@ -24,7 +24,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
-- Show platform specific quick access instructions [#2576](https://github.com/keptn/keptn/issues/2576)
+- Show OS-specific quick access instructions [#2576](https://github.com/keptn/keptn/issues/2576)
 - Added timeout of 5 seconds to server version check [#2589](https://github.com/keptn/keptn/issues/2589)
 
 </p>
@@ -34,8 +34,8 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <p>
 
 - *configuration-service*: 
-  - Update git upstream infos in materialized view [#2577](https://github.com/keptn/keptn/issues/2577)
-  - Fix create project with upstream credentials [#2639](https://github.com/keptn/keptn/issues/2639)
+  - Update Git upstream information  in materialized view [#2577](https://github.com/keptn/keptn/issues/2577)
+  - Fixed create project with upstream credentials [#2639](https://github.com/keptn/keptn/issues/2639)
 
 - *helm-service*: 
   - Added timeout when waiting for deployment to be rolled out [#2578](https://github.com/keptn/keptn/issues/2578)  
@@ -53,9 +53,9 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 <p>
 
 - Fixed issue of showing no information at the "Compared with" label [#2545](https://github.com/keptn/keptn/issues/2545)
-- Fixed issue of showing wrong evaluation timeframe when switching evaluations [#2585](https://github.com/keptn/keptn/issues/2585)
-- Show all core use-cases on integrations page [#2565](https://github.com/keptn/keptn/issues/2565)
-- Allow to invalidate evaluation results from Bridge [#2548](https://github.com/keptn/keptn/issues/2548)
+- Show the correct evaluation timeframe when switching evaluations in the HeatMap [#2585](https://github.com/keptn/keptn/issues/2585)
+- Show all core use-cases on integrations page depending on installation type[#2565](https://github.com/keptn/keptn/issues/2565)
+- Allow invalidating evaluation results from Bridge [#2548](https://github.com/keptn/keptn/issues/2548)
 - Fix base href in Bridge [#2564](https://github.com/keptn/keptn/issues/2564)
 
 </p>
@@ -63,7 +63,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 
 ## Fixed Issues
 
-- Allow to load more than 20 services/projects in Bridge [#2631](https://github.com/keptn/keptn/issues/2631)
+- Allow loading more than 20 services/projects in Bridge [#2631](https://github.com/keptn/keptn/issues/2631)
 
 ## Development Process / Testing
 
@@ -71,7 +71,7 @@ Implemented **Keptn spec** version: [0.1.6](https://github.com/keptn/spec/tree/0
 
 ## Good to know / Known Limitations
 
-This sections lists bugs and limitations that are known but not fixed in this release. The will get addressed in one of the next releases.
+This section lists bugs and limitations that are known but not fixed in this release. They will get addressed in one of the next releases.
 
 - Bridge ignores deployed service artifact [#2543](https://github.com/keptn/keptn/issues/2543)
   - The Bridge loads the last 20 triggers (aka. root events) and if this list does not contain a `sh.keptn.event.configuration.change` or `sh.keptn.event.start-evaluation` event, the label below the service name shows: *Service not deployed*.
