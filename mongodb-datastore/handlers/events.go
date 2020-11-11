@@ -277,6 +277,7 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 	collectionName := getProjectOfEvent(event)
 	collection := client.Database(mongoDBName).Collection(collectionName)
 	rootEventsCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
+	invalidatedEventsCollection := client.Database(mongoDBName).Collection(getInvalidatedCollectionName(collectionName))
 
 	logger.Debug(fmt.Sprintf("Delete all events of project %s", collectionName))
 	err := collection.Drop(ctx)
@@ -292,6 +293,14 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 		err := fmt.Errorf("failed to drop collection %s: %v", collectionName+rootEventCollectionSuffix, err)
 		logger.Error(err.Error())
 		return err
+	}
+
+	logger.Debug(fmt.Sprintf("Delete all invalidated events of project %s", collectionName))
+	err = invalidatedEventsCollection.Drop(ctx)
+	if err != nil {
+		// log the error but continue
+		err := fmt.Errorf("failed to drop collection %s: %v", invalidatedEventsCollection.Name(), err)
+		logger.Error(err.Error())
 	}
 
 	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", collectionName))
