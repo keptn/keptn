@@ -62,7 +62,7 @@ func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error)
 	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
 		if customCredsLocation != "" {
-			return handleCustomCreds(customCredsLocation)
+			return handleCustomCreds(customCredsLocation, namespace)
 		}
 	}
 

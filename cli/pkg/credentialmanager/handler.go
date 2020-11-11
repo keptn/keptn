@@ -2,10 +2,8 @@ package credentialmanager
 
 import (
 	"bufio"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -31,9 +29,15 @@ const installCredsKey = "https://keptn-install.sh"
 var MockAuthCreds bool
 var MockKubeConfigCheck bool
 
-type credsConfig struct {
-	APIToken string `json:"api_token"`
-	Endpoint string `json:"endpoint"`
+type keptnConfig struct {
+	APIToken       string `yaml:"api_token"`
+	Endpoint       string `yaml:"endpoint"`
+	ContextName    string `yaml:"name"`
+	KeptnNamespace string `yaml:"namespace"`
+}
+
+type keptnConfigFile struct {
+	Contexts []keptnConfig `yaml:"contexts"`
 }
 
 type kubeConfigFileType struct {
@@ -87,7 +91,7 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
 		if customCredsLocation != "" {
-			return handleCustomCreds(customCredsLocation)
+			return handleCustomCreds(customCredsLocation, namespace)
 		}
 	}
 	endPointStr, apiToken, err := h.Get(customServerURL)
@@ -98,26 +102,31 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 	return *url, apiToken, err
 }
 
-func handleCustomCreds(configLocation string) (url.URL, string, error) {
-	fd, err := os.Open(configLocation)
+func handleCustomCreds(configLocation string, namespace string) (url.URL, string, error) {
+	fileContent, err := file.ReadFile(configLocation)
 	if err != nil {
 		return url.URL{}, "", err
 	}
 
-	defer fd.Close()
+	var keptnConfig keptnConfigFile
 
-	byteValue, _ := ioutil.ReadAll(fd)
+	yaml.Unmarshal([]byte(fileContent), &keptnConfig)
+	for _, context := range keptnConfig.Contexts {
 
-	var credsConfig credsConfig
+		// Keeping default namespace to keptn
+		if &context.KeptnNamespace == nil || context.KeptnNamespace == "" {
+			context.KeptnNamespace = "keptn"
+		}
 
-	json.Unmarshal(byteValue, &credsConfig)
-
-	parsedURL, err := url.Parse(credsConfig.Endpoint)
-	if err != nil {
-		return url.URL{}, "", err
+		if context.ContextName == kubeConfigFile.CurrentContext && context.KeptnNamespace == namespace {
+			parsedURL, err := url.Parse(context.Endpoint)
+			if err != nil {
+				return url.URL{}, "", err
+			}
+			return *parsedURL, context.APIToken, nil
+		}
 	}
-
-	return *parsedURL, credsConfig.APIToken, nil
+	return url.URL{}, "", errors.New("Credentials against current kubecontext isn't found")
 }
 
 // initChecks needs to be run when credentialManager is called or initilized
