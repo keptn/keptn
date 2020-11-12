@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -46,12 +45,15 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	// get remediation.yaml
 	resource, err := eh.Remediation.getRemediationFile()
 	if err != nil {
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
 
 	// get remediation action from remediation.yaml
 	remediationData, err := eh.Remediation.getRemediation(resource)
 	if err != nil {
+		eh.KeptnHandler.Logger.Error(err.Error())
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
 
@@ -83,6 +85,8 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 			Tags:           problemEvent.Tags,
 		})
 		if err != nil {
+			eh.KeptnHandler.Logger.Error(err.Error())
+			_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 			return err
 		}
 	} else {
@@ -95,21 +99,12 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 }
 
 func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
-	shipyard := &keptn.Shipyard{}
-	resource, err := eh.KeptnHandler.ResourceHandler.GetProjectResource(eh.KeptnHandler.Event.GetProject(), "shipyard.yaml")
+
+	remediationFile, err := eh.Remediation.getRemediationFile()
 	if err != nil {
 		return false, err
+	} else if remediationFile == nil {
+		return false, nil
 	}
-	err = yaml.Unmarshal([]byte(resource.ResourceContent), shipyard)
-	if err != nil {
-		return false, err
-	}
-
-	for _, s := range shipyard.Stages {
-		if s.Name == eh.KeptnHandler.Event.GetStage() && s.RemediationStrategy == "automated" {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return true, nil
 }

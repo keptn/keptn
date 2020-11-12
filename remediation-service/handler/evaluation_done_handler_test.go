@@ -349,7 +349,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				Keptn: testKeptnHandler,
 			}
 
-			eh := &EvaluationDoneEventHandler{
+			eh := &EvaluationFinishedEventHandler{
 				KeptnHandler: testKeptnHandler,
 				Event:        tt.fields.Event,
 				Remediation:  remediation,
