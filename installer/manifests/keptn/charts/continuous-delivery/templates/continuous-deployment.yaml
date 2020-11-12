@@ -68,7 +68,7 @@ spec:
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
-          - containerPort: 8080
+            - containerPort: 8080
           resources:
             requests:
               memory: "32Mi"
@@ -278,7 +278,14 @@ spec:
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
-          - containerPort: 8080
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m
           env:
           - name: CONFIGURATION_SERVICE
             value: 'http://configuration-service:8080'
