@@ -283,9 +283,6 @@ spec:
             requests:
               memory: "64Mi"
               cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m
           env:
           - name: CONFIGURATION_SERVICE
             value: 'http://configuration-service:8080'
