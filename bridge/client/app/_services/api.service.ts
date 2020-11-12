@@ -73,8 +73,10 @@ export class ApiService {
     }
   }
 
-  public getProjects(pageSize: number): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true&pageSize=${pageSize}`;
+  public getProjects(pageSize?: number): Observable<ProjectResult> {
+    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
+    if(pageSize)
+      url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
   }
