@@ -16,12 +16,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type uninstallCmdParams struct {
-	Namespace *string
-}
-
-var uninstallParams uninstallCmdParams
-
 // uninstallCmd represents the uninstall command
 var uninstallCmd = &cobra.Command{
 	Use:   "uninstall",
@@ -46,7 +40,7 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 			kubectlOptions = "--insecure-skip-tls-verify=true"
 		}
 
-		keptnNamespace := *uninstallParams.Namespace
+		keptnNamespace := namespace
 
 		ctx, _ := platform.GetKubeContext()
 		fmt.Println("Your Kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
@@ -129,11 +123,5 @@ func deleteNamespace(namespace string) error {
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)
-
-	uninstallParams = uninstallCmdParams{}
-
-	uninstallParams.Namespace = uninstallCmd.Flags().StringP("namespace", "n", "keptn",
-		"Specify the namespace Keptn should be installed in (default keptn).")
-
 	uninstallCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s", false, "Skip tls verification for kubectl commands")
 }

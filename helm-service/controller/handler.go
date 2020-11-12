@@ -13,8 +13,8 @@ type Handler interface {
 	getHelmExecutor() helm.HelmExecutor
 	getConfigServiceURL() string
 
-	getGeneratedChart(e keptnv2.EventData) (*chart.Chart, error)
-	getUserChart(e keptnv2.EventData) (*chart.Chart, error)
+	getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error)
+	getUserChart(e keptnv2.EventData) (*chart.Chart, string, error)
 	existsGeneratedChart(e keptnv2.EventData) (bool, error)
 	handleError(triggerID string, err error, taskName string, finishedEventData interface{})
 	sendEvent(triggerID, ceType string, data interface{}) error

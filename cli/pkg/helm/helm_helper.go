@@ -133,7 +133,7 @@ func (c Helper) GetHistory(releaseName, namespace string) ([]*release.Release, e
 func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 
 	if len(ch.Templates) > 0 {
-		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace %s", releaseName, namespace), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Start upgrading Helm Chart %s in namespace %s, upgrade may stall due to limited resources", releaseName, namespace), logging.InfoLevel)
 
 		config, err := clientcmd.BuildConfigFromFlags("", getKubeConfig())
 		if err != nil {

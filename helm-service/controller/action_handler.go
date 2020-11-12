@@ -2,10 +2,10 @@ package controller
 
 import (
 	"fmt"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"strconv"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 )
@@ -13,15 +13,18 @@ import (
 // ActionTriggeredHandler handles sh.keptn.events.action.triggered events for scaling
 type ActionTriggeredHandler struct {
 	Handler
+	configChanger configurationchanger.IConfigurationChanger
 }
 
 // ActionScaling is the identifier for the scaling action
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) *ActionTriggeredHandler {
+func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configChanger configurationchanger.IConfigurationChanger, configServiceURL string) *ActionTriggeredHandler {
+
 	return &ActionTriggeredHandler{
-		Handler: NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:       NewHandlerBase(keptnHandler, configServiceURL),
+		configChanger: configChanger,
 	}
 }
 
@@ -46,7 +49,7 @@ func (h *ActionTriggeredHandler) HandleEvent(ce cloudevents.Event, closeLogger f
 			actionTriggeredEvent.Service, actionTriggeredEvent.Stage, actionTriggeredEvent.Project))
 		if sendErr := h.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.ActionTaskName),
 			h.getStartedEventData(actionTriggeredEvent.EventData)); sendErr != nil {
-			h.handleError(ce.ID(), err, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, err))
+			h.handleError(ce.ID(), sendErr, keptnv2.ActionTaskName, h.getFinishedEventDataForError(actionTriggeredEvent.EventData, sendErr))
 			return
 		}
 
@@ -129,7 +132,7 @@ func (h *ActionTriggeredHandler) handleScaling(e keptnv2.ActionTriggeredEventDat
 
 	replicaCountUpdater := configurationchanger.NewReplicaCountManipulator(replicaIncrement)
 	// Note: This action applies the scaling on the generated chart and therefore assumes a b/g deployment
-	genChart, gitVersion, err := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e.EventData,
+	genChart, gitVersion, err := h.configChanger.UpdateChart(e.EventData,
 		true, replicaCountUpdater)
 	if err != nil {
 		return h.getFinishedEventDataForError(e.EventData, err)

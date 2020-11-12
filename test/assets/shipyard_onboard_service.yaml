@@ -1,0 +1,49 @@
+apiVersion: "spec.keptn.sh/0.2.0"
+kind: "Shipyard"
+metadata:
+  name: "shipyard-sockshop"
+spec:
+  stages:
+    - name: "dev"
+      sequences:
+        - name: "artifact-delivery"
+          tasks:
+            - name: "deployment"
+              properties:
+                strategy: "direct"
+            - name: "test"
+              properties:
+                kind: "functional"
+            - name: "evaluation"
+            - name: "release"
+
+    - name: "staging"
+      sequences:
+        - name: "artifact-delivery"
+          triggers:
+            - "dev.artifact-delivery.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                strategy: "blue_green_service"
+            - name: "test"
+              properties:
+                kind: "performance"
+            - name: "evaluation"
+            - name: "release"
+
+    - name: "production"
+      sequences:
+        - name: "artifact-delivery"
+          triggers:
+            - "staging.artifact-delivery.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                strategy: "blue_green"
+            - name: "release"
+
+        - name: "remediation"
+          tasks:
+            - name: "remediation"
+            - name: "evaluation"

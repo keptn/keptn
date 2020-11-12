@@ -73,4 +73,8 @@ export class KtbEventsListComponent implements OnInit {
     }
   }
 
+  isInvalidated(event) {
+    return !!this.events.find(e => e.isEvaluationInvalidation() && e.triggeredid == event.id);
+  }
+
 }

@@ -8,45 +8,7 @@ import (
 	"testing"
 )
 
-const allServicesInStageResponse = `{"nextPageKey": "0",
-    "services": [
-        {
-            "creationDate": "1589377890962439729",
-            "deployedImage": "docker.io/keptnexamples/carts:0.10.1",
-            "lastEventTypes": {
-               
-            },
-            "openApprovals": [
-				{
-					"eventId": "test-event-id-1",
-					"image": "docker.io/keptnexamples/carts",
-					"keptnContext": "test-event-context-1",
-					"tag": "0.10.1",
-					"time": "2020-05-13 11:59:18.131869605 +0000 UTC"
-				},
-				{
-					"eventId": "test-event-id-2",
-					"image": "docker.io/keptnexamples/carts",
-					"keptnContext": "test-event-context-2",
-					"tag": "0.10.2",
-					"time": "2020-05-13 11:59:18.131869605 +0000 UTC"
-				}
-			],
-            "serviceName": "carts"
-        },
-        {
-            "creationDate": "1589377893322882799",
-            "deployedImage": "mongo:latest",
-            "lastEventTypes": {
-            },
-            "openApprovals": [],
-            "serviceName": "carts-db"
-        }
-    ],
-    "totalCount": 2
-}`
-
-const eventsForID1Response = `{
+const eventsResponse = `{
     "events": [
         {
 		  "contenttype": "application/json",
@@ -68,16 +30,8 @@ const eventsForID1Response = `{
 		  "time": "2020-04-14T08:11:27.484Z",
 		  "type": "sh.keptn.event.approval.triggered",
 		  "shkeptncontext": "test-event-context-1"
-		}
-    ],
-	"nextPageKey": "0",
-    "pageSize": 1,
-    "totalCount": 1
-}`
-
-const eventsForID2Response = `{
-    "events": [
-        {
+		},
+		{
 		  "contenttype": "application/json",
 		  "data": {
 			"deploymentURILocal": "http://carts.sockshop-dev",
@@ -100,8 +54,8 @@ const eventsForID2Response = `{
 		}
     ],
 	"nextPageKey": "0",
-    "pageSize": 1,
-    "totalCount": 1
+    "pageSize": 2,
+    "totalCount": 2
 }`
 
 func Test_getApprovalTriggeredEvents(t *testing.T) {
@@ -111,20 +65,10 @@ func Test_getApprovalTriggeredEvents(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 
-			if strings.Contains(r.RequestURI, "/service") {
+			if strings.Contains(r.RequestURI, "/event") {
 				w.WriteHeader(200)
-				w.Write([]byte(allServicesInStageResponse))
+				w.Write([]byte(eventsResponse))
 				return
-			} else if strings.Contains(r.RequestURI, "/event") {
-				if strings.Contains(r.RequestURI, "test-event-id-1") {
-					w.WriteHeader(200)
-					w.Write([]byte(eventsForID1Response))
-					return
-				} else if strings.Contains(r.RequestURI, "test-event-id-2") {
-					w.WriteHeader(200)
-					w.Write([]byte(eventsForID2Response))
-					return
-				}
 			}
 
 			w.WriteHeader(500)

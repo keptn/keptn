@@ -47,7 +47,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 		var err error
 		// User wants to print current auth credentials
 		if *authParams.exportConfig {
-			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager().GetCreds()
+			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager().GetCreds(namespace)
 			if err != nil {
 				return err
 			}
@@ -101,7 +101,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			}
 
 			logging.PrintLog("Successfully authenticated against the Keptn cluster "+*authParams.endPoint, logging.InfoLevel)
-			return credentialmanager.NewCredentialManager().SetCreds(*url, *authParams.apiToken)
+			return credentialmanager.NewCredentialManager().SetCreds(*url, *authParams.apiToken, namespace)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")

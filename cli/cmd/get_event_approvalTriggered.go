@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"os"
 
@@ -53,7 +54,7 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
@@ -70,24 +71,24 @@ func getApprovalTriggeredEvents(approvalTriggered approvalTriggeredStruct) error
 			endPointErr)
 	}
 
-	serviceHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	scHandler := apiutils.NewAuthenticatedShipyardControllerHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 	if approvalTriggered.Service == nil || *approvalTriggered.Service == "" {
-		return getAllApprovalEventsInStage(approvalTriggered, serviceHandler, eventHandler)
+		return getAllApprovalEventsInStage(approvalTriggered, scHandler, eventHandler)
 	}
-	return getAllApprovalEventsInService(approvalTriggered, serviceHandler, eventHandler)
+	return getAllApprovalEventsInService(approvalTriggered, scHandler, eventHandler)
 }
 
-func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, serviceHandler *apiutils.ServiceHandler, eventHandler *apiutils.EventHandler) error {
-	svc, err := serviceHandler.GetService(*approvalTriggered.Project, *approvalTriggered.Stage, *approvalTriggered.Service)
-	if err != nil {
-		return err
-	}
-	allEvents := []*apimodels.KeptnContextExtendedCE{}
-	allEvents, err = retrieveApprovalEventsFromService(svc, *approvalTriggered.Project, *approvalTriggered.Stage, eventHandler, allEvents)
+func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
+		Stage:     *approvalTriggered.Stage,
+		Project:   *approvalTriggered.Project,
+		Service:   *approvalTriggered.Service,
+		EventType: keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName),
+	})
 	if err != nil {
 		return err
 	}
@@ -96,17 +97,14 @@ func getAllApprovalEventsInService(approvalTriggered approvalTriggeredStruct, se
 	return nil
 }
 
-func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, serviceHandler *apiutils.ServiceHandler, eventHandler *apiutils.EventHandler) error {
-	services, err := serviceHandler.GetAllServices(*approvalTriggered.Project, *approvalTriggered.Stage)
+func getAllApprovalEventsInStage(approvalTriggered approvalTriggeredStruct, scHandler *apiutils.ShipyardControllerHandler, eventHandler *apiutils.EventHandler) error {
+	allEvents, err := scHandler.GetOpenTriggeredEvents(apiutils.EventFilter{
+		Project:   *approvalTriggered.Project,
+		Stage:     *approvalTriggered.Stage,
+		EventType: keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName),
+	})
 	if err != nil {
 		return err
-	}
-	allEvents := []*apimodels.KeptnContextExtendedCE{}
-	for _, svc := range services {
-		allEvents, err = retrieveApprovalEventsFromService(svc, *approvalTriggered.Project, *approvalTriggered.Stage, eventHandler, allEvents)
-		if err != nil {
-			return err
-		}
 	}
 
 	printApprovalEvents(allEvents)

@@ -20,9 +20,6 @@ var ErrStageNotFound = errors.New("stage not found")
 // ErrServiceNotFound indicates that a service has not been found
 var ErrServiceNotFound = errors.New("service not found")
 
-// ErrOpenApprovalNotFound indicates that an open approval has not been found
-var ErrOpenApprovalNotFound = errors.New("open approval not found")
-
 // ErrOpenRemediationNotFound indeicates that no open remediation has been found
 var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
@@ -69,6 +66,26 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 	return mv.updateProject(existingProject)
 }
 
+// UpdateUpstreamInfo updates the Upstream Repository URL and git user of a project
+func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, user string) error {
+	existingProject, err := mv.GetProject(projectName)
+	if err != nil {
+		return err
+	}
+	if existingProject == nil {
+		return nil
+	}
+	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
+		existingProject.GitRemoteURI = uri
+		existingProject.GitUser = user
+		if err := mv.updateProject(existingProject); err != nil {
+			mv.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+			return err
+		}
+	}
+	return nil
+}
+
 // GetProjects returns all projects
 func (mv *projectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
 	return mv.ProjectRepo.GetProjects()
@@ -86,7 +103,7 @@ func (mv *projectsMaterializedView) DeleteProject(projectName string) error {
 
 // CreateStage creates a stage
 func (mv *projectsMaterializedView) CreateStage(project string, stage string) error {
-	fmt.Println("Adding stage " + stage + " to project " + project)
+	mv.Logger.Info("Adding stage " + stage + " to project " + project)
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
@@ -293,60 +310,6 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 		return err
 	}
 	return nil
-}
-
-// CreateOpenApproval creates an open approval
-func (mv *projectsMaterializedView) CreateOpenApproval(project, stage, service string, approval *models.Approval) error {
-	existingProject, err := mv.GetProject(project)
-	if err != nil {
-		mv.Logger.Error("Could create approval for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
-		return ErrProjectNotFound
-	}
-	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
-		if service.OpenApprovals == nil {
-			service.OpenApprovals = []*models.Approval{}
-		}
-		service.OpenApprovals = append(service.OpenApprovals, approval)
-		return nil
-	})
-	return mv.updateProject(existingProject)
-}
-
-// CloseOpenApproval closes an open approval
-func (mv *projectsMaterializedView) CloseOpenApproval(project, stage, service, approvalEventID string) error {
-	existingProject, err := mv.GetProject(project)
-	if err != nil {
-		mv.Logger.Error("Could not close approval for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
-		return ErrProjectNotFound
-	}
-	if approvalEventID == "" {
-		mv.Logger.Debug("No approvalEventID has been set.")
-		return errors.New("no approvalEventID has been set")
-	}
-
-	err = updateServiceInStage(existingProject, stage, service, func(service *models.ExpandedService) error {
-		foundApproval := false
-		updatedApprovals := []*models.Approval{}
-		for _, approval := range service.OpenApprovals {
-			if approval.EventID == approvalEventID {
-				foundApproval = true
-				continue
-			}
-			updatedApprovals = append(updatedApprovals, approval)
-		}
-
-		if !foundApproval {
-			return ErrOpenApprovalNotFound
-		}
-		service.OpenApprovals = updatedApprovals
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return mv.updateProject(existingProject)
 }
 
 // CreateRemediation creates a remediation action

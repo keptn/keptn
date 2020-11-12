@@ -24,6 +24,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/keptn/keptn/cli/pkg/common"
+
 	"helm.sh/helm/v3/pkg/chart"
 
 	"github.com/keptn/keptn/cli/pkg/platform"
@@ -45,6 +47,7 @@ type installCmdParams struct {
 	UseCase                  usecase
 	EndPointServiceTypeInput *string
 	EndPointServiceType      endpointServiceType
+	HideSensitiveData        *bool
 }
 
 var installParams installCmdParams
@@ -58,11 +61,13 @@ var installCmd = &cobra.Command{
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
 `,
-	Example: `keptn install                                                        # install on Kubernetes
+	Example: `keptn install                                                          # install on Kubernetes
 
-keptn install --platform=openshift --use-case=continuous-delivery    # install continuous delivery on Openshift
+keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on Openshift
 
-keptn install --platform=kubernetes --endpoint-service-type=NodePort # install on Kubernetes with gateway NodePort
+keptn install --platform=kubernetes --endpoint-service-type=NodePort   # install on Kubernetes with gateway NodePort
+
+keptn install --hide-sensitive-data                                    # install on Kubernetes and hides sensitive data like api-token and endpoint in post-installation output
 `,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -88,7 +93,6 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort # install o
 		}
 
 		chartRepoURL := getChartRepoURL(installParams.ChartRepoURL)
-
 		var err error
 		if keptnChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
 			return err
@@ -167,7 +171,7 @@ func init() {
 		"Specify a JSON file containing cluster information needed for the installation. This allows skipping user prompts to execute a *silent* Keptn installation.")
 
 	installParams.UseCaseInput = installCmd.Flags().StringP("use-case", "u", "",
-		"The use case to install Keptn for ["+ContinuousDelivery.String()+"]")
+		"Use --use-case=continuous-delivery to install the execution plane for continuous delivery. Without this flag, your Keptn is capable of the quality gate and automated remediations use-case.")
 
 	installParams.EndPointServiceTypeInput = installCmd.Flags().StringP("endpoint-service-type", "",
 		ClusterIP.String(), "Installation options for the endpoint-service type ["+ClusterIP.String()+","+
@@ -179,16 +183,15 @@ func init() {
 
 	installCmd.PersistentFlags().BoolVarP(&insecureSkipTLSVerify, "insecure-skip-tls-verify", "s",
 		false, "Skip tls verification for kubectl commands")
+	installParams.HideSensitiveData = installCmd.Flags().BoolP("hide-sensitive-data", "", false,
+		"Hide the sensitive data like api-tokens and endpoints in post-installation output.")
 
-	installParams.Namespace = installCmd.Flags().StringP("namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be installed in (default keptn).")
 }
 
 // Preconditions: 1. Already authenticated against the cluster.
 func doInstallation() error {
-	keptnNamespace := *installParams.Namespace
-	
-	timer := time.NewTimer(7 * time.Second)
+	keptnNamespace := namespace
+	showFallbackConnectMessage := true
 
 	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
@@ -227,26 +230,46 @@ func doInstallation() error {
 			"apiGatewayNginx": map[string]interface{}{
 				"type": installParams.EndPointServiceType.String(),
 			},
+			"bridge": map[string]interface{}{
+				"installationType": getInstallationTypeEnvVar(*installParams.UseCaseInput),
+			},
 		},
 	}
 
 	if err := helm.NewHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values);  err != nil {
-
-		<-timer.C
-	    logging.PrintLog("Timed out, waiting for error message")
-	
 		logging.PrintLog("Could not complete Keptn installation: "+err.Error(), logging.InfoLevel)
 		return err
 	}
 
 	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
+
+	// Hide sensitive information like api-token and endpoint in post-installation output
+	if *installParams.HideSensitiveData {
+		return nil
+	}
+
 	logging.PrintLog("---------------------------------------------------", logging.InfoLevel)
-	fmt.Println("* To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI (in a Linux shell):\n" +
-		" - kubectl -n " + keptnNamespace + " port-forward service/api-gateway-nginx 8080:80\n" +
-		" - keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n " + keptnNamespace + " -ojsonpath={.data.keptn-api-token} | base64 --decode)\n")
-	fmt.Println("* To expose Keptn on a public endpoint, please continue with the installation guidelines provided at:\n" +
-		" - https://keptn.sh/docs/" + keptnReleaseDocsURL + "/operate/install#install-keptn\n")
+
+	if installParams.EndPointServiceType.String() == "NodePort" || installParams.EndPointServiceType.String() == "LoadBalancer" {
+		endpoint, err := getAPIEndpoint(keptnNamespace, installParams.EndPointServiceType.String())
+		if err == nil {
+			showFallbackConnectMessage = false
+			common.PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL, endpoint)
+		}
+	}
+
+	if showFallbackConnectMessage {
+		common.PrintQuickAccessInstructions(keptnNamespace, keptnReleaseDocsURL, "http://localhost:8080/api")
+	}
+
 	return nil
+}
+
+func getInstallationTypeEnvVar(useCase string) string {
+	if useCase == ContinuousDelivery.String() {
+		return "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
+	}
+	return "QUALITY_GATES,CONTINUOUS_OPERATIONS"
 }
 
 func checkIstioInstallation() error {
@@ -265,4 +288,35 @@ func checkIstioInstallation() error {
 	}
 
 	return nil
+}
+
+func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
+	var endpoint, port string
+	switch serviceType {
+	case "NodePort":
+		// Fetching external and internal node IP
+		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "nodes", "-o", "jsonpath='{ $.items[0].status.addresses[?(@.type==\"ExternalIP\")].address }'"})
+		internal, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "nodes", "-o", "jsonpath='{ $.items[0].status.addresses[?(@.type==\"InternalIP\")].address }'"})
+		if err != nil {
+			return "", err
+		}
+		endpoint = strings.Trim(external, "'")
+		internal = strings.Trim(internal, "'")
+		// Fetching mapped port of the api-gateway-nginx nodeport service
+		port, _ = keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.spec.ports[?(@.name==\"http\")].nodePort}'"})
+		port = strings.Trim(port, "'")
+		if endpoint == "" {
+			endpoint = internal
+		}
+		return "http://" + endpoint + ":" + port + "/api", nil
+	case "LoadBalancer":
+		// Fetching the EXTERNAL-IP of the api-gateway-ngix loadbalancer service
+		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.status.loadBalancer.ingress[0].ip}'"})
+		if err != nil {
+			return "", err
+		}
+		endpoint = strings.Trim(external, "'")
+		return "http://" + endpoint + "/api", nil
+	}
+	return "", errors.New("Unknown service-type: " + serviceType)
 }

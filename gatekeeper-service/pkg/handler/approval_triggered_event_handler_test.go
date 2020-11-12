@@ -14,117 +14,121 @@ var approvalTriggeredTests = []struct {
 	name        string
 	image       string
 	shipyard    keptnevents.Shipyard
-	inputEvent  keptnevents.ApprovalTriggeredEventData
+	inputEvent  keptnv2.ApprovalTriggeredEventData
 	outputEvent []cloudevents.Event
 }{
 	{
 		name:       "pass-with-approval-strategy-auto-auto",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
-		inputEvent: getApprovalTriggeredTestData("pass"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalAutomatic, keptnv2.ApprovalAutomatic),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:       "pass-with-approval-strategy-auto-manual",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Manual),
-		inputEvent: getApprovalTriggeredTestData("pass"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:        "pass-with-approval-strategy-manual-auto",
 		image:       "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:    getShipyardWithApproval(keptnevents.Manual, keptnevents.Automatic),
-		inputEvent:  getApprovalTriggeredTestData("pass"),
+		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
 		outputEvent: []cloudevents.Event{},
 	},
 	{
 		name:        "pass-with-approval-strategy-manual-manual",
 		image:       "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:    getShipyardWithApproval(keptnevents.Manual, keptnevents.Manual),
-		inputEvent:  getApprovalTriggeredTestData("pass"),
+		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
 		outputEvent: []cloudevents.Event{},
 	},
 
 	{
 		name:       "warning-with-approval-strategy-auto-auto",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
-		inputEvent: getApprovalTriggeredTestData("warning"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalAutomatic, keptnv2.ApprovalAutomatic),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:        "warning-with-approval-strategy-auto-manual",
 		image:       "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:    getShipyardWithApproval(keptnevents.Automatic, keptnevents.Manual),
-		inputEvent:  getApprovalTriggeredTestData("warning"),
+		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
 		outputEvent: []cloudevents.Event{},
 	},
 	{
 		name:       "warning-with-approval-strategy-manual-auto",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Manual, keptnevents.Automatic),
-		inputEvent: getApprovalTriggeredTestData("warning"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("pass", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:        "warning-with-approval-strategy-manual-manual",
 		image:       "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:    getShipyardWithApproval(keptnevents.Manual, keptnevents.Manual),
-		inputEvent:  getApprovalTriggeredTestData("warning"),
+		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
 		outputEvent: []cloudevents.Event{},
 	},
 
 	{
 		name:       "fail-with-approval-strategy-auto-auto",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Automatic),
-		inputEvent: getApprovalTriggeredTestData("fail"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalAutomatic, keptnv2.ApprovalAutomatic),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:       "fail-with-approval-strategy-auto-manual",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Automatic, keptnevents.Manual),
-		inputEvent: getApprovalTriggeredTestData("fail"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:       "fail-with-approval-strategy-manual-auto",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Manual, keptnevents.Automatic),
-		inputEvent: getApprovalTriggeredTestData("fail"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 	{
 		name:       "fail-with-approval-strategy-manual-manual",
 		image:      "docker.io/keptnexamples/carts:0.11.1",
-		shipyard:   getShipyardWithApproval(keptnevents.Manual, keptnevents.Manual),
-		inputEvent: getApprovalTriggeredTestData("fail"),
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
 		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 			*getCloudEvent(getApprovalFinishedTestData("fail", "succeeded"),
-				keptnevents.ApprovalFinishedEventType, shkeptncontext, eventID),
+				keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
 		},
 	},
 }
@@ -136,10 +140,11 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 			ce.SetData(cloudevents.ApplicationJSON, tt.inputEvent)
 			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptn.KeptnOpts{})
 			e := NewApprovalTriggeredEventHandler(keptnHandler)
-			res := e.handleApprovalTriggeredEvent(tt.inputEvent, eventID, shkeptncontext, tt.shipyard)
+			res := e.handleApprovalTriggeredEvent(tt.inputEvent, eventID, shkeptncontext)
 			if len(res) != len(tt.outputEvent) {
 				t.Errorf("got %d output event, want %v output events for %s",
 					len(res), len(tt.outputEvent), tt.name)
+				return
 			}
 			if len(tt.outputEvent) > 0 {
 				for i, r := range res {

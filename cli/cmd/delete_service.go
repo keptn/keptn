@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -30,7 +28,7 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 	SilenceUsage: true,
 	Args:         cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -47,15 +45,16 @@ Furthermore, if Keptn is used for continuous delivery (i.e. services have been o
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
+			deleteResp, err := apiHandler.DeleteService(*deleteServiceParams.Project, service)
 			if err != nil {
-				fmt.Println("Delete project was unsuccessful")
+				logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
 			}
 
 			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			if deleteResp != nil {
+				logging.PrintLog("Service deleted successfully", logging.InfoLevel)
+				logging.PrintLog(deleteResp.Message, logging.InfoLevel)
 			}
 
 			return nil

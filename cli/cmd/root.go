@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/keptn/keptn/cli/pkg/version"
-
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -22,6 +20,7 @@ var SuppressWSCommunication bool
 
 var insecureSkipTLSVerify bool
 var kubectlOptions string
+var namespace string
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
@@ -44,8 +43,6 @@ func Execute() {
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
 
-	runDailyVersionCheck()
-
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel
 
@@ -60,6 +57,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
 		"Disables WebSocket communication to suppress info messages from services running inside Keptn")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
+		"Specify the namespace where Keptn should be installed, used and uninstalled in (default keptn).")
 	cobra.OnInitialize(initConfig)
 }
 
@@ -106,31 +105,5 @@ type options []string
 func (s *options) appendIfNotEmpty(newOption string) {
 	if newOption != "" {
 		*s = append(*s, newOption)
-	}
-}
-
-func runDailyVersionCheck() {
-	var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
-
-	vChecker := version.NewVersionChecker()
-	cliChecked, cliMsgPrinted = vChecker.CheckCLIVersion(Version, true)
-
-	keptnVersion, err := getKeptnServerVersion()
-	if err != nil {
-		logging.PrintLog(err.Error(), logging.InfoLevel)
-	} else {
-		kvChecker := version.NewKeptnVersionChecker()
-		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, keptnVersion, true)
-	}
-
-	if cliMsgPrinted || keptnMsgPrinted {
-		if len(os.Args) > 0 {
-			fmt.Printf(disableVersionCheckMsg+"\n", os.Args[0])
-		} else {
-			fmt.Printf(disableVersionCheckMsg+"\n", "keptn")
-		}
-	}
-	if cliChecked || keptnChecked {
-		updateLastVersionCheck()
 	}
 }

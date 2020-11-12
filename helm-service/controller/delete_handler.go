@@ -2,10 +2,9 @@ package controller
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/types"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-
-	configutils "github.com/keptn/go-utils/pkg/api/utils"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
@@ -13,12 +12,14 @@ import (
 // DeleteHandler handles sh.keptn.internal.event.service.delete events
 type DeleteHandler struct {
 	Handler
+	stagesHandler types.IStagesHandler
 }
 
 // NewDeleteHandler creates a new DeleteHandler
-func NewDeleteHandler(keptnHandler *keptnv2.Keptn, configServiceURL string) *DeleteHandler {
+func NewDeleteHandler(keptnHandler *keptnv2.Keptn, stagesHandler types.IStagesHandler, configServiceURL string) *DeleteHandler {
 	return &DeleteHandler{
-		Handler: NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:       NewHandlerBase(keptnHandler, configServiceURL),
+		stagesHandler: stagesHandler,
 	}
 }
 
@@ -39,15 +40,14 @@ func (h *DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting uninstalling releases for service %s of project %s",
 		serviceDeleteEvent.Service, serviceDeleteEvent.Project))
 
-	stageHandler := configutils.NewStageHandler(h.getConfigServiceURL())
-	stages, err := stageHandler.GetAllStages(serviceDeleteEvent.Project)
+	stages, err := h.stagesHandler.GetAllStages(serviceDeleteEvent.Project)
 	if err != nil {
 		err = fmt.Errorf("error when getting all stages: %v", err)
 		h.handleError(ce.ID(), err, keptnv2.ServiceDeleteTaskName, h.getFinishedEventDataForError(serviceDeleteEvent.EventData, err))
 		return
 	}
 
-	allReleasesSuccessfullyUnistalled := true
+	allReleasesSuccessfullyUninstalled := true
 	for _, stage := range stages {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Uninstalling Helm releases for service %s in "+
 			"stage %s and project %s", serviceDeleteEvent.Service, stage.StageName, serviceDeleteEvent.Project))
@@ -56,15 +56,15 @@ func (h *DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptn
 		releaseName := namespace + "-" + serviceDeleteEvent.Service
 		if err := h.getHelmExecutor().UninstallRelease(releaseName, namespace); err != nil {
 			h.getKeptnHandler().Logger.Error(err.Error())
-			allReleasesSuccessfullyUnistalled = false
+			allReleasesSuccessfullyUninstalled = false
 		}
 		if err := h.getHelmExecutor().UninstallRelease(releaseName+"-generated", namespace); err != nil {
 			h.getKeptnHandler().Logger.Error(err.Error())
-			allReleasesSuccessfullyUnistalled = false
+			allReleasesSuccessfullyUninstalled = false
 		}
 	}
 
-	if allReleasesSuccessfullyUnistalled {
+	if allReleasesSuccessfullyUninstalled {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("All Helm releases for service %s in project %s successfully uninstalled",
 			serviceDeleteEvent.Service, serviceDeleteEvent.Project))
 	}

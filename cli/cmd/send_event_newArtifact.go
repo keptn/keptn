@@ -73,7 +73,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

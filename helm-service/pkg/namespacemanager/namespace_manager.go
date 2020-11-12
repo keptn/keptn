@@ -10,10 +10,18 @@ import (
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
+// INamespaceManager defines operations for initializing and configuring namespaces
+type INamespaceManager interface {
+	InitNamespaces(project string, stages []string) error
+	InjectIstio(project string, stage string) error
+}
+
+// NamespaceManager is an implementation of INamespaceManager
 type NamespaceManager struct {
 	logger keptn.LoggerInterface
 }
 
+// NewNamespaceManager creates a new instance of a NamespaceManager
 func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 	return &NamespaceManager{logger: logger}
 }

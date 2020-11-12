@@ -12,13 +12,13 @@ func init() {
 }
 
 func TestSetAndGetCreds(t *testing.T) {
-
+	MockKubeConfigCheck = true
 	cm := NewCredentialManager()
-	if err := cm.SetCreds(testEndPoint, testAPIToken); err != nil {
+	if err := cm.SetCreds(testEndPoint, testAPIToken, testNamespace); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := cm.GetCreds()
+	endPoint, apiToken, err := cm.GetCreds(testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,17 +28,17 @@ func TestSetAndGetCreds(t *testing.T) {
 }
 
 func TestOverwriteCreds(t *testing.T) {
-
+	MockKubeConfigCheck = true
 	cm := NewCredentialManager()
-	if err := cm.SetCreds(testEndPoint, "old-secret"); err != nil {
+	if err := cm.SetCreds(testEndPoint, "old-secret", testNamespace); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := cm.SetCreds(testEndPoint, testAPIToken); err != nil {
+	if err := cm.SetCreds(testEndPoint, testAPIToken, testNamespace); err != nil {
 		t.Fatal(err)
 	}
 
-	endPoint, apiToken, err := cm.GetCreds()
+	endPoint, apiToken, err := cm.GetCreds(testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}

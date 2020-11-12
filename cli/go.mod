@@ -10,19 +10,20 @@ require (
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153 // indirect
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-test/deep v1.0.5
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.3-0.20200929122933-df294e7a41c5
+	github.com/keptn/go-utils v0.6.3-0.20201104145324-b4fabd54ef88
 	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.1.2
+	github.com/mitchellh/mapstructure v1.3.3
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/spf13/cobra v1.0.0

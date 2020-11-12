@@ -1,155 +1,336 @@
 package controller
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/golang/mock/gomock"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"net/http"
-	"net/http/httptest"
-	"reflect"
-	"strings"
+	"github.com/keptn/keptn/helm-service/mocks"
+	"github.com/stretchr/testify/assert"
 	"testing"
-
-	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/helm-service/pkg/helm"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
-func mockChartResourceEndpoints() *httptest.Server {
+func TestCreateActionHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	return httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ce := cloudevents.NewEvent()
+	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-			if r.Method == http.MethodGet &&
-				strings.Contains(r.RequestURI, "/v1/project/sockshop/stage/production/service/carts/resource/helm%2Fcarts-generated.tgz") {
-				defer r.Body.Close()
-
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-
-				ch := helm.GetTestGeneratedChart()
-				chPackage, _ := keptnutils.PackageChart(&ch)
-
-				resp := models.Resource{
-					ResourceContent: base64.StdEncoding.EncodeToString(chPackage),
-					ResourceURI:     stringp("helm/carts-generated.tgz"),
-				}
-				data, _ := json.Marshal(resp)
-				w.Write(data)
-			} else if r.Method == http.MethodPost &&
-				strings.Contains(r.RequestURI, "v1/project/sockshop/stage/production/service/carts/resource") {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(200)
-
-				resp := models.Version{
-					Version: "123-456",
-				}
-				data, _ := json.Marshal(resp)
-				w.Write(data)
-			}
-		}),
-	)
+	instance := NewActionTriggeredHandler(keptn, mocks.NewMockIConfigurationChanger(ctrl), "")
+	assert.NotNil(t, instance)
 }
 
-func TestHandleScaling(t *testing.T) {
-	ts := mockChartResourceEndpoints()
-	defer ts.Close()
+func TestHandleActionTriggeredEvent(t *testing.T) {
 
-	inData := keptnv2.EventData{
-		Project: "sockshop",
-		Stage:   "production",
-		Service: "carts",
-		Labels:  nil,
-		Status:  "",
-		Result:  "",
-		Message: "",
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
+
+	instance := ActionTriggeredHandler{
+		Handler:       mockedBaseHandler,
+		configChanger: mockedConfigurationChanger,
 	}
 
-	tests := []struct {
-		name                 string
-		actionTriggeredEvent keptnv2.ActionTriggeredEventData
-		wanted               keptnv2.ActionFinishedEventData
-	}{
-		{
-			name: "validAction",
-			actionTriggeredEvent: keptnv2.ActionTriggeredEventData{
-				EventData: inData,
-				Action: keptnv2.ActionInfo{
-					Name:        "my-scaling-action",
-					Action:      "scaling",
-					Description: "this is a unit test",
-					Value:       "1",
-				},
-				Problem: keptnv2.ProblemDetails{},
-			},
-			wanted: keptnv2.ActionFinishedEventData{
-				EventData: keptnv2.EventData{
-					Project: "sockshop",
-					Stage:   "production",
-					Service: "carts",
-					Labels:  nil,
-					Status:  keptnv2.StatusSucceeded,
-					Result:  keptnv2.ResultPass,
-					Message: "Successfully executed scaling action",
-				},
-				Action: keptnv2.ActionData{
-					GitCommit: "123-456",
-				},
-			},
+	actionTriggeredEventData := keptnv2.ActionTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
 		},
-		{
-			name: "invalidAction",
-			actionTriggeredEvent: keptnv2.ActionTriggeredEventData{
-				EventData: inData,
-				Action: keptnv2.ActionInfo{
-					Name:        "my-scaling-action",
-					Action:      "scaling",
-					Description: "this is a unit test",
-					Value:       "byOne",
-				},
-				Problem: keptnv2.ProblemDetails{},
-			},
-			wanted: keptnv2.ActionFinishedEventData{
-				EventData: keptnv2.EventData{
-					Project: "sockshop",
-					Stage:   "production",
-					Service: "carts",
-					Labels:  nil,
-					Status:  keptnv2.StatusSucceeded,
-					Result:  keptnv2.ResultFailed,
-					Message: "could not parse action.value to int",
-				},
-				Action: keptnv2.ActionData{
-					GitCommit: "",
-				},
-			},
+		Action: keptnv2.ActionInfo{
+			Name:        "my-scaling-action",
+			Action:      "scaling",
+			Description: "this is a unit test",
+			Value:       "1",
+		},
+		Problem: keptnv2.ProblemDetails{},
+	}
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
+
+	expectedActionStartedEvent := cloudevents.NewEvent()
+	expectedActionStartedEvent.SetType("sh.keptn.event.action.started")
+	expectedActionStartedEvent.SetSource("helm-service")
+	expectedActionStartedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedActionStartedEvent.SetExtension("triggeredid", "")
+	expectedActionStartedEvent.SetExtension("shkeptncontext", "")
+	expectedActionStartedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.ActionStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Status:  keptnv2.StatusSucceeded,
+		},
+	})
+
+	expectedActionFinishedEvent := cloudevents.NewEvent()
+	expectedActionFinishedEvent.SetType("sh.keptn.event.action.finished")
+	expectedActionFinishedEvent.SetSource("helm-service")
+	expectedActionFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedActionFinishedEvent.SetExtension("triggeredid", "")
+	expectedActionFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedActionFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.ActionFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+			Message: "Successfully executed scaling action",
+		},
+		Action: keptnv2.ActionData{
+			GitCommit: "123-456",
+		},
+	})
+
+	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
+
+	instance.HandleEvent(ce, nilCloser)
+	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
+	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
+
+}
+
+func TestHandleEvent_InvalidData(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
+
+	instance := ActionTriggeredHandler{
+		Handler:       mockedBaseHandler,
+		configChanger: mockedConfigurationChanger,
+	}
+
+	actionTriggeredEventData := keptnv2.ActionTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+		},
+		Action: keptnv2.ActionInfo{
+			Name:        "my-scaling-action",
+			Action:      "scaling",
+			Description: "this is a unit test",
+			Value:       "one", // <<-- ohoh
+		},
+		Problem: keptnv2.ProblemDetails{},
+	}
+
+	expectedActionStartedEvent := cloudevents.NewEvent()
+	expectedActionStartedEvent.SetType("sh.keptn.event.action.started")
+	expectedActionStartedEvent.SetSource("helm-service")
+	expectedActionStartedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedActionStartedEvent.SetExtension("triggeredid", "")
+	expectedActionStartedEvent.SetExtension("shkeptncontext", "")
+	expectedActionStartedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.ActionStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Status:  keptnv2.StatusSucceeded,
+		},
+	})
+
+	expectedActionFinishedEvent := cloudevents.NewEvent()
+	expectedActionFinishedEvent.SetType("sh.keptn.event.action.finished")
+	expectedActionFinishedEvent.SetSource("helm-service")
+	expectedActionFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedActionFinishedEvent.SetExtension("triggeredid", "")
+	expectedActionFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedActionFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.ActionFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultFailed,
+			Message: "could not parse action.value to int",
+		},
+		Action: keptnv2.ActionData{
+			GitCommit: "",
+		},
+	})
+
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
+
+	instance.HandleEvent(ce, nilCloser)
+
+	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
+	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
+
+}
+
+func TestHandleUnparsableEvent(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
+
+	instance := ActionTriggeredHandler{
+		Handler:       mockedBaseHandler,
+		configChanger: mockedConfigurationChanger,
+	}
+
+	expectedFinishEventData := keptnv2.ActionFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status:  "errored",
+			Result:  "fail",
+			Message: "failed to unmarshal data: [json] found bytes \"\"WEIRD_JSON_CONTENT\"\", but failed to unmarshal: json: cannot unmarshal string into Go value of type v0_2_0.ActionTriggeredEventData",
+		},
+		Action: keptnv2.ActionData{
+			GitCommit: "",
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	instance.HandleEvent(createUnparsableEvent(), nilCloser)
+	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedFinishEventData, mockedBaseHandler.handledErrorEvents[0])
+}
 
-			ce := cloudevents.NewEvent()
-			ce.SetData(cloudevents.ApplicationJSON, tt.actionTriggeredEvent)
+func TestHandleEvent_SendStartEventFails(t *testing.T) {
 
-			keptnHandler, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-			mockHandler := &HandlerBase{
-				keptnHandler:     keptnHandler,
-				helmExecutor:     helm.NewHelmMockExecutor(),
-				configServiceURL: ts.URL,
+	// Handle started event will fail
+	opt := func(o *MockedHandlerOptions) {
+		o.SendEventBehavior = func(eventType string) bool {
+			if eventType == "sh.keptn.event.action.started" {
+				return false
 			}
-
-			a := ActionTriggeredHandler{
-				Handler:mockHandler,
-			}
-
-			resp := a.handleScaling(tt.actionTriggeredEvent)
-			if !reflect.DeepEqual(resp, tt.wanted) {
-				t.Error("unexpected action.finished response")
-			}
-		})
+			return true
+		}
 	}
+
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "", opt) //NewMockHandler(ctrl)
+	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
+
+	instance := ActionTriggeredHandler{
+		Handler:       mockedBaseHandler,
+		configChanger: mockedConfigurationChanger,
+	}
+
+	actionTriggeredEventData := keptnv2.ActionTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+		},
+		Action: keptnv2.ActionInfo{
+			Name:        "my-scaling-action",
+			Action:      "scaling",
+			Description: "this is a unit test",
+			Value:       "1",
+		},
+		Problem: keptnv2.ProblemDetails{},
+	}
+
+	expectedFinishEvent := keptnv2.ActionFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Status:  "errored",
+			Result:  "fail",
+			Message: "Failed at sending event of type sh.keptn.event.action.started",
+		},
+		Action: keptnv2.ActionData{},
+	}
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
+
+	instance.HandleEvent(ce, nilCloser)
+	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedFinishEvent, mockedBaseHandler.handledErrorEvents[0])
+}
+
+func TestHandleEvent_SendFinishEventFails(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Handle finished event will fail
+	opt := func(o *MockedHandlerOptions) {
+		o.SendEventBehavior = func(eventType string) bool {
+			if eventType == "sh.keptn.event.action.finished" {
+				return false
+			}
+			return true
+		}
+	}
+
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "", opt) //NewMockHandler(ctrl)
+	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
+	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
+
+	instance := ActionTriggeredHandler{
+		Handler:       mockedBaseHandler,
+		configChanger: mockedConfigurationChanger,
+	}
+
+	actionTriggeredEventData := keptnv2.ActionTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+		},
+		Action: keptnv2.ActionInfo{
+			Name:        "my-scaling-action",
+			Action:      "scaling",
+			Description: "this is a unit test",
+			Value:       "1",
+		},
+		Problem: keptnv2.ProblemDetails{},
+	}
+
+	expectedFinishEvent := keptnv2.ActionFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "sockshop",
+			Stage:   "production",
+			Service: "carts",
+			Status:  "errored",
+			Result:  "fail",
+			Message: "Failed at sending event of type sh.keptn.event.action.finished",
+		},
+		Action: keptnv2.ActionData{},
+	}
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
+
+	instance.HandleEvent(ce, nilCloser)
+	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
+	assert.Equal(t, expectedFinishEvent, mockedBaseHandler.handledErrorEvents[0])
+}
+
+func TestHandleEvent_WithMissingAction(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	ctrl.Finish()
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+	mockedConfigurationChanger := mocks.NewMockIConfigurationChanger(ctrl)
+
+	instance := ActionTriggeredHandler{
+		Handler:       mockedBaseHandler,
+		configChanger: mockedConfigurationChanger,
+	}
+
+	actionTriggeredEventData := keptnv2.ActionTriggeredEventData{
+		EventData: keptnv2.EventData{},
+		Action: keptnv2.ActionInfo{
+			Action: "", // <<-- ohoh
+		},
+		Problem: keptnv2.ProblemDetails{},
+	}
+
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
+
+	instance.HandleEvent(ce, nilCloser)
+
 }

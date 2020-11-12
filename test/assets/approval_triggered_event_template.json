@@ -1,0 +1,12 @@
+{
+  "type": "sh.keptn.event.$STAGE.approval.triggered",
+  "specversion": "1.0",
+  "source": "travis-ci",
+  "contenttype": "application/json",
+  "data": {
+    "project": "$PROJECT",
+    "stage": "$STAGE",
+    "service": "$SERVICE",
+    "result": "$RESULT"
+  }
+}

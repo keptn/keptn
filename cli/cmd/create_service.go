@@ -6,8 +6,6 @@ import (
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
-
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -32,7 +30,7 @@ var crServiceCmd = &cobra.Command{
 	Example:      `keptn create service carts --project=sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager().GetCreds()
+		_, _, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -50,7 +48,7 @@ var crServiceCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -69,16 +67,13 @@ var crServiceCmd = &cobra.Command{
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			eventContext, err := apiHandler.CreateService(*createServiceParams.Project, service)
+			_, err := apiHandler.CreateService(*createServiceParams.Project, service)
 			if err != nil {
-				fmt.Println("Create service was unsuccessful")
+				logging.PrintLog("Create service was unsuccessful", logging.InfoLevel)
 				return fmt.Errorf("Create service was unsuccessful. %s", *err.Message)
 			}
 
-			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-			}
+			logging.PrintLog("Service created successfully", logging.InfoLevel)
 
 			return nil
 		}

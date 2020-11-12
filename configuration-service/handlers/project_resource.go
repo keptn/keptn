@@ -25,10 +25,15 @@ func GetProjectProjectNameResourceHandlerFunc(params project_resource.GetProject
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, *params.DisableUpstreamSync)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
@@ -50,11 +55,17 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	logger.Debug("Updating resource(s) in: " + projectConfigPath)
-	logger.Debug("Checking out master branch")
+	logger.Debug("Checking out default branch")
 
-	err := common.CheckoutBranch(params.ProjectName, "master", false)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return project_resource.NewPutProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName))
 		logger.Error(err.Error())
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 	}
@@ -77,14 +88,14 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resources", true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
+		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s", defaultBranch, params.ProjectName))
 		logger.Error(err.Error())
 		return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully updated resources")
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	metadata.Branch = defaultBranch
 
 	return project_resource.NewPutProjectProjectNameResourceCreated().WithPayload(metadata)
 }
@@ -101,11 +112,17 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
-	logger.Debug("Checking out master branch")
+	logger.Debug("Checking out default branch")
 
-	err := common.CheckoutBranch(params.ProjectName, "master", false)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return project_resource.NewPostProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", defaultBranch, params.ProjectName))
 		logger.Error(err.Error())
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 	}
@@ -119,15 +136,13 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Added resources", true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
-
+		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewPostProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully added resources")
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	metadata.Branch = defaultBranch
 
 	return project_resource.NewPostProjectProjectNameResourceCreated().WithPayload(metadata)
 }
@@ -142,11 +157,15 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	logger.Debug("Checking out master branch")
-	err := common.CheckoutBranch(params.ProjectName, "master", *params.DisableUpstreamSync)
+	logger.Debug("Checking out default branch")
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could check out master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return project_resource.NewGetProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, *params.DisableUpstreamSync)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
@@ -170,7 +189,7 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	}
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	metadata.Branch = defaultBranch
 	resource.Metadata = metadata
 
 	return project_resource.NewGetProjectProjectNameResourceResourceURIOK().WithPayload(resource)
@@ -186,14 +205,19 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return project_resource.NewPutProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
 	logger.Debug("Creating new resource(s) in: " + projectConfigPath)
-	logger.Debug("Checking out branch: master")
+	logger.Debug("Checking out branch: " + defaultBranch)
 
-	err := common.CheckoutBranch(params.ProjectName, "master", false)
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
 	}
 
@@ -203,14 +227,14 @@ func PutProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
+		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		logger.Error(err.Error())
 		return project_resource.NewPutProjectProjectNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully updated resource: " + params.ResourceURI)
 
 	metadata := common.GetResourceMetadata(params.ProjectName)
-	metadata.Branch = "master"
+	metadata.Branch = defaultBranch
 
 	return project_resource.NewPutProjectProjectNameResourceResourceURICreated().WithPayload(metadata)
 
@@ -226,10 +250,15 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
-	err := common.CheckoutBranch(params.ProjectName, "master", false)
+	defaultBranch, err := common.GetDefaultBranch(params.ProjectName)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not check out master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not determine default branch of project %s: %s", params.ProjectName, err.Error()))
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
+	err = common.CheckoutBranch(params.ProjectName, defaultBranch, false)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
@@ -245,8 +274,7 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 	logger.Debug("Staging Changes")
 	err = common.StageAndCommitAll(params.ProjectName, "Deleted resources", true)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Could not commit to master branch of project %s", params.ProjectName))
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("Could not commit to %s branch of project %s: %s", defaultBranch, params.ProjectName, err.Error()))
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not commit changes")})
 	}
 	logger.Debug("Successfully deleted resources")

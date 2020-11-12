@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"keptn/gatekeeper-service/pkg/handler"
 	"log"
 	"os"
@@ -67,29 +65,15 @@ func switchEvent(event cloudevents.Event) {
 		return
 	}
 
-	// TODO: Retrieving the shipyard file will become obsolete because required properties will be located in the event
-
-	shipyard := &keptn.Shipyard{}
-	shipyardResource, err := keptnHandlerV2.ResourceHandler.GetProjectResource(keptnHandlerV2.KeptnBase.Event.GetProject(), "shipyard.yaml")
-	if err != nil {
-		keptnHandlerV2.Logger.Error("failed to retrieve shipyard: " + err.Error())
-		return
-	}
-	err = yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard)
-	if err != nil {
-		keptnHandlerV2.Logger.Error("failed to decode shipyard: " + err.Error())
-		return
-	}
-
-	handlers := []handler.Handler{handler.NewEvaluationDoneEventHandler(keptnHandlerV2),
+	handlers := []handler.Handler{
 		handler.NewApprovalTriggeredEventHandler(keptnHandlerV2),
-		handler.NewApprovalFinishedEventHandler(keptnHandlerV2)}
+	}
 
 	unhandled := true
 	for _, handler := range handlers {
 		if handler.IsTypeHandled(event) {
 			unhandled = false
-			handler.Handle(event, keptnHandlerV2, shipyard)
+			handler.Handle(event, keptnHandlerV2)
 		}
 	}
 

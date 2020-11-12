@@ -50,7 +50,7 @@ keptn add-resource --project=rockshop --stage=production --service=shop --resour
 	SilenceUsage: true,
 	Args:         cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds()
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
