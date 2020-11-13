@@ -54,7 +54,7 @@ func TestActionFinishedEventHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.StartEvaluationEventType),
+					Type:           stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
 				},
 			},
 		},
