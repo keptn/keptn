@@ -43,7 +43,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	eh.WaitFunction()
 	eh.KeptnHandler.Logger.Info("Wait time is over. Sending start-evaluation event.")
 
-	err = eh.Remediation.sendStartEvaluationEvent()
+	err = eh.Remediation.sendEvaluationTriggeredEvent()
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not send start-evaluation event: " + err.Error())
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, "could not send start-evaluation event")

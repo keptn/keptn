@@ -315,30 +315,43 @@ func getRemediationsByContext(keptnContext string, keptnBase keptncommon.EventPr
 
 }
 
-func (r *Remediation) sendStartEvaluationEvent() error {
+func (r *Remediation) sendEvaluationTriggeredEvent() error {
 	source, _ := url.Parse("remediation-service")
 
 	waitTime := getWaitTime()
-	startEvaluationEventData := &keptn.StartEvaluationEventData{
-		Project:      r.Keptn.Event.GetProject(),
-		Service:      r.Keptn.Event.GetService(),
-		Stage:        r.Keptn.Event.GetStage(),
-		Labels:       r.Keptn.Event.GetLabels(),
-		Start:        time.Now().Add(-waitTime).Format(time.RFC3339),
-		End:          time.Now().Format(time.RFC3339),
-		TestStrategy: "real-user",
+	evaluationTriggeredEventData := &keptnv2.EvaluationTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: r.Keptn.Event.GetProject(),
+			Stage:   r.Keptn.Event.GetStage(),
+			Service: r.Keptn.Event.GetService(),
+			Labels:  r.Keptn.Event.GetLabels(),
+		},
+		Test: struct {
+			Start string `json:"start"`
+			End   string `json:"end"`
+		}{
+			Start: time.Now().Add(-waitTime).Format(time.RFC3339),
+			End:   time.Now().Format(time.RFC3339),
+		},
+		Evaluation: struct {
+			Start string `json:"start"`
+			End   string `json:"end"`
+		}{
+			Start: time.Now().Add(-waitTime).Format(time.RFC3339),
+			End:   time.Now().Format(time.RFC3339),
+		},
 	}
 
 	event := cloudevents.NewEvent()
-	event.SetType(keptn.StartEvaluationEventType)
+	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", r.Keptn.KeptnContext)
-	event.SetData(cloudevents.ApplicationJSON, startEvaluationEventData)
+	event.SetData(cloudevents.ApplicationJSON, evaluationTriggeredEventData)
 
 	err := r.Keptn.SendCloudEvent(event)
 	if err != nil {
-		r.Keptn.Logger.Error("Could not send astart-evaluation event: " + err.Error())
+		r.Keptn.Logger.Error("Could not send evaluation.triggered event: " + err.Error())
 		return err
 	}
 	return nil
