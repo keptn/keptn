@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -37,6 +38,11 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		return err
 	}
 
+	evaluationStartTimestamp, evaluationEndTimestamp, err := getEvaluationTimestamps(e)
+	if err != nil {
+		return eh.sendEvaluationFinishedWithErrorEvent(keptnContext, evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
+	}
+
 	// get SLO file
 	indicators := []string{}
 	var filters = []*keptnevents.SLIFilter{}
@@ -69,27 +75,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			message = "error retrieving SLO file: project " + e.Project + " not found"
 			eh.KeptnHandler.Logger.Error(message)
 		}
-		evaluationDetails := keptnv2.EvaluationDetails{
-			IndicatorResults: nil,
-			TimeStart:        e.Test.Start,
-			TimeEnd:          e.Test.End,
-			Result:           message,
-		}
-
-		evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
-			EventData: keptnv2.EventData{
-				Project: e.Project,
-				Stage:   e.Stage,
-				Service: e.Service,
-				Labels:  e.Labels,
-				Status:  keptnv2.StatusErrored,
-				Result:  keptnv2.ResultFailed,
-				Message: message,
-			},
-			Evaluation: evaluationDetails,
-		}
-
-		return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+		return eh.sendEvaluationFinishedWithErrorEvent(keptnContext, evaluationStartTimestamp, evaluationEndTimestamp, e, message)
 	} else if err != nil && err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
@@ -103,8 +89,8 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
 			evaluationDetails := keptnv2.EvaluationDetails{
 				IndicatorResults: nil,
-				TimeStart:        e.Test.Start,
-				TimeEnd:          e.Test.End,
+				TimeStart:        evaluationStartTimestamp,
+				TimeEnd:          evaluationEndTimestamp,
 				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
 			}
 
@@ -126,8 +112,41 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, e.Test.Start, e.Test.End, filters, e.Labels)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters, e.Labels)
 	return nil
+}
+
+func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(keptnContext, start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
+	evaluationDetails := keptnv2.EvaluationDetails{
+		IndicatorResults: nil,
+		TimeStart:        start,
+		TimeEnd:          end,
+		Result:           message,
+	}
+
+	evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: e.Project,
+			Stage:   e.Stage,
+			Service: e.Service,
+			Labels:  e.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: message,
+		},
+		Evaluation: evaluationDetails,
+	}
+
+	return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+}
+
+func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, string, error) {
+	if e.Evaluation.Start != "" && e.Evaluation.End != "" {
+		return e.Evaluation.Start, e.Evaluation.End, nil
+	} else if e.Test.Start != "" && e.Test.End != "" {
+		return e.Test.Start, e.Test.End, nil
+	}
+	return "", "", errors.New("evaluation.triggered event does not contain evaluation timeframe")
 }
 
 func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnevents.SLIFilter, labels map[string]string) error {
