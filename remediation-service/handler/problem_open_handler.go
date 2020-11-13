@@ -31,7 +31,8 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	// check if remediation should be performed
 	autoRemediate, err := eh.isRemediationEnabled()
 	if err != nil {
-		eh.KeptnHandler.Logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
+		eh.KeptnHandler.Logger.Error(err.Error())
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
 
@@ -102,7 +103,7 @@ func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
 
 	remediationFile, err := eh.Remediation.getRemediationFile()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("Failed to check if remediation is enabled: %s", err.Error())
 	} else if remediationFile == nil {
 		return false, nil
 	}
