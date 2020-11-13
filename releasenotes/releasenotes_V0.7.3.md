@@ -8,7 +8,7 @@ Keptn 0.7.3 provides a new feature that allows invalidating a quality gate evalu
 
 ## Keptn Specification
 
-Implemented **Keptn spec** version: [0.1.7](https://github.com/keptn/spec/tree/0.1.6)
+Implemented **Keptn spec** version: [0.1.7](https://github.com/keptn/spec/tree/0.1.7)
 
 - Added new event of type: `sh.keptn.events.evaluation.invalidated` - this event marks a quality gate evaluation result as invalid [#47](https://github.com/keptn/spec/issues/47) 
 
