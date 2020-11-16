@@ -30,7 +30,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Error("Could not parse incoming action.finished event: " + err.Error())
 		return err
 	}
-	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v", actionFinishedEvent.Action.Result))
+	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v, status = %v", actionFinishedEvent.Action.Result, actionFinishedEvent.Action.Status))
 
 	if eh.WaitFunction == nil {
 		eh.WaitFunction = func() {
