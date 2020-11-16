@@ -39,7 +39,10 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	if autoRemediate {
 		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
 	} else {
-		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
+		msg := fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage)
+		eh.KeptnHandler.Logger.Info(msg)
+		eh.KeptnHandler.Logger.Error(err.Error())
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil
 	}
 
@@ -100,7 +103,6 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 }
 
 func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
-
 	remediationFile, err := eh.Remediation.getRemediationFile()
 	if err != nil {
 		if err == errNoRemediationFileAvailable {
