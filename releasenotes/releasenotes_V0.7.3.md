@@ -18,7 +18,7 @@ Implemented **Keptn spec** version: [0.1.7](https://github.com/keptn/spec/tree/0
 <p>
 
 - Added installation type as environment variable to Bridge [#2606](https://github.com/keptn/keptn/issues/2606)
-- Update NGNIX version to 1.19.4-alpha [#2651](https://github.com/keptn/keptn/issues/2615)
+- Update NGNIX version to 1.19.4-alpine [#2651](https://github.com/keptn/keptn/issues/2651)
 
 </p>
 </details>
