@@ -732,6 +732,8 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	eventType := eventScope.Stage + "." + taskSequenceName
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
+	event.SetTime(time.Now())
 	event.SetType(keptnv2.GetTriggeredEventType(eventType))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
@@ -741,6 +743,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	} else {
 		event.SetData(cloudevents.ApplicationJSON, eventPayload)
 	}
+
 	toEvent, err := models.ConvertToEvent(event)
 	if err != nil {
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
