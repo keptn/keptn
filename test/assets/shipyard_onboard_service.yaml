@@ -10,11 +10,17 @@ spec:
           tasks:
             - name: "deployment"
               properties:
-                strategy: "direct"
+                deploymentstrategy: "direct"
             - name: "test"
               properties:
                 kind: "functional"
             - name: "evaluation"
+            - name: "release"
+        - name: "artifact-delivery-db"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
             - name: "release"
 
     - name: "staging"
@@ -25,11 +31,20 @@ spec:
           tasks:
             - name: "deployment"
               properties:
-                strategy: "blue_green_service"
+                deploymentstrategy: "blue_green_service"
             - name: "test"
               properties:
                 kind: "performance"
             - name: "evaluation"
+            - name: "release"
+
+        - name: "artifact-delivery-db"
+          triggers:
+            - "dev.artifact-delivery-db.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
             - name: "release"
 
     - name: "production"
@@ -40,10 +55,14 @@ spec:
           tasks:
             - name: "deployment"
               properties:
-                strategy: "blue_green"
+                deploymentstrategy: "blue_green"
             - name: "release"
 
-        - name: "remediation"
+        - name: "artifact-delivery-db"
+          triggers:
+            - "staging.artifact-delivery-db.finished"
           tasks:
-            - name: "remediation"
-            - name: "evaluation"
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "release"

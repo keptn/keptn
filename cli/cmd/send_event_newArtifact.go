@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"strings"
 
@@ -28,8 +29,6 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/websockethelper"
@@ -37,10 +36,12 @@ import (
 )
 
 type newArtifactStruct struct {
-	Project *string `json:"project"`
-	Service *string `json:"service"`
-	Image   *string `json:"image"`
-	Tag     *string `json:"tag"`
+	Project  *string `json:"project"`
+	Service  *string `json:"service"`
+	Stage    *string `json:"stage"`
+	Image    *string `json:"image"`
+	Tag      *string `json:"tag"`
+	Sequence *string `json:"sequence"`
 }
 
 var newArtifact newArtifactStruct
@@ -61,7 +62,7 @@ Therefore, this command takes the project, service, image, and tag of the new ar
 * This command does not send the actual Docker image to Keptn, just the image name and tag. Instead, Keptn uses Kubernetes functionalities for pulling this image.
 For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 `,
-	Example:      `keptn send event new-artifact --project=sockshop --service=carts --image=docker.io/keptnexamples/carts --tag=0.7.0`,
+	Example:      `keptn send event new-artifact --project=sockshop --service=carts --stage=dev --image=docker.io/keptnexamples/carts --tag=0.7.0 --sequence=artifact-delivery`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
@@ -86,25 +87,27 @@ For pulling an image from a private registry, we would like to refer to the Kube
 				endPointErr)
 		}
 
-		valuesCanary := make(map[string]interface{})
-		valuesCanary["image"] = *newArtifact.Image + ":" + *newArtifact.Tag
-		canary := keptnevents.Canary{Action: keptnevents.Set, Value: 100}
-		configChangedEvent := keptnevents.ConfigurationChangeEventData{
-			Project:      *newArtifact.Project,
-			Service:      *newArtifact.Service,
-			Stage:        "", // If the stage is empty, the first stage is inserted by the helm-service
-			ValuesCanary: valuesCanary,
-			Canary:       &canary,
+		deploymentEvent := keptnv2.DeploymentTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: *newArtifact.Project,
+				Stage:   *newArtifact.Stage,
+				Service: *newArtifact.Service,
+			},
+			ConfigurationChange: keptnv2.ConfigurationChange{
+				Values: map[string]interface{}{
+					"image": *newArtifact.Image + ":" + *newArtifact.Tag,
+				},
+			},
 		}
 
 		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
 
 		sdkEvent := cloudevents.NewEvent()
 		sdkEvent.SetID(uuid.New().String())
-		sdkEvent.SetType(keptnevents.StartEvaluationEventType)
+		sdkEvent.SetType(keptnv2.GetTriggeredEventType(*newArtifact.Stage + "." + *newArtifact.Sequence))
 		sdkEvent.SetSource(source.String())
 		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
-		sdkEvent.SetData(cloudevents.ApplicationJSON, configChangedEvent)
+		sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
 
 		eventByte, err := sdkEvent.MarshalJSON()
 		if err != nil {
@@ -151,6 +154,10 @@ func init() {
 		"The service which will be new deployed")
 	newArtifactCmd.MarkFlagRequired("service")
 
+	newArtifact.Stage = newArtifactCmd.Flags().StringP("stage", "", "",
+		"The stage containing the service to be deployed")
+	newArtifactCmd.MarkFlagRequired("stage")
+
 	newArtifact.Image = newArtifactCmd.Flags().StringP("image", "", "", "The image name, e.g."+
 		"docker.io/YOUR_ORG/YOUR_IMAGE or quay.io/YOUR_ORG/YOUR_IMAGE. "+
 		"Optionally, you can directly append the tag using \":YOUR_TAG\"")
@@ -158,4 +165,7 @@ func init() {
 
 	newArtifact.Tag = newArtifactCmd.Flags().StringP("tag", "", "", "The tag of the image. "+
 		"If no tag is specified, the \"latest\" tag is used.")
+
+	newArtifact.Sequence = newArtifactCmd.Flags().StringP("sequence", "", "", "The name of the sequence to be triggered")
+	newArtifactCmd.MarkFlagRequired("sequence")
 }
