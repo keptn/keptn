@@ -39,9 +39,8 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	if autoRemediate {
 		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
 	} else {
-		msg := fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage)
+		msg := fmt.Sprintf("Remediation disabled for service %s in project %s in stage %s", problemEvent.Service, problemEvent.Project, problemEvent.Stage)
 		eh.KeptnHandler.Logger.Info(msg)
-		eh.KeptnHandler.Logger.Error(err.Error())
 		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil
 	}
