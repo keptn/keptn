@@ -39,7 +39,7 @@ var ErrStageNotFound = errors.New("stage not found")
 var ErrServiceNotFound = errors.New("service not found")
 
 func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
-	endpoint, err := keptncommon.GetServiceEndpoint(os.Getenv("CONFIGURATION_SERVICE"))
+	endpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
 	if err != nil {
 		return nil, err
 	}
