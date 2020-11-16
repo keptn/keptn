@@ -103,9 +103,13 @@ func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
 
 	remediationFile, err := eh.Remediation.getRemediationFile()
 	if err != nil {
+		if err == errNoRemediationFileAvailable {
+			return false, nil
+		}
 		return false, fmt.Errorf("Failed to check if remediation is enabled: %s", err.Error())
 	} else if remediationFile == nil {
 		return false, nil
 	}
+	eh.KeptnHandler.Logger.Debug("remediation.yaml for service found")
 	return true, nil
 }

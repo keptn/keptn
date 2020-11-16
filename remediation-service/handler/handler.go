@@ -26,6 +26,9 @@ const configurationserviceconnection = "CONFIGURATION_SERVICE" //"localhost:6060
 const datastoreConnection = "MONGODB_DATASTORE"
 const remediationSpecVersion = "spec.keptn.sh/0.1.4"
 
+var errNoRemediationFileAvailable = errors.New("no remediation file available")
+var errServiceNotAvailable = errors.New("service is not available")
+
 // Handler handles incoming Keptn events
 type Handler interface {
 	HandleEvent() error
@@ -478,12 +481,12 @@ func (r *Remediation) getRemediationFile() (*configmodels.Resource, error) {
 
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "service not found") {
-			return nil, errors.New("Could not execute remediation action because service is not available")
+			return nil, errServiceNotAvailable
 		} else {
-			return nil, errors.New("Could not execute remediation action because no remediation file available")
+			return nil, errNoRemediationFileAvailable
 		}
 	}
-	r.Keptn.Logger.Debug("remediation.yaml for service found")
+
 	return resource, nil
 }
 
