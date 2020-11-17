@@ -83,10 +83,6 @@ type GetEventsParams struct {
 	  In: query
 	*/
 	Stage *string
-	/*triggeredID of the events
-	  In: query
-	*/
-	TriggeredID *string
 	/*Type of the keptn cloud event
 	  In: query
 	*/
@@ -151,11 +147,6 @@ func (o *GetEventsParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qStage, qhkStage, _ := qs.GetOK("stage")
 	if err := o.bindStage(qStage, qhkStage, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qTriggeredID, qhkTriggeredID, _ := qs.GetOK("triggeredID")
-	if err := o.bindTriggeredID(qTriggeredID, qhkTriggeredID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -369,24 +360,6 @@ func (o *GetEventsParams) bindStage(rawData []string, hasKey bool, formats strfm
 	}
 
 	o.Stage = &raw
-
-	return nil
-}
-
-// bindTriggeredID binds and validates parameter TriggeredID from query.
-func (o *GetEventsParams) bindTriggeredID(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.TriggeredID = &raw
 
 	return nil
 }

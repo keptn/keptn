@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-openapi/errors"
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
+	errors "github.com/go-openapi/errors"
+	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
 
 	"github.com/keptn/keptn/mongodb-datastore/models"
 )
@@ -64,7 +64,6 @@ func (o *GetEvents) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetEventsOKBody get events o k body
-//
 // swagger:model GetEventsOKBody
 type GetEventsOKBody struct {
 

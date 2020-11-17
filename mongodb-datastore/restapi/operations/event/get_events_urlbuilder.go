@@ -25,7 +25,6 @@ type GetEventsURL struct {
 	Service      *string
 	Source       *string
 	Stage        *string
-	TriggeredID  *string
 	Type         *string
 
 	_basePath string
@@ -140,14 +139,6 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 	}
 	if stageQ != "" {
 		qs.Set("stage", stageQ)
-	}
-
-	var triggeredIDQ string
-	if o.TriggeredID != nil {
-		triggeredIDQ = *o.TriggeredID
-	}
-	if triggeredIDQ != "" {
-		qs.Set("triggeredID", triggeredIDQ)
 	}
 
 	var typeVarQ string
