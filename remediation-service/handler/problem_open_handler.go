@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -32,26 +31,33 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 	// check if remediation should be performed
 	autoRemediate, err := eh.isRemediationEnabled()
 	if err != nil {
-		eh.KeptnHandler.Logger.Error(fmt.Sprintf("Failed to check if remediation is enabled: %s", err.Error()))
+		eh.KeptnHandler.Logger.Error(err.Error())
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
 
 	if autoRemediate {
 		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation enabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
 	} else {
-		eh.KeptnHandler.Logger.Info(fmt.Sprintf("Remediation disabled for project %s in stage %s", problemEvent.Project, problemEvent.Stage))
+		msg := fmt.Sprintf("Remediation disabled for service %s in project %s in stage %s", problemEvent.Service, problemEvent.Project, problemEvent.Stage)
+		eh.KeptnHandler.Logger.Info(msg)
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, msg)
 		return nil
 	}
 
 	// get remediation.yaml
 	resource, err := eh.Remediation.getRemediationFile()
 	if err != nil {
+		eh.KeptnHandler.Logger.Info(err.Error())
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
 
 	// get remediation action from remediation.yaml
 	remediationData, err := eh.Remediation.getRemediation(resource)
 	if err != nil {
+		eh.KeptnHandler.Logger.Error(err.Error())
+		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
 
@@ -83,6 +89,8 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 			Tags:           problemEvent.Tags,
 		})
 		if err != nil {
+			eh.KeptnHandler.Logger.Error(err.Error())
+			_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 			return err
 		}
 	} else {
@@ -95,21 +103,15 @@ func (eh *ProblemOpenEventHandler) HandleEvent() error {
 }
 
 func (eh *ProblemOpenEventHandler) isRemediationEnabled() (bool, error) {
-	shipyard := &keptn.Shipyard{}
-	resource, err := eh.KeptnHandler.ResourceHandler.GetProjectResource(eh.KeptnHandler.Event.GetProject(), "shipyard.yaml")
+	remediationFile, err := eh.Remediation.getRemediationFile()
 	if err != nil {
-		return false, err
-	}
-	err = yaml.Unmarshal([]byte(resource.ResourceContent), shipyard)
-	if err != nil {
-		return false, err
-	}
-
-	for _, s := range shipyard.Stages {
-		if s.Name == eh.KeptnHandler.Event.GetStage() && s.RemediationStrategy == "automated" {
-			return true, nil
+		if err == errNoRemediationFileAvailable {
+			return false, nil
 		}
+		return false, fmt.Errorf("Failed to check if remediation is enabled: %s", err.Error())
+	} else if remediationFile == nil {
+		return false, nil
 	}
-
-	return false, nil
+	eh.KeptnHandler.Logger.Debug("remediation.yaml for service found")
+	return true, nil
 }
