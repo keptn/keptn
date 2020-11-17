@@ -20,8 +20,8 @@ func TestNewArtifact(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 
-	cmd := fmt.Sprintf("send event new-artifact --project=%s --service=%s --stage=%s --sequence=%s"+
-		"--image=%s --tag=%s  --mock", "sockshop", "carts", "docker.io/keptnexamples/carts", "0.9.1", "dev", "artifact-delivery")
+	cmd := fmt.Sprintf("send event new-artifact --project=%s --service=%s --stage=%s --sequence=%s "+
+		"--image=%s --tag=%s  --mock", "sockshop", "carts", "dev", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
