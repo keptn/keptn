@@ -13,7 +13,7 @@ spec:
                 deploymentstrategy: "direct"
             - name: "test"
               properties:
-                kind: "functional"
+                teststrategy: "functional"
             - name: "evaluation"
             - name: "release"
         - name: "artifact-delivery-db"
@@ -34,7 +34,7 @@ spec:
                 deploymentstrategy: "blue_green_service"
             - name: "test"
               properties:
-                kind: "performance"
+                teststrategy: "performance"
             - name: "evaluation"
             - name: "release"
 
