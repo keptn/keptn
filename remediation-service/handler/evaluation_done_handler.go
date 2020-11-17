@@ -49,6 +49,7 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 	// get remediation.yaml
 	resource, err := eh.Remediation.getRemediationFile()
 	if err != nil {
+		eh.KeptnHandler.Logger.Info(err.Error())
 		_ = eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, err.Error())
 		return err
 	}
