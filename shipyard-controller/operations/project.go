@@ -24,7 +24,11 @@ type CreateProjectParams struct {
 	Shipyard *string `json:"shipyard"`
 }
 
+// CreateProjectResponse contains information about the result of the CreateProject operation
 type CreateProjectResponse struct {
+}
+
+type CreateResponseWithoutComment struct {
 }
 
 // DeleteProjectResponse contains information about the deleted project
