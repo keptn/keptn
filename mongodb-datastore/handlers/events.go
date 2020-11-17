@@ -557,6 +557,9 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 	if params.KeptnContext != nil {
 		searchOptions["shkeptncontext"] = *params.KeptnContext
 	}
+	if params.TriggeredID != nil {
+		searchOptions["triggeredid"] = *params.TriggeredID
+	}
 	if params.Type != nil {
 		searchOptions["type"] = *params.Type
 	}

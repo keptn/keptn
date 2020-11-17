@@ -51,6 +51,12 @@ func init() {
           },
           {
             "type": "string",
+            "description": "triggeredID of the events",
+            "name": "triggeredID",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "description": "Type of the keptn cloud event",
             "name": "type",
             "in": "query"
@@ -325,6 +331,12 @@ func init() {
             "type": "string",
             "description": "keptnContext of the events to get",
             "name": "keptnContext",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "triggeredID of the events",
+            "name": "triggeredID",
             "in": "query"
           },
           {

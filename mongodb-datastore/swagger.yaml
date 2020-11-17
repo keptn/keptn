@@ -39,6 +39,11 @@ paths:
           type: string
           required: false
           description: keptnContext of the events to get
+        - name: triggeredID
+          in: query
+          type: string
+          required: false
+          description: triggeredID of the events
         - name: type
           in: query
           type: string
