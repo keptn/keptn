@@ -29,7 +29,7 @@ keptn add-resource --project=$PROJECT --service=carts --stage=staging --resource
 ###########################################
 # onboard carts-db                        #
 ###########################################
-keptn onboard service carts-db --project=$PROJECT --chart=./carts-db --deployment-strategy=direct
+keptn onboard service carts-db --project=$PROJECT --chart=./carts-db
 verify_test_step $? "keptn onboard service carts-db - failed"
 sleep 10
 
