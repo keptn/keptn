@@ -3,6 +3,8 @@
 PROJECT=$1
 ARTIFACT_IMAGE=$2
 ARTIFACT_IMAGE_TAG=$3
+STAGE=$4
+SEQUENCE=$5
 
 source test/utils.sh
 
@@ -12,7 +14,7 @@ echo "---------------------------------------------------------------------"
 echo ""
 
 # send new artifact for carts service
-keptn send event new-artifact --project=$PROJECT --service=carts --image=${ARTIFACT_IMAGE} --tag=${ARTIFACT_IMAGE_TAG}
+keptn send event new-artifact --project=$PROJECT --service=carts --image=${ARTIFACT_IMAGE} --tag=${ARTIFACT_IMAGE_TAG} --stage=$STAGE --sequence=$SEQUENCE
 verify_test_step $? "keptn send event new-artifact --project=${PROJECT} --service=carts - failed"
 
 sleep 30
