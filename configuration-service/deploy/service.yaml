@@ -55,12 +55,6 @@ spec:
                 fieldPath: metadata.namespace
         ports:
         - containerPort: 8080
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 10999
-          initialDelaySeconds: 5
-          periodSeconds: 5
         resources:
           requests:
             memory: "256Mi"
