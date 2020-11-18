@@ -293,3 +293,82 @@ func getStartEvaluationEvent() cloudevents.Event {
 func stringp(s string) *string {
 	return &s
 }
+
+func Test_getEvaluationTimestamps(t *testing.T) {
+	type args struct {
+		e *keptnv2.EvaluationTriggeredEventData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		want1   string
+		wantErr bool
+	}{
+		{
+			name: "get evaluation timestamps",
+			args: args{
+				e: &keptnv2.EvaluationTriggeredEventData{
+					Test: struct {
+						Start string `json:"start"`
+						End   string `json:"end"`
+					}{
+						Start: "test-start",
+						End:   "test-end",
+					},
+					Evaluation: struct {
+						Start string `json:"start"`
+						End   string `json:"end"`
+					}{
+						Start: "evaluation-start",
+						End:   "evaluation-end",
+					},
+				},
+			},
+			want:    "evaluation-start",
+			want1:   "evaluation-end",
+			wantErr: false,
+		},
+		{
+			name: "fallback to test timestamps",
+			args: args{
+				e: &keptnv2.EvaluationTriggeredEventData{
+					Test: struct {
+						Start string `json:"start"`
+						End   string `json:"end"`
+					}{
+						Start: "test-start",
+						End:   "test-end",
+					},
+				},
+			},
+			want:    "test-start",
+			want1:   "test-end",
+			wantErr: false,
+		},
+		{
+			name: "no timestamps provided",
+			args: args{
+				e: &keptnv2.EvaluationTriggeredEventData{},
+			},
+			want:    "",
+			want1:   "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := getEvaluationTimestamps(tt.args.e)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getEvaluationTimestamps() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getEvaluationTimestamps() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("getEvaluationTimestamps() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

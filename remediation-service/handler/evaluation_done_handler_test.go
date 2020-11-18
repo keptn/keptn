@@ -33,6 +33,13 @@ const previousRemediations = `{
     "totalCount": 2
 }`
 
+const emptyRemediations = `{
+    "nextPageKey": "0",
+    "remediations": [
+    ],
+    "totalCount": 2
+}`
+
 const previousRemediationStatusChangedEvent = `{
     "nextPageKey": "0",
     "events": [
@@ -107,7 +114,6 @@ const evaluationDoneEventPayloadWithResultFailed = `{
     "stage": "production", 
     "service": "service",
     "result": "failed",
-	"teststrategy": "real-user"
   }`
 
 const evaluationDoneEventPayloadWithResultPass = `{
@@ -115,7 +121,6 @@ const evaluationDoneEventPayloadWithResultPass = `{
     "stage": "production", 
     "service": "service",
     "result": "pass",
-	"teststrategy": "real-user"
   }`
 
 const evaluationDoneEventPayloadWithResultWarning = `{
@@ -123,14 +128,12 @@ const evaluationDoneEventPayloadWithResultWarning = `{
     "stage": "production", 
     "service": "service",
     "result": "warning",
-	"teststrategy": "real-user"
   }`
 
 const evaluationDoneEventWithIrrelevantTestStrategyPayload = `{
     "project": "sockshop",
     "stage": "production", 
     "service": "service",
-	"teststrategy": "performance"
   }`
 
 type MockDatastore struct {
@@ -188,7 +191,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "get and send next action",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultFailed),
+				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultFailed),
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediationAndMultipleActions,
@@ -234,7 +237,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "all actions executed - send finished event",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultFailed),
+				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultFailed),
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
@@ -259,15 +262,15 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 		},
 		{
-			name: "do not handle events with teststrategy != real-user",
+			name: "do not handle events with no related remediation",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventWithIrrelevantTestStrategyPayload),
+				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventWithIrrelevantTestStrategyPayload),
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
 			expectedRemediationOnConfigService: []*remediationStatus{},
 			expectedEventOnEventbroker:         []*keptnapi.KeptnContextExtendedCE{},
-			returnedRemediations:               previousRemediations,
+			returnedRemediations:               emptyRemediations,
 			returnedEvents: map[string]string{
 				"test-id-1": previousRemediationTriggeredEvent,
 				"test-id-2": previousRemediationStatusChangedEvent,
@@ -276,7 +279,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "complete remediation if evaluation is successful (result=pass)",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultPass),
+				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultPass),
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
@@ -303,7 +306,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "complete remediation if evaluation is successful (result=warning)",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.EvaluationDoneEventType, evaluationDoneEventPayloadWithResultWarning),
+				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultWarning),
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
@@ -349,7 +352,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				Keptn: testKeptnHandler,
 			}
 
-			eh := &EvaluationDoneEventHandler{
+			eh := &EvaluationFinishedEventHandler{
 				KeptnHandler: testKeptnHandler,
 				Event:        tt.fields.Event,
 				Remediation:  remediation,

@@ -117,7 +117,7 @@ verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.remediation.status" "errored"
 verify_using_jq "$response" ".data.remediation.result" "failed"
-verify_using_jq "$response" ".data.remediation.message" "Could not execute remediation action because no remediation file available"
+verify_using_jq "$response" ".data.remediation.message" "Remediation disabled for service $SERVICE in project $PROJECT in stage production"
 
 
 ##########################################################################################################################################
@@ -179,6 +179,8 @@ fi
 # install unleash service
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n keptn
 sleep 10
+
+kubectl -n keptn set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
 
 wait_for_deployment_in_namespace "unleash-service" "keptn"
 

@@ -30,7 +30,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Error("Could not parse incoming action.finished event: " + err.Error())
 		return err
 	}
-	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v", actionFinishedEvent.Action.Result))
+	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v, status = %v", actionFinishedEvent.Action.Result, actionFinishedEvent.Action.Status))
 
 	if eh.WaitFunction == nil {
 		eh.WaitFunction = func() {
@@ -43,7 +43,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	eh.WaitFunction()
 	eh.KeptnHandler.Logger.Info("Wait time is over. Sending start-evaluation event.")
 
-	err = eh.Remediation.sendStartEvaluationEvent()
+	err = eh.Remediation.sendEvaluationTriggeredEvent()
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not send start-evaluation event: " + err.Error())
 		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, "could not send start-evaluation event")
