@@ -7,5 +7,4 @@ wget "https://storage.googleapis.com/keptn-cli/${KEPTN_CLI_VERSION}/keptn-linux.
 unzip keptn-linux.zip
 
 sudo mv keptn /usr/local/bin/keptn
-echo "Keptn CLI installed in version:"
-keptn version
+
