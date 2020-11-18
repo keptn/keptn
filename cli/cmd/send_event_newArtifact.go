@@ -151,7 +151,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		eventContext, err2 := apiHandler.SendEvent(apiEvent)
-		if err != nil {
+		if err2 != nil {
 			logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 			return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err2.Message)
 		}
