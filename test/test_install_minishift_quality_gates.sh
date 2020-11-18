@@ -24,9 +24,6 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.
 auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
 #keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN
 
-echo "Keptn installed in version:"
-keptn version
-
 # verify that the keptn CLI has successfully authenticated
 echo "Checking that Keptn is authenticated ..."
 ls -la ~/.keptn/.keptn
