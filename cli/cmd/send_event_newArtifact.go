@@ -21,6 +21,7 @@ import (
 	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/docker"
@@ -75,7 +76,17 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
+		var endPoint url.URL
+		var apiToken string
+		var err error
+		if !mocking {
+			endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds(namespace)
+		} else {
+			endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
+			endPoint = *endPointPtr
+			apiToken = ""
+		}
+
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -86,10 +97,6 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
-		}
-
-		if mocking {
-			return nil
 		}
 
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
@@ -161,9 +168,6 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
 		}
 
-		return nil
-
-		fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		return nil
 	},
 }
