@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"strings"
@@ -87,6 +88,27 @@ For pulling an image from a private registry, we would like to refer to the Kube
 				endPointErr)
 		}
 
+		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		shipyardResource, err := resourceHandler.GetProjectResource(*newArtifact.Project, "shipyard.yaml")
+		if err != nil {
+			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *newArtifact.Project, err.Error())
+		}
+
+		shipyard := &keptnv2.Shipyard{}
+
+		if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
+			return fmt.Errorf("Error while decoding shipyard.yaml for project %s: %s", *newArtifact.Project, err.Error())
+		}
+
+		// if no stage has been provided to the new-artifact command, use the first stage in the shipyard.yaml
+		if newArtifact.Stage == nil || *newArtifact.Stage == "" {
+			if len(shipyard.Spec.Stages) > 0 {
+				newArtifact.Stage = &shipyard.Spec.Stages[0].Name
+			} else {
+				return fmt.Errorf("Could not start sequence because no stage has been found in the shipyard.yaml of project %s", *newArtifact.Project)
+			}
+		}
+
 		deploymentEvent := keptnv2.DeploymentTriggeredEventData{
 			EventData: keptnv2.EventData{
 				Project: *newArtifact.Project,
@@ -121,6 +143,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
@@ -156,7 +179,6 @@ func init() {
 
 	newArtifact.Stage = newArtifactCmd.Flags().StringP("stage", "", "",
 		"The stage containing the service to be deployed")
-	newArtifactCmd.MarkFlagRequired("stage")
 
 	newArtifact.Image = newArtifactCmd.Flags().StringP("image", "", "", "The image name, e.g."+
 		"docker.io/YOUR_ORG/YOUR_IMAGE or quay.io/YOUR_ORG/YOUR_IMAGE. "+
