@@ -251,6 +251,10 @@ func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteP
 		pm.logger.Error("could not delete event collections: " + err.Error())
 	}
 
+	if err := pm.sendProjectDeleteSuccessFinishedEvent(uuid.New().String(), projectName); err != nil {
+		pm.logger.Error("could not send project.delete.finished event: " + err.Error())
+	}
+
 	return result, nil
 }
 
@@ -400,6 +404,21 @@ func (pm *projectManager) sendProjectCreateStartedEvent(keptnContext string, par
 		return errors.New("could not send create.project.started event: " + err.Error())
 	}
 
+	return nil
+}
+
+func (pm *projectManager) sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName string) error {
+	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+		},
+	}
+
+	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload); err != nil {
+		return errors.New("could not send create.project.finished event: " + err.Error())
+	}
 	return nil
 }
 
