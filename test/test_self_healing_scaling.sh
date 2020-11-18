@@ -47,7 +47,7 @@ keptn onboard service $SERVICE --project=$PROJECT --chart=./$SERVICE
 # onboard carts-db                        #
 ###########################################
 keptn onboard service $SERVICE-db --project=$PROJECT --chart=./$SERVICE-db --deployment-strategy=direct
-keptn send event new-artifact --project=$PROJECT --service=$SERVICE-db --image=mongo
+keptn send event new-artifact --project=$PROJECT --service=$SERVICE-db --image=mongo --sequence=artifact-delivery-db
 
 # add health check in production
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
@@ -60,7 +60,7 @@ keptn add-resource --project=$PROJECT --stage=production --service=$SERVICE --re
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=./test/assets/self_healing_slo.yaml --resourceUri=slo.yaml
 
 # deploy the service
-keptn send event new-artifact --project=$PROJECT --service=$SERVICE --image=docker.io/keptnexamples/$SERVICE --tag=0.11.1
+keptn send event new-artifact --project=$PROJECT --service=$SERVICE --image=docker.io/keptnexamples/$SERVICE --tag=0.11.1 --sequence=artifact-delivery
 
 echo "It might take a while for the service to be available on production - waiting 50sec"
 sleep 50

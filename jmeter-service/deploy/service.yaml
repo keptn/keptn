@@ -37,9 +37,9 @@ spec:
         - containerPort: 8080
         env:
         - name: EVENTBROKER
-          value: 'http://event-broker/keptn'
+          value: 'http://localhost:8081/event'
       - name: distributor
-        image: keptn/distributor:0.6.1
+        image: keptn/distributor:latest
         livenessProbe:
           httpGet:
             path: /health

@@ -596,6 +596,7 @@ func (sc *shipyardController) triggerNextTaskSequences(event models.Event, event
 			sc.logger.Error("could not send event " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
 			continue
 		}
+
 		err = sc.proceedTaskSequence(newScope, &sequence.Sequence, event, shipyard, previousFinishedEvents, "")
 		if err != nil {
 			sc.logger.Error("could not proceed task sequence " + newScope.Stage + "." + sequence.Sequence.Name + ".triggered: " + err.Error())
@@ -731,6 +732,8 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	eventType := eventScope.Stage + "." + taskSequenceName
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
+	event.SetTime(time.Now())
 	event.SetType(keptnv2.GetTriggeredEventType(eventType))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
@@ -739,6 +742,14 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 		event.SetData(cloudevents.ApplicationJSON, mergedPayload)
 	} else {
 		event.SetData(cloudevents.ApplicationJSON, eventPayload)
+	}
+
+	toEvent, err := models.ConvertToEvent(event)
+	if err != nil {
+		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
+	}
+	if err := sc.eventRepo.InsertEvent(eventScope.Project, *toEvent, db.TriggeredEvent); err != nil {
+		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
 
 	return common.SendEvent(event)
