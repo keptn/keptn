@@ -88,6 +88,10 @@ For pulling an image from a private registry, we would like to refer to the Kube
 				endPointErr)
 		}
 
+		if mocking {
+			return nil
+		}
+
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		shipyardResource, err := resourceHandler.GetProjectResource(*newArtifact.Project, "shipyard.yaml")
 		if err != nil {
@@ -146,20 +150,18 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		if !mocking {
-			eventContext, err := apiHandler.SendEvent(apiEvent)
-			if err != nil {
-				logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err.Message)
-			}
-
-			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-			}
-
-			return nil
+		eventContext, err2 := apiHandler.SendEvent(apiEvent)
+		if err != nil {
+			logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
+			return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err2.Message)
 		}
+
+		// if eventContext is available, open WebSocket communication
+		if eventContext != nil && !SuppressWSCommunication {
+			return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+		}
+
+		return nil
 
 		fmt.Println("Skipping send new-artifact due to mocking flag set to true")
 		return nil
