@@ -181,10 +181,10 @@ func checkForContextChange(currentContext string, cliConfigManager *config.CLICo
 	if err != nil {
 		log.Fatal(err)
 	}
-	if cliConfig.CurrentContext != "" && cliConfig.CurrentContext != currentContext {
+	if cliConfig.CurrentContext != currentContext {
 		fmt.Printf("Kube context has been changed to %s", currentContext)
 		fmt.Println()
-		if !autoApplyNewContext {
+		if !autoApplyNewContext && cliConfig.CurrentContext != "" {
 			fmt.Println("Do you want to continue with this? (y/n)")
 			reader := bufio.NewReader(os.Stdin)
 			in, err := reader.ReadString('\n')
