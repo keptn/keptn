@@ -140,10 +140,7 @@
                         </ng-container>
                       </div>
                     </dt-info-group-title>
-                    <ng-container *ngIf="project.getLatestSuccessfulArtifact(service, selectedStage) as artifact; else noDeployment">
-                      <p class="m-0 mt-1"><span [textContent]="artifact.data.image"></span>:<span [textContent]="artifact.data.tag"></span></p>
-                      <p class="m-0 mb-1" *ngIf="artifact.isDeployment()"><span class="bold">Deployed at: </span><span [textContent]="artifact.time | amCalendar:getCalendarFormats()"></span></p>
-                    </ng-container>
+                    <p class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getShortImageName()"></p>
                   </dt-info-group>
                 </ktb-expandable-tile-header>
                 <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
