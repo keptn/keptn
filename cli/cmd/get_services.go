@@ -55,7 +55,7 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 `,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -69,7 +69,7 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

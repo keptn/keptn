@@ -13,7 +13,7 @@ func init() {
 
 func TestSetAndGetCreds(t *testing.T) {
 	MockKubeConfigCheck = true
-	cm := NewCredentialManager()
+	cm := NewCredentialManager(false)
 	if err := cm.SetCreds(testEndPoint, testAPIToken, testNamespace); err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestSetAndGetCreds(t *testing.T) {
 
 func TestOverwriteCreds(t *testing.T) {
 	MockKubeConfigCheck = true
-	cm := NewCredentialManager()
+	cm := NewCredentialManager(false)
 	if err := cm.SetCreds(testEndPoint, "old-secret", testNamespace); err != nil {
 		t.Fatal(err)
 	}

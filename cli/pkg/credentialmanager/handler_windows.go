@@ -9,8 +9,8 @@ import (
 type CredentialManager struct {
 }
 
-func NewCredentialManager() (cm *CredentialManager) {
-	initChecks()
+func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
+	initChecks(autoApplyNewContext)
 	return &CredentialManager{}
 }
 

@@ -67,7 +67,7 @@ func (mng PlatformManager) ParseConfig(configFile string) error {
 // ReadCreds reads the credentials for the platform
 func (mng PlatformManager) ReadCreds() error {
 
-	cm := credentialmanager.NewCredentialManager()
+	cm := credentialmanager.NewCredentialManager(false)
 	credsStr, err := cm.GetInstallCreds()
 	if err != nil {
 		credsStr = ""
