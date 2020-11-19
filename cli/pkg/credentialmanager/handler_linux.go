@@ -31,6 +31,7 @@ type CredentialManager struct {
 	credsFile    string
 }
 
+// NewCredentialManager creates a new credential manager
 func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
 
 	dir, err := keptnutils.GetKeptnDirectory()
