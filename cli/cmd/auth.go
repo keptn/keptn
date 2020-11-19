@@ -20,7 +20,7 @@ type authCmdParams struct {
 	endPoint      *string
 	apiToken      *string
 	exportConfig  *bool
-	acceptContext *bool
+	acceptContext bool
 }
 
 var authParams *authCmdParams
@@ -48,7 +48,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 		var err error
 		// User wants to print current auth credentials
 		if *authParams.exportConfig {
-			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager(*authParams.acceptContext).GetCreds(namespace)
+			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager(authParams.acceptContext).GetCreds(namespace)
 			if err != nil {
 				return err
 			}
@@ -102,7 +102,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			}
 
 			logging.PrintLog("Successfully authenticated against the Keptn cluster "+*authParams.endPoint, logging.InfoLevel)
-			return credentialmanager.NewCredentialManager(false).SetCreds(*url, *authParams.apiToken, namespace)
+			return credentialmanager.NewCredentialManager(authParams.acceptContext).SetCreds(*url, *authParams.apiToken, namespace)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")
@@ -117,7 +117,7 @@ func init() {
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
-	authParams.acceptContext = authCmd.Flags().BoolP("yes", "y", false, "Automatically accept change of Kubernetes Context")
+	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
 }
 
 func verifyAuthParams(authParams *authCmdParams) error {
