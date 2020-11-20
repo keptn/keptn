@@ -9,8 +9,6 @@ spec:
         - name: "echosequence"
           tasks:
             - name: "echo"
-              properties:
-                simulatewrongeventseq: false
     - name: "secondstage"
       sequences:
         - name: "echosequence"
@@ -18,5 +16,10 @@ spec:
             - firststage.echosequence.finished
           tasks:
             - name: "echo"
-              properties:
-                simulatewrongeventseq: false
+    - name: "thirdstage"
+      sequences:
+        - name: "echosequence"
+          triggers:
+            - secondstage.echosequence.finished
+          tasks:
+            - name: "echo"

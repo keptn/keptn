@@ -14,6 +14,7 @@ function cleanup() {
   kubectl delete services/echo-service -n keptn
 
   echo "<END>"
+  return 0
 }
 
 function verify_event_not_null() {
@@ -28,11 +29,11 @@ trap cleanup EXIT
 KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
+echo "KEPTN_ENDPOINT $KEPTN_ENDPOINT"
+
 #test configuration
 PROJECT="linking-stages-project"
 SERVICE="linking-stages-service"
-
-ECHO_SVC_IMG="docker.io/warber/keptnsandbox_echo-service"
 
 echo "Installing echo service"
 kubectl apply -f - <<EOF
@@ -97,6 +98,8 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+            - name: SLEEP_TIME_MS
+              value: '1000'
 ---
 # Expose echo-service via Port 8080 within the cluster
 apiVersion: v1
@@ -129,31 +132,23 @@ echo "Creating a new service"
 keptn create service ${SERVICE} --project ${PROJECT}
 sleep 1
 
-echo "Sending trigger echosequence event event"
+
+####################################################################################################################################
+# Testcase:
+# 1) sh.keptn.event.firststage.echosequence.triggered 
+# 2) check if the stages in the provided shipyard file gets started by shipyard controller
+####################################################################################################################################
+
+echo "Sending trigger echosequence event"
 keptn_context_id=$(send_event_json ./test/assets/trigger_echosequence_event.json)
 sleep 20
 
-
-verify_event_not_null $(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.firststage.echosequence.triggered $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-if [ "$?" -eq "-1" ];then
-echo "Event for triggering first stage could not be fetched"
-exit 2
-fi 
-
-verify_event_not_null $(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.firststage.echosequence.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-if [ "$?" -eq "-1" ];then
-echo "Event for finishing first stage could not be fetched"
-exit 2
-fi 
-
-verify_event_not_null $(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.secondstage.echosequence.triggered $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-if [ "$?" -eq "-1" ];then
-echo "Event for triggering second stage could not be fetched"
-exit 2
-fi 
-
-verify_event_not_null $(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.secondstage.echosequence.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-if [ "$?" -eq "-1" ];then
-echo "Event for finishing second stage could not be fetched"
-exit 2
-fi 
+declare -a list_of_events=("sh.keptn.event.firststage.echosequence.triggered" "sh.keptn.event.firststage.echosequence.finished" "sh.keptn.event.secondstage.echosequence.triggered" "sh.keptn.event.secondstage.echosequence.finished" "sh.keptn.event.thirdstage.echosequence.triggered" "sh.keptn.event.thirdstage.echosequence.finished")
+for e in ${list_of_events[@]}; do
+  echo "Verifying that event $e was sent"
+  verify_event_not_null $(get_keptn_event $PROJECT $keptn_context_id $e $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+  if [ "$?" -eq "-1" ];then
+    echo "Event $e could not be fetched. Exiting test..."
+    exit 2
+  fi 
+done
