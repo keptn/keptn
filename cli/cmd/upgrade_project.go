@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/ghodss/yaml"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -12,6 +11,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 	"log"
 	"net/url"
 	"os"
@@ -160,7 +160,13 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 		},
 	}
 
+	bytes, _ := yaml.Marshal(shipyard)
+
+	fmt.Println(string(bytes))
+
 	for index, stage := range shipyard.Stages {
+
+		passStrategy, warningStrategy := getApprovalStrategyForStage(index, shipyard)
 		newStage := keptnv2.Stage{
 			Name: stage.Name,
 			Sequences: []keptnv2.Sequence{
@@ -186,8 +192,8 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 						{
 							Name: "approval",
 							Properties: map[string]string{
-								"pass":    stage.ApprovalStrategy.Pass.String(),
-								"warning": stage.ApprovalStrategy.Warning.String(),
+								"pass":    passStrategy,
+								"warning": warningStrategy,
 							},
 						},
 						{
@@ -218,8 +224,8 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 						{
 							Name: "approval",
 							Properties: map[string]string{
-								"pass":    stage.ApprovalStrategy.Pass.String(),
-								"warning": stage.ApprovalStrategy.Warning.String(),
+								"pass":    passStrategy,
+								"warning": warningStrategy,
 							},
 						},
 						{
@@ -233,6 +239,14 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 	}
 
 	return upgradedShipyard
+}
+
+func getApprovalStrategyForStage(index int, shipyard *keptn.Shipyard) (string, string) {
+	if shipyard.Stages[index].ApprovalStrategy == nil {
+		return keptn.Automatic.String(), keptn.Automatic.String()
+	}
+
+	return shipyard.Stages[index].ApprovalStrategy.Pass.String(), shipyard.Stages[index].ApprovalStrategy.Warning.String()
 }
 
 func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []string {
