@@ -35,7 +35,7 @@ const upgradeShipyardMockResponseContent = `stages:
     remediation_strategy: "automated"`
 
 const upgradeShipyardResourceMockResponse = `{
-      "resourceContent": "c3RhZ2VzOgogIC0gbmFtZTogImRldiIKICAgIGRlcGxveW1lbnRfc3RyYXRlZ3k6ICJkaXJlY3QiCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCIKICAtIG5hbWU6ICJzdGFnaW5nIgogICAgYXBwcm92YWxfc3RyYXRlZ3k6IAogICAgICBwYXNzOiAiYXV0b21hdGljIgogICAgICB3YXJuaW5nOiAiYXV0b21hdGljIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSIKICAtIG5hbWU6ICJwcm9kdWN0aW9uIgogICAgYXBwcm92YWxfc3RyYXRlZ3k6IAogICAgICBwYXNzOiAiYXV0b21hdGljIgogICAgICB3YXJuaW5nOiAibWFudWFsIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHJlbWVkaWF0aW9uX3N0cmF0ZWd5OiAiYXV0b21hdGVkIg",
+      "resourceContent": "c3RhZ2VzOgogIC0gbmFtZTogImRldiIKICAgIGRlcGxveW1lbnRfc3RyYXRlZ3k6ICJkaXJlY3QiCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCIKICAtIG5hbWU6ICJzdGFnaW5nIgogICAgYXBwcm92YWxfc3RyYXRlZ3k6IAogICAgICBwYXNzOiAiYXV0b21hdGljIgogICAgICB3YXJuaW5nOiAiYXV0b21hdGljIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSIKICAtIG5hbWU6ICJwcm9kdWN0aW9uIgogICAgYXBwcm92YWxfc3RyYXRlZ3k6IAogICAgICBwYXNzOiAiYXV0b21hdGljIgogICAgICB3YXJuaW5nOiAibWFudWFsIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHJlbWVkaWF0aW9uX3N0cmF0ZWd5OiAiYXV0b21hdGVkIg==",
       "resourceURI": "shipyard.yaml"
 }`
 
@@ -50,7 +50,7 @@ func Test_UpgradeProjectShipyard(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			if r.Method == http.MethodGet && strings.Contains(r.RequestURI, "shipyard.yaml") {
-				w.Write([]byte(shipyardResourceMockResponse))
+				w.Write([]byte(upgradeShipyardResourceMockResponse))
 				return
 			} else if r.Method == http.MethodPut && strings.Contains(r.RequestURI, "resource") {
 				defer r.Body.Close()
