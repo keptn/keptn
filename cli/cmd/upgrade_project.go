@@ -20,6 +20,7 @@ import (
 
 type upgradeProjectCmdParams struct {
 	Shipyard    bool
+	DryRun      bool
 	FromVersion *string
 	ToVersion   *string
 	AutoConfirm bool
@@ -95,10 +96,27 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *newArtifact.Project, err.Error())
 		}
 
-		shipyard := &keptn.Shipyard{}
+		// first, check if the shipyard already has been upgraded
+		alreadyUpgraded, err := isShipyardUpgraded(shipyardResource)
+		if err != nil {
+			return fmt.Errorf("could not check if shipyard of project %s is already up to date: %s", err.Error())
+		}
+		if alreadyUpgraded {
+			logging.PrintLog("Shipyard of project "+projectName+" has already been upgraded to version 0.2", logging.InfoLevel)
+			return nil
+		}
 
+		shipyard := &keptn.Shipyard{}
 		if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
 			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", *newArtifact.Project, err.Error())
+		}
+
+		// check if there are any stages in the old shipyard.
+		// Having a shipyard with no stage should not happen, so this would mean that something has gone wrong when unmarshalling into the struct.
+		// in this case, the upgrade is cancelled to avoid deleting data
+		if len(shipyard.Stages) == 0 {
+			logging.PrintLog("Current shipyard.yaml of project "+projectName+" does not contain any stages. Will not proceed with upgrade", logging.InfoLevel)
+			return nil
 		}
 
 		upgradedShipyard := transformShipyard(shipyard)
@@ -114,6 +132,10 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		logging.PrintLog("Shipyard converted into version 0.2:", logging.InfoLevel)
 		logging.PrintLog("-----------------------", logging.InfoLevel)
 		logging.PrintLog(string(marshalledUpgradedShipyard), logging.InfoLevel)
+
+		if upgradeProjectParams.DryRun {
+			return nil
+		}
 
 		if err := confirmShipyardUpgrade(); err != nil {
 			return err
@@ -131,6 +153,19 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 
 		return nil
 	},
+}
+
+func isShipyardUpgraded(resource *apimodels.Resource) (bool, error) {
+	v2Shipyard := &keptnv2.Shipyard{}
+
+	if err := yaml.Unmarshal([]byte(resource.ResourceContent), v2Shipyard); err != nil {
+		return false, err
+	}
+
+	if strings.Contains(v2Shipyard.ApiVersion, "0.2") {
+		return true, nil
+	}
+	return false, nil
 }
 
 func confirmShipyardUpgrade() error {
@@ -280,6 +315,7 @@ func init() {
 	upgradeProjectParams = &upgradeProjectCmdParams{}
 
 	upgradeProjectCmd.Flags().BoolVarP(&upgradeProjectParams.Shipyard, "shipyard", "", false, "Upgrade the shipyard file of the project")
+	upgradeProjectCmd.Flags().BoolVarP(&upgradeProjectParams.DryRun, "dry-run", "", false, "Output the upgraded shipyard but don't upload it to the project")
 	upgradeProjectParams.FromVersion = upgradeProjectCmd.Flags().StringP("fromVersion", "", "", "The current version of the shipyard")
 	upgradeProjectParams.ToVersion = upgradeProjectCmd.Flags().StringP("toVersion", "", "", "The new target version of the shipyard")
 	upgradeProjectCmd.Flags().BoolVarP(&upgradeProjectParams.AutoConfirm, "yes", "y", false, "Automatically confirm the upgrade of the shipyard")
