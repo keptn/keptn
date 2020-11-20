@@ -162,7 +162,7 @@ func isShipyardUpgraded(resource *apimodels.Resource) (bool, error) {
 		return false, err
 	}
 
-	if strings.Contains(v2Shipyard.ApiVersion, "0.2") {
+	if strings.Contains(v2Shipyard.ApiVersion, *upgradeProjectParams.ToVersion) {
 		return true, nil
 	}
 	return false, nil
