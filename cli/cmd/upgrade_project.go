@@ -99,7 +99,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		// first, check if the shipyard already has been upgraded
 		alreadyUpgraded, err := isShipyardUpgraded(shipyardResource)
 		if err != nil {
-			return fmt.Errorf("could not check if shipyard of project %s is already up to date: %s", err.Error())
+			return fmt.Errorf("could not check if shipyard of project %s is already up to date: %s", projectName, err.Error())
 		}
 		if alreadyUpgraded {
 			logging.PrintLog("Shipyard of project "+projectName+" has already been upgraded to version 0.2", logging.InfoLevel)
