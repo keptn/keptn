@@ -203,7 +203,8 @@ func doUpgrade() error {
 	logging.PrintLog("Keptn has been successfully upgraded on your cluster.", logging.InfoLevel)
 	// when upgrading from 0.7.x to 0.8.x, display information about how to upgrade projects to the new shipyard format
 	if strings.HasPrefix(installedKeptnVersion, "0.7") && strings.HasPrefix(getAppVersion(keptnUpgradeChart), "0.8") {
-		logging.PrintLog("Please upgrade your projects using keptn upgrade project. For detailed instructions about upgrading your projects, head to keptn.sh/docs/0.8.x/operate/upgrade", logging.InfoLevel)
+		logging.PrintLog("Please upgrade your projects using keptn upgrade project.", logging.InfoLevel)
+		logging.PrintLog("For detailed instructions about upgrading your projects, head to keptn.sh/docs/0.8.x/operate/upgrade", logging.InfoLevel)
 	}
 	return nil
 }
