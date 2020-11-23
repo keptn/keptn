@@ -23,11 +23,6 @@ echo "{}" > creds.json # empty credentials file
 keptn install --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --use-case=continuous-delivery --hide-sensitive-data
 verify_test_step $? "keptn install --chart-repo=${KEPTN_INSTALLER_REPO} - failed"
 
-# verify that the keptn CLI has successfully authenticated
-echo "Checking that Keptn is authenticated ..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find Keptn credentials in ~/.keptn folder"
-
 echo "Verifying that services and namespaces have been created"
 
 # verify the deployments within the keptn namespace

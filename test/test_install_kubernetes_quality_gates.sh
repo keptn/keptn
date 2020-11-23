@@ -40,11 +40,6 @@ verify_test_step $? "Could not authenticate at Keptn API"
 echo "Keptn installed in version:"
 keptn version
 
-# verify that the keptn CLI has successfully authenticated
-echo "Checking that Keptn is authenticated ..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find Keptn credentials in ~/.keptn folder"
-
 cd ../..
 
 echo "Installing Keptn on cluster done ✓"
