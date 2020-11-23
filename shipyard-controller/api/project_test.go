@@ -112,6 +112,7 @@ type mockSecretStore struct {
 	create func(name string, content map[string][]byte) error
 	delete func(name string) error
 	get    func(name string) (map[string][]byte, error)
+	update func(name string, content map[string][]byte) error
 }
 
 func (ms *mockSecretStore) CreateSecret(name string, content map[string][]byte) error {
@@ -124,6 +125,10 @@ func (ms *mockSecretStore) DeleteSecret(name string) error {
 
 func (ms *mockSecretStore) GetSecret(name string) (map[string][]byte, error) {
 	return ms.get(name)
+}
+
+func (ms *mockSecretStore) UpdateSecret(name string, content map[string][]byte) error {
+	return ms.update(name, content)
 }
 
 type mockConfigurationService struct {
