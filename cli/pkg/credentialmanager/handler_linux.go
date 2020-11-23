@@ -114,5 +114,6 @@ func (cm *CredentialManager) GetInstallCreds() (string, error) {
 }
 
 func (cm *CredentialManager) getLinuxApiTokenFile(namespace string) string {
-	return strings.ReplaceAll(cm.apiTokenFile+"__"+kubeConfigFile.CurrentContext+"__"+namespace, "/", "-")
+	sanitizedCurrentContext := strings.ReplaceAll(kubeConfigFile.CurrentContext, "/", "-")
+	return cm.apiTokenFile + "__" + sanitizedCurrentContext + "__" + namespace
 }
