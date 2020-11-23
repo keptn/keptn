@@ -164,8 +164,8 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 		if err == nil && credentials != nil {
 			logger.Debug("Storing Git credentials for project " + params.ProjectName)
 
-			logger.Debug("Add Git origin and push changes for project " + params.ProjectName)
-			err = common.AddOrigin(params.Project.ProjectName)
+			logger.Debug("Add or update Git origin and push changes for project " + params.ProjectName)
+			err = common.UpdateOrCreateOrigin(params.Project.ProjectName)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
 				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
