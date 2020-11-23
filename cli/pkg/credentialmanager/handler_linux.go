@@ -31,13 +31,14 @@ type CredentialManager struct {
 	credsFile    string
 }
 
-func NewCredentialManager() (cm *CredentialManager) {
+// NewCredentialManager creates a new credential manager
+func NewCredentialManager(autoApplyNewContext bool) (cm *CredentialManager) {
 
 	dir, err := keptnutils.GetKeptnDirectory()
 	if err != nil {
 		log.Fatal(err)
 	}
-	initChecks()
+	initChecks(autoApplyNewContext)
 	return &CredentialManager{apiTokenFile: dir + ".keptn", credsFile: dir + ".keptn-creds"}
 }
 

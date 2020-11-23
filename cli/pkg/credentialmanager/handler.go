@@ -133,14 +133,14 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 	return url.URL{}, "", nil
 }
 
-// initChecks needs to be run when credentialManager is called or initilized
-func initChecks() {
+// initChecks needs to be run when credentialManager is called or initialized
+func initChecks(autoApplyNewContext bool) {
 	cliConfigManager := config.NewCLIConfigManager()
 	currentContext, err := getCurrentContextFromKubeConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-	checkForContextChange(currentContext, cliConfigManager)
+	checkForContextChange(currentContext, cliConfigManager, autoApplyNewContext)
 }
 
 func getCurrentContextFromKubeConfig() (string, error) {
@@ -171,7 +171,7 @@ func getCurrentContextFromKubeConfig() (string, error) {
 	return kubeConfigFile.CurrentContext, nil
 }
 
-func checkForContextChange(currentContext string, cliConfigManager *config.CLIConfigManager) error {
+func checkForContextChange(currentContext string, cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) error {
 
 	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
@@ -184,16 +184,18 @@ func checkForContextChange(currentContext string, cliConfigManager *config.CLICo
 	if cliConfig.CurrentContext != currentContext {
 		fmt.Printf("Kube context has been changed to %s", currentContext)
 		fmt.Println()
-		fmt.Println("Do you want to continue with this? (y/n)")
-		reader := bufio.NewReader(os.Stdin)
-		in, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		in = strings.ToLower(strings.TrimSpace(in))
-		if !(in == "y" || in == "yes") {
-			err := errors.New("stopping installation")
-			log.Fatal(err)
+		if !autoApplyNewContext && cliConfig.CurrentContext != "" {
+			fmt.Println("Do you want to continue with this? (y/n)")
+			reader := bufio.NewReader(os.Stdin)
+			in, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			in = strings.ToLower(strings.TrimSpace(in))
+			if !(in == "y" || in == "yes") {
+				err := errors.New("stopping installation")
+				log.Fatal(err)
+			}
 		}
 		cliConfig.CurrentContext = currentContext
 		err = cliConfigManager.StoreCLIConfig(cliConfig)

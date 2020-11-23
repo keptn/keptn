@@ -61,7 +61,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 `,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -84,7 +84,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

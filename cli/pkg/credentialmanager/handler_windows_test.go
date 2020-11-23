@@ -13,7 +13,7 @@ func init() {
 
 func TestSetAndGetCreds(t *testing.T) {
 	MockKubeConfigCheck = true
-	cm := NewCredentialManager()
+	cm := NewCredentialManager(false)
 	if err := cm.SetCreds(testEndPoint, testAPIToken, testNamespace); err != nil {
 		t.Fatal(err)
 	}
