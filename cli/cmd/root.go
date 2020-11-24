@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"os"
+	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 	homedir "github.com/mitchellh/go-homedir"
@@ -44,7 +45,11 @@ func Execute() {
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
 
-	runVersionCheck()
+	containsHelp := strings.Contains(strings.Join(os.Args, " "), "help")
+
+	if !containsHelp {
+		runVersionCheck()
+	}
 
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel
