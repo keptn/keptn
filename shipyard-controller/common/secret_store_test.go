@@ -89,3 +89,17 @@ func TestUpdateSecret(t *testing.T) {
 	assert.Equal(t, updatedSecretVal, fetchedSecret)
 
 }
+
+func TestUpdateNonExistentSecret(t *testing.T) {
+	secretStore := K8sSecretStore{client: fake.NewSimpleClientset()}
+	secretKey := "my-secret"
+	secretVal := map[string][]byte{"git": []byte{0x1}}
+
+	// when updating secret
+	err := secretStore.UpdateSecret(secretKey, secretVal)
+	assert.Nil(t, err)
+	fetchedSecret, _ := secretStore.GetSecret(secretKey)
+
+	assert.Equal(t, secretVal, fetchedSecret)
+
+}

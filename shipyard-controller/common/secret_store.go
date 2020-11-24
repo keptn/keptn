@@ -68,10 +68,17 @@ func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
 func (k *K8sSecretStore) UpdateSecret(name string, content map[string][]byte) error {
 	namespace := GetKeptnNamespace()
 	secret := k.createSecretObj(name, namespace, content)
-	_, err := k.client.CoreV1().Secrets(namespace).Update(secret)
 
+	_, err := k.client.CoreV1().Secrets(namespace).Update(secret)
 	if err != nil {
-		return err
+		if err.(*k8serrors.StatusError).ErrStatus.Reason == "NotFound" {
+			_, err := k.client.CoreV1().Secrets(namespace).Create(secret)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	return nil
 }

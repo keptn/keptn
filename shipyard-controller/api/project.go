@@ -454,7 +454,7 @@ func (pm *projectManager) createUpstreamRepoCredentials(params *operations.Creat
 	if err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
-	if err := pm.secretStore.CreateSecret(getUpstreamRepoCredsSecretName(*params.Name), map[string][]byte{
+	if err := pm.secretStore.UpdateSecret(getUpstreamRepoCredsSecretName(*params.Name), map[string][]byte{
 		"git-credentials": credsEncoded,
 	}); err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
