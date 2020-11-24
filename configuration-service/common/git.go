@@ -386,6 +386,3 @@ func addVersionToMetadata(project string, metadata *models.Version) {
 		metadata.Version = version
 	}
 }
-
-type GitExecutor interface {
-}
