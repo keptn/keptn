@@ -51,3 +51,26 @@ jobs:
       - name: Test mongodb datastore svc
         run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./mongodb-datastore
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash)
+  unit-tests-node:
+    name: Unit-Tests-Node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install npm libs
+        run: |
+          npm install -g codecov
+          npm install -g libnpx@10.2.0
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Test
+        run: |
+          npm install
+          npm run test:ci
+        working-directory: ./bridge
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash) -F moduleA
