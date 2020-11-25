@@ -8,6 +8,7 @@ type installUpgradeParams struct {
 	PlatformIdentifier *string
 	ChartRepoURL       *string
 	Namespace          *string
+	PatchNamespace     *bool
 }
 
 func getChartRepoURL(input *string) string {
