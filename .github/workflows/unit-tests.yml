@@ -1,0 +1,74 @@
+name: Unit Tests
+on:
+  pull_request:
+    branches: [ master ]
+jobs:
+  unit-tests-go:
+    name: Unit-Tests-Go
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.13
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Test cli
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+        working-directory: ./cli
+      - name: Test api
+        run: go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./ws/... ./utils/...
+        working-directory: ./api
+      - name: Test os route svc
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./platform-support/openshift-route-service
+      - name: Test jmeter svc
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./jmeter-service
+      - name: Test helm svc
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./helm-service
+      - name: Test gatekeeper svc
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./gatekeeper-service
+      - name: Test distributor svc
+        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./distributor
+      - name: Test shipyard controller svc
+        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./shipyard-controller
+      - name: Test configuration svc
+        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./configuration-service
+      - name: Test remediation svc
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./remediation-service
+      - name: Test lighthouse svc
+        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./lighthouse-service
+      - name: Test mongodb datastore svc
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./mongodb-datastore
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash)
+  unit-tests-node:
+    name: Unit-Tests-Node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install npm libs
+        run: |
+          npm install -g codecov
+          npm install -g libnpx@10.2.0
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Test
+        run: |
+          npm install
+          npm run test:ci
+        working-directory: ./bridge
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash) -F moduleA
