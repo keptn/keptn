@@ -181,7 +181,7 @@ func init() {
 	upgradeParams.ChartRepoURL = upgraderCmd.Flags().StringP("chart-repo", "",
 		"", "URL of the Keptn Helm Chart repository")
 	upgraderCmd.Flags().MarkHidden("chart-repo")
-	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label `keptn.sh/managed-by: keptn`")
+	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
 }
 
 func doUpgrade() error {

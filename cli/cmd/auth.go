@@ -51,7 +51,10 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 
 **Note:** If you receive a warning *Using a file-based storage for the key because the password-store seems to be not set up.* this is because a password store could not be found in your environment. In this case, the credentials are stored in *~/.keptn/.keptn* in your home directory.
 	`,
-	Example:      `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
+	Example: `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890
+keptn auth				# Automatically fetch the endpoint & api-token from current kubernetes context
+keptn auth --secure			# Authenticates against the https endpoint
+`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		smartKeptnAuth = smartKeptnAuthParams{
