@@ -1,7 +1,5 @@
 name: Unit Tests
 on:
-  push:
-    branches: [ feature/2716/unit-tests-as-github-action ]
   pull_request:
     branches: [ master ]
 jobs:
