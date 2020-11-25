@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +24,17 @@ type authCmdParams struct {
 	apiToken      *string
 	exportConfig  *bool
 	acceptContext bool
+	secure        *bool
 }
+
+type smartKeptnAuthParams struct {
+	ingressName    string
+	serviceName    string
+	secretName     string
+	insecurePrefix string
+}
+
+var smartKeptnAuth smartKeptnAuthParams
 
 var authParams *authCmdParams
 var exportEndPoint url.URL
@@ -41,6 +54,12 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 	Example:      `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		smartKeptnAuth = smartKeptnAuthParams{
+			ingressName:    "api-keptn-ingress",
+			serviceName:    "api-gateway-nginx",
+			secretName:     "keptn-api-token",
+			insecurePrefix: "http://",
+		}
 		return verifyAuthParams(authParams)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -117,22 +136,42 @@ func init() {
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
+	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
 }
 
 func verifyAuthParams(authParams *authCmdParams) error {
-
+	var err error
 	if *authParams.exportConfig {
 		return nil
 	}
 
 	if !mocking {
 		if (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
-			return errors.New("required flag(s) \"api-token\", \"endpoint\" not set")
-		} else if authParams.endPoint == nil || *authParams.endPoint == "" {
-			return errors.New("required flag \"endpoint\" not set")
-		} else if authParams.apiToken == nil || *authParams.apiToken == "" {
-			return errors.New("required flag \"api-token\" not set")
+			namespace, err = smartKeptnCLIAuth()
+			if err != nil {
+				return err
+			}
+		}
+		if authParams.endPoint == nil || *authParams.endPoint == "" {
+			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
+			if err != nil {
+				*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
+				if err != nil {
+					return fmt.Errorf("Error in fetching the endpoint\n" + err.Error())
+				}
+			}
+			if *authParams.secure {
+				smartKeptnAuth.insecurePrefix = "https://"
+			}
+			*authParams.endPoint = smartKeptnAuth.insecurePrefix + *authParams.endPoint + "/api"
+		}
+
+		if authParams.apiToken == nil || *authParams.apiToken == "" {
+			*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
+			if err != nil {
+				return fmt.Errorf("Error in fetching the api-token\n" + err.Error())
+			}
 		}
 	}
 	return nil
@@ -174,4 +213,33 @@ func authenticate(endPoint string, apiToken string) error {
 	}
 	rootCmd.SetArgs(args)
 	return rootCmd.Execute()
+}
+
+func smartKeptnCLIAuth() (string, error) {
+	keptnInstallations, err := keptnutils.GetKeptnManagedNamespace(false)
+	if err != nil {
+		return "", err
+	}
+
+	if len(keptnInstallations) > 1 {
+		fmt.Println("We have found multiple Keptn Installation, Please select the one from the list below to continue")
+		for index, keptnInstallation := range keptnInstallations {
+			fmt.Printf("\t%d - %s\n", index, keptnInstallation)
+		}
+		fmt.Println("Please select the correct keptn installation: ")
+		reader := bufio.NewReader(os.Stdin)
+		in, err := reader.ReadString('\n')
+		if err != nil {
+			return "", err
+		}
+		inp, err := strconv.Atoi(strings.TrimSuffix(in, "\n"))
+		if err != nil {
+			return "", err
+		}
+		if inp >= len(keptnInstallations) {
+			return "", fmt.Errorf("Please select the correct keptn installation")
+		}
+		return keptnInstallations[inp], nil
+	}
+	return keptnInstallations[0], nil
 }
