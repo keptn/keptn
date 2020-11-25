@@ -5,11 +5,14 @@ jobs:
     name: deprecated version check
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code.
+        uses: actions/checkout@v1
+
       - name: install helm
-        run: ./gh-actions-scripts/install_helm.sh
+        run: .${GITHUB_WORKSPACE}/gh-actions-scripts/install_helm.sh
 
       - name: install pluto
-        run: ./gh-actions-scripts/install_pluto.sh
+        run: .${GITHUB_WORKSPACE}/gh-actions-scripts/install_pluto.sh
 
       - name: check deprecated versions
-        run: ./gh-actions-scripts/check_deprecated_versions.sh
+        run: .${GITHUB_WORKSPACE}/gh-actions-scripts/check_deprecated_versions.sh
