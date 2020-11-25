@@ -8,11 +8,8 @@ jobs:
       - name: Check out code.
         uses: actions/checkout@v1
 
-      - name: install helm
-        run: .${GITHUB_WORKSPACE}/gh-actions-scripts/install_helm.sh
-
-      - name: install pluto
-        run: .${GITHUB_WORKSPACE}/gh-actions-scripts/install_pluto.sh
-
       - name: check deprecated versions
-        run: .${GITHUB_WORKSPACE}/gh-actions-scripts/check_deprecated_versions.sh
+        run: |
+          ./gh-actions-scripts/install_helm.sh
+          ./gh-actions-scripts/install_pluto.sh
+          ./gh-actions-scripts/check_deprecated_versions.sh
