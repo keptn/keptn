@@ -465,7 +465,7 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			fields: fields{
 				apiBase: &apiBase{
 					secretStore: &mockSecretStore{
-						create: func(name string, content map[string][]byte) error {
+						update: func(name string, content map[string][]byte) error {
 							return nil
 						},
 					},
@@ -488,7 +488,7 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			fields: fields{
 				apiBase: &apiBase{
 					secretStore: &mockSecretStore{
-						create: func(name string, content map[string][]byte) error {
+						update: func(name string, content map[string][]byte) error {
 							return errors.New("")
 						},
 					},
