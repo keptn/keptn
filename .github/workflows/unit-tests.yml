@@ -28,10 +28,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: |
+      - name: Install npm libs
+        run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - run: |
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Test
+        run: |
           cd bridge
           npm install
           npm run test:ci
