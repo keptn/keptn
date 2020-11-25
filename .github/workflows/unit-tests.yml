@@ -20,3 +20,18 @@ jobs:
           cd cli
           go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
           cd ..
+  unit-tests-node:
+    name: Unit-Tests-Node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: |
+          npm install -g codecov
+          npm install -g libnpx@10.2.0
+      - run: |
+          cd bridge
+          npm install
+          npm run test:ci
