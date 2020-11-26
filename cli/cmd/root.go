@@ -45,7 +45,7 @@ func Execute() {
 
 	isHelp := false
 	for _, n := range os.Args {
-		if n == "--h" || n == "--help" {
+		if n == "-h" || n == "--help" {
 			isHelp = true
 		}
 	}
