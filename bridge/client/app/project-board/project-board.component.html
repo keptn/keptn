@@ -75,7 +75,7 @@
                   <ng-container *ngIf="openApprovals$ | async as openApprovals">
                     <dt-tag-list aria-label="services">
                       <dt-tag *ngFor="let service of stage.services" [class.out-of-sync-service]="countOpenApprovals(openApprovals, project, stage, service) > 0" [class.error]="findProblemEvent(project.getLatestProblemEvents(stage), service)">
-                        <span *ngIf="project.getLatestDeployment(service, stage) as deployment; else noDeploymentOfServiceTag" (click)="selectDeployment(deployment, project)" [textContent]="deployment.getShortImageName()"></span>
+                        <span *ngIf="service.deployedImage; else noDeploymentOfServiceTag" [textContent]="service.getShortImageName()"></span>
                         <ng-template #noDeploymentOfServiceTag>
                           <span class="no-deployment" [textContent]="service.serviceName"></span>
                         </ng-template>
@@ -140,10 +140,7 @@
                         </ng-container>
                       </div>
                     </dt-info-group-title>
-                    <ng-container *ngIf="project.getLatestSuccessfulArtifact(service, selectedStage) as artifact; else noDeployment">
-                      <p class="m-0 mt-1"><span [textContent]="artifact.data.image"></span>:<span [textContent]="artifact.data.tag"></span></p>
-                      <p class="m-0 mb-1" *ngIf="artifact.isDeployment()"><span class="bold">Deployed at: </span><span [textContent]="artifact.time | amCalendar:getCalendarFormats()"></span></p>
-                    </ng-container>
+                    <p class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getShortImageName()"></p>
                   </dt-info-group>
                 </ktb-expandable-tile-header>
                 <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">

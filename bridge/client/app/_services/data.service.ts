@@ -130,6 +130,30 @@ export class DataService {
     });
   }
 
+  public loadServices(project: Project) {
+    from(project.stages).pipe(
+      mergeMap(
+        // @ts-ignore
+        stage => this.apiService.getServices(project.projectName, stage.stageName, this._keptnInfo.getValue().bridgeInfo.servicesPageSize||50)
+          .pipe(
+            map(result => result.services),
+            map(services => services.map(service => Service.fromJSON(service))),
+            map(services => ({ ...stage, services}))
+          )
+      ),
+      toArray(),
+      map(stages => stages.map(stage => Stage.fromJSON(stage)))
+    ).subscribe((stages: Stage[]) => {
+      project.stages.forEach((stage: Stage) => {
+        stage.services.forEach((service: Service) => {
+          service.deployedImage = stages.find(s => s.stageName == stage.stageName).services.find(s => s.serviceName == service.serviceName).deployedImage;
+        });
+      });
+    }, (err) => {
+      this._projects.next([]);
+    });
+  }
+
   public loadRoots(project: Project, service: Service) {
     let fromTime: Date = this._rootsLastUpdated[project.projectName+":"+service.serviceName];
     this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date();
