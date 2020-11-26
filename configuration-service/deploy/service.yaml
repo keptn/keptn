@@ -60,7 +60,7 @@ spec:
             memory: "256Mi"
             cpu: "500m"
           limits:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "500m"
         volumeMounts:
         - mountPath: /data/config
@@ -69,12 +69,6 @@ spec:
         image: keptn/distributor:latest
         ports:
           - containerPort: 8080
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 10999
-          initialDelaySeconds: 5
-          periodSeconds: 5
         resources:
           requests:
             memory: "32Mi"
