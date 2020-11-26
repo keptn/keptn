@@ -132,7 +132,8 @@ export class DataService {
   public loadServices(project: Project) {
     from(project.stages).pipe(
       mergeMap(
-        stage => this.apiService.getServices(project.projectName, stage.stageName)
+        // @ts-ignore
+        stage => this.apiService.getServices(project.projectName, stage.stageName, this._keptnInfo.getValue().bridgeInfo.servicesPageSize||50)
           .pipe(
             map(result => result.services),
             map(services => services.map(service => Service.fromJSON(service))),
