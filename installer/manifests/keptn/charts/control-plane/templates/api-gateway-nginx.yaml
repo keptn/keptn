@@ -154,7 +154,6 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
       rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*) /$1  break;
-
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
