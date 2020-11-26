@@ -37,10 +37,8 @@ auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
 
 verify_test_step $? "Could not authenticate at Keptn API"
 
-# verify that the keptn CLI has successfully authenticated
-echo "Checking that Keptn is authenticated ..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find Keptn credentials in ~/.keptn folder"
+echo "Keptn installed in version:"
+keptn version
 
 cd ../..
 

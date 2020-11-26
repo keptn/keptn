@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
-import {debounce, map, mergeMap, take, takeUntil, toArray} from "rxjs/operators";
+import {debounce, filter, map, mergeMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -30,6 +30,7 @@ export class DataService {
   constructor(private http: HttpClient, private apiService: ApiService) {
     this.loadKeptnInfo();
     this.keptnInfo
+      .pipe(filter(keptnInfo => !!keptnInfo))
       .pipe(take(1))
       .subscribe(keptnInfo => {
         this.loadProjects();
