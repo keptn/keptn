@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/version"
-	"os"
-	"strings"
-
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/pkg/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var cfgFile string
@@ -45,9 +43,14 @@ func Execute() {
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
 
-	containsHelp := strings.Contains(strings.Join(os.Args, " "), "help")
+	isHelp := false
+	for _, n := range os.Args {
+		if n == "--h" || n == "--help" {
+			isHelp = true
+		}
+	}
 
-	if !containsHelp {
+	if !isHelp {
 		runVersionCheck()
 	}
 
