@@ -153,9 +153,8 @@ data:
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
-      rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*)/project/(.*)/resource/(.*) $request_uri;
       rewrite {{ .Values.prefixPath }}/api/configuration-service/(.*) /$1  break;
-      return 400; # if none of the rewrites matches
+
       proxy_pass         http://configuration-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
