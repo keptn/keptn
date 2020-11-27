@@ -126,6 +126,34 @@ func AddOrigin(project string) error {
 	return err
 }
 
+// UpdateOrCreateOrigin tries to update the remote origin.
+// If no remote origin exists, it will add one
+func UpdateOrCreateOrigin(project string) error {
+
+	projectConfigPath := config.ConfigDir + "/" + project
+	credentials, err := GetCredentials(project)
+
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+
+		// try to update existing remote origin
+		_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "set-url", "origin", repoURI}, projectConfigPath)
+		if err != nil {
+			// create new remote origin in case updating was not possible
+			_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
+			if err != nil {
+				removeRemoteOrigin(project)
+				return obfuscateErrorMessage(err, credentials)
+			}
+		}
+		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
+			removeRemoteOrigin(project)
+			return fmt.Errorf("failed to set upstream: %v\nKeptn requires an uninitialized repo", err)
+		}
+	}
+	return nil
+}
+
 func removeRemoteOrigin(project string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "remove", "origin"}, projectConfigPath)
