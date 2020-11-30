@@ -44,6 +44,11 @@ type CredentialManagerInterface interface {
 }
 
 func do(cmd *cobra.Command, args []string) error {
+
+	fmt.Println(`NOTE: The "keptn get event evaluation-done" command is DEPRECATED and will be removed in a future release`)
+	fmt.Println(`Use "keptn get event evaluation.finished" instead`)
+	fmt.Println()
+
 	endPoint, apiToken, err := credentialManager.GetCreds(namespace)
 	if err != nil {
 		return errors.New(authErrorMsg)
