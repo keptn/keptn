@@ -18,12 +18,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"io"
+	"net/url"
+	"os"
 )
 
 type evaluationDoneStruct struct {
@@ -31,6 +33,59 @@ type evaluationDoneStruct struct {
 }
 
 var evaluationDone evaluationDoneStruct
+var credentialManager CredentialManagerInterface = credentialmanager.NewCredentialManager(false)
+var out io.Writer = os.Stdout
+
+type CredentialManagerInterface interface {
+	SetCreds(endPoint url.URL, apiToken string, namespace string) error
+	GetCreds(namespace string) (url.URL, string, error)
+	SetInstallCreds(creds string) error
+	GetInstallCreds() (string, error)
+}
+
+func do(cmd *cobra.Command, args []string) error {
+	endPoint, apiToken, err := credentialManager.GetCreds(namespace)
+	if err != nil {
+		return errors.New(authErrorMsg)
+	}
+
+	logging.PrintLog("Starting to get evaluation-done event", logging.InfoLevel)
+
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+			endPointErr)
+	}
+
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
+	if !mocking {
+
+		evaluationFinishedEvents, err := eventHandler.GetEvents(&apiutils.EventFilter{
+			KeptnContext: *evaluationDone.KeptnContext,
+			EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+		})
+
+		if err != nil {
+			logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
+			return fmt.Errorf("%s", *err.Message)
+		}
+
+		if len(evaluationFinishedEvents) == 0 {
+			logging.PrintLog("No event returned", logging.QuietLevel)
+			return nil
+		} else if len(evaluationFinishedEvents) == 1 {
+			eventsJSON, _ := json.MarshalIndent(evaluationFinishedEvents[0], "", " ")
+			fmt.Fprintf(out, "%s\n", string(eventsJSON))
+		} else {
+			eventsJSON, _ := json.MarshalIndent(evaluationFinishedEvents, "", "	")
+			fmt.Fprintf(out, "%s\n", string(eventsJSON))
+		}
+	} else {
+		fmt.Println("Skipping send evaluation-start due to mocking flag set to true")
+	}
+	return nil
+}
 
 // evaluationDoneCmd represents the evaluation-done command
 var evaluationDoneCmd = &cobra.Command{
@@ -39,47 +94,7 @@ var evaluationDoneCmd = &cobra.Command{
 	Long:         `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.`,
 	Example:      `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-		if err != nil {
-			return errors.New(authErrorMsg)
-		}
-
-		logging.PrintLog("Starting to get evaluation-done event", logging.InfoLevel)
-
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
-		if !mocking {
-			evaluationDoneEvts, err := eventHandler.GetEvents(&apiutils.EventFilter{
-				KeptnContext: *evaluationDone.KeptnContext,
-				EventType:    keptnevents.EvaluationDoneEventType,
-			})
-			if err != nil {
-				logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("%s", *err.Message)
-			}
-
-			if len(evaluationDoneEvts) == 0 {
-				logging.PrintLog("No event returned", logging.QuietLevel)
-				return nil
-			} else if len(evaluationDoneEvts) == 1 {
-				eventsJSON, _ := json.MarshalIndent(evaluationDoneEvts[0], "", "	")
-				fmt.Println(string(eventsJSON))
-			} else {
-				eventsJSON, _ := json.MarshalIndent(evaluationDoneEvts, "", "	")
-				fmt.Println(string(eventsJSON))
-			}
-		} else {
-			fmt.Println("Skipping send evaluation-start due to mocking flag set to true")
-		}
-		return nil
-	},
+	RunE:         do,
 }
 
 func init() {
