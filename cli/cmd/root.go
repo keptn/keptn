@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/keptn/keptn/cli/pkg/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var cfgFile string
@@ -42,6 +42,17 @@ func Execute() {
 	// Set LogLevel to QuietLevel
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
+
+	isHelp := false
+	for _, n := range os.Args {
+		if n == "-h" || n == "--help" {
+			isHelp = true
+		}
+	}
+
+	if !isHelp {
+		runVersionCheck()
+	}
 
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel
@@ -105,5 +116,39 @@ type options []string
 func (s *options) appendIfNotEmpty(newOption string) {
 	if newOption != "" {
 		*s = append(*s, newOption)
+	}
+}
+
+func runVersionCheck() {
+	var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
+
+	vChecker := version.NewVersionChecker()
+	cliChecked, cliMsgPrinted = vChecker.CheckCLIVersion(Version, true)
+
+	if cliMsgPrinted {
+		fmt.Println("* Your Keptn CLI version: " + Version)
+	}
+
+	clusterVersion, err := getKeptnServerVersion()
+	if err != nil {
+		logging.PrintLog(err.Error(), logging.InfoLevel)
+	} else {
+		kvChecker := version.NewKeptnVersionChecker()
+		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, clusterVersion, true)
+		if keptnMsgPrinted {
+			fmt.Println("* Your Keptn cluster version: " + clusterVersion)
+		}
+
+		if clusterVersion != Version {
+			fmt.Println("* Warning: Your Keptn CLI version (", Version, ") and Keptn cluster version (", clusterVersion, ") don't match. This can lead to problems. Please make sure to use the same versions.")
+		}
+	}
+
+	if cliMsgPrinted || keptnMsgPrinted {
+		fmt.Printf(setVersionCheckMsg, "disable", "false")
+	}
+
+	if cliChecked || keptnChecked {
+		updateLastVersionCheck()
 	}
 }
