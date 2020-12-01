@@ -155,14 +155,14 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
-verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
-verify_using_jq "$response" ".data.evaluationdetails.score" "0"
-verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
+verify_using_jq "$response" ".data.evaluation.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
+verify_using_jq "$response" ".data.evaluation.score" "0"
+verify_using_jq "$response" ".data.evaluation.sloFileContent" ""
 
 ########################################################################################################################
 # Testcase 2:
@@ -223,14 +223,14 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
-verify_using_jq "$response" ".data.evaluationdetails.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
-verify_using_jq "$response" ".data.evaluationdetails.score" "0"
-verify_using_jq "$response" ".data.evaluationdetails.sloFileContent" ""
+verify_using_jq "$response" ".data.evaluation.result" "no evaluation performed by lighthouse because no SLI-provider configured for project ${PROJECT}"
+verify_using_jq "$response" ".data.evaluation.score" "0"
+verify_using_jq "$response" ".data.evaluation.sloFileContent" ""
 
 
 ########################################################################################################################
@@ -289,7 +289,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -344,15 +344,15 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# verify .data.evaluationdetails: There should be 3 results that are true, and 0 false
-number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
-number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
+# verify .data.evaluation: There should be 3 results that are true, and 0 false
+number_of_true_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "true")
+number_of_false_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "false")
 
 if [[ $number_of_true_results -ne 3 ]]; then
   echo "Expected 3 results with success: true, but found $number_of_true_results"
@@ -362,10 +362,10 @@ if [[ $number_of_false_results -ne 0 ]]; then
   echo "Expected 0 results with success: false, but found $number_of_false_results"
 fi
 
-# Verify .data.evaluationdetails: There should be 2 results with status: pass, and 1 with status: info
-number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
-number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
-number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
+# Verify .data.evaluation: There should be 2 results with status: pass, and 1 with status: info
+number_of_pass_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "pass")
+number_of_warning_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "warning")
+number_of_info_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "info")
 
 if [[ $number_of_pass_results -ne 2 ]]; then
   echo "Expected 2 results with status: pass, but found $number_of_pass_results"
@@ -423,15 +423,15 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# verify .data.evaluationdetails: There should be 3 results that are true, and 0 false
-number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
-number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
+# verify .data.evaluation: There should be 3 results that are true, and 0 false
+number_of_true_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "true")
+number_of_false_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "false")
 
 if [[ $number_of_true_results -ne 3 ]]; then
   echo "Expected 3 results with success: true, but found $number_of_true_results"
@@ -442,9 +442,9 @@ if [[ $number_of_false_results -ne 0 ]]; then
 fi
 
 # verify .data.evaluationsdetails: There should be 2 results with status: pass, and 1 with status: info
-number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
-number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
-number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
+number_of_pass_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "pass")
+number_of_warning_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "warning")
+number_of_info_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "info")
 
 if [[ $number_of_pass_results -ne 2 ]]; then
   echo "Expected 2 results with status: pass, but found $number_of_pass_results"
@@ -504,15 +504,15 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# verify .data.evaluationdetails: There should be 3 results that are true, and 2 false
-number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
-number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
+# verify .data.evaluation: There should be 3 results that are true, and 2 false
+number_of_true_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "true")
+number_of_false_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "false")
 
 if [[ $number_of_true_results -ne 3 ]]; then
   echo "Expected 3 results with success: true, but found $number_of_true_results"
@@ -523,9 +523,9 @@ if [[ $number_of_false_results -ne 2 ]]; then
 fi
 
 # verify .data.evaluationsdetails: There should be 2 results with status: pass, and 3 with status: info
-number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
-number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
-number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
+number_of_pass_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "pass")
+number_of_warning_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "warning")
+number_of_info_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "info")
 
 if [[ $number_of_pass_results -ne 2 ]]; then
   echo "Expected 2 results with status: pass, but found $number_of_pass_results"
@@ -587,15 +587,15 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
-# verify .data.evaluationdetails: There should be 5 results that are true, and 0 false
-number_of_true_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "true")
-number_of_false_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].value.success' | grep -c "false")
+# verify .data.evaluation: There should be 5 results that are true, and 0 false
+number_of_true_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "true")
+number_of_false_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].value.success' | grep -c "false")
 
 if [[ $number_of_true_results -ne 5 ]]; then
   echo "Expected 5 results with success: true, but found $number_of_true_results"
@@ -606,9 +606,9 @@ if [[ $number_of_false_results -ne 0 ]]; then
 fi
 
 # verify .data.evaluationsdetails: There should be 2 results with status: pass, and 3 with status: info
-number_of_pass_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "pass")
-number_of_warning_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "warning")
-number_of_info_results=$(echo $response | jq -r '.data.evaluationdetails.indicatorResults[].status' | grep -c "info")
+number_of_pass_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "pass")
+number_of_warning_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "warning")
+number_of_info_results=$(echo $response | jq -r '.data.evaluation.indicatorResults[].status' | grep -c "info")
 
 if [[ $number_of_pass_results -ne 2 ]]; then
   echo "Expected 2 results with status: pass, but found $number_of_pass_results"
@@ -646,7 +646,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -666,12 +666,12 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
-verify_using_jq "$response" ".data.evaluationdetails.comparedEvents|contains([\"${first_event_id}\"])" "true"
+verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first_event_id}\"])" "true"
 
 
 # Send the invalidated event for the first evaluation
@@ -692,12 +692,12 @@ echo $response | jq .
 # invalidated event should not be in list of compared events anymore
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
-verify_using_jq "$response" ".data.evaluationdetails.comparedEvents|contains([\"${first_event_id}\"])" "false"
+verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first_event_id}\"])" "false"
 
 
 ########################################################################################################################
