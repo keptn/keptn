@@ -72,7 +72,7 @@ func TestNewEventHandler(t *testing.T) {
 				event:  incomingEvent,
 				logger: nil,
 			},
-			eventType: keptn.InternalGetSLIDoneEventType,
+			eventType: keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName),
 			want: &EvaluateSLIHandler{
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
