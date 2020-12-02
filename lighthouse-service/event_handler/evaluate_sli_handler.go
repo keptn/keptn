@@ -51,13 +51,18 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err := eh.Event.DataAs(&e)
 
-	triggeredEvents, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
+	triggeredEvents, err2 := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
 		Stage:        e.Stage,
 		Service:      e.Service,
 		EventType:    keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 		KeptnContext: eh.KeptnHandler.KeptnContext,
 	})
+	if err2 != nil {
+		msg := fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2)
+		eh.KeptnHandler.Logger.Error(fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2))
+		return errors.New(msg)
+	}
 	if triggeredEvents == nil || len(triggeredEvents) == 0 {
 		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
 		eh.KeptnHandler.Logger.Error(msg)
