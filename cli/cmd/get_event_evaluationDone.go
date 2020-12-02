@@ -24,7 +24,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 	"io"
-	"net/url"
 	"os"
 )
 
@@ -33,15 +32,8 @@ type evaluationDoneStruct struct {
 }
 
 var evaluationDone evaluationDoneStruct
-var credentialManager CredentialManagerInterface = credentialmanager.NewCredentialManager(false)
+var credentialManager credentialmanager.CredentialManagerInterface = credentialmanager.NewCredentialManager(false)
 var out io.Writer = os.Stdout
-
-type CredentialManagerInterface interface {
-	SetCreds(endPoint url.URL, apiToken string, namespace string) error
-	GetCreds(namespace string) (url.URL, string, error)
-	SetInstallCreds(creds string) error
-	GetInstallCreds() (string, error)
-}
 
 func do(cmd *cobra.Command, args []string) error {
 

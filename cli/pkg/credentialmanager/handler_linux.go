@@ -25,6 +25,15 @@ func init() {
 	passwordStoreDirectory = os.Getenv("HOME") + "/.password-store"
 }
 
+// CredentialManagerInterface defines the API of a credential manager
+type CredentialManagerInterface interface {
+	SetCreds(endPoint url.URL, apiToken string, namespace string) error
+	GetCreds(namespace string) (url.URL, string, error)
+	SetInstallCreds(creds string) error
+	GetInstallCreds() (string, error)
+}
+
+// CredentialManager is the default implementation of the CredentialManagerInterface
 type CredentialManager struct {
 	// MockAuthCreds shows whether the get and set for the auth-creds should be mocked
 	apiTokenFile string
