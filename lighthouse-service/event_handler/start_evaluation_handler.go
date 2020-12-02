@@ -45,7 +45,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	// get SLO file
 	indicators := []string{}
-	var filters = []*keptnevents.SLIFilter{}
+	var filters = []*keptnv2.SLIFilter{}
 	// get SLO file
 	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
 	if err == nil && objectives != nil {
@@ -56,7 +56,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 		if objectives.Filter != nil {
 			for key, value := range objectives.Filter {
-				filter := &keptnevents.SLIFilter{
+				filter := &keptnv2.SLIFilter{
 					Key:   key,
 					Value: value,
 				}
@@ -149,23 +149,33 @@ func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, s
 	return "", "", errors.New("evaluation.triggered event does not contain evaluation timeframe")
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnevents.SLIFilter, labels map[string]string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter, labels map[string]string) error {
 	source, _ := url.Parse("lighthouse-service")
 
-	getSLIEvent := keptnevents.InternalGetSLIEventData{
-		SLIProvider:   sliProvider,
-		Project:       project,
-		Service:       service,
-		Stage:         stage,
-		Start:         start,
-		End:           end,
-		Indicators:    indicators,
-		CustomFilters: filters,
-		Labels:        labels,
+	getSLIEvent := keptnv2.GetSLITriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: project,
+			Stage:   stage,
+			Service: service,
+			Labels:  labels,
+		},
+		GetSLI: struct {
+			SLIProvider   string               `json:"sliProvider"`
+			Start         string               `json:"start"`
+			End           string               `json:"end"`
+			Indicators    []string             `json:"indicators"`
+			CustomFilters []*keptnv2.SLIFilter `json:"customFilters"`
+		}{
+			SLIProvider:   sliProvider,
+			Start:         start,
+			End:           end,
+			Indicators:    indicators,
+			CustomFilters: filters,
+		},
 	}
 
 	event := cloudevents.NewEvent()
-	event.SetType(keptnevents.InternalGetSLIEventType)
+	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
