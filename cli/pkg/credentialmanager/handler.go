@@ -196,7 +196,7 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 		fmt.Printf("Kube context has been changed to %s", kubeConfigFile.CurrentContext)
 		fmt.Println()
 		if !autoApplyNewContext && keptnContext != "" {
-			fmt.Println("Do you want to continue with this? (y/n)")
+			fmt.Println("Do you want to switch to the new Kube context with the Keptn running there? (y/n)")
 			reader := bufio.NewReader(os.Stdin)
 			in, err := reader.ReadString('\n')
 			if err != nil {
