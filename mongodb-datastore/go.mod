@@ -12,7 +12,7 @@ require (
 	github.com/go-openapi/validate v0.19.10
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20201021140127-a974f80c5982
+	github.com/keptn/go-utils v0.6.3-0.20201202151239-46192ab68374
 	github.com/magiconair/properties v1.8.1
 	github.com/mitchellh/mapstructure v1.3.2
 	github.com/xdg/stringprep v1.0.0 // indirect
