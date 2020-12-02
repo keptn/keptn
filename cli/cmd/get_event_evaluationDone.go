@@ -64,30 +64,25 @@ func do(cmd *cobra.Command, args []string) error {
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-	if !mocking {
+	evaluationFinishedEvents, getEventsError := eventHandler.GetEvents(&apiutils.EventFilter{
+		KeptnContext: *evaluationDone.KeptnContext,
+		EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+	})
 
-		evaluationFinishedEvents, err := eventHandler.GetEvents(&apiutils.EventFilter{
-			KeptnContext: *evaluationDone.KeptnContext,
-			EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
-		})
+	if getEventsError != nil {
+		logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
+		return fmt.Errorf("%s", *getEventsError.Message)
+	}
 
-		if err != nil {
-			logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
-			return fmt.Errorf("%s", *err.Message)
-		}
-
-		if len(evaluationFinishedEvents) == 0 {
-			logging.PrintLog("No event returned", logging.QuietLevel)
-			return nil
-		} else if len(evaluationFinishedEvents) == 1 {
-			eventsJSON, _ := json.MarshalIndent(evaluationFinishedEvents[0], "", " ")
-			fmt.Fprintf(out, "%s\n", string(eventsJSON))
-		} else {
-			eventsJSON, _ := json.MarshalIndent(evaluationFinishedEvents, "", "	")
-			fmt.Fprintf(out, "%s\n", string(eventsJSON))
-		}
+	if len(evaluationFinishedEvents) == 0 {
+		logging.PrintLog("No event returned", logging.QuietLevel)
+		return nil
+	} else if len(evaluationFinishedEvents) == 1 {
+		eventsJSON, _ := json.MarshalIndent(evaluationFinishedEvents[0], "", " ")
+		fmt.Fprintf(out, "%s\n", string(eventsJSON))
 	} else {
-		fmt.Println("Skipping send evaluation-start due to mocking flag set to true")
+		eventsJSON, _ := json.MarshalIndent(evaluationFinishedEvents, "", "	")
+		fmt.Fprintf(out, "%s\n", string(eventsJSON))
 	}
 	return nil
 }
