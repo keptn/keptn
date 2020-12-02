@@ -181,7 +181,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	event.SetExtension("shkeptncontext", shkeptncontext)
 	event.SetData(cloudevents.ApplicationJSON, getSLIEvent)
 
-	eh.KeptnHandler.Logger.Debug("Send event: " + keptnevents.InternalGetSLIEventType)
+	eh.KeptnHandler.Logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)
 }
 

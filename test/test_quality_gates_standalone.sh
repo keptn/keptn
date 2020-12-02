@@ -2,6 +2,8 @@
 
 source test/utils.sh
 
+set_keptn_contrib_service_versions
+
 # test configuration
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
