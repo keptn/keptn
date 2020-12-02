@@ -4,6 +4,23 @@ source test/utils.sh
 
 set_keptn_contrib_service_versions
 
+function cleanup() {
+  echo "Executing cleanup..."
+
+  echo "Delete lighthouse-config configmap"
+  kubectl delete configmap -n ${KEPTN_NAMESPACE} lighthouse-config
+
+  echo "Deleting project ${PROJECT}"
+  keptn delete project $PROJECT
+
+  echo "Uninstalling dynatrace-sli-service"
+  kubectl -n ${KEPTN_NAMESPACE} delete deployment dynatrace-sli-service
+
+  echo "Removing secret dynatrace-credentials-${PROJECT}"
+  kubectl -n ${KEPTN_NAMESPACE} delete secret dynatrace-credentials-${PROJECT}
+}
+trap cleanup EXIT SIGINT
+
 # test configuration
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
@@ -63,17 +80,10 @@ fi
 
 echo "Testing quality gates standalone for project $PROJECT"
 
-# test keptn create project and create service
-rm -rf examples
-git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
-cd examples/onboarding-carts
-
 echo "Creating a new project without Git upstream"
-keptn create project $PROJECT --shipyard=./shipyard-quality-gates.yaml
+keptn create project $PROJECT --shipyard=./test/assets/shipyard-quality-gates.yaml
 verify_test_step $? "keptn create project {$PROJECT} - failed"
-sleep 10
 
-cd ../..
 
 # verify that the project has been created via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
@@ -92,7 +102,6 @@ fi
 SERVICE=frontend
 keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} - failed"
-sleep 10
 
 ########################################################################################################################
 # Testcase 0.a: Send a start-evaluation event for a service that does not exist
@@ -100,7 +109,7 @@ sleep 10
 
 echo "Sending start-evaluation event for service 'wrong-service' in stage hardening"
 
-response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
+response=$(send_start_evaluation_request $PROJECT hardening wrong-service)
 
 # check if the error response tells us that the service does not exist
 if [[ $response != *"Service not found"* ]]; then
@@ -129,7 +138,7 @@ fi
 
 echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-service' in project 'wrong-project'"
 
-response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
+response=$(send_start_evaluation_request wrong-project wrong-stage wrong-service)
 
 # check if the error response tells us that the project does not exist
 if [[ $response != *"Project not found"* ]]; then
@@ -157,7 +166,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -182,18 +191,18 @@ sleep 10
 
 # try to fetch a get-sli event
 echo "Getting get-sli event with context-id: ${keptn_context_id}"
-response=$(get_event sh.keptn.internal.event.get-sli ${keptn_context_id} ${PROJECT})
+response=$(get_event sh.keptn.event.get-sli.triggered ${keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.internal.event.get-sli"
+verify_using_jq "$response" ".type" "sh.keptn.event.get-sli.triggered"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
-verify_using_jq "$response" ".data.sliProvider" "dynatrace"
+verify_using_jq "$response" ".data[\"get-sli\"].sliProvider" "dynatrace"
 
 kubectl delete configmap -n ${KEPTN_NAMESPACE} lighthouse-config
 
@@ -225,7 +234,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -241,6 +250,10 @@ verify_using_jq "$response" ".data.evaluation.sloFileContent" ""
 ########################################################################################################################
 echo "Install dynatrace-sli-service from: ${DYNATRACE_SLI_SERVICE_VERSION}"
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
+sleep 5
+# TODO: delete line below !
+kubectl -n keptn set image deployment/dynatrace-sli-service dynatrace-sli-service=keptncontrib/dynatrace-sli-service:0.6.0-master
+
 sleep 10
 wait_for_deployment_in_namespace "dynatrace-sli-service" ${KEPTN_NAMESPACE}
 
@@ -291,7 +304,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -346,7 +359,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -425,7 +438,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -506,7 +519,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -589,7 +602,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -648,7 +661,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -668,7 +681,7 @@ echo $response | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
@@ -694,26 +707,13 @@ echo $response | jq .
 # invalidated event should not be in list of compared events anymore
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"
-verify_using_jq "$response" ".type" "sh.keptn.events.evaluation.finished"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
 verify_using_jq "$response" ".data.project" "${PROJECT}"
 verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first_event_id}\"])" "false"
 
-
-########################################################################################################################
-# cleanup
-########################################################################################################################
-
-echo "Deleting project ${PROJECT}"
-keptn delete project $PROJECT
-
-echo "Uninstalling dynatrace-sli-service"
-kubectl -n ${KEPTN_NAMESPACE} delete deployment dynatrace-sli-service
-
-echo "Removing secret dynatrace-credentials-${PROJECT}"
-kubectl -n ${KEPTN_NAMESPACE} delete secret dynatrace-credentials-${PROJECT}
 
 echo "Quality gates standalone tests done ✓"
 
