@@ -2,8 +2,6 @@
 
 source test/utils.sh
 
-set_keptn_contrib_service_versions
-
 function cleanup() {
   echo "Executing cleanup..."
 
