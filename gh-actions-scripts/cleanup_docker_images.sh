@@ -1,5 +1,7 @@
 #!/bin/bash
 
+apt-get update && apt-get install jq -y
+
 function get_outdated_images() {
   REPO=$1
   TAG_FILTER=$2

@@ -376,12 +376,6 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: Delete outdated images
-    if: branch = master AND type = cron
-    os: linux
-    script:
-      - travis-scripts/cleanup_docker_images.sh
-
   ##################################################################################
   # Release specific jobs
   ##################################################################################
