@@ -73,7 +73,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.internal.event.get-sli.done,sh.keptn.event.monitoring.configure'
+              value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
       serviceAccountName: keptn-lighthouse-service

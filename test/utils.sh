@@ -39,7 +39,7 @@ function send_start_evaluation_request() {
 
   response=$(keptn send event start-evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m 2>&1)
 
-  echo "$response"
+  echo $response
 }
 
 function send_start_evaluation_event() {
@@ -55,7 +55,7 @@ function send_start_evaluation_event() {
 
 function get_evaluation_done_event() {
   keptn_context_id=$1
-  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
+  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +5
 }
 
 function get_event() {
