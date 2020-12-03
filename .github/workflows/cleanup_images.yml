@@ -15,4 +15,4 @@ jobs:
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
-          ./gh-actions-scripts/cleanup_docker_images.sh
+          apt-get update && apt-get install jq -y && ./gh-actions-scripts/cleanup_docker_images.sh
