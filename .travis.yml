@@ -205,20 +205,6 @@ gke_full_part2: &gke_full_part2
 jobs:
   include:
   ##################################################################################
-  # Jobs that are always executed
-  ##################################################################################
-  - stage: Check deprecated Kubernetes apiVersions
-    os: linux
-    before_script:
-      - source ./travis-scripts/install_helm.sh
-      - source ./travis-scripts/install_pluto.sh
-    script:
-      - set -e # fail the whole script whenever any command fails
-      - helm template ${INSTALLER_FOLDER}/manifests/keptn | pluto detect-files -owide
-      - pluto detect-files -owide
-      - set +e # revert set -e from above
-
-  ##################################################################################
   # Jobs for the master branch
   ##################################################################################
   - stage: Build Docker Images
