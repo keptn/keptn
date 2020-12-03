@@ -167,7 +167,31 @@ func setUpstreamsAndPush(project string, credentials *GitCredentials, repoURI st
 		return obfuscateErrorMessage(err, credentials)
 	}
 
+	defaultBranch, err := GetDefaultBranch(project)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+
+	// first, make sure to push the master/main branch first
 	for _, branch := range branches {
+		if branch == defaultBranch {
+			err := CheckoutBranch(project, branch, true)
+			if err != nil {
+				return obfuscateErrorMessage(err, credentials)
+			}
+			_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
+			if err != nil {
+				return obfuscateErrorMessage(err, credentials)
+			}
+
+			break
+		}
+	}
+
+	for _, branch := range branches {
+		if branch == defaultBranch {
+			continue
+		}
 		err := CheckoutBranch(project, branch, true)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)
