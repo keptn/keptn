@@ -67,15 +67,12 @@ For pulling an image from a private registry, we would like to refer to the Kube
 	Example:      `keptn send event new-artifact --project=sockshop --service=carts --stage=dev --image=docker.io/keptnexamples/carts --tag=0.7.0 --sequence=artifact-delivery`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
-		newArtifact.Image = &trimmedImage
-
-		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
-			*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
-		}
-		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
+		return doSendEventNewArtifactPreRunCheck()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := doSendEventNewArtifactPreRunCheck(); err != nil {
+			return err
+		}
 		var endPoint url.URL
 		var apiToken string
 		var err error
@@ -170,6 +167,16 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 		return nil
 	},
+}
+
+func doSendEventNewArtifactPreRunCheck() error {
+	trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
+	newArtifact.Image = &trimmedImage
+
+	if newArtifact.Tag == nil || *newArtifact.Tag == "" {
+		*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
+	}
+	return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 }
 
 func init() {

@@ -43,15 +43,10 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 `,
 	Example:      `keptn send event --file=./new_artifact_event.json`,
 	SilenceUsage: true,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		eventString, err := file.ReadFile(*eventFilePath)
-		if err != nil {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := doSendEventPreRunChecks(); err != nil {
 			return err
 		}
-		var body interface{}
-		return json.Unmarshal([]byte(eventString), &body)
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
@@ -88,6 +83,15 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
 		return nil
 	},
+}
+
+func doSendEventPreRunChecks() error {
+	eventString, err := file.ReadFile(*eventFilePath)
+	if err != nil {
+		return err
+	}
+	var body interface{}
+	return json.Unmarshal([]byte(eventString), &body)
 }
 
 func init() {
