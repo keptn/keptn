@@ -461,7 +461,7 @@ jobs:
     <<: *gke_full_part2 # use GKE template
 
   - stage: Test Minishift Standalone (--platform=openshift)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push and cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron) # run nightlies for any master/release-* branches
     os: linux
     before_script:
       # download and install kubectl
@@ -490,6 +490,7 @@ jobs:
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
 
+  # Run K3s Standalone on every push on master/release branch
   - &K3sStandaloneTest
     stage: Test K3s Standalone (--platform=kubernetes, --namespace=keptn-test)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
@@ -523,12 +524,13 @@ jobs:
       - kubectl get ingress --all-namespaces
 
   - <<: *K3sStandaloneTest
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron) # run only nightly
     env:
       - K3S_VERSION=v1.19.2+k3s1 # see https://github.com/rancher/k3s/releases
 
   - &microk8sStandaloneTest
     stage: Test MicroK8s Standalone (--platform=kubernetes)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron) # run nightlies for any master/release-* branches
     os: linux
     env:
       - MICROK8S_VERSION=1.16/stable # see https://snapcraft.io/microk8s channels
