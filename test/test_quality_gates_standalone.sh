@@ -250,7 +250,7 @@ echo "Install dynatrace-sli-service from: ${DYNATRACE_SLI_SERVICE_VERSION}"
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
 sleep 5
 # TODO: delete line below !
-kubectl -n keptn set image deployment/dynatrace-sli-service dynatrace-sli-service=keptncontrib/dynatrace-sli-service:0.6.0-master
+kubectl -n ${KEPTN_NAMESPACE} set image deployment/dynatrace-sli-service dynatrace-sli-service=keptncontrib/dynatrace-sli-service:0.6.0-master
 
 sleep 10
 wait_for_deployment_in_namespace "dynatrace-sli-service" ${KEPTN_NAMESPACE}
