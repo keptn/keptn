@@ -157,7 +157,7 @@ sleep 10
 
 # try to fetch a evaluation-done event
 echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
-response=$(get_evaluation_done_event ${keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
@@ -225,7 +225,7 @@ sleep 10
 
 # try to fetch a evaluation-done event
 echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
-response=$(get_evaluation_done_event ${keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
@@ -276,7 +276,7 @@ RETRY=0; RETRY_MAX=30;
 
 while [[ $RETRY -lt $RETRY_MAX ]]; do
   # try to fetch the evaluation-done event
-  response=$(get_evaluation_done_event ${keptn_context_id})
+  response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
   # check if this contains an error
   echo $response | grep "No event returned"
@@ -327,7 +327,7 @@ RETRY=0; RETRY_MAX=30;
 
 while [[ $RETRY -lt $RETRY_MAX ]]; do
   # try to fetch the evaluation-done event
-  response=$(get_evaluation_done_event ${keptn_context_id})
+  response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
   # check if this contains an error
   echo $response | grep "No event returned"
@@ -409,7 +409,7 @@ RETRY=0; RETRY_MAX=30;
 
 while [[ $RETRY -lt $RETRY_MAX ]]; do
   # try to fetch the evaluation-done event
-  response=$(get_evaluation_done_event ${keptn_context_id})
+  response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
   # check if this contains an error
   echo $response | grep "No event returned"
@@ -490,7 +490,7 @@ RETRY=0; RETRY_MAX=30;
 
 while [[ $RETRY -lt $RETRY_MAX ]]; do
   # try to fetch the evaluation-done event
-  response=$(get_evaluation_done_event ${keptn_context_id})
+  response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
   # check if this contains an error
   echo $response | grep "No event returned"
@@ -573,7 +573,7 @@ RETRY=0; RETRY_MAX=30;
 
 while [[ $RETRY -lt $RETRY_MAX ]]; do
   # try to fetch the evaluation-done event
-  response=$(get_evaluation_done_event ${keptn_context_id})
+  response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
   # check if this contains an error
   echo $response | grep "No event returned"
@@ -652,7 +652,7 @@ sleep 10
 
 # try to fetch a evaluation-done event
 echo "Getting evaluation-done event with context-id: ${first_keptn_context_id}"
-response=$(get_evaluation_done_event ${first_keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${first_keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
@@ -672,7 +672,7 @@ sleep 10
 
 # try to fetch a evaluation-done event
 echo "Getting evaluation-done event with context-id: ${second_keptn_context_id}"
-response=$(get_evaluation_done_event ${second_keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${second_keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
@@ -697,7 +697,7 @@ sleep 10
 
 # try to fetch a evaluation-done event
 echo "Getting evaluation-done event with context-id: ${third_keptn_context_id}"
-response=$(get_evaluation_done_event ${third_keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${third_keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .

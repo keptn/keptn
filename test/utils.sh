@@ -55,7 +55,7 @@ function send_start_evaluation_event() {
 
 function get_evaluation_done_event() {
   keptn_context_id=$1
-  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +5
+  keptn get event evaluation-done --keptn-context="${keptn_context_id}" 2>/dev/null | tail -n +5
 }
 
 function get_event() {
