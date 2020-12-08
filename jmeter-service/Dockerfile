@@ -42,7 +42,7 @@ ENV	JMETER_BIN	${JMETER_HOME}/bin
 ENV	JMETER_DOWNLOAD_URL  https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
 
 # Load additional extensions
-ARG DYNATRACE_EXTENSION_VERSION="1.1"
+ARG DYNATRACE_EXTENSION_VERSION="1.2"
 ENV DYNATRACE_EXTENSION_URL https://github.com/dynatrace-oss/jmeter-dynatrace-plugin/releases/download/v${DYNATRACE_EXTENSION_VERSION}.snapshot/jmeter-dynatrace-plugin-${DYNATRACE_EXTENSION_VERSION}-SNAPSHOT.jar
 
 # Install extra packages

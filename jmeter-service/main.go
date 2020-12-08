@@ -73,8 +73,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 //
 func runTests(event cloudevents.Event, shkeptncontext string, data keptn.DeploymentFinishedEventData, logger *keptn.Logger) {
 
-	testInfo := getTestInfo(data)
-	id := uuid.New().String()
+	testInfo := getTestInfo(data, shkeptncontext)
 	startedAt := time.Now()
 
 	// load the workloads from JMeterConf
@@ -98,7 +97,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 	var res bool
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
-		res, err = runWorkload(serviceUrl, testInfo, id, healthCheckWorkload, logger)
+		res, err = runWorkload(serviceUrl, testInfo, healthCheckWorkload, logger)
 		if err != nil {
 			logger.Error(err.Error())
 			return
@@ -128,7 +127,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 		var teststrategyWorkload *Workload
 		teststrategyWorkload, err = getWorkload(jmeterconf, testStrategy)
 		if teststrategyWorkload != nil {
-			res, err = runWorkload(serviceUrl, testInfo, id, teststrategyWorkload, logger)
+			res, err = runWorkload(serviceUrl, testInfo, teststrategyWorkload, logger)
 			if err != nil {
 				logger.Error(err.Error())
 				res = false
@@ -158,12 +157,13 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptn.Deploym
 //
 // Extracts relevant information from the data object
 //
-func getTestInfo(data keptn.DeploymentFinishedEventData) *TestInfo {
+func getTestInfo(data keptn.DeploymentFinishedEventData, shkeptncontext string) *TestInfo {
 	return &TestInfo{
 		Project:      data.Project,
 		Service:      data.Service,
 		Stage:        data.Stage,
 		TestStrategy: data.TestStrategy,
+		Context:      shkeptncontext,
 	}
 }
 
@@ -191,7 +191,7 @@ func getServiceURL(data keptn.DeploymentFinishedEventData) (*url.URL, error) {
 //
 // executes the actual JMEter tests based on the workload configuration
 //
-func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, id string, workload *Workload, logger *keptn.Logger) (bool, error) {
+func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, workload *Workload, logger *keptn.Logger) (bool, error) {
 
 	// for testStrategy functional we enforce a 0% error policy!
 	breakOnFunctionalIssues := workload.TestStrategy == TestStrategy_Functional
@@ -204,12 +204,16 @@ func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, id string, workload *W
 		return true, nil
 	}
 
-	os.RemoveAll(workload.TestStrategy + "_" + testInfo.Service)
-	os.RemoveAll(workload.TestStrategy + "_" + testInfo.Service + "_result.tlf")
+	// the resultdirectory is unique as it contains context but also gives some human readable context such as teststrategy and service
+	// this will also be used for TSN parameter
+	resultDirectory := fmt.Sprintf("%s_%s_%s", workload.TestStrategy, testInfo.Service, testInfo.Context)
+
+	// lets first remove all potentially left over result files from previous runs -> we keept them between runs for troubleshooting though
+	os.RemoveAll(resultDirectory)
+	os.RemoveAll(resultDirectory + "_result.tlf")
 	os.RemoveAll("output.txt")
 
-	return executeJMeter(testInfo, workload, workload.TestStrategy+"_"+testInfo.Service, serviceUrl, workload.TestStrategy+""+id,
-		breakOnFunctionalIssues, logger)
+	return executeJMeter(testInfo, workload, resultDirectory, serviceUrl, resultDirectory, breakOnFunctionalIssues, logger)
 }
 
 func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result string, logger *keptn.Logger) error {
