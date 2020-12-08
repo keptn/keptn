@@ -20,12 +20,12 @@ import (
 )
 
 type authCmdParams struct {
-	endPoint               *string
-	apiToken               *string
-	exportConfig           *bool
-	acceptContext          bool
-	secure                 *bool
-	ignoreNamespaceListing *bool
+	endPoint             *string
+	apiToken             *string
+	exportConfig         *bool
+	acceptContext        bool
+	secure               *bool
+	skipNamespaceListing *bool
 }
 
 type smartKeptnAuthParams struct {
@@ -55,7 +55,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 	Example: `keptn auth --endpoint=https://api.keptn.MY.DOMAIN.COM --api-token=abcd-0123-wxyz-7890
 keptn auth				# Automatically fetch the endpoint & api-token from current kubernetes context
 keptn auth --secure			# Authenticates against the https endpoint
-keptn auth --ignore-namespace-listing # To ignore the listing of namespaces and use the namespace passed with "--namespace" flag (default namespace is 'keptn')
+keptn auth --skip-namespace-listing # To skip the listing of namespaces and use the namespace passed with "--namespace" flag (default namespace is 'keptn')
 `,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -142,7 +142,7 @@ func init() {
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
-	authParams.ignoreNamespaceListing = authCmd.Flags().BoolP("ignore-namespace-listing", "i", false, "To ignore the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
+	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
 }
 
@@ -153,7 +153,7 @@ func verifyAuthParams(authParams *authCmdParams) error {
 	}
 
 	if !mocking {
-		if !*authParams.ignoreNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
+		if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
 			namespace, err = smartKeptnCLIAuth()
 			if err != nil {
 				return err
