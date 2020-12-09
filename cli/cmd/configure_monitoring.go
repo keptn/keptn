@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/mitchellh/mapstructure"
 	"net/url"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -13,7 +16,6 @@ import (
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -87,6 +89,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		eventByte, err := json.Marshal(sdkEvent)
@@ -107,9 +110,36 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 				return fmt.Errorf("Sending configure-monitoring event was unsuccessful. %s", *err.Message)
 			}
 
+			maxFetchEventRetries := 10
+			fetchEventRetryTime := 3
 			// if eventContext is available, open WebSocket communication
-			if eventContext != nil && !SuppressWSCommunication {
-				return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
+			if eventContext != nil {
+				for i := 0; i < maxFetchEventRetries; i = i + i {
+					events, errObj := eventHandler.GetEvents(&apiutils.EventFilter{
+						KeptnContext: *eventContext.KeptnContext,
+						EventType:    keptnv2.GetFinishedEventType("configure-monitoring"),
+					})
+					if errObj == nil && len(events) > 0 {
+						for _, event := range events {
+							eventData := &keptnv2.EventData{}
+							decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+								Squash: true,
+								Result: eventData,
+							})
+							if err != nil {
+								return fmt.Errorf("could not decode event: " + err.Error())
+							}
+
+							if err := decoder.Decode(event.Data); err != nil {
+								return fmt.Errorf("could not decode event: " + err.Error())
+							}
+
+							logging.PrintLog(eventData.Message, logging.InfoLevel)
+						}
+						break
+					}
+					<-time.After(time.Duration(fetchEventRetryTime) * time.Second)
+				}
 			}
 
 			return nil
