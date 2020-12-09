@@ -112,7 +112,8 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 
 			maxFetchEventRetries := 10
 			fetchEventRetryTime := 3
-			// if eventContext is available, open WebSocket communication
+			// if eventContext is available, try to fetch the correlating configure-monitoring.finished event
+			gotEvent := false
 			if eventContext != nil {
 				for i := 0; i < maxFetchEventRetries; i = i + i {
 					events, errObj := eventHandler.GetEvents(&apiutils.EventFilter{
@@ -136,9 +137,14 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 
 							logging.PrintLog(eventData.Message, logging.InfoLevel)
 						}
+						gotEvent = true
 						break
 					}
 					<-time.After(time.Duration(fetchEventRetryTime) * time.Second)
+				}
+
+				if !gotEvent {
+					logging.PrintLog("Could not retrieve configure-monitoring.finished event with KeptnContext "+*eventContext.KeptnContext+". Please check your monitoring solution if it has been configured correctly.", logging.InfoLevel)
 				}
 			}
 
