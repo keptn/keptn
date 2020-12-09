@@ -28,12 +28,11 @@ func TestAddingEventContext(t *testing.T) {
 	ja.Assertf(string(ceString), `{"project":"sockshop"}`)
 
 	channelID := "id"
-	token := "token"
-	channelInfo := models.EventContext{KeptnContext: &channelID, Token: &token}
+	channelInfo := models.EventContext{KeptnContext: &channelID}
 
 	forwardData := addEventContextInCE(ceData, channelInfo)
 	actual, _ := json.Marshal(forwardData)
-	ja.Assertf(string(actual), `{"project":"sockshop", "eventContext":{"keptnContext":"id", "token":"token"}}`)
+	ja.Assertf(string(actual), `{"project":"sockshop", "eventContext":{"keptnContext":"id"}}`)
 }
 
 func Test_createOrApplyKeptnContext(t *testing.T) {
