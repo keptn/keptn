@@ -14,10 +14,6 @@ var cfgFile string
 var verboseLogging bool
 var quietLogging bool
 var mocking bool
-
-// SuppressWSCommunication suppresses the WebSocket communication if it is true
-var SuppressWSCommunication bool
-
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 var namespace string
@@ -66,8 +62,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "Enables verbose logging to print debug messages")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
-	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
-		"Disables WebSocket communication to suppress info messages from services running inside Keptn")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
 		"Specify the namespace where Keptn should be installed, used and uninstalled in (default keptn).")
 	cobra.OnInitialize(initConfig)
