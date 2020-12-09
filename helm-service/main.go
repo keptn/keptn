@@ -69,7 +69,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	url, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
 		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
-		closeLogger(keptnHandler)
 		return err
 	}
 
@@ -80,22 +79,21 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
-		go deploymentHandler.HandleEvent(event, closeLogger)
+		go deploymentHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(url, mesh, keptnHandler)
-		go releaseHandler.HandleEvent(event, closeLogger)
+		go releaseHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
 		onBoarder := createOnboarder(keptnHandler, url, mesh)
-		go onBoarder.HandleEvent(event, closeLogger)
+		go onBoarder.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(url, keptnHandler)
-		go actionHandler.HandleEvent(event, closeLogger)
+		go actionHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := createDeleteHandler(url, keptnHandler)
-		go deleteHandler.HandleEvent(event, closeLogger)
+		go deleteHandler.HandleEvent(event)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")
-		closeLogger(keptnHandler)
 	}
 
 	return nil
@@ -145,12 +143,6 @@ func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *me
 	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
 	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, onBoarder, chartGenerator, url.String())
 	return deploymentHandler
-}
-
-func closeLogger(keptnHandler *keptnv2.Keptn) {
-	if combinedLogger, ok := keptnHandler.Logger.(*keptncommon.CombinedLogger); ok {
-		combinedLogger.Terminate("")
-	}
 }
 
 func _main(args []string, env envConfig) int {

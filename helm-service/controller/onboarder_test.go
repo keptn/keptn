@@ -200,14 +200,14 @@ func TestHandleEvent_WhenPassingUnparsableEvent_ThenHandleErrorIsCalled(t *testi
 
 	ctrl, instance, _ := newTestOnboarderCreator(t)
 	defer ctrl.Finish()
-	instance.HandleEvent(createUnparsableEvent(), nilCloser)
+	instance.HandleEvent(createUnparsableEvent())
 }
 
 func TestHandleEvent_WhenHelmChartMissing_ThenNothingHappens(t *testing.T) {
 	ctrl, instance, moqs := newTestOnboarderCreator(t)
 	defer ctrl.Finish()
 
-	instance.HandleEvent(cloudevents.NewEvent(), nilCloser)
+	instance.HandleEvent(cloudevents.NewEvent())
 	assert.Empty(t, moqs.mockedBaseHandler.sentCloudEvents)
 	assert.Empty(t, moqs.mockedBaseHandler.handledErrorEvents)
 }
@@ -218,7 +218,7 @@ func TestHandleEvent_WhenNoProjectExists_ThenHandleErrorIsCalled(t *testing.T) {
 
 	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(nil, &models.Error{Message: stringp("")})
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -229,7 +229,7 @@ func TestHandleEvent_WhenNoStagesDefined_ThenHandleErrorIsCalled(t *testing.T) {
 	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{}, nil)
 	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return([]*models.Stage{}, nil)
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -242,7 +242,7 @@ func TestHandleEvent_WhenStagesCannotBeFetched_ThenHandleErrorIsCalled(t *testin
 	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
 	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(nil, errors.New("unable to fetch stages"))
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -256,7 +256,7 @@ func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.
 	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
 	moqs.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"}).Return(errors.New("namespace initialization failed"))
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -268,7 +268,7 @@ func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *te
 
 	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
 
-	instance.HandleEvent(createEventWith(t, "EVENT_ID", keptnv2.EventData{Project: "my-project", Stage: "dev", Service: "!§$%&/"}), nilCloser)
+	instance.HandleEvent(createEventWith(t, "EVENT_ID", keptnv2.EventData{Project: "my-project", Stage: "dev", Service: "!§$%&/"}))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -284,7 +284,7 @@ func TestHandleEvent_WhenUnableToStoreChart_ThenHandleErrorIsCalled(t *testing.T
 	moqs.mockedServiceHandler.EXPECT().GetService(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
 	moqs.mockedChartStorer.EXPECT().Store(gomock.Any()).Return("", errors.New("unable to store chart"))
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -310,7 +310,7 @@ func TestHandleEvent_WhenSendingFinishedEventFails_ThenHandleErrorisCalled(t *te
 	moqs.mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
 	moqs.mockedChartStorer.EXPECT().Store(gomock.Any()).Return("", nil)
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 
@@ -326,7 +326,7 @@ func TestHandleEvent_OnboardsService(t *testing.T) {
 	moqs.mockedServiceHandler.EXPECT().GetService("my-project", "dev", "carts").Return(nil, nil)
 	moqs.mockedChartStorer.EXPECT().Store(gomock.Any()).Return("", nil)
 
-	instance.HandleEvent(createEvent(t, "EVENT_ID"), nilCloser)
+	instance.HandleEvent(createEvent(t, "EVENT_ID"))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.sentCloudEvents))
 }
 
@@ -531,10 +531,6 @@ func createUnparsableEvent() event.Event {
 	_ = testEvent.SetData(cloudevents.ApplicationJSON, "WEIRD_JSON_CONTENT")
 	testEvent.SetID("EVENT_ID")
 	return testEvent
-}
-
-func nilCloser(keptnHandler *keptnv2.Keptn) {
-	//No-op
 }
 
 func createChart() chart.Chart {
