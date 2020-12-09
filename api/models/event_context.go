@@ -20,10 +20,6 @@ type EventContext struct {
 	// keptn context
 	// Required: true
 	KeptnContext *string `json:"keptnContext"`
-
-	// token
-	// Required: true
-	Token *string `json:"token"`
 }
 
 // Validate validates this event context
@@ -31,10 +27,6 @@ func (m *EventContext) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateKeptnContext(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateToken(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -47,15 +39,6 @@ func (m *EventContext) Validate(formats strfmt.Registry) error {
 func (m *EventContext) validateKeptnContext(formats strfmt.Registry) error {
 
 	if err := validate.Required("keptnContext", "body", m.KeptnContext); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *EventContext) validateToken(formats strfmt.Registry) error {
-
-	if err := validate.Required("token", "body", m.Token); err != nil {
 		return err
 	}
 

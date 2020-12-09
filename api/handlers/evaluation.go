@@ -13,7 +13,6 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/utils"
-	"github.com/keptn/keptn/api/ws"
 	"net/url"
 	"strconv"
 	"strings"
@@ -49,12 +48,7 @@ func TriggerEvaluationHandlerFunc(params evaluation.TriggerEvaluationParams, pri
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
-	token, err := ws.CreateChannelInfo(keptnContext)
-	if err != nil {
-		return sendInternalErrorForPost(fmt.Errorf("Error creating channel info %s", err.Error()), logger)
-	}
-
-	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
+	eventContext := models.EventContext{KeptnContext: &keptnContext}
 
 	startEvaluationEvent := keptnv2.EvaluationTriggeredEventData{
 		EventData: keptnv2.EventData{
