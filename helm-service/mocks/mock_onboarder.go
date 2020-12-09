@@ -38,15 +38,15 @@ func (m *MockOnboarder) EXPECT() *MockOnboarderMockRecorder {
 }
 
 // HandleEvent mocks base method.
-func (m *MockOnboarder) HandleEvent(arg0 event.Event, arg1 func(*v0_2_0.Keptn)) {
+func (m *MockOnboarder) HandleEvent(arg0 event.Event) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "HandleEvent", arg0, arg1)
+	m.ctrl.Call(m, "HandleEvent", arg0)
 }
 
 // HandleEvent indicates an expected call of HandleEvent.
-func (mr *MockOnboarderMockRecorder) HandleEvent(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockOnboarderMockRecorder) HandleEvent(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleEvent", reflect.TypeOf((*MockOnboarder)(nil).HandleEvent), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleEvent", reflect.TypeOf((*MockOnboarder)(nil).HandleEvent), arg0)
 }
 
 // OnboardGeneratedChart mocks base method.
