@@ -6,6 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200908082455-010bbcf95e6f
+	github.com/keptn/go-utils v0.6.3-0.20201209152319-7c9665e3aab8
 )
