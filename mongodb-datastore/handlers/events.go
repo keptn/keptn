@@ -25,6 +25,7 @@ import (
 const contextToProjectCollection = "contextToProject"
 const rootEventCollectionSuffix = "-rootEvents"
 const invalidatedEventsCollectionSuffix = "-invalidatedEvents"
+const unmappedEventsCollectionName = "keptnUnmappedEvents"
 
 var client *mongo.Client
 var mutex sync.Mutex
@@ -526,7 +527,7 @@ func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				logger.Info("no project found for shkeptkontext")
-				return "", nil
+				return unmappedEventsCollectionName, nil
 			}
 			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))
 			return "", err
