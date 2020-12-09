@@ -14,7 +14,6 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.1.0 // indirect
-	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.6.3-0.20201209152319-7c9665e3aab8
 	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
