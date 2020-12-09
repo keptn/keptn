@@ -74,7 +74,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 		if !mocking {
 			authenticated := false
 
-			if !lookupHostname(url.Hostname()) {
+			if !lookupHostname(url.Hostname(), net.LookupHost, time.Sleep) {
 				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 			}
 
@@ -138,14 +138,17 @@ func verifyAuthParams(authParams *authCmdParams) error {
 	return nil
 }
 
-func lookupHostname(hostname string) bool {
+type resolveFunc func(string) ([]string, error)
+type sleepFunc func(time.Duration)
+
+func lookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bool {
 	if strings.HasSuffix(hostname, "xip.io") {
 		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
 		return true
 	} else {
 		// first, try to resolve the domain (and retry it)
-		for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
-			_, err := net.LookupHost(hostname)
+		for retries := 0; retries < 3; sleepFn(5 * time.Second) {
+			_, err := lookupFn(hostname)
 			if err != nil {
 				logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
 				logging.PrintLog("Retrying...", logging.InfoLevel)
