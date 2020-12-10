@@ -75,7 +75,7 @@ func setCreds(h credentials.Helper, endPoint url.URL, apiToken string, namespace
 	customServerURL := serverURL + "/" + kubeConfigFile.CurrentContext + "/" + namespace
 	c := &credentials.Credentials{
 		ServerURL: customServerURL,
-		Username:  endPoint.String(),
+		Username:  url.QueryEscape(endPoint.String()),
 		Secret:    apiToken,
 	}
 	return h.Add(c)
@@ -102,7 +102,8 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 	if err != nil {
 		return url.URL{}, "", err
 	}
-	url, err := url.Parse(endPointStr)
+	outURL, _ := url.QueryUnescape(endPointStr)
+	url, err := url.Parse(outURL)
 	return *url, apiToken, err
 }
 
