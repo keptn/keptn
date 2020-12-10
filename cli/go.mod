@@ -17,7 +17,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.6.3-0.20201104145324-b4fabd54ef88
-	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
+	github.com/keptn/kubernetes-utils v0.2.1-0.20201210142002-43a05951fb72
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-runewidth v0.0.4 // indirect
