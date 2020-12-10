@@ -10,7 +10,7 @@ Several tests are specified in [.travis.yml](../.travis.yml). They usually follo
     script:
       - kubectl get nodes || travis_terminate 1
       # finally install keptn quality gates
-      - test/test_install_kubernetes_quality_gates.sh
+      - test/test_install_on_kubernetes.sh
       - keptn status
       - export PROJECT=musicshop
       - test/test_quality_gates_standalone.sh

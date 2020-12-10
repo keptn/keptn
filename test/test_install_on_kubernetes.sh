@@ -20,6 +20,9 @@ verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
 verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
 verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
 verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
+verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
+verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
 
 # verify the datastore deployments
 verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
