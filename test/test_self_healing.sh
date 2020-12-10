@@ -193,7 +193,7 @@ sleep 10
 
 kubectl -n ${KEPTN_NAMESPACE} set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
 
-wait_for_deployment_in_namespace "unleash-service" "keptn"
+wait_for_deployment_in_namespace "unleash-service" "${KEPTN_NAMESPACE}"
 
 echo "Sending problem.open event"
 keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
