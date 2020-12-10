@@ -256,7 +256,7 @@ function wait_for_deployment_in_namespace() {
       READY_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.status.availableReplicas}')
       WANTED_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT  -n $NAMESPACE -o=jsonpath='{$.spec.replicas}')
       UNAVAILABLE_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT  -n $NAMESPACE -o=jsonpath='{$.status.unavailableReplicas}')
-      if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" && "$UNAVAILABLE_REPLICAS" = "0" ]]; then
+      if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" && "$UNAVAILABLE_REPLICAS" = "" ]]; then
         echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
         break
       else
