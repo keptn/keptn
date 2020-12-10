@@ -9,7 +9,7 @@ echo "Installing keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 
 # install Keptn using the develop version, which refers to the :latest docker images
-keptn install --namespace=${KEPTN_NAMESPACE} --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --hide-sensitive-data
+keptn install --namespace=${KEPTN_NAMESPACE} --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --use-case=continuous-delivery --verbose --hide-sensitive-data
 verify_test_step $? "keptn install --chart-repo=${KEPTN_INSTALLER_REPO} - failed"
 
 echo "Verifying that services and namespaces have been created"
