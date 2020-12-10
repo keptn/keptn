@@ -82,7 +82,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     xAxis: {
       type: 'category',
       labels: {
-        rotation: -45
+        rotation: 0
       }
     },
     yAxis: [
@@ -132,7 +132,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       categories: [],
       plotBands: [],
       labels: {
-        rotation: -45
+        rotation: 0
       },
     }],
 
