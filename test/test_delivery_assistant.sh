@@ -8,9 +8,17 @@ function cleanup() {
 trap cleanup EXIT
 
 # get keptn API details
-KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-
+if [[ "$PLATFORM" == "openshift" ]]; then
+  KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
+else
+  if [[ "$KEPTN_SERVICE_TYPE" == "NodePort" ]]; then
+    API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+    INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+    KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+  else
+    KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
+  fi
+fi
 # test configuration
 PROJECT="delivery-assistant-project"
 SERVICE="carts"

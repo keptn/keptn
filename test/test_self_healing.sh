@@ -2,9 +2,20 @@
 
 source test/utils.sh
 
-# get keptn api details
-KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+# get keptn API details
+if [[ "$PLATFORM" == "openshift" ]]; then
+  KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
+else
+  if [[ "$KEPTN_SERVICE_TYPE" == "NodePort" ]]; then
+    API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+    INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+    KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+  else
+    KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
+  fi
+fi
+
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 # test configuration
 UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}
@@ -16,11 +27,11 @@ SERVICE="frontend"
 ########################################################################################################################
 
 # ensure unleash-service is not installed yet
-kubectl -n keptn get deployment unleash-service 2> /dev/null
+kubectl -n ${KEPTN_NAMESPACE} get deployment unleash-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found unleash-service. Please uninstall it using:"
-  echo "kubectl -n keptn delete deployment unleash-service"
+  echo "kubectl -n ${KEPTN_NAMESPACE} delete deployment unleash-service"
   exit 1
 fi
 
@@ -177,10 +188,10 @@ fi
 ##########################################################################################################################################
 
 # install unleash service
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n keptn
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
 sleep 10
 
-kubectl -n keptn set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
+kubectl -n ${KEPTN_NAMESPACE} set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
 
 wait_for_deployment_in_namespace "unleash-service" "keptn"
 
