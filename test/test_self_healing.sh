@@ -242,7 +242,11 @@ fi
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
-kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service
+echo "Unleash service logs:"
+kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c unleash-service
+
+echo "Unleash service distributor logs:"
+kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c distributor
 
 # print the response
 echo $response | jq .
