@@ -190,9 +190,10 @@ fi
 # install unleash service
 echo "Installing unleash-service version ${UNLEASH_SERVICE_VERSION}"
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
-sleep 10
 
 kubectl -n ${KEPTN_NAMESPACE} set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
+
+sleep 10
 
 wait_for_deployment_in_namespace "unleash-service" "${KEPTN_NAMESPACE}"
 
@@ -241,6 +242,9 @@ fi
 #verify_using_jq "$response" ".data.remediation.message" "Action run-snow-wf triggered but not executed after waiting for 2 minutes."
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
+
+echo "Remediation Service logs:"
+kubectl logs -n ${KEPTN_NAMESPACE} svc/remediation-service -c remediation-service
 
 echo "Unleash service logs:"
 kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c unleash-service
