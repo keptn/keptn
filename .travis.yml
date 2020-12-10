@@ -512,9 +512,9 @@ jobs:
       - keptn status
       - export PROJECT=musicshop
       - export DYNATRACE_SLI_SERVICE_VERSION=master
-      - test/test_quality_gates_standalone.sh
+      # - test/test_quality_gates_standalone.sh
       - test/test_self_healing.sh
-      - test/test_delivery_assistant.sh
+      # - test/test_delivery_assistant.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
