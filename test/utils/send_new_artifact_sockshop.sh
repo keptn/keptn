@@ -3,7 +3,7 @@
 PROJECT=$1
 ARTIFACT_IMAGE=$2
 ARTIFACT_IMAGE_TAG=$3
-SEQUENCE=$5
+SEQUENCE=$4
 
 source test/utils.sh
 
