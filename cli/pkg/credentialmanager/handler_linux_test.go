@@ -33,7 +33,7 @@ func TestSetAndGetCreds(t *testing.T) {
 
 func TestGetCredsFromFile(t *testing.T) {
 	MockKubeConfigCheck = true
-	file, err := ioutil.TempFile("", "*__"+kubeConfigFile.CurrentContext+"__"+testNamespace)
+	file, err := ioutil.TempFile("", "*__"+keptnContext+"__"+testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}

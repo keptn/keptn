@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	utils "github.com/keptn/kubernetes-utils/pkg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 // GitCredentials contains git ccredentials info
@@ -126,6 +127,34 @@ func AddOrigin(project string) error {
 	return err
 }
 
+// UpdateOrCreateOrigin tries to update the remote origin.
+// If no remote origin exists, it will add one
+func UpdateOrCreateOrigin(project string) error {
+
+	projectConfigPath := config.ConfigDir + "/" + project
+	credentials, err := GetCredentials(project)
+
+	if err == nil && credentials != nil {
+		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)
+
+		// try to update existing remote origin
+		_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "set-url", "origin", repoURI}, projectConfigPath)
+		if err != nil {
+			// create new remote origin in case updating was not possible
+			_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "add", "origin", repoURI}, projectConfigPath)
+			if err != nil {
+				removeRemoteOrigin(project)
+				return obfuscateErrorMessage(err, credentials)
+			}
+		}
+		if err := setUpstreamsAndPush(project, credentials, repoURI); err != nil {
+			removeRemoteOrigin(project)
+			return fmt.Errorf("failed to set upstream: %v\nKeptn requires an uninitialized repo", err)
+		}
+	}
+	return nil
+}
+
 func removeRemoteOrigin(project string) error {
 	projectConfigPath := config.ConfigDir + "/" + project
 	_, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "remove", "origin"}, projectConfigPath)
@@ -139,7 +168,25 @@ func setUpstreamsAndPush(project string, credentials *GitCredentials, repoURI st
 		return obfuscateErrorMessage(err, credentials)
 	}
 
+	defaultBranch, err := GetDefaultBranch(project)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+
+	// first, make sure to push the master/main branch first
+	err = CheckoutBranch(project, defaultBranch, true)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+
 	for _, branch := range branches {
+		if branch == defaultBranch {
+			continue
+		}
 		err := CheckoutBranch(project, branch, true)
 		if err != nil {
 			return obfuscateErrorMessage(err, credentials)

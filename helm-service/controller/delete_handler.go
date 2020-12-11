@@ -24,9 +24,7 @@ func NewDeleteHandler(keptnHandler *keptnv2.Keptn, stagesHandler types.IStagesHa
 }
 
 // HandleEvent takes the sh.keptn.internal.event.service.delete event and deletes the service in all stages
-func (h *DeleteHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
-
-	defer closeLogger(h.getKeptnHandler())
+func (h *DeleteHandler) HandleEvent(ce cloudevents.Event) {
 
 	serviceDeleteEvent := keptnv2.ServiceDeleteFinishedEventData{}
 

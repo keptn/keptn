@@ -52,11 +52,6 @@ kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname
 kubectl delete pod -n keptn -lapp.kubernetes.io/name=helm-service
 sleep 15
 
-# verify that the Keptn CLI has successfully authenticated
-echo "Checking that Keptn CLI is authenticated ..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find keptn credentials in ~/.keptn folder"
-
 echo "Verifying that services and namespaces have been created"
 
 # verify the deployments within the keptn namespace

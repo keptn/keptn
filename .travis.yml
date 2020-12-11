@@ -205,20 +205,6 @@ gke_full_part2: &gke_full_part2
 jobs:
   include:
   ##################################################################################
-  # Jobs that are always executed
-  ##################################################################################
-  - stage: Check deprecated Kubernetes apiVersions
-    os: linux
-    before_script:
-      - source ./travis-scripts/install_helm.sh
-      - source ./travis-scripts/install_pluto.sh
-    script:
-      - set -e # fail the whole script whenever any command fails
-      - helm template ${INSTALLER_FOLDER}/manifests/keptn | pluto detect-files -owide
-      - pluto detect-files -owide
-      - set +e # revert set -e from above
-
-  ##################################################################################
   # Jobs for the master branch
   ##################################################################################
   - stage: Build Docker Images
@@ -249,7 +235,7 @@ jobs:
 
   - stage: Build CLI (OSX, Windows, Linux)
     if: branch = master AND (type = cron OR type = push)
-    os: osx
+    os: linux # osx
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -280,7 +266,7 @@ jobs:
   ##################################################################################
   - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
-    os: osx
+    os: linux
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -381,7 +367,7 @@ jobs:
   ##################################################################################
   - stage: Release Build CLI
     if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: osx
+    os: linux # osx
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -475,7 +461,7 @@ jobs:
     <<: *gke_full_part2 # use GKE template
 
   - stage: Test Minishift Standalone (--platform=openshift)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push and cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron) # run nightlies for any master/release-* branches
     os: linux
     before_script:
       # download and install kubectl
@@ -504,6 +490,7 @@ jobs:
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
 
+  # Run K3s Standalone on every push on master/release branch
   - &K3sStandaloneTest
     stage: Test K3s Standalone (--platform=kubernetes, --namespace=keptn-test)
     if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
@@ -519,11 +506,14 @@ jobs:
     script:
       - kubectl get nodes || travis_terminate 1
       - export KEPTN_NAMESPACE=keptn-test
-      - test/test_install_kubernetes_quality_gates.sh
+      - export KEPTN_SERVICE_TYPE=NodePort
+      - test/test_install_on_kubernetes.sh
       - keptn status
       - export PROJECT=musicshop
       - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
+      - test/test_self_healing.sh
+      - test/test_delivery_assistant.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
@@ -537,20 +527,13 @@ jobs:
       - kubectl get ingress --all-namespaces
 
   - <<: *K3sStandaloneTest
-    env:
-      - K3S_VERSION=v1.17.6+k3s1 # see https://github.com/rancher/k3s/releases
-
-  - <<: *K3sStandaloneTest
-    env:
-      - K3S_VERSION=v1.18.3+k3s1 # see https://github.com/rancher/k3s/releases
-
-  - <<: *K3sStandaloneTest
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron) # run only nightly
     env:
       - K3S_VERSION=v1.19.2+k3s1 # see https://github.com/rancher/k3s/releases
 
   - &microk8sStandaloneTest
     stage: Test MicroK8s Standalone (--platform=kubernetes)
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
+    if: (branch = master or branch =~ ^release.*$) AND (type = cron) # run nightlies for any master/release-* branches
     os: linux
     env:
       - MICROK8S_VERSION=1.16/stable # see https://snapcraft.io/microk8s channels
@@ -562,11 +545,13 @@ jobs:
       - export KUBECONFIG=~/kubeconfig
     script:
       - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
-      - test/test_install_kubernetes_quality_gates.sh
+      - test/test_install_on_kubernetes.sh
       - keptn status
       - export PROJECT=musicshop
       - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
+      - test/test_self_healing.sh
+      - test/test_delivery_assistant.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
@@ -577,60 +562,7 @@ jobs:
       - kubectl get pods --all-namespaces
       - kubectl get services --all-namespaces
       - kubectl get ingress --all-namespaces
-
-  - <<: *microk8sStandaloneTest
-    env:
-      - MICROK8S_VERSION=1.17/stable # see https://snapcraft.io/microk8s channels
-
-  - <<: *microk8sStandaloneTest
-    env:
-      - MICROK8S_VERSION=1.18/stable # see https://snapcraft.io/microk8s channels
 
   - <<: *microk8sStandaloneTest
     env:
       - MICROK8S_VERSION=1.19/stable # see https://snapcraft.io/microk8s channels
-
-  - &minikubeStandaloneTest
-    stage: Test Minikube Standalone (--platform=kubernetes) # for detailed Minikube versions see https://github.com/kubernetes/minikube/blob/master/CHANGELOG.md
-    env:
-      - MINIKUBE_VERSION=v1.3.1 # from 2019-08-13; uses K8s 1.15
-    if: (branch = master or branch =~ ^release.*$) AND (type = cron OR type = push) # run for any change on master/release-* on push as well as cron
-    os: linux
-    before_script:
-      # install conntrack (required for newer Minikube versions)
-      - sudo apt-get install -y conntrack
-      # download and install kubectl
-      - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
-      - test/utils/download_and_install_keptn_cli.sh
-      - export USE_CASE=""
-      - test/utils/minikube_create_cluster.sh
-    script:
-      - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
-      # install keptn quality gates
-      - test/test_install_kubernetes_quality_gates.sh
-      - keptn status
-      - export PROJECT=musicshop
-      - export DYNATRACE_SLI_SERVICE_VERSION=master
-      - test/test_quality_gates_standalone.sh
-    after_success:
-      # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
-      - echo "Tests were successful, cleaning up the cluster now..."
-    after_failure:
-      # print debug info
-      - cat ~/.keptn/keptn-installer.log
-      - kubectl get events --sort-by='.lastTimestamp' --all-namespaces
-      - kubectl get pods --all-namespaces
-      - kubectl get services --all-namespaces
-      - kubectl get ingress --all-namespaces
-
-  - <<: *minikubeStandaloneTest
-    env:
-      - MINIKUBE_VERSION=v1.4.0 # from 2019-09-17; uses K8s 1.16
-
-  - <<: *minikubeStandaloneTest
-    env:
-      - MINIKUBE_VERSION=v1.7.3 # from 2020-02-20; uses K8s 1.17.3
-
-  - <<: *minikubeStandaloneTest
-    env:
-      - MINIKUBE_VERSION=v1.10.1 # from 2020-05-12; uses K8s 1.18.2

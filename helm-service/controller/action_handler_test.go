@@ -87,7 +87,7 @@ func TestHandleActionTriggeredEvent(t *testing.T) {
 
 	mockedConfigurationChanger.EXPECT().UpdateChart(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, "123-456", nil)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
 	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
 
@@ -159,7 +159,7 @@ func TestHandleEvent_InvalidData(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 
 	assert.Equal(t, expectedActionStartedEvent, mockedBaseHandler.sentCloudEvents[0])
 	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
@@ -188,7 +188,7 @@ func TestHandleUnparsableEvent(t *testing.T) {
 		},
 	}
 
-	instance.HandleEvent(createUnparsableEvent(), nilCloser)
+	instance.HandleEvent(createUnparsableEvent())
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedFinishEventData, mockedBaseHandler.handledErrorEvents[0])
 }
@@ -245,7 +245,7 @@ func TestHandleEvent_SendStartEventFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedFinishEvent, mockedBaseHandler.handledErrorEvents[0])
 }
@@ -303,7 +303,7 @@ func TestHandleEvent_SendFinishEventFails(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 	assert.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedFinishEvent, mockedBaseHandler.handledErrorEvents[0])
 }
@@ -331,6 +331,6 @@ func TestHandleEvent_WithMissingAction(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, actionTriggeredEventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 
 }

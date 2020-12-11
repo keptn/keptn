@@ -3,18 +3,18 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/api/utils"
-	"net/url"
-	"strings"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
-	"github.com/keptn/keptn/api/ws"
 )
 
 // PostEventHandlerFunc forwards an event to the event broker
@@ -25,14 +25,8 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	logger := keptnutils.NewLogger(keptnContext, "", "api")
 	logger.Info("API received a keptn event")
 
-	token, err := ws.CreateChannelInfo(keptnContext)
-	if err != nil {
-		return sendInternalErrorForPost(fmt.Errorf("Error creating channel info %s", err.Error()), logger)
-	}
-
-	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
-
 	var source *url.URL
+	var err error
 	if params.Body.Source != nil && len(*params.Body.Source) > 0 {
 		source, err = url.Parse(*params.Body.Source)
 		if err != nil {
@@ -45,13 +39,13 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 		source, _ = url.Parse("https://github.com/keptn/keptn/api")
 	}
 
-	forwardData := addEventContextInCE(params.Body.Data, eventContext)
-
-	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, *params.Body.Type, source.String(), forwardData, logger)
+	err = utils.SendEvent(keptnContext, params.Body.Triggeredid, *params.Body.Type, source.String(), params.Body.Data, logger)
 
 	if err != nil {
 		return sendInternalErrorForPost(err, logger)
 	}
+
+	eventContext := models.EventContext{KeptnContext: &keptnContext}
 
 	return event.NewPostEventOK().WithPayload(&eventContext)
 }
@@ -128,9 +122,4 @@ func sendInternalErrorForGet(err error, logger *keptnutils.Logger) *event.GetEve
 func sendNotFoundErrorForGet(err error, logger *keptnutils.Logger) *event.GetEventDefault {
 	logger.Error(err.Error())
 	return event.NewGetEventDefault(404).WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
-}
-
-func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
-	ceData.(map[string]interface{})["eventContext"] = eventContext
-	return ceData
 }

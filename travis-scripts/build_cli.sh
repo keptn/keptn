@@ -6,28 +6,28 @@ KUBE_CONSTRAINTS=$2
 ############################################
 # MAC OS
 ############################################
-echo "Building Keptn CLI for OSX"
-env GOOS=darwin GOARCH=amd64 go mod download
-env GOOS=darwin GOARCH=amd64 go build -v -x  -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn
-
-if [ $? -ne 0 ]; then
-  echo "Error compiling Keptn CLI, exiting ..."
-  exit 1
-fi
-
-# create archives
-zip keptn-macOS.zip keptn
-tar -zcvf keptn-macOS.tar.gz keptn
-rm keptn
-
-# upload to gcloud
-if [ -n "$TAG" ]; then
-  gsutil cp keptn-macOS.zip gs://keptn-cli/${TAG}/keptn-macOS.zip
-  gsutil cp keptn-macOS.tar.gz gs://keptn-cli/${TAG}/keptn-macOS.tar.gz
-fi
-
-rm keptn-macOS.zip
-rm keptn-macOS.tar.gz
+#echo "Building Keptn CLI for OSX"
+#env GOOS=darwin GOARCH=amd64 go mod download
+#env GOOS=darwin GOARCH=amd64 go build -v -x  -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn
+#
+#if [ $? -ne 0 ]; then
+#  echo "Error compiling Keptn CLI, exiting ..."
+#  exit 1
+#fi
+#
+## create archives
+#zip keptn-macOS.zip keptn
+#tar -zcvf keptn-macOS.tar.gz keptn
+#rm keptn
+#
+## upload to gcloud
+#if [ -n "$TAG" ]; then
+#  gsutil cp keptn-macOS.zip gs://keptn-cli/${TAG}/keptn-macOS.zip
+#  gsutil cp keptn-macOS.tar.gz gs://keptn-cli/${TAG}/keptn-macOS.tar.gz
+#fi
+#
+#rm keptn-macOS.zip
+#rm keptn-macOS.tar.gz
 
 ############################################
 # Linux

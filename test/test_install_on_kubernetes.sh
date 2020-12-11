@@ -9,7 +9,7 @@ echo "Installing keptn on cluster"
 echo "{}" > creds.json # empty credentials file
 
 # install Keptn using the develop version, which refers to the :latest docker images
-keptn install --namespace=${KEPTN_NAMESPACE} --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --verbose --hide-sensitive-data
+keptn install --namespace=${KEPTN_NAMESPACE} --chart-repo="${KEPTN_INSTALLER_REPO}" --platform=kubernetes --creds=creds.json --endpoint-service-type=NodePort --use-case=continuous-delivery --verbose --hide-sensitive-data
 verify_test_step $? "keptn install --chart-repo=${KEPTN_INSTALLER_REPO} - failed"
 
 echo "Verifying that services and namespaces have been created"
@@ -20,6 +20,9 @@ verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
 verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
 verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
 verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
+verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
+verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
 
 # verify the datastore deployments
 verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
@@ -39,11 +42,6 @@ verify_test_step $? "Could not authenticate at Keptn API"
 
 echo "Keptn installed in version:"
 keptn version
-
-# verify that the keptn CLI has successfully authenticated
-echo "Checking that Keptn is authenticated ..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find Keptn credentials in ~/.keptn folder"
 
 cd ../..
 
