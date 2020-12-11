@@ -43,9 +43,7 @@ func NewReleaseHandler(keptnHandler *keptnv2.Keptn,
 }
 
 // HandleEvent handles release.triggered events and either promotes or aborts an artifact
-func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
-
-	defer closeLogger(h.getKeptnHandler())
+func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 
 	e := keptnv2.ReleaseTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {

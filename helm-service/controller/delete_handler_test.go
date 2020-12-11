@@ -64,7 +64,7 @@ func TestHandleDeleteEvent(t *testing.T) {
 		},
 	})
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 
 	require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
 	assert.Equal(t, expectedDeleteFinishedEvent, mockedBaseHandler.sentCloudEvents[0])
@@ -81,7 +81,7 @@ func TestWhenReceivingUnparsableEvent_ThenErrorMessageIsSent(t *testing.T) {
 		stagesHandler: mockedStagesHandler,
 	}
 
-	instance.HandleEvent(createUnparsableEvent(), nilCloser)
+	instance.HandleEvent(createUnparsableEvent())
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 
 }
@@ -107,7 +107,7 @@ func TestWhenGettingStagesFails_Then(t *testing.T) {
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, eventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 }
 
@@ -157,7 +157,7 @@ func TestWhenUninstallingReleaseFails_FinishedEventIsStillSent(t *testing.T) {
 		},
 	})
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 
 	require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
 	assert.Equal(t, expectedDeleteFinishedEvent, mockedBaseHandler.sentCloudEvents[0])

@@ -1,8 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
@@ -13,11 +17,6 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/utils"
-	"github.com/keptn/keptn/api/ws"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // TriggerEvaluationHandlerFunc triggers a new evaluation by sending a start-evaluation event
@@ -49,12 +48,7 @@ func TriggerEvaluationHandlerFunc(params evaluation.TriggerEvaluationParams, pri
 
 	source, _ := url.Parse("https://github.com/keptn/keptn/api")
 
-	token, err := ws.CreateChannelInfo(keptnContext)
-	if err != nil {
-		return sendInternalErrorForPost(fmt.Errorf("Error creating channel info %s", err.Error()), logger)
-	}
-
-	eventContext := models.EventContext{KeptnContext: &keptnContext, Token: &token}
+	eventContext := models.EventContext{KeptnContext: &keptnContext}
 
 	startEvaluationEvent := keptnv2.EvaluationTriggeredEventData{
 		EventData: keptnv2.EventData{
@@ -72,22 +66,12 @@ func TriggerEvaluationHandlerFunc(params evaluation.TriggerEvaluationParams, pri
 		},
 	}
 
-	var ceIntf map[string]interface{}
-	marshal, _ := json.Marshal(startEvaluationEvent)
-	err = json.Unmarshal(marshal, &ceIntf)
-	if err != nil {
-		return evaluation.NewTriggerEvaluationBadRequest().WithPayload(&models.Error{
-			Code: 500,
-		})
-	}
-	forwardData := addEventContextInCE(ceIntf, eventContext)
-
 	err = utils.SendEvent(
 		keptnContext,
 		"",
 		keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 		source.String(),
-		forwardData,
+		startEvaluationEvent,
 		logger,
 	)
 	if err != nil {

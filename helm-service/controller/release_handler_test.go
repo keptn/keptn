@@ -37,7 +37,7 @@ func TestHandleReleaseTriggeredEvent_WhenDeploymentStrategyDirect_ThenNoActionRe
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, releaseTriggeredEventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 
 	expectedReleaseStartedEvent := cloudevents.NewEvent()
 	expectedReleaseStartedEvent.SetType("sh.keptn.event.release.started")
@@ -95,7 +95,7 @@ func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T)
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, releaseTriggeredEventData)
 
-	instance.HandleEvent(ce, nilCloser)
+	instance.HandleEvent(ce)
 
 	expectedReleaseStartedEvent := cloudevents.NewEvent()
 	expectedReleaseStartedEvent.SetType("sh.keptn.event.release.started")
