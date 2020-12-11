@@ -60,19 +60,20 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	})
 	if err2 != nil {
 		msg := fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2)
-		eh.KeptnHandler.Logger.Error(fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2))
-		return errors.New(msg)
+		eh.KeptnHandler.Logger.Error(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 	if triggeredEvents == nil || len(triggeredEvents) == 0 {
 		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
 		eh.KeptnHandler.Logger.Error(msg)
-		return errors.New(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 	triggeredID := triggeredEvents[0].ID
 
 	if err != nil {
-		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
-		return err
+		msg := "Could not parse event payload: " + err.Error()
+		eh.KeptnHandler.Logger.Error(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 
 	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
