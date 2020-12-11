@@ -445,7 +445,7 @@ jobs:
   - stage: Test GKE Full with Istio - Pt. 1 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
-      - GKE_VERSION=1.16
+      - GKE_VERSION=1.17
     <<: *gke_full_part1 # use GKE template
 
   - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
@@ -457,7 +457,7 @@ jobs:
   - stage: Test GKE Full with Istio - Pt. 2 (--platform=gke --use-case=continuous-delivery)
     if: branch = master AND type = cron # run for cron
     env:
-      - GKE_VERSION=1.16
+      - GKE_VERSION=1.17
     <<: *gke_full_part2 # use GKE template
 
   - stage: Test Minishift Standalone (--platform=openshift)
