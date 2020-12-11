@@ -506,11 +506,14 @@ jobs:
     script:
       - kubectl get nodes || travis_terminate 1
       - export KEPTN_NAMESPACE=keptn-test
-      - test/test_install_kubernetes_quality_gates.sh
+      - export KEPTN_SERVICE_TYPE=NodePort
+      - test/test_install_on_kubernetes.sh
       - keptn status
       - export PROJECT=musicshop
       - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
+      - test/test_self_healing.sh
+      - test/test_delivery_assistant.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
@@ -542,11 +545,13 @@ jobs:
       - export KUBECONFIG=~/kubeconfig
     script:
       - kubectl get nodes || travis_terminate 1 # sanity check that the K8s cluster is available
-      - test/test_install_kubernetes_quality_gates.sh
+      - test/test_install_on_kubernetes.sh
       - keptn status
       - export PROJECT=musicshop
       - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
+      - test/test_self_healing.sh
+      - test/test_delivery_assistant.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
       - echo "Tests were successful, cleaning up the cluster now..."
