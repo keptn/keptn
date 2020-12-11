@@ -110,7 +110,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			}
 
 			maxFetchEventRetries := 10
-			fetchEventRetryTime := 3
+			fetchEventRetryTime := 3 * time.Second
 			// if eventContext is available, try to fetch the correlating configure-monitoring.finished event
 			if eventContext != nil {
 				events, err := eventHandler.GetEventsWithRetry(&apiutils.EventFilter{
