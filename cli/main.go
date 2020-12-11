@@ -12,7 +12,7 @@ var (
 	Version = "develop"
 
 	// DefaultKubeServerVersionConstraints is used when no version is passed by ldflags
-	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.19"
+	DefaultKubeServerVersionConstraints = ">= 1.14, <= 1.19" // double check versions in .github/workflows/cli-pipeline.yml
 
 	//KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 	KubeServerVersionConstraints = ""

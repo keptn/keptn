@@ -34,7 +34,6 @@ before_install:
 - VERSION="unknownversion"
 - DATE="$(date +'%Y%m%d.%H%M')"
 - GIT_SHA="$(git rev-parse --short HEAD)"
-- KUBE_CONSTRAINTS=">= 1.14, <= 1.19" # don't forget to udpate the defaults in cli/main.go
 
 # store all changed files from this commit in files.txt (note: Travis commit range might fail)
 - git diff --name-only $TRAVIS_COMMIT_RANGE > files.txt || echo ""
@@ -54,7 +53,6 @@ before_install:
 - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, BRANCH=$BRANCH"
 
 # configure folders and image names
-- CLI_FOLDER="cli/"
 - API_IMAGE="keptn/api"
 - API_FOLDER="api/"
 - OS_ROUTE_SVC_IMAGE="keptn/openshift-route-service"
@@ -233,22 +231,6 @@ jobs:
       - echo "The following images have been built and pushed to dockerhub:"
       - docker images | grep keptn
 
-  - stage: Build CLI (OSX, Windows, Linux)
-    if: branch = master AND (type = cron OR type = push)
-    os: linux # osx
-    before_script:
-      - source ./travis-scripts/install_gcloud.sh
-      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-    script:
-      - export VERSION="master+${DATE}"
-      - export TAG="latest"
-      - echo "Build keptn cli"
-      - cd ./cli
-      - go test ./...
-      - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
-      - cd ..
-
   - stage: Build Installer
     if: branch = master AND (type = cron OR type = push)
     os: linux
@@ -264,25 +246,6 @@ jobs:
   ##################################################################################
   # feature/bug/hotfix/patch branches build jobs
   ##################################################################################
-  - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
-    if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
-    os: linux
-    before_script:
-      - source ./travis-scripts/install_gcloud.sh
-      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-    script:
-    - TYPE="$(echo $TRAVIS_BRANCH | cut -d'/' -f1)"
-    - NUMBER="$(echo $TRAVIS_BRANCH | cut -d'/' -f2)"
-    - |
-      if [[ $CHANGED_FILES == *"${CLI_FOLDER}"*  ]]; then
-        echo "Build keptn cli"
-        cd ./cli
-        go test ./...
-        TAG="${TYPE}-${NUMBER}+${DATE}"
-        source ../travis-scripts/build_cli.sh "${TAG}" "${KUBE_CONSTRAINTS}"
-        cd ..
-      fi
   - if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
     os: linux
     before_script:
@@ -365,22 +328,6 @@ jobs:
   ##################################################################################
   # Release specific jobs
   ##################################################################################
-  - stage: Release Build CLI
-    if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: linux # osx
-    before_script:
-      - source ./travis-scripts/install_gcloud.sh
-      - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
-      - gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
-    script:
-      - export VERSION=${BRANCH#"release-"} # overwrite version for release branches based on the branch name
-      - echo "Build keptn cli"
-      - cd ./cli
-      - go test ./...
-      - TAG="${VERSION}"
-      - source ../travis-scripts/build_cli.sh "${VERSION}" "${KUBE_CONSTRAINTS}"
-      - cd ..
-
   - stage: Release Build Installer
     if: branch =~ ^release.*$ AND NOT type = pull_request
     os: linux

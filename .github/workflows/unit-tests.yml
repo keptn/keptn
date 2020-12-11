@@ -1,7 +1,15 @@
 name: Unit Tests
 on:
+  # always execute unit tests when something is pushed to master or release-* branches
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+  # in addition, execute for pull requests to those branches
   pull_request:
-    branches: [ master ]
+    branches:
+      - 'master'
+      - 'release-*'
 jobs:
   unit-tests-go:
     name: Unit-Tests-Go

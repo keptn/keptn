@@ -1,0 +1,129 @@
+name: Keptn CLI Pipeline
+on:
+  # always execute CLI Pipeline when something is pushed to master or release-* branches
+  push:
+    branches:
+      - 'master'
+      - 'release-*'
+  # in addition, execute for pull requests to those branches if anything was changed in the CLI folder
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
+    paths:
+      - 'cli/**' # only execute if there are changes to the cli folder
+defaults:
+  run:
+    shell: bash
+jobs:
+  build-cli:
+    env:
+      VERSION: "dev"
+      KUBE_CONSTRAINTS: ">= 1.14, <= 1.19" # don't forget to udpate the defaults in cli/main.go
+    strategy:
+      matrix:
+        go-version: [ 1.13.x ]
+        platform: [ ubuntu-20.04, macOS-11.0, windows-2019 ]
+    name: Build Keptn CLI
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Test cli
+        run: echo "skipping tests for now" # ToDo: Enable tests: go test -race -v ./...
+        working-directory: ./cli
+      - name: Build cli
+        env:
+          PLATFORM: "${{ matrix.platform }}"
+          GOARCH: "amd64"
+        working-directory: ./cli
+        run: |
+          FILE_ENDING=""
+          CPU_ARCHITECTURE=amd64
+
+          if [[ "$OSTYPE" == "linux-gnu" ]]; then
+            DISTR="linux"
+          elif [[ "$OSTYPE" == "darwin"* ]]; then
+            DISTR="darwin"
+          elif [[ "$PLATFORM" == "windows-2019" ]]; then
+            DISTR="windows"
+            FILE_ENDING=".exe"
+          else
+            echo "Unknown Operating System; PlATFORM=${PLATFORM},OSTYPE=${OSTYPE}"
+            exit 1
+          fi
+
+          # determine version
+          GIT_LAST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "0.0.0")
+          BRANCH=${GITHUB_REF##*/}
+          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
+
+          if [[ "$BRANCH" == "release-"* ]]; then
+            # Release Branch: extract version from branch name
+            VERSION=${BRANCH#"release-"}
+          else
+            if [[ "$BRANCH" == "master" ]]; then
+              # master branch = latest
+              VERSION=latest
+            else
+              # Feature/Development Branch - use last tag with branch slug
+              VERSION="${GIT_LAST_TAG}-${BRANCH_SLUG}"
+            fi
+          fi
+
+          # determine output file name based on version, distribution, architecture
+          OUTPUT_FILENAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
+
+          mkdir dist
+
+          go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_FILENAME}"
+          tar -zcvf dist/${OUTPUT_FILENAME}.tar.gz ${OUTPUT_FILENAME}
+      - name: Upload Keptn CLI as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: keptn-cli
+          path: cli/dist/
+
+
+  upload-cli:
+    # Attach Keptn CLI to a release draft
+    name: Upload Keptn CLI to Release
+    needs: "build-cli"
+    # only run this for release-* and master branch
+    if: contains('refs/heads/release-', github.head_ref) || github.head_ref == 'refs/heads/master'
+    runs-on: "ubuntu-20.04"
+    steps:
+      - name: Extract branch name
+        id: extract_branch
+        shell: bash
+        run: echo "##[set-output name=BRANCH;]$(echo ${GITHUB_REF#refs/heads/})"
+      - name: Get the version of the release based on branch name
+        id: get_version
+        env:
+          BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
+        # For BRANCH=release-*, output the version number; else, output the branch name
+        run: |
+          if [[ "$BRANCH" == "release-"* ]]; then
+            echo "##[set-output name=VERSION;]$(echo ${BRANCH#"release-"})"
+          else
+            if [[ "$BRANCH" == "master" ]]; then
+              echo "##[set-output name=VERSION;]$(echo latest)"
+            else
+              echo "##[set-output name=VERSION;]$(echo ${BRANCH})"
+            fi
+          fi
+      - name: Debug step
+        env:
+          BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
+        run: echo "::debug::Version=${VERSION}, Branch=${BRANCH}"
+      - name: Download Keptn CLI Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: keptn-cli
+          path: cli/dist/
+      # ToDo: Create Draft Release and upload Release Assets

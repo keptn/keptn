@@ -43,7 +43,7 @@ function check_if_stale() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # for each tag, check if the tag is stale
-  for TAG in ${RELEASE_TAGS[@]}; do
+  for TAG in ${TAGS[@]}; do
     HTTP_RESPONSE=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" --write-out "HTTPSTATUS:%{http_code}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/")
 
     # extract body and status
