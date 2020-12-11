@@ -2,7 +2,6 @@ package credentialmanager
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -29,6 +28,10 @@ const installCredsKey = "https://keptn-install.sh"
 var MockAuthCreds bool
 var MockKubeConfigCheck bool
 
+// GlobalCheckForContextChange ...Since credential manager is called at multiple times, we dont want to check for context switch for one command at multiple places,
+// it should be called only for the first time.
+var GlobalCheckForContextChange bool
+
 type keptnConfig struct {
 	APIToken       string `yaml:"api_token"`
 	Endpoint       string `yaml:"endpoint"`
@@ -45,6 +48,8 @@ type kubeConfigFileType struct {
 }
 
 var kubeConfigFile kubeConfigFileType
+
+var keptnContext string
 
 func init() {
 	credentials.SetCredsLabel(credsLab)
@@ -72,7 +77,7 @@ func setCreds(h credentials.Helper, endPoint url.URL, apiToken string, namespace
 		// Do nothing
 		return nil
 	}
-	customServerURL := serverURL + "/" + kubeConfigFile.CurrentContext + "/" + namespace
+	customServerURL := serverURL + "/" + keptnContext + "/" + namespace
 	c := &credentials.Credentials{
 		ServerURL: customServerURL,
 		Username:  endPoint.String(),
@@ -87,7 +92,7 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 		return url.URL{}, "", nil
 	}
 
-	customServerURL := serverURL + "/" + kubeConfigFile.CurrentContext + "/" + namespace
+	customServerURL := serverURL + "/" + keptnContext + "/" + namespace
 	// Check if creds file is specified in the 'KEPTNCONFIG' environment variable
 	if customCredsLocation, ok := os.LookupEnv("KEPTNCONFIG"); ok {
 		if customCredsLocation != "" {
@@ -122,7 +127,7 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 			context.KeptnNamespace = "keptn"
 		}
 
-		if context.ContextName == kubeConfigFile.CurrentContext && context.KeptnNamespace == namespace {
+		if context.ContextName == keptnContext && context.KeptnNamespace == namespace {
 			parsedURL, err := url.Parse(context.Endpoint)
 			if err != nil {
 				return url.URL{}, "", err
@@ -135,19 +140,23 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 
 // initChecks needs to be run when credentialManager is called or initialized
 func initChecks(autoApplyNewContext bool) {
-	cliConfigManager := config.NewCLIConfigManager()
-	currentContext, err := getCurrentContextFromKubeConfig()
-	if err != nil {
-		log.Fatal(err)
+	if !GlobalCheckForContextChange {
+		cliConfigManager := config.NewCLIConfigManager()
+		err := getCurrentContextFromKubeConfig()
+		if err != nil {
+			log.Fatal(err)
+		}
+		checkForContextChange(cliConfigManager, autoApplyNewContext)
+		GlobalCheckForContextChange = true
 	}
-	checkForContextChange(currentContext, cliConfigManager, autoApplyNewContext)
 }
 
-func getCurrentContextFromKubeConfig() (string, error) {
+func getCurrentContextFromKubeConfig() error {
 	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
 		kubeConfigFile.CurrentContext = ""
-		return "", nil
+		keptnContext = ""
+		return nil
 	}
 
 	var kubeconfig string
@@ -161,17 +170,17 @@ func getCurrentContextFromKubeConfig() (string, error) {
 
 	fileContent, err := file.ReadFile(kubeconfig)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	err = yaml.Unmarshal([]byte(fileContent), &kubeConfigFile)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
-	return kubeConfigFile.CurrentContext, nil
+	return nil
 }
 
-func checkForContextChange(currentContext string, cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) error {
+func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) error {
 
 	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
@@ -181,11 +190,13 @@ func checkForContextChange(currentContext string, cliConfigManager *config.CLICo
 	if err != nil {
 		log.Fatal(err)
 	}
-	if cliConfig.CurrentContext != currentContext {
-		fmt.Printf("Kube context has been changed to %s", currentContext)
+	// Setting keptnContext from ~/.keptn/config file
+	keptnContext = cliConfig.CurrentContext
+	if keptnContext != kubeConfigFile.CurrentContext {
+		fmt.Printf("Kube context has been changed to %s", kubeConfigFile.CurrentContext)
 		fmt.Println()
-		if !autoApplyNewContext && cliConfig.CurrentContext != "" {
-			fmt.Println("Do you want to continue with this? (y/n)")
+		if !autoApplyNewContext && keptnContext != "" {
+			fmt.Println("Do you want to switch to the new Kube context with the Keptn running there? (y/n)")
 			reader := bufio.NewReader(os.Stdin)
 			in, err := reader.ReadString('\n')
 			if err != nil {
@@ -193,11 +204,11 @@ func checkForContextChange(currentContext string, cliConfigManager *config.CLICo
 			}
 			in = strings.ToLower(strings.TrimSpace(in))
 			if !(in == "y" || in == "yes") {
-				err := errors.New("stopping installation")
-				log.Fatal(err)
+				return nil
 			}
 		}
-		cliConfig.CurrentContext = currentContext
+		cliConfig.CurrentContext = kubeConfigFile.CurrentContext
+		keptnContext = kubeConfigFile.CurrentContext
 		err = cliConfigManager.StoreCLIConfig(cliConfig)
 		if err != nil {
 			return err
