@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/mitchellh/mapstructure"
 	"net/url"
 	"time"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/mitchellh/mapstructure"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -151,7 +152,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			return nil
 		}
 
-		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+		fmt.Println("Skipping configure monitoring due to mocking flag set to true")
 		return nil
 	},
 }
