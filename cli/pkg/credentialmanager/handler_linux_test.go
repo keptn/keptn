@@ -15,7 +15,7 @@ func init() {
 
 func TestSetAndGetCreds(t *testing.T) {
 	MockKubeConfigCheck = true
-	cm := NewCredentialManager()
+	cm := NewCredentialManager(false)
 	if err := cm.SetCreds(testEndPoint, testAPIToken, testNamespace); err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestSetAndGetCreds(t *testing.T) {
 
 func TestGetCredsFromFile(t *testing.T) {
 	MockKubeConfigCheck = true
-	file, err := ioutil.TempFile("", "*__"+kubeConfigFile.CurrentContext+"__"+testNamespace)
+	file, err := ioutil.TempFile("", "*__"+keptnContext+"__"+testNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func TestGetCredsFromFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cm := NewCredentialManager()
+	cm := NewCredentialManager(false)
 	tempFileName := strings.Split(file.Name(), "__")[0]
 	cm.apiTokenFile = tempFileName
 

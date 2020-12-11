@@ -7,7 +7,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/nats-io/nats-server/v2/server"
@@ -127,7 +126,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				Event:  getStartEvaluationEvent(),
 			},
 			sloAvailable:  false,
-			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnevents.InternalGetSLIEventType},
+			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName)},
 			wantErr:       false,
 			ProjectSLIProvider: struct {
 				val string
@@ -170,7 +169,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 				Event:  getStartEvaluationEvent(),
 			},
 			sloAvailable:  false,
-			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnevents.InternalGetSLIEventType},
+			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName)},
 			wantErr:       false,
 			ProjectSLIProvider: struct {
 				val string

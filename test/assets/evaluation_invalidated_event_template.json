@@ -1,6 +1,6 @@
 {
-  "type": "sh.keptn.events.evaluation.invalidated",
-  "specversion": "0.2",
+  "type": "sh.keptn.event.evaluation.invalidated",
+  "specversion": "1.0",
   "source": "travis-ci",
   "contenttype": "application/json",
   "triggeredid": "$TRIGGERED_ID",

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
-import {debounce, map, mergeMap, take, takeUntil, toArray} from "rxjs/operators";
+import {debounce, filter, map, mergeMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -30,6 +30,7 @@ export class DataService {
   constructor(private http: HttpClient, private apiService: ApiService) {
     this.loadKeptnInfo();
     this.keptnInfo
+      .pipe(filter(keptnInfo => !!keptnInfo))
       .pipe(take(1))
       .subscribe(keptnInfo => {
         this.loadProjects();
@@ -124,6 +125,30 @@ export class DataService {
         map(projects => projects.map(project => Project.fromJSON(project)))
       ).subscribe((projects: Project[]) => {
       this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
+    }, (err) => {
+      this._projects.next([]);
+    });
+  }
+
+  public loadServices(project: Project) {
+    from(project.stages).pipe(
+      mergeMap(
+        // @ts-ignore
+        stage => this.apiService.getServices(project.projectName, stage.stageName, this._keptnInfo.getValue().bridgeInfo.servicesPageSize||50)
+          .pipe(
+            map(result => result.services),
+            map(services => services.map(service => Service.fromJSON(service))),
+            map(services => ({ ...stage, services}))
+          )
+      ),
+      toArray(),
+      map(stages => stages.map(stage => Stage.fromJSON(stage)))
+    ).subscribe((stages: Stage[]) => {
+      project.stages.forEach((stage: Stage) => {
+        stage.services.forEach((service: Service) => {
+          service.deployedImage = stages.find(s => s.stageName == stage.stageName).services.find(s => s.serviceName == service.serviceName).deployedImage;
+        });
+      });
     }, (err) => {
       this._projects.next([]);
     });

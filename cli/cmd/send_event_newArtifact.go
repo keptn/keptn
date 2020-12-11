@@ -33,7 +33,6 @@ import (
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -80,7 +79,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		var apiToken string
 		var err error
 		if !mocking {
-			endPoint, apiToken, err = credentialmanager.NewCredentialManager().GetCreds(namespace)
+			endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		} else {
 			endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 			endPoint = *endPointPtr
@@ -157,17 +156,11 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		eventContext, err2 := apiHandler.SendEvent(apiEvent)
+		_, err2 := apiHandler.SendEvent(apiEvent)
 		if err2 != nil {
 			logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 			return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err2.Message)
 		}
-
-		// if eventContext is available, open WebSocket communication
-		if eventContext != nil && !SuppressWSCommunication {
-			return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-		}
-
 		return nil
 	},
 }

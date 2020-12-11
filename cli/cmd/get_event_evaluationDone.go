@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -40,7 +40,11 @@ var evaluationDoneCmd = &cobra.Command{
 	Example:      `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager().GetCreds(namespace)
+		fmt.Println(`NOTE: The "keptn get event evaluation-done" command is DEPRECATED and will be removed in a future release`)
+		fmt.Println(`Use "keptn get event evaluation.finished" instead`)
+		fmt.Println()
+
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -58,7 +62,7 @@ var evaluationDoneCmd = &cobra.Command{
 		if !mocking {
 			evaluationDoneEvts, err := eventHandler.GetEvents(&apiutils.EventFilter{
 				KeptnContext: *evaluationDone.KeptnContext,
-				EventType:    keptnevents.EvaluationDoneEventType,
+				EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 			})
 			if err != nil {
 				logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)

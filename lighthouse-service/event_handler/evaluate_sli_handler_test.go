@@ -15,7 +15,6 @@ import (
 	"strings"
 	"testing"
 
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
 	"github.com/stretchr/testify/assert"
 )
@@ -1404,7 +1403,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 
 type evaluateObjectivesTestObject struct {
 	Name                       string
-	InGetSLIDoneEvent          *keptnevents.InternalGetSLIDoneEventData
+	InGetSLIDoneEvent          *keptnv2.GetSLIFinishedEventData
 	InSLOConfig                *keptnmodelsv2.ServiceLevelObjectives
 	InPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
 	ExpectedEvaluationResult   *keptnv2.EvaluationFinishedEventData
@@ -1416,18 +1415,26 @@ func TestEvaluateObjectives(t *testing.T) {
 	tests := []*evaluateObjectivesTestObject{
 		{
 			Name: "Simple comparison evaluation",
-			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
-				Project: "sockshop",
-				Service: "carts",
-				Stage:   "dev",
-				Start:   "2019-10-20T07:57:27.152330783Z",
-				End:     "2019-10-22T08:57:27.152330783Z",
-				IndicatorValues: []*keptnevents.SLIResult{
-					{
-						Metric:  "my-test-metric-1",
-						Value:   10.0,
-						Success: true,
-						Message: "",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: struct {
+					Start           string               `json:"start"`
+					End             string               `json:"end"`
+					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
+				}{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "my-test-metric-1",
+							Value:   10.0,
+							Success: true,
+							Message: "",
+						},
 					},
 				},
 			},
@@ -1540,18 +1547,26 @@ func TestEvaluateObjectives(t *testing.T) {
 		},
 		{
 			Name: "Expect Warning",
-			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
-				Project: "sockshop",
-				Service: "carts",
-				Stage:   "dev",
-				Start:   "2019-10-20T07:57:27.152330783Z",
-				End:     "2019-10-22T08:57:27.152330783Z",
-				IndicatorValues: []*keptnevents.SLIResult{
-					{
-						Metric:  "my-test-metric-1",
-						Value:   16.0,
-						Success: true,
-						Message: "",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: struct {
+					Start           string               `json:"start"`
+					End             string               `json:"end"`
+					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
+				}{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "my-test-metric-1",
+							Value:   16.0,
+							Success: true,
+							Message: "",
+						},
 					},
 				},
 			},
@@ -1674,24 +1689,32 @@ func TestEvaluateObjectives(t *testing.T) {
 		},
 		{
 			Name: "Logging SLI with no pass criteria should not affect score",
-			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
-				Project: "sockshop",
-				Service: "carts",
-				Stage:   "dev",
-				Start:   "2019-10-20T07:57:27.152330783Z",
-				End:     "2019-10-22T08:57:27.152330783Z",
-				IndicatorValues: []*keptnevents.SLIResult{
-					{
-						Metric:  "my-test-metric-1",
-						Value:   10.0,
-						Success: true,
-						Message: "",
-					},
-					{
-						Metric:  "my-log-metric",
-						Value:   30.0,
-						Success: true,
-						Message: "",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: struct {
+					Start           string               `json:"start"`
+					End             string               `json:"end"`
+					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
+				}{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "my-test-metric-1",
+							Value:   10.0,
+							Success: true,
+							Message: "",
+						},
+						{
+							Metric:  "my-log-metric",
+							Value:   30.0,
+							Success: true,
+							Message: "",
+						},
 					},
 				},
 			},
@@ -1819,24 +1842,32 @@ func TestEvaluateObjectives(t *testing.T) {
 		},
 		{
 			Name: "Logging SLI with empty pass criteria array should not affect score and have status 'info' - BUG 2231",
-			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
-				Project: "sockshop",
-				Service: "carts",
-				Stage:   "dev",
-				Start:   "2019-10-20T07:57:27.152330783Z",
-				End:     "2019-10-22T08:57:27.152330783Z",
-				IndicatorValues: []*keptnevents.SLIResult{
-					{
-						Metric:  "my-test-metric-1",
-						Value:   10.0,
-						Success: true,
-						Message: "",
-					},
-					{
-						Metric:  "my-log-metric",
-						Value:   30.0,
-						Success: true,
-						Message: "",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: struct {
+					Start           string               `json:"start"`
+					End             string               `json:"end"`
+					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
+				}{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "my-test-metric-1",
+							Value:   10.0,
+							Success: true,
+							Message: "",
+						},
+						{
+							Metric:  "my-log-metric",
+							Value:   30.0,
+							Success: true,
+							Message: "",
+						},
 					},
 				},
 			},
@@ -1966,18 +1997,26 @@ func TestEvaluateObjectives(t *testing.T) {
 		},
 		{
 			Name: "BUG 1125",
-			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
-				Project: "sockshop",
-				Service: "carts",
-				Stage:   "dev",
-				Start:   "2019-10-20T07:57:27.152330783Z",
-				End:     "2019-10-22T08:57:27.152330783Z",
-				IndicatorValues: []*keptnevents.SLIResult{
-					{
-						Metric:  "response_time_p50",
-						Value:   1011.0745528937252,
-						Success: true,
-						Message: "",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: struct {
+					Start           string               `json:"start"`
+					End             string               `json:"end"`
+					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
+				}{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "response_time_p50",
+							Value:   1011.0745528937252,
+							Success: true,
+							Message: "",
+						},
 					},
 				},
 			},
@@ -2051,18 +2090,26 @@ func TestEvaluateObjectives(t *testing.T) {
 		},
 		{
 			Name: "BUG 1263",
-			InGetSLIDoneEvent: &keptnevents.InternalGetSLIDoneEventData{
-				Project: "sockshop",
-				Service: "carts",
-				Stage:   "dev",
-				Start:   "2019-10-20T07:57:27.152330783Z",
-				End:     "2019-10-22T08:57:27.152330783Z",
-				IndicatorValues: []*keptnevents.SLIResult{
-					{
-						Metric:  "response_time_p50",
-						Value:   100,
-						Success: true,
-						Message: "",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: struct {
+					Start           string               `json:"start"`
+					End             string               `json:"end"`
+					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
+				}{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "response_time_p50",
+							Value:   100,
+							Success: true,
+							Message: "",
+						},
 					},
 				},
 			},
@@ -2564,7 +2611,7 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 		HTTPClient *http.Client
 	}
 	type args struct {
-		e            *keptnevents.InternalGetSLIDoneEventData
+		e            *keptnv2.GetSLIFinishedEventData
 		keptnContext string
 	}
 	tests := []struct {
@@ -2583,17 +2630,14 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 				HTTPClient: &http.Client{},
 			},
 			args: args{
-				e: &keptnevents.InternalGetSLIDoneEventData{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					Start:              "",
-					End:                "",
-					TestStrategy:       "",
-					IndicatorValues:    nil,
-					DeploymentStrategy: "",
-					Deployment:         "",
-					Labels:             nil,
+				e: &keptnv2.GetSLIFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+						Result:  "",
+						Labels:  nil,
+					},
 				},
 				keptnContext: "",
 			},
@@ -2699,7 +2743,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 		HTTPClient *http.Client
 	}
 	type args struct {
-		e                       *keptnevents.InternalGetSLIDoneEventData
+		e                       *keptnv2.GetSLIFinishedEventData
 		numberOfPreviousResults int
 	}
 	tests := []struct {
@@ -2719,17 +2763,12 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 				HTTPClient: &http.Client{},
 			},
 			args: args{
-				e: &keptnevents.InternalGetSLIDoneEventData{
-					Project:            "sockshop",
-					Stage:              "dev",
-					Service:            "carts",
-					Start:              "",
-					End:                "",
-					TestStrategy:       "",
-					IndicatorValues:    nil,
-					DeploymentStrategy: "",
-					Deployment:         "",
-					Labels:             nil,
+				e: &keptnv2.GetSLIFinishedEventData{
+					EventData: keptnv2.EventData{
+						Project: "sockshop",
+						Stage:   "dev",
+						Service: "carts",
+					},
 				},
 				numberOfPreviousResults: 1,
 			},

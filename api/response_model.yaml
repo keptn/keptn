@@ -3,11 +3,8 @@ definitions:
   eventContext:
     type: object
     required:
-      - token
       - keptnContext
     properties:
-      token:
-        type: string
       keptnContext:
         type: string
   error:

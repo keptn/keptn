@@ -17,9 +17,10 @@ import (
 )
 
 type authCmdParams struct {
-	endPoint     *string
-	apiToken     *string
-	exportConfig *bool
+	endPoint      *string
+	apiToken      *string
+	exportConfig  *bool
+	acceptContext bool
 }
 
 var authParams *authCmdParams
@@ -47,7 +48,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 		var err error
 		// User wants to print current auth credentials
 		if *authParams.exportConfig {
-			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager().GetCreds(namespace)
+			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager(authParams.acceptContext).GetCreds(namespace)
 			if err != nil {
 				return err
 			}
@@ -73,7 +74,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 		if !mocking {
 			authenticated := false
 
-			if !lookupHostname(url.Hostname()) {
+			if !lookupHostname(url.Hostname(), net.LookupHost, time.Sleep) {
 				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
 			}
 
@@ -101,7 +102,7 @@ More precisely, the Keptn CLI stores the endpoint and API token using *pass* in 
 			}
 
 			logging.PrintLog("Successfully authenticated against the Keptn cluster "+*authParams.endPoint, logging.InfoLevel)
-			return credentialmanager.NewCredentialManager().SetCreds(*url, *authParams.apiToken, namespace)
+			return credentialmanager.NewCredentialManager(authParams.acceptContext).SetCreds(*url, *authParams.apiToken, namespace)
 		}
 
 		fmt.Println("skipping auth due to mocking flag set to true")
@@ -116,6 +117,7 @@ func init() {
 	authParams.endPoint = authCmd.Flags().StringP("endpoint", "e", "", "The endpoint exposed by the Keptn installation (e.g., api.keptn.127.0.0.1.xip.io)")
 	authParams.apiToken = authCmd.Flags().StringP("api-token", "a", "", "The API token to communicate with the Keptn installation")
 	authParams.exportConfig = authCmd.Flags().BoolP("export", "c", false, "To export the current cluster config i.e API token and Endpoint")
+	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
 }
 
 func verifyAuthParams(authParams *authCmdParams) error {
@@ -136,14 +138,17 @@ func verifyAuthParams(authParams *authCmdParams) error {
 	return nil
 }
 
-func lookupHostname(hostname string) bool {
+type resolveFunc func(string) ([]string, error)
+type sleepFunc func(time.Duration)
+
+func lookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bool {
 	if strings.HasSuffix(hostname, "xip.io") {
 		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
 		return true
 	} else {
 		// first, try to resolve the domain (and retry it)
-		for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
-			_, err := net.LookupHost(hostname)
+		for retries := 0; retries < 3; sleepFn(5 * time.Second) {
+			_, err := lookupFn(hostname)
 			if err != nil {
 				logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
 				logging.PrintLog("Retrying...", logging.InfoLevel)

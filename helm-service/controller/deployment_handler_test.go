@@ -40,7 +40,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-	deploymentHandler.HandleEvent(ce, nilCloser)
+	deploymentHandler.HandleEvent(ce)
 
 	expectedActionFinishedEvent := cloudevents.NewEvent()
 	expectedActionFinishedEvent.SetType("sh.keptn.event.deployment.finished")

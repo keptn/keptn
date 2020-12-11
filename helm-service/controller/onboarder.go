@@ -27,7 +27,7 @@ import (
 // Onboarder is responsible for onboarding a service
 type Onboarder interface {
 	// HandleEvent onboards a new service
-	HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn))
+	HandleEvent(ce cloudevents.Event)
 	// OnboardGeneratedChart generates the generated chart using the Helm manifests of the user chart
 	// as well as the specified deployment strategy
 	OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error)
@@ -73,7 +73,7 @@ func NewOnboarder(
 }
 
 // HandleEvent onboards a new service
-func (o *onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
+func (o *onboarder) HandleEvent(ce cloudevents.Event) {
 
 	e := &keptnv2.ServiceCreateFinishedEventData{}
 	if err := ce.DataAs(e); err != nil {
@@ -87,9 +87,6 @@ func (o *onboarder) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHand
 		// Event does not contain a Helm chart
 		return
 	}
-
-	// Only close logger/websocket, if there is a chart which needs to be onboarded
-	defer closeLogger(o.getKeptnHandler())
 
 	// Check if project exists
 	if _, err := o.projectHandler.GetProject(models.Project{ProjectName: e.Project}); err != nil {

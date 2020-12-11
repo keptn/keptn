@@ -2,9 +2,20 @@
 
 source test/utils.sh
 
-# get keptn api details
-KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+# get keptn API details
+if [[ "$PLATFORM" == "openshift" ]]; then
+  KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
+else
+  if [[ "$KEPTN_SERVICE_TYPE" == "NodePort" ]]; then
+    API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+    INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+    KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+  else
+    KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
+  fi
+fi
+
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 # test configuration
 UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}
@@ -16,11 +27,11 @@ SERVICE="frontend"
 ########################################################################################################################
 
 # ensure unleash-service is not installed yet
-kubectl -n keptn get deployment unleash-service 2> /dev/null
+kubectl -n ${KEPTN_NAMESPACE} get deployment unleash-service 2> /dev/null
 
 if [[ $? -eq 0 ]]; then
   echo "Found unleash-service. Please uninstall it using:"
-  echo "kubectl -n keptn delete deployment unleash-service"
+  echo "kubectl -n ${KEPTN_NAMESPACE} delete deployment unleash-service"
   exit 1
 fi
 
@@ -177,12 +188,16 @@ fi
 ##########################################################################################################################################
 
 # install unleash service
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n keptn
+echo "Installing unleash-service version ${UNLEASH_SERVICE_VERSION}"
+kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
+
+kubectl -n ${KEPTN_NAMESPACE} set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
+
 sleep 10
 
-kubectl -n keptn set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
+wait_for_deployment_in_namespace "unleash-service" "${KEPTN_NAMESPACE}"
 
-wait_for_deployment_in_namespace "unleash-service" "keptn"
+kubectl get deployment -n ${KEPTN_NAMESPACE} unleash-service -oyaml
 
 echo "Sending problem.open event"
 keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
@@ -227,6 +242,15 @@ fi
 #verify_using_jq "$response" ".data.remediation.message" "Action run-snow-wf triggered but not executed after waiting for 2 minutes."
 
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
+
+echo "Remediation Service logs:"
+kubectl logs -n ${KEPTN_NAMESPACE} svc/remediation-service -c remediation-service
+
+echo "Unleash service logs:"
+kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c unleash-service
+
+echo "Unleash service distributor logs:"
+kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c distributor
 
 # print the response
 echo $response | jq .

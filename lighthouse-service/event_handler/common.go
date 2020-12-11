@@ -129,7 +129,7 @@ func sendEvent(shkeptncontext string, triggeredID, eventType string, keptnHandle
 	return keptnHandler.SendCloudEvent(event)
 }
 
-func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptn.InternalGetSLIDoneEventData) error {
+func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, sloFileContent string, keptnHandler *keptnv2.Keptn, incoming *keptnv2.GetSLIFinishedEventData) error {
 	data := keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: incoming.Project,
@@ -141,8 +141,8 @@ func sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, message, s
 			Message: message,
 		},
 		Evaluation: keptnv2.EvaluationDetails{
-			TimeStart:        incoming.Start,
-			TimeEnd:          incoming.End,
+			TimeStart:        incoming.GetSLI.Start,
+			TimeEnd:          incoming.GetSLI.End,
 			Result:           string(keptnv2.ResultFailed),
 			Score:            0,
 			SLOFileContent:   sloFileContent,
