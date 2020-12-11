@@ -235,7 +235,7 @@ jobs:
 
   - stage: Build CLI (OSX, Windows, Linux)
     if: branch = master AND (type = cron OR type = push)
-    os: osx
+    os: linux # osx
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -266,7 +266,7 @@ jobs:
   ##################################################################################
   - stage: Partial Build for feature/bug/hotfix/patch branches (CLI + Docker Images)
     if: branch =~ ^feature.*$ OR branch =~ ^bug.*$ OR branch =~ ^hotfix.*$ OR branch =~ ^patch.*$
-    os: osx
+    os: linux
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
@@ -367,7 +367,7 @@ jobs:
   ##################################################################################
   - stage: Release Build CLI
     if: branch =~ ^release.*$ AND NOT type = pull_request
-    os: osx
+    os: linux # osx
     before_script:
       - source ./travis-scripts/install_gcloud.sh
       - echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
