@@ -36,7 +36,7 @@ PROJECT="linking-stages-project"
 SERVICE="linking-stages-service"
 
 echo "Installing echo service"
-kubectl apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/implement-echo-service/deploy/service.yaml
+kubectl apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/release-0.1.0/deploy/service.yaml
 
 echo "Testing link staging..."
 
