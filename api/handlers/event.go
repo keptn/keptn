@@ -3,12 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/api/utils"
-	"net/url"
-	"strings"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -121,9 +122,4 @@ func sendInternalErrorForGet(err error, logger *keptnutils.Logger) *event.GetEve
 func sendNotFoundErrorForGet(err error, logger *keptnutils.Logger) *event.GetEventDefault {
 	logger.Error(err.Error())
 	return event.NewGetEventDefault(404).WithPayload(&models.Error{Code: 404, Message: swag.String(err.Error())})
-}
-
-func addEventContextInCE(ceData interface{}, eventContext models.EventContext) interface{} {
-	ceData.(map[string]interface{})["eventContext"] = eventContext
-	return ceData
 }

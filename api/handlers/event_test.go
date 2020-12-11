@@ -2,38 +2,21 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-openapi/strfmt"
-	"github.com/google/uuid"
-	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/api/restapi/operations/event"
-	"github.com/keptn/keptn/api/utils"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
+	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/api/restapi/operations/event"
+	"github.com/keptn/keptn/api/utils"
+
 	"github.com/keptn/keptn/api/models"
-	"github.com/kinbiko/jsonassert"
 )
-
-func TestAddingEventContext(t *testing.T) {
-
-	ja := jsonassert.New(t)
-	ceData := make(map[string]interface{})
-	ceData["project"] = "sockshop"
-
-	ceString, _ := json.Marshal(ceData)
-	ja.Assertf(string(ceString), `{"project":"sockshop"}`)
-
-	channelID := "id"
-	channelInfo := models.EventContext{KeptnContext: &channelID}
-
-	forwardData := addEventContextInCE(ceData, channelInfo)
-	actual, _ := json.Marshal(forwardData)
-	ja.Assertf(string(actual), `{"project":"sockshop", "eventContext":{"keptnContext":"id"}}`)
-}
 
 func Test_createOrApplyKeptnContext(t *testing.T) {
 	type args struct {

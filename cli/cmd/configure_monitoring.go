@@ -110,7 +110,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			}
 
 			maxFetchEventRetries := 10
-			fetchEventRetryTime := 3 * time.Second
+			fetchEventRetryTime := 3
 			// if eventContext is available, try to fetch the correlating configure-monitoring.finished event
 			if eventContext != nil {
 				events, err := eventHandler.GetEventsWithRetry(&apiutils.EventFilter{
@@ -148,7 +148,7 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			return nil
 		}
 
-		fmt.Println("Skipping send-new artifact due to mocking flag set to true")
+		fmt.Println("Skipping configure monitoring due to mocking flag set to true")
 		return nil
 	},
 }
