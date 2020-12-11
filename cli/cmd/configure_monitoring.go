@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/mitchellh/mapstructure"
-	"net/url"
-	"time"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
+	"net/url"
+	"time"
 )
 
 type configureMonitoringCmdParams struct {
@@ -111,40 +110,38 @@ keptn configure monitoring prometheus --project=PROJECTNAME --service=SERVICENAM
 			}
 
 			maxFetchEventRetries := 10
-			fetchEventRetryTime := 3
+			fetchEventRetryTime := 3 * time.Second
 			// if eventContext is available, try to fetch the correlating configure-monitoring.finished event
-			gotEvent := false
 			if eventContext != nil {
-				for i := 0; i < maxFetchEventRetries; i = i + i {
-					events, errObj := eventHandler.GetEvents(&apiutils.EventFilter{
-						KeptnContext: *eventContext.KeptnContext,
-						EventType:    keptnv2.GetFinishedEventType("configure-monitoring"),
-					})
-					if errObj == nil && len(events) > 0 {
-						for _, event := range events {
-							eventData := &keptnv2.EventData{}
-							decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-								Squash: true,
-								Result: eventData,
-							})
-							if err != nil {
-								return fmt.Errorf("could not decode event: " + err.Error())
-							}
+				events, err := eventHandler.GetEventsWithRetry(&apiutils.EventFilter{
+					KeptnContext: *eventContext.KeptnContext,
+					EventType:    keptnv2.GetFinishedEventType("configure-monitoring"),
+				}, maxFetchEventRetries, fetchEventRetryTime)
 
-							if err := decoder.Decode(event.Data); err != nil {
-								return fmt.Errorf("could not decode event: " + err.Error())
-							}
-
-							logging.PrintLog(eventData.Message, logging.InfoLevel)
-						}
-						gotEvent = true
-						break
+				if err != nil || len(events) == 0 {
+					if err != nil {
+						logging.PrintLog(err.Error(), logging.InfoLevel)
 					}
-					<-time.After(time.Duration(fetchEventRetryTime) * time.Second)
+					logging.PrintLog("Could not retrieve configure-monitoring.finished event with KeptnContext "+*eventContext.KeptnContext+". Please check your monitoring solution if it has been configured correctly.", logging.InfoLevel)
+					return nil
 				}
 
-				if !gotEvent {
-					logging.PrintLog("Could not retrieve configure-monitoring.finished event with KeptnContext "+*eventContext.KeptnContext+". Please check your monitoring solution if it has been configured correctly.", logging.InfoLevel)
+				for _, event := range events {
+					eventData := &keptnv2.EventData{}
+					decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+						Squash: true,
+						Result: eventData,
+					})
+					if err != nil {
+						logging.PrintLog("could not decode event: "+err.Error(), logging.InfoLevel)
+						continue
+					}
+
+					if err := decoder.Decode(event.Data); err != nil {
+						return fmt.Errorf("could not decode event: " + err.Error())
+					}
+
+					logging.PrintLog(eventData.Message, logging.InfoLevel)
 				}
 			}
 

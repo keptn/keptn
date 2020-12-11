@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.6.3-0.20201209152319-7c9665e3aab8
+	github.com/keptn/go-utils v0.6.3-0.20201211092237-e63e682d3ec0
 	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1
@@ -46,4 +46,5 @@ require (
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+	github.com/keptn/go-utils => ../../go-utils
 )
