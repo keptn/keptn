@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	utils "github.com/keptn/kubernetes-utils/pkg"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 // GitCredentials contains git ccredentials info
@@ -173,19 +174,13 @@ func setUpstreamsAndPush(project string, credentials *GitCredentials, repoURI st
 	}
 
 	// first, make sure to push the master/main branch first
-	for _, branch := range branches {
-		if branch == defaultBranch {
-			err := CheckoutBranch(project, branch, true)
-			if err != nil {
-				return obfuscateErrorMessage(err, credentials)
-			}
-			_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, branch}, projectConfigPath)
-			if err != nil {
-				return obfuscateErrorMessage(err, credentials)
-			}
-
-			break
-		}
+	err = CheckoutBranch(project, defaultBranch, true)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
+	}
+	_, err = utils.ExecuteCommandInDirectory("git", []string{"push", "--set-upstream", repoURI, defaultBranch}, projectConfigPath)
+	if err != nil {
+		return obfuscateErrorMessage(err, credentials)
 	}
 
 	for _, branch := range branches {
