@@ -1,0 +1,59 @@
+name: Auto PR for go-utils
+on:
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - 'master'
+      - '*'
+    tags:
+      - '*'
+jobs:
+  auto-pr:
+    strategy:
+      matrix:
+        go-version: [1.13.x]
+        platform: [ubuntu-latest]
+    runs-on: '${{ matrix.platform }}'
+    env:
+      GO111MODULE: "on"
+      GOPROXY: "https://proxy.golang.org"
+      DEPENDENCY_NAME: "go-utils"
+      DEPENDENCY_URL: "github.com/keptn/go-utils"
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Auto update go mod
+        run: gh-actions-scripts/auto-update-go-mod.sh ${DEPENDENCY_URL} "master"
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          #push-to-fork: 'keptn/keptn'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update go-utils
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: true
+          base: 'master'
+          branch: patch/go-utils
+          branch-suffix: 'short-commit-hash'
+          delete-branch: true
+          title: 'Auto-update go-utils'
+          body: |
+            **Beep boop I am a bot!
+
+            This is an automatically created PR to change [keptn/go-utils](https://github.com/keptn/go-utils) to version $GO_UTILS_TARGET.
+          labels: |
+            automated pr
+          draft: false
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
