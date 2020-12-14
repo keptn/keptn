@@ -295,45 +295,32 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 		if service.LastEventTypes == nil {
 			service.LastEventTypes = map[string]models.EventContext{}
 		}
+		service.LastEventTypes[eventType] = *contextInfo
 
 		// for events of type "deployment.finished", find the correlating
 		// "deployment.triggered" event to update the deployed image name
 		if eventType == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
 
-			events, errObj := mv.EventsRetriever.GetEvents(&keptnapi.EventFilter{
-				Project:      eventData.GetProject(),
-				Stage:        eventData.GetStage(),
-				Service:      eventData.GetService(),
-				EventType:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-				KeptnContext: keptnContext,
-			})
-
+			events, errObj := mv.getAllDeploymentTriggeredEvents(eventData, keptnContext)
 			if errObj != nil || events == nil || len(events) == 0 {
 				return errors.New(*errObj.Message)
 			}
 
-			// find matching .triggered event
-			var matchingTriggeredEvent *goutilsmodels.KeptnContextExtendedCE = nil
-			for _, e := range events {
-				if e.Triggeredid == triggeredID {
-					matchingTriggeredEvent = e
-					break
-				}
+			matchingTriggeredEvent := findMatchingTriggeredEvent(events, triggeredID)
+			if matchingTriggeredEvent == nil {
+				return errors.New("no matching deployment.triggered event found")
 			}
 
-			// decode triggered event data
 			triggeredData := keptnv2.DeploymentTriggeredEventData{}
 			err := keptnv2.Decode(matchingTriggeredEvent.Data, &triggeredData)
 			if err != nil {
-				return err
+				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
 			}
 
-			// update deployed image of service
 			if deployedImage := triggeredData.ConfigurationChange.Values["image"]; deployedImage != nil {
 				service.DeployedImage = fmt.Sprintf("%v", deployedImage)
 			}
 		}
-		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})
 
@@ -404,6 +391,17 @@ func (mv *projectsMaterializedView) CloseOpenRemediations(project, stage, servic
 	return mv.updateProject(existingProject)
 }
 
+func (mv *projectsMaterializedView) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, keptnContext string) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error) {
+	events, errObj := mv.EventsRetriever.GetEvents(&keptnapi.EventFilter{
+		Project:      eventData.GetProject(),
+		Stage:        eventData.GetStage(),
+		Service:      eventData.GetService(),
+		EventType:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		KeptnContext: keptnContext,
+	})
+	return events, errObj
+}
+
 type serviceUpdateFunc func(service *models.ExpandedService) error
 
 func updateServiceInStage(project *models.ExpandedProject, stage string, service string, fn serviceUpdateFunc) error {
@@ -422,4 +420,15 @@ func updateServiceInStage(project *models.ExpandedProject, stage string, service
 		}
 	}
 	return errors.New("stage not found")
+}
+
+func findMatchingTriggeredEvent(events []*goutilsmodels.KeptnContextExtendedCE, triggeredID string) *goutilsmodels.KeptnContextExtendedCE {
+	var matchingTriggeredEvent *goutilsmodels.KeptnContextExtendedCE = nil
+	for _, e := range events {
+		if e.Triggeredid == triggeredID {
+			matchingTriggeredEvent = e
+			break
+		}
+	}
+	return matchingTriggeredEvent
 }
