@@ -113,6 +113,9 @@ cat << EOF > ./tmp-trigger-evaluation.json
     "service": "$SERVICE",
     "deployment": {
       "deploymentURIsLocal": ["$SERVICE:8080"]
+    },
+    "labels": {
+      "nr_projects": "0"
     }
   }
 }
@@ -125,9 +128,8 @@ rm tmp-trigger-evaluation.json
 echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
 response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
-echo response
+echo $response | jq .
 
-exit
 
 # Create projects, services and evaluations to generate data
 for project_nr in $(seq 1 ${NR_PROJECTS})
@@ -144,3 +146,36 @@ do
     done
   done
 done
+
+# do the evaluation again
+
+cat << EOF > ./tmp-trigger-evaluation.json
+{
+  "type": "sh.keptn.event.hardening.evaluation.triggered",
+  "specversion": "1.0",
+  "source": "travis-ci",
+  "contenttype": "application/json",
+  "data": {
+    "project": "$PROJECT",
+    "stage": "hardening",
+    "service": "$SERVICE",
+    "deployment": {
+      "deploymentURIsLocal": ["$SERVICE:8080"]
+    },
+    "labels": {
+      "nr_projects": "$NR_PROJECTS",
+      "nr_services_per_project": "$NR_SERVICES_PER_PROJECT",
+      "nr_evaluations_per_service": "$NR_NR_EVALUATIONS_PER_SERVICE",
+    }
+  }
+}
+EOF
+
+keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
+rm tmp-trigger-evaluation.json
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
+
+echo $response | jq .

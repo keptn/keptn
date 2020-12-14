@@ -22,10 +22,6 @@ objectives:
     pass:
       - criteria:
           - "<1"
-  - sli: "memory_usage"
-    pass:
-      - criteria:
-          - "<=+10%"
     warning:
       - criteria:
           - "<=+25%"
