@@ -65,6 +65,33 @@ function get_event() {
   keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project}
 }
 
+function get_event_with_retry() {
+  event_type=$1
+  keptn_context_id=$2
+  project=$3
+
+  RETRY=0; RETRY_MAX=50;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    response=$(keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project})
+
+    if [[ $response == "No event returned" ]]; then
+      RETRY=$[$RETRY+1]
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for ${event_type} event..."
+      sleep 10
+    else
+      echo $response
+      break
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    print_error "URL ${URL} could not be reached"
+    exit 1
+  fi
+
+}
+
 function send_approval_triggered_event() {
   PROJECT=$1
   STAGE=$2

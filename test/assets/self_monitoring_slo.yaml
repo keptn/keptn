@@ -1,0 +1,37 @@
+---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    pass:
+      - criteria:
+          - "<=+10%"
+          - "<250"
+    warning:
+      - criteria:
+          - "<=500"
+          - "<=+100%"
+    weight: 1
+  - sli: "throughput"
+  - sli: "error_rate"
+    pass:
+      - criteria:
+          - "<1"
+  - sli: "memory_usage"
+    pass:
+      - criteria:
+          - "<=+10%"
+    warning:
+      - criteria:
+          - "<=+25%"
+  - sli: "throughput"
+  - sli: "cpu_time"
+  - sli: "io_time"
+total_score:
+  pass: "90%"
+  warning: "75%"
