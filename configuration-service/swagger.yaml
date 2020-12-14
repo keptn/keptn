@@ -363,8 +363,8 @@ definitions:
         format: date-time
       type:
         type: string
-      extensions:
-        type: object
+      triggeredid:
+        type: string
       source:
         format: uri-reference
         type: string

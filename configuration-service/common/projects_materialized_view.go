@@ -3,10 +3,13 @@ package common
 import (
 	"errors"
 	"fmt"
+	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
+	goutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/configuration-service/models"
-	"github.com/mitchellh/mapstructure"
+	"os"
 	"strconv"
 	"time"
 )
@@ -25,17 +28,25 @@ var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 var instance *projectsMaterializedView
 
+// EventsRetriever defines the interface for fetching events from the data store
+type EventsRetriever interface {
+	GetEvents(filter *goutils.EventFilter) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error)
+}
+
 type projectsMaterializedView struct {
-	ProjectRepo ProjectRepo
-	Logger      keptncommon.LoggerInterface
+	ProjectRepo     ProjectRepo
+	EventsRetriever EventsRetriever
+	Logger          keptncommon.LoggerInterface
 }
 
 // GetProjectsMaterializedView returns the materialized view
 func GetProjectsMaterializedView() *projectsMaterializedView {
+	fmt.Println(instance)
 	if instance == nil {
 		instance = &projectsMaterializedView{
-			ProjectRepo: &MongoDBProjectRepo{},
-			Logger:      keptncommon.NewLogger("", "", "configuration-service"),
+			ProjectRepo:     &MongoDBProjectRepo{},
+			EventsRetriever: keptnapi.NewEventHandler(os.Getenv("DATASTORE")),
+			Logger:          keptncommon.NewLogger("", "", "configuration-service"),
 		}
 	}
 	return instance
@@ -261,10 +272,11 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 }
 
 // UpdateEventOfService updates a service event
-func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string) error {
+func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 
 	keptnBase := &keptnv2.EventData{}
-	err := mapstructure.Decode(event, keptnBase)
+	err := keptnv2.DecodeKeptnEventData(event, keptnBase)
+	//err := mapstructure.Decode(event, keptnBase)
 	if err != nil {
 		mv.Logger.Error("Could not parse event data: " + err.Error())
 		return err
@@ -285,17 +297,38 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 		if service.LastEventTypes == nil {
 			service.LastEventTypes = map[string]models.EventContext{}
 		}
-		/*
-			// TODO: this will need changes due to different event payload in 0.8
-			if eventType == keptn.DeploymentFinishedEventType {
-				keptnv2.DeploymentFinishedEventData{}
-				if deploymentFinishedData, ok := keptnBase.(keptn.DeploymentFinishedEventData); ok {
-					if deploymentFinishedData.Image != "" && deploymentFinishedData.Tag != "" {
-						service.DeployedImage = deploymentFinishedData.Image + ":" + deploymentFinishedData.Tag
-					}
+
+		if eventType == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
+
+			events, errObj := mv.EventsRetriever.GetEvents(&keptnapi.EventFilter{
+				Project:      keptnBase.GetProject(),
+				Stage:        keptnBase.GetStage(),
+				Service:      keptnBase.GetService(),
+				EventType:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+				KeptnContext: keptnContext,
+			})
+
+			if errObj != nil || events == nil || len(events) == 0 {
+				return errors.New(*errObj.Message)
+			}
+
+			var matchingTriggeredEvent *goutilsmodels.KeptnContextExtendedCE = nil
+			for _, e := range events {
+				if e.Triggeredid == triggeredID {
+					matchingTriggeredEvent = e
+					break
 				}
 			}
-		*/
+
+			triggeredData := keptnv2.DeploymentTriggeredEventData{}
+			err := keptnv2.DecodeKeptnEventData(matchingTriggeredEvent.Data, &triggeredData)
+			if err != nil {
+				return err
+			}
+
+			deployedImage := triggeredData.ConfigurationChange.Values["image"]
+			service.DeployedImage = fmt.Sprintf("%v", deployedImage)
+		}
 		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})

@@ -18,10 +18,9 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.6.3-0.20201021140127-a974f80c5982
+	github.com/keptn/go-utils v0.6.3-0.20201211092237-e63e682d3ec0
 	github.com/keptn/kubernetes-utils v0.2.1-0.20201019122529-4a7e8d047794
 	github.com/mholt/archiver v3.1.1+incompatible
-	github.com/mitchellh/mapstructure v1.2.2
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.0.2
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
@@ -33,7 +32,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
-	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
@@ -42,3 +40,4 @@ require (
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
 replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
+replace github.com/keptn/go-utils => ../../go-utils

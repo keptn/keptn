@@ -8,7 +8,7 @@ package project
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // PutProjectProjectNameHandlerFunc turns a function with the right signature into a put project project name handler

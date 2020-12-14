@@ -8,13 +8,13 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // ExpandedServiceWithStageInfo expanded service with stage info
+//
 // swagger:model ExpandedServiceWithStageInfo
 type ExpandedServiceWithStageInfo struct {
 
