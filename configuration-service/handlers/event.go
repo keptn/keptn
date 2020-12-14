@@ -12,8 +12,7 @@ import (
 func HandleEventHandlerFunc(params event.HandleEventParams) middleware.Responder {
 	if params.Body.Type != nil {
 		keptnBase := &keptnv2.EventData{}
-		err := keptnv2.DecodeKeptnEventData(params.Body.Data, keptnBase)
-		//err := mapstructure.Decode(params.Body.Data, keptnBase)
+		err := keptnv2.Decode(params.Body.Data, keptnBase)
 		if err != nil {
 			return event.NewHandleEventDefault(400).WithPayload(&models.Error{Message: swag.String("Could not parse event data: " + err.Error()), Code: 400})
 		}

@@ -41,7 +41,6 @@ type projectsMaterializedView struct {
 
 // GetProjectsMaterializedView returns the materialized view
 func GetProjectsMaterializedView() *projectsMaterializedView {
-	fmt.Println(instance)
 	if instance == nil {
 		instance = &projectsMaterializedView{
 			ProjectRepo:     &MongoDBProjectRepo{},
@@ -274,17 +273,16 @@ func (mv *projectsMaterializedView) DeleteService(project string, stage string, 
 // UpdateEventOfService updates a service event
 func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 
-	keptnBase := &keptnv2.EventData{}
-	err := keptnv2.DecodeKeptnEventData(event, keptnBase)
-	//err := mapstructure.Decode(event, keptnBase)
+	eventData := &keptnv2.EventData{}
+	err := keptnv2.Decode(event, eventData)
 	if err != nil {
 		mv.Logger.Error("Could not parse event data: " + err.Error())
 		return err
 	}
 
-	existingProject, err := mv.GetProject(keptnBase.Project)
+	existingProject, err := mv.GetProject(eventData.Project)
 	if err != nil {
-		mv.Logger.Error("Could not update service " + keptnBase.Service + " in stage " + keptnBase.Stage + " in project " + keptnBase.Project + ". Could not load project: " + err.Error())
+		mv.Logger.Error("Could not update service " + eventData.Service + " in stage " + eventData.Stage + " in project " + eventData.Project + ". Could not load project: " + err.Error())
 		return err
 	}
 
@@ -293,17 +291,19 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 		KeptnContext: keptnContext,
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
-	err = updateServiceInStage(existingProject, keptnBase.Stage, keptnBase.Service, func(service *models.ExpandedService) error {
+	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *models.ExpandedService) error {
 		if service.LastEventTypes == nil {
 			service.LastEventTypes = map[string]models.EventContext{}
 		}
 
+		// for events of type "deployment.finished", find the correlating
+		// "deployment.triggered" event to update the deployed image name
 		if eventType == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
 
 			events, errObj := mv.EventsRetriever.GetEvents(&keptnapi.EventFilter{
-				Project:      keptnBase.GetProject(),
-				Stage:        keptnBase.GetStage(),
-				Service:      keptnBase.GetService(),
+				Project:      eventData.GetProject(),
+				Stage:        eventData.GetStage(),
+				Service:      eventData.GetService(),
 				EventType:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
 				KeptnContext: keptnContext,
 			})
@@ -312,6 +312,7 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 				return errors.New(*errObj.Message)
 			}
 
+			// find matching .triggered event
 			var matchingTriggeredEvent *goutilsmodels.KeptnContextExtendedCE = nil
 			for _, e := range events {
 				if e.Triggeredid == triggeredID {
@@ -320,26 +321,29 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 				}
 			}
 
+			// decode triggered event data
 			triggeredData := keptnv2.DeploymentTriggeredEventData{}
-			err := keptnv2.DecodeKeptnEventData(matchingTriggeredEvent.Data, &triggeredData)
+			err := keptnv2.Decode(matchingTriggeredEvent.Data, &triggeredData)
 			if err != nil {
 				return err
 			}
 
-			deployedImage := triggeredData.ConfigurationChange.Values["image"]
-			service.DeployedImage = fmt.Sprintf("%v", deployedImage)
+			// update deployed image of service
+			if deployedImage := triggeredData.ConfigurationChange.Values["image"]; deployedImage != nil {
+				service.DeployedImage = fmt.Sprintf("%v", deployedImage)
+			}
 		}
 		service.LastEventTypes[eventType] = *contextInfo
 		return nil
 	})
 
 	if err != nil {
-		mv.Logger.Error("Could not update image of service " + keptnBase.Service + ": " + err.Error())
+		mv.Logger.Error("Could not update image of service " + eventData.Service + ": " + err.Error())
 		return err
 	}
 	err = mv.updateProject(existingProject)
 	if err != nil {
-		mv.Logger.Error("Could not update " + keptnBase.Project + ": " + err.Error())
+		mv.Logger.Error("Could not update " + eventData.Project + ": " + err.Error())
 		return err
 	}
 	return nil
