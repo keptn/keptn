@@ -1,0 +1,19 @@
+{
+  "type": "sh.keptn.event.hardening.evaluation.triggered",
+  "specversion": "1.0",
+  "source": "travis-ci",
+  "contenttype": "application/json",
+  "data": {
+    "project": "$PROJECT",
+    "stage": "hardening",
+    "service": "$SERVICE",
+    "deployment": {
+      "deploymentURIsLocal": ["mongodb-datastore:8080"]
+    },
+    "labels": {
+      "nr_projects": "$project_nr",
+      "nr_services_per_project": "$service_nr",
+      "nr_evaluations_per_service": "$NR_NR_EVALUATIONS_PER_SERVICE",
+    }
+  }
+}

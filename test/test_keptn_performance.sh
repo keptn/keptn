@@ -29,9 +29,10 @@ DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 SELF_MONITORING_PROJECT=${SELF_MONITORING_PROJECT:-keptn-selfmonitoring}
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
-NR_PROJECTS=${NR_PROJECTS:-20}
+NR_PROJECTS=${NR_PROJECTS:-5}
 NR_SERVICES_PER_PROJECT=${NR_SERVICES_PER_PROJECT:-15}
 NR_EVALUATIONS_PER_SERVICE=${NR_EVALUATIONS_PER_SERVICE:-100}
+NR_INVALIDATIONS_PER_SERVICE=${NR_INVALIDATIONS_PER_SERVICE:-10}
 
 if [[ $QG_INTEGRATION_TEST_DT_TENANT == "" ]]; then
   echo "No DT Tenant env var provided. Exiting."
@@ -132,6 +133,9 @@ response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_conte
 
 echo $response | jq .
 
+nr_services=0
+nr_evaluations=0
+nr_invalidations=0
 
 # Create projects, services and evaluations to generate data
 for project_nr in $(seq 1 ${NR_PROJECTS})
@@ -140,10 +144,12 @@ do
 
   for service_nr in $(seq 1 ${NR_SERVICES_PER_PROJECT})
   do
+    nr_services=$((nr_services+1))
     keptn create service service-${service_nr} --project=project-${project_nr}
 
-    for evaluation_r in $(seq 1 ${NR_EVALUATIONS_PER_SERVICE})
+    for evaluation_nr in $(seq 1 ${NR_EVALUATIONS_PER_SERVICE})
     do
+      nr_evaluations=$((nr_evaluations+1))
       send_start_evaluation_request project-${project_nr} hardening service-${service_nr}
     done
 
@@ -162,9 +168,10 @@ do
           "deploymentURIsLocal": ["$SELF_MONITORING_SERVICE:8080"]
         },
         "labels": {
-          "nr_projects": "$SELF_MONITORING_PROJECT_nr",
-          "nr_services_per_project": "$service_nr",
-          "nr_evaluations_per_service": "$NR_NR_EVALUATIONS_PER_SERVICE"
+          "nr_projects": "$project_nr",
+          "nr_services": "$nr_services",
+          "nr_evaluations": "$nr_evaluations",
+          "nr_invalidations": "$nr_invalidations"
         }
       }
     }
@@ -178,5 +185,45 @@ EOF
     response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
 
     echo $response | jq .
+
+    for invalidation_nr in $(seq 1 ${NR_INVALIDATIONS_PER_SERVICE})
+    do
+      nr_invalidations=$((nr_invalidations+1))
+      send_evaluation_invalidated_event project-${project_nr} "hardening" service-${service_nr} "test-triggered-id-${invalidation_nr}" "test-context-id-${invalidation_nr}"
+    done
+
+    # do the evaluation again
+    cat << EOF > ./tmp-trigger-evaluation.json
+    {
+      "type": "sh.keptn.event.hardening.evaluation.triggered",
+      "specversion": "1.0",
+      "source": "travis-ci",
+      "contenttype": "application/json",
+      "data": {
+        "project": "$SELF_MONITORING_PROJECT",
+        "stage": "hardening",
+        "service": "$SELF_MONITORING_SERVICE",
+        "deployment": {
+          "deploymentURIsLocal": ["$SELF_MONITORING_SERVICE:8080"]
+        },
+        "labels": {
+          "nr_projects": "$project_nr",
+          "nr_services": "$nr_services",
+          "nr_evaluations": "$nr_evaluations",
+          "nr_invalidations": "$nr_invalidations"
+        }
+      }
+    }
+EOF
+
+    keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
+    rm tmp-trigger-evaluation.json
+
+    # try to fetch a evaluation-done event
+    echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+    response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
+
+    echo $response | jq .
+
   done
 done

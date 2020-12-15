@@ -171,7 +171,7 @@ hm.add(new org.apache.jmeter.protocol.http.control.Header(&quot;x-dynatrace-test
               </elementProp>
               <elementProp name="project" elementType="HTTPArgument" enabled="true">
                 <stringProp name="Argument.name">project</stringProp>
-                <stringProp name="Argument.value">project-0</stringProp>
+                <stringProp name="Argument.value">project-1</stringProp>
                 <stringProp name="Argument.desc">project</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
@@ -179,7 +179,7 @@ hm.add(new org.apache.jmeter.protocol.http.control.Header(&quot;x-dynatrace-test
               </elementProp>
               <elementProp name="service" elementType="HTTPArgument" enabled="true">
                 <stringProp name="Argument.name">service</stringProp>
-                <stringProp name="Argument.value">service-0</stringProp>
+                <stringProp name="Argument.value">service-1</stringProp>
                 <stringProp name="Argument.desc">service</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
