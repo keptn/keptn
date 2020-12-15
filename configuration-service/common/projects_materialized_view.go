@@ -302,8 +302,11 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 		if eventType == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
 
 			events, errObj := mv.getAllDeploymentTriggeredEvents(eventData, keptnContext)
-			if errObj != nil || events == nil || len(events) == 0 {
+			if errObj != nil {
 				return errors.New(*errObj.Message)
+			}
+			if events == nil || len(events) == 0 {
+				return errors.New("No deployment.triggered events could be found for keptn context " + keptnContext)
 			}
 
 			matchingTriggeredEvent := findMatchingTriggeredEvent(events, triggeredID)
