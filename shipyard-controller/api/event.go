@@ -575,9 +575,8 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 		}
 		if eventScope.Result == keptnv2.ResultPass {
 			return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents, inputEvent)
-		} else {
-			return nil
 		}
+		return nil
 	} else if err != nil {
 		sc.logger.Error("Could not get next task of sequence: " + err.Error())
 		return err
