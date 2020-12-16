@@ -791,6 +791,10 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 		}
 	}
 
+	// make sure the result from the previous event is used
+	eventPayload["result"] = eventScope.Result
+	eventPayload["status"] = eventScope.Status
+
 	source, _ := url.Parse("shipyard-controller")
 
 	event := cloudevents.NewEvent()
