@@ -22,7 +22,48 @@ function cleanup() {
     keptn delete project project-${project_nr}
   done
 }
-#trap cleanup EXIT SIGINT
+
+function evaluate_service() {
+  evaluated_project=$1
+  evaluated_service=$2
+  nr_projects=$3
+  nr_services=$4
+  nr_evaluations=$5
+  nr_invalidations=$6
+
+  cat << EOF > ./tmp-trigger-evaluation.json
+  {
+    "type": "sh.keptn.event.hardening.evaluation.triggered",
+    "specversion": "1.0",
+    "source": "travis-ci",
+    "contenttype": "application/json",
+    "data": {
+      "project": "$evaluated_project",
+      "stage": "hardening",
+      "service": "$evaluated_service",
+      "deployment": {
+        "deploymentURIsLocal": ["$evaluated_service:8080"]
+      },
+      "labels": {
+        "nr_projects": "$nr_projects",
+        "nr_services": "$nr_services",
+        "nr_evaluations": "$nr_evaluations",
+        "nr_invalidations": "$nr_invalidations"
+      }
+    }
+  }
+EOF
+
+  cat tmp-trigger-evaluation.json
+
+  keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
+  rm tmp-trigger-evaluation.json
+
+  # try to fetch a evaluation-done event
+  echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+  response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
+  echo $response
+}
 
 # test configuration
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
@@ -68,7 +109,7 @@ kubectl -n ${KEPTN_NAMESPACE} create secret generic dynatrace-credentials-${SELF
 echo "Install dynatrace-sli-service from: ${DYNATRACE_SLI_SERVICE_VERSION}"
 kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/${DYNATRACE_SLI_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
 sleep 5
-# TODO: delete line below !
+
 kubectl -n ${KEPTN_NAMESPACE} set image deployment/dynatrace-sli-service dynatrace-sli-service=keptncontrib/dynatrace-sli-service:0.6.0-master
 
 sleep 10
@@ -102,34 +143,7 @@ SELF_MONITORING_SERVICE=mongodb-datastore
 
 keptn add-resource --project=$SELF_MONITORING_PROJECT --service=$SELF_MONITORING_SERVICE --stage=hardening --resource=./test/assets/mongodb-performance.jmx --resourceUri=jmeter/load.jmx
 
-cat << EOF > ./tmp-trigger-evaluation.json
-{
-  "type": "sh.keptn.event.hardening.evaluation.triggered",
-  "specversion": "1.0",
-  "source": "travis-ci",
-  "contenttype": "application/json",
-  "data": {
-    "project": "$SELF_MONITORING_PROJECT",
-    "stage": "hardening",
-    "service": "$SELF_MONITORING_SERVICE",
-    "deployment": {
-      "deploymentURIsLocal": ["$SELF_MONITORING_SERVICE:8080"]
-    },
-    "labels": {
-      "nr_projects": "0"
-    }
-  }
-}
-EOF
-
-cat tmp-trigger-evaluation.json
-
-keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
-rm tmp-trigger-evaluation.json
-
-# try to fetch a evaluation-done event
-echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
-response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
+response=$(evaluate_service $SELF_MONITORING_PROJECT $SELF_MONITORING_SERVICE "0" "0" "0" "0")
 
 echo $response | jq .
 
@@ -153,39 +167,6 @@ do
       send_start_evaluation_request project-${project_nr} hardening service-${service_nr}
     done
 
-    # do the evaluation again
-    cat << EOF > ./tmp-trigger-evaluation.json
-    {
-      "type": "sh.keptn.event.hardening.evaluation.triggered",
-      "specversion": "1.0",
-      "source": "travis-ci",
-      "contenttype": "application/json",
-      "data": {
-        "project": "$SELF_MONITORING_PROJECT",
-        "stage": "hardening",
-        "service": "$SELF_MONITORING_SERVICE",
-        "deployment": {
-          "deploymentURIsLocal": ["$SELF_MONITORING_SERVICE:8080"]
-        },
-        "labels": {
-          "nr_projects": "$project_nr",
-          "nr_services": "$nr_services",
-          "nr_evaluations": "$nr_evaluations",
-          "nr_invalidations": "$nr_invalidations"
-        }
-      }
-    }
-EOF
-
-    keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
-    rm tmp-trigger-evaluation.json
-
-    # try to fetch a evaluation-done event
-    echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
-    response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
-
-    echo $response | jq .
-
     for invalidation_nr in $(seq 1 ${NR_INVALIDATIONS_PER_SERVICE})
     do
       nr_invalidations=$((nr_invalidations+1))
@@ -193,35 +174,7 @@ EOF
     done
 
     # do the evaluation again
-    cat << EOF > ./tmp-trigger-evaluation.json
-    {
-      "type": "sh.keptn.event.hardening.evaluation.triggered",
-      "specversion": "1.0",
-      "source": "travis-ci",
-      "contenttype": "application/json",
-      "data": {
-        "project": "$SELF_MONITORING_PROJECT",
-        "stage": "hardening",
-        "service": "$SELF_MONITORING_SERVICE",
-        "deployment": {
-          "deploymentURIsLocal": ["$SELF_MONITORING_SERVICE:8080"]
-        },
-        "labels": {
-          "nr_projects": "$project_nr",
-          "nr_services": "$nr_services",
-          "nr_evaluations": "$nr_evaluations",
-          "nr_invalidations": "$nr_invalidations"
-        }
-      }
-    }
-EOF
-
-    keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
-    rm tmp-trigger-evaluation.json
-
-    # try to fetch a evaluation-done event
-    echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
-    response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
+    response=$(evaluate_service $SELF_MONITORING_PROJECT $SELF_MONITORING_SERVICE $project_nr $nr_services $nr_evaluations $nr_invalidations)
 
     echo $response | jq .
 
