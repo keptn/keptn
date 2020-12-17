@@ -6,7 +6,7 @@
 //    http
 //  Host: localhost
 //  BasePath: /v1
-//  Version: 0.1.0
+//  Version: develop
 //
 //  Consumes:
 //    - application/cloudevents+json

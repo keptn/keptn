@@ -8,7 +8,7 @@ package event
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // HandleEventHandlerFunc turns a function with the right signature into a handle event handler

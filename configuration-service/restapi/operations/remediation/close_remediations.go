@@ -8,7 +8,7 @@ package remediation
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // CloseRemediationsHandlerFunc turns a function with the right signature into a close remediations handler

@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"strconv"
 
-	errors "github.com/go-openapi/errors"
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/keptn/keptn/configuration-service/models"
+	"github.com/keptn/keptn/configuration-service/models"
 )
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc turns a function with the right signature into a post project project name stage stage name resource handler
@@ -64,6 +64,7 @@ func (o *PostProjectProjectNameStageStageNameResource) ServeHTTP(rw http.Respons
 }
 
 // PostProjectProjectNameStageStageNameResourceBody post project project name stage stage name resource body
+//
 // swagger:model PostProjectProjectNameStageStageNameResourceBody
 type PostProjectProjectNameStageStageNameResourceBody struct {
 
