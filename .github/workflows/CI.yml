@@ -21,9 +21,9 @@ jobs:
     runs-on: ubuntu-20.04
     outputs: # declare what this job outputs (so it can be re-used for other jobs)
       # build config
-      BUILD_EVERYTHING: ${{ steps.BUILD_EVERYTHING.outputs.BUILD_EVERYTHING }}
-      BUILD_INSTALLER: ${{ steps.BUILD_EVERYTHING.outputs.BUILD_INSTALLER }}
-      BUILD_API: ${{ steps.BUILD_EVERYTHING.outputs.BUILD_API }}
+      BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
+      BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
+      BUILD_API: ${{ steps.check_modified_files.outputs.BUILD_API }}
       BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
       BUILD_OS_ROUTE_SVC: ${{ steps.check_modified_files.outputs.BUILD_OS_ROUTE_SVC }}
       BUILD_BRIDGE: ${{ steps.check_modified_files.outputs.BUILD_BRIDGE }}
@@ -67,14 +67,14 @@ jobs:
 
       - name: Process all artifacts (for push on master/release branches)
         if: github.event_name == 'push'
-        id: BUILD_EVERYTHING
+        id: build_everything
         run: |
           BUILD_EVERYTHING=true
           echo "##[set-output name=BUILD_EVERYTHING;]$(echo ${BUILD_EVERYTHING})"
 
       - name: Process only certain artifacts based on changed files (for PRs only)
         if: github.event_name == 'pull_request'
-        id: check_modified_files
+        id: check_modified_filesbuild_everything
         run: |
           # initialize variables with false (make sure they are also set in needs.prepare_ci_run.outputs !!!)
           BUILD_INSTALLER=false
@@ -299,6 +299,7 @@ jobs:
         working-directory: ./gatekeeper-service
 
       - name: Test distributor svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
         run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./distributor
 

@@ -16,7 +16,7 @@ cd ./${FOLDER}
 # uncomment certain lines from Dockerfile that are for Travis builds only
 sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
 cat MANIFEST
-docker build . -t "${IMAGE}:${GIT_SHA}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
+docker build . -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
 
 if [[ $? -ne 0 ]]; then
   echo "Failed to build Docker Image ${IMAGE}:${VERSION}.${DATETIME}, exiting"
