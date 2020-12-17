@@ -22,6 +22,7 @@ jobs:
     outputs: # declare what this job outputs (so it can be re-used for other jobs)
       # build config
       BUILD_EVERYTHING: ${{ steps.BUILD_EVERYTHING.outputs.BUILD_EVERYTHING }}
+      BUILD_INSTALLER: ${{ steps.BUILD_EVERYTHING.outputs.BUILD_INSTALLER }}
       BUILD_API: ${{ steps.BUILD_EVERYTHING.outputs.BUILD_API }}
       BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
       BUILD_OS_ROUTE_SVC: ${{ steps.check_modified_files.outputs.BUILD_OS_ROUTE_SVC }}
@@ -76,6 +77,7 @@ jobs:
         id: check_modified_files
         run: |
           # initialize variables with false (make sure they are also set in needs.prepare_ci_run.outputs !!!)
+          BUILD_INSTALLER=false
           BUILD_API=false
           BUILD_CLI=false
           BUILD_OS_ROUTE_SVC=false
@@ -93,6 +95,12 @@ jobs:
 
           for changed_file in ${{ steps.changed_files.outputs.all }}; do
             echo "Checking if $changed_file leads to a build..."
+
+            if [[ $changed_file == "${INSTALLER_FOLDER}"* ]]; then
+              echo "Found changes in Installer"
+              BUILD_CLI=true
+            fi
+
             if [[ $changed_file == "${CLI_FOLDER}"* ]]; then
               echo "Found changes in CLI"
               BUILD_CLI=true
@@ -155,6 +163,7 @@ jobs:
           done
 
           # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
+          echo "##[set-output name=BUILD_INSTALLER;]$(echo ${BUILD_INSTALLER})"
           echo "##[set-output name=BUILD_API;]$(echo ${BUILD_API})"
           echo "##[set-output name=BUILD_CLI;]$(echo ${BUILD_CLI})"
           echo "##[set-output name=BUILD_OS_ROUTE_SVC;]$(echo ${BUILD_OS_ROUTE_SVC})"
@@ -169,6 +178,7 @@ jobs:
           echo "##[set-output name=BUILD_REMEDIATION_SVC;]$(echo ${BUILD_REMEDIATION_SVC})"
           echo "##[set-output name=BUILD_LIGHTHOUSE_SVC;]$(echo ${BUILD_LIGHTHOUSE_SVC})"
           echo "##[set-output name=BUILD_MONGODB_DS;]$(echo ${BUILD_MONGODB_DS})"
+
       - name: Extract branch name
         id: extract_branch
         shell: bash
@@ -432,6 +442,40 @@ jobs:
           path: cli/dist/
 
   ############################################################################
+  # Build Helm Charts                                                        #
+  ############################################################################
+  helm_charts_build:
+    needs: prepare_ci_run
+    name: Build Helm Charts
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Load CI Environemnt from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v2
+        with:
+          env-file: .ci_env
+
+      - name: Build Helm Charts
+        id: build_helm_charts
+        run: ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}"
+
+      - name: Upload Helm Chart as an artifact
+        id: upload_helm_chart
+        uses: actions/upload-artifact@v2
+        with:
+          name: keptn-installer
+          path: keptn-charts/*.tgz # keptn-charts/keptn-${VERSION}.tgz
+
+  ############################################################################
   # Build Docker Images                                                      #
   ############################################################################
   docker_build:
@@ -439,6 +483,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-20.04
     env:
+      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
@@ -544,9 +589,6 @@ jobs:
         name: Docker Build configuration-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
         env:
-          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE}}"
           FOLDER: ${{ env.CONFIGURATION_SVC_FOLDER }}
         run: |
@@ -556,9 +598,6 @@ jobs:
         name: Docker Build remediation-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
         env:
-          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE}}"
           FOLDER: ${{ env.REMEDIATION_SVC_FOLDER }}
         run: |
@@ -568,9 +607,6 @@ jobs:
         name: Docker Build lighthouse-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
         env:
-          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE}}"
           FOLDER: ${{ env.LIGHTHOUSE_SVC_FOLDER }}
         run: |
@@ -580,40 +616,7 @@ jobs:
         name: Docker Build mongodb-datastore
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
         env:
-          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE}}"
           FOLDER: ${{ env.MONGODB_DS_FOLDER }}
         run: |
           ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
-
-#      - id: docker_build
-#        name: Docker Build ALL
-#        env:
-#          VERSION: ${{ steps.get_version.outputs.VERSION }}
-#          DATETIME: ${{ steps.get_datetime.outputs.DATE }}${{ steps.get_datetime.outputs.TIME }}
-#          GIT_SHA: ${{ steps.prepare_manifest.outputs.GIT_SHA }}
-#        run: |
-#          # Todo: build image list
-#          IMAGE_LIST=()
-#          echo "##[set-output name=IMAGE_LIST;]$(echo ${IMAGE_LIST})"
-
-
-#      - name: Docker Build Report (for PRs only)
-#        if: ${{ github.event_name == 'pull_request' }}
-#        uses: unsplash/comment-on-pr@master
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          IMAGE_LIST: "" # ${{ steps.docker_build.outputs.IMAGE_LIST }}
-#        with:
-#          msg: |
-#            :robot: Beep bop I'm a robot.
-#
-#            I've built and uploaded the following Docker Images:
-#
-#            ${{ steps.docker_build.outputs.IMAGE_LIST }}
-#
-#            The images are available with the following tags: `${{ needs.prepare_ci_run.outputs.VERSION }}`, `${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATETIME }}`
-#
-#          check_for_duplicate_msg: true  # OPTIONAL

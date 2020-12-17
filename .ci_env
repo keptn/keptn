@@ -2,6 +2,7 @@ DOCKER_ORGANIZATION="keptn"
 KUBE_CONSTRAINTS=">= 1.14, <= 1.19"
 
 CLI_FOLDER="cli/"
+INSTALLER_FOLDER="installer/"
 API_IMAGE="api"
 API_FOLDER="api/"
 OS_ROUTE_SVC_IMAGE="openshift-route-service"
