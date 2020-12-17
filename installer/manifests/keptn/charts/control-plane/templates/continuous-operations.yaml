@@ -60,13 +60,7 @@ spec:
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
         ports:
           - containerPort: 8080
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "50m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        {{- include "keptn.distributor.resources" . | nindent 8 }}
         env:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'
