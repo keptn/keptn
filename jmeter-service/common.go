@@ -194,6 +194,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 		stored, err := storeFile(localDirectory, primaryTestFileName, primaryTestFileContent, true)
 		if stored {
 			fileCount = fileCount + 1
+			foundPrimaryFile = true
 		}
 	}
 
@@ -276,6 +277,8 @@ func getJMeterConf(project string, stage string, service string, logger *keptn.L
 		}
 	} else {
 
+		logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, project, stage, service))
+
 		keptnResourceContent, err := GetKeptnResource(project, stage, service, JMeterConfFilename)
 
 		/* resourceHandler := keptnapi.NewResourceHandler(GetConfigurationServiceURL())
@@ -296,6 +299,8 @@ func getJMeterConf(project string, stage string, service string, logger *keptn.L
 		logger.Error(logMessage)
 		return nil, errors.New(logMessage)
 	}
+
+	logger.Debug(fmt.Sprintf("Successfully loaded jmeter.conf.yaml with %d workloads", len(jmeterConf.Workloads)))
 
 	return jmeterConf, nil
 }
