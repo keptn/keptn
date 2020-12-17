@@ -372,6 +372,7 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptn.RemediationStatu
 	for _, remediation := range remediations {
 		if remediation.Type == keptn.RemediationTriggeredEventType {
 			triggeredID = remediation.EventID
+			break
 		}
 	}
 
