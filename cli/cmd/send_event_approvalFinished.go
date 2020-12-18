@@ -43,20 +43,24 @@ var approvalFinishedCmd = &cobra.Command{
 * The open approval.triggered events and their ID can be retrieved using the "keptn get event approval.triggered --project=<project> --stage=<stage>" command.
 `,
 	Example: `keptn send event approval.finished --project=sockshop --stage=hardening --id=1234-5678-9123`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if *sendApprovalFinishedOptions.ID == "" && *sendApprovalFinishedOptions.Service == "" {
-			logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
-			return errors.New("either ID or service must be provided")
-		} else if *sendApprovalFinishedOptions.ID != "" && *sendApprovalFinishedOptions.Service != "" {
-			logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
-			return errors.New("either ID or service must be provided")
-		}
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := deSendEventApprovalFinishedPreRunCheck(); err != nil {
+			return err
+		}
 		return sendApprovalFinishedEvent(sendApprovalFinishedOptions)
 	},
 	SilenceUsage: true,
+}
+
+func deSendEventApprovalFinishedPreRunCheck() error {
+	if *sendApprovalFinishedOptions.ID == "" && *sendApprovalFinishedOptions.Service == "" {
+		logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
+		return errors.New("either ID or service must be provided")
+	} else if *sendApprovalFinishedOptions.ID != "" && *sendApprovalFinishedOptions.Service != "" {
+		logging.PrintLog("Either ID or service must be provided", logging.InfoLevel)
+		return errors.New("either ID or service must be provided")
+	}
+	return nil
 }
 
 func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedStruct) error {
