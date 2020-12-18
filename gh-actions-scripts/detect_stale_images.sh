@@ -5,6 +5,7 @@
 # Required secrets/params:                                       #
 # - REGISTRY_USER                                                #
 # - REGISTRY_PASSWORD                                            #
+# - DOCKER_ORG                                                   #
 ##################################################################
 
 ##################################################################
@@ -12,11 +13,10 @@
 ##################################################################
 
 # list all images that should be checked
-DOCKER_ORG="keptn"
 MAX_AGE_DAYS=30
-IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
-# Todo: The list of images should be somehow configured in the repo
 
+# list of images to be checked
+IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
 # additional old images that we want to keep
 ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader")
 
@@ -43,7 +43,7 @@ function check_if_stale() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # for each tag, check if the tag is stale
-  for TAG in ${RELEASE_TAGS[@]}; do
+  for TAG in ${TAGS[@]}; do
     HTTP_RESPONSE=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" --write-out "HTTPSTATUS:%{http_code}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/")
 
     # extract body and status

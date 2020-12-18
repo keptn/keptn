@@ -5,17 +5,17 @@
 # Required secrets/params:                                       #
 # - REGISTRY_USER                                                #
 # - REGISTRY_PASSWORD                                            #
+# - DOCKER_ORG                                                   #
+# - IMAGES                                                       #
 ##################################################################
 
 ##################################################################
 # Configuration                                                  #
 ##################################################################
 
-# list all images that should be checked
-IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
 # max age that images should have before they are marked as outdated
 MAX_AGE=30
-
+IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
 
 ##################################################################
 # Actual Job                                                     #
@@ -34,10 +34,10 @@ function get_outdated_images() {
   TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${TOKEN}" "https://hub.docker.com/v2/repositories/keptn/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${TOKEN}" "https://hub.docker.com/v2/repositories/keptn/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
+  response=$(curl -s -H "Authorization: JWT ${TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
   echo $response
 }
 
