@@ -25,16 +25,7 @@ KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
 PROJECT=${PROJECT:-easytravel}
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
-# get keptn API details
-if [[ "$PLATFORM" == "openshift" ]]; then
-  KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
-  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
-else
-  API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
-  INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
-  KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
-  KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
-fi
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 ########################################################################################################################
 # Pre-requisites
@@ -257,7 +248,7 @@ wait_for_deployment_in_namespace "dynatrace-sli-service" ${KEPTN_NAMESPACE}
 
 # configure monitoring for Dynatrace
 echo "Calling keptn configure monitoring dynatrace --project=$PROJECT"
-keptn configure monitoring dynatrace --project=$PROJECT --suppress-websocket
+keptn configure monitoring dynatrace --project=$PROJECT
 sleep 5
 # this should set the configmap 'lighthouse-config-$PROJECT' - verify that it exists
 

@@ -1,0 +1,195 @@
+name: CI
+on:
+  # always execute docker build when something is pushed to master or release-* branches
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 3 * * 1-5' # run integration tests at 3 AM, monday to friday (1-5)
+  push: # also run the test when something is pushed to master or a release branch
+    branches:
+      - 'master'
+      - 'release-*'
+defaults:
+  run:
+    shell: bash
+jobs:
+  test-k3s:
+    name: Integration Test on K3s
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        K3S_VERSION: ["v1.16.15+k3s1", "v1.19.5+k3s1"] # see https://github.com/rancher/k3s/releases
+    env:
+      PLATFORM: "kubernetes"
+      K3S_VERSION: ${{ matrix.K3S_VERSION }}
+      KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+      KEPTN_NAMESPACE: "keptn-test"
+      KEPTN_SERVICE_TYPE: "NodePort"
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v2
+      - name: Install and start K3s
+        run: test/utils/k3s_create_cluster.sh
+      - name: Debug - Describe Kubernetes Nodes
+        run: kubectl describe nodes
+      - name: Install Istio
+        run: test/utils/install_istio.sh
+
+      # Print some Kubernetes Debug Output
+      - name: Debug - Get Kubernetes namespaces
+        run: kubectl get namespaces
+      - name: Debug - Get Kubernetes services
+        run: kubectl get services --all-namespaces
+      - name: Debug - Get Kubernetes Deployments
+        run: kubectl get deployments --all-namespaces -owide
+
+      - name: Download CLI artifact from master branch
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          # Optional, GitHub token
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          # Required, workflow file name or ID
+          workflow: CI.yml
+          # Optional, the status or conclusion of a completed workflow to search for
+          # Can be one of a workflow conculsion::
+          # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
+          # Or a workflow status:
+          # "completed", "in_progress", "queued"
+          # Default: "completed"
+          workflow_conclusion: success
+          # Optional, will use the branch
+          branch: master # ToDo: Should be either master or release branch
+          # Optional, directory where to extract artifact
+          path: ./dist
+
+      - name: Extract Keptn CLI artifact
+        run: |
+          tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
+          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
+
+      - name: Verify Keptn CLI works
+        run: keptn version
+
+      - name: Extract name of helm chart
+        id: extract_helm_chart_name
+        run: |
+          ls dist/keptn-installer/*.tgz # debug output
+          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
+          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+
+      - name: Host helm chart via python http server
+        run: cd dist/keptn-installer/ && python3 -m http.server &
+
+      - name: Install Keptn on K3s
+        env:
+          HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
+        run: |
+          echo "Installing Keptn on cluster"
+          echo "{}" > creds.json # empty credentials file
+
+          # install Keptn using the develop version, which refers to the :latest docker images
+          keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
+             --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose --use-case=continuous-delivery
+
+      # Print some Kubernetes Debug Output
+      - name: Debug - Get Kubernetes namespaces
+        run: kubectl get namespaces
+      - name: Debug - Get Kubernetes services
+        run: kubectl get services --all-namespaces
+      - name: Debug - Get Kubernetes Deployments
+        run: kubectl get deployments --all-namespaces -owide
+      - name: Debug - Get Keptn Pods
+        run: kubectl -n ${KEPTN_NAMESPACE} get pods
+
+      - name: Verify Deployments of Keptn
+        run: |
+          source test/utils.sh
+          echo "Verifying that services and namespaces have been created"
+
+          # verify the deployments within the keptn namespace
+          verify_deployment_in_namespace "api-gateway-nginx" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
+
+          # verify the datastore deployments
+          verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
+
+      - name: Authenticate Keptn CLI with API
+        id: authenticate_keptn_cli
+        run: |
+          source test/utils.sh
+          # authenticate at Keptn API
+          if [[ "$PLATFORM" == "openshift" ]]; then
+            KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
+          else
+            if [[ "$KEPTN_SERVICE_TYPE" == "NodePort" ]]; then
+              API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+              INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
+              KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+            else
+              KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
+            fi
+          fi
+
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+
+          echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
+          echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
+
+          auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
+          verify_test_step $? "Could not authenticate at Keptn API"
+
+      - name: Verify that Keptn CLI is authenticated using keptn status
+        run: keptn status
+
+      - name: Test Linking Stages
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_linking_stages.sh
+
+      - name: Test Quality Gates Standalone
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "musicshop"
+          DYNATRACE_SLI_SERVICE_VERSION: "master"
+          QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
+          QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
+        run: test/test_quality_gates_standalone.sh
+
+      - name: Test Self Healing
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          UNLEASH_SERVICE_VERSION: "master"
+        run: test/test_self_healing.sh
+
+      - name: Test Delivery Assistant
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "musicshop"
+          DYNATRACE_SLI_SERVICE_VERSION: "master"
+        run: test/test_delivery_assistant.sh
+
+      # All Tests finished, time for cleanup
+      - name: Debug - Get Kubernetes namespaces
+        run: kubectl get namespaces
+      - name: Debug - Get Kubernetes services
+        run: kubectl get services --all-namespaces
+      - name: Debug - Get Kubernetes Deployments
+        run: kubectl get deployments --all-namespaces -owide
+      - name: Debug - Get Keptn Pods
+        run: kubectl -n ${KEPTN_NAMESPACE} get pods
+
+      - name: Uninstall Keptn
+        run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
+
+      - name: Debug - Get Kubernetes namespaces
+        run: kubectl get namespaces
+      - name: Debug - Get Kubernetes services
+        run: kubectl get services --all-namespaces
+      - name: Debug - Get Kubernetes Deployments
+        run: kubectl get deployments --all-namespaces -owide
