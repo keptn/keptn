@@ -206,7 +206,7 @@ func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, workload *Workload, lo
 
 	// the resultdirectory is unique as it contains context but also gives some human readable context such as teststrategy and service
 	// this will also be used for TSN parameter
-	resultDirectory := fmt.Sprintf("%s_%s_%s", workload.TestStrategy, testInfo.Service, testInfo.Context)
+	resultDirectory := fmt.Sprintf("%s_%s_%s_%s_%s", testInfo.Project, testInfo.Service, testInfo.Stage, workload.TestStrategy, testInfo.Context)
 
 	// lets first remove all potentially left over result files from previous runs -> we keept them between runs for troubleshooting though
 	os.RemoveAll(resultDirectory)
