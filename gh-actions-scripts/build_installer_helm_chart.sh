@@ -11,6 +11,10 @@ BASE_PATH=installer/manifests
 helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 helm dependency build ${BASE_PATH}/keptn/charts/control-plane
 
+# replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
+find -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${VERSION}/g" {} \;
+find -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
+
 helm package ${BASE_PATH}/keptn --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then
   echo "Error packing installer, exiting..."
