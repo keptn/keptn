@@ -70,11 +70,11 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 }
 
 func doUpgradePreRunCheck() error {
-		if *upgradeParams.PatchNamespace {
-			return nil
-		}
+	if *upgradeParams.PatchNamespace {
+		return nil
+	}
 
-		chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
+	chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
 
 	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
@@ -134,8 +134,6 @@ func doUpgradePreRunCheck() error {
 	}
 
 	return nil
-		return nil
-	},
 }
 
 func getInstalledKeptnVersion() (string, error) {
