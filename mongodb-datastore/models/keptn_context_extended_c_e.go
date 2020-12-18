@@ -18,6 +18,9 @@ type KeptnContextExtendedCE struct {
 
 	// shkeptncontext
 	Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+	// triggeredid
+	Triggeredid string `json:"triggeredid,omitempty"`
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
@@ -32,12 +35,16 @@ func (m *KeptnContextExtendedCE) UnmarshalJSON(raw []byte) error {
 	// AO1
 	var dataAO1 struct {
 		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Triggeredid string `json:"triggeredid,omitempty"`
 	}
 	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
 		return err
 	}
 
 	m.Shkeptncontext = dataAO1.Shkeptncontext
+
+	m.Triggeredid = dataAO1.Triggeredid
 
 	return nil
 }
@@ -54,9 +61,13 @@ func (m KeptnContextExtendedCE) MarshalJSON() ([]byte, error) {
 
 	var dataAO1 struct {
 		Shkeptncontext string `json:"shkeptncontext,omitempty"`
+
+		Triggeredid string `json:"triggeredid,omitempty"`
 	}
 
 	dataAO1.Shkeptncontext = m.Shkeptncontext
+
+	dataAO1.Triggeredid = m.Triggeredid
 
 	jsonDataAO1, errAO1 := swag.WriteJSON(dataAO1)
 	if errAO1 != nil {

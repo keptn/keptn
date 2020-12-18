@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -46,6 +47,8 @@ const setVersionCheckMsg = `* To %s the daily version check, please execute:
 const keptnReleaseDocsURL = "0.7.x"
 
 const disableVersionCheckMsg = "To disable this notice, run: '%s set config AutomaticVersionCheck false'"
+
+const maxHTTPTimeout = 5 * time.Second
 
 // KubeServerVersionConstraints the Kubernetes Cluster version's constraints is passed by ldflags
 var KubeServerVersionConstraints string
@@ -145,7 +148,9 @@ func getKeptnServerVersion() (string, error) {
 	if err != nil {
 		return "", errors.New(authErrorMsg)
 	}
-	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", &http.Client{
+		Timeout: maxHTTPTimeout,
+	}, endPoint.Scheme)
 	if !mocking {
 		metadataData, errMetadata := apiHandler.GetMetadata()
 		if errMetadata != nil {

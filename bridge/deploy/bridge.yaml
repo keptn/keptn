@@ -46,6 +46,14 @@ spec:
            value: "true"
          - name: SHOW_API_TOKEN
            value: "true"
+         - name: PROJECTS_PAGE_SIZE
+           value: "50"
+         - name: SERVICES_PAGE_SIZE
+           value: "50"
+         - name: KEPTN_INSTALLATION_TYPE
+           value: "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
+           Description: >
+             Should contain the supported use cases as comma-separated string. "QUALITY_GATES", "CONTINUOUS_OPERATIONS" and "CONTINUOUS_DELIVERY" are valid values.
         envFrom:
           - secretRef:
               name: bridge-credentials

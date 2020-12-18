@@ -26,6 +26,7 @@ import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
+import { ClipboardService } from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -36,10 +37,15 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   @Input() public showChart = true;
+  @Input() public isInvalidated = false;
 
   @ViewChild('sloDialog')
   public sloDialog: TemplateRef<any>;
   public sloDialogRef: MatDialogRef<any, any>;
+
+  @ViewChild('invalidateEvaluationDialog')
+  public invalidateEvaluationDialog: TemplateRef<any>;
+  public invalidateEvaluationDialogRef: MatDialogRef<any, any>;
 
   private heatmapChart: DtChart;
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
@@ -168,31 +174,42 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService) { }
 
   ngOnInit() {
     if(this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
-      if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+      if (this.isInvalidated)
+        this.selectEvaluationData(this._evaluationData);
+      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
         this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
     }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((event) => {
-        if(this.evaluationData === event) {
-          this.updateChartData(event.data.evaluationHistory);
+      .subscribe((results) => {
+        if(results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
+          this.evaluationData.data.evaluationHistory = [...results.traces||[], ...this.evaluationData.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+          this.updateChartData(this.evaluationData.data.evaluationHistory);
+          this._changeDetectorRef.markForCheck();
+        } else if(results.type == "invalidateEvaluation" &&
+          this.evaluationData.data.project == results.triggerEvent.data.project &&
+          this.evaluationData.data.service == results.triggerEvent.data.service &&
+          this.evaluationData.data.stage == results.triggerEvent.data.stage) {
+          this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
+          this._selectedEvaluationData = null;
+          this.updateChartData(this.evaluationData.data.evaluationHistory);
           this._changeDetectorRef.markForCheck();
         }
       });
   }
 
   private parseSloFile(evaluationData) {
-    if(evaluationData.data && evaluationData.data.evaluationdetails.sloFileContent && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
+    if(evaluationData && evaluationData.data && evaluationData.data.evaluationdetails.sloFileContent && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
       evaluationData.data.evaluationdetails.sloFileContentParsed = atob(evaluationData.data.evaluationdetails.sloFileContent);
-      evaluationData.data.evaluationdetails.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split("\"")[1]?.split("%")[0];
-      evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split("\"")[1]?.split("%")[0];
-      evaluationData.data.evaluationdetails.compare_with = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split("\"")[1];
-      evaluationData.data.evaluationdetails.include_result_with_score = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split("\"")[1];
+      evaluationData.data.evaluationdetails.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
+      evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
+      evaluationData.data.evaluationdetails.compare_with = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split(" ")[1]?.replace(/\"/g, "");
+      evaluationData.data.evaluationdetails.include_result_with_score = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split(" ")[1]?.replace(/\"/g, "");
       if (evaluationData.data.evaluationdetails.comparedEvents !== null) {
         evaluationData.data.evaluationdetails.number_of_comparison_results = evaluationData.data.evaluationdetails.comparedEvents?.length;
       } else {
@@ -356,35 +373,41 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   highlightHeatmap() {
-    let _this = this;
-    let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
-    let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
-    let plotBands = [];
-    if(highlightIndex >= 0)
-      plotBands.push({
-        className: 'highlight-primary',
-        from: highlightIndex-0.5,
-        to: highlightIndex+0.5,
-        zIndex: 100
-      });
-    secondaryHighlightIndexes?.forEach(highlightIndex => {
+    if(this._selectedEvaluationData && !this.isInvalidated) {
+      let _this = this;
+      let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
+      let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
+      let plotBands = [];
       if(highlightIndex >= 0)
         plotBands.push({
-          className: 'highlight-secondary',
+          className: 'highlight-primary',
           from: highlightIndex-0.5,
           to: highlightIndex+0.5,
-          zIndex: 100,
-          events: {
-            click: function () {
-              let index = this.options.from+0.5;
-              setTimeout(() => {
-                _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
-              });
-            }
-          }
+          zIndex: 100
         });
-    });
-    this._heatmapOptions.xAxis[0].plotBands = plotBands;
+      secondaryHighlightIndexes?.forEach(highlightIndex => {
+        if(highlightIndex >= 0)
+          plotBands.push({
+            className: 'highlight-secondary',
+            from: highlightIndex-0.5,
+            to: highlightIndex+0.5,
+            zIndex: 100,
+            events: {
+              click: function () {
+                let index = this.options.from+0.5;
+                setTimeout(() => {
+                  _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+                });
+              }
+            }
+          });
+      });
+      this._heatmapOptions.xAxis[0].plotBands = plotBands;
+      this._selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
+    } else {
+      this._heatmapOptions.xAxis[0].plotBands = [];
+      this._selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results = 0;
+    }
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
   }
@@ -405,6 +428,24 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if (this.sloDialogRef) {
       this.sloDialogRef.close();
     }
+  }
+
+  copySloPayload(plainEvent: string): void {
+    this.clipboard.copy(plainEvent, 'slo payload');
+  }
+
+  invalidateEvaluationTrigger() {
+    this.invalidateEvaluationDialogRef = this.dialog.open(this.invalidateEvaluationDialog, { data: this._selectedEvaluationData });
+  }
+
+  invalidateEvaluation(evaluation, reason) {
+    this.dataService.invalidateEvaluation(evaluation, reason);
+    this.closeInvalidateEvaluationDialog();
+  }
+
+  closeInvalidateEvaluationDialog() {
+    if (this.invalidateEvaluationDialogRef)
+      this.invalidateEvaluationDialogRef.close();
   }
 
   ngOnDestroy(): void {

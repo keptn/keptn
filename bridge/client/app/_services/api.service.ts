@@ -71,8 +71,8 @@ export class ApiService {
     }
   }
 
-  public getProjects(): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
+  public getProjects(pageSize: number): Observable<ProjectResult> {
+    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url, { headers: this.defaultHeaders });
   }
@@ -89,8 +89,8 @@ export class ApiService {
       .get<Stage[]>(url, { headers: this.defaultHeaders });
   }
 
-  public getServices(projectName, stageName): Observable<ServiceResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service`;
+  public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
+    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url, { headers: this.defaultHeaders });
   }
@@ -114,7 +114,7 @@ export class ApiService {
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {
-    let url = `${this._baseUrl}/mongodb-datastore/event?type=sh.keptn.events.evaluation-done&project=${projectName}&service=${serviceName}&stage=${stageName}&source=${source}&pageSize=50`;
+    let url = `${this._baseUrl}/mongodb-datastore/event/type/sh.keptn.events.evaluation-done?filter=data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}&excludeInvalidated=true&limit=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http
@@ -137,6 +137,26 @@ export class ApiService {
           }
         })
       }, { headers: this.defaultHeaders });
+  }
+
+  public sendEvaluationInvalidated(evaluation: Trace, reason: string) {
+    let url = `${this._baseUrl}/v1/event`;
+
+    return this.http
+      .post<any>(url, {
+        "shkeptncontext": evaluation.shkeptncontext,
+        "type": EventTypes.EVALUATION_INVALIDATED,
+        "triggeredid": evaluation.id,
+        "source": "https://github.com/keptn/keptn/bridge#evaluation.invalidated",
+        "data": {
+          "project": evaluation.data.project,
+          "stage": evaluation.data.stage,
+          "service": evaluation.data.service,
+          "evaluation": {
+            "reason": reason
+          }
+        }
+      });
   }
 
 }
