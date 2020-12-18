@@ -2,6 +2,8 @@
 
 source test/utils.sh
 
+set_keptn_contrib_service_versions
+
 # test configuration
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
@@ -624,6 +626,83 @@ fi
 if [[ $number_of_info_results -ne 3 ]]; then
   echo "Expected 3 results with status: info, but found $number_of_info_results"
 fi
+
+
+########################################################################################################################
+# Testcase 9: Invalidate evaluation
+########################################################################################################################
+
+# add SLI file for service
+echo "Adding SLI File: test/assets/quality_gates_standalone_sli_dynatrace_step4.yaml"
+keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --resource=test/assets/quality_gates_standalone_slo_step4.yaml --resourceUri=slo.yaml
+verify_test_step $? "keptn add-resource slo.yaml - failed"
+
+# Send the first evaluation event
+
+first_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+sleep 10
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${first_keptn_context_id}"
+response=$(get_evaluation_done_event ${first_keptn_context_id})
+
+# print the response
+echo $response | jq .
+
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "${SERVICE}"
+verify_using_jq "$response" ".data.result" "pass"
+
+first_event_id=$(echo "${response}" | jq -r ".id")
+
+second_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+sleep 10
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${second_keptn_context_id}"
+response=$(get_evaluation_done_event ${second_keptn_context_id})
+
+# print the response
+echo $response | jq .
+
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "${SERVICE}"
+verify_using_jq "$response" ".data.result" "pass"
+verify_using_jq "$response" ".data.evaluationdetails.comparedEvents|contains([\"${first_event_id}\"])" "true"
+
+
+# Send the invalidated event for the first evaluation
+
+send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_id $first_keptn_context_id
+sleep 10
+
+third_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+sleep 10
+
+# try to fetch a evaluation-done event
+echo "Getting evaluation-done event with context-id: ${third_keptn_context_id}"
+response=$(get_evaluation_done_event ${third_keptn_context_id})
+
+# print the response
+echo $response | jq .
+
+# invalidated event should not be in list of compared events anymore
+# validate the response
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".type" "sh.keptn.events.evaluation-done"
+verify_using_jq "$response" ".data.project" "${PROJECT}"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "${SERVICE}"
+verify_using_jq "$response" ".data.result" "pass"
+verify_using_jq "$response" ".data.evaluationdetails.comparedEvents|contains([\"${first_event_id}\"])" "false"
 
 
 ########################################################################################################################

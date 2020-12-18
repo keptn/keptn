@@ -6,6 +6,32 @@ function print_error() {
   echo "[keptn|ERROR] $(timestamp) $1"
 }
 
+# based on the KEPTN_INSTALLER_VERSION, we need to make sure to use versions of the keptn-contrib services that are compatible with this release
+function set_keptn_contrib_service_versions() {
+  echo "Setting version numbers of keptn-services to be compatible with Keptn version ${KEPTN_INSTALLER_VERSION}"
+
+  # use master (=latest) per default
+  export DYNATRACE_SLI_SERVICE_VERSION="master"
+  export DYNATRACE_SERVICE_VERSION="master"
+  export PROMETHEUS_SLI_SERVICE_VERSION="master"
+  export PROMETHEUS_SERVICE_VERSION="master"
+  export UNLEASH_SERVICE_VERSION="master"
+
+  if [[ $KEPTN_INSTALLER_VERSION == "0.7.3" ]]; then
+    export DYNATRACE_SLI_SERVICE_VERSION="release-0.7.0"
+    export DYNATRACE_SERVICE_VERSION="release-0.10.0"
+    export PROMETHEUS_SLI_SERVICE_VERSION="release-0.2.3"
+    export PROMETHEUS_SERVICE_VERSION="release-0.3.6"
+    export UNLEASH_SERVICE_VERSION="release-0.2.0"
+  fi
+
+  echo "using dynatrace-sli-service ${DYNATRACE_SLI_SERVICE_VERSION}"
+  echo "using dynatrace-service ${DYNATRACE_SERVICE_VERSION}"
+  echo "using prometheus-sli-service ${PROMETHEUS_SLI_SERVICE_VERSION}"
+  echo "using prometheus-service ${PROMETHEUS_SERVICE_VERSION}"
+  echo "using unleash-service ${UNLEASH_SERVICE_VERSION}"
+}
+
 function auth_at_keptn() {
   ENDPOINT=$1
   API_TOKEN=$2
@@ -75,6 +101,22 @@ function send_evaluation_done_event() {
 
   response=$(keptn send event --file=tmp_evaluation_done_event.json)
   rm tmp_evaluation_done_event.json
+
+  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
+  echo "$keptn_context_id"
+}
+
+function send_evaluation_invalidated_event() {
+  PROJECT=$1
+  STAGE=$2
+  SERVICE=$3
+  TRIGGERED_ID=$4
+  KEPTN_CONTEXT=$5
+
+  cat ./test/assets/evaluation_invalidated_event_template.json | jq -r --arg project $PROJECT --arg stage $STAGE --arg service $SERVICE --arg triggered_id $TRIGGERED_ID --arg keptn_context $KEPTN_CONTEXT '.data.project=$project | .data.stage=$stage | .data.service=$service | .triggeredid=$triggered_id | .shkeptncontext=$keptn_context' > tmp_evaluation_invalidated_event.json
+
+  response=$(keptn send event --file=tmp_evaluation_invalidated_event.json)
+  rm tmp_evaluation_invalidated_event.json
 
   keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
   echo "$keptn_context_id"

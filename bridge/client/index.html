@@ -5,10 +5,14 @@
   <title>keptn</title>
   <base id="base-href" href="/">
   <script>
-    if(window.location.href.indexOf('/bridge') != -1)
-      document.getElementById("base-href").href = window.location.href.substring(0, window.location.href.indexOf('/bridge')) + '/bridge/';
-    else
-      document.getElementById("base-href").href = window.location.origin;
+    // NOTE: if changed, update tests in app.component.spec.ts
+    function getBridgeBaseHref(origin, path) {
+      if(path.indexOf('/bridge') != -1)
+        return [origin, path.substring(0, path.indexOf('/bridge')), '/bridge/'].join('');
+      else
+        return origin;
+    }
+    document.getElementById("base-href").href = getBridgeBaseHref(window.location.origin, window.location.pathname);
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="assets/keptn_logo.png">

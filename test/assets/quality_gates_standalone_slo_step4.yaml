@@ -1,0 +1,19 @@
+---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "several_results"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 2
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "<7500"     # absolute values only require a logical operator
+    weight: 1
+total_score:
+  pass: "90%"
+  warning: "75%"

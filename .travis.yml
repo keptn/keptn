@@ -575,7 +575,6 @@ jobs:
       - keptn status
       - export PROJECT=musicshop
       - export PLATFORM=openshift
-      - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
@@ -606,7 +605,6 @@ jobs:
       - test/test_install_kubernetes_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
-      - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
@@ -649,7 +647,6 @@ jobs:
       - test/test_install_kubernetes_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
-      - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)
@@ -694,7 +691,6 @@ jobs:
       - test/test_install_kubernetes_quality_gates.sh
       - keptn status
       - export PROJECT=musicshop
-      - export DYNATRACE_SLI_SERVICE_VERSION=master
       - test/test_quality_gates_standalone.sh
     after_success:
       # delete Google Kubernetes cluster only on success (keep cluster in case of an error to dig into the cluster)

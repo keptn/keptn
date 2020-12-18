@@ -218,6 +218,13 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 				}
 				return project.NewPostProjectBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 			}
+			mv := common.GetProjectsMaterializedView()
+			// try to update the materialized view. If this fails, it should not prevent the further execution
+			err = mv.UpdateUpstreamInfo(params.Project.ProjectName, params.Project.GitRemoteURI, params.Project.GitUser)
+			if err != nil {
+				logger.Info("Could not update project materialized view " + params.ProjectName + ": " + err.Error())
+				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not update materialized view of project " + params.ProjectName)})
+			}
 			// make sure that master branch exists
 			err = common.EnsureBranchAvailability(params.ProjectName, "master")
 			if err != nil {

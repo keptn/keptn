@@ -8,7 +8,6 @@ consumes:
   - application/cloudevents+json
   - application/json
 produces:
-  - application/cloudevents+json
   - application/json
 paths:
   /event:
@@ -105,7 +104,56 @@ paths:
           description: error
           schema:
             "$ref": "#/definitions/error"
+
+  /event/type/{eventType}:
+    parameters:
+      - name: eventType
+        in: path
+        type: string
+        required: true
+    get:
+      tags:
+        - event
+      operationId: getEventsByType
+      summary: Gets events by their type from the mongodb
+      parameters:
+        - name: filter
+          in: query
+          type: string
+        - name: excludeInvalidated
+          in: query
+          type: boolean
+        - name: fromTime
+          in: query
+          type: string
+          required: false
+        - "$ref": "#/parameters/limitParam"
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            properties:
+              events:
+                type: array
+                items:
+                  "$ref": "#/definitions/KeptnContextExtendedCE"
+        default:
+          description: error
+          schema:
+            "$ref": "#/definitions/error"
+
+
 parameters:
+  limitParam:
+    name: limit
+    in: query
+    type: integer
+    required: false
+    default: 20
+    minimum: 1
+    maximum: 100
+    description: Page size to be returned
   pagesizeParam:
     name: pageSize
     in: query
@@ -128,6 +176,8 @@ definitions:
       - type: object
         properties:
           shkeptncontext:
+            type: string
+          triggeredid:
             type: string
   error:
     type: object
