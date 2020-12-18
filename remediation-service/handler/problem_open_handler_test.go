@@ -180,7 +180,6 @@ func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http
 			return
 		}
 		if r.Method == http.MethodGet {
-			cs.ReceivedRemediations = []*remediationStatus{}
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(cs.ReturnedRemediations))
