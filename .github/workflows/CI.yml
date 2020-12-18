@@ -38,7 +38,7 @@ jobs:
       BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
       BUILD_MONGODB_DS: ${{ steps.check_modified_files.outputs.BUILD_MONGODB_DS }}
       # some env variables
-      KUBE_CONSTRAINTS: ${{ steps.load_ci_env.env.KUBE_CONSTRAINTS }}
+      KUBE_CONSTRAINTS: ${{ steps.output_kube_constraints.outputs.KUBE_CONSTRAINTS }}
       # metadata
       GIT_SHA: ${{ steps.extract_branch.outputs.GIT_SHA }}
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
@@ -60,6 +60,10 @@ jobs:
         with:
           env-file: .ci_env
 
+      - name: Output KUBE_CONSTRAINTS
+        id: output_kube_constraints
+        run: echo "##[set-output name=KUBE_CONSTRAINTS;]$(echo ${KUBE_CONSTRAINTS})"
+
       - name: Get changed files
         id: changed_files
         uses: jitterbit/get-changed-files@v1
@@ -74,7 +78,7 @@ jobs:
 
       - name: Process only certain artifacts based on changed files (for PRs only)
         if: github.event_name == 'pull_request'
-        id: check_modified_filesbuild_everything
+        id: check_modified_files
         run: |
           # initialize variables with false (make sure they are also set in needs.prepare_ci_run.outputs !!!)
           BUILD_INSTALLER=false
@@ -98,7 +102,7 @@ jobs:
 
             if [[ $changed_file == "${INSTALLER_FOLDER}"* ]]; then
               echo "Found changes in Installer"
-              BUILD_CLI=true
+              BUILD_INSTALLER=true
             fi
 
             if [[ $changed_file == "${CLI_FOLDER}"* ]]; then
@@ -364,8 +368,8 @@ jobs:
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
-    needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
+    needs: prepare_ci_run
     strategy:
       matrix:
         go-version: [ 1.13.x ]
