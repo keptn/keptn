@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: jmeter-service
-        image: grabnerandi/jmeter-service:0.7.4
+        image: keptn/jmeter-service:0.7.3-patch1
         livenessProbe:
           httpGet:
             path: /health
@@ -49,9 +49,9 @@ spec:
         - name: EVENTBROKER
           value: 'http://event-broker/keptn'
         - name: DEBUG_KEEP_TEMP_FILES
-          value: "true"
+          value: "false"
       - name: distributor
-        image: keptn/distributor:0.7.2
+        image: keptn/distributor:0.7.3
         livenessProbe:
           httpGet:
             path: /health

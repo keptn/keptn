@@ -281,8 +281,6 @@ func getJMeterConf(project string, stage string, service string, logger *keptn.L
 
 		keptnResourceContent, err := GetKeptnResource(project, stage, service, JMeterConfFilename)
 
-		/* resourceHandler := keptnapi.NewResourceHandler(GetConfigurationServiceURL())
-		keptnResourceContent, err := resourceHandler.GetServiceResource(project, stage, service, JMeterConfFilename)*/
 		if err != nil {
 			logMessage := fmt.Sprintf("No %s file found for service %s on stage %s or project-level %s", JMeterConfFilename, service, stage, project)
 			logger.Info(logMessage)
