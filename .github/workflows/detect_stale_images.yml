@@ -1,0 +1,18 @@
+name: Detect Stale Images
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 * * 0'
+jobs:
+  cleanup:
+    name: Detect Stale Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v2
+      - name: Detect stale images on DockerHub
+        env:
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          apt-get update && apt-get install jq -y && ./gh-actions-scripts/detect_stale_images.sh

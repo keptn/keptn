@@ -117,13 +117,7 @@ spec:
               port: 10999
             initialDelaySeconds: 5
             periodSeconds: 5
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
+          {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
@@ -327,13 +321,7 @@ spec:
               port: 10999
             initialDelaySeconds: 5
             periodSeconds: 5
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
+          {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
@@ -463,13 +451,7 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          resources:
-            requests:
-              memory: "32Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
+          {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'

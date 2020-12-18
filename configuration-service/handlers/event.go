@@ -7,13 +7,12 @@ import (
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
-	"github.com/mitchellh/mapstructure"
 )
 
 func HandleEventHandlerFunc(params event.HandleEventParams) middleware.Responder {
 	if params.Body.Type != nil {
 		keptnBase := &keptnv2.EventData{}
-		err := mapstructure.Decode(params.Body.Data, keptnBase)
+		err := keptnv2.Decode(params.Body.Data, keptnBase)
 		if err != nil {
 			return event.NewHandleEventDefault(400).WithPayload(&models.Error{Message: swag.String("Could not parse event data: " + err.Error()), Code: 400})
 		}
@@ -33,7 +32,7 @@ func HandleEventHandlerFunc(params event.HandleEventParams) middleware.Responder
 		common.LockProject(keptnBase.Project)
 		defer common.UnlockProject(keptnBase.Project)
 		mv := common.GetProjectsMaterializedView()
-		err = mv.UpdateEventOfService(params.Body.Data, *params.Body.Type, params.Body.Shkeptncontext, params.Body.ID)
+		err = mv.UpdateEventOfService(params.Body.Data, *params.Body.Type, params.Body.Shkeptncontext, params.Body.ID, params.Body.Triggeredid)
 		if err != nil {
 			return event.NewHandleEventDefault(400).WithPayload(&models.Error{Message: swag.String("Could not update service: " + err.Error()), Code: 400})
 		}

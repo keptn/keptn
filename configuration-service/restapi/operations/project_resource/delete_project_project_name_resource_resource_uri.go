@@ -8,7 +8,7 @@ package project_resource
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // DeleteProjectProjectNameResourceResourceURIHandlerFunc turns a function with the right signature into a delete project project name resource resource URI handler

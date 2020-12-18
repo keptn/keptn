@@ -30,6 +30,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/keptn/cli/pkg/kube"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -69,7 +70,11 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 }
 
 func doUpgradePreRunCheck() error {
-	chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
+		if *upgradeParams.PatchNamespace {
+			return nil
+		}
+
+		chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
 
 	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
@@ -129,6 +134,8 @@ func doUpgradePreRunCheck() error {
 	}
 
 	return nil
+		return nil
+	},
 }
 
 func getInstalledKeptnVersion() (string, error) {
@@ -175,6 +182,7 @@ func init() {
 	upgradeParams.ChartRepoURL = upgraderCmd.Flags().StringP("chart-repo", "",
 		"", "URL of the Keptn Helm Chart repository")
 	upgraderCmd.Flags().MarkHidden("chart-repo")
+	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
 }
 
 func doUpgrade() error {
@@ -203,5 +211,14 @@ func doUpgrade() error {
 	}
 
 	logging.PrintLog("Keptn has been successfully upgraded on your cluster.", logging.InfoLevel)
+	return nil
+}
+
+func patchNamespace() error {
+	err := keptnutils.PatchKeptnManagedNamespace(false, namespace)
+	if err != nil {
+		return err
+	}
+	logging.PrintLog(namespace+" namespace has been successfully patched on your cluster.", logging.InfoLevel)
 	return nil
 }

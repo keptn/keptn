@@ -24,19 +24,26 @@ mv keptn-${VERSION}.tgz keptn-charts/
 helm template --debug keptn-charts/keptn-${VERSION}.tgz
 
 if [ $? -ne 0 ]; then
-  echo "Helm Chart has templating errors - exiting"
+  echo "::error Helm Chart has templating errors - exiting"
   exit 1
 fi
 
 # download index.yaml chart
-gsutil cp gs://keptn-installer/index.yaml keptn-charts/index.yaml
+#gsutil cp gs://keptn-installer/index.yaml keptn-charts/index.yaml
+#
+#helm repo index keptn-charts --url https://storage.googleapis.com/keptn-installer/ --merge keptn-charts/index.yaml
+#if [ $? -ne 0 ]; then
+#  echo "Error generating index.yaml, exiting..."
+#  exit 1
+#fi
+#
+## upload to gcloud
+#gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
+#gsutil cp keptn-charts/keptn-${VERSION}.tgz gs://keptn-installer/keptn-${VERSION}.tgz
 
-helm repo index keptn-charts --url https://storage.googleapis.com/keptn-installer/ --merge keptn-charts/index.yaml
-if [ $? -ne 0 ]; then
-  echo "Error generating index.yaml, exiting..."
-  exit 1
-fi
 
-# upload to gcloud
-gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
-gsutil cp keptn-charts/keptn-${VERSION}.tgz gs://keptn-installer/keptn-${VERSION}.tgz
+
+echo "Generated files:"
+echo " - keptn-charts/keptn-${VERSION}.tgz"
+
+

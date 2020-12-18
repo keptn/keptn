@@ -14,10 +14,6 @@ var cfgFile string
 var verboseLogging bool
 var quietLogging bool
 var mocking bool
-
-// SuppressWSCommunication suppresses the WebSocket communication if it is true
-var SuppressWSCommunication bool
-
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 var namespace string
@@ -66,8 +62,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "Enables verbose logging to print debug messages")
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
-	rootCmd.PersistentFlags().BoolVarP(&SuppressWSCommunication, "suppress-websocket", "", false,
-		"Disables WebSocket communication to suppress info messages from services running inside Keptn")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
 		"Specify the namespace where Keptn should be installed, used and uninstalled in (default keptn).")
 	cobra.OnInitialize(initConfig)
@@ -136,16 +130,16 @@ func runVersionCheck() {
 		kvChecker := version.NewKeptnVersionChecker()
 		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, clusterVersion, true)
 		if keptnMsgPrinted {
-			fmt.Println("* Your Keptn cluster version: " + clusterVersion)
+			fmt.Fprintf(os.Stderr, "* Your Keptn cluster version: %s", clusterVersion)
 		}
 
 		if clusterVersion != Version {
-			fmt.Println("* Warning: Your Keptn CLI version (", Version, ") and Keptn cluster version (", clusterVersion, ") don't match. This can lead to problems. Please make sure to use the same versions.")
+			fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.", Version, clusterVersion)
 		}
 	}
 
 	if cliMsgPrinted || keptnMsgPrinted {
-		fmt.Printf(setVersionCheckMsg, "disable", "false")
+		fmt.Fprintf(os.Stderr, setVersionCheckMsg, "disable", "false")
 	}
 
 	if cliChecked || keptnChecked {

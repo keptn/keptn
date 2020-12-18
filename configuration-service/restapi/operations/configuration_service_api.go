@@ -43,7 +43,6 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
-		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
@@ -205,7 +204,6 @@ type ConfigurationServiceAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
-	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -335,16 +333,6 @@ type ConfigurationServiceAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
-}
-
-// UseRedoc for documentation at /docs
-func (o *ConfigurationServiceAPI) UseRedoc() {
-	o.useSwaggerUI = false
-}
-
-// UseSwaggerUI for documentation at /docs
-func (o *ConfigurationServiceAPI) UseSwaggerUI() {
-	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type

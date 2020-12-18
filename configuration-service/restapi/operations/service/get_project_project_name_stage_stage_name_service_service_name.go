@@ -8,7 +8,7 @@ package service
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc turns a function with the right signature into a get project project name stage stage name service service name handler

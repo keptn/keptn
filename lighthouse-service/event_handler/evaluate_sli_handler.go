@@ -45,29 +45,35 @@ type EvaluateSLIHandler struct {
 }
 
 func (eh *EvaluateSLIHandler) HandleEvent() error {
-	e := &keptn.InternalGetSLIDoneEventData{}
+	e := &keptnv2.GetSLIFinishedEventData{}
 
 	var shkeptncontext string
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err := eh.Event.DataAs(&e)
 
-	triggeredEvents, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
+	triggeredEvents, err2 := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
 		Stage:        e.Stage,
 		Service:      e.Service,
 		EventType:    keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
 		KeptnContext: eh.KeptnHandler.KeptnContext,
 	})
+	if err2 != nil {
+		msg := fmt.Sprintf("Could not retrieve evaluation.triggered event for context %s %v", eh.KeptnHandler.KeptnContext, err2)
+		eh.KeptnHandler.Logger.Error(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
+	}
 	if triggeredEvents == nil || len(triggeredEvents) == 0 {
 		msg := "Could not retrieve evaluation.triggered event for context " + eh.KeptnHandler.KeptnContext
 		eh.KeptnHandler.Logger.Error(msg)
-		return errors.New(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 	triggeredID := triggeredEvents[0].ID
 
 	if err != nil {
-		eh.KeptnHandler.Logger.Error("Could not parse event payload: " + err.Error())
-		return err
+		msg := "Could not parse event payload: " + err.Error()
+		eh.KeptnHandler.Logger.Error(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 
 	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
@@ -77,8 +83,8 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		if err == ErrSLOFileNotFound {
 			evaluationDetails := keptnv2.EvaluationDetails{
 				IndicatorResults: nil,
-				TimeStart:        e.Start,
-				TimeEnd:          e.End,
+				TimeStart:        e.GetSLI.Start,
+				TimeEnd:          e.GetSLI.End,
 				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
 			}
 
@@ -154,7 +160,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, evaluationResult)
 }
 
-func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {
+func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {
 	evaluationResult := &keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Status:  "",
@@ -163,8 +169,8 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 			Stage:   e.Stage,
 		},
 		Evaluation: keptnv2.EvaluationDetails{
-			TimeStart: e.Start,
-			TimeEnd:   e.End,
+			TimeStart: e.GetSLI.Start,
+			TimeEnd:   e.GetSLI.End,
 		},
 	}
 	var sliEvaluationResults []*keptnv2.SLIEvaluationResult
@@ -176,7 +182,7 @@ func evaluateObjectives(e *keptn.InternalGetSLIDoneEventData, sloConfig *keptn.S
 			maximumAchievableScore += float64(objective.Weight)
 		}
 		sliEvaluationResult := &keptnv2.SLIEvaluationResult{}
-		result := getSLIResult(e.IndicatorValues, objective.SLI)
+		result := getSLIResult(e.GetSLI.IndicatorValues, objective.SLI)
 
 		if result == nil {
 			// no result available => fail the objective
@@ -294,7 +300,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	return nil
 }
 
-func getSLIResult(results []*keptn.SLIResult, sli string) *keptn.SLIResult {
+func getSLIResult(results []*keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
 	for _, sliResult := range results {
 		if sliResult.Metric == sli {
 			return sliResult
@@ -525,7 +531,7 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 }
 
 // gets previous evaluation-done events from mongodb-datastore
-func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDoneEventData, numberOfPreviousResults int, includeResult string) ([]*keptnv2.EvaluationFinishedEventData, []string, error) {
+func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnv2.GetSLIFinishedEventData, numberOfPreviousResults int, includeResult string) ([]*keptnv2.EvaluationFinishedEventData, []string, error) {
 	var evaluationDoneEvents []*keptnv2.EvaluationFinishedEventData
 	var eventIDs []string
 
@@ -589,7 +595,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptn.InternalGetSLIDone
 	return evaluationDoneEvents, eventIDs, nil
 }
 
-func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptn.InternalGetSLIDoneEventData) (*keptnv2.TestFinishedEventData, error) {
+func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnv2.GetSLIFinishedEventData) (*keptnv2.TestFinishedEventData, error) {
 	events, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
 		Stage:        e.Stage,

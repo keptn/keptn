@@ -39,7 +39,7 @@ function send_start_evaluation_request() {
 
   response=$(keptn send event start-evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m 2>&1)
 
-  echo "$response"
+  echo $response
 }
 
 function send_start_evaluation_event() {
@@ -55,7 +55,7 @@ function send_start_evaluation_event() {
 
 function get_evaluation_done_event() {
   keptn_context_id=$1
-  keptn get event evaluation-done --keptn-context="${keptn_context_id}" | tail -n +2
+  keptn get event evaluation-done --keptn-context="${keptn_context_id}" 2>/dev/null | tail -n +5
 }
 
 function get_event() {
@@ -63,6 +63,33 @@ function get_event() {
   keptn_context_id=$2
   project=$3
   keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project}
+}
+
+function get_event_with_retry() {
+  event_type=$1
+  keptn_context_id=$2
+  project=$3
+
+  RETRY=0; RETRY_MAX=50;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    response=$(keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project})
+
+    if [[ $response == "No event returned" ]]; then
+      RETRY=$[$RETRY+1]
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for ${event_type} event..."
+      sleep 10
+    else
+      echo $response
+      break
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    print_error "URL ${URL} could not be reached"
+    exit 1
+  fi
+
 }
 
 function send_approval_triggered_event() {
@@ -255,7 +282,8 @@ function wait_for_deployment_in_namespace() {
     else
       READY_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.status.availableReplicas}')
       WANTED_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT  -n $NAMESPACE -o=jsonpath='{$.spec.replicas}')
-      if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" ]]; then
+      UNAVAILABLE_REPLICAS=$(eval kubectl get deployments $DEPLOYMENT  -n $NAMESPACE -o=jsonpath='{$.status.unavailableReplicas}')
+      if [[ "$READY_REPLICAS" = "$WANTED_REPLICAS" && "$UNAVAILABLE_REPLICAS" = "" ]]; then
         echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
         break
       else

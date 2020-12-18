@@ -15,7 +15,6 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 
 	"github.com/keptn/keptn/api/handlers"
-	"github.com/keptn/keptn/api/ws"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
@@ -32,8 +31,6 @@ import (
 )
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
-
-var hub *ws.Hub
 
 func configureFlags(api *operations.KeptnAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -98,8 +95,6 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
-	hub = ws.NewHub()
-	go hub.Run()
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
@@ -145,24 +140,6 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)
-			return
-		}
-		if r.URL.Path == "/websocket" {
-			// Verify token
-			err := ws.VerifyToken(r.Header)
-			if err != nil {
-				w.WriteHeader(401)
-				return
-			}
-
-			if val, ok := r.Header["Keptn-Ws-Channel-Id"]; ok {
-				err = ws.ServeWsCLI(hub, w, r, val[0])
-			} else {
-				err = ws.ServeWs(hub, w, r)
-			}
-			if err != nil {
-				w.WriteHeader(500)
-			}
 			return
 		}
 
