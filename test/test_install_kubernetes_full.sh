@@ -46,6 +46,9 @@ auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
 
 verify_test_step $? "Could not authenticate at Keptn API"
 
+echo "Keptn installed in version:"
+keptn version
+
 cd ../..
 
 echo "Installing Keptn on cluster done ✓"
