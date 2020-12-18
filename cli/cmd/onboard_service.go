@@ -99,11 +99,6 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 }
 
 func doOnboardServicePreRunChecks(args []string) error {
-	_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-	if err != nil {
-		return errors.New(authErrorMsg)
-	}
-
 	// validate chart flag
 	*onboardServiceParams.ChartFilePath = keptnutils.ExpandTilde(*onboardServiceParams.ChartFilePath)
 
