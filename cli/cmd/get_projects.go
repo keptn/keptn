@@ -53,7 +53,7 @@ shirtshop       2020-05-28T10:26:22+02:00
 	
 keptn get project sockshop
 NAME           CREATION DATE                 
-sockshop       2020-04-06T14:35:40.210Z
+sockshop       2020-10-06T14:35:40.210Z
 
 keptn get project sockshop -output=yaml  # Returns project details in YAML format
 
