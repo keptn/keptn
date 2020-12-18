@@ -13,6 +13,7 @@ helm dependency build ${BASE_PATH}/keptn/charts/control-plane
 
 # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
 find -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${VERSION}/g" {} \;
+find -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
 
 helm package ${BASE_PATH}/keptn --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then
