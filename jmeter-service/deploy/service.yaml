@@ -41,11 +41,13 @@ spec:
             secretKeyRef:
               name: dynatrace
               key: DT_API_TOKEN
+              optional: true
         - name: DT_TENANT
           valueFrom:
             secretKeyRef:
               name: dynatrace
               key: DT_TENANT
+              optional: true
         - name: EVENTBROKER
           value: 'http://event-broker/keptn'
         - name: DEBUG_KEEP_TEMP_FILES
