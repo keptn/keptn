@@ -3,7 +3,7 @@ function timestamp() {
 }
 
 function print_error() {
-  echo "[keptn|ERROR] $(timestamp) $1"
+  echo "::error::$(timestamp) $1"
 }
 
 function auth_at_keptn() {
@@ -223,6 +223,12 @@ function verify_value() {
   fi
 
   return 0
+}
+
+function verify_event_not_null() {
+  if [[ $1 == "null" ]]; then
+    return -1
+  fi
 }
 
 function verify_test_step() {
