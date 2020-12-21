@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: jmeter-service
-        image: keptn/jmeter-service:0.7.3-patch1
+        image: grabnerandi/jmeter-service:0.7.4
         livenessProbe:
           httpGet:
             path: /health
