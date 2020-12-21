@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
+    helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -125,9 +125,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
     app.kubernetes.io/version: {{ .Values.helmService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -141,14 +141,14 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+        app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
         app.kubernetes.io/version: {{ .Values.helmService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}
+        helm.sh/chart: {{ include "continuous-delivery.chart" . }}
     spec:
       containers:
         - name: helm-service
           image: {{ .Values.helmService.image.repository }}:{{ .Values.helmService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -196,7 +196,7 @@ spec:
                   optional: true
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -219,8 +219,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}
+    app.kubernetes.io/component: {{ include "continuous-delivery.name" . }}
+    helm.sh/chart: {{ include "continuous-delivery.chart" . }}
 spec:
   ports:
     - port: 8080
