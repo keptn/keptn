@@ -15,10 +15,27 @@
 # list all images that should be checked
 MAX_AGE_DAYS=30
 
+# ensure the params/variables are set
+if [ -z "$REGISTRY_USER" ]; then
+  echo "REGISTRY_USER is not set. Please set REGISTRY_USER to the username of your container registry."
+  exit 1
+fi
+
+if [ -z "$REGISTRY_PASSWORD" ]; then
+  echo "REGISTRY_PASSWORD is not set. Please set REGISTRY_PASSWORD to the password of your container registry."
+  exit 1
+fi
+
+if [ -z "$DOCKER_ORG" ]; then
+  echo "DOCKER_ORG is not set. Please set DOCKER_ORG to the organization that you want to check stale images for."
+  exit 1
+fi
+
+
 # list of images to be checked
 IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
 # additional old images that we want to keep
-ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader")
+ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader" "wait-service")
 
 # merge IMAGES and ADDITIONAL_OLD_IMAGES
 IMAGES=("${IMAGES[@]}" "${ADDITIONAL_OLD_IMAGES[@]}")
@@ -26,6 +43,11 @@ IMAGES=("${IMAGES[@]}" "${ADDITIONAL_OLD_IMAGES[@]}")
 
 # Authenticate against DockerHub API
 DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
+  echo "Failed to authenticate on DockerHub Api."
+  exit 1
+fi
 
 
 # get all github release tags
