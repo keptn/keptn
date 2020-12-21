@@ -20,6 +20,4 @@ jobs:
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           DOCKER_ORG: ${{ env.DOCKER_ORGANIZATION }}
-        run: |
-          # sudo apt-get update && sudo apt-get install jq -y
-          ./gh-actions-scripts/detect_stale_images.sh
+        run: ./gh-actions-scripts/detect_stale_images.sh
