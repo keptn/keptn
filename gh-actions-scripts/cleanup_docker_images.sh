@@ -46,6 +46,24 @@ if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
   exit 1
 fi
 
+function get_outdated_commit_hash_tags() {
+  REPO=$1
+  MAX_AGE_DAYS=$3
+
+  # Target-Date = Current Date Minus $MAX_AGE_DAYS
+  TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
+
+  # Count number of tags based on the tag filter
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?page_size=1" | jq -r '.count')
+# unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
+  >&2 echo "Found $COUNT tags for $REPO without filter"
+
+  # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?ordering=-last_updated&page_size=${COUNT}" | \
+     jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("\\b[0-9a-f]{7}\\b"))|.name')
+  echo $response
+}
+
 # get all outdated images (e.g., for repo=keptn/bridge2, tag_filter=patch, max_age_days=30)
 function get_outdated_images() {
   REPO=$1
@@ -57,7 +75,7 @@ function get_outdated_images() {
 
   # Count number of tags based on the tag filter
   COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
-
+  # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   >&2 echo "Found $COUNT tags for $REPO (filter $TAG_FILTER)"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
@@ -88,14 +106,22 @@ function delete_tag() {
 
 for s in ${IMAGES[@]}; do
   echo "deleting outdated images for service ${s}"
+
+  # get all outdated commit hash tags
+  # outdated_commit_hash_tags=$(get_outdated_commit_hash_tags $s $MAX_AGE)
+
   # get all outdated tag where tag contains "feature"
   outdated_feature_tags=$(get_outdated_images $s "feature" $MAX_AGE)
   # get all outdated tag where tag contains "bug"
   outdated_bug_tags=$(get_outdated_images $s "bug" $MAX_AGE)
   # get all outdated tag where tag contains "patch"
-  # outdated_patch_tags=$(get_outdated_images $s "patch" $MAX_AGE)
+  outdated_patch_tags=$(get_outdated_images $s "patch" $MAX_AGE)
   # get all outdated tag where tag contains "dirty"
   outdated_dirty_tags=$(get_outdated_images $s "dirty" $MAX_AGE)
+
+  for tag in ${outdated_commit_hash_tags}; do
+    delete_tag $s $tag
+  done
 
   for tag in ${outdated_feature_tags}; do
     delete_tag $s $tag
