@@ -281,7 +281,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: 'mongodb:27017'
+              value: '{{ .Values.mongodb.host }}:{{ .Values.mongodb.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:

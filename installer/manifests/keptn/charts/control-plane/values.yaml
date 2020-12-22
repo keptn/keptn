@@ -1,5 +1,7 @@
 mongodb:
   enabled: true
+  host: mongodb
+  port: 27017
 
 prefixPath: ""
 
