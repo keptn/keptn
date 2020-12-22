@@ -103,7 +103,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			}
 
 			if endPointErr := checkEndPointStatus(*authParams.endPoint); endPointErr != nil {
-				return fmt.Errorf("Authentication was unsucessful: %s"+endPointErrorReasons,
+				return fmt.Errorf("Authentication was unsuccessful: %s"+endPointErrorReasons,
 					endPointErr)
 			}
 
