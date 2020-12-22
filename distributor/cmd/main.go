@@ -16,6 +16,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -42,9 +43,13 @@ import (
 )
 
 type envConfig struct {
-	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8081"`
-	Path string `envconfig:"RCV_PATH" default:"/event"`
+	KeptnAPIEndpoint string `envconfig:"KEPTN_API:ENDPOINT" default:""`
+	APIProxyPort     int    `envconfig:"API_PROXY_PORT" default:"8081"`
+	APIProxyPath     string `envconfig:"API_PROXY_PATH" default:"/"`
+	// EventForwardingPort on which to listen for cloudevents
+	EventForwardingPort int    `envconfig:"RCV_PORT" default:"8081"`
+	EventForwardingPath string `envconfig:"RCV_PATH" default:"/event"`
+	VerifySSL           bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
 }
 
 var httpClient cloudevents.Client
@@ -57,16 +62,37 @@ var ctx context.Context
 
 var close = make(chan bool)
 
-var mux sync.Mutex
-
 var sentCloudEvents map[string][]string
 
 var pubSubConnections map[string]*cenats.Sender
 
 var recipientURL string
 
+var env envConfig
+
+var inClusterAPIProxyMappings = map[string]string{
+	"/mongodb-datastore":     "mongodb-datastore:8080",
+	"/datastore":             "mongodb-datastore:8080",
+	"/event-store":           "mongodb-datastore:8080",
+	"/configuration-service": "configuration-service:8080",
+	"/configuration":         "configuration-service:8080",
+	"/config":                "configuration-service:8080",
+	"/shipyard-controller":   "shipyard-controller:8080",
+	"/shipyard":              "shipyard-controller:8080",
+}
+
+var externalAPIProxyMappings = map[string]string{
+	"/mongodb-datastore":     "/api/mongodb-datastore",
+	"/datastore":             "/api/mongodb-datastore",
+	"/event-store":           "/api/mongodb-datastore",
+	"/configuration-service": "/api/configuration-service",
+	"/configuration":         "/api/configuration-service",
+	"/config":                "/api/configuration-service",
+	"/shipyard-controller":   "/api/shipyard-controller",
+	"/shipyard":              "/api/shipyard-controller",
+}
+
 func main() {
-	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		fmt.Println("Failed to process env var: " + err.Error())
 		os.Exit(1)
@@ -116,8 +142,9 @@ func startEventForwarder(env envConfig, wg *sync.WaitGroup) {
 	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")
 
-	http.HandleFunc("/event", EventForwardHandler)
-	serverURL := fmt.Sprintf("localhost:%d", env.Port)
+	http.HandleFunc(env.EventForwardingPath, EventForwardHandler)
+	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
+	serverURL := fmt.Sprintf("localhost:%d", env.EventForwardingPort)
 	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 
@@ -140,6 +167,67 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 		fmt.Printf("Failed to forward CloudEvent: %s", err)
 		return
 	}
+}
+
+// APIProxyHandler godoc
+func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
+
+	apiEndpoint := env.KeptnAPIEndpoint
+	fmt.Println("Keptn API endpoint: " + apiEndpoint)
+	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
+
+	proxyHost, proxyPath := getProxyHost(apiEndpoint, req.URL.Path)
+
+	req.URL.Host = proxyHost
+	req.URL.Path = proxyPath
+
+	if apiToken != "" {
+		fmt.Println("Adding x-token header to HTTP request")
+		req.Header.Add("x-token", apiToken)
+	}
+
+	client := getHTTPClient()
+	resp, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println("Could not send event to API endpoint: " + err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	rw.WriteHeader(resp.StatusCode)
+
+	defer resp.Body.Close()
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Could not read response payload: " + err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if _, err := rw.Write(respBytes); err != nil {
+		fmt.Println("could not send response from API: " + err.Error())
+	}
+}
+
+func getProxyHost(endpoint string, path string) (string, string) {
+	// if the endpoint is empty, redirect to the internal services
+	if env.KeptnAPIEndpoint == "" {
+		for key, value := range inClusterAPIProxyMappings {
+			if strings.HasPrefix(path, key) {
+				trimmedPath := strings.TrimPrefix(path, key)
+				return value, trimmedPath
+			}
+		}
+		return "", ""
+	}
+
+	// if the endpoint is not empty, map to the correct api
+	for key, value := range inClusterAPIProxyMappings {
+		if strings.HasPrefix(path, key) {
+			trimmedPath := strings.TrimPrefix(path, key)
+			return strings.TrimSuffix(endpoint, "/api") + value, trimmedPath
+		}
+	}
+	return "", ""
 }
 
 const defaultPollingInterval = 10
@@ -214,7 +302,9 @@ func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
 		req.Header.Add("x-token", apiToken)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := getHTTPClient()
+	resp, err := client.Do(req)
+
 	if err != nil {
 		fmt.Println("Could not send event to API endpoint: " + err.Error())
 		return err
@@ -234,6 +324,14 @@ func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
 
 	fmt.Println("Response from Keptn API: " + string(body))
 	return errors.New(string(body))
+}
+
+func getHTTPClient() *http.Client {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: env.VerifySSL},
+	}
+	client := &http.Client{Transport: tr}
+	return client
 }
 
 func createHTTPConnection() {
