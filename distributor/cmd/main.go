@@ -43,7 +43,7 @@ import (
 )
 
 type envConfig struct {
-	KeptnAPIEndpoint string `envconfig:"KEPTN_API:ENDPOINT" default:""`
+	KeptnAPIEndpoint string `envconfig:"KEPTN_API_ENDPOINT" default:""`
 	APIProxyPort     int    `envconfig:"API_PROXY_PORT" default:"8081"`
 	APIProxyPath     string `envconfig:"API_PROXY_PATH" default:"/"`
 	// EventForwardingPort on which to listen for cloudevents
