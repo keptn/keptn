@@ -21,7 +21,7 @@ import (
 // Swagger Structure
 
 // GetMetadataHandlerFunc returns metadata of the keptn installation
-func GetMetadataHandlerFunc(params metadata.MetadataParams, pricipal *models.Principal) middleware.Responder {
+func GetMetadataHandlerFunc(params metadata.MetadataParams, principal *models.Principal) middleware.Responder {
 
 	logger := keptnutils.NewLogger("", "", "api")
 	logger.Info("API received a GET metadata event")
