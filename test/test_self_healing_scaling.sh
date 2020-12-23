@@ -2,6 +2,8 @@
 
 source test/utils.sh
 
+KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
+
 function cleanup() {
   kubectl delete namespace loadgen
 }
@@ -35,7 +37,7 @@ wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distrib
 echo "Prometheus service deployed successfully"
 
 rm -rf examples
-git clone --branch master https://github.com/keptn/examples --single-branch
+git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
 
 cd examples/onboarding-$SERVICE
 

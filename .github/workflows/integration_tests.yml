@@ -10,6 +10,10 @@ on:
         description: 'Branch for integration tests (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
+      examples_branch:
+        description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
+        required: true
+        default: 'master'
 defaults:
   run:
     shell: bash
@@ -58,6 +62,7 @@ jobs:
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -442,7 +447,7 @@ jobs:
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
           echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Self Healing  |  Delivery Assistant  | Continuous Delivery |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | -------------- | -------------------- | ------------------- | >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | -------------- | -------------------- | ------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
