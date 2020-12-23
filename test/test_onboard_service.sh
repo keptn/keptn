@@ -2,11 +2,13 @@
 
 source test/utils.sh
 
+KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
+
 echo "Testing onboarding for project $PROJECT"
 
 # test keptn create-project and onboard
 rm -rf examples
-git clone --branch master https://github.com/keptn/examples --single-branch
+git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
 cd examples/onboarding-carts
 
 echo "Creating a new project without Git upstream"
