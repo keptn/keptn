@@ -39,7 +39,7 @@ spec:
             cpu: "1000m"
         env:
         - name: CONFIGURATION_SERVICE
-          value: 'http://localhost:8081/configuration-service'
+          value: 'http://configuration-service:8080'
         - name: EVENTBROKER
           value: 'http://localhost:8081/event'
         - name: ENVIRONMENT
