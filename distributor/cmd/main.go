@@ -176,18 +176,31 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 
-	fmt.Println(fmt.Sprintf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, req.URL.RawPath, req.URL.String()))
+	var path string
+	if req.URL.RawPath != "" {
+		path = req.URL.RawPath
+	} else {
+		path = req.URL.Path
+	}
 
-	proxyScheme, proxyHost, proxyPath := getProxyHost(apiEndpoint, req.URL.RawPath)
+	fmt.Println(fmt.Sprintf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String()))
+
+	proxyScheme, proxyHost, proxyPath := getProxyHost(apiEndpoint, path)
 
 	// TODO: handle case when values are empty
 
 	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
 
 	forwardReq.Header = req.Header
-	forwardReq.URL.Host = proxyHost
-	forwardReq.URL.Path = proxyPath
-	forwardReq.URL.Scheme = proxyScheme
+
+	parsedProxyURL, err := url.Parse(proxyScheme + "://" + proxyHost + "/" + proxyPath)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Could not decode url with scheme: %s, host: %s, path: %s - %s", proxyScheme, proxyHost, proxyPath, err.Error()))
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	forwardReq.URL = parsedProxyURL
 
 	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
 
@@ -226,9 +239,8 @@ func getProxyHost(endpoint string, path string) (string, string, string) {
 		for key, value := range inClusterAPIProxyMappings {
 			if strings.HasPrefix(path, key) {
 				split := strings.Split(strings.TrimPrefix(path, "/"), "/")
-				strings.Join(split[1:], "/")
-				trimmedPath := strings.TrimPrefix(path, key)
-				return "http", value, trimmedPath
+				join := strings.Join(split[1:], "/")
+				return "http", value, join
 			}
 		}
 		return "", "", ""
@@ -242,8 +254,18 @@ func getProxyHost(endpoint string, path string) (string, string, string) {
 	// if the endpoint is not empty, map to the correct api
 	for key, value := range externalAPIProxyMappings {
 		if strings.HasPrefix(path, key) {
-			trimmedPath := strings.TrimPrefix(path, key)
-			return parsedKeptnURL.Scheme, strings.TrimSuffix(endpoint, "/api") + value, trimmedPath
+			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
+			if value == "/api/configuration-service" {
+				splitPath := strings.Split(path, "/resource/")
+				if len(splitPath) > 1 {
+					path = ""
+					for i := 0; i < len(splitPath)-1; i = i + 1 {
+						path = splitPath[i] + "/resource/"
+					}
+					path = path + url.QueryEscape(splitPath[len(splitPath)-1])
+				}
+			}
+			return parsedKeptnURL.Scheme, parsedKeptnURL.Host, parsedKeptnURL.Path + path
 		}
 	}
 	return "", "", ""
