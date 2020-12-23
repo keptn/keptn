@@ -176,21 +176,31 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 
-	proxyHost, proxyPath := getProxyHost(apiEndpoint, req.URL.Path)
+	fmt.Println(fmt.Sprintf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, req.URL.RawPath, req.URL.String()))
 
-	req.URL.Host = proxyHost
-	req.URL.Path = proxyPath
+	proxyScheme, proxyHost, proxyPath := getProxyHost(apiEndpoint, req.URL.RawPath)
+
+	// TODO: handle case when values are empty
+
+	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
+
+	forwardReq.Header = req.Header
+	forwardReq.URL.Host = proxyHost
+	forwardReq.URL.Path = proxyPath
+	forwardReq.URL.Scheme = proxyScheme
+
+	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
 
 	if apiToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
-		req.Header.Add("x-token", apiToken)
+		forwardReq.Header.Add("x-token", apiToken)
 	}
 
 	client := getHTTPClient()
-	resp, err := client.Do(req)
+	resp, err := client.Do(forwardReq)
 
 	if err != nil {
-		fmt.Println("Could not send event to API endpoint: " + err.Error())
+		fmt.Println("Could not send request to API endpoint: " + err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -203,31 +213,40 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println(fmt.Sprintf("Received response from API: Status=%d, Payload=%s", resp.StatusCode, string(respBytes)))
 	if _, err := rw.Write(respBytes); err != nil {
 		fmt.Println("could not send response from API: " + err.Error())
 	}
 }
 
-func getProxyHost(endpoint string, path string) (string, string) {
+func getProxyHost(endpoint string, path string) (string, string, string) {
 	// if the endpoint is empty, redirect to the internal services
 	if env.KeptnAPIEndpoint == "" {
 		for key, value := range inClusterAPIProxyMappings {
 			if strings.HasPrefix(path, key) {
+				split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+				strings.Join(split[1:], "/")
 				trimmedPath := strings.TrimPrefix(path, key)
-				return value, trimmedPath
+				return "http", value, trimmedPath
 			}
 		}
-		return "", ""
+		return "", "", ""
+	}
+
+	parsedKeptnURL, err := url.Parse(env.KeptnAPIEndpoint)
+	if err != nil {
+		return "", "", ""
 	}
 
 	// if the endpoint is not empty, map to the correct api
-	for key, value := range inClusterAPIProxyMappings {
+	for key, value := range externalAPIProxyMappings {
 		if strings.HasPrefix(path, key) {
 			trimmedPath := strings.TrimPrefix(path, key)
-			return strings.TrimSuffix(endpoint, "/api") + value, trimmedPath
+			return parsedKeptnURL.Scheme, strings.TrimSuffix(endpoint, "/api") + value, trimmedPath
 		}
 	}
-	return "", ""
+	return "", "", ""
 }
 
 const defaultPollingInterval = 10
