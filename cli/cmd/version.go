@@ -35,15 +35,16 @@ var (
 	Version string
 )
 
+const keptnReleaseDocsURL = "0.8.x" // ToDo: Can we automate this?
+
 const versionCheckInfo = `Daily version check is %s. 
-Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/0.7.x/reference/version_check
+Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/` + keptnReleaseDocsURL + `/reference/version_check
 ---------------------------------------------------
 `
 const setVersionCheckMsg = `* To %s the daily version check, please execute:
  - keptn set config AutomaticVersionCheck %s
 
 `
-const keptnReleaseDocsURL = "0.7.x"
 
 const disableVersionCheckMsg = "To disable this notice, run: '%s set config AutomaticVersionCheck false'"
 
