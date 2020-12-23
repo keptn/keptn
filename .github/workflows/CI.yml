@@ -436,10 +436,11 @@ jobs:
           fi
 
           # determine output file name based on version, distribution, architecture
-          OUTPUT_FILENAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}" # no need for file-ending in the archive name
           mkdir dist
-          go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_FILENAME}"
-          tar -zcvf dist/${OUTPUT_FILENAME}.tar.gz ${OUTPUT_FILENAME}
+          go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTEABLE_NAME}
       - name: Upload Keptn CLI as an artifact
         uses: actions/upload-artifact@v2
         with:
@@ -478,7 +479,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: keptn-installer
-          path: keptn-charts/*.tgz # keptn-charts/keptn-${VERSION}.tgz
+          path: keptn-charts/*.tgz # keptn-charts/keptn-installer-${VERSION}.tgz
 
   ############################################################################
   # Build Docker Images                                                      #
