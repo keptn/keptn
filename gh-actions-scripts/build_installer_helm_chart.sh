@@ -22,7 +22,7 @@ if [ $? -ne 0 ]; then
 fi
 
 mkdir keptn-charts/
-mv keptn-${VERSION}.tgz keptn-charts/
+mv keptn-${VERSION}.tgz keptn-charts/keptn-installer-${VERSION}.tgz
 
 # verify the chart
 helm template --debug keptn-charts/keptn-installer-${VERSION}.tgz
@@ -48,6 +48,6 @@ fi
 
 
 echo "Generated files:"
-echo " - keptn-charts/keptn-${VERSION}.tgz"
+echo " - keptn-charts/keptn-installer-${VERSION}.tgz"
 
 
