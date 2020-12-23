@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -49,10 +51,22 @@ func TestLookupHostname(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
-			s := lookupHostname(tt.in)
+			s := lookupHostname(tt.in, mockedHostnameResolveFn, mockedSleepFn)
 			if s != tt.out {
 				t.Errorf("lookupHostname(%s): got %v, want %v", tt.in, s, tt.out)
 			}
 		})
 	}
+}
+
+func mockedHostnameResolveFn(hostname string) ([]string, error) {
+	if hostname == "a.b.c.d" {
+		return []string{}, errors.New("Unable to resolve " + hostname)
+	}
+
+	return []string{"0.0.0.0"}, nil
+}
+
+func mockedSleepFn(d time.Duration) {
+	//no-op
 }

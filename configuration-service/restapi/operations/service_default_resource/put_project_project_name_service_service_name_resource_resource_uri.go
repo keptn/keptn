@@ -8,7 +8,7 @@ package service_default_resource
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // PutProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc turns a function with the right signature into a put project project name service service name resource resource URI handler

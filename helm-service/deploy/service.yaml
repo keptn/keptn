@@ -39,11 +39,9 @@ spec:
             cpu: "1000m"
         env:
         - name: CONFIGURATION_SERVICE
-          value: 'http://configuration-service:8080'
+          value: 'http://localhost:8081/configuration-service'
         - name: EVENTBROKER
           value: 'http://localhost:8081/event'
-        - name: API
-          value: 'ws://api-service:8080/websocket'
         - name: ENVIRONMENT
           value: 'production'
         - name: INGRESS_HOSTNAME_SUFFIX

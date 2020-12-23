@@ -76,7 +76,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		}
 		return nil
 	},
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		shipyard := keptnv2.Shipyard{}
 		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
@@ -95,19 +95,20 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			}
 		}
 
-		return checkGitCredentials()
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := checkGitCredentials(); err != nil {
+			return err
+		}
+
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		shipyard := base64.StdEncoding.EncodeToString([]byte(createProjectParams.ShipyardContent))
+		encodedShipyardContent := base64.StdEncoding.EncodeToString([]byte(createProjectParams.ShipyardContent))
 		project := apimodels.CreateProject{
 			Name:     &args[0],
-			Shipyard: &shipyard,
+			Shipyard: &encodedShipyardContent,
 		}
 
 		if *createProjectParams.GitUser != "" && *createProjectParams.GitToken != "" && *createProjectParams.RemoteURL != "" {

@@ -3,11 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-test/deep"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +10,12 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/go-test/deep"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
 type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
@@ -709,7 +710,7 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 	}
 }
 
-func getEvaluationTaskFinishedEvent(stage string, triggeredID string) models.Event {
+func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationFinishedEventData{
@@ -718,10 +719,10 @@ func getEvaluationTaskFinishedEvent(stage string, triggeredID string) models.Eve
 				Stage:   stage,
 				Service: "carts",
 				Status:  keptnv2.StatusSucceeded,
-				Result:  keptnv2.ResultPass,
+				Result:  result,
 			},
 			Evaluation: keptnv2.EvaluationDetails{
-				Result: "pass",
+				Result: string(result),
 			},
 		},
 		Extensions:     nil,
@@ -950,7 +951,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 				return true
 			}
 			if testData.Test.Start != "start" || testData.Test.End != "end" {
-				t.Errorf("Test property was not transmitted corretly: %v", testData.Test)
+				t.Errorf("Test property was not transmitted correctly: %v", testData.Test)
 			}
 			return false
 		})
@@ -966,7 +967,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 7
 	// send evaluation.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, "pass"), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
 	if done {
 		return
 	}
@@ -1267,6 +1268,181 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	if done {
 		return
 	}
+}
+
+// Scenario 4: Received .finished event with result "fail" - next .triggered event should contain result "fail" as well
+func Test_shipyardController_Scenario4(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
+	sc := getTestShipyardController()
+
+	mockCS := newMockConfigurationService()
+	defer mockCS.Close()
+
+	done := false
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := newMockEventbroker(t,
+		func(meb *mockEventBroker, event *models.Event) {
+			meb.receivedEvents = append(meb.receivedEvents, *event)
+		},
+		func(meb *mockEventBroker) {
+
+		})
+	defer mockEV.server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+	if len(mockEV.receivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
+		return
+	}
+	done = shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	if done {
+		return
+	}
+	// check triggeredEvent Collection -> should contain deployment.triggered event
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   stringp("dev"),
+		Service: stringp("carts"),
+		Source:  stringp("shipyard-controller"),
+	}, db.TriggeredEvent)
+	done = shouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	if done {
+		return
+	}
+	triggeredID := triggeredEvents[0].ID
+
+	// STEP 2
+	// send deployment.started event
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+	if done {
+		return
+	}
+
+	// STEP 3
+	// send deployment.finished event
+	triggeredID, done = sendAndVerifyFinishedEvent(
+		t,
+		sc,
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source"),
+		keptnv2.DeploymentTaskName,
+		keptnv2.TestTaskName,
+		mockEV,
+		"",
+		func(t *testing.T, e models.Event) bool {
+			marshal, _ := json.Marshal(e.Data)
+			testData := &keptnv2.TestTriggeredEventData{}
+
+			err := json.Unmarshal(marshal, testData)
+
+			if err != nil {
+				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if len(testData.Deployment.DeploymentURIsLocal) != 2 {
+				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			if len(testData.Deployment.DeploymentURIsPublic) != 2 {
+				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+			return false
+		})
+	if done {
+		return
+	}
+
+	// STEP 4
+	// send test.started event
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.TestTaskName, triggeredID, "dev", "test-source")
+	if done {
+		return
+	}
+
+	// STEP 5
+	// send test.finished event
+	triggeredID, done = sendAndVerifyFinishedEvent(
+		t,
+		sc,
+		getTestTaskFinishedEvent("dev", triggeredID),
+		keptnv2.TestTaskName,
+		keptnv2.EvaluationTaskName,
+		mockEV,
+		"",
+		func(t *testing.T, e models.Event) bool {
+			marshal, _ := json.Marshal(e.Data)
+			testData := &keptnv2.EvaluationTriggeredEventData{}
+
+			err := json.Unmarshal(marshal, testData)
+
+			if err != nil {
+				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if len(testData.Deployment.DeploymentNames) != 1 {
+				t.Errorf("Deployment property was not transmitted correctly: %v", testData.Deployment)
+				return true
+			}
+			if testData.Test.Start != "start" || testData.Test.End != "end" {
+				t.Errorf("Test property was not transmitted correctly: %v", testData.Test)
+			}
+			return false
+		})
+	if done {
+		return
+	}
+	// STEP 6
+	// send evaluation.started event
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
+	if done {
+		return
+	}
+
+	// STEP 7
+	// send evaluation.finished event with result=fail
+	triggeredID, done = sendAndVerifyFinishedEvent(t,
+		sc,
+		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed),
+		keptnv2.EvaluationTaskName,
+		keptnv2.ReleaseTaskName,
+		mockEV,
+		"",
+		func(t *testing.T, e models.Event) bool {
+			marshal, _ := json.Marshal(e.Data)
+			testData := &keptnv2.ReleaseTriggeredEventData{}
+
+			err := json.Unmarshal(marshal, testData)
+
+			if err != nil {
+				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if testData.Result != keptnv2.ResultFailed {
+				t.Errorf("Result property was not transmitted correctly: %s", testData.Result)
+				return true
+			}
+			return false
+		},
+	)
+	if done {
+		return
+	}
+
 }
 
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *mockEventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {

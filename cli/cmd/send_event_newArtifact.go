@@ -33,7 +33,6 @@ import (
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
-	"github.com/keptn/keptn/cli/pkg/websockethelper"
 	"github.com/spf13/cobra"
 )
 
@@ -67,15 +66,12 @@ For pulling an image from a private registry, we would like to refer to the Kube
 	Example:      `keptn send event new-artifact --project=sockshop --service=carts --stage=dev --image=docker.io/keptnexamples/carts --tag=0.7.0 --sequence=artifact-delivery`,
 	SilenceUsage: true,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
-		newArtifact.Image = &trimmedImage
-
-		if newArtifact.Tag == nil || *newArtifact.Tag == "" {
-			*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
-		}
-		return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
+		return doSendEventNewArtifactPreRunCheck()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := doSendEventNewArtifactPreRunCheck(); err != nil {
+			return err
+		}
 		var endPoint url.URL
 		var apiToken string
 		var err error
@@ -157,19 +153,23 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		eventContext, err2 := apiHandler.SendEvent(apiEvent)
+		_, err2 := apiHandler.SendEvent(apiEvent)
 		if err2 != nil {
 			logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 			return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err2.Message)
 		}
-
-		// if eventContext is available, open WebSocket communication
-		if eventContext != nil && !SuppressWSCommunication {
-			return websockethelper.PrintWSContentEventContext(eventContext, endPoint)
-		}
-
 		return nil
 	},
+}
+
+func doSendEventNewArtifactPreRunCheck() error {
+	trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
+	newArtifact.Image = &trimmedImage
+
+	if newArtifact.Tag == nil || *newArtifact.Tag == "" {
+		*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
+	}
+	return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 }
 
 func init() {

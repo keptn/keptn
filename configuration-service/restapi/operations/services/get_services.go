@@ -8,7 +8,7 @@ package services
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // GetServicesHandlerFunc turns a function with the right signature into a get services handler

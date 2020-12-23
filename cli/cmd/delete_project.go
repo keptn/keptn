@@ -87,11 +87,13 @@ var delProjectCmd = &cobra.Command{
 						logging.PrintLog("Deleting service "+service.ServiceName, logging.InfoLevel)
 						deleteResp, err := apiHandler.DeleteService(project.ProjectName, service.ServiceName)
 						if err != nil {
-							logging.PrintLog("Delete project was unsuccessful", logging.InfoLevel)
-							return fmt.Errorf("Delete project was unsuccessful. %s", *err.Message)
+							logging.PrintLog("Delete service was unsuccessful", logging.InfoLevel)
+							return fmt.Errorf("Delete service was unsuccessful. %s", *err.Message)
 						}
-						logging.PrintLog("Project deleted successfully", logging.InfoLevel)
-						logging.PrintLog(deleteResp.Message, logging.InfoLevel)
+						logging.PrintLog("Service deleted successfully", logging.InfoLevel)
+						if len(deleteResp.Message) > 0 {
+							logging.PrintLog(deleteResp.Message, logging.InfoLevel)
+						}
 					}
 				}
 			}

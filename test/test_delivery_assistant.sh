@@ -7,9 +7,9 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-# get keptn API details
-KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
+
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 # test configuration
 PROJECT="delivery-assistant-project"

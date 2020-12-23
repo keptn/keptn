@@ -3,7 +3,7 @@
 PROJECT=$1
 ARTIFACT_IMAGE=$2
 ARTIFACT_IMAGE_TAG=$3
-SEQUENCE=$5
+SEQUENCE=$4
 
 source test/utils.sh
 
@@ -40,7 +40,7 @@ verify_pod_in_namespace "carts-db" "$PROJECT-dev"
 verify_test_step $? "Pod carts-db not found, exiting ..."
 
 # get URL for that deployment
-DEV_URL=$(echo http://carts.${PROJECT}-dev.$(kubectl get cm ingress-config -n keptn -o=jsonpath='{.data.ingress_hostname_suffix}'))
+DEV_URL=$(echo http://carts.${PROJECT}-dev.$(kubectl get cm ingress-config -n ${KEPTN_NAMESPACE} -o=jsonpath='{.data.ingress_hostname_suffix}'))
 # try to access that URL
 wait_for_url $DEV_URL/health
 verify_test_step $? "Trying to access $DEV_URL/health failed"
@@ -71,7 +71,7 @@ verify_pod_in_namespace "carts-db" "$PROJECT-staging"
 verify_test_step $? "Pod carts-db not found, exiting ..."
 
 # get URL for that deployment
-STAGING_URL=$(echo http://carts.${PROJECT}-staging.$(kubectl get cm ingress-config -n keptn -o=jsonpath='{.data.ingress_hostname_suffix}'))
+STAGING_URL=$(echo http://carts.${PROJECT}-staging.$(kubectl get cm ingress-config -n ${KEPTN_NAMESPACE} -o=jsonpath='{.data.ingress_hostname_suffix}'))
 # try to access that URL
 wait_for_url $STAGING_URL/health
 verify_test_step $? "Trying to access $STAGING_URL/health failed"
@@ -102,7 +102,7 @@ verify_pod_in_namespace "carts-db" "$PROJECT-production"
 verify_test_step $? "Pod carts-db not found, exiting ..."
 
 # get URL for that deployment
-PRODUCTION_URL=$(echo http://carts.${PROJECT}-production.$(kubectl get cm ingress-config -n keptn -o=jsonpath='{.data.ingress_hostname_suffix}'))
+PRODUCTION_URL=$(echo http://carts.${PROJECT}-production.$(kubectl get cm ingress-config -n ${KEPTN_NAMESPACE} -o=jsonpath='{.data.ingress_hostname_suffix}'))
 # try to access that URL
 wait_for_url $PRODUCTION_URL/health
 verify_test_step $? "Trying to access $PRODUCTION_URL/health failed"

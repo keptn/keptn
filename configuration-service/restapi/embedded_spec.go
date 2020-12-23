@@ -28,7 +28,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "Configuration Service API",
-    "version": "0.1.0"
+    "version": "develop"
   },
   "basePath": "/v1",
   "paths": {
@@ -1821,9 +1821,6 @@ func init() {
             "string"
           ]
         },
-        "extensions": {
-          "type": "object"
-        },
         "id": {
           "type": "string"
         },
@@ -1840,6 +1837,9 @@ func init() {
         "time": {
           "type": "string",
           "format": "date-time"
+        },
+        "triggeredid": {
+          "type": "string"
         },
         "type": {
           "type": "string"
@@ -4447,9 +4447,6 @@ func init() {
             "string"
           ]
         },
-        "extensions": {
-          "type": "object"
-        },
         "id": {
           "type": "string"
         },
@@ -4466,6 +4463,9 @@ func init() {
         "time": {
           "type": "string",
           "format": "date-time"
+        },
+        "triggeredid": {
+          "type": "string"
         },
         "type": {
           "type": "string"

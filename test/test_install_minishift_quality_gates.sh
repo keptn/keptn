@@ -27,11 +27,6 @@ auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
 echo "Keptn installed in version:"
 keptn version
 
-# verify that the keptn CLI has successfully authenticated
-echo "Checking that Keptn is authenticated ..."
-ls -la ~/.keptn/.keptn
-verify_test_step $? "Could not find Keptn credentials in ~/.keptn folder"
-
 echo "Verifying that services and namespaces have been created"
 
 # verify the deployments within the keptn namespace

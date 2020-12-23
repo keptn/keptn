@@ -33,9 +33,7 @@ func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, onboarder
 
 // HandleEvent handles deployment.triggered events by first changing the new configuration and
 // afterwards applying the configuration in the cluster
-func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event, closeLogger func(keptnHandler *keptnv2.Keptn)) {
-
-	defer closeLogger(h.getKeptnHandler())
+func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 
 	e := keptnv2.DeploymentTriggeredEventData{}
 	if err := ce.DataAs(&e); err != nil {

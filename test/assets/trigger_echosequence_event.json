@@ -1,0 +1,11 @@
+{
+    "type": "sh.keptn.event.firststage.echosequence.triggered",
+    "specversion": "1.0",
+    "source": "travis-ci",
+    "contenttype": "application/json",
+    "data": {
+      "project": "linking-stages-project",
+      "stage": "firststage",
+      "service": "linking-stages-service"
+    }
+  }

@@ -2,11 +2,12 @@ package common
 
 import (
 	"errors"
+	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
+	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/configuration-service/models"
-	"reflect"
 	"testing"
 )
 
@@ -44,6 +45,16 @@ func (m mockProjectRepo) DeleteProject(projectName string) error {
 	return m.DeleteProjectMock(projectName)
 }
 
+type GetEventsMock func(filter *goutils.EventFilter) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error)
+
+type mockEventRetriever struct {
+	GetEventsMock GetEventsMock
+}
+
+func (er mockEventRetriever) GetEvents(filter *goutils.EventFilter) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error) {
+	return er.GetEventsMock(filter)
+}
+
 func TestGetProjectsMaterializedView(t *testing.T) {
 	tests := []struct {
 		name string
@@ -51,15 +62,12 @@ func TestGetProjectsMaterializedView(t *testing.T) {
 	}{
 		{
 			name: "get MV instance",
-			want: &projectsMaterializedView{
-				ProjectRepo: &MongoDBProjectRepo{},
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
-			},
+			want: GetProjectsMaterializedView(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetProjectsMaterializedView(); !reflect.DeepEqual(got, tt.want) {
+			if got := GetProjectsMaterializedView(); got != tt.want {
 				t.Errorf("GetProjectsMaterializedView() = %v, want %v", got, tt.want)
 			}
 		})
@@ -836,7 +844,8 @@ func Test_updateServiceInStage(t *testing.T) {
 
 func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 	type fields struct {
-		ProjectRepo ProjectRepo
+		ProjectRepo    ProjectRepo
+		EventRetriever EventsRetriever
 	}
 	type args struct {
 		keptnBase    interface{}
@@ -907,6 +916,10 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 						}, nil
 					},
 					UpdateProjectMock: func(project *models.ExpandedProject) error {
+						if project.Stages[0].Services[0].DeployedImage == "the-service-image:latest" {
+							return nil
+						}
+						return errors.New("project was not updated correctly")
 						/*
 							if project.Stages[0].Services[0].LastEventTypes[keptn.DeploymentFinishedEventType].KeptnContext == "test-context" &&
 								project.Stages[0].Services[0].DeployedImage == "test-image:0.1" {
@@ -920,6 +933,27 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 					DeleteProjectMock: nil,
 					GetProjectsMock:   nil,
 				},
+				EventRetriever: mockEventRetriever{
+					GetEventsMock: func(filter *goutils.EventFilter) ([]*goutilsmodels.KeptnContextExtendedCE, *goutilsmodels.Error) {
+						e1 := goutilsmodels.KeptnContextExtendedCE{Triggeredid: "a-triggered-id"}
+						e2 := goutilsmodels.KeptnContextExtendedCE{
+							Data: keptnv2.DeploymentTriggeredEventData{
+								EventData: keptnv2.EventData{
+									Project: "test-project",
+									Stage:   "dev",
+									Service: "test-service",
+								},
+								ConfigurationChange: keptnv2.ConfigurationChange{
+									Values: map[string]interface{}{"image": "the-service-image:latest"},
+								},
+								Deployment: keptnv2.DeploymentWithStrategy{},
+							},
+							Triggeredid: "the-triggered-id",
+						}
+						return []*goutilsmodels.KeptnContextExtendedCE{&e1, &e2}, nil
+
+					},
+				},
 			},
 			args: args{
 				keptnBase: &keptnv2.EventData{
@@ -927,7 +961,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 					Stage:   "dev",
 					Service: "test-service",
 				},
-				eventType:    keptn.DeploymentFinishedEventType,
+				eventType:    keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
 				keptnContext: "test-context",
 			},
 			wantErr: false,
@@ -936,10 +970,11 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &projectsMaterializedView{
-				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
+				ProjectRepo:     tt.fields.ProjectRepo,
+				EventsRetriever: tt.fields.EventRetriever,
+				Logger:          keptncommon.NewLogger("", "", "configuration-service"),
 			}
-			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, "test-event-id"); (err != nil) != tt.wantErr {
+			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, "test-event-id", "the-triggered-id"); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

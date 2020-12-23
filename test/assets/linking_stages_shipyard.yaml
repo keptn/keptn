@@ -1,0 +1,25 @@
+apiVersion: "spec.keptn.sh/0.2.0"
+kind: Shipyard
+metadata:
+  name: "shipyard-echo-service"
+spec:
+  stages:
+    - name: "firststage"
+      sequences:
+        - name: "echosequence"
+          tasks:
+            - name: "echo"
+    - name: "secondstage"
+      sequences:
+        - name: "echosequence"
+          triggers:
+            - firststage.echosequence.finished
+          tasks:
+            - name: "echo"
+    - name: "thirdstage"
+      sequences:
+        - name: "echosequence"
+          triggers:
+            - secondstage.echosequence.finished
+          tasks:
+            - name: "echo"

@@ -8,7 +8,7 @@ package stage_resource
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // GetProjectProjectNameStageStageNameResourceHandlerFunc turns a function with the right signature into a get project project name stage stage name resource handler

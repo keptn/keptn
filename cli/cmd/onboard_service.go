@@ -47,37 +47,10 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 		}
 		return nil
 	},
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-		if err != nil {
-			return errors.New(authErrorMsg)
-		}
-
-		// validate chart flag
-		*onboardServiceParams.ChartFilePath = keptnutils.ExpandTilde(*onboardServiceParams.ChartFilePath)
-
-		if _, err := os.Stat(*onboardServiceParams.ChartFilePath); os.IsNotExist(err) {
-			return errors.New("Provided Helm chart does not exist")
-		}
-
-		ch, err := keptnutils.LoadChartFromPath(*onboardServiceParams.ChartFilePath)
-		if err != nil {
-			return err
-		}
-
-		res, err := validator.ValidateHelmChart(ch, args[0])
-		if err != nil {
-			return err
-		}
-
-		if !res {
-			return errors.New("The provided Helm chart is invalid. Please checkout the requirements")
-		}
-
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := doOnboardServicePreRunChecks(args); err != nil {
+			return err
+		}
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
@@ -123,6 +96,31 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 		logging.PrintLog("Skipping onboard service due to mocking flag set to true", logging.InfoLevel)
 		return nil
 	},
+}
+
+func doOnboardServicePreRunChecks(args []string) error {
+	// validate chart flag
+	*onboardServiceParams.ChartFilePath = keptnutils.ExpandTilde(*onboardServiceParams.ChartFilePath)
+
+	if _, err := os.Stat(*onboardServiceParams.ChartFilePath); os.IsNotExist(err) {
+		return errors.New("Provided Helm chart does not exist")
+	}
+
+	ch, err := keptnutils.LoadChartFromPath(*onboardServiceParams.ChartFilePath)
+	if err != nil {
+		return err
+	}
+
+	res, err := validator.ValidateHelmChart(ch, args[0])
+	if err != nil {
+		return err
+	}
+
+	if !res {
+		return errors.New("The provided Helm chart is invalid. Please checkout the requirements")
+	}
+
+	return nil
 }
 
 func init() {

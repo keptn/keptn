@@ -8,7 +8,7 @@ package stage
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // PutProjectProjectNameStageStageNameHandlerFunc turns a function with the right signature into a put project project name stage stage name handler

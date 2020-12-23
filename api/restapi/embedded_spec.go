@@ -621,14 +621,10 @@ func init() {
     "eventContext": {
       "type": "object",
       "required": [
-        "token",
         "keptnContext"
       ],
       "properties": {
         "keptnContext": {
-          "type": "string"
-        },
-        "token": {
           "type": "string"
         }
       }

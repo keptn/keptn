@@ -212,7 +212,15 @@ func doInstallation() error {
 			return fmt.Errorf("Stopping installation.")
 		}
 	} else {
-		if err := keptnutils.CreateNamespace(false, keptnNamespace); err != nil {
+		namespaceMetadata := metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"keptn.sh/managed-by": "keptn",
+			},
+			Labels: map[string]string{
+				"keptn.sh/managed-by": "keptn",
+			},
+		}
+		if err := keptnutils.CreateNamespace(false, keptnNamespace, namespaceMetadata); err != nil {
 			return fmt.Errorf("Failed to create Keptn namespace %s: %v", keptnNamespace, err)
 		}
 	}

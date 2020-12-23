@@ -61,3 +61,13 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "keptn.distributor.resources" -}}
+resources:
+  requests:
+    memory: "16Mi"
+    cpu: "25m"
+  limits:
+    memory: "32Mi"
+    cpu: "250m"
+{{- end }}
