@@ -15,7 +15,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha
+	github.com/keptn/go-utils v0.8.0-alpha.0.20201228103117-b4da7753f6f2
 	github.com/mitchellh/mapstructure v1.2.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
