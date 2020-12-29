@@ -46,7 +46,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
               if(traces.length > 0) {
                 this.root = Root.fromJSON(traces[0]);
                 this.root.traces = traces;
-                this.evaluations = traces.filter(t => t.type == EventTypes.EVALUATION_DONE && (!params["eventselector"] || t.id == params["eventselector"] || t.data.stage == params["eventselector"])) ;
+                this.evaluations = traces.filter(t => t.type == EventTypes.EVALUATION_FINISHED && (!params["eventselector"] || t.id == params["eventselector"] || t.data.stage == params["eventselector"])) ;
               } else {
                 this.error = "contextError";
               }

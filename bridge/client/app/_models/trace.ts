@@ -53,7 +53,7 @@ class Trace {
       image: string;
     };
 
-    evaluationdetails: {
+    evaluation: {
       comparedEvents: string[];
       indicatorResults: any;
       result: string;
@@ -110,7 +110,7 @@ class Trace {
   isFailedEvaluation() {
     let result: string = null;
     if(this.data) {
-      if(this.type === EventTypes.EVALUATION_DONE && this.isFailed()) {
+      if(this.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
         result = this.data.stage;
       }
     }
@@ -120,7 +120,7 @@ class Trace {
   isWarning(): string {
     let result: string = null;
     if(this.data) {
-      if(this.type === EventTypes.EVALUATION_DONE && this.data.result == ResultTypes.WARNING) {
+      if(this.type === EventTypes.EVALUATION_FINISHED && this.data.result == ResultTypes.WARNING) {
         result = this.data.stage;
       }
     }

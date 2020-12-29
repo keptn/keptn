@@ -5,7 +5,7 @@ export enum EventTypes {
   DEPLOYMENT_FINISHED = 'sh.keptn.events.deployment-finished',
   TESTS_FINISHED = 'sh.keptn.events.tests-finished',
   START_EVALUATION = 'sh.keptn.event.start-evaluation',
-  EVALUATION_DONE = 'sh.keptn.events.evaluation-done',
+  EVALUATION_FINISHED = 'sh.keptn.event.evaluation.finished',
   EVALUATION_INVALIDATED = 'sh.keptn.events.evaluation.invalidated',
   START_SLI_RETRIEVAL = 'sh.keptn.internal.event.get-sli',
   SLI_RETRIEVAL_DONE = 'sh.keptn.internal.event.get-sli.done',

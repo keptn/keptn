@@ -204,16 +204,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private parseSloFile(evaluationData) {
-    if(evaluationData && evaluationData.data && evaluationData.data.evaluationdetails.sloFileContent && !evaluationData.data.evaluationdetails.sloFileContentParsed) {
-      evaluationData.data.evaluationdetails.sloFileContentParsed = atob(evaluationData.data.evaluationdetails.sloFileContent);
-      evaluationData.data.evaluationdetails.score_pass = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
-      evaluationData.data.evaluationdetails.score_warning = evaluationData.data.evaluationdetails.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
-      evaluationData.data.evaluationdetails.compare_with = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split(" ")[1]?.replace(/\"/g, "");
-      evaluationData.data.evaluationdetails.include_result_with_score = evaluationData.data.evaluationdetails.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split(" ")[1]?.replace(/\"/g, "");
-      if (evaluationData.data.evaluationdetails.comparedEvents !== null) {
-        evaluationData.data.evaluationdetails.number_of_comparison_results = evaluationData.data.evaluationdetails.comparedEvents?.length;
+    if(evaluationData && evaluationData.data && evaluationData.data.evaluation.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
+      evaluationData.data.evaluation.sloFileContentParsed = atob(evaluationData.data.evaluation.sloFileContent);
+      evaluationData.data.evaluation.score_pass = evaluationData.data.evaluation.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
+      evaluationData.data.evaluation.score_warning = evaluationData.data.evaluation.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
+      evaluationData.data.evaluation.compare_with = evaluationData.data.evaluation.sloFileContentParsed.split("comparison:")[1]?.split("compare_with:")[1]?.split(" ")[1]?.replace(/\"/g, "");
+      evaluationData.data.evaluation.include_result_with_score = evaluationData.data.evaluation.sloFileContentParsed.split("comparison:")[1]?.split("include_result_with_score:")[1]?.split(" ")[1]?.replace(/\"/g, "");
+      if (evaluationData.data.evaluation.comparedEvents !== null) {
+        evaluationData.data.evaluation.number_of_comparison_results = evaluationData.data.evaluation.comparedEvents?.length;
       } else {
-        evaluationData.data.evaluationdetails.number_of_comparison_results = 0;
+        evaluationData.data.evaluation.number_of_comparison_results = 0;
       }
     }
   }
@@ -227,9 +227,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if(this.showChart) {
       evaluationHistory.forEach((evaluation) => {
         let scoreData = {
-          y: evaluation.data.evaluationdetails ? evaluation.data.evaluationdetails.score : 0,
+          y: evaluation.data.evaluation ? evaluation.data.evaluation.score : 0,
           evaluationData: evaluation,
-          color: this._evaluationColor[evaluation.data.evaluationdetails.result],
+          color: this._evaluationColor[evaluation.data.evaluation.result],
           name: evaluation.getChartLabel(),
         };
 
@@ -260,8 +260,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         indicatorScoreSeriesColumn.data.push(scoreData);
         indicatorScoreSeriesLine.data.push(scoreData);
 
-        if(evaluation.data.evaluationdetails.indicatorResults) {
-          evaluation.data.evaluationdetails.indicatorResults.forEach((indicatorResult) => {
+        if(evaluation.data.evaluation.indicatorResults) {
+          evaluation.data.evaluation.indicatorResults.forEach((indicatorResult) => {
             let indicatorData = {
               y: indicatorResult.value.value,
               indicatorResult: indicatorResult,
@@ -322,7 +322,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         },
       ];
     }
-
     this.highlightHeatmap();
     this._changeDetectorRef.markForCheck();
   }
@@ -376,7 +375,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if(this._selectedEvaluationData && !this.isInvalidated) {
       let _this = this;
       let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
-      let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
+      let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
       let plotBands = [];
       if(highlightIndex >= 0)
         plotBands.push({
@@ -403,10 +402,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           });
       });
       this._heatmapOptions.xAxis[0].plotBands = plotBands;
-      this._selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluationdetails.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
+      this._selectedEvaluationData.data.evaluation.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluation.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
     } else {
       this._heatmapOptions.xAxis[0].plotBands = [];
-      this._selectedEvaluationData.data.evaluationdetails.number_of_missing_comparison_results = 0;
+      this._selectedEvaluationData.data.evaluation.number_of_missing_comparison_results = 0;
     }
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
@@ -421,7 +420,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   showSloDialog() {
-    this.sloDialogRef = this.dialog.open(this.sloDialog, { data: this._selectedEvaluationData.data.evaluationdetails.sloFileContentParsed });
+    this.sloDialogRef = this.dialog.open(this.sloDialog, { data: this._selectedEvaluationData.data.evaluation.sloFileContentParsed });
   }
 
   closeSloDialog() {
