@@ -78,7 +78,7 @@ export class Root extends Trace {
   }
 
   getEvaluation(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.EVALUATION_DONE && t.data.stage == stage.stageName);
+    return this.traces.find(t => t.type == EventTypes.EVALUATION_FINISHED && t.data.stage == stage.stageName);
   }
 
   getDeploymentDetails(stage: Stage): Trace {

@@ -41,7 +41,7 @@
     <p><span class="bold">Stage: </span><span [textContent]="evaluation.data.stage"></span></p>
     <ktb-event-item [event]="evaluation">
       <ktb-event-item-detail>
-        <ktb-evaluation-details *ngIf="evaluation.data.evaluationdetails" [evaluationData]="evaluation"></ktb-evaluation-details>
+        <ktb-evaluation-details *ngIf="evaluation.data.evaluation" [evaluationData]="evaluation"></ktb-evaluation-details>
       </ktb-event-item-detail>
     </ktb-event-item>
   </div>
