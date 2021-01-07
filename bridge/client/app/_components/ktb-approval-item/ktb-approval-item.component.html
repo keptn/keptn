@@ -1,7 +1,7 @@
 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="_event.isApproval() && (project$ | async) as project">
   <h4 class="m-0" [textContent]="_event.getShortImageName()"></h4>
   <dt-tag-list aria-label="evaluation-info" *ngIf="project.getDeploymentEvaluation(_event) as evaluation">
-    <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluationdetails.score | number:'1.0-0'"></dt-tag>
+    <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
     <ng-template #overlay>
       <ktb-evaluation-details [evaluationData]="evaluation" [showChart]="false"></ktb-evaluation-details>
     </ng-template>

@@ -118,7 +118,7 @@ export class ApiService {
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {
-    let url = `${this._baseUrl}/mongodb-datastore/event/type/sh.keptn.events.evaluation-done?filter=data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}&excludeInvalidated=true&limit=50`;
+    let url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}?filter=data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}&excludeInvalidated=true&limit=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
     return this.http

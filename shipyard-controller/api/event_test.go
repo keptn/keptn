@@ -3,11 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-test/deep"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +10,12 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/go-test/deep"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
 type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
@@ -950,7 +951,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 				return true
 			}
 			if testData.Test.Start != "start" || testData.Test.End != "end" {
-				t.Errorf("Test property was not transmitted corretly: %v", testData.Test)
+				t.Errorf("Test property was not transmitted correctly: %v", testData.Test)
 			}
 			return false
 		})
@@ -1397,7 +1398,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 				return true
 			}
 			if testData.Test.Start != "start" || testData.Test.End != "end" {
-				t.Errorf("Test property was not transmitted corretly: %v", testData.Test)
+				t.Errorf("Test property was not transmitted correctly: %v", testData.Test)
 			}
 			return false
 		})

@@ -3,7 +3,7 @@
 # Keptn
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
 ![Github Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
-[![Build Status](https://travis-ci.org/keptn/keptn.svg?branch=master)](https://travis-ci.org/keptn/keptn)
+![CI](https://github.com/keptn/keptn/workflows/CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/keptn/keptn/branch/master/graph/badge.svg)](https://codecov.io/gh/keptn/keptn)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn/keptn)](https://goreportcard.com/report/github.com/keptn/keptn)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3588/badge)](https://bestpractices.coreinfrastructure.org/projects/3588)
@@ -15,29 +15,27 @@ Please find the documentation on our [website](https://keptn.sh), and read the m
 In addition, you can find the roadmap of the Keptn project [here](https://github.com/orgs/keptn/projects/1). It provides 
 an overview of user stories that are currently in the focus of development for the next release.
 
-## Usage
+## Quickstart
 To get started with keptn you need a Kubernetes cluster. Supported Kubernetes engines and versions can be found [in the documentation](https://keptn.sh/docs/0.7.x/operate/k8s_support/).  
 <br>
-Here is a quick guide on how to get started with keptn on [k3s](https://k3s.io/):  
+Here is a quick guide on how to get started with Keptn on [k3s](https://k3s.io/) on MacOS and Linux:
 
 **Install K3s**  
 Download, install and run K3s (tested with versions 1.16 to 1.19):
 ``` console
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.18.3+k3s1 K3S_KUBECONFIG_MODE="644" sh -s - --no-deploy=traefik
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.19.5+k3s1 K3S_KUBECONFIG_MODE="644" sh -s - --no-deploy=traefik
 ```
-Export the Kubernetes config using:
+**Export the Kubernetes config using:**
 ``` console
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 ```  
-<br>
 
-**Download keptn CLI (Linux and Mac OS)**:
+**Download keptn CLI using Bash (e.g., Linux and Mac OS)**:
 ```console
-curl -sL https://get.keptn.sh | sudo -E bash
+curl -sL https://get.keptn.sh | bash
 ```
 or download a release for your platform from the [release page](https://github.com/keptn/keptn/releases)
 
-<br>
 
 **Install keptn**:
 ```console

@@ -8,7 +8,7 @@ export const EVENT_LABELS = {
   [EventTypes.DEPLOYMENT_FINISHED]: "Deployment finished",
   [EventTypes.TESTS_FINISHED]: "Tests finished",
   [EventTypes.START_EVALUATION]: "Evaluation started",
-  [EventTypes.EVALUATION_DONE]: "Evaluation done",
+  [EventTypes.EVALUATION_FINISHED]: "Evaluation finished",
   [EventTypes.EVALUATION_INVALIDATED]: "Evaluation invalidated",
   [EventTypes.START_SLI_RETRIEVAL]: "SLI retrieval started",
   [EventTypes.SLI_RETRIEVAL_DONE]: "SLI retrieval done",

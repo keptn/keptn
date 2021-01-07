@@ -6,7 +6,7 @@ export const EVENT_ICONS = {
   [EventTypes.DEPLOYMENT_FINISHED]: "deploy",
   [EventTypes.TESTS_FINISHED]: "perfromance-health",
   [EventTypes.START_EVALUATION]: "traffic-light",
-  [EventTypes.EVALUATION_DONE]: "traffic-light",
+  [EventTypes.EVALUATION_FINISHED]: "traffic-light",
   [EventTypes.START_SLI_RETRIEVAL]: "collector",
   [EventTypes.SLI_RETRIEVAL_DONE]: "collector",
   [EventTypes.PROBLEM_OPEN]: "criticalevent",

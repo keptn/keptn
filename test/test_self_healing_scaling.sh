@@ -2,15 +2,18 @@
 
 source test/utils.sh
 
+KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
+
 function cleanup() {
   kubectl delete namespace loadgen
 }
 
 trap cleanup EXIT
 
-# get keptn api details
-KEPTN_ENDPOINT=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+
+KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+
 
 # test configuration
 PROJECT="sockshop"
@@ -34,7 +37,7 @@ wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distrib
 echo "Prometheus service deployed successfully"
 
 rm -rf examples
-git clone --branch master https://github.com/keptn/examples --single-branch
+git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
 
 cd examples/onboarding-$SERVICE
 

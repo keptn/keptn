@@ -31,7 +31,7 @@ PROJECT="linking-stages-project"
 SERVICE="linking-stages-service"
 
 echo "Installing keptn-sandbox/echo-service"
-kubectl -n ${KEPTN_NAMESPACE} apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/e8349bfc644c78c14b2c5dd1bd644a467299f734/deploy/service.yaml
+kubectl -n ${KEPTN_NAMESPACE} apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/release-0.1.0/deploy/service.yaml
 
 echo "Testing link staging..."
 
