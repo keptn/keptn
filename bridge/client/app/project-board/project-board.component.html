@@ -35,6 +35,7 @@
     <dt-menu-group label="">
       <a (click)="selectView('environment')" [class.active]="view == 'environment'" dtMenuItem>Environment</a>
       <a (click)="selectView('services')" [class.active]="view == 'services'" dtMenuItem>Services</a>
+      <a (click)="selectView('sequences')" [class.active]="view == 'sequences'" dtMenuItem>Sequences</a>
       <a (click)="selectView('integration')" [class.active]="view == 'integration'" dtMenuItem>Integration</a>
     </dt-menu-group>
   </dt-menu>
@@ -229,7 +230,7 @@
               <dt-tag>Last time fetched: <span [textContent]="getRootsLastUpdated(project, service) | amCalendar:getCalendarFormats()"></span></dt-tag>
             </dt-tag-list>
           </div>
-          <ktb-root-events-list [events]="getFilteredRoots(service.roots)" [selectedEvent]="currentRoot"  (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
+          <ktb-root-events-list [events]="getFilteredRoots(service.roots)" [selectedEvent]="currentRoot" (selectedEventChange)="selectRoot($event)"></ktb-root-events-list>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" *ngIf="!service.roots">
             <dt-loading-spinner></dt-loading-spinner>
             <p>Loading ...</p>
@@ -263,6 +264,26 @@
             <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
           </dt-tag-list>
         </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="view == 'sequences'">
+    <div class="container dark" fxFlex="10" fxLayout="column" fxLayoutGap="15px">
+      <div fxFlex fxLayout="column" fxLayoutGap="15px">
+        <p>Filters coming here</p>
+      </div>
+    </div>
+    <div class="container" fxFlex="20" fxLayout="column" fxLayoutGap="15px">
+      <div fxFlex fxLayout="column" fxLayoutGap="15px">
+        <p>Sequences coming here</p>
+        <ktb-root-events-list [events]="project.sequences"></ktb-root-events-list>
+        <div class="mb-3">
+        </div>
+      </div>
+    </div>
+    <div class="container dark" fxFlex="70" fxLayout="column" fxLayoutGap="15px">
+      <div fxFlex fxLayout="column" fxLayoutGap="15px">
+        <p>Sequence details coming here</p>
       </div>
     </div>
   </ng-container>

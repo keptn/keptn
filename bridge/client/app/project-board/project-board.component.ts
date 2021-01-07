@@ -30,6 +30,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   private _tracesTimer: Subscription = Subscription.EMPTY;
+  private _sequencesTimer: Subscription = Subscription.EMPTY;
 
   public project$: Observable<Project>;
   public openApprovals$: Observable<Trace[]>;
@@ -268,6 +269,19 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadSequences(): void {
+    this._sequencesTimer = timer(0, this._rootEventsTimerInterval*1000)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.project$),
+        filter(project => !!project && !!project.getServices())
+      )
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(project => {
+        this.dataService.loadSequences(project);
+      });
+  }
+
   getCalendarFormats() {
     return DateUtil.getCalendarFormats(true);
   }
@@ -294,6 +308,11 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   selectView(view) {
     this.view = view;
+    if(this.view == 'sequences') {
+      this.loadSequences();
+    } else {
+      this._sequencesTimer.unsubscribe();
+    }
   }
 
   filterEvents(event: DtCheckboxChange<string>, eventType: string): void {

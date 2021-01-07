@@ -12,6 +12,7 @@ import {Service} from "../_models/service";
 import {ApiService} from "./api.service";
 import {EventTypes} from "../_models/event-types";
 import DateUtil from "../_utils/date.utils";
+import {Sequence} from "../_models/sequence";
 
 @Injectable({
   providedIn: 'root'
@@ -20,9 +21,11 @@ export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
+  private _sequences = new BehaviorSubject<Sequence[]>(null);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
   private _keptnInfo = new BehaviorSubject<Object>(null);
   private _rootsLastUpdated: Object = {};
+  private _sequencesLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
   private _evaluationResults = new Subject();
@@ -43,6 +46,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get sequences(): Observable<Sequence[]> {
+    return this._sequences.asObservable();
   }
 
   get openApprovals(): Observable<Trace[]> {
@@ -197,6 +204,49 @@ export class DataService {
         roots.forEach(root => {
           this.updateApprovals(root);
         })
+      });
+  }
+
+  public loadSequences(project: Project) {
+    let fromTime: Date = this._sequencesLastUpdated[project.projectName];
+    this._sequencesLastUpdated[project.projectName] = new Date();
+
+    this.apiService.getRoots(project.projectName, null, fromTime ? fromTime.toISOString() : null)
+      .pipe(
+        debounce(() => timer(10000)),
+        map(response => {
+          this._sequencesLastUpdated[project.projectName] = new Date(response.headers.get("date"));
+          return response.body;
+        }),
+        map(result => result.events||[]),
+        mergeMap((sequences) =>
+          from(sequences).pipe(
+            mergeMap(
+              sequence => {
+                let fromTime: Date = this._tracesLastUpdated[sequence.shkeptncontext];
+                this._tracesLastUpdated[sequence.shkeptncontext] = new Date();
+
+                return this.apiService.getTraces(sequence.shkeptncontext, sequence.data.project, fromTime ? fromTime.toISOString() : null)
+                  .pipe(
+                    map(response => {
+                      this._tracesLastUpdated[sequence.shkeptncontext] = new Date(response.headers.get("date"));
+                      return response.body;
+                    }),
+                    map(result => result.events||[]),
+                    map(traces => traces.map(trace => Trace.fromJSON(trace))),
+                    map(traces => traces.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())),
+                    map(traces => ({ ...sequence, traces}))
+                  )
+              }
+            ),
+            toArray()
+          )
+        ),
+        map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)))
+      )
+      .subscribe((sequences: Sequence[]) => {
+        project.sequences = [...sequences||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimes);
+        this._sequences.next(sequences);
       });
   }
 
