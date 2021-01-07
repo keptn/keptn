@@ -144,7 +144,7 @@ func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 
 	http.HandleFunc(env.EventForwardingPath, EventForwardHandler)
 	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
-	serverURL := fmt.Sprintf("localhost:%d", env.EventForwardingPort)
+	serverURL := fmt.Sprintf("localhost:%d", env.APIProxyPort)
 	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 

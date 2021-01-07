@@ -492,7 +492,7 @@ func Test__main(t *testing.T) {
 	if err := envconfig.Process("", &env); err != nil {
 		t.Errorf("Failed to process env var: %s", err)
 	}
-	env.EventForwardingPort = TEST_PORT + 1
+	env.APIProxyPort = TEST_PORT + 1
 	go _main(nil, env)
 
 	<-time.After(2 * time.Second)
@@ -528,7 +528,7 @@ func Test__main(t *testing.T) {
 	})
 
 	<-time.After(2 * time.Second)
-	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.EventForwardingPort)+"/event", "application/cloudevents+json", bytes.NewBuffer([]byte(`{
+	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.APIProxyPort)+"/event", "application/cloudevents+json", bytes.NewBuffer([]byte(`{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
@@ -547,18 +547,7 @@ func Test__main(t *testing.T) {
 		t.Errorf("Message did not make it to the receiver")
 	}
 
-	close <- true
-}
-
-func Test_APIProxy(t *testing.T) {
-	if err := envconfig.Process("", &env); err != nil {
-		fmt.Println("Failed to process env var: " + err.Error())
-		os.Exit(1)
-	}
-	env.EventForwardingPort = TEST_PORT + 1
-	go _main(nil, env)
-	<-time.After(2 * time.Second)
-	_, err := http.Post("http://127.0.0.1:"+strconv.Itoa(env.EventForwardingPort)+env.APIProxyPath+"/datastore?foo=bar", "application/json", bytes.NewBuffer([]byte(`{
+	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.APIProxyPort)+env.APIProxyPath+"/datastore?foo=bar", "application/json", bytes.NewBuffer([]byte(`{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
@@ -569,6 +558,8 @@ func Test_APIProxy(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not handle API request")
 	}
+
+	close <- true
 }
 
 func Test_getProxyRequestURL(t *testing.T) {
@@ -577,10 +568,11 @@ func Test_getProxyRequestURL(t *testing.T) {
 		path     string
 	}
 	tests := []struct {
-		name  string
-		args  args
-		want1 string
-		want2 string
+		name       string
+		args       args
+		wantScheme string
+		wantHost   string
+		wantPath   string
 	}{
 		{
 			name: "Get internal Datastore",
@@ -588,8 +580,9 @@ func Test_getProxyRequestURL(t *testing.T) {
 				endpoint: "",
 				path:     "/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished",
 			},
-			want1: "mongodb-datastore:8080",
-			want2: "/event/type/sh.keptn.event.evaluation.finished",
+			wantScheme: "http",
+			wantHost:   "mongodb-datastore:8080",
+			wantPath:   "event/type/sh.keptn.event.evaluation.finished",
 		},
 		{
 			name: "Get internal Datastore 2",
@@ -597,8 +590,9 @@ func Test_getProxyRequestURL(t *testing.T) {
 				endpoint: "",
 				path:     "/event-store/event",
 			},
-			want1: "mongodb-datastore:8080",
-			want2: "/event",
+			wantScheme: "http",
+			wantHost:   "mongodb-datastore:8080",
+			wantPath:   "event",
 		},
 		{
 			name: "Get internal configuration service",
@@ -606,7 +600,8 @@ func Test_getProxyRequestURL(t *testing.T) {
 				endpoint: "",
 				path:     "/configuration-service",
 			},
-			want1: "configuration-service:8080",
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
 		},
 		{
 			name: "Get internal configuration service 2",
@@ -614,7 +609,8 @@ func Test_getProxyRequestURL(t *testing.T) {
 				endpoint: "",
 				path:     "/configuration",
 			},
-			want1: "configuration-service:8080",
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
 		},
 		{
 			name: "Get internal configuration service 3",
@@ -622,7 +618,8 @@ func Test_getProxyRequestURL(t *testing.T) {
 				endpoint: "",
 				path:     "/config",
 			},
-			want1: "configuration-service:8080",
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
 		},
 		{
 			name: "Get shipyard controller",
@@ -630,19 +627,24 @@ func Test_getProxyRequestURL(t *testing.T) {
 				endpoint: "",
 				path:     "/config",
 			},
-			want1: "configuration-service:8080",
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got1, got2 := getProxyHost(tt.args.endpoint, tt.args.path)
+			scheme, host, path := getProxyHost(tt.args.path)
 
-			if got1 != tt.want1 {
-				t.Errorf("getProxyHost(); host = %v, want %v", got1, tt.want1)
+			if scheme != tt.wantScheme {
+				t.Errorf("getProxyHost(); host = %v, want %v", scheme, tt.wantScheme)
 			}
 
-			if got2 != tt.want2 {
-				t.Errorf("getProxyHost(); path = %v, want %v", got2, tt.want2)
+			if host != tt.wantHost {
+				t.Errorf("getProxyHost(); path = %v, want %v", host, tt.wantHost)
+			}
+
+			if path != tt.wantPath {
+				t.Errorf("getProxyHost(); path = %v, want %v", path, tt.wantPath)
 			}
 		})
 	}
