@@ -45,5 +45,23 @@ func GetLocalDeploymentURI(event keptnv2.EventData) []string {
 
 // GetPublicDeploymentURI returns URIs where a service is exposed
 func GetPublicDeploymentURI(event keptnv2.EventData) []string {
-	return []string{GetIngressProtocol() + "://" + event.GetService() + "." + event.GetProject() + "-" + event.GetStage() + "." + GetIngressHostnameSuffix() + ":" + GetIngressPort()}
+	publicHostName := GetPublicDeploymentHostNameTemplate()
+
+	publicHostName = strings.ReplaceAll(publicHostName, "${INGRESS_PROTOCOL}", GetIngressProtocol())
+	publicHostName = strings.ReplaceAll(publicHostName, "${SERVICE}", event.Service)
+	publicHostName = strings.ReplaceAll(publicHostName, "${PROJECT}", event.Project)
+	publicHostName = strings.ReplaceAll(publicHostName, "${STAGE}", event.Stage)
+	publicHostName = strings.ReplaceAll(publicHostName, "${INGRESS_HOSTNAME_SUFFIX}", GetIngressHostnameSuffix())
+	publicHostName = strings.ReplaceAll(publicHostName, "${INGRESS_PORT}", GetIngressPort())
+
+	return []string{publicHostName}
+}
+
+// GetPublicDeploymentHostNameTemplate returns the HostName of the service
+func GetPublicDeploymentHostNameTemplate() string {
+	hostNameTemplate := os.Getenv("HOSTNAME_TEMPLATE")
+	if hostNameTemplate == "" {
+		return "${INGRESS_PROTOCOL}://${SERVICE}.${PROJECT}-${STAGE}.${INGRESS_HOSTNAME_SUFFIX}:${INGRESS_PORT}"
+	}
+	return strings.ToUpper(hostNameTemplate)
 }
