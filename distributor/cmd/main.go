@@ -171,9 +171,6 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 // APIProxyHandler godoc
 func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
-
-	apiEndpoint := env.KeptnAPIEndpoint
-	fmt.Println("Keptn API endpoint: " + apiEndpoint)
 	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 
 	var path string
@@ -185,9 +182,13 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	fmt.Println(fmt.Sprintf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String()))
 
-	proxyScheme, proxyHost, proxyPath := getProxyHost(apiEndpoint, path)
+	proxyScheme, proxyHost, proxyPath := getProxyHost(path)
 
-	// TODO: handle case when values are empty
+	if proxyScheme == "" || proxyHost == "" {
+		fmt.Println("Could not get proxy Host URL - got empty values")
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
 
@@ -233,7 +234,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getProxyHost(endpoint string, path string) (string, string, string) {
+func getProxyHost(path string) (string, string, string) {
 	// if the endpoint is empty, redirect to the internal services
 	if env.KeptnAPIEndpoint == "" {
 		for key, value := range inClusterAPIProxyMappings {
