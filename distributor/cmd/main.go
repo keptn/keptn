@@ -109,7 +109,7 @@ func _main(args []string, env envConfig) int {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	go startEventForwarder(env, wg)
+	go startAPIProxy(env, wg)
 	go startEventReceiver(wg)
 
 	wg.Wait()
@@ -137,7 +137,7 @@ func startEventReceiver(waitGroup *sync.WaitGroup) {
 	}
 }
 
-func startEventForwarder(env envConfig, wg *sync.WaitGroup) {
+func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 	defer wg.Done()
 	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")

@@ -52,7 +52,7 @@ func getJMeterConf(project string, stage string, service string, logger *keptnco
 			return nil, errors.New(logMessage)
 		}
 	} else {
-		resourceHandler := keptnapi.NewResourceHandler("configuration-service:8080")
+		resourceHandler := keptnapi.NewResourceHandler(getConfigurationServiceURL())
 		keptnResourceContent, err := resourceHandler.GetServiceResource(project, stage, service, JMeterConfFilename)
 		if err != nil {
 			logMessage := fmt.Sprintf("No %s file found for service %s in stage %s in project %s", JMeterConfFilename, service, stage, project)
