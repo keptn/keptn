@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -10,6 +9,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
@@ -154,6 +154,27 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 	return h.onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 }
 
+func (h *DeploymentHandler) getPortOfDeployedService(e keptnv2.EventData) (string, error) {
+	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
+		e.Project+"-"+e.Stage)
+
+	if err != nil {
+		return "", err
+	}
+	services := helm.GetServices(userChartManifest)
+	if len(services) > 0 {
+		if len(services[0].Spec.Ports) > 0 {
+			for _, port := range services[0].Spec.Ports {
+				if port.Protocol == corev1.ProtocolTCP {
+					return fmt.Sprintf("%d", port.Port), nil
+				}
+			}
+		}
+
+	}
+	return "80", nil
+}
+
 func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {
 
 	inEventData.Status = keptnv2.StatusSucceeded
@@ -168,12 +189,17 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.E
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = keptnv2.ResultPass
 	inEventData.Message = "Successfully deployed"
+
+	servicePort, err := h.getPortOfDeployedService(inEventData)
+	if err != nil {
+		servicePort = "80"
+	}
 	return keptnv2.DeploymentFinishedEventData{
 		EventData: inEventData,
 		Deployment: keptnv2.DeploymentData{
 			DeploymentStrategy:   deploymentStrategy.String(),
 			DeploymentURIsPublic: mesh.GetPublicDeploymentURI(inEventData),
-			DeploymentURIsLocal:  mesh.GetLocalDeploymentURI(inEventData),
+			DeploymentURIsLocal:  mesh.GetLocalDeploymentURI(inEventData, servicePort),
 			DeploymentNames:      []string{deploymentName},
 			GitCommit:            gitCommit,
 		},
