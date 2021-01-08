@@ -252,7 +252,9 @@ func getProxyHost(path string) (string, string, string) {
 	// if the endpoint is not empty, map to the correct api
 	for key, value := range externalAPIProxyMappings {
 		if strings.HasPrefix(path, key) {
-			path = strings.Replace(path, key, value, 1)
+			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+			join := strings.Join(split[1:], "/")
+			path = value + "/" + join
 			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
 			if value == "/api/configuration-service" {
 				splitPath := strings.Split(path, "/resource/")
