@@ -43,11 +43,10 @@ import (
 )
 
 type envConfig struct {
-	KeptnAPIEndpoint string `envconfig:"KEPTN_API_ENDPOINT" default:""`
-	APIProxyPort     int    `envconfig:"API_PROXY_PORT" default:"8081"`
-	APIProxyPath     string `envconfig:"API_PROXY_PATH" default:"/"`
-	// EventForwardingPort on which to listen for cloudevents
-	EventForwardingPort int    `envconfig:"RCV_PORT" default:"8081"`
+	KeptnAPIEndpoint    string `envconfig:"KEPTN_API_ENDPOINT" default:""`
+	KeptnAPIToken       string `envconfig:"KEPTN_API_TOKEN" default:""`
+	APIProxyPort        int    `envconfig:"API_PROXY_PORT" default:"8081"`
+	APIProxyPath        string `envconfig:"API_PROXY_PATH" default:"/"`
 	EventForwardingPath string `envconfig:"RCV_PATH" default:"/event"`
 	VerifySSL           bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
 }
@@ -171,8 +170,6 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 // APIProxyHandler godoc
 func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
-	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
-
 	var path string
 	if req.URL.RawPath != "" {
 		path = req.URL.RawPath
@@ -205,9 +202,9 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
 
-	if apiToken != "" {
+	if env.KeptnAPIToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
-		forwardReq.Header.Add("x-token", apiToken)
+		forwardReq.Header.Add("x-token", env.KeptnAPIToken)
 	}
 
 	client := getHTTPClient()
@@ -276,12 +273,11 @@ const defaultPollingInterval = 10
 
 func gotEvent(event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
-	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
-	if apiEndpoint == "" {
+	if env.KeptnAPIEndpoint == "" {
 		fmt.Println("No external API endpoint defined. Forwarding directly to NATS server ")
 		return forwardEventToNATSServer(event)
 	}
-	return forwardEventToAPI(event, apiEndpoint)
+	return forwardEventToAPI(event)
 }
 
 func forwardEventToNATSServer(event cloudevents.Event) error {
@@ -330,18 +326,17 @@ func createPubSubConnection(topic string) (*cenats.Sender, error) {
 	return pubSubConnections[topic], nil
 }
 
-func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
-	fmt.Println("Keptn API endpoint: " + apiEndpoint)
-	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
+func forwardEventToAPI(event cloudevents.Event) error {
+	fmt.Println("Keptn API endpoint: " + env.KeptnAPIEndpoint)
 
 	payload, err := event.MarshalJSON()
-	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
+	req, err := http.NewRequest("POST", env.KeptnAPIEndpoint+"/v1/event", bytes.NewBuffer(payload))
 
 	req.Header.Set("Content-Type", "application/json")
 
-	if apiToken != "" {
+	if env.KeptnAPIToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
-		req.Header.Add("x-token", apiToken)
+		req.Header.Add("x-token", env.KeptnAPIToken)
 	}
 
 	client := getHTTPClient()
