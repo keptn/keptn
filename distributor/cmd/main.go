@@ -191,7 +191,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	forwardReq.Header = req.Header
 
-	parsedProxyURL, err := url.Parse(proxyScheme + "://" + proxyHost + "/" + proxyPath)
+	parsedProxyURL, err := url.Parse(proxyScheme + "://" + strings.TrimSuffix(proxyHost, "/") + "/" + proxyPath)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Could not decode url with scheme: %s, host: %s, path: %s - %s", proxyScheme, proxyHost, proxyPath, err.Error()))
 		rw.WriteHeader(http.StatusInternalServerError)
