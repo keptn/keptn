@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-// EvaluationFinishedEventHandler handles incoming evaluation-done events
+// EvaluationFinishedEventHandler handles incoming evaluation.finished events
 type EvaluationFinishedEventHandler struct {
 	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
@@ -25,7 +25,7 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 
 	err := eh.Event.DataAs(evaluationDoneEventData)
 	if err != nil {
-		eh.KeptnHandler.Logger.Error("Could not parse evaluation-done event: " + err.Error())
+		eh.KeptnHandler.Logger.Error("Could not parse evaluation.finished event: " + err.Error())
 		return err
 	}
 

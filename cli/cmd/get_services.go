@@ -37,7 +37,7 @@ type getServiceStruct struct {
 
 var getService getServiceStruct
 
-// evaluationDoneCmd represents the evaluation-done command
+// getServiceCmd represents the get service command
 var getServiceCmd = &cobra.Command{
 	Use:     "service",
 	Aliases: []string{"services"},

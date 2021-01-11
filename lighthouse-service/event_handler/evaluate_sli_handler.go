@@ -107,7 +107,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
 	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
 	if err != nil {
-		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation-done event.")
+		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation.finished event.")
 		sloFileContent, _ = yaml.Marshal(sloConfig)
 	} else {
 		sloFileContent = []byte(sloFileContentTmp)
@@ -530,7 +530,7 @@ func parseCriteriaString(criteria string) (*criteriaObject, error) {
 	return c, nil
 }
 
-// gets previous evaluation-done events from mongodb-datastore
+// gets previous evaluation.finished events from mongodb-datastore
 func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnv2.GetSLIFinishedEventData, numberOfPreviousResults int, includeResult string) ([]*keptnv2.EvaluationFinishedEventData, []string, error) {
 	var evaluationDoneEvents []*keptnv2.EvaluationFinishedEventData
 	var eventIDs []string
@@ -565,7 +565,7 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnv2.GetSLIFinishedEv
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
-		return nil, nil, errors.New("could not retrieve previous evaluation-done events")
+		return nil, nil, errors.New("could not retrieve previous evaluation.finished events")
 	}
 	previousEvents := &datastoreResult{}
 	err = json.Unmarshal(body, previousEvents)

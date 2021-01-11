@@ -53,7 +53,7 @@ fi
 keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} - failed"
 
-# Send 3 evaluation-done events (result: pass, warning, failed) for each stage (dev, combi1, combi2, combi3) using the CLI
+# Send 3 approval.triggered events (result: pass, warning, failed) for each stage (dev, combi1, combi2, combi3) using the CLI
 
 send_approval_triggered_event $PROJECT combi1 $SERVICE pass
 send_approval_triggered_event $PROJECT combi1 $SERVICE warning

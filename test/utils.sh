@@ -53,9 +53,9 @@ function send_start_evaluation_event() {
   echo "$keptn_context_id"
 }
 
-function get_evaluation_done_event() {
+function get_evaluation_finished_event() {
   keptn_context_id=$1
-  keptn get event evaluation-done --keptn-context="${keptn_context_id}" 2>/dev/null | tail -n +5
+  keptn get event evaluation.finished --keptn-context="${keptn_context_id}" 2>/dev/null | tail -n +5
 }
 
 function get_event() {
@@ -103,21 +103,6 @@ function send_approval_triggered_event() {
 
   response=$(keptn send event --file=tmp_approval_triggered_event.json)
   rm tmp_approval_triggered_event.json
-
-  keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
-  echo "$keptn_context_id"
-}
-
-function send_evaluation_done_event() {
-  PROJECT=$1
-  STAGE=$2
-  SERVICE=$3
-  RESULT=$4
-
-  cat ./test/assets/evaluation_done_event_template.json | jq -r --arg project $PROJECT --arg stage $STAGE --arg service $SERVICE --arg result $RESULT '.data.project=$project | .data.stage=$stage | .data.service=$service | .data.result=$result' > tmp_evaluation_done_event.json
-
-  response=$(keptn send event --file=tmp_evaluation_done_event.json)
-  rm tmp_evaluation_done_event.json
 
   keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
   echo "$keptn_context_id"
