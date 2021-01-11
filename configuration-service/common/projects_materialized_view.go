@@ -96,6 +96,24 @@ func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	return nil
 }
 
+// DeleteUpstreamInfo deletes the Upstream Rpository URL and git user of a project
+func (mv *projectsMaterializedView) DeleteUpstreamInfo(projectName string) error {
+	existingProject, err := mv.GetProject(projectName)
+	if err != nil {
+		return err
+	}
+	if existingProject == nil {
+		return nil
+	}
+	existingProject.GitUser = ""
+	existingProject.GitRemoteURI = ""
+	if err := mv.updateProject(existingProject); err != nil {
+		mv.Logger.Error(fmt.Sprintf("could not delete upstream credentials of project %s: %s", projectName, err.Error()))
+		return err
+	}
+	return nil
+}
+
 // GetProjects returns all projects
 func (mv *projectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
 	return mv.ProjectRepo.GetProjects()

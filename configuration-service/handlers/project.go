@@ -164,14 +164,17 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 		if err == nil && credentials != nil {
 			logger.Debug("Storing Git credentials for project " + params.ProjectName)
 
+			mv := common.GetProjectsMaterializedView()
 			logger.Debug("Add or update Git origin and push changes for project " + params.ProjectName)
 			err = common.UpdateOrCreateOrigin(params.Project.ProjectName)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
+				if deleteErr := mv.DeleteUpstreamInfo(params.ProjectName); deleteErr != nil {
+					logger.Error(fmt.Sprintf("Could not delete upstream info from materialized view: %s", err.Error()))
+				}
 				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 			}
 
-			mv := common.GetProjectsMaterializedView()
 			if err := mv.UpdateUpstreamInfo(params.Project.ProjectName, credentials.RemoteURI, credentials.User); err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository info for project %s: %v", params.Project.ProjectName, err))
 				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
