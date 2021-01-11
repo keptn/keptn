@@ -14,7 +14,7 @@
 
 # max age that images should have before they are marked as outdated
 MAX_AGE=30
-IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
+IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller")
 
 # ensure the params/variables are set
 if [ -z "$REGISTRY_USER" ]; then
@@ -130,14 +130,20 @@ for s in ${IMAGES[@]}; do
   # get all outdated commit hash tags
   outdated_commit_hash_tags=$(get_outdated_commit_hash_tags $s $MAX_AGE)
 
-  outdated_datetime_tags=$(get_outdated_datetime_tags $s "202003" $MAX_AGE)
+  outdated_datetime_tags=$(get_outdated_datetime_tags $s "2020" $MAX_AGE)
 
-#  # get all outdated tag where tag contains "feature"
-#  outdated_feature_tags=$(get_outdated_images $s "feature" $MAX_AGE)
-#  # get all outdated tag where tag contains "bug"
-#  outdated_bug_tags=$(get_outdated_images $s "bug" $MAX_AGE)
-#  # get all outdated tag where tag contains "patch"
-#  outdated_patch_tags=$(get_outdated_images $s "patch" $MAX_AGE)
+  # get all outdated tag where tag contains "dev-PR"
+  # outdated_dev_pr_tags=$(get_outdated_images $s "dev-PR" $MAX_AGE)
+
+  # ToDo: Also Check for "x.y.z-dev.20" tags (e.g., 0.8.0-dev.20210101)
+  # outdated_dev_tags=$(get_outdated_images $s "dev.20" $MAX_AGE)
+
+  # get all outdated tag where tag contains "feature"
+  outdated_feature_tags=$(get_outdated_images $s "feature" $MAX_AGE)
+  # get all outdated tag where tag contains "bug"
+  outdated_bug_tags=$(get_outdated_images $s "bug" $MAX_AGE)
+  # get all outdated tag where tag contains "patch"
+  outdated_patch_tags=$(get_outdated_images $s "patch" $MAX_AGE)
 
   # get all outdated tag where tag contains "dirty"
   outdated_dirty_tags=$(get_outdated_images $s "dirty" $MAX_AGE)
@@ -148,6 +154,14 @@ for s in ${IMAGES[@]}; do
 
   for tag in ${outdated_datetime_tags}; do
     delete_tag $s $tag
+  done
+
+  for tag in ${outdated_dev_pr_tags}; do
+    echo "dummy" $s $tag
+  done
+
+  for tag in ${outdated_dev_tags}; do
+    echo "dummy" $s $tag
   done
 
   for tag in ${outdated_feature_tags}; do
