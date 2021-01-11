@@ -315,7 +315,7 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 	})
 
 	if errObj != nil {
-		msg := fmt.Sprintf("Could not update upstream repository of project %s: %s", *params.Name, errObj.Message)
+		msg := fmt.Sprintf("Could not update upstream repository of project %s: %s", *params.Name, *errObj.Message)
 
 		if delErr := pm.deleteUpstreamRepoCredentials(params); delErr != nil {
 			pm.logger.Error(fmt.Sprintf("Could not delete upstream repo credentials: %s", delErr.Error()))
