@@ -307,12 +307,21 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 		}
 	}
 
-	pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
+	_, errObj := pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
 		GitRemoteURI: params.GitRemoteURL,
 		GitToken:     params.GitToken,
 		GitUser:      params.GitUser,
 		ProjectName:  *params.Name,
 	})
+
+	if errObj != nil {
+		msg := fmt.Sprintf("Could not update upstream repository of project %s: %s", *params.Name, errObj.Message)
+
+		if delErr := pm.deleteUpstreamRepoCredentials(params); delErr != nil {
+			pm.logger.Error(fmt.Sprintf("Could not delete upstream repo credentials: %s", delErr.Error()))
+		}
+		return pm.logAndReturnError(msg)
+	}
 	return nil
 }
 
@@ -460,6 +469,16 @@ func (pm *projectManager) createUpstreamRepoCredentials(params *operations.Creat
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
 	pm.logger.Info("stored git credentials for project " + *params.Name)
+	return nil
+}
+
+func (pm *projectManager) deleteUpstreamRepoCredentials(params *operations.CreateProjectParams) error {
+	pm.logger.Info("Deleting git credentials for project " + *params.Name)
+
+	if err := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(*params.Name)); err != nil {
+		return fmt.Errorf("could not delete git credentials: %s", err.Error())
+	}
+	pm.logger.Info("deleted git credentials for project " + *params.Name)
 	return nil
 }
 
