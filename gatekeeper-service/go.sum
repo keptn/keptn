@@ -176,6 +176,8 @@ github.com/keptn/go-utils v0.6.3-0.20201104145324-b4fabd54ef88 h1:csTLzDPkYAvqz7
 github.com/keptn/go-utils v0.6.3-0.20201104145324-b4fabd54ef88/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
 github.com/keptn/go-utils v0.8.0-alpha h1:h+yUaI8pmM3VqxRgBQAENrFZ7GafyIWMOPfwHkohkAk=
 github.com/keptn/go-utils v0.8.0-alpha/go.mod h1:SmTTNxBonQXC4/nxkqAWtVm4WjqEfu8r7EPQe8LZ1/Y=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81 h1:yiTImA9jc7SNdnaEcCChCf1wMwM42I9Lc1vPBx4j5SM=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81/go.mod h1:SmTTNxBonQXC4/nxkqAWtVm4WjqEfu8r7EPQe8LZ1/Y=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
