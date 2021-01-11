@@ -7,6 +7,9 @@ exemptLabels:
   - pinned
   - security
   - future
+  - "help wanted"
+  - "integrations"
+  - "known issue"
   - "area:security"
 # Set to true to ignore issues in a milestone (defaults to false)
 exemptMilestones: true
