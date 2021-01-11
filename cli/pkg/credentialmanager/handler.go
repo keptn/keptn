@@ -3,6 +3,7 @@ package credentialmanager
 import (
 	"bufio"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"log"
 	"net/url"
 	"os"
@@ -153,10 +154,9 @@ func initChecks(autoApplyNewContext bool) {
 }
 
 func getCurrentContextFromKubeConfig() error {
+	kubeConfigFile.CurrentContext = ""
+	keptnContext = ""
 	if MockAuthCreds || MockKubeConfigCheck {
-		// Do nothing
-		kubeConfigFile.CurrentContext = ""
-		keptnContext = ""
 		return nil
 	}
 
@@ -171,12 +171,14 @@ func getCurrentContextFromKubeConfig() error {
 
 	fileContent, err := file.ReadFile(kubeconfig)
 	if err != nil {
-		return err
+		logging.PrintLog("Warning: could not open KUBECONFIG file: "+err.Error(), logging.InfoLevel)
+		return nil
 	}
 
 	err = yaml.Unmarshal([]byte(fileContent), &kubeConfigFile)
 	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
+		logging.PrintLog("Warning: could not parse KUBECONFIG file: "+err.Error(), logging.InfoLevel)
+		return nil
 	}
 	return nil
 }
@@ -193,7 +195,7 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 	}
 	// Setting keptnContext from ~/.keptn/config file
 	keptnContext = cliConfig.CurrentContext
-	if keptnContext != kubeConfigFile.CurrentContext {
+	if kubeConfigFile.CurrentContext != "" && keptnContext != kubeConfigFile.CurrentContext {
 		fmt.Printf("Kube context has been changed to %s", kubeConfigFile.CurrentContext)
 		fmt.Println()
 		if !autoApplyNewContext && keptnContext != "" {

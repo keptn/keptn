@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -224,7 +225,7 @@ func authenticate(endPoint string, apiToken string) error {
 func smartKeptnCLIAuth() (string, error) {
 	keptnInstallations, err := keptnutils.GetKeptnManagedNamespace(false)
 	if err != nil {
-		return "", err
+		return "", errors.New("Could not get current Kubernetes context from KUBECONFIG: " + err.Error())
 	}
 
 	if len(keptnInstallations) > 1 {
