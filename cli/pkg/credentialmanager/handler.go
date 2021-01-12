@@ -3,7 +3,6 @@ package credentialmanager
 import (
 	"bufio"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"log"
 	"net/url"
 	"os"
@@ -171,13 +170,13 @@ func getCurrentContextFromKubeConfig() error {
 
 	fileContent, err := file.ReadFile(kubeconfig)
 	if err != nil {
-		logging.PrintLog("Warning: could not open KUBECONFIG file: "+err.Error(), logging.InfoLevel)
+		fmt.Fprintf(os.Stderr, "Warning: could not open KUBECONFIG file: "+err.Error())
 		return nil
 	}
 
 	err = yaml.Unmarshal([]byte(fileContent), &kubeConfigFile)
 	if err != nil {
-		logging.PrintLog("Warning: could not parse KUBECONFIG file: "+err.Error(), logging.InfoLevel)
+		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error())
 		return nil
 	}
 	return nil
