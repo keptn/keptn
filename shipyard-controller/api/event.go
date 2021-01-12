@@ -506,7 +506,17 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	shipyard, err := common.GetShipyard(eventScope)
 	if err != nil {
-		sc.logger.Error("could not retrieve shipyard: " + err.Error())
+		msg := "could not retrieve shipyard: " + err.Error()
+		sc.logger.Error(msg)
+		return sc.sendTaskSequenceFinishedEvent(event.Shkeptncontext, &keptnv2.EventData{
+			Project: eventScope.Project,
+			Stage:   eventScope.Stage,
+			Service: eventScope.Service,
+			Labels:  eventScope.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: msg,
+		}, taskSequenceName)
 	}
 
 	err = common.ValidateShipyardVersion(shipyard)
