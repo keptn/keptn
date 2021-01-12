@@ -90,9 +90,9 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		EventType:     eventType,
 		NumberOfPages: *eventStruct.NumOfPages,
 	}
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 	if !*getEventParams.Wait {
-		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		events, modErr := eventHandler.GetEvents(filter)
 
 		if modErr != nil {
@@ -111,10 +111,11 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 	} else {
 
 		watcher := apiutils.NewEventWatcher(
+			eventHandler,
 			apiutils.WithEventFilter(*filter),
-			apiutils.WithAuthenticatedSortingEventGetter(endPoint.String(), apiToken),
 			apiutils.WithCustomInterval(apiutils.NewConfigurableSleeper(5*time.Second)),
-			apiutils.WithStartTime(time.Time{}),
+			apiutils.WithStartTime(time.Time{}), // this makes sure that we also capture old events
+			apiutils.WithEventManipulator(apiutils.SortByTime),
 		)
 		eventChan, _ := watcher.Watch(context.Background())
 		for events := range eventChan {
