@@ -377,6 +377,8 @@ github.com/keptn/go-utils v0.7.2-alpha h1:yoTmI6Od47AjPxGZNsns/ZGWl4mO5a0+bWEuvy
 github.com/keptn/go-utils v0.7.2-alpha/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
 github.com/keptn/go-utils v0.8.0-alpha h1:h+yUaI8pmM3VqxRgBQAENrFZ7GafyIWMOPfwHkohkAk=
 github.com/keptn/go-utils v0.8.0-alpha/go.mod h1:SmTTNxBonQXC4/nxkqAWtVm4WjqEfu8r7EPQe8LZ1/Y=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81 h1:yiTImA9jc7SNdnaEcCChCf1wMwM42I9Lc1vPBx4j5SM=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81/go.mod h1:SmTTNxBonQXC4/nxkqAWtVm4WjqEfu8r7EPQe8LZ1/Y=
 github.com/keptn/kubernetes-utils v0.2.0 h1:DEjTzixk7TJ6i2HopTlw/d4b1perJR1gmyOOCrWX5cA=
 github.com/keptn/kubernetes-utils v0.2.0/go.mod h1:YoWRuV28Guz5/mzjo9jVxtMsWAEn0MDXwxK/ScAQlZc=
 github.com/keptn/kubernetes-utils v0.2.1-0.20200908105128-d6bbdd55d8d2 h1:I0lfk4UfdG2oLC1Idky2vgXPsyYUNPUEDJ/8rrQlZHQ=
