@@ -160,21 +160,20 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 		logger.Debug("Updating project " + params.ProjectName)
 
+		mv := common.GetProjectsMaterializedView()
+		logger.Debug("Add or update Git origin and push changes for project " + params.ProjectName)
+		projectInfo, err := mv.GetProject(params.Project.ProjectName)
+		if err != nil {
+			msg := "could not read project information: " + err.Error()
+			logger.Error(msg)
+			return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(msg)})
+		}
+
+		oldRemoteURL := projectInfo.GitRemoteURI
+		oldRemoteUser := projectInfo.GitUser
 		credentials, err := common.GetCredentials(params.Project.ProjectName)
 		if err == nil && credentials != nil {
 			logger.Debug("Storing Git credentials for project " + params.ProjectName)
-
-			mv := common.GetProjectsMaterializedView()
-			logger.Debug("Add or update Git origin and push changes for project " + params.ProjectName)
-			projectInfo, err := mv.GetProject(params.Project.ProjectName)
-			if err != nil {
-				msg := "could not read project information: " + err.Error()
-				logger.Error(msg)
-				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(msg)})
-			}
-
-			oldRemoteURL := projectInfo.GitRemoteURI
-			oldRemoteUser := projectInfo.GitUser
 
 			err = common.UpdateOrCreateOrigin(params.Project.ProjectName)
 			if err != nil {
