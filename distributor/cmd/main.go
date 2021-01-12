@@ -368,7 +368,7 @@ func forwardEventToAPI(event cloudevents.Event) error {
 
 func getHTTPClient() *http.Client {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: env.VerifySSL},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL},
 	}
 	client := &http.Client{Transport: tr}
 	return client
