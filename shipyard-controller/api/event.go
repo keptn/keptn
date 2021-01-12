@@ -509,6 +509,20 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		sc.logger.Error("could not retrieve shipyard: " + err.Error())
 	}
 
+	err = common.ValidateShipyardVersion(shipyard)
+	if err != nil {
+		sc.logger.Error("invalid shipyard version: " + err.Error())
+		return sc.sendTaskSequenceFinishedEvent(event.Shkeptncontext, &keptnv2.EventData{
+			Project: eventScope.Project,
+			Stage:   eventScope.Stage,
+			Service: eventScope.Service,
+			Labels:  eventScope.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: "Found shipyard.yaml with invalid version. Please upgrade the shipyard.yaml of the project using the Keptn CLI: 'keptn upgrade project " + eventScope.Project + " --shipyard'. '",
+		}, taskSequenceName)
+	}
+
 	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
 	if err != nil && err == errNoTaskSequence {
 		sc.logger.Info("no task sequence with name " + taskSequenceName + "found in stage " + stageName)
