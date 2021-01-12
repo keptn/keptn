@@ -15,11 +15,13 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/ghodss/yaml"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -36,6 +38,7 @@ type GetEventStruct struct {
 	PageSize     *string
 	Output       *string
 	NumOfPages   *int
+	Wait         *bool
 }
 
 var getEventParams GetEventStruct
@@ -52,17 +55,16 @@ var getEventCmd = &cobra.Command{
 }
 
 func getEvent(eventStruct GetEventStruct, args []string) error {
-	if len(args) == 0 {
-		return errors.New("please provide an event type as an argument")
-	}
 
-	pageSize := setParameterValue(*eventStruct.PageSize, "1")
-
-	eventType := args[0]
-
+	var eventType = ""
 	var endPoint url.URL
 	var apiToken string
 	var err error
+
+	if len(args) > 0 {
+		eventType = args[0]
+	}
+
 	if !mocking {
 		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 	} else {
@@ -80,32 +82,47 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			endPointErr)
 	}
 
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
-	events, modErr := eventHandler.GetEvents(&apiutils.EventFilter{
+	filter := &apiutils.EventFilter{
 		KeptnContext:  *eventStruct.KeptnContext,
 		Service:       *eventStruct.Service,
 		Stage:         *eventStruct.Stage,
 		Project:       *eventStruct.Project,
 		EventType:     eventType,
-		PageSize:      pageSize,
 		NumberOfPages: *eventStruct.NumOfPages,
-	})
-
-	if modErr != nil {
-		logging.PrintLog(*modErr.Message, logging.QuietLevel)
-		return errors.New(*modErr.Message)
 	}
 
-	if len(events) == 0 {
-		logging.PrintLog("No event returned", logging.QuietLevel)
-		return nil
-	} else if len(events) == 1 {
-		printEvents(events[0], *eventStruct.Output)
+	if !*getEventParams.Wait {
+		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		events, modErr := eventHandler.GetEvents(filter)
+
+		if modErr != nil {
+			logging.PrintLog(*modErr.Message, logging.QuietLevel)
+			return errors.New(*modErr.Message)
+		}
+
+		if len(events) == 0 {
+			logging.PrintLog("No event returned", logging.QuietLevel)
+			return nil
+		} else if len(events) == 1 {
+			printEvents(events[0], *eventStruct.Output)
+		} else {
+			printEvents(events, *eventStruct.Output)
+		}
 	} else {
-		printEvents(events, *eventStruct.Output)
-	}
 
+		watcher := apiutils.NewEventWatcher(
+			apiutils.WithEventFilter(*filter),
+			apiutils.WithAuthenticatedSortingEventGetter(endPoint.String(), apiToken),
+			apiutils.WithCustomInterval(apiutils.NewConfigurableSleeper(5*time.Second)),
+			apiutils.WithStartTime(time.Time{}),
+		)
+		eventChan, _ := watcher.Watch(context.Background())
+		for events := range eventChan {
+			for _, e := range events {
+				printEvents(e, *eventStruct.Output)
+			}
+		}
+	}
 	return nil
 }
 
@@ -143,11 +160,6 @@ func init() {
 
 	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
 		"Number of pages that should be returned (Default 1).")
-}
 
-func setParameterValue(value string, defaultValue string) string {
-	if len(value) == 0 {
-		return defaultValue
-	}
-	return value
+	getEventParams.Wait = getEventCmd.Flags().BoolP("wait", "w", false, "Print event stream")
 }

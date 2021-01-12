@@ -30,6 +30,7 @@ type createProjectCmdParams struct {
 	GitToken        *string
 	RemoteURL       *string
 	ShipyardContent string
+	Wait            *bool
 }
 
 var createProjectParams *createProjectCmdParams
@@ -210,4 +211,5 @@ func init() {
 	createProjectParams.GitUser = crProjectCmd.Flags().StringP("git-user", "u", "", "The git user of the upstream target")
 	createProjectParams.GitToken = crProjectCmd.Flags().StringP("git-token", "t", "", "The git token of the git user")
 	createProjectParams.RemoteURL = crProjectCmd.Flags().StringP("git-remote-url", "r", "", "The remote url of the upstream target")
+	createProjectParams.Wait = crProjectCmd.Flags().BoolP("wait", "w", false, "Print event stream")
 }

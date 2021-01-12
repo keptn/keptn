@@ -134,7 +134,7 @@ func runVersionCheck() {
 		}
 
 		if clusterVersion != Version {
-			fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.", Version, clusterVersion)
+			fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.\n", Version, clusterVersion)
 		}
 	}
 

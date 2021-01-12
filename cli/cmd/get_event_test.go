@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"net/http"
 	"net/http/httptest"
@@ -13,18 +11,6 @@ import (
 
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
-}
-
-func TestGetEventCmdEmptyInput(t *testing.T) {
-	credentialmanager.MockAuthCreds = true
-
-	cmd := fmt.Sprintf("get event --project=%s",
-		"sockshop")
-	_, err := executeActionCommandC(cmd)
-
-	if !errorContains(err, "please provide an event type as an argument") {
-		t.Errorf("missing expected error, but got %v", err)
-	}
 }
 
 func TestGetTriggeredEvent(t *testing.T) {
