@@ -3,7 +3,6 @@ import {Service} from "./service";
 import {Trace} from "./trace";
 import {EventTypes} from "./event-types";
 import {Root} from "./root";
-import {Sequence} from "./sequence";
 
 export class Project {
   projectName: string;
@@ -13,7 +12,7 @@ export class Project {
 
   stages: Stage[];
   services: Service[];
-  sequences: Sequence[];
+  sequences: Root[];
 
   getServices(): Service[] {
     if(!this.services) {

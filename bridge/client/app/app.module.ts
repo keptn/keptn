@@ -36,10 +36,12 @@ import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
 import { DtCopyToClipboardModule } from "@dynatrace/barista-components/copy-to-clipboard";
 import { DtToggleButtonGroupModule } from "@dynatrace/barista-components/toggle-button-group";
+import {DtQuickFilterModule} from "@dynatrace/barista-components/experimental/quick-filter";
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
+
 import { MomentModule } from 'ngx-moment';
 import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
 import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
@@ -147,6 +149,7 @@ registerLocaleData(localeEn, 'en');
     DtTopBarNavigationModule,
     DtCopyToClipboardModule,
     DtToggleButtonGroupModule,
+    DtQuickFilterModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
