@@ -170,13 +170,13 @@ func getCurrentContextFromKubeConfig() error {
 
 	fileContent, err := file.ReadFile(kubeconfig)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: could not open KUBECONFIG file: "+err.Error())
+		fmt.Fprintf(os.Stderr, "Warning: could not open KUBECONFIG file: "+err.Error()+"\n")
 		return nil
 	}
 
 	err = yaml.Unmarshal([]byte(fileContent), &kubeConfigFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error())
+		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error()+"\n")
 		return nil
 	}
 	return nil
