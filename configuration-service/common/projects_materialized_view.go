@@ -44,7 +44,7 @@ func GetProjectsMaterializedView() *projectsMaterializedView {
 	if instance == nil {
 		instance = &projectsMaterializedView{
 			ProjectRepo:     &MongoDBProjectRepo{},
-			EventsRetriever: keptnapi.NewEventHandler(os.Getenv("DATASTORE")),
+			EventsRetriever: keptnapi.NewEventHandler(os.Getenv("DATASTORE_URI")),
 			Logger:          keptncommon.NewLogger("", "", "configuration-service"),
 		}
 	}
@@ -314,8 +314,8 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 				return errors.New("no matching deployment.triggered event found")
 			}
 
-			triggeredData := keptnv2.DeploymentTriggeredEventData{}
-			err := keptnv2.Decode(matchingTriggeredEvent.Data, &triggeredData)
+			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
+			err := keptnv2.Decode(matchingTriggeredEvent.Data, triggeredData)
 			if err != nil {
 				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
 			}
@@ -428,7 +428,7 @@ func updateServiceInStage(project *models.ExpandedProject, stage string, service
 func findMatchingTriggeredEvent(events []*goutilsmodels.KeptnContextExtendedCE, triggeredID string) *goutilsmodels.KeptnContextExtendedCE {
 	var matchingTriggeredEvent *goutilsmodels.KeptnContextExtendedCE = nil
 	for _, e := range events {
-		if e.Triggeredid == triggeredID {
+		if e.ID == triggeredID {
 			matchingTriggeredEvent = e
 			break
 		}

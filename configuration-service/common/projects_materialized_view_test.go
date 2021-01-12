@@ -920,15 +920,6 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 							return nil
 						}
 						return errors.New("project was not updated correctly")
-						/*
-							if project.Stages[0].Services[0].LastEventTypes[keptn.DeploymentFinishedEventType].KeptnContext == "test-context" &&
-								project.Stages[0].Services[0].DeployedImage == "test-image:0.1" {
-								return nil
-							}
-							return errors.New("project was not updated correctly")
-
-						*/
-						return nil
 					},
 					DeleteProjectMock: nil,
 					GetProjectsMock:   nil,
@@ -948,7 +939,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 								},
 								Deployment: keptnv2.DeploymentWithStrategy{},
 							},
-							Triggeredid: "the-triggered-id",
+							ID: "the-triggered-id",
 						}
 						return []*goutilsmodels.KeptnContextExtendedCE{&e1, &e2}, nil
 
