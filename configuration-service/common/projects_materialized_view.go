@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/ghodss/yaml"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -23,7 +24,7 @@ var ErrStageNotFound = errors.New("stage not found")
 // ErrServiceNotFound indicates that a service has not been found
 var ErrServiceNotFound = errors.New("service not found")
 
-// ErrOpenRemediationNotFound indeicates that no open remediation has been found
+// ErrOpenRemediationNotFound indicates that no open remediation has been found
 var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 var instance *projectsMaterializedView
@@ -73,7 +74,23 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 
 	existingProject.Shipyard = shipyardContent
 
+	if err := setShipyardVersion(existingProject); err != nil {
+		return err
+	}
+
 	return mv.updateProject(existingProject)
+}
+
+func setShipyardVersion(existingProject *models.ExpandedProject) error {
+	shipyard := &keptnv2.Shipyard{}
+	if err := yaml.Unmarshal([]byte(existingProject.Shipyard), shipyard); err != nil {
+		return errors.New("could not parse shipyard file content to shipyard struct: " + err.Error())
+	}
+	if existingProject.ShipyardVersion != shipyard.ApiVersion {
+		existingProject.ShipyardVersion = shipyard.ApiVersion
+		return nil
+	}
+	return nil
 }
 
 // UpdateUpstreamInfo updates the Upstream Repository URL and git user of a project
@@ -98,12 +115,30 @@ func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 
 // GetProjects returns all projects
 func (mv *projectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
-	return mv.ProjectRepo.GetProjects()
+	projects, err := mv.ProjectRepo.GetProjects()
+	if err != nil {
+		return nil, err
+	}
+	for _, project := range projects {
+		if err := setShipyardVersion(project); err != nil {
+			// log the error but continue
+			mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+		}
+	}
+	return projects, nil
 }
 
 // GetProject returns a project by its name
 func (mv *projectsMaterializedView) GetProject(projectName string) (*models.ExpandedProject, error) {
-	return mv.ProjectRepo.GetProject(projectName)
+	project, err := mv.ProjectRepo.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+	if err := setShipyardVersion(project); err != nil {
+		// log the error but continue
+		mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+	}
+	return project, nil
 }
 
 // DeleteProject deletes a project
