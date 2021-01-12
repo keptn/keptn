@@ -383,7 +383,6 @@ func createHTTPConnection() {
 	httpClient = createRecipientConnection()
 
 	eventEndpoint := getHTTPPollingEndpoint()
-	eventEndpointAuthToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
 	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
 
 	pollingInterval, err := strconv.ParseInt(os.Getenv("HTTP_POLLING_INTERVAL"), 10, 64)
@@ -395,16 +394,18 @@ func createHTTPConnection() {
 
 	for {
 		<-pollingTicker.C
-		pollHTTPEventSource(eventEndpoint, eventEndpointAuthToken, topics, httpClient)
+		pollHTTPEventSource(eventEndpoint, env.KeptnAPIToken, topics, httpClient)
 	}
 }
 
 func getHTTPPollingEndpoint() string {
-	endpoint := os.Getenv("HTTP_EVENT_POLLING_ENDPOINT")
+	endpoint := env.KeptnAPIEndpoint
 	if endpoint == "" {
 		if endpoint == "" {
 			return "http://shipyard-controller:8080/v1/event/triggered"
 		}
+	} else {
+		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/shipyard-controller/v1/event/triggered"
 	}
 
 	parsedURL, _ := url.Parse(endpoint)
