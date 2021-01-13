@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"math"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/keptn/keptn/cli/pkg/docker"
 
@@ -37,12 +39,14 @@ import (
 )
 
 type newArtifactStruct struct {
-	Project  *string `json:"project"`
-	Service  *string `json:"service"`
-	Stage    *string `json:"stage"`
-	Image    *string `json:"image"`
-	Tag      *string `json:"tag"`
-	Sequence *string `json:"sequence"`
+	Project   *string `json:"project"`
+	Service   *string `json:"service"`
+	Stage     *string `json:"stage"`
+	Image     *string `json:"image"`
+	Tag       *string `json:"tag"`
+	Sequence  *string `json:"sequence"`
+	Watch     *bool
+	WatchTime *int
 }
 
 var newArtifact newArtifactStruct
@@ -153,10 +157,21 @@ For pulling an image from a private registry, we would like to refer to the Kube
 
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
-		_, err2 := apiHandler.SendEvent(apiEvent)
+		eventContext, err2 := apiHandler.SendEvent(apiEvent)
 		if err2 != nil {
 			logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
 			return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err2.Message)
+		}
+
+		if *newArtifact.Watch {
+			eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+			filter := apiutils.EventFilter{
+				KeptnContext: *eventContext.KeptnContext,
+				Project:      *newArtifact.Project,
+				Stage:        *newArtifact.Stage,
+				Service:      *newArtifact.Service,
+			}
+			runEventWaiter(eventHandler, filter, time.Duration(*newArtifact.WatchTime)*time.Second)
 		}
 		return nil
 	},
@@ -196,4 +211,8 @@ func init() {
 
 	newArtifact.Sequence = newArtifactCmd.Flags().StringP("sequence", "", "", "The name of the sequence to be triggered")
 	newArtifactCmd.MarkFlagRequired("sequence")
+
+	newArtifact.Watch = newArtifactCmd.Flags().BoolP("watch", "w", false, "Print event stream")
+
+	newArtifact.WatchTime = newArtifactCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
 }

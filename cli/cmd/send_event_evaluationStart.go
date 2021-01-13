@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
@@ -41,6 +42,8 @@ type evaluationStartStruct struct {
 	Start     *string            `json:"start"`
 	End       *string            `json:"end"`
 	Labels    *map[string]string `json:"labels"`
+	Watch     *bool
+	WatchTime *int
 }
 
 var evaluationStart evaluationStartStruct
@@ -147,6 +150,17 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 			if response == nil {
 				logging.PrintLog("No event returned", logging.QuietLevel)
 				return nil
+			}
+
+			if *evaluationStart.Watch {
+				eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+				filter := apiutils.EventFilter{
+					KeptnContext: *response.KeptnContext,
+					Project:      *evaluationStart.Project,
+					Stage:        *evaluationStart.Stage,
+					Service:      *evaluationStart.Service,
+				}
+				runEventWaiter(eventHandler, filter, time.Duration(*evaluationStart.WatchTime)*time.Second)
 			}
 
 			return nil
@@ -266,4 +280,8 @@ func init() {
 	evaluationStart.End = evaluationStartCmd.Flags().StringP("end", "", "",
 		"The end point to which the evaluation data should be gathered in UTC (can not be used together with --timeframe)")
 	evaluationStart.Labels = evaluationStartCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
+
+	evaluationStart.Watch = evaluationStartCmd.Flags().BoolP("watch", "w", false, "Print event stream")
+
+	evaluationStart.WatchTime = evaluationStartCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
 }

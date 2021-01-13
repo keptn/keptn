@@ -15,15 +15,13 @@
 package cmd
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"os"
 	"time"
 
-	"github.com/ghodss/yaml"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -38,7 +36,8 @@ type GetEventStruct struct {
 	PageSize     *string
 	Output       *string
 	NumOfPages   *int
-	Wait         *bool
+	Watch        *bool
+	WatchTime    *int
 }
 
 var getEventParams GetEventStruct
@@ -92,7 +91,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 	}
 	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
-	if !*getEventParams.Wait {
+	if !*getEventParams.Watch {
 		events, modErr := eventHandler.GetEvents(filter)
 
 		if modErr != nil {
@@ -109,32 +108,9 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			printEvents(events, *eventStruct.Output)
 		}
 	} else {
-
-		watcher := apiutils.NewEventWatcher(
-			eventHandler,
-			apiutils.WithEventFilter(*filter),
-			apiutils.WithCustomInterval(apiutils.NewConfigurableSleeper(5*time.Second)),
-			apiutils.WithStartTime(time.Time{}), // this makes sure that we also capture old events
-			apiutils.WithEventManipulator(apiutils.SortByTime),
-		)
-		eventChan, _ := watcher.Watch(context.Background())
-		for events := range eventChan {
-			for _, e := range events {
-				printEvents(e, *eventStruct.Output)
-			}
-		}
+		runEventWaiter(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
 	}
 	return nil
-}
-
-func printEvents(events interface{}, outputType string) {
-	if outputType == "yaml" {
-		eventsYAML, _ := yaml.Marshal(events)
-		fmt.Println(string(eventsYAML))
-	} else {
-		eventsJSON, _ := json.MarshalIndent(events, "", "    ")
-		fmt.Println(string(eventsJSON))
-	}
 }
 
 func init() {
@@ -162,5 +138,7 @@ func init() {
 	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
 		"Number of pages that should be returned (Default 1).")
 
-	getEventParams.Wait = getEventCmd.Flags().BoolP("wait", "w", false, "Print event stream")
+	getEventParams.Watch = getEventCmd.Flags().BoolP("watch", "w", false, "Print event stream")
+
+	getEventParams.WatchTime = getEventCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
 }
