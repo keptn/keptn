@@ -73,6 +73,9 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 	}
 
 	existingProject.Shipyard = shipyardContent
+	if err := setShipyardVersion(existingProject); err != nil {
+		mv.Logger.Error(fmt.Sprintf("could not update shipyard version fo project %s: %s"+projectName, err.Error()))
+	}
 
 	return mv.updateProject(existingProject)
 }
