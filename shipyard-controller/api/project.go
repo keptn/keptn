@@ -332,6 +332,16 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 				Name:         params.Name,
 			}); createErr != nil {
 				pm.logger.Error(fmt.Sprintf("Could not restore previous upstream repo credentials: %s", createErr.Error()))
+			} else {
+				// restore the upstream on the configuration service
+				if _, restoreErrObj := pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
+					GitRemoteURI: oldSecret.RemoteURI,
+					GitToken:     oldSecret.Token,
+					GitUser:      oldSecret.User,
+					ProjectName:  *params.Name,
+				}); restoreErrObj != nil {
+					pm.logger.Error(fmt.Sprintf("Could not restore previous upstream on configuration service: %s", *restoreErrObj.Message))
+				}
 			}
 		} else {
 			if delErr := pm.deleteUpstreamRepoCredentials(params); delErr != nil {
