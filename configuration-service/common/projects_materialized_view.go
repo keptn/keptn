@@ -134,9 +134,11 @@ func (mv *projectsMaterializedView) GetProject(projectName string) (*models.Expa
 	if err != nil {
 		return nil, err
 	}
-	if err := setShipyardVersion(project); err != nil {
-		// log the error but continue
-		mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+	if project != nil {
+		if err := setShipyardVersion(project); err != nil {
+			// log the error but continue
+			mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+		}
 	}
 	return project, nil
 }
