@@ -498,7 +498,8 @@ func getEventsFromEndpoint(endpoint string, token string, topic string) ([]*kept
 			req.Header.Add("x-token", token)
 		}
 
-		resp, err := http.DefaultClient.Do(req)
+		httpClient := getHTTPClient()
+		resp, err := httpClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
