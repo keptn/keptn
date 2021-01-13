@@ -169,6 +169,11 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 	}
 }
 
+const testShipyardContent = `apiVersion: "spec.keptn.sh/0.2.0"
+kind: "Shipyard"
+metadata:
+  name: "shipyard-sockshop"`
+
 func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 	type fields struct {
 		ProjectRepo ProjectRepo
@@ -192,7 +197,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 						return &models.ExpandedProject{ProjectName: "test-project"}, nil
 					},
 					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if project.Shipyard == "test-content" {
+						if project.Shipyard == testShipyardContent && project.ShipyardVersion == "spec.keptn.sh/0.2.0" {
 							return nil
 						}
 						return errors.New("shipyard content was not updated properly")
@@ -203,7 +208,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 			},
 			args: args{
 				projectName:     "test-project",
-				shipyardContent: "test-content",
+				shipyardContent: testShipyardContent,
 			},
 			wantErr: false,
 		},
@@ -222,7 +227,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 			},
 			args: args{
 				projectName:     "test-project",
-				shipyardContent: "test-content",
+				shipyardContent: testShipyardContent,
 			},
 			wantErr: true,
 		},
