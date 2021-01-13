@@ -74,21 +74,24 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 
 	existingProject.Shipyard = shipyardContent
 
-	if err := setShipyardVersion(existingProject); err != nil {
-		return err
-	}
-
 	return mv.updateProject(existingProject)
 }
 
 func setShipyardVersion(existingProject *models.ExpandedProject) error {
+	const previousShipyardVersion = "spec.keptn.sh/0.1.7"
+	if existingProject.Shipyard == "" {
+		// if the field is not set, it can only be 0.1.7, since in Keptn 0.8 we ensure that the shipyard content is always included in the materialized view
+		existingProject.ShipyardVersion = previousShipyardVersion
+		return nil
+	}
 	shipyard := &keptnv2.Shipyard{}
 	if err := yaml.Unmarshal([]byte(existingProject.Shipyard), shipyard); err != nil {
 		return errors.New("could not parse shipyard file content to shipyard struct: " + err.Error())
 	}
-	if existingProject.ShipyardVersion != shipyard.ApiVersion {
+	if shipyard.ApiVersion != "" {
 		existingProject.ShipyardVersion = shipyard.ApiVersion
-		return nil
+	} else {
+		existingProject.ShipyardVersion = previousShipyardVersion
 	}
 	return nil
 }
