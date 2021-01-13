@@ -431,7 +431,7 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 	fmt.Println("Retrieving events of type " + topic)
 	events, err := getEventsFromEndpoint(endpoint, token, topic)
 	if err != nil {
-		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + endpoint)
+		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + err.Error())
 	}
 
 	fmt.Println("Received " + strconv.FormatInt(int64(len(events)), 10) + " new .triggered events")
