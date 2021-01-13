@@ -30,7 +30,6 @@ type createProjectCmdParams struct {
 	GitToken        *string
 	RemoteURL       *string
 	ShipyardContent string
-	Wait            *bool
 }
 
 var createProjectParams *createProjectCmdParams
