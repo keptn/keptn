@@ -198,16 +198,6 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not read file")})
 	}
 
-	if strings.ToLower(params.ResourceURI) == "shipyard.yaml" {
-		mv := common.GetProjectsMaterializedView()
-		logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
-		err = mv.UpdateShipyard(params.ProjectName, string(dat))
-		if err != nil {
-			logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
-			return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-		}
-	}
-
 	resourceContent := base64.StdEncoding.EncodeToString(dat)
 
 	resource := &models.Resource{
