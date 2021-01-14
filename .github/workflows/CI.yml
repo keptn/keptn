@@ -183,6 +183,7 @@ jobs:
           echo "##[set-output name=BUILD_REMEDIATION_SVC;]$(echo ${BUILD_REMEDIATION_SVC})"
           echo "##[set-output name=BUILD_LIGHTHOUSE_SVC;]$(echo ${BUILD_LIGHTHOUSE_SVC})"
           echo "##[set-output name=BUILD_MONGODB_DS;]$(echo ${BUILD_MONGODB_DS})"
+          echo "##[set-output name=BUILD_STATISTICS_SVC;]$(echo ${BUILD_STATISTICS_SVC})"
 
       - name: Extract branch name
         id: extract_branch
