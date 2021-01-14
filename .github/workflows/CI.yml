@@ -37,6 +37,7 @@ jobs:
       BUILD_REMEDIATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_REMEDIATION_SVC }}
       BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
       BUILD_MONGODB_DS: ${{ steps.check_modified_files.outputs.BUILD_MONGODB_DS }}
+      BUILD_STATISTICS_SVC: ${{ steps.check_modified_files.outputs.BUILD_STATISTICS_SVC }}
       # some env variables
       KUBE_CONSTRAINTS: ${{ steps.output_kube_constraints.outputs.KUBE_CONSTRAINTS }}
       # metadata
@@ -96,6 +97,7 @@ jobs:
           BUILD_REMEDIATION_SVC=false
           BUILD_LIGHTHOUSE_SVC=false
           BUILD_MONGODB_DS=false
+          BUILD_STATISTICS_SVC=false
 
           for changed_file in ${{ steps.changed_files.outputs.all }}; do
             echo "Checking if $changed_file leads to a build..."
@@ -163,6 +165,10 @@ jobs:
 
             if [[ $changed_file == "${MONGODB_DS_FOLDER}"* ]]; then
               BUILD_MONGODB_DS=true
+            fi
+
+            if [[ $changed_file == "${STATISTICS_SVC_FOLDER}"* ]]; then
+              BUILD_STATISTICS_SVC=true
             fi
           done
 
@@ -331,6 +337,11 @@ jobs:
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
         run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./mongodb-datastore
+
+      - name: Test statistics svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        working-directory: ./statistics-service
 
       - name: Coverage report
         run: bash <(curl -s https://codecov.io/bash)
@@ -624,5 +635,14 @@ jobs:
         env:
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE}}"
           FOLDER: ${{ env.MONGODB_DS_FOLDER }}
+        run: |
+          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+
+      - id: docker_build_statistics-service
+        name: Docker Build statistics-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
+        env:
+          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE}}"
+          FOLDER: ${{ env.STATISTICS_SVC_FOLDER }}
         run: |
           ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
