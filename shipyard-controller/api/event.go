@@ -519,8 +519,10 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		}, taskSequenceName)
 	}
 
+	// validate the shipyard version - only shipyard files following the '0.2.0' spec are supported by the shipyard controller
 	err = common.ValidateShipyardVersion(shipyard)
 	if err != nil {
+		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
 		sc.logger.Error("invalid shipyard version: " + err.Error())
 		return sc.sendTaskSequenceFinishedEvent(event.Shkeptncontext, &keptnv2.EventData{
 			Project: eventScope.Project,
