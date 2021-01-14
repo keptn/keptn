@@ -1,0 +1,144 @@
+basePath: /v1
+definitions:
+  operations.Error:
+    properties:
+      errorCode:
+        type: string
+      message:
+        type: string
+    type: object
+  operations.Event:
+    properties:
+      contenttype:
+        type: string
+      data:
+        type: object
+      extensions:
+        type: object
+      id:
+        type: string
+      shkeptncontext:
+        type: string
+      source:
+        type: string
+      specversion:
+        type: string
+      time:
+        type: string
+      triggeredid:
+        type: string
+      type:
+        type: string
+    type: object
+  operations.Project:
+    properties:
+      name:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/operations.Service'
+        type: array
+    type: object
+  operations.Service:
+    properties:
+      events:
+        additionalProperties:
+          type: integer
+        type: object
+      executedSequences:
+        type: integer
+      name:
+        type: string
+    type: object
+  operations.Statistics:
+    properties:
+      from:
+        type: string
+      projects:
+        items:
+          $ref: '#/definitions/operations.Project'
+        type: array
+      to:
+        type: string
+    type: object
+info:
+  contact:
+    name: Keptn Team
+    url: http://www.keptn.sh
+  description: This is the API documentation of the Statistics Service.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Statistics Service API
+  version: "1.0"
+paths:
+  /event:
+    post:
+      consumes:
+      - application/json
+      description: Handle incoming cloud event
+      parameters:
+      - description: Event type
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/operations.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/operations.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/operations.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Handle event
+      tags:
+      - Events
+  /statistics:
+    get:
+      consumes:
+      - application/json
+      description: get statistics about Keptn installation
+      parameters:
+      - description: From
+        in: query
+        name: from
+        type: string
+      - description: To
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.Statistics'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/operations.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/operations.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get statistics
+      tags:
+      - Statistics
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: x-token
+    type: apiKey
+swagger: "2.0"
