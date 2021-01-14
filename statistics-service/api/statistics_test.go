@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/keptn-sandbox/statistics-service/statistics-service/db"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	"github.com/keptn/keptn/statistics-service/controller"
+	"github.com/keptn/keptn/statistics-service/db"
+	"github.com/keptn/keptn/statistics-service/operations"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

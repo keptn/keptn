@@ -2,19 +2,22 @@ package controller
 
 import (
 	"fmt"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/config"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/db"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/statistics-service/config"
+	"github.com/keptn/keptn/statistics-service/db"
+	"github.com/keptn/keptn/statistics-service/operations"
 	"strings"
 	"sync"
 	"time"
 )
 
-var statisticsBucketInstance *statisticsBucket
+var statisticsBucketInstance *StatisticsBucket
 
-type statisticsBucket struct {
-	StatisticsRepo  db.StatisticsRepo
+// StatisticsBucket godoc
+type StatisticsBucket struct {
+	// StatisticsRepo interface for accessing the repository
+	StatisticsRepo db.StatisticsRepo
+	// Statistics in-memory statistics
 	Statistics      operations.Statistics
 	uniqueSequences map[string]bool
 	logger          keptn.LoggerInterface
@@ -24,10 +27,10 @@ type statisticsBucket struct {
 }
 
 // GetStatisticsBucketInstance godoc
-func GetStatisticsBucketInstance() *statisticsBucket {
+func GetStatisticsBucketInstance() *StatisticsBucket {
 	if statisticsBucketInstance == nil {
 		env := config.GetConfig()
-		statisticsBucketInstance = &statisticsBucket{
+		statisticsBucketInstance = &StatisticsBucket{
 			StatisticsRepo: &db.StatisticsMongoDBRepo{},
 			logger:         keptn.NewLogger("", "", "statistics service"),
 			nextGenEvents:  env.NextGenEvents,
@@ -51,22 +54,22 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 }
 
 // GetCutoffTime
-func (sb *statisticsBucket) GetCutoffTime() time.Time {
+func (sb *StatisticsBucket) GetCutoffTime() time.Time {
 	return sb.cutoffTime
 }
 
 // GetStatistics godoc
-func (sb *statisticsBucket) GetStatistics() operations.Statistics {
+func (sb *StatisticsBucket) GetStatistics() operations.Statistics {
 	return sb.Statistics
 }
 
 // GetRepo godoc
-func (sb *statisticsBucket) GetRepo() db.StatisticsRepo {
+func (sb *StatisticsBucket) GetRepo() db.StatisticsRepo {
 	return sb.StatisticsRepo
 }
 
 // AddEvent godoc
-func (sb *statisticsBucket) AddEvent(event operations.Event) {
+func (sb *StatisticsBucket) AddEvent(event operations.Event) {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
 
@@ -104,7 +107,7 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 	}
 }
 
-func (sb *statisticsBucket) storeCurrentBucket() {
+func (sb *StatisticsBucket) storeCurrentBucket() {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
 	sb.logger.Info(fmt.Sprintf("Storing statistics for time frame %s - %s\n\n", sb.Statistics.From.String(), sb.Statistics.To.String()))
@@ -115,7 +118,7 @@ func (sb *statisticsBucket) storeCurrentBucket() {
 	sb.logger.Info(fmt.Sprintf("Statistics stored successfully"))
 }
 
-func (sb *statisticsBucket) createNewBucket() {
+func (sb *StatisticsBucket) createNewBucket() {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
 	sb.cutoffTime = time.Now().Round(time.Second)

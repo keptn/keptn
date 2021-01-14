@@ -2,12 +2,12 @@ package db
 
 import (
 	"errors"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
+	"github.com/keptn/keptn/statistics-service/operations"
 	"time"
 )
 
-// NoStatisticsFoundError godoc
-var NoStatisticsFoundError = errors.New("no statistics found")
+// ErrNoStatisticsFound godoc
+var ErrNoStatisticsFound = errors.New("no statistics found")
 
 // StatisticsRepo godoc
 type StatisticsRepo interface {
