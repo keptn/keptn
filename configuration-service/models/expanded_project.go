@@ -36,6 +36,9 @@ type ExpandedProject struct {
 	// Shipyard file content
 	Shipyard string `json:"shipyard,omitempty"`
 
+	// Version of the shipyard file
+	ShipyardVersion string `json:"shipyardVersion,omitempty"`
+
 	// stages
 	Stages []*ExpandedStage `json:"stages"`
 }

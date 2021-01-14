@@ -70,6 +70,9 @@ definitions:
       shipyard:
         type: string
         description: Shipyard file content
+      shipyardVersion:
+        type: string
+        description: Version of the shipyard file
       creationDate:
         type: string
         description: Creation date of the project

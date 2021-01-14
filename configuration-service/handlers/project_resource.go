@@ -77,7 +77,11 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
 			mv := common.GetProjectsMaterializedView()
 			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
-			err := mv.UpdateShipyard(params.ProjectName, res.ResourceContent)
+			decodedShipyard, err := base64.StdEncoding.DecodeString(res.ResourceContent)
+			if err != nil {
+				logger.Error(fmt.Sprintf("could not decode shipyard file content: %s", err.Error()))
+			}
+			err = mv.UpdateShipyard(params.ProjectName, string(decodedShipyard))
 			if err != nil {
 				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
 				return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
@@ -131,6 +135,19 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Adding resource: " + filePath)
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
+		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
+			mv := common.GetProjectsMaterializedView()
+			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
+			decodedShipyard, err := base64.StdEncoding.DecodeString(res.ResourceContent)
+			if err != nil {
+				logger.Error(fmt.Sprintf("could not decode shipyard file content: %s", err.Error()))
+			}
+			err = mv.UpdateShipyard(params.ProjectName, string(decodedShipyard))
+			if err != nil {
+				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
+				return project_resource.NewPostProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+			}
+		}
 	}
 
 	logger.Debug("Staging Changes")
