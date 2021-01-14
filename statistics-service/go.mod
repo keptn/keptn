@@ -1,4 +1,4 @@
-module github.com/keptn-sandbox/statistics-service/statistics-service
+module github.com/keptn/keptn/statistics-service
 
 go 1.14
 

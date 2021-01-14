@@ -2,11 +2,11 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/config"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/controller"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/db"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/statistics-service/config"
+	"github.com/keptn/keptn/statistics-service/controller"
+	"github.com/keptn/keptn/statistics-service/db"
+	"github.com/keptn/keptn/statistics-service/operations"
 	"net/http"
 )
 
@@ -46,7 +46,7 @@ func GetStatistics(c *gin.Context) {
 
 	payload, err := getStatistics(params, sb)
 
-	if err != nil && err == db.NoStatisticsFoundError {
+	if err != nil && err == db.ErrNoStatisticsFound {
 		c.JSON(http.StatusNotFound, operations.Error{
 			Message:   "no statistics found for selected time frame",
 			ErrorCode: 404,
@@ -84,7 +84,7 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 			// case 2: time frame outside of "in-memory" interval
 			// -> return results from database
 			statistics, err = sb.GetRepo().GetStatistics(params.From, params.To)
-			if err != nil && err == db.NoStatisticsFoundError {
+			if err != nil && err == db.ErrNoStatisticsFound {
 				return operations.GetStatisticsResponse{}, err
 			}
 		} else if params.From.Before(cutoffTime) && params.To.After(cutoffTime) {

@@ -14,6 +14,7 @@ type Event struct {
 	Type           string      `json:"type"`
 }
 
+// KeptnBase godoc
 type KeptnBase struct {
 	Project string `json:"project"`
 	Service string `json:"service"`

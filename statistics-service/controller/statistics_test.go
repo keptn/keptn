@@ -2,9 +2,9 @@ package controller
 
 import (
 	"github.com/go-test/deep"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/db"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/statistics-service/db"
+	"github.com/keptn/keptn/statistics-service/operations"
 	"os"
 	"strconv"
 	"sync"
@@ -81,7 +81,7 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sb := &statisticsBucket{
+			sb := &StatisticsBucket{
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
@@ -143,7 +143,7 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			sb := &statisticsBucket{
+			sb := &StatisticsBucket{
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,
@@ -394,7 +394,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sb := &statisticsBucket{
+			sb := &StatisticsBucket{
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
 				uniqueSequences: tt.fields.uniqueSequences,

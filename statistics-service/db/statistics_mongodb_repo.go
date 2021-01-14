@@ -3,13 +3,14 @@ package db
 import (
 	"context"
 	"github.com/globalsign/mgo/bson"
-	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
+	"github.com/keptn/keptn/statistics-service/operations"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
 const keptnStatsCollection = "keptn-stats"
 
+// StatisticsMongoDBRepo godoc
 type StatisticsMongoDBRepo struct {
 	DbConnection    MongoDBConnection
 	statsCollection *mongo.Collection
@@ -42,7 +43,7 @@ func (s *StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.
 	result := []operations.Statistics{}
 	defer cur.Close(ctx)
 	if cur.RemainingBatchLength() == 0 {
-		return nil, NoStatisticsFoundError
+		return nil, ErrNoStatisticsFound
 	}
 	for cur.Next(ctx) {
 		stats := &operations.Statistics{}
