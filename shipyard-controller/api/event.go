@@ -156,20 +156,22 @@ type shipyardController struct {
 }
 
 func getShipyardControllerInstance() *shipyardController {
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	sc := &shipyardController{
-		projectRepo: &db.ProjectMongoDBRepo{
-			Logger: logger,
-		},
-		eventRepo: &db.MongoDBEventsRepo{
-			Logger: logger,
-		},
-		taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
-			Logger: logger,
-		},
-		logger: logger,
+	if shipyardControllerInstance == nil {
+		logger := keptncommon.NewLogger("", "", "shipyard-controller")
+		shipyardControllerInstance = &shipyardController{
+			projectRepo: &db.ProjectMongoDBRepo{
+				Logger: logger,
+			},
+			eventRepo: &db.MongoDBEventsRepo{
+				Logger: logger,
+			},
+			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
+				Logger: logger,
+			},
+			logger: logger,
+		}
 	}
-	return sc
+	return shipyardControllerInstance
 }
 
 func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
@@ -181,7 +183,7 @@ func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]mo
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events with filter: %s", printObject(filter)))
+		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events of project %s with filter: %s", project, printObject(filter)))
 		events, err := sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
