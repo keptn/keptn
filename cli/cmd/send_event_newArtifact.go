@@ -47,6 +47,7 @@ type newArtifactStruct struct {
 	Sequence  *string `json:"sequence"`
 	Watch     *bool
 	WatchTime *int
+	Output    *string
 }
 
 var newArtifact newArtifactStruct
@@ -171,7 +172,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 				Stage:        *newArtifact.Stage,
 				Service:      *newArtifact.Service,
 			}
-			runEventWaiter(eventHandler, filter, time.Duration(*newArtifact.WatchTime)*time.Second)
+			runEventWaiter(eventHandler, filter, time.Duration(*newArtifact.WatchTime)*time.Second, *newArtifact.Output)
 		}
 		return nil
 	},
@@ -215,4 +216,7 @@ func init() {
 	newArtifact.Watch = newArtifactCmd.Flags().BoolP("watch", "w", false, "Print event stream")
 
 	newArtifact.WatchTime = newArtifactCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
+
+	newArtifact.Output = newArtifactCmd.Flags().StringP("output", "o", "",
+		"Output format for the --watch flag. One of: json|yaml")
 }

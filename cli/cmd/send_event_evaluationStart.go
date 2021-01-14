@@ -44,6 +44,7 @@ type evaluationStartStruct struct {
 	Labels    *map[string]string `json:"labels"`
 	Watch     *bool
 	WatchTime *int
+	Output    *string
 }
 
 var evaluationStart evaluationStartStruct
@@ -160,7 +161,7 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 					Stage:        *evaluationStart.Stage,
 					Service:      *evaluationStart.Service,
 				}
-				runEventWaiter(eventHandler, filter, time.Duration(*evaluationStart.WatchTime)*time.Second)
+				runEventWaiter(eventHandler, filter, time.Duration(*evaluationStart.WatchTime)*time.Second, *evaluationStart.Output)
 			}
 
 			return nil
@@ -284,4 +285,7 @@ func init() {
 	evaluationStart.Watch = evaluationStartCmd.Flags().BoolP("watch", "w", false, "Print event stream")
 
 	evaluationStart.WatchTime = evaluationStartCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
+
+	evaluationStart.Output = evaluationStartCmd.Flags().StringP("output", "o", "",
+		"Output format for the --watch flag. One of: json|yaml")
 }

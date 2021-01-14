@@ -152,20 +152,20 @@ func runVersionCheck() {
 	}
 }
 
-func runEventWaiter(eventHandler *apiutils.EventHandler, eventFilter apiutils.EventFilter, timeout time.Duration) {
+func runEventWaiter(eventHandler *apiutils.EventHandler, eventFilter apiutils.EventFilter, timeout time.Duration, format string) {
 	watcher := apiutils.NewEventWatcher(
 		eventHandler,
 		apiutils.WithEventFilter(eventFilter),
+		apiutils.WithEventManipulator(apiutils.SortByTime),
 		apiutils.WithInterval(time.NewTicker(5*time.Second)),
 		apiutils.WithStartTime(time.Time{}), // this makes sure that we also capture old events
 		apiutils.WithTimeout(timeout),
-		apiutils.WithEventManipulator(apiutils.SortByTime),
 	)
 
 	eventChan, _ := watcher.Watch(context.Background())
 	for events := range eventChan {
 		for _, e := range events {
-			printEvents(e, "yaml")
+			printEvents(e, format)
 		}
 	}
 }

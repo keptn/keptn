@@ -108,7 +108,10 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			printEvents(events, *eventStruct.Output)
 		}
 	} else {
-		runEventWaiter(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
+		runEventWaiter(eventHandler,
+			*filter,
+			time.Duration(*getEventParams.WatchTime)*time.Second,
+			*getEventParams.Output)
 	}
 	return nil
 }
@@ -130,12 +133,12 @@ func init() {
 		"The name of a service within a project from which to retrieve the event")
 
 	getEventParams.Output = getEventCmd.Flags().StringP("output", "o", "",
-		" Output format. One of: json|yaml")
+		"Output format. One of: json|yaml")
 
 	getEventParams.PageSize = getEventCmd.Flags().StringP("page-size", "", "",
 		"Max number of return events per page (Default 1)")
 
-	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
+	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 100,
 		"Number of pages that should be returned (Default 1).")
 
 	getEventParams.Watch = getEventCmd.Flags().BoolP("watch", "w", false, "Print event stream")
