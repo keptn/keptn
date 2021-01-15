@@ -5,6 +5,7 @@ import (
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
+	"net/url"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -186,8 +187,14 @@ func GetProjectProjectNameResourceResourceURIHandlerFunc(params project_resource
 		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
+	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return project_resource.NewGetProjectProjectNameResourceResourceURIDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
+	}
+
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
-	resourcePath := projectConfigPath + "/" + params.ResourceURI
+	resourcePath := projectConfigPath + "/" + unescapedResourceName
 	if !common.FileExists(resourcePath) {
 		return project_resource.NewGetProjectProjectNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project resource not found")})
 	}
@@ -279,8 +286,14 @@ func DeleteProjectProjectNameResourceResourceURIHandlerFunc(params project_resou
 		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
 	}
 
+	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return project_resource.NewDeleteProjectProjectNameResourceResourceURIDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
+	}
+
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
-	resourcePath := projectConfigPath + "/" + params.ResourceURI
+	resourcePath := projectConfigPath + "/" + unescapedResourceName
 
 	err = common.DeleteFile(resourcePath)
 	if err != nil {

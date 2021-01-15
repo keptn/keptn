@@ -6,6 +6,7 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,14 +36,19 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 	defer common.UnlockProject(params.ProjectName)
 
 	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
-	resourcePath := serviceConfigPath + "/" + params.ResourceURI
+	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
+	}
+	resourcePath := serviceConfigPath + "/" + unescapedResourceName
 	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, *params.DisableUpstreamSync) {
 		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURINotFound().
 			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
 	}
 
 	logger.Debug("Checking out " + params.StageName + " branch")
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
+	err = common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
