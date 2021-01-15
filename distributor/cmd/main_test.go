@@ -568,11 +568,12 @@ func Test_getProxyRequestURL(t *testing.T) {
 		path     string
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantScheme string
-		wantHost   string
-		wantPath   string
+		name             string
+		args             args
+		wantScheme       string
+		wantHost         string
+		wantPath         string
+		externalEndpoint string
 	}{
 		{
 			name: "Get internal Datastore",
@@ -622,7 +623,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantHost:   "configuration-service:8080",
 		},
 		{
-			name: "Get shipyard controller",
+			name: "Get configuration service",
 			args: args{
 				endpoint: "",
 				path:     "/config",
@@ -630,9 +631,32 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantScheme: "http",
 			wantHost:   "configuration-service:8080",
 		},
+		{
+			name: "Get configuration service via public API",
+			args: args{
+				endpoint: "",
+				path:     "/config",
+			},
+			wantScheme:       "http",
+			wantHost:         "external-api.com",
+			wantPath:         "/api/configuration-service/",
+			externalEndpoint: "http://external-api.com",
+		},
+		{
+			name: "Get configuration service via public API with API prefix",
+			args: args{
+				endpoint: "",
+				path:     "/config",
+			},
+			wantScheme:       "http",
+			wantHost:         "external-api.com",
+			wantPath:         "/my/path/prefix/api/configuration-service/",
+			externalEndpoint: "http://external-api.com/my/path/prefix",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			env.KeptnAPIEndpoint = tt.externalEndpoint
 			scheme, host, path := getProxyHost(tt.args.path)
 
 			if scheme != tt.wantScheme {

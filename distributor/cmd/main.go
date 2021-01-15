@@ -266,7 +266,10 @@ func getProxyHost(path string) (string, string, string) {
 					path = path + url.QueryEscape(splitPath[len(splitPath)-1])
 				}
 			}
-			return parsedKeptnURL.Scheme, parsedKeptnURL.Host, strings.TrimSuffix(parsedKeptnURL.Path, "/") + "/" + path
+			if parsedKeptnURL.Path != "" {
+				path = strings.TrimSuffix(parsedKeptnURL.Path, "/") + path
+			}
+			return parsedKeptnURL.Scheme, parsedKeptnURL.Host, path
 		}
 	}
 	return "", "", ""
