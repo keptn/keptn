@@ -198,13 +198,17 @@ class Trace {
       if(this.isProblem() && this.isProblemResolvedOrClosed()) {
         this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else if(this.isApprovalFinished()) {
-        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.type.split(".").slice(-2)[0];
+        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.getShortType();
       } else {
-        this.label = EVENT_LABELS[this.type] || this.type.split(".").slice(-2)[0];
+        this.label = EVENT_LABELS[this.type] || this.getShortType();
       }
     }
 
     return this.label;
+  }
+
+  getShortType(): string {
+    return this.type.split(".").slice(-2)[0];
   }
 
   getIcon() {
