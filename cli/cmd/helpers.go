@@ -61,21 +61,21 @@ func PrintEventWatcher(watcher Watcher, format string, writer io.Writer) {
 // either in YAML or JSON format
 func PrintEvents(writer io.Writer, format string, content interface{}) {
 	if format == "yaml" {
-		PrintAsYaml(writer, content)
+		PrintAsYAML(writer, content)
 	} else { //default
-		PrintAsJson(writer, content)
+		PrintAsJSON(writer, content)
 	}
 }
 
-// PrintAsYaml prints events in YAML format to std::out
-func PrintAsYaml(writer io.Writer, events interface{}) {
+// PrintAsYAML prints events in YAML format to std::out
+func PrintAsYAML(writer io.Writer, events interface{}) {
 	eventsYAML, _ := yaml.Marshal(events)
 	fmt.Fprintf(writer, string(eventsYAML)+"\n")
 
 }
 
-// PrintAsJson prints events in JSON format to std::out
-func PrintAsJson(writer io.Writer, events interface{}) {
+// PrintAsJSON prints events in JSON format to std::out
+func PrintAsJSON(writer io.Writer, events interface{}) {
 	eventsJSON, _ := json.MarshalIndent(events, "", "    ")
 	fmt.Fprintf(writer, string(eventsJSON)+"\n")
 }
