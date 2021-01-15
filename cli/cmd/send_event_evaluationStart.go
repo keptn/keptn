@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -158,10 +158,9 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 				filter := apiutils.EventFilter{
 					KeptnContext: *response.KeptnContext,
 					Project:      *evaluationStart.Project,
-					Stage:        *evaluationStart.Stage,
-					Service:      *evaluationStart.Service,
 				}
-				runEventWaiter(eventHandler, filter, time.Duration(*evaluationStart.WatchTime)*time.Second, *evaluationStart.Output)
+				watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*evaluationStart.WatchTime)*time.Second)
+				PrintEventWatcher(watcher, *evaluationStart.Output, os.Stdout)
 			}
 
 			return nil
@@ -282,10 +281,7 @@ func init() {
 		"The end point to which the evaluation data should be gathered in UTC (can not be used together with --timeframe)")
 	evaluationStart.Labels = evaluationStartCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
 
-	evaluationStart.Watch = evaluationStartCmd.Flags().BoolP("watch", "w", false, "Print event stream")
-
-	evaluationStart.WatchTime = evaluationStartCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
-
-	evaluationStart.Output = evaluationStartCmd.Flags().StringP("output", "o", "",
-		"Output format for the --watch flag. One of: json|yaml")
+	evaluationStart.Output = AddOutputFormatFlag(evaluationStartCmd)
+	evaluationStart.Watch = AddWatchFlag(evaluationStartCmd)
+	evaluationStart.WatchTime = AddWatchTimeFlag(evaluationStartCmd)
 }

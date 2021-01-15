@@ -1,18 +1,13 @@
 package cmd
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 	"os"
-	"time"
 )
 
 var cfgFile string
@@ -149,33 +144,5 @@ func runVersionCheck() {
 
 	if cliChecked || keptnChecked {
 		updateLastVersionCheck()
-	}
-}
-
-func runEventWaiter(eventHandler *apiutils.EventHandler, eventFilter apiutils.EventFilter, timeout time.Duration, format string) {
-	watcher := apiutils.NewEventWatcher(
-		eventHandler,
-		apiutils.WithEventFilter(eventFilter),
-		apiutils.WithEventManipulator(apiutils.SortByTime),
-		apiutils.WithInterval(time.NewTicker(5*time.Second)),
-		apiutils.WithStartTime(time.Time{}), // this makes sure that we also capture old events
-		apiutils.WithTimeout(timeout),
-	)
-
-	eventChan, _ := watcher.Watch(context.Background())
-	for events := range eventChan {
-		for _, e := range events {
-			printEvents(e, format)
-		}
-	}
-}
-
-func printEvents(events interface{}, outputType string) {
-	if outputType == "yaml" {
-		eventsYAML, _ := yaml.Marshal(events)
-		fmt.Println(string(eventsYAML))
-	} else {
-		eventsJSON, _ := json.MarshalIndent(events, "", "    ")
-		fmt.Println(string(eventsJSON))
 	}
 }

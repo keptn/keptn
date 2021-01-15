@@ -17,15 +17,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"math"
-	"net/url"
-	"os"
-	"time"
-
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"net/url"
+	"os"
+	"time"
 )
 
 type GetEventStruct struct {
@@ -103,15 +101,14 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			logging.PrintLog("No event returned", logging.QuietLevel)
 			return nil
 		} else if len(events) == 1 {
-			printEvents(events[0], *eventStruct.Output)
+			PrintEvents(os.Stdout, *eventStruct.Output, events[0])
+
 		} else {
-			printEvents(events, *eventStruct.Output)
+			PrintEvents(os.Stdout, *eventStruct.Output, events)
 		}
 	} else {
-		runEventWaiter(eventHandler,
-			*filter,
-			time.Duration(*getEventParams.WatchTime)*time.Second,
-			*getEventParams.Output)
+		watcher := NewDefaultWatcher(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
+		PrintEventWatcher(watcher, *getEventParams.Output, os.Stdout)
 	}
 	return nil
 }
@@ -132,16 +129,13 @@ func init() {
 	getEventParams.Service = getEventCmd.Flags().StringP("service", "", "",
 		"The name of a service within a project from which to retrieve the event")
 
-	getEventParams.Output = getEventCmd.Flags().StringP("output", "o", "",
-		"Output format. One of: json|yaml")
-
 	getEventParams.PageSize = getEventCmd.Flags().StringP("page-size", "", "",
 		"Max number of return events per page (Default 1)")
 
 	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 100,
 		"Number of pages that should be returned (Default 1).")
 
-	getEventParams.Watch = getEventCmd.Flags().BoolP("watch", "w", false, "Print event stream")
-
-	getEventParams.WatchTime = getEventCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
+	getEventParams.Watch = AddWatchFlag(getEventCmd)
+	getEventParams.WatchTime = AddWatchTimeFlag(getEventCmd)
+	getEventParams.Output = AddOutputFormatFlag(getEventCmd)
 }

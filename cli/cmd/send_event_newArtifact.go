@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"math"
 	"net/url"
 	"os"
 	"strings"
@@ -169,10 +168,9 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			filter := apiutils.EventFilter{
 				KeptnContext: *eventContext.KeptnContext,
 				Project:      *newArtifact.Project,
-				Stage:        *newArtifact.Stage,
-				Service:      *newArtifact.Service,
 			}
-			runEventWaiter(eventHandler, filter, time.Duration(*newArtifact.WatchTime)*time.Second, *newArtifact.Output)
+			watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*newArtifact.WatchTime)*time.Second)
+			PrintEventWatcher(watcher, *newArtifact.Output, os.Stdout)
 		}
 		return nil
 	},
@@ -213,10 +211,8 @@ func init() {
 	newArtifact.Sequence = newArtifactCmd.Flags().StringP("sequence", "", "", "The name of the sequence to be triggered")
 	newArtifactCmd.MarkFlagRequired("sequence")
 
-	newArtifact.Watch = newArtifactCmd.Flags().BoolP("watch", "w", false, "Print event stream")
+	newArtifact.Output = AddOutputFormatFlag(newArtifactCmd)
+	newArtifact.Watch = AddWatchFlag(newArtifactCmd)
+	newArtifact.WatchTime = AddWatchTimeFlag(newArtifactCmd)
 
-	newArtifact.WatchTime = newArtifactCmd.Flags().Int("watch-time", math.MaxInt32, "Timeout (in seconds) used for the --watch flag")
-
-	newArtifact.Output = newArtifactCmd.Flags().StringP("output", "o", "",
-		"Output format for the --watch flag. One of: json|yaml")
 }
