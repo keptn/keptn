@@ -297,8 +297,8 @@
         <ktb-events-list [events]="currentSequence.traces" [focusedEventId]="eventId"></ktb-events-list>
         <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
           <dt-tag-list aria-label="fetch-info">
-            <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:getCalendarFormats()"></span></dt-tag>
-            <dt-tag *ngIf="showReloadButton(currentRoot)"><button dt-button (click)="loadTraces(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
+            <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:getCalendarFormats()"></span></dt-tag>
+            <dt-tag *ngIf="showReloadButton(currentSequence)"><button dt-button (click)="loadTraces(currentSequence)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
           </dt-tag-list>
         </div>
       </div>
