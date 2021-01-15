@@ -5,7 +5,7 @@ FROM golang:1.13.7-alpine as builder
 
 RUN apk add --no-cache gcc libc-dev git
 
-WORKDIR /src/statistics-service
+WORKDIR /go/src/github.com/keptn/keptn/statistics-service
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -51,24 +51,25 @@ ARG version=develop
 ENV VERSION="${version}"
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /src/statistics-service /statistics-service
+COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service /statistics-service
 
-COPY --from=builder /src/statistics-service/swagger-ui /swagger-ui
+COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/swagger-ui /swagger-ui
 
-COPY --from=builder /src/statistics-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
-COPY --from=builder /src/statistics-service/docs/swagger.yaml /swagger-ui/swagger.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagger.yaml /swagger-ui/swagger.yaml
 
-
+RUN ls -la
 
 EXPOSE 8080
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
 
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
+# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the build pipeline)
 #travis-uncomment ADD MANIFEST /
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
+ENV GIN_MODE=release
 CMD ["/statistics-service"]
