@@ -181,7 +181,7 @@ class Trace {
   }
 
   public isEvaluation(): string {
-    return this.type === EventTypes.START_EVALUATION ? this.data.stage : null;
+    return this.type === EventTypes.EVALUATION_TRIGGERED ? this.data.stage : null;
   }
 
   public isEvaluationInvalidation(): boolean {
@@ -270,6 +270,10 @@ class Trace {
     }
 
     return this.finished;
+  }
+
+  getFinishedEvent() {
+    return this.traces.find(t => t.type.includes(".finished"));
   }
 
   static fromJSON(data: any) {
