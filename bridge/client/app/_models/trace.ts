@@ -208,7 +208,7 @@ class Trace {
   }
 
   getShortType(): string {
-    return this.type.split(".").slice(-2)[0];
+    return this.type.split(".").slice(3, -1).join(".");
   }
 
   getIcon() {
