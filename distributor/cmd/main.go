@@ -81,14 +81,14 @@ var inClusterAPIProxyMappings = map[string]string{
 }
 
 var externalAPIProxyMappings = map[string]string{
-	"/mongodb-datastore":     "/api/mongodb-datastore",
-	"/datastore":             "/api/mongodb-datastore",
-	"/event-store":           "/api/mongodb-datastore",
-	"/configuration-service": "/api/configuration-service",
-	"/configuration":         "/api/configuration-service",
-	"/config":                "/api/configuration-service",
-	"/shipyard-controller":   "/api/shipyard-controller",
-	"/shipyard":              "/api/shipyard-controller",
+	"/mongodb-datastore":     "/mongodb-datastore",
+	"/datastore":             "/mongodb-datastore",
+	"/event-store":           "/mongodb-datastore",
+	"/configuration-service": "/configuration-service",
+	"/configuration":         "/configuration-service",
+	"/config":                "/configuration-service",
+	"/shipyard-controller":   "/shipyard-controller",
+	"/shipyard":              "/shipyard-controller",
 }
 
 func main() {

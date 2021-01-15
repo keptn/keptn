@@ -640,7 +640,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
 			wantPath:         "/api/configuration-service/",
-			externalEndpoint: "http://external-api.com",
+			externalEndpoint: "http://external-api.com/api",
 		},
 		{
 			name: "Get configuration service via public API with API prefix",
@@ -651,7 +651,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
 			wantPath:         "/my/path/prefix/api/configuration-service/",
-			externalEndpoint: "http://external-api.com/my/path/prefix",
+			externalEndpoint: "http://external-api.com/my/path/prefix/api",
 		},
 	}
 	for _, tt := range tests {
