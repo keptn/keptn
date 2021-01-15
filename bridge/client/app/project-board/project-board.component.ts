@@ -408,7 +408,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               res = res && this.sequenceFilters[key].every(f => s.getStages().includes(f));
               break;
             case "Sequence":
-              res = res && this.sequenceFilters[key].includes(s.getSequenceName());
+              res = res && this.sequenceFilters[key].includes(s.getShortType());
               break;
             case "Status":
               res = res && this.sequenceFilters[key].includes(s.getStatus());
