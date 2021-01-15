@@ -508,7 +508,33 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	shipyard, err := common.GetShipyard(eventScope)
 	if err != nil {
-		sc.logger.Error("could not retrieve shipyard: " + err.Error())
+		msg := "could not retrieve shipyard: " + err.Error()
+		sc.logger.Error(msg)
+		return sc.sendTaskSequenceFinishedEvent(event.Shkeptncontext, &keptnv2.EventData{
+			Project: eventScope.Project,
+			Stage:   eventScope.Stage,
+			Service: eventScope.Service,
+			Labels:  eventScope.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: msg,
+		}, taskSequenceName)
+	}
+
+	// validate the shipyard version - only shipyard files following the '0.2.0' spec are supported by the shipyard controller
+	err = common.ValidateShipyardVersion(shipyard)
+	if err != nil {
+		// if the validation has not been successful: send a <task-sequence>.finished event with status=errored
+		sc.logger.Error("invalid shipyard version: " + err.Error())
+		return sc.sendTaskSequenceFinishedEvent(event.Shkeptncontext, &keptnv2.EventData{
+			Project: eventScope.Project,
+			Stage:   eventScope.Stage,
+			Service: eventScope.Service,
+			Labels:  eventScope.Labels,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+			Message: "Found shipyard.yaml with invalid version. Please upgrade the shipyard.yaml of the project using the Keptn CLI: 'keptn upgrade project " + eventScope.Project + " --shipyard'. '",
+		}, taskSequenceName)
 	}
 
 	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
