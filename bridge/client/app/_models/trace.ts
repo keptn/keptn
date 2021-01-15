@@ -273,6 +273,9 @@ class Trace {
   }
 
   static fromJSON(data: any) {
+    if(data instanceof Trace)
+      return data;
+
     const plainEvent = JSON.parse(JSON.stringify(data));
     return Object.assign(new this, data, { plainEvent });
   }
