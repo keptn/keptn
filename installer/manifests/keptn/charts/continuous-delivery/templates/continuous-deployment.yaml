@@ -194,6 +194,11 @@ spec:
                   name: ingress-config
                   key: istio_gateway
                   optional: true
+            - name: HOSTNAME_TEMPLATE
+              valueFrom:
+                name: ingress-config
+                key: hostname_template
+                optional: true
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
