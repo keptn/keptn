@@ -11,9 +11,12 @@ import {ProblemStates} from "./problem-states";
 const DEFAULT_ICON = "information";
 
 class Trace {
+  traces: Trace[] = [];
+
   id: string;
   shkeptncontext: string;
   triggeredid: string;
+  finished: boolean;
   source: string;
   time: Date;
   type: string;
@@ -195,16 +198,23 @@ class Trace {
       if(this.isProblem() && this.isProblemResolvedOrClosed()) {
         this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
       } else if(this.isApprovalFinished()) {
-        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.type;
+        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.getShortType();
       } else {
-        this.label = EVENT_LABELS[this.type] || this.type;
+        this.label = EVENT_LABELS[this.type] || this.getShortType();
       }
     }
 
     return this.label;
   }
 
+  getShortType(): string {
+    return this.type.split(".").slice(3, -1).join(".");
+  }
+
   getIcon() {
+    if(!this.isFinished())
+      return "idle";
+
     if(!this.icon) {
       if(this.isApprovalFinished()) {
         this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
@@ -249,6 +259,17 @@ class Trace {
 
   setHeatmapLabel(label: string) {
     this.heatmapLabel = label;
+  }
+
+  isFinished() {
+    if(!this.finished) {
+      if(!this.traces || this.traces.length == 0)
+        this.finished = this.type.includes(".finished");
+      else
+        this.finished = this.traces.some(t => t.type.includes(".finished"));
+    }
+
+    return this.finished;
   }
 
   static fromJSON(data: any) {

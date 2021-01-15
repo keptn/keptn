@@ -12,6 +12,7 @@ export class Project {
 
   stages: Stage[];
   services: Service[];
+  sequences: Root[];
 
   getServices(): Service[] {
     if(!this.services) {

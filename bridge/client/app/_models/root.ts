@@ -3,7 +3,7 @@ import {EventTypes} from "./event-types";
 import {Stage} from "./stage";
 
 export class Root extends Trace {
-  traces: Trace[];
+  traces: Trace[] = [];
 
   isFaulty(): string {
     return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
@@ -94,6 +94,23 @@ export class Root extends Trace {
         result[result.length-1].traces = [...result[result.length-1].traces||[], trace];
       return result;
     }, []);
+  }
+
+  isFinished() {
+    return this.getLastTrace()?.isFinished();
+  }
+
+  getSequenceName() {
+    return this.type;
+  }
+
+  getStatus() {
+    if(this.isFaulty())
+      return "failed";
+    else if(this.isFinished())
+      return "succeeded";
+    else
+      return "active";
   }
 
   static fromJSON(data: any) {
