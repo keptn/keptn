@@ -256,7 +256,7 @@ func getProxyHost(path string) (string, string, string) {
 			join := strings.Join(split[1:], "/")
 			path = value + "/" + join
 			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
-			if value == "/api/configuration-service" {
+			if value == "/configuration-service" {
 				splitPath := strings.Split(path, "/resource/")
 				if len(splitPath) > 1 {
 					path = ""
