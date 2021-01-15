@@ -60,8 +60,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagg
 
 # Replace contents for api proxy
 RUN sed -i "s|basePath: /v1|basePath: /api/statistics/v1 |g" /swagger-ui/swagger.yaml
-RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
-
 EXPOSE 8080
 
 # required for external tools to detect this as a go binary
