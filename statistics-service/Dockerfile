@@ -32,7 +32,7 @@ COPY . .
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o statistics-service
+RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -42,7 +42,7 @@ ENV ENV=production
 # Install extra packages
 # See https://github.com/gliderlabs/docker-alpine/issues/136#issuecomment-272703023
 
-RUN    apk update && apk upgrade \
+RUN apk update && apk upgrade \
 	&& apk add ca-certificates libc6-compat \
 	&& update-ca-certificates \
 	&& rm -rf /var/cache/apk/*
@@ -51,14 +51,12 @@ ARG version=develop
 ENV VERSION="${version}"
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service /statistics-service
+COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/main /statistics-service
 
 COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/swagger-ui /swagger-ui
 
 COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagger.yaml /swagger-ui/swagger.yaml
-
-RUN ls -la
 
 EXPOSE 8080
 
