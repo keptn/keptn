@@ -51,6 +51,8 @@ COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-u
 
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/shipyard-controller/v1 |g" /swagger-ui/swagger.yaml
+RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 
