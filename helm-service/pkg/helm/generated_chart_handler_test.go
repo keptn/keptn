@@ -49,6 +49,18 @@ func Test_getVirtualServicePublicHost(t *testing.T) {
 				project:   "prj",
 				stageName: "stg",
 			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:             "get hostname based on custom HOSTNAME_TEMPLATE and custom INGRESS_HOSTNAME_SUFFIX",
+			hostnameTemplate: "${INGRESS_PROTOCOL}://${service}-${stage}-${project}.${INGRESS_HOSTNAME_SUFFIX}",
+			hostnameSuffix:   "123.xip.io",
+			args: args{
+				svc:       "svc",
+				project:   "prj",
+				stageName: "stg",
+			},
 			want:    "svc-stg-prj.123.xip.io",
 			wantErr: false,
 		},
