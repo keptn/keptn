@@ -5,7 +5,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +37,12 @@ func TestHandleDeleteEvent(t *testing.T) {
 		stagesHandler: mockedStagesHandler,
 	}
 
-	eventData := keptn.ServiceDeleteEventData{Project: "my-project", Service: "my-service"}
+	eventData := keptnv2.ServiceDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Service: "my-service",
+		},
+	}
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, eventData)
@@ -99,10 +103,7 @@ func TestWhenGettingStagesFails_Then(t *testing.T) {
 
 	mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(nil, errors.New("Failed to get stages"))
 
-	eventData := keptn.ServiceDeleteEventData{
-		Project: "my-project",
-		Service: "my-service",
-	}
+	eventData := keptnv2.ServiceDeleteFinishedEventData{}
 
 	ce := cloudevents.NewEvent()
 	_ = ce.SetData(cloudevents.ApplicationJSON, eventData)
@@ -128,9 +129,11 @@ func TestWhenUninstallingReleaseFails_FinishedEventIsStillSent(t *testing.T) {
 		stagesHandler: mockedStagesHandler,
 	}
 
-	eventData := keptn.ServiceDeleteEventData{
-		Project: "my-project",
-		Service: "my-service",
+	eventData := keptnv2.ServiceDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Service: "my-service",
+		},
 	}
 
 	ce := cloudevents.NewEvent()
