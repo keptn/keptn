@@ -182,9 +182,9 @@ func (h *DeploymentHandler) getDeploymentURIs(e keptnv2.EventData) ([]string, []
 				localDeploymentURI := mesh.GetLocalDeploymentURI(e, fmt.Sprintf("%d", lowestPort))
 				publicDeploymentURI := mesh.GetPublicDeploymentURI(e)
 				return localDeploymentURI, publicDeploymentURI, nil
-			} else {
-				return nil, nil, errors.New("deployed service does not contain a valid port definition")
 			}
+			return nil, nil, errors.New("deployed service does not contain a valid port definition")
+
 		}
 	}
 	return nil, nil, nil
