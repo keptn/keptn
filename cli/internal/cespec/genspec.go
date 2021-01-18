@@ -9,13 +9,13 @@ import (
 	"os"
 )
 
-func createDataJsonSchemaSection(md *MarkDown, eventType string, data interface{}) {
+func createDataJSONSchemaSection(md *MarkDown, eventType string, data interface{}) {
 	md.Title("Data Json Schema", 5)
 	md.WriteLineBreak()
 	md.Writeln("<details><summary>Json Schema of " + eventType + "</summary>")
 	md.Writeln("<p>")
 	md.WriteLineBreak()
-	md.CodeBlock(toJsonSchema(data), "json")
+	md.CodeBlock(toJSONSchema(data), "json")
 	md.Writeln("</p>")
 	md.Writeln("</details>")
 	md.WriteLineBreak()
@@ -24,7 +24,7 @@ func createDataJsonSchemaSection(md *MarkDown, eventType string, data interface{
 func createExampleSection(md *MarkDown, eventType string, data interface{}) {
 	md.Title("Example Cloud Event", 5)
 	md.WriteLineBreak()
-	md.CodeBlock(toJson(ce(eventType, data)), "json")
+	md.CodeBlock(toJSON(ce(eventType, data)), "json")
 	md.WriteLineBreak()
 }
 func createUpLink(md *MarkDown) {
@@ -35,7 +35,7 @@ func createSection(md *MarkDown, title string, eventType string, data interface{
 	md.Title(title, 4)
 	md.Title("Type", 5)
 	md.Writeln(eventType)
-	createDataJsonSchemaSection(md, eventType, data)
+	createDataJSONSchemaSection(md, eventType, data)
 	createExampleSection(md, eventType, data)
 	createUpLink(md)
 }
@@ -44,6 +44,7 @@ func createSectionTitle(md *MarkDown, title string) {
 	md.Title(title, 3)
 }
 
+// Generate produces a cloudevents.md file in the provided outputDir path
 func Generate(outputDir string) {
 
 	md := NewMarkDown()
@@ -142,14 +143,14 @@ func Generate(outputDir string) {
 
 }
 
-func toJsonSchema(j interface{}) string {
+func toJSONSchema(j interface{}) string {
 	schema := jsonschema.Reflect(j)
 	schemaStr, _ := json.MarshalIndent(schema, "", "  ")
 	return string(schemaStr)
 
 }
 
-func toJson(j interface{}) string {
+func toJSON(j interface{}) string {
 	jsonStr, _ := json.MarshalIndent(j, "", "  ")
 	return string(jsonStr)
 }

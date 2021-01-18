@@ -78,7 +78,7 @@ func (m *MarkDown) CodeBlock(code, t string) *MarkDown {
 	return m
 }
 
-// Uplink creates and appends a link to the top of the file
+// UpLink creates and appends a link to the top of the file
 func (m *MarkDown) UpLink() *MarkDown {
 	m.Writeln(`([&uarr; up to index](#keptn-cloud-events))`)
 	return m

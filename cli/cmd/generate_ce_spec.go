@@ -1,8 +1,6 @@
-// Inspired by `hugo gen doc`  - see https://github.com/gohugoio/hugo/blob/release-0.69.0/commands/gendoc.go
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/keptn/keptn/cli/internal/cespec"
 	"github.com/spf13/cobra"
@@ -33,7 +31,7 @@ keptn generate cloud-events-spec --dir=/some/directory`,
 		}
 
 		if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-			return errors.New(fmt.Sprintf("Error trying to access directory %s. Please make sure the directory exists.", outputDir))
+			return fmt.Errorf("Error trying to access directory %s. Please make sure the directory exists.", outputDir)
 		}
 
 		fmt.Println("Generating cloud-events-spec now...")
