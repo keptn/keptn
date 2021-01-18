@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
+	github.com/cloudevents/sdk-go v0.10.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/validate v0.19.5 // indirect
@@ -14,7 +15,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/nats-io/nats-server/v2 v2.1.6
 	github.com/onsi/ginkgo v1.11.0 // indirect
