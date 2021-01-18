@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -10,6 +11,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
 	corev1 "k8s.io/api/core/v1"
+	"math"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
@@ -100,8 +102,12 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	}
 
 	// Send finished event
-	data := h.getFinishedEventDataForSuccess(e.EventData, gitVersion,
+	data, err := h.getFinishedEventDataForSuccess(e.EventData, gitVersion,
 		getDeploymentName(deploymentStrategy, false), deploymentStrategy)
+	if err != nil {
+		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
+		return
+	}
 	if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), data); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -154,25 +160,34 @@ func (h *DeploymentHandler) catchupGeneratedChartOnboarding(deploymentStrategy k
 	return h.onboarder.OnboardGeneratedChart(userChartManifest, event, deploymentStrategy)
 }
 
-func (h *DeploymentHandler) getPortOfDeployedService(e keptnv2.EventData) (string, error) {
+func (h *DeploymentHandler) getDeploymentURIs(e keptnv2.EventData) ([]string, []string, error) {
 	userChartManifest, err := h.getHelmExecutor().GetManifest(helm.GetReleaseName(e.Project, e.Stage, e.Service, false),
 		e.Project+"-"+e.Stage)
 
 	if err != nil {
-		return "", err
+		return nil, nil, err
 	}
 	services := helm.GetServices(userChartManifest)
 	if len(services) > 0 {
 		if len(services[0].Spec.Ports) > 0 {
+			lowestPort := int32(math.MaxInt32)
+			foundPort := false
 			for _, port := range services[0].Spec.Ports {
-				if port.Protocol == corev1.ProtocolTCP {
-					return fmt.Sprintf("%d", port.Port), nil
+				if port.Protocol == corev1.ProtocolTCP && port.Port < lowestPort {
+					lowestPort = port.Port
+					foundPort = true
 				}
 			}
+			if foundPort {
+				localDeploymentURI := mesh.GetLocalDeploymentURI(e, fmt.Sprintf("%d", lowestPort))
+				publicDeploymentURI := mesh.GetPublicDeploymentURI(e)
+				return localDeploymentURI, publicDeploymentURI, nil
+			} else {
+				return nil, nil, errors.New("deployed service does not contain a valid port definition")
+			}
 		}
-
 	}
-	return "80", nil
+	return nil, nil, nil
 }
 
 func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {
@@ -184,26 +199,26 @@ func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) k
 }
 
 func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData, gitCommit string,
-	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy) keptnv2.DeploymentFinishedEventData {
+	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy) (*keptnv2.DeploymentFinishedEventData, error) {
 
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = keptnv2.ResultPass
 	inEventData.Message = "Successfully deployed"
 
-	servicePort, err := h.getPortOfDeployedService(inEventData)
+	localURIs, publicURIs, err := h.getDeploymentURIs(inEventData)
 	if err != nil {
-		servicePort = "80"
+		return nil, fmt.Errorf("could not determine deployment URIs: %s", err.Error())
 	}
-	return keptnv2.DeploymentFinishedEventData{
+	return &keptnv2.DeploymentFinishedEventData{
 		EventData: inEventData,
 		Deployment: keptnv2.DeploymentData{
 			DeploymentStrategy:   deploymentStrategy.String(),
-			DeploymentURIsPublic: mesh.GetPublicDeploymentURI(inEventData),
-			DeploymentURIsLocal:  mesh.GetLocalDeploymentURI(inEventData, servicePort),
+			DeploymentURIsPublic: publicURIs,
+			DeploymentURIsLocal:  localURIs,
 			DeploymentNames:      []string{deploymentName},
 			GitCommit:            gitCommit,
 		},
-	}
+	}, nil
 }
 
 func (h *DeploymentHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.DeploymentFinishedEventData {
