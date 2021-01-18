@@ -440,7 +440,7 @@ func (sc *shipyardController) getEvents(project string, filter db.EventFilter, s
 	for i := 0; i <= nrRetries; i++ {
 		startedEvents, err := sc.eventRepo.GetEvents(project, filter, status)
 		if err != nil && err == db.ErrNoEventFound {
-			sc.logger.Info(string("No matching" + status + " events found. Retrying in 2s."))
+			sc.logger.Info(string("No matching " + status + " events found. Retrying in 2s."))
 			<-time.After(2 * time.Second)
 		} else {
 			return startedEvents, err
@@ -539,10 +539,10 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
 	if err != nil && err == errNoTaskSequence {
-		sc.logger.Info("no task sequence with name " + taskSequenceName + "found in stage " + stageName)
+		sc.logger.Info("no task sequence with name " + taskSequenceName + " found in stage " + stageName)
 		return err
 	} else if err != nil && err == errNoStage {
-		sc.logger.Info("no stage with name " + stageName + "found in project " + eventScope.Project)
+		sc.logger.Info("no stage with name " + stageName + " found in project " + eventScope.Project)
 		return err
 	}
 
