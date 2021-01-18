@@ -191,6 +191,9 @@ func getVirtualServicePublicHost(serviceName, projectName, stageName string) (st
 	if err != nil {
 		return "", fmt.Errorf("could not parse hostname: " + err.Error())
 	}
+	if url.Hostname() == "" && url.Path != "" {
+		return "", errors.New("Missing leading protocol (e.g. http://) in HOSTNAME_TEMPLATE environment variable")
+	}
 	return url.Hostname(), nil
 }
 
