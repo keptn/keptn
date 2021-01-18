@@ -159,13 +159,7 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 			Service: service,
 			Labels:  labels,
 		},
-		GetSLI: struct {
-			SLIProvider   string               `json:"sliProvider"`
-			Start         string               `json:"start"`
-			End           string               `json:"end"`
-			Indicators    []string             `json:"indicators"`
-			CustomFilters []*keptnv2.SLIFilter `json:"customFilters"`
-		}{
+		GetSLI: keptnv2.GetSLI{
 			SLIProvider:   sliProvider,
 			Start:         start,
 			End:           end,
