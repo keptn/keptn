@@ -13,7 +13,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210118074605-2d2e3c30fcdd
 	github.com/magiconair/properties v1.8.1
 	github.com/mitchellh/mapstructure v1.3.2
 	github.com/xdg/stringprep v1.0.0 // indirect
