@@ -42,6 +42,7 @@ func getWorkload(jmeterconf *JMeterConf, teststrategy string) (*Workload, error)
 	return nil, errors.New("No workload configuration found for teststrategy: " + teststrategy)
 }
 
+// GetConfigurationServiceURL returns the URL of the configuration service
 func GetConfigurationServiceURL() string {
 	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") == "" {
 		return "configuration-service:8080"
@@ -51,8 +52,7 @@ func GetConfigurationServiceURL() string {
 	return "localhost:8080"
 }
 
-/**
- * Loads a Resource from the Keptn configuration repository
+/** GetKeptnResource Loads a Resource from the Keptn configuration repository
  * returns:
  * - fileContent if found or "" if no file found at all
  * - error: in case there was an error
@@ -84,7 +84,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
 }
 
 /*
- * This function will download ALL Resources from Keptn's Configuration Repository where the name starts with 'resourceUriStartWith'. This for instance allows us to download all files in the /jmeter folders
+ * GetAllKeptnResources This function will download ALL Resources from Keptn's Configuration Repository where the name starts with 'resourceUriStartWith'. This for instance allows us to download all files in the /jmeter folders
  *
  * Parameters:
  * project, stage, string: reference the keptn repo
@@ -98,7 +98,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
  * no of resources: total number of downloaded resources
  * error: any error that occured
  */
-func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceUriFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
+func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
 
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 
@@ -133,7 +133,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 	foundPrimaryFile := false
 
 	// Download Files
-	// now lets iterate through all resources and download those that match the resourceUriFolderOfInterest and that havent already been downloaded
+	// now lets iterate through all resources and download those that match the resourceURIFolderOfInterest and that havent already been downloaded
 	// as we download files from project, service and stage level we have different file structures, e.g:
 	// Project: /jmeter/myjmeter.jmx
 	// Stage: /jmeter/myjmeter2.jmx
@@ -141,10 +141,10 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 	// When we store it locally we have to store all these files in /jmeter/filename.jmx
 	for _, resource := range resourceList {
 		isPrimaryFile := strings.Contains(*resource.ResourceURI, primaryTestFileName)
-		startingIndex := strings.Index(*resource.ResourceURI, resourceUriFolderOfInterest)
+		startingIndex := strings.Index(*resource.ResourceURI, resourceURIFolderOfInterest)
 
 		// store to local directory if it doesnt already exist
-		// now lets strip off the any prepending directory names prior to resourceUriFolderOfInterest
+		// now lets strip off the any prepending directory names prior to resourceURIFolderOfInterest
 
 		targetFileName := ""
 		if startingIndex >= 0 {
@@ -171,7 +171,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 			fileCount = fileCount + 1
 		} else {
 			skippedFileCount = skippedFileCount + 1
-			// 	logger.Debug(fmt.Sprintf("Not storing %s as it doesnt match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceUriFolderOfInterest))
+			// 	logger.Debug(fmt.Sprintf("Not storing %s as it doesnt match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceURIFolderOfInterest))
 		}
 	}
 
@@ -196,13 +196,13 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 		foundPrimaryFile = true
 	}
 
-	logger.Debug(fmt.Sprintf("Downloaded %d and skipped %d files for %s in %s.%s.%s", fileCount, skippedFileCount, resourceUriFolderOfInterest, project, stage, service))
+	logger.Debug(fmt.Sprintf("Downloaded %d and skipped %d files for %s in %s.%s.%s", fileCount, skippedFileCount, resourceURIFolderOfInterest, project, stage, service))
 
 	return foundPrimaryFile, fileCount, nil
 }
 
 /**
- * just returns whether the file exists
+ * FileExists just returns whether the file exists
  */
 func FileExists(filename string) bool {
 	// lets first check if the file exists and if we should not overwrite it

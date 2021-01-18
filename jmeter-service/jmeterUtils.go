@@ -14,6 +14,8 @@ import (
 )
 
 const maxAcceptedErrorRate = 0.1
+
+// JMeterConfigDirectory defines the default jmeter config directory
 const JMeterConfigDirectory = "/jmeter"
 
 // TestInfo contains information about which test to execute
@@ -25,7 +27,7 @@ type TestInfo struct {
 	Context      string
 }
 
-// Returns true if temp files should be removed. This is default - but can be changed through env variable DEBUG_KEEP_TEMP_FILES == true
+// DoRemoveTempFiles Returns true if temp files should be removed. This is default - but can be changed through env variable DEBUG_KEEP_TEMP_FILES == true
 func DoRemoveTempFiles() bool {
 	debugFlag := os.Getenv("DEBUG_KEEP_TEMP_FILES")
 	if strings.Compare(debugFlag, "true") == 0 {

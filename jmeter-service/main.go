@@ -192,7 +192,7 @@ func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 //
 // executes the actual JMEter tests based on the workload configuration
 //
-func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, workload *Workload, logger *keptncommon.Logger) (bool, error) {
+func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, logger *keptncommon.Logger) (bool, error) {
 
 	// for testStrategy functional we enforce a 0% error policy!
 	breakOnFunctionalIssues := workload.TestStrategy == TestStrategy_Functional
@@ -214,7 +214,7 @@ func runWorkload(serviceUrl *url.URL, testInfo *TestInfo, workload *Workload, lo
 	os.RemoveAll(resultDirectory + "_result.tlf")
 	os.RemoveAll("output.txt")
 
-	return executeJMeter(testInfo, workload, resultDirectory, serviceUrl, resultDirectory, breakOnFunctionalIssues, logger)
+	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger)
 }
 
 func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptncommon.Logger) error {
