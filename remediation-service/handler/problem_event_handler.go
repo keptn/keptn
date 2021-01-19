@@ -4,11 +4,12 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 // ProblemEventHandler handles incoming problem events
 type ProblemEventHandler struct {
-	KeptnHandler *keptn.Keptn
+	KeptnHandler *keptnv2.Keptn
 	Logger       keptncommon.LoggerInterface
 	Event        cloudevents.Event
 	Remediation  *Remediation
@@ -31,7 +32,7 @@ func (eh *ProblemEventHandler) HandleEvent() error {
 	if problemEvent.State == "CLOSED" {
 		msg := "Problem " + problemEvent.PID + " of type " + problemEvent.ProblemTitle + " has been closed."
 		eh.Logger.Info(msg)
-		return eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusSucceeded, keptn.RemediationResultFailed, msg)
+		return eh.Remediation.sendRemediationFinishedEvent(keptnv2.StatusSucceeded, keptnv2.ResultPass, msg)
 	}
 	return nil
 }

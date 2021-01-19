@@ -12,15 +12,6 @@ import (
 
 func TestNewEventHandler(t *testing.T) {
 	incomingEvent := cloudevents.NewEvent()
-	incomingEvent.SetType(keptn.TestsFinishedEventType)
-	incomingEvent.SetSource("test")
-	incomingEvent.SetID("1")
-	incomingEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	incomingEvent.SetData(cloudevents.ApplicationJSON, keptn.KeptnBaseEvent{
-		Project: "sockshop",
-		Service: "carts",
-		Stage:   "staging",
-	})
 
 	serviceName := "lighthouse-service"
 	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
@@ -45,20 +36,6 @@ func TestNewEventHandler(t *testing.T) {
 				logger: nil,
 			},
 			eventType: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
-			want: &StartEvaluationHandler{
-				Event:             incomingEvent,
-				KeptnHandler:      keptnHandler,
-				SLIProviderConfig: K8sSLIProviderConfig{},
-			},
-			wantErr: false,
-		},
-		{
-			name: "start-evaluation -> start-evaluation handler",
-			args: args{
-				event:  incomingEvent,
-				logger: nil,
-			},
-			eventType: keptn.StartEvaluationEventType,
 			want: &StartEvaluationHandler{
 				Event:             incomingEvent,
 				KeptnHandler:      keptnHandler,

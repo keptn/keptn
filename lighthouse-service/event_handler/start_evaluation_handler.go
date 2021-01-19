@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 )
@@ -177,14 +176,4 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)
-}
-
-func (eh *StartEvaluationHandler) getTestExecutionResult() string {
-
-	e := &keptnevents.TestsFinishedEventData{}
-	err := eh.Event.DataAs(e)
-	if err != nil {
-		eh.KeptnHandler.Logger.Error("Could not unmarshal event payload: " + err.Error())
-	}
-	return e.Result
 }
