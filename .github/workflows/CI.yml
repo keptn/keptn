@@ -293,12 +293,12 @@ jobs:
         working-directory: ./jmeter-service
 
       - name: Test helm svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
         run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./helm-service
 
       - name: Test gatekeeper svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
         run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./gatekeeper-service
 
@@ -554,7 +554,7 @@ jobs:
 
       - id: docker_build_helm_service
         name: Docker Build helm-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
         env:
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE}}"
           FOLDER: ${{ env.HELM_SVC_FOLDER }}
@@ -563,7 +563,7 @@ jobs:
 
       - id: docker_build_gatekeeper_service
         name: Docker Build gatekeeper-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
         env:
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE}}"
           FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}

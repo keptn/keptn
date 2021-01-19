@@ -41,10 +41,6 @@ func GetShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {
 		return nil, err
 	}
 
-	err = ValidateShipyardVersion(shipyard)
-	if err != nil {
-		return nil, err
-	}
 	return shipyard, err
 }
 

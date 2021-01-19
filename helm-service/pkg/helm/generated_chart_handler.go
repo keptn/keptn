@@ -1,6 +1,10 @@
 package helm
 
 import (
+	"errors"
+	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"net/url"
 	"strings"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -144,11 +148,17 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	}
 	templates = append(templates, &chart.File{Name: "templates/" + servicePrimary.Name + c.mesh.GetDestinationRuleSuffix(), Data: destinationRulePrimary})
 
+	// get the public hostname based on what has been configured in HOSTNAME_TEMPLATE and INGRESS_HOSTNAME_SUFFIX
+	publicHostName, err := getVirtualServicePublicHost(svc.Name, project, stageName)
+	if err != nil {
+		return nil, err
+	}
+
 	// Generate virtual service
 	gws := []string{mesh.GetIngressGateway(), "mesh"}
 	hosts := []string{
-		svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(), // service_name.dev.123.45.67.89.xip.io
-		svc.Name, // service-name
+		publicHostName, // service_name.dev.123.45.67.89.xip.io
+		svc.Name,       // service-name
 	}
 	destCanary := mesh.HTTPRouteDestination{Host: hostCanary, Weight: 0}
 	destPrimary := mesh.HTTPRouteDestination{Host: hostPrimary, Weight: 100}
@@ -165,6 +175,26 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	templates = append(templates, &chart.File{Name: "templates/" + svc.Name + c.mesh.GetVirtualServiceSuffix(), Data: vs})
 
 	return templates, nil
+}
+
+func getVirtualServicePublicHost(serviceName, projectName, stageName string) (string, error) {
+	publicURI := mesh.GetPublicDeploymentURI(keptnv2.EventData{
+		Project: projectName,
+		Stage:   stageName,
+		Service: serviceName,
+	})
+
+	if len(publicURI) == 0 {
+		return "", errors.New("could not determine public host name")
+	}
+	url, err := url.Parse(publicURI[0])
+	if err != nil {
+		return "", fmt.Errorf("could not parse hostname: " + err.Error())
+	}
+	if url.Hostname() == "" && url.Path != "" {
+		return "", errors.New("Missing leading protocol (e.g. http://) in HOSTNAME_TEMPLATE environment variable")
+	}
+	return url.Hostname(), nil
 }
 
 func (c *GeneratedChartGenerator) generateDeployment(depl *appsv1.Deployment) (*chart.File, error) {
@@ -208,10 +238,16 @@ func (c *GeneratedChartGenerator) GenerateMeshChart(helmManifest string, project
 	svcs := GetServices(helmManifest)
 
 	for _, svc := range svcs {
+		// get the public hostname based on what has been configured in HOSTNAME_TEMPLATE and INGRESS_HOSTNAME_SUFFIX
+		publicHostName, err := getVirtualServicePublicHost(svc.Name, project, stageName)
+		if err != nil {
+			return nil, err
+		}
+
 		// Generate virtual service for external access
 		gws := []string{mesh.GetIngressGateway(), "mesh"}
 		hosts := []string{
-			svc.Name + "." + c.getNamespace(project, stageName) + "." + mesh.GetIngressHostnameSuffix(),
+			publicHostName,
 			svc.Name,
 		}
 		host := svc.Name + "." + c.getNamespace(project, stageName) + ".svc.cluster.local"

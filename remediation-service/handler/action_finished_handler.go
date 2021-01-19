@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"time"
@@ -23,14 +22,14 @@ type waitFunction func()
 
 // HandleEvent handles the incoming event
 func (eh *ActionFinishedEventHandler) HandleEvent() error {
-	actionFinishedEvent := &keptn.ActionFinishedEventData{}
+	actionFinishedEvent := &keptnv2.ActionFinishedEventData{}
 
 	err := eh.Event.DataAs(actionFinishedEvent)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not parse incoming action.finished event: " + err.Error())
 		return err
 	}
-	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v, status = %v", actionFinishedEvent.Action.Result, actionFinishedEvent.Action.Status))
+	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v, status = %v", actionFinishedEvent.Result, actionFinishedEvent.Status))
 
 	if eh.WaitFunction == nil {
 		eh.WaitFunction = func() {
@@ -46,7 +45,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 	err = eh.Remediation.sendEvaluationTriggeredEvent()
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not send start-evaluation event: " + err.Error())
-		eh.Remediation.sendRemediationFinishedEvent(keptn.RemediationStatusErrored, keptn.RemediationResultFailed, "could not send start-evaluation event")
+		eh.Remediation.sendRemediationFinishedEvent(keptnv2.StatusErrored, keptnv2.ResultFailed, "could not send start-evaluation event")
 		return err
 	}
 	return nil

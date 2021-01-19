@@ -4,7 +4,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"testing"
@@ -41,7 +40,7 @@ func TestActionFinishedEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "received action.finished, send start-evaluation event",
 			fields: fields{
-				Event: createTestCloudEvent(keptn.ActionFinishedEventType, actionFinishedEvent),
+				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName), actionFinishedEvent),
 			},
 			wantErr: false,
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{

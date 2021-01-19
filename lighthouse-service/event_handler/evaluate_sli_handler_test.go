@@ -1421,11 +1421,7 @@ func TestEvaluateObjectives(t *testing.T) {
 					Service: "carts",
 					Stage:   "dev",
 				},
-				GetSLI: struct {
-					Start           string               `json:"start"`
-					End             string               `json:"end"`
-					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
-				}{
+				GetSLI: keptnv2.GetSLIFinished{
 					Start: "2019-10-20T07:57:27.152330783Z",
 					End:   "2019-10-22T08:57:27.152330783Z",
 					IndicatorValues: []*keptnv2.SLIResult{
@@ -1553,11 +1549,7 @@ func TestEvaluateObjectives(t *testing.T) {
 					Service: "carts",
 					Stage:   "dev",
 				},
-				GetSLI: struct {
-					Start           string               `json:"start"`
-					End             string               `json:"end"`
-					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
-				}{
+				GetSLI: keptnv2.GetSLIFinished{
 					Start: "2019-10-20T07:57:27.152330783Z",
 					End:   "2019-10-22T08:57:27.152330783Z",
 					IndicatorValues: []*keptnv2.SLIResult{
@@ -1695,11 +1687,7 @@ func TestEvaluateObjectives(t *testing.T) {
 					Service: "carts",
 					Stage:   "dev",
 				},
-				GetSLI: struct {
-					Start           string               `json:"start"`
-					End             string               `json:"end"`
-					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
-				}{
+				GetSLI: keptnv2.GetSLIFinished{
 					Start: "2019-10-20T07:57:27.152330783Z",
 					End:   "2019-10-22T08:57:27.152330783Z",
 					IndicatorValues: []*keptnv2.SLIResult{
@@ -1848,11 +1836,7 @@ func TestEvaluateObjectives(t *testing.T) {
 					Service: "carts",
 					Stage:   "dev",
 				},
-				GetSLI: struct {
-					Start           string               `json:"start"`
-					End             string               `json:"end"`
-					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
-				}{
+				GetSLI: keptnv2.GetSLIFinished{
 					Start: "2019-10-20T07:57:27.152330783Z",
 					End:   "2019-10-22T08:57:27.152330783Z",
 					IndicatorValues: []*keptnv2.SLIResult{
@@ -2003,11 +1987,7 @@ func TestEvaluateObjectives(t *testing.T) {
 					Service: "carts",
 					Stage:   "dev",
 				},
-				GetSLI: struct {
-					Start           string               `json:"start"`
-					End             string               `json:"end"`
-					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
-				}{
+				GetSLI: keptnv2.GetSLIFinished{
 					Start: "2019-10-20T07:57:27.152330783Z",
 					End:   "2019-10-22T08:57:27.152330783Z",
 					IndicatorValues: []*keptnv2.SLIResult{
@@ -2096,11 +2076,7 @@ func TestEvaluateObjectives(t *testing.T) {
 					Service: "carts",
 					Stage:   "dev",
 				},
-				GetSLI: struct {
-					Start           string               `json:"start"`
-					End             string               `json:"end"`
-					IndicatorValues []*keptnv2.SLIResult `json:"indicatorValues"`
-				}{
+				GetSLI: keptnv2.GetSLIFinished{
 					Start: "2019-10-20T07:57:27.152330783Z",
 					End:   "2019-10-22T08:57:27.152330783Z",
 					IndicatorValues: []*keptnv2.SLIResult{

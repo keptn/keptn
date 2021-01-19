@@ -59,7 +59,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 		},
 		Deployment: keptnv2.DeploymentData{
 			DeploymentStrategy:   "direct",
-			DeploymentURIsLocal:  []string{"http://my-service.my-project-my-stage"},
+			DeploymentURIsLocal:  []string{"http://my-service.my-project-my-stage:80"},
 			DeploymentURIsPublic: []string{"http://my-service.my-project-my-stage.svc.cluster.local:80"},
 			DeploymentNames:      []string{"direct"},
 			GitCommit:            "USER_CHART_GIT_ID",

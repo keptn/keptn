@@ -36,20 +36,19 @@ import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
 import { DtCopyToClipboardModule } from "@dynatrace/barista-components/copy-to-clipboard";
 import { DtToggleButtonGroupModule } from "@dynatrace/barista-components/toggle-button-group";
+import { DtQuickFilterModule } from "@dynatrace/barista-components/experimental/quick-filter";
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
+
 import { MomentModule } from 'ngx-moment';
 import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
 import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
 
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
-import {
-  KtbHorizontalSeparatorComponent,
-  KtbHorizontalSeparatorTitle,
-} from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
+import { KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
 import { KtbHttpLoadingBarComponent } from './_components/ktb-http-loading-bar/ktb-http-loading-bar.component';
 import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/ktb-notification-bar.component';
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
@@ -60,8 +59,8 @@ import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sl
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
 import { KtbApprovalItemComponent } from "./_components/ktb-approval-item/ktb-approval-item.component";
-import {KtbCopyToClipboardComponent} from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
-import {KtbMarkdownComponent} from "./_components/ktb-markdown/ktb-markdown.component";
+import { KtbCopyToClipboardComponent } from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
+import { KtbMarkdownComponent } from "./_components/ktb-markdown/ktb-markdown.component";
 
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
@@ -147,6 +146,7 @@ registerLocaleData(localeEn, 'en');
     DtTopBarNavigationModule,
     DtCopyToClipboardModule,
     DtToggleButtonGroupModule,
+    DtQuickFilterModule,
     MatDialogModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,

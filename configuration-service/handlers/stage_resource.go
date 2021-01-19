@@ -5,6 +5,7 @@ import (
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
+	"net/url"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
@@ -47,11 +48,17 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURINotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Project not found")})
 	}
 
+	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceResourceURIDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
+	}
+
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
-	resourcePath := projectConfigPath + "/" + params.ResourceURI
+	resourcePath := projectConfigPath + "/" + unescapedResourceName
 
 	logger.Debug("Checking out " + params.StageName + " branch")
-	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
+	err = common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())

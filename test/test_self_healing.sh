@@ -84,8 +84,8 @@ verify_using_jq "$response" ".source" "remediation-service"
 verify_using_jq "$response" ".data.project" "self-healing-project"
 verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
-verify_using_jq "$response" ".data.remediation.status" "errored"
-verify_using_jq "$response" ".data.remediation.result" "failed"
+verify_using_jq "$response" ".data.status" "errored"
+verify_using_jq "$response" ".data.result" "fail"
 
 
 ####################################################################################################################################
@@ -126,9 +126,9 @@ verify_using_jq "$response" ".source" "remediation-service"
 verify_using_jq "$response" ".data.project" "self-healing-project"
 verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
-verify_using_jq "$response" ".data.remediation.status" "errored"
-verify_using_jq "$response" ".data.remediation.result" "failed"
-verify_using_jq "$response" ".data.remediation.message" "Remediation disabled for service $SERVICE in project $PROJECT in stage production"
+verify_using_jq "$response" ".data.status" "errored"
+verify_using_jq "$response" ".data.result" "fail"
+verify_using_jq "$response" ".data.message" "Remediation disabled for service $SERVICE in project $PROJECT in stage production"
 
 
 ##########################################################################################################################################

@@ -4,7 +4,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
@@ -13,21 +12,21 @@ import (
 	"testing"
 )
 
-const previousRemediations = `{
+var previousRemediations = `{
     "nextPageKey": "0",
     "remediations": [
         {
             "eventId": "test-id-1",
             "keptnContext": "` + testKeptnContext + `",
             "time": "1",
-            "type": "` + keptn.RemediationTriggeredEventType + `"
+            "type": "` + keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName) + `"
         },
 		{
             "eventId": "test-id-2",
             "keptnContext": "` + testKeptnContext + `",
             "time": "2",
 			"action": "togglefeature",
-            "type": "` + keptn.RemediationStatusChangedEventType + `"
+            "type": "` + keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName) + `"
         }
     ],
     "totalCount": 2
@@ -201,7 +200,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 					EventID:      "",
 					KeptnContext: testKeptnContext,
 					Time:         "",
-					Type:         keptn.RemediationStatusChangedEventType,
+					Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
 				},
 			},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
@@ -214,7 +213,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.RemediationStatusChangedEventType),
+					Type:           stringp(keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName)),
 				},
 				{
 					Contenttype:    "application/json",
@@ -225,7 +224,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.ActionTriggeredEventType),
+					Type:           stringp(keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName)),
 				},
 			},
 			returnedRemediations: previousRemediations,
@@ -252,7 +251,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.RemediationFinishedEventType),
+					Type:           stringp(keptnv2.GetFinishedEventType(keptnv2.RemediationTaskName)),
 				},
 			},
 			returnedRemediations: previousRemediations,
@@ -294,7 +293,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.RemediationFinishedEventType),
+					Type:           stringp(keptnv2.GetFinishedEventType(keptnv2.RemediationTaskName)),
 				},
 			},
 			returnedRemediations: previousRemediations,
@@ -321,7 +320,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.RemediationFinishedEventType),
+					Type:           stringp(keptnv2.GetFinishedEventType(keptnv2.RemediationTaskName)),
 				},
 			},
 			returnedRemediations: previousRemediations,

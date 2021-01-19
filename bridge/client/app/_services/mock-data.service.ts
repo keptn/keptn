@@ -89,7 +89,7 @@ export class MockDataService {
   }
 
   public loadRoots(project: Project, service: Service) {
-    service.roots = [...this.mockRoots[project.projectName+"."+service.serviceName]||[], ...service.roots||[]].sort(DateUtil.compareTraceTimes);
+    service.roots = [...this.mockRoots[project.projectName+"."+service.serviceName]||[], ...service.roots||[]].sort(DateUtil.compareTraceTimesAsc);
     this._roots.next(service.roots);
     this.mockRoots[project.projectName+"."+service.serviceName] = [];
   }
