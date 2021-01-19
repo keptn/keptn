@@ -53,6 +53,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: DATASTORE_URI
+            value: mongodb-datastore:8080
         ports:
         - containerPort: 8080
         resources:
@@ -69,18 +71,12 @@ spec:
         image: keptn/distributor:latest
         ports:
           - containerPort: 8080
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 10999
-          initialDelaySeconds: 5
-          periodSeconds: 5
         resources:
           requests:
             memory: "32Mi"
             cpu: "50m"
           limits:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "500m"
         env:
           - name: PUBSUB_URL

@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/ghodss/yaml"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -23,7 +24,7 @@ var ErrStageNotFound = errors.New("stage not found")
 // ErrServiceNotFound indicates that a service has not been found
 var ErrServiceNotFound = errors.New("service not found")
 
-// ErrOpenRemediationNotFound indeicates that no open remediation has been found
+// ErrOpenRemediationNotFound indicates that no open remediation has been found
 var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 var instance *projectsMaterializedView
@@ -44,7 +45,7 @@ func GetProjectsMaterializedView() *projectsMaterializedView {
 	if instance == nil {
 		instance = &projectsMaterializedView{
 			ProjectRepo:     &MongoDBProjectRepo{},
-			EventsRetriever: keptnapi.NewEventHandler(os.Getenv("DATASTORE")),
+			EventsRetriever: keptnapi.NewEventHandler(os.Getenv("DATASTORE_URI")),
 			Logger:          keptncommon.NewLogger("", "", "configuration-service"),
 		}
 	}
@@ -72,8 +73,30 @@ func (mv *projectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 	}
 
 	existingProject.Shipyard = shipyardContent
+	if err := setShipyardVersion(existingProject); err != nil {
+		mv.Logger.Error(fmt.Sprintf("could not update shipyard version fo project %s: %s"+projectName, err.Error()))
+	}
 
 	return mv.updateProject(existingProject)
+}
+
+func setShipyardVersion(existingProject *models.ExpandedProject) error {
+	const previousShipyardVersion = "spec.keptn.sh/0.1.7"
+	if existingProject.Shipyard == "" {
+		// if the field is not set, it can only be 0.1.7, since in Keptn 0.8 we ensure that the shipyard content is always included in the materialized view
+		existingProject.ShipyardVersion = previousShipyardVersion
+		return nil
+	}
+	shipyard := &keptnv2.Shipyard{}
+	if err := yaml.Unmarshal([]byte(existingProject.Shipyard), shipyard); err != nil {
+		return errors.New("could not parse shipyard file content to shipyard struct: " + err.Error())
+	}
+	if shipyard.ApiVersion != "" {
+		existingProject.ShipyardVersion = shipyard.ApiVersion
+	} else {
+		existingProject.ShipyardVersion = previousShipyardVersion
+	}
+	return nil
 }
 
 // UpdateUpstreamInfo updates the Upstream Repository URL and git user of a project
@@ -96,14 +119,52 @@ func (mv *projectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	return nil
 }
 
+// DeleteUpstreamInfo deletes the Upstream Rpository URL and git user of a project
+func (mv *projectsMaterializedView) DeleteUpstreamInfo(projectName string) error {
+	existingProject, err := mv.GetProject(projectName)
+	if err != nil {
+		return err
+	}
+	if existingProject == nil {
+		return nil
+	}
+	existingProject.GitUser = ""
+	existingProject.GitRemoteURI = ""
+	if err := mv.updateProject(existingProject); err != nil {
+		mv.Logger.Error(fmt.Sprintf("could not delete upstream credentials of project %s: %s", projectName, err.Error()))
+		return err
+	}
+	return nil
+}
+
 // GetProjects returns all projects
 func (mv *projectsMaterializedView) GetProjects() ([]*models.ExpandedProject, error) {
-	return mv.ProjectRepo.GetProjects()
+	projects, err := mv.ProjectRepo.GetProjects()
+	if err != nil {
+		return nil, err
+	}
+	for _, project := range projects {
+		if err := setShipyardVersion(project); err != nil {
+			// log the error but continue
+			mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+		}
+	}
+	return projects, nil
 }
 
 // GetProject returns a project by its name
 func (mv *projectsMaterializedView) GetProject(projectName string) (*models.ExpandedProject, error) {
-	return mv.ProjectRepo.GetProject(projectName)
+	project, err := mv.ProjectRepo.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+	if project != nil {
+		if err := setShipyardVersion(project); err != nil {
+			// log the error but continue
+			mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+		}
+	}
+	return project, nil
 }
 
 // DeleteProject deletes a project
@@ -314,8 +375,8 @@ func (mv *projectsMaterializedView) UpdateEventOfService(event interface{}, even
 				return errors.New("no matching deployment.triggered event found")
 			}
 
-			triggeredData := keptnv2.DeploymentTriggeredEventData{}
-			err := keptnv2.Decode(matchingTriggeredEvent.Data, &triggeredData)
+			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
+			err := keptnv2.Decode(matchingTriggeredEvent.Data, triggeredData)
 			if err != nil {
 				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
 			}
@@ -428,7 +489,7 @@ func updateServiceInStage(project *models.ExpandedProject, stage string, service
 func findMatchingTriggeredEvent(events []*goutilsmodels.KeptnContextExtendedCE, triggeredID string) *goutilsmodels.KeptnContextExtendedCE {
 	var matchingTriggeredEvent *goutilsmodels.KeptnContextExtendedCE = nil
 	for _, e := range events {
-		if e.Triggeredid == triggeredID {
+		if e.ID == triggeredID {
 			matchingTriggeredEvent = e
 			break
 		}

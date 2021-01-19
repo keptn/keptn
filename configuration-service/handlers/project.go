@@ -160,18 +160,34 @@ func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams
 
 		logger.Debug("Updating project " + params.ProjectName)
 
+		mv := common.GetProjectsMaterializedView()
+		logger.Debug("Add or update Git origin and push changes for project " + params.ProjectName)
+		projectInfo, err := mv.GetProject(params.Project.ProjectName)
+		if err != nil {
+			msg := "could not read project information: " + err.Error()
+			logger.Error(msg)
+			return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(msg)})
+		}
+
+		oldRemoteURL := projectInfo.GitRemoteURI
+		oldRemoteUser := projectInfo.GitUser
 		credentials, err := common.GetCredentials(params.Project.ProjectName)
 		if err == nil && credentials != nil {
 			logger.Debug("Storing Git credentials for project " + params.ProjectName)
 
-			logger.Debug("Add or update Git origin and push changes for project " + params.ProjectName)
 			err = common.UpdateOrCreateOrigin(params.Project.ProjectName)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository while updating project %s: %v", params.Project.ProjectName, err))
+				if oldRemoteURL != "" && oldRemoteUser != "" {
+					if restoreErr := mv.UpdateUpstreamInfo(params.ProjectName, oldRemoteURL, oldRemoteUser); restoreErr != nil {
+						logger.Error(fmt.Sprintf("could not restore upstream info in materializer view to previous values: %s", err.Error()))
+					}
+				} else if deleteErr := mv.DeleteUpstreamInfo(params.ProjectName); deleteErr != nil {
+					logger.Error(fmt.Sprintf("Could not delete upstream info from materialized view: %s", err.Error()))
+				}
 				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 			}
 
-			mv := common.GetProjectsMaterializedView()
 			if err := mv.UpdateUpstreamInfo(params.Project.ProjectName, credentials.RemoteURI, credentials.User); err != nil {
 				logger.Error(fmt.Sprintf("Could not add upstream repository info for project %s: %v", params.Project.ProjectName, err))
 				return project.NewPostProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})

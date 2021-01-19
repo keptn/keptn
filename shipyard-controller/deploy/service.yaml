@@ -65,7 +65,7 @@ spec:
             memory: "256Mi"
             cpu: "500m"
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptn/distributor:0.8.0-alpha
         ports:
           - containerPort: 8080
         livenessProbe:

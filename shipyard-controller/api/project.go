@@ -301,18 +301,55 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 		pm.logger.Error(msg)
 		return errors.New(msg)
 	}
+	oldSecret, getSecretErr := pm.getUpstreamRepoCredentials(*params.Name)
+	if getSecretErr != nil {
+		// log the error but continue
+		pm.logger.Error(fmt.Sprintf("could not read previous secret of project %s: %s", *params.Name, getSecretErr.Error()))
+	}
+
 	if params.GitRemoteURL != "" && params.GitUser != "" && params.GitToken != "" {
 		if err := pm.createUpstreamRepoCredentials(params); err != nil {
 			return pm.logAndReturnError(err.Error())
 		}
 	}
 
-	pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
+	_, errObj := pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
 		GitRemoteURI: params.GitRemoteURL,
 		GitToken:     params.GitToken,
 		GitUser:      params.GitUser,
 		ProjectName:  *params.Name,
 	})
+
+	if errObj != nil {
+		msg := fmt.Sprintf("Could not update upstream repository of project %s: %s", *params.Name, *errObj.Message)
+
+		if oldSecret != nil {
+			// restore previous secret
+			if createErr := pm.createUpstreamRepoCredentials(&operations.CreateProjectParams{
+				GitRemoteURL: oldSecret.RemoteURI,
+				GitToken:     oldSecret.Token,
+				GitUser:      oldSecret.User,
+				Name:         params.Name,
+			}); createErr != nil {
+				pm.logger.Error(fmt.Sprintf("Could not restore previous upstream repo credentials: %s", createErr.Error()))
+			} else {
+				// restore the upstream on the configuration service
+				if _, restoreErrObj := pm.projectAPI.UpdateConfigurationServiceProject(keptnapimodels.Project{
+					GitRemoteURI: oldSecret.RemoteURI,
+					GitToken:     oldSecret.Token,
+					GitUser:      oldSecret.User,
+					ProjectName:  *params.Name,
+				}); restoreErrObj != nil {
+					pm.logger.Error(fmt.Sprintf("Could not restore previous upstream on configuration service: %s", *restoreErrObj.Message))
+				}
+			}
+		} else {
+			if delErr := pm.deleteUpstreamRepoCredentials(params); delErr != nil {
+				pm.logger.Error(fmt.Sprintf("Could not delete upstream repo credentials: %s", delErr.Error()))
+			}
+		}
+		return pm.logAndReturnError(msg)
+	}
 	return nil
 }
 
@@ -442,6 +479,25 @@ func (pm *projectManager) sendProjectCreateSuccessFinishedEvent(keptnContext str
 	return nil
 }
 
+func (pm *projectManager) getUpstreamRepoCredentials(projectName string) (*gitCredentials, error) {
+	secret, err := pm.secretStore.GetSecret(getUpstreamRepoCredsSecretName(projectName))
+	if err != nil {
+		return nil, err
+	}
+	if secret == nil {
+		return nil, nil
+	}
+
+	if marshalledSecret, ok := secret["git-credentials"]; ok {
+		secretObj := &gitCredentials{}
+		if err := json.Unmarshal(marshalledSecret, secretObj); err != nil {
+			return nil, err
+		}
+		return secretObj, nil
+	}
+	return nil, nil
+}
+
 func (pm *projectManager) createUpstreamRepoCredentials(params *operations.CreateProjectParams) error {
 	pm.logger.Info("Storing git credentials for project " + *params.Name)
 	credentials := &gitCredentials{
@@ -460,6 +516,16 @@ func (pm *projectManager) createUpstreamRepoCredentials(params *operations.Creat
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
 	pm.logger.Info("stored git credentials for project " + *params.Name)
+	return nil
+}
+
+func (pm *projectManager) deleteUpstreamRepoCredentials(params *operations.CreateProjectParams) error {
+	pm.logger.Info("Deleting git credentials for project " + *params.Name)
+
+	if err := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(*params.Name)); err != nil {
+		return fmt.Errorf("could not delete git credentials: %s", err.Error())
+	}
+	pm.logger.Info("deleted git credentials for project " + *params.Name)
 	return nil
 }
 
