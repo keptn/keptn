@@ -280,11 +280,16 @@ func getJMeterConf(project string, stage string, service string, logger *keptnco
 		keptnResourceContent, err := GetKeptnResource(project, stage, service, JMeterConfFilename)
 
 		if err != nil {
-			logMessage := fmt.Sprintf("No %s file found for service %s on stage %s or project-level %s", JMeterConfFilename, service, stage, project)
+			logMessage := fmt.Sprintf("error when trying to load %s file for service %s on stage %s or project-level %s", JMeterConfFilename, service, stage, project)
 			logger.Info(logMessage)
 			return nil, errors.New(logMessage)
 		}
-		fileContent = []byte(keptnResourceContent /*keptnResourceContent.ResourceContent*/)
+		if keptnResourceContent == "" {
+			// if no jmeter.conf file is available, this is not an error, as the service will proceed with the default workload
+			logger.Info(fmt.Sprintf("no %s found", JMeterConfFilename))
+			return nil, nil
+		}
+		fileContent = []byte(keptnResourceContent)
 	}
 
 	var jmeterConf *JMeterConf
