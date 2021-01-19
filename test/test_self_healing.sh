@@ -85,7 +85,7 @@ verify_using_jq "$response" ".data.project" "self-healing-project"
 verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.status" "errored"
-verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.result" "fail"
 
 
 ####################################################################################################################################
@@ -127,7 +127,7 @@ verify_using_jq "$response" ".data.project" "self-healing-project"
 verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.status" "errored"
-verify_using_jq "$response" ".data.result" "failed"
+verify_using_jq "$response" ".data.result" "fail"
 verify_using_jq "$response" ".data.message" "Remediation disabled for service $SERVICE in project $PROJECT in stage production"
 
 
