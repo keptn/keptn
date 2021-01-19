@@ -17,7 +17,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
