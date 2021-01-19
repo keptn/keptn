@@ -24,8 +24,6 @@ func NewEventHandler(event cloudevents.Event, logger *keptncommon.Logger) (Evalu
 		return nil, err
 	}
 	switch event.Type() {
-	case keptn.StartEvaluationEventType:
-		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler, SLIProviderConfig: K8sSLIProviderConfig{}}, nil
 	case keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName):
 		return &StartEvaluationHandler{Event: event, KeptnHandler: keptnHandler, SLIProviderConfig: K8sSLIProviderConfig{}}, nil
 	case keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName):

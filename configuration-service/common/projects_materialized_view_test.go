@@ -4,7 +4,6 @@ import (
 	"errors"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -884,7 +883,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 						}, nil
 					},
 					UpdateProjectMock: func(project *models.ExpandedProject) error {
-						if project.Stages[0].Services[0].LastEventTypes[keptn.ConfigurationChangeEventType].KeptnContext == "test-context" {
+						if project.Stages[0].Services[0].LastEventTypes["keptn.sh.some.event"].KeptnContext == "test-context" {
 							return nil
 						}
 						return errors.New("project was not updated correctly")
@@ -895,7 +894,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			},
 			args: args{
 				keptnBase:    &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
-				eventType:    keptn.ConfigurationChangeEventType,
+				eventType:    "keptn.sh.some.event",
 				keptnContext: "test-context",
 			},
 			wantErr: false,

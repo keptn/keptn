@@ -71,10 +71,7 @@ func getApprovalTriggeredTestData(result keptnv2.ResultType, passStrategy, warni
 			Result:  result,
 			Message: "",
 		},
-		Approval: struct {
-			Pass    string `json:"pass"`
-			Warning string `json:"warning"`
-		}{
+		Approval: keptnv2.Approval{
 			Pass:    passStrategy,
 			Warning: warningStrategy,
 		},
