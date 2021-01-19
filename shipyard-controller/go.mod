@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
+	github.com/cloudevents/sdk-go v0.10.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3
@@ -20,7 +21,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210119093614-eab1c3bafadb
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/mitchellh/mapstructure v1.2.2
 	github.com/stretchr/testify v1.5.1

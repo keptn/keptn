@@ -10,9 +10,10 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210119093614-eab1c3bafadb
 	github.com/keptn/kubernetes-utils v0.8.0-alpha
 	github.com/kinbiko/jsonassert v1.0.1
+	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/stretchr/testify v1.5.1
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.1.2
