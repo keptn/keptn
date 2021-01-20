@@ -47,8 +47,14 @@ type envConfig struct {
 	KeptnAPIToken       string `envconfig:"KEPTN_API_TOKEN" default:""`
 	APIProxyPort        int    `envconfig:"API_PROXY_PORT" default:"8081"`
 	APIProxyPath        string `envconfig:"API_PROXY_PATH" default:"/"`
-	EventForwardingPath string `envconfig:"RCV_PATH" default:"/event"`
+	HTTPPollingInterval string `envconfig:"HTTP_POLLING_INTERVAL" default:"10"`
+	EventForwardingPath string `envconfig:"EVENT_FORWARDING_PATH" default:"/event"`
 	VerifySSL           bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
+	PubSubURL           string `envconfig:"PUBSUB_URL" default:"nats://keptn-nats-cluster"`
+	PubSubTopic         string `envconfig:"PUBSUB_TOPIC" default:""`
+	PubSubRecipient     string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
+	PubSubRecipientPort string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
+	PubSubRecipientPath string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
 }
 
 var httpClient cloudevents.Client
@@ -64,8 +70,6 @@ var close = make(chan bool)
 var sentCloudEvents map[string][]string
 
 var pubSubConnections map[string]*cenats.Sender
-
-var recipientURL string
 
 var env envConfig
 
@@ -118,13 +122,8 @@ func _main(args []string, env envConfig) int {
 
 func startEventReceiver(waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
-	// initialize the http client
-	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
-	switch connectionType {
-	case "":
-		createNATSClientConnection()
-		break
+	switch getPubSubConnectionType() {
 	case connectionTypeNATS:
 		createNATSClientConnection()
 		break
@@ -133,6 +132,16 @@ func startEventReceiver(waitGroup *sync.WaitGroup) {
 		break
 	default:
 		createNATSClientConnection()
+	}
+}
+
+func getPubSubConnectionType() string {
+	if env.KeptnAPIEndpoint == "" {
+		// f no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
+		return connectionTypeNATS
+	} else {
+		// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
+		return connectionTypeHTTP
 	}
 }
 
@@ -147,7 +156,7 @@ func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 
-// EventForwardHandler godoc
+// EventForwardHandler forwards events received by the exxecution plane services to the Keptn API or the Nats server
 func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
@@ -311,18 +320,12 @@ func forwardEventToNATSServer(event cloudevents.Event) error {
 }
 
 func createPubSubConnection(topic string) (*cenats.Sender, error) {
-	pubSubURL := os.Getenv("PUBSUB_URL")
-
-	if pubSubURL == "" {
-		return nil, errors.New("no PubSub URL defined")
-	}
-
 	if topic == "" {
 		return nil, errors.New("no PubSub Topic defined")
 	}
 
 	if pubSubConnections[topic] == nil {
-		p, err := cenats.NewSender(pubSubURL, topic, cenats.NatsOptions())
+		p, err := cenats.NewSender(env.PubSubURL, topic, cenats.NatsOptions())
 		if err != nil {
 			fmt.Printf("Failed to create nats protocol, %s", err.Error())
 		}
@@ -378,7 +381,7 @@ func getHTTPClient() *http.Client {
 }
 
 func createHTTPConnection() {
-	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+	if env.PubSubRecipient == "" {
 		fmt.Printf("No pubsub recipient defined")
 		return
 	}
@@ -386,9 +389,9 @@ func createHTTPConnection() {
 	httpClient = createRecipientConnection()
 
 	eventEndpoint := getHTTPPollingEndpoint()
-	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
+	topics := strings.Split(env.PubSubTopic, ",")
 
-	pollingInterval, err := strconv.ParseInt(os.Getenv("HTTP_POLLING_INTERVAL"), 10, 64)
+	pollingInterval, err := strconv.ParseInt(env.HTTPPollingInterval, 10, 64)
 	if err != nil {
 		pollingInterval = defaultPollingInterval
 	}
@@ -462,7 +465,7 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 		e, err := decodeCloudEvent(marshal)
 
 		if e != nil {
-			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + os.Getenv("PUBSUB_RECIPIENT"))
+			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + env.PubSubRecipient)
 			err = sendEvent(*e)
 			if err != nil {
 				fmt.Println("Could not send CloudEvent: " + err.Error())
@@ -579,14 +582,14 @@ func stringp(s string) *string {
 }
 
 func createNATSClientConnection() {
-	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+	if env.PubSubRecipient == "" {
 		fmt.Println("No pubsub recipient defined")
 		return
 	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
 
-	natsURL := os.Getenv("PUBSUB_URL")
-	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
+	natsURL := env.PubSubURL
+	topics := strings.Split(env.PubSubTopic, ",")
 	nch := lib.NewNatsConnectionHandler(natsURL, topics)
 
 	nch.MessageHandler = handleMessage
@@ -617,11 +620,6 @@ func createNATSClientConnection() {
 
 func createRecipientConnection() cloudevents.Client {
 	var err error
-	recipientURL, err = getPubSubRecipientURL(
-		os.Getenv("PUBSUB_RECIPIENT"),
-		os.Getenv("PUBSUB_RECIPIENT_PORT"),
-		os.Getenv("PUBSUB_RECIPIENT_PATH"),
-	)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -676,7 +674,7 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 func sendEvent(event cloudevents.Event) error {
 	client := createRecipientConnection()
 
-	ctx := cloudevents.ContextWithTarget(context.Background(), recipientURL)
+	ctx := cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		fmt.Printf("failed to send: %s\n", result.Error())
@@ -686,19 +684,16 @@ func sendEvent(event cloudevents.Event) error {
 	return nil
 }
 
-func getPubSubRecipientURL(recipientService string, port string, path string) (string, error) {
-	if recipientService == "" {
-		return "", errors.New("no recipient service defined")
-	}
+func getPubSubRecipientURL() string {
+	recipientService := env.PubSubRecipient
 
 	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
 		recipientService = "http://" + recipientService
 	}
-	if port == "" {
-		port = "8080"
+
+	path := ""
+	if env.PubSubRecipientPath != "" {
+		path = "/" + strings.TrimPrefix(env.PubSubRecipientPath, "/")
 	}
-	if path != "" && !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	return recipientService + ":" + port + path, nil
+	return recipientService + ":" + env.PubSubRecipientPort + path
 }

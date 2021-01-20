@@ -81,7 +81,7 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 				port:             "666",
 				path:             "",
 			},
-			want:    "",
+			want:    "http://127.0.0.1:666",
 			wantErr: true,
 		},
 		{
@@ -91,17 +91,31 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 				port:             "",
 				path:             "",
 			},
-			want:    "https://lighthouse-service:8080",
-			wantErr: false,
+			want: "https://lighthouse-service:8080",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPubSubRecipientURL(tt.args.recipientService, tt.args.port, tt.args.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getPubSubRecipientURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.args.recipientService != "" {
+				os.Setenv("PUBSUB_RECIPIENT", tt.args.recipientService)
+			} else {
+				os.Unsetenv("PUBSUB_RECIPIENT")
 			}
+			if tt.args.port != "" {
+				os.Setenv("PUBSUB_RECIPIENT_PORT", tt.args.port)
+			} else {
+				os.Unsetenv("PUBSUB_RECIPIENT_PORT")
+			}
+			if tt.args.path != "" {
+				os.Setenv("PUBSUB_RECIPIENT_PATH", tt.args.path)
+			} else {
+				os.Unsetenv("PUBSUB_RECIPIENT_PATH")
+			}
+
+			env = envConfig{}
+			_ = envconfig.Process("", &env)
+
+			got := getPubSubRecipientURL()
 			if got != tt.want {
 				t.Errorf("getPubSubRecipientURL() got = %v, want1 %v", got, tt.want)
 			}
