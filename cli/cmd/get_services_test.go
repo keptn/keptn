@@ -13,7 +13,7 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
-// TestEvaluationDoneGetEvent tests the evaluation-done command
+// TestGetService tests the get service command
 func TestGetService(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true

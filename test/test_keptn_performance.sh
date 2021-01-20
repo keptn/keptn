@@ -59,8 +59,8 @@ EOF
   keptn_context_id=$(send_event_json ./tmp-trigger-evaluation.json)
   rm tmp-trigger-evaluation.json
 
-  # try to fetch a evaluation-done event
-  echo "Getting evaluation-done event with context-id: ${keptn_context_id}"
+  # try to fetch a evaluation.finished event
+  echo "Getting evaluation.finished event with context-id: ${keptn_context_id}"
   response=$(get_event_with_retry sh.keptn.event.evaluation.finished ${keptn_context_id} ${SELF_MONITORING_PROJECT})
   echo $response
 }

@@ -31,7 +31,7 @@ type getStageStruct struct {
 
 var stageParameter getStageStruct
 
-// evaluationDoneCmd represents the evaluation-done command
+// getStageCmd represents the get stage command
 var getStageCmd = &cobra.Command{
 	Use:     "stage",
 	Aliases: []string{"stages"},

@@ -37,7 +37,7 @@ type approvalTriggeredStruct struct {
 
 var approvalTriggered approvalTriggeredStruct
 
-// evaluationDoneCmd represents the approval.triggered command
+// approvalTriggeredCmd represents the approval.triggered command
 var approvalTriggeredCmd = &cobra.Command{
 	Use:          "approval.triggered",
 	Short:        "Returns the latest Keptn sh.keptn.event.approval.triggered event from a specific project/stage/service",

@@ -3,13 +3,12 @@
 The *gatekeeper-service* is a Keptn core component and implements the quality gate in each stage, i.e., depending on the evaluation result it either promotes an artifact to the next stage or not.
 
 The *gatekeeper-service* listens to Keptn events of type:
-- `sh.keptn.events.evaluation-done`
+- `sh.keptn.event.approval.triggered`
 
-The `evaluation-done` contains the result of the evaluation. If the evaluation result is positive (e.g., 
- `result = "pass" || result = "warning"`), this service promotes the artifact to the next stage by sending a 
- `new-artifact` event for the next stage. If the evaluation result is negative (e.g., `result = "fail"`) and the 
- service is deployed with a blue/green strategy, this service changes the configuration back to the old version and 
- sends a `configuration-changed` event.
+The `approval.triggered` contains the approval strategy, as well as the result of the previous service execution (e.g., an evaluation). If the result is positive (e.g., 
+ `result = "pass" || result = "warning"`), and the approval strategyy is set to `automatic`, the service will automatically send out a `approval.finished` event to continue the task sequence for the associated Keptn context.
+ If the strategy is set to `manual`, the service will not respond with any further events. In this case, the user is responsible for sending an `approval.finished` events to continue the task sequence for the associated Keptn context.
+ If the rsult of the previous service execution is set to `fail`, the gatekeeper service will automatically send an `approval.finished` event with the result set to `fail`.
 
 ## Installation
 

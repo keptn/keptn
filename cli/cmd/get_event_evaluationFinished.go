@@ -32,15 +32,15 @@ type evaluationDoneStruct struct {
 
 var evaluationDone evaluationDoneStruct
 
-// evaluationDoneCmd represents the evaluation-done command
-var evaluationDoneCmd = &cobra.Command{
-	Use:          "evaluation-done",
-	Short:        "Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context",
-	Long:         `Returns the latest Keptn sh.keptn.events.evaluation-done event from a specific Keptn context.`,
-	Example:      `keptn get event evaluation-done --keptn-context=1234-5678-90ab-cdef`,
+// getEvaluationFinishedCmd represents the evaluation.finished command
+var getEvaluationFinishedCmd = &cobra.Command{
+	Use:          "evaluation.finished",
+	Short:        "Returns the latest Keptn sh.keptn.event.evaluation.finished event from a specific Keptn context",
+	Long:         `Returns the latest Keptn sh.keptn.event.evaluation.finished event from a specific Keptn context.`,
+	Example:      `keptn get event evaluation.finished --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println(`NOTE: The "keptn get event evaluation-done" command is DEPRECATED and will be removed in a future release`)
+		fmt.Println(`NOTE: The "keptn get event evaluation.finished" command is DEPRECATED and will be removed in a future release`)
 		fmt.Println(`Use "keptn get event evaluation.finished" instead`)
 		fmt.Println()
 
@@ -49,7 +49,7 @@ var evaluationDoneCmd = &cobra.Command{
 			return errors.New(authErrorMsg)
 		}
 
-		logging.PrintLog("Starting to get evaluation-done event", logging.InfoLevel)
+		logging.PrintLog("Starting to get evaluation.finished event", logging.InfoLevel)
 
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
@@ -65,7 +65,7 @@ var evaluationDoneCmd = &cobra.Command{
 				EventType:    keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 			})
 			if err != nil {
-				logging.PrintLog("Get evaluation-done event was unsuccessful", logging.QuietLevel)
+				logging.PrintLog("Get evaluation.finished event was unsuccessful", logging.QuietLevel)
 				return fmt.Errorf("%s", *err.Message)
 			}
 
@@ -87,9 +87,9 @@ var evaluationDoneCmd = &cobra.Command{
 }
 
 func init() {
-	getEventCmd.AddCommand(evaluationDoneCmd)
+	getEventCmd.AddCommand(getEvaluationFinishedCmd)
 
-	evaluationDone.KeptnContext = evaluationDoneCmd.Flags().StringP("keptn-context", "", "",
-		"The ID of a Keptn context from which to retrieve an evaluation-done event")
-	evaluationDoneCmd.MarkFlagRequired("keptn-context")
+	evaluationDone.KeptnContext = getEvaluationFinishedCmd.Flags().StringP("keptn-context", "", "",
+		"The ID of a Keptn context from which to retrieve an evaluation.finished event")
+	getEvaluationFinishedCmd.MarkFlagRequired("keptn-context")
 }
