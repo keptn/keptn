@@ -137,12 +137,12 @@ func startEventReceiver(waitGroup *sync.WaitGroup) {
 
 func getPubSubConnectionType() string {
 	if env.KeptnAPIEndpoint == "" {
-		// f no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
+		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
 		return connectionTypeNATS
-	} else {
-		// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
-		return connectionTypeHTTP
 	}
+	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
+	return connectionTypeHTTP
+
 }
 
 func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
