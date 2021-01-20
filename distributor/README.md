@@ -9,15 +9,12 @@ Thus, each service has its own distributor that is configured by the two environ
 - `API_PROXY_PATH` - Path on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `/`.
 - `HTTP_POLLING_INTERVAL` - Interval (in seconds) in which the distributor will check for new triggered events on the Keptn API. default = `10`
 - `EVENT_FORWARDING_PATH` - Path on which the distributor will listen for incoming events from its execution plane service. default = `/event`
-- `HTTP_SSL_VERIFY` - Determines wether the distributor should check the validity of SSL certificates when sending requests to a Keptn API endpoint via HTTPS. default = `true`
+- `HTTP_SSL_VERIFY` - Determines whether the distributor should check the validity of SSL certificates when sending requests to a Keptn API endpoint via HTTPS. default = `true`
 - `PUBSUB_URL` - The URL of the nats cluster the distributor should connect to when the distributor is running within the Keptn cluster. default = `nats://keptn-nats-cluster`
 - `PUBSUB_TOPIC` - Comma separated list of topics (i.e. event types) the distributor should listen to (see https://github.com/keptn/keptn/blob/master/specification/cloudevents.md for details). When running within the Keptn cluster, it is possible to use NATS [Subject hierarchies](https://nats-io.github.io/docs/developer/concepts/subjects.html#matching-a-single-token). When running outside of the cluster (polling events via HTTP), wildcards can not be used. In this case, each specific topic has to be included in the list.
 - `PUBSUB_RECIPIENT` - Hostname of the execution plane service the distributor should forward incoming CloudEvents to. default = `http://127.0.0.1`
 - `PUBSUB_RECIPIENT_PORT` - Port of the execution plane service the distributor should forward incoming CloudEvents to. default = `8080`
 - `PUBSUB_RECIPIENT_PATH` - Path of the execution plane service the distributor should forward incoming CloudEvents to. default = `/`
-
-In addition, the following environment variable defines the URL of the NATS server:
-- `PUBSUB_URL` - e.g., `nats://keptn-nats-cluster`
 
 All cloud events specified in `PUBSUB_TOPIC` are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 
