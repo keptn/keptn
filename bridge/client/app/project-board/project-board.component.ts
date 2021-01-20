@@ -265,7 +265,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       label: 'Trigger deployment with a new artifact',
       code: `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/event" \\
       -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{"type":"sh.keptn.event.configuration.change","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}","valuesCanary":{"image":"\${IMAGE}"}}}"`
+      -d "{"type":"sh.keptn.event.configuration.change","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}","configurationChange":{"values":{"image":"\${IMAGE}"}}}}"`
     });
   }
 

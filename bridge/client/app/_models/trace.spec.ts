@@ -44,7 +44,9 @@ describe('Trace', () => {
         "project": "sockshop",
         "service": "carts",
         "stage": "",
-        "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+        "configurationChange": {
+          "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+        }
       },
       "id": "f95d2c20-2d89-4f52-8838-36743cf8835f",
       "source": "https://github.com/keptn/keptn/api",
@@ -61,7 +63,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          }
         },
         "id": "f95d2c20-2d89-4f52-8838-36743cf8835f",
         "source": "https://github.com/keptn/keptn/api",
@@ -156,7 +160,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "staging",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          }
         },
         "id": "662c4b5b-9726-4932-9093-d8d0bbfae257",
         "source": "gatekeeper-service",
@@ -251,7 +257,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "production",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          }
         },
         "id": "391dc227-99a0-4dc8-9176-282f618aa3bd",
         "source": "gatekeeper-service",
@@ -348,7 +356,9 @@ describe('Trace', () => {
         "project": "sockshop",
         "service": "carts",
         "stage": "",
-        "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+        "configurationChange": {
+          "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+        }
       },
       "id": "d72b0a9d-24d3-48ec-832f-e36696c466d4",
       "source": "https://github.com/keptn/keptn/api",
@@ -365,7 +375,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          }
         },
         "id": "d72b0a9d-24d3-48ec-832f-e36696c466d4",
         "source": "https://github.com/keptn/keptn/api",
@@ -460,7 +472,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "staging",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          }
         },
         "id": "d9073b98-98f5-47de-966f-8d57902f2cf3",
         "source": "gatekeeper-service",
@@ -539,7 +553,9 @@ describe('Trace', () => {
         "project": "sockshop",
         "service": "carts",
         "stage": "",
-        "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+        "configurationChange": {
+          "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+        }
       },
       "id": "21ccce4c-e77e-479c-91fa-7052551bdf48",
       "source": "https://github.com/keptn/keptn/api",
@@ -556,7 +572,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          }
         },
         "id": "21ccce4c-e77e-479c-91fa-7052551bdf48",
         "source": "https://github.com/keptn/keptn/api",
@@ -651,7 +669,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "staging",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          }
         },
         "id": "9bcbce99-9e00-493f-8143-83f1a2dfaf82",
         "source": "gatekeeper-service",
@@ -730,7 +750,9 @@ describe('Trace', () => {
         "project": "sockshop",
         "service": "carts",
         "stage": "",
-        "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+        "configurationChange": {
+          "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+        }
       },
       "id": "84235fd5-d009-4e42-96c2-4cfdcfb48b4d",
       "source": "https://github.com/keptn/keptn/api",
@@ -747,7 +769,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          }
         },
         "id": "84235fd5-d009-4e42-96c2-4cfdcfb48b4d",
         "source": "https://github.com/keptn/keptn/api",
@@ -842,7 +866,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "staging",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.2"}
+          }
         },
         "id": "ef7b141e-23a3-4542-86c1-ca3dcb8341cc",
         "source": "gatekeeper-service",
@@ -1026,7 +1052,9 @@ describe('Trace', () => {
         "project": "sockshop",
         "service": "carts",
         "stage": "",
-        "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+        "configurationChange": {
+          "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+        }
       },
       "id": "6eacae7f-7446-49a8-b351-0d95bb6be76b",
       "source": "https://github.com/keptn/keptn/cli#configuration-change",
@@ -1043,7 +1071,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          }
         },
         "id": "6eacae7f-7446-49a8-b351-0d95bb6be76b",
         "source": "https://github.com/keptn/keptn/cli#configuration-change",
@@ -1138,7 +1168,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "staging",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.1"}
+          }
         },
         "id": "e36f86f7-b2d2-41cc-a9a1-10df93197623",
         "source": "gatekeeper-service",
@@ -1508,7 +1540,9 @@ describe('Trace', () => {
         "project": "sockshop",
         "service": "carts",
         "stage": "",
-        "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.3"}
+        "configurationChange": {
+          "values": {"image": "docker.io/keptnexamples/carts:0.10.3"}
+        }
       },
       "id": "d9949721-29de-47bf-9b04-b890eeb21e4d",
       "source": "https://github.com/keptn/keptn/api",
@@ -1525,7 +1559,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.3"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.3"}
+          }
         },
         "id": "d9949721-29de-47bf-9b04-b890eeb21e4d",
         "source": "https://github.com/keptn/keptn/api",
@@ -1620,7 +1656,9 @@ describe('Trace', () => {
           "project": "sockshop",
           "service": "carts",
           "stage": "staging",
-          "valuesCanary": {"image": "docker.io/keptnexamples/carts:0.10.3"}
+          "configurationChange": {
+            "values": {"image": "docker.io/keptnexamples/carts:0.10.3"}
+          }
         },
         "id": "0c2f02b6-4116-4bda-b774-4af2930f89d9",
         "source": "gatekeeper-service",
