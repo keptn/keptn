@@ -79,19 +79,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
-		go deploymentHandler.HandleEvent(event)
+		deploymentHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(url, mesh, keptnHandler)
-		go releaseHandler.HandleEvent(event)
+		releaseHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
-		onBoarder := createOnboarder(keptnHandler, url, mesh)
-		go onBoarder.HandleEvent(event)
+		onboardHandler := createOnboardHandler(url, keptnHandler, mesh)
+		onboardHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(url, keptnHandler)
-		go actionHandler.HandleEvent(event)
+		actionHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := createDeleteHandler(url, keptnHandler)
-		go deleteHandler.HandleEvent(event)
+		deleteHandler.HandleEvent(event)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")
 	}
@@ -120,27 +120,28 @@ func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptnHandler *kept
 	return releaseHandler
 }
 
-func createOnboarder(keptnHandler *keptnv2.Keptn, url *url.URL, mesh *mesh.IstioMesh) controller.Onboarder {
+func createOnboarder(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
 	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
-	projectHandler := keptnapi.NewProjectHandler(url.String())
-	stagesHandler := configutils.NewStageHandler(url.String())
 	serviceHandler := configutils.NewServiceHandler(url.String())
 	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	chartPackager := keptnutils.NewChartPackager()
-	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
+	onBoarder := controller.NewOnboarder(keptnHandler, namespaceManager, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
 	return onBoarder
 }
 
-func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
+func createOnboardHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.OnboardHandler {
+
 	projectHandler := keptnapi.NewProjectHandler(url.String())
 	namespaceManager := namespacemanager.NewNamespaceManager(keptnHandler.Logger)
 	stagesHandler := configutils.NewStageHandler(url.String())
-	serviceHandler := configutils.NewServiceHandler(url.String())
-	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
+	onBoarder := createOnboarder(url, keptnHandler, mesh)
+	return controller.NewOnboardHandler(keptnHandler, projectHandler, namespaceManager, stagesHandler, onBoarder, url.String())
+}
+
+func createDeploymentHandler(url *url.URL, keptnHandler *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
-	chartPackager := keptnutils.NewChartPackager()
-	onBoarder := controller.NewOnboarder(keptnHandler, mesh, projectHandler, namespaceManager, stagesHandler, serviceHandler, chartStorer, chartGenerator, chartPackager, url.String())
+	onBoarder := createOnboarder(url, keptnHandler, mesh)
 	deploymentHandler := controller.NewDeploymentHandler(keptnHandler, mesh, onBoarder, chartGenerator, url.String())
 	return deploymentHandler
 }
