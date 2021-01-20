@@ -586,6 +586,10 @@ func createNATSClientConnection() {
 		fmt.Println("No pubsub recipient defined")
 		return
 	}
+	if env.PubSubTopic == "" {
+		fmt.Println("No pubsub topic defined. No need to create NATS client connection.")
+		return
+	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
 
 	natsURL := env.PubSubURL
