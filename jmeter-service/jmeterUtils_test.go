@@ -20,7 +20,7 @@ func Test_executeJMeter(t *testing.T) {
 	)
 	defer ts.Close()
 
-	os.Setenv("CONFIGURATION_SERVICE_URL", ts.URL)
+	os.Setenv("CONFIGURATION_SERVICE", ts.URL)
 	os.Setenv("env", "production")
 
 	type args struct {

@@ -81,7 +81,7 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 				port:             "666",
 				path:             "",
 			},
-			want:    "",
+			want:    "http://127.0.0.1:666",
 			wantErr: true,
 		},
 		{
@@ -91,19 +91,33 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 				port:             "",
 				path:             "",
 			},
-			want:    "https://lighthouse-service:8080",
-			wantErr: false,
+			want: "https://lighthouse-service:8080",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPubSubRecipientURL(tt.args.recipientService, tt.args.port, tt.args.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getPubSubRecipientURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.args.recipientService != "" {
+				os.Setenv("PUBSUB_RECIPIENT", tt.args.recipientService)
+			} else {
+				os.Unsetenv("PUBSUB_RECIPIENT")
 			}
+			if tt.args.port != "" {
+				os.Setenv("PUBSUB_RECIPIENT_PORT", tt.args.port)
+			} else {
+				os.Unsetenv("PUBSUB_RECIPIENT_PORT")
+			}
+			if tt.args.path != "" {
+				os.Setenv("PUBSUB_RECIPIENT_PATH", tt.args.path)
+			} else {
+				os.Unsetenv("PUBSUB_RECIPIENT_PATH")
+			}
+
+			env = envConfig{}
+			_ = envconfig.Process("", &env)
+
+			got := getPubSubRecipientURL()
 			if got != tt.want {
-				t.Errorf("getPubSubRecipientURL() got = %v, want %v", got, tt.want)
+				t.Errorf("getPubSubRecipientURL() got = %v, want1 %v", got, tt.want)
 			}
 		})
 	}
@@ -152,10 +166,10 @@ func Test_decodeCloudEvent(t *testing.T) {
 			}
 			if got != nil {
 				if !reflect.DeepEqual(got.Context.GetSpecVersion(), tt.want.Context.GetSpecVersion()) {
-					t.Errorf("decodeCloudEvent() specVersion: got = %v, want %v", got.Context.GetSpecVersion(), tt.want.Context.GetSpecVersion())
+					t.Errorf("decodeCloudEvent() specVersion: got = %v, want1 %v", got.Context.GetSpecVersion(), tt.want.Context.GetSpecVersion())
 				}
 				if !reflect.DeepEqual(got.Context.GetType(), tt.want.Context.GetType()) {
-					t.Errorf("decodeCloudEvent() type: got = %v, want %v", got.Context.GetType(), tt.want.Context.GetType())
+					t.Errorf("decodeCloudEvent() type: got = %v, want1 %v", got.Context.GetType(), tt.want.Context.GetType())
 				}
 			}
 		})
@@ -216,7 +230,7 @@ func Test_cleanSentEventList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := cleanSentEventList(tt.args.sentEvents, tt.args.events); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("cleanSentEventList() = %v, want %v", got, tt.want)
+				t.Errorf("cleanSentEventList() = %v, want1 %v", got, tt.want)
 			}
 		})
 	}
@@ -233,7 +247,7 @@ func Test_hasEventBeenSent(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "want true",
+			name: "want1 true",
 			args: args{
 				sentEvents: []string{"sent-1", "sent-2"},
 				eventID:    "sent-1",
@@ -241,7 +255,7 @@ func Test_hasEventBeenSent(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "want false",
+			name: "want1 false",
 			args: args{
 				sentEvents: []string{"sent-1", "sent-2"},
 				eventID:    "sent-X",
@@ -252,7 +266,7 @@ func Test_hasEventBeenSent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := hasEventBeenSent(tt.args.sentEvents, tt.args.eventID); got != tt.want {
-				t.Errorf("hasEventBeenSent() = %v, want %v", got, tt.want)
+				t.Errorf("hasEventBeenSent() = %v, want1 %v", got, tt.want)
 			}
 		})
 	}
@@ -381,7 +395,7 @@ func Test_getEventsFromEndpoint(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getEventsFromEndpoint() got = %v, want %v", got, tt.want)
+				t.Errorf("getEventsFromEndpoint() got = %v, want1 %v", got, tt.want)
 			}
 		})
 	}
@@ -488,11 +502,11 @@ func Test__main(t *testing.T) {
 	os.Setenv("PUBSUB_URL", natsURL)
 
 	natsPublisher, _ := nats.Connect(natsURL)
-	var env envConfig
+	env = envConfig{}
 	if err := envconfig.Process("", &env); err != nil {
 		t.Errorf("Failed to process env var: %s", err)
 	}
-	env.Port = TEST_PORT + 1
+	env.APIProxyPort = TEST_PORT + 1
 	go _main(nil, env)
 
 	<-time.After(2 * time.Second)
@@ -528,7 +542,7 @@ func Test__main(t *testing.T) {
 	})
 
 	<-time.After(2 * time.Second)
-	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.Port)+"/event", "application/cloudevents+json", bytes.NewBuffer([]byte(`{
+	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.APIProxyPort)+"/event", "application/cloudevents+json", bytes.NewBuffer([]byte(`{
 				"data": "",
 				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
 				"source": "helm-service",
@@ -547,5 +561,129 @@ func Test__main(t *testing.T) {
 		t.Errorf("Message did not make it to the receiver")
 	}
 
+	_, err = http.Post("http://127.0.0.1:"+strconv.Itoa(env.APIProxyPort)+env.APIProxyPath+"/datastore?foo=bar", "application/json", bytes.NewBuffer([]byte(`{
+				"data": "",
+				"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",
+				"source": "helm-service",
+				"specversion": "1.0",
+				"type": "sh.keptn.events.deployment-finished",
+				"shkeptncontext": "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb"
+			}`)))
+	if err != nil {
+		t.Errorf("Could not handle API request")
+	}
+
 	close <- true
+}
+
+func Test_getProxyRequestURL(t *testing.T) {
+	type args struct {
+		endpoint string
+		path     string
+	}
+	tests := []struct {
+		name             string
+		args             args
+		wantScheme       string
+		wantHost         string
+		wantPath         string
+		externalEndpoint string
+	}{
+		{
+			name: "Get internal Datastore",
+			args: args{
+				endpoint: "",
+				path:     "/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished",
+			},
+			wantScheme: "http",
+			wantHost:   "mongodb-datastore:8080",
+			wantPath:   "event/type/sh.keptn.event.evaluation.finished",
+		},
+		{
+			name: "Get internal Datastore 2",
+			args: args{
+				endpoint: "",
+				path:     "/event-store/event",
+			},
+			wantScheme: "http",
+			wantHost:   "mongodb-datastore:8080",
+			wantPath:   "event",
+		},
+		{
+			name: "Get internal configuration service",
+			args: args{
+				endpoint: "",
+				path:     "/configuration-service",
+			},
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
+		},
+		{
+			name: "Get internal configuration service 2",
+			args: args{
+				endpoint: "",
+				path:     "/configuration",
+			},
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
+		},
+		{
+			name: "Get internal configuration service 3",
+			args: args{
+				endpoint: "",
+				path:     "/config",
+			},
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
+		},
+		{
+			name: "Get configuration service",
+			args: args{
+				endpoint: "",
+				path:     "/config",
+			},
+			wantScheme: "http",
+			wantHost:   "configuration-service:8080",
+		},
+		{
+			name: "Get configuration service via public API",
+			args: args{
+				endpoint: "",
+				path:     "/config",
+			},
+			wantScheme:       "http",
+			wantHost:         "external-api.com",
+			wantPath:         "/api/configuration-service/",
+			externalEndpoint: "http://external-api.com/api",
+		},
+		{
+			name: "Get configuration service via public API with API prefix",
+			args: args{
+				endpoint: "",
+				path:     "/config",
+			},
+			wantScheme:       "http",
+			wantHost:         "external-api.com",
+			wantPath:         "/my/path/prefix/api/configuration-service/",
+			externalEndpoint: "http://external-api.com/my/path/prefix/api",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env.KeptnAPIEndpoint = tt.externalEndpoint
+			scheme, host, path := getProxyHost(tt.args.path)
+
+			if scheme != tt.wantScheme {
+				t.Errorf("getProxyHost(); host = %v, want %v", scheme, tt.wantScheme)
+			}
+
+			if host != tt.wantHost {
+				t.Errorf("getProxyHost(); path = %v, want %v", host, tt.wantHost)
+			}
+
+			if path != tt.wantPath {
+				t.Errorf("getProxyHost(); path = %v, want %v", path, tt.wantPath)
+			}
+		})
+	}
 }
