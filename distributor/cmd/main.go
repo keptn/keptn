@@ -156,7 +156,7 @@ func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 
-// EventForwardHandler forwards events received by the exxecution plane services to the Keptn API or the Nats server
+// EventForwardHandler forwards events received by the execution plane services to the Keptn API or the Nats server
 func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
