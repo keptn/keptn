@@ -502,7 +502,7 @@ func Test__main(t *testing.T) {
 	os.Setenv("PUBSUB_URL", natsURL)
 
 	natsPublisher, _ := nats.Connect(natsURL)
-	var env envConfig
+	env = envConfig{}
 	if err := envconfig.Process("", &env); err != nil {
 		t.Errorf("Failed to process env var: %s", err)
 	}
