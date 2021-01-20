@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-test/deep"
@@ -10,8 +11,11 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	fakeappsv1 "k8s.io/client-go/kubernetes/typed/apps/v1/fake"
+	test "k8s.io/client-go/testing"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -72,14 +76,16 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 	clientSet := fake.NewSimpleClientset(
 		getBridgeDeployment(),
 	)
+
 	type fields struct {
 		k8sClient kubernetes.Interface
 		logger    keptn.LoggerInterface
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   middleware.Responder
+		name        string
+		fields      fields
+		want        middleware.Responder
+		k8sAPIError bool
 	}{
 		{
 			name: "get bridge deployment info from k8s",
@@ -97,6 +103,24 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "k8s api not available - skip bridge but return remaining attributes",
+			fields: fields{
+				k8sClient: clientSet,
+				logger:    keptnutils.NewLogger("", "", "api"),
+			},
+			k8sAPIError: true,
+			want: &metadata.MetadataOK{
+				Payload: &models.Metadata{
+					Bridgeversion: "N/A",
+					Keptnlabel:    "keptn",
+					Keptnservices: nil,
+					Keptnversion:  "develop",
+					Namespace:     "keptn",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,6 +131,12 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 				fmt.Println(err.Error())
 			}
 			defer os.Remove(tmpSwaggerFileName)
+			if tt.k8sAPIError {
+				clientSet.AppsV1().(*fakeappsv1.FakeAppsV1).PrependReactor("get", "deployments", func(action test.Action) (handled bool, ret runtime.Object, err error) {
+					return true, nil, errors.New("Error getting deployment")
+				})
+			}
+
 			h := &metadataHandler{
 				k8sClient:       tt.fields.k8sClient,
 				logger:          tt.fields.logger,
