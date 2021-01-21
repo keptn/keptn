@@ -44,10 +44,10 @@ func getWorkload(jmeterconf *JMeterConf, teststrategy string) (*Workload, error)
 
 // GetConfigurationServiceURL returns the URL of the configuration service
 func GetConfigurationServiceURL() string {
-	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") == "" {
+	if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE") == "" {
 		return "configuration-service:8080"
-	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE_URL") != "" {
-		return os.Getenv("CONFIGURATION_SERVICE_URL")
+	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE") != "" {
+		return os.Getenv("CONFIGURATION_SERVICE")
 	}
 	return "localhost:8080"
 }
