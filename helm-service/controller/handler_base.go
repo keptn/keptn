@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -21,7 +22,7 @@ type HandlerBase struct {
 
 // NewHandlerBase creates a new HandlerBase
 func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *HandlerBase {
-	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
+	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger, namespacemanager.NewNamespaceManager(keptnHandler.Logger))
 	return &HandlerBase{
 		keptnHandler:     keptnHandler,
 		helmExecutor:     helmExecutor,
@@ -84,21 +85,19 @@ func getDeploymentName(strategy keptnevents.DeploymentStrategy, generatedChart b
 		return "primary"
 	} else if strategy == keptnevents.Duplicate && !generatedChart {
 		return "canary"
-	} else if strategy == keptnevents.Direct {
+	} else if strategy == keptnevents.Direct || strategy == keptnevents.UserManaged {
 		return "direct"
 	}
 	return ""
 }
 
-func (h *HandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
-	strategy keptnevents.DeploymentStrategy) error {
+func (h *HandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) error {
 	generated := strings.HasSuffix(ch.Name(), "-generated")
 	releasename := helm.GetReleaseName(event.Project, event.Stage, event.Service, generated)
 	namespace := event.Project + "-" + event.Stage
 
 	return h.helmExecutor.UpgradeChart(ch, releasename, namespace,
-		getKeptnValues(event.Project, event.Stage, event.Service,
-			getDeploymentName(strategy, generated)))
+		getKeptnValues(event.Project, event.Stage, event.Service, getDeploymentName(strategy, generated)))
 }
 
 func (h *HandlerBase) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,

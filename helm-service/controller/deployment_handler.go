@@ -51,6 +51,8 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
+	// Skip execution if previous event has result failure
+	// TODO: model this case in the workflow processing of the shipyard controller
 	if e.Result == keptnv2.ResultFailed {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf("No deployment done for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 		data := h.getFinishedEventDataForNoDeployment(e.EventData)

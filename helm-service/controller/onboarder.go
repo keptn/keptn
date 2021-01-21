@@ -3,11 +3,9 @@ package controller
 import (
 	"encoding/base64"
 	"fmt"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"github.com/keptn/keptn/helm-service/pkg/types"
-	"time"
-
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	"helm.sh/helm/v3/pkg/chart"
 
@@ -58,20 +56,8 @@ func NewOnboarder(
 	}
 }
 
+// OnboardService commits the helm chart to the configuration service
 func (o *onboarder) OnboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error {
-
-	const retries = 2
-	var err error
-	for i := 0; i < retries; i++ {
-		_, err = o.serviceHandler.GetService(event.Project, stageName, event.Service)
-		if err == nil {
-			break
-		}
-		time.Sleep(3 * time.Second)
-	}
-	if err != nil {
-		return err
-	}
 
 	helmChartData, err := base64.StdEncoding.DecodeString(event.Helm.Chart)
 	if err != nil {
@@ -102,10 +88,10 @@ func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 	strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
 	helmChartName := helm.GetChartName(event.Service, true)
-	o.getKeptnHandler().Logger.Debug(fmt.Sprintf("Generating the Keptn-managed Helm Chart %s for stage %s", helmChartName, event.Stage))
 
 	var generatedChart *chart.Chart
 	var err error
+
 	if strategy == keptnevents.Duplicate {
 		o.getKeptnHandler().Logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, "+
 			"a chart for a duplicate deployment strategy is generated", event.Service, event.Stage, strategy.String()))
@@ -118,7 +104,7 @@ func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 		if err := o.namespaceManager.InjectIstio(event.Project, event.Stage); err != nil {
 			return nil, err
 		}
-	} else {
+	} else if strategy == keptnevents.Direct {
 		o.getKeptnHandler().Logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s, a mesh chart is generated",
 			event.Service, event.Stage, strategy.String()))
 		generatedChart, err = o.chartGenerator.GenerateMeshChart(helmManifest, event.Project, event.Stage, event.Service)
@@ -126,6 +112,10 @@ func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 			o.getKeptnHandler().Logger.Error("Error when generating the managed chart: " + err.Error())
 			return nil, err
 		}
+	} else {
+		o.getKeptnHandler().Logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s no futher charts are genereated",
+			event.Service, event.Stage, strategy.String()))
+		return &chart.Chart{}, nil
 	}
 
 	o.getKeptnHandler().Logger.Debug(fmt.Sprintf("Storing the Keptn-generated Helm Chart %s for stage %s", helmChartName, event.Stage))

@@ -12,7 +12,7 @@ import (
 
 // INamespaceManager defines operations for initializing and configuring namespaces
 type INamespaceManager interface {
-	InitNamespaces(project string, stages []string) error
+	CreateNamespaceIfNotExists(nsName string) error
 	InjectIstio(project string, stage string) error
 }
 
@@ -27,22 +27,18 @@ func NewNamespaceManager(logger keptn.LoggerInterface) *NamespaceManager {
 }
 
 // InitNamespaces initializes namespaces if they do not exist yet
-func (p *NamespaceManager) InitNamespaces(project string, stages []string) error {
+func (p *NamespaceManager) CreateNamespaceIfNotExists(nsName string) error {
 
-	for _, stage := range stages {
-
-		namespace := project + "-" + stage
-		exists, err := keptnutils.ExistsNamespace(true, namespace)
-		if err != nil {
-			return fmt.Errorf("error when checking availability of namespace: %v", err)
-		}
-		if exists {
-			p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", namespace))
-		} else {
-			p.logger.Debug(fmt.Sprintf("Create new namespace %s", namespace))
-			if err != keptnutils.CreateNamespace(true, namespace) {
-				return fmt.Errorf("error when creating namespace %s: %v", namespace, err)
-			}
+	exists, err := keptnutils.ExistsNamespace(true, nsName)
+	if err != nil {
+		return fmt.Errorf("error when checking availability of namespace: %v", err)
+	}
+	if exists {
+		p.logger.Debug(fmt.Sprintf("Reuse existing namespace %s", nsName))
+	} else {
+		p.logger.Debug(fmt.Sprintf("Create new namespace %s", nsName))
+		if err != keptnutils.CreateNamespace(true, nsName) {
+			return fmt.Errorf("error when creating namespace %s: %v", nsName, err)
 		}
 	}
 	return nil

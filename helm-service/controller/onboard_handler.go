@@ -12,10 +12,9 @@ import (
 
 type OnboardHandler struct {
 	Handler
-	projectHandler   types.IProjectHandler
-	namespaceManager namespacemanager.INamespaceManager
-	stagesHandler    types.IStagesHandler
-	onboarder        Onboarder
+	projectHandler types.IProjectHandler
+	stagesHandler  types.IStagesHandler
+	onboarder      Onboarder
 }
 
 func NewOnboardHandler(keptnHandler *keptnv2.Keptn,
@@ -25,11 +24,10 @@ func NewOnboardHandler(keptnHandler *keptnv2.Keptn,
 	onboarder Onboarder,
 	configServiceURL string) *OnboardHandler {
 	return &OnboardHandler{
-		Handler:          NewHandlerBase(keptnHandler, configServiceURL),
-		projectHandler:   projectHandler,
-		namespaceManager: namespaceManager,
-		stagesHandler:    stagesHandler,
-		onboarder:        onboarder,
+		Handler:        NewHandlerBase(keptnHandler, configServiceURL),
+		projectHandler: projectHandler,
+		stagesHandler:  stagesHandler,
+		onboarder:      onboarder,
 	}
 }
 
@@ -55,22 +53,9 @@ func (o *OnboardHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	// Check service name
-	if err := CheckAndSetServiceName(e); err != nil {
-		err := fmt.Errorf("invalid service name: %s", err.Error())
-		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
-		return
-	}
-
-	// Check stages
+	// Get Stages
 	stages, err := o.getStages(e)
 	if err != nil {
-		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
-		return
-	}
-
-	// Initialize Namespace
-	if err := o.namespaceManager.InitNamespaces(e.Project, stages); err != nil {
 		o.handleError(ce.ID(), err, keptnv2.ServiceCreateTaskName, o.getFinishedEventDataForError(e.EventData, err))
 		return
 	}

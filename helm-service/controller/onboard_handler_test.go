@@ -130,27 +130,24 @@ func newTestOnboardHandlerCreator(t *testing.T, mockedBaseHandlerOptions ...Mock
 	mockedBaseHandler := NewMockedHandler(createKeptn(), "", mockedBaseHandlerOptions...)
 	mockedMesh := mocks.NewMockMesh(ctrl)
 	mockedProjectHandler := mocks.NewMockIProjectHandler(ctrl)
-	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
 	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
 	mockedServiceHandler := mocks.NewMockIServiceHandler(ctrl)
 	mockedOnBoarder := mocks.NewMockOnboarder(ctrl)
 
 	onboardHandler := OnboardHandler{
-		Handler:          mockedBaseHandler,
-		projectHandler:   mockedProjectHandler,
-		namespaceManager: mockedNamespaceManager,
-		stagesHandler:    mockedStagesHandler,
-		onboarder:        mockedOnBoarder,
+		Handler:        mockedBaseHandler,
+		projectHandler: mockedProjectHandler,
+		stagesHandler:  mockedStagesHandler,
+		onboarder:      mockedOnBoarder,
 	}
 
 	mocksCol := mocksCollection{
-		mockedBaseHandler:      mockedBaseHandler,
-		mockedMesh:             mockedMesh,
-		mockedProjectHandler:   mockedProjectHandler,
-		mockedNamespaceManager: mockedNamespaceManager,
-		mockedStagesHandler:    mockedStagesHandler,
-		mockedServiceHandler:   mockedServiceHandler,
-		mockedOnBoarder:        mockedOnBoarder,
+		mockedBaseHandler:    mockedBaseHandler,
+		mockedMesh:           mockedMesh,
+		mockedProjectHandler: mockedProjectHandler,
+		mockedStagesHandler:  mockedStagesHandler,
+		mockedServiceHandler: mockedServiceHandler,
+		mockedOnBoarder:      mockedOnBoarder,
 	}
 	return ctrl, onboardHandler, mocksCol
 
@@ -225,32 +222,6 @@ func TestHandleEvent_WhenStagesCannotBeFetched_ThenHandleErrorIsCalled(t *testin
 	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(nil, errors.New("unable to fetch stages"))
 
 	instance.HandleEvent(createEvent(t, "EVENT_ID"))
-	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
-}
-
-func TestHandleEvent_WhenInitNamespacesFails_ThenHandleErrorIsCalled(t *testing.T) {
-	ctrl, instance, moqs := newTestOnboardHandlerCreator(t)
-	defer ctrl.Finish()
-
-	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
-
-	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-	moqs.mockedStagesHandler.EXPECT().GetAllStages(gomock.Any()).Return(stages, nil)
-	moqs.mockedNamespaceManager.EXPECT().InitNamespaces("my-project", []string{"dev"}).Return(errors.New("namespace initialization failed"))
-
-	instance.HandleEvent(createEvent(t, "EVENT_ID"))
-	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
-}
-
-func TestHandleEvent_WhenPassingInvalidServiceName_ThenHandleErrorIsCalled(t *testing.T) {
-	ctrl, instance, moqs := newTestOnboardHandlerCreator(t)
-	defer ctrl.Finish()
-
-	stages := []*models.Stage{{Services: []*models.Service{{}}, StageName: "dev"}}
-
-	moqs.mockedProjectHandler.EXPECT().GetProject(gomock.Any()).Return(&models.Project{Stages: stages}, nil)
-
-	instance.HandleEvent(createEventWith(t, "EVENT_ID", keptnv2.EventData{Project: "my-project", Stage: "dev", Service: "otherthancarts"}))
 	assert.Equal(t, 1, len(moqs.mockedBaseHandler.handledErrorEvents))
 }
 

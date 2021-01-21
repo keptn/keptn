@@ -2,6 +2,7 @@ package helm
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"os"
 	"path/filepath"
 
@@ -32,12 +33,16 @@ func getInClusterConfig() bool {
 
 // HelmV3Executor provides util functions to execute helm commands
 type HelmV3Executor struct {
-	logger keptncommon.LoggerInterface
+	logger           keptncommon.LoggerInterface
+	namespaceManager namespacemanager.INamespaceManager
 }
 
 // NewHelmV3Executor creates a new HelmV3Executor
-func NewHelmV3Executor(logger keptncommon.LoggerInterface) *HelmV3Executor {
-	return &HelmV3Executor{logger: logger}
+func NewHelmV3Executor(logger keptncommon.LoggerInterface, nsManager namespacemanager.INamespaceManager) *HelmV3Executor {
+	return &HelmV3Executor{
+		logger:           logger,
+		namespaceManager: nsManager,
+	}
 }
 
 func (h *HelmV3Executor) newActionConfig(config *rest.Config, namespace string) (*action.Configuration, error) {
@@ -114,6 +119,11 @@ func (h *HelmV3Executor) GetManifest(releaseName, namespace string) (string, err
 func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error {
 
 	if len(ch.Templates) > 0 {
+		h.logger.Info(fmt.Sprintf("Creating namespace %s if not present", namespace))
+		if err := h.namespaceManager.CreateNamespaceIfNotExists(namespace); err != nil {
+			return err
+		}
+
 		h.logger.Info(fmt.Sprintf("Start upgrading release %s in namespace %s", releaseName, namespace))
 		config, err := h.getKubeRestConfig()
 		if err != nil {
