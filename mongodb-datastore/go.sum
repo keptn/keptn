@@ -297,9 +297,12 @@ github.com/keptn/go-utils v0.8.0-alpha h1:h+yUaI8pmM3VqxRgBQAENrFZ7GafyIWMOPfwHk
 github.com/keptn/go-utils v0.8.0-alpha/go.mod h1:SmTTNxBonQXC4/nxkqAWtVm4WjqEfu8r7EPQe8LZ1/Y=
 github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81 h1:yiTImA9jc7SNdnaEcCChCf1wMwM42I9Lc1vPBx4j5SM=
 github.com/keptn/go-utils v0.8.0-alpha.0.20210108094001-51257d664f81/go.mod h1:SmTTNxBonQXC4/nxkqAWtVm4WjqEfu8r7EPQe8LZ1/Y=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86 h1:LdwbBsK00nObdlpyUviuPIZY2TF1UZfqfWF2K9vL+uI=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86/go.mod h1:K8ZE1XraoVWyNe15E8hpMVWOyF1ag1PzYI0hteYsH00=
 github.com/keptn/keptn v0.0.0-20191107135234-c0939707dff0 h1:Q5MSMeWKpgleVkZLE2kw/ELOGdBPyegqGc3+132geqE=
 github.com/keptn/keptn v0.0.0-20191108092506-3f8146d90389 h1:E/mUFUNxm76CvuxWjYrklg9agNNuz7wMxnZEOmsq3Rk=
 github.com/keptn/keptn v0.0.0-20191203073718-08fcca449c2c h1:0+bI5c4xmoMIfThsKHoEIzYjNfu2oqhHi9o7DzS13SQ=
+github.com/keptn/keptn v0.0.0-20210115135807-1c121959b492 h1:hHOW+SBp7SHul63792jy1gZt2tGy+QGDbeR/J2s4j0k=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd h1:Coekwdh0v2wtGp9Gmz1Ze3eVRAWJMLokvN3QjdzCHLY=
 github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=

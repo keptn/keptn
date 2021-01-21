@@ -39,8 +39,8 @@ func GetIngressGateway() string {
 }
 
 // GetLocalDeploymentURI returns URIs where a service is accessible from within the cluster
-func GetLocalDeploymentURI(event keptnv2.EventData) []string {
-	return []string{"http://" + event.Service + "." + event.Project + "-" + event.Stage}
+func GetLocalDeploymentURI(event keptnv2.EventData, port string) []string {
+	return []string{"http://" + event.Service + "." + event.Project + "-" + event.Stage + ":" + port}
 }
 
 // GetPublicDeploymentURI returns URIs where a service is exposed

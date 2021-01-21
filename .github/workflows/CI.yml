@@ -185,34 +185,9 @@ jobs:
 
       - name: Extract branch name
         id: extract_branch
-        shell: bash
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
-            echo "This is a push to a local branch -> using branch name"
-            BRANCH=${GITHUB_REF#refs/heads/}
-            BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
-          else
-            if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-              # usually the format for PRs is: refs/pull/1234/merge
-              echo "This is a Pull Request -> using PR ID"
-              tmp=${GITHUB_REF#refs/pull/}
-              # remove the last "/merge"
-              # Branch name is basically the PR id
-              BRANCH=${tmp%/merge}
-              # And Slug is "PR-${PRID}"
-              BRANCH_SLUG=PR-${BRANCH}
-            else
-              echo "::error This is neither a push, nor a PR, probably something else... Exiting"
-              exit 1
-            fi
-          fi
+        # see https://github.com/keptn/gh-action-extract-branch-name for details
+        uses: keptn/gh-action-extract-branch-name@main
 
-          GIT_SHA="$(git rev-parse --short HEAD)"
-
-          # print GIT_SHA, BRANCH and BRANCH_SLUG (make sure they are also set in needs.prepare_ci_run.outputs !!!)
-          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
-          echo "##[set-output name=BRANCH_SLUG;]$(echo ${BRANCH_SLUG})"
-          echo "##[set-output name=GIT_SHA;]$(echo ${GIT_SHA})"
       - name: 'Get Previous tag'
         id: get_previous_tag
         uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
@@ -293,12 +268,12 @@ jobs:
         working-directory: ./jmeter-service
 
       - name: Test helm svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
         run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./helm-service
 
       - name: Test gatekeeper svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
         run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./gatekeeper-service
 
@@ -554,7 +529,7 @@ jobs:
 
       - id: docker_build_helm_service
         name: Docker Build helm-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
         env:
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE}}"
           FOLDER: ${{ env.HELM_SVC_FOLDER }}
@@ -563,7 +538,7 @@ jobs:
 
       - id: docker_build_gatekeeper_service
         name: Docker Build gatekeeper-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER == 'true')
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
         env:
           IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE}}"
           FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}

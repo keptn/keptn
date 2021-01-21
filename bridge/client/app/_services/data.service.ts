@@ -57,8 +57,8 @@ export class DataService {
     return this._evaluationResults;
   }
 
-  public getRootsLastUpdated(project: Project, service: Service): Date {
-    return this._rootsLastUpdated[project.projectName+":"+service.serviceName];
+  public getRootsLastUpdated(project: Project): Date {
+    return this._rootsLastUpdated[project.projectName];
   }
 
   public getTracesLastUpdated(root: Root): Date {
@@ -154,15 +154,15 @@ export class DataService {
     });
   }
 
-  public loadRoots(project: Project, service: Service) {
-    let fromTime: Date = this._rootsLastUpdated[project.projectName+":"+service.serviceName];
-    this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date();
+  public loadRoots(project: Project) {
+    let fromTime: Date = this._rootsLastUpdated[project.projectName];
+    this._rootsLastUpdated[project.projectName] = new Date();
 
-    this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
+    this.apiService.getRoots(project.projectName, null, fromTime ? fromTime.toISOString() : null)
       .pipe(
         debounce(() => timer(10000)),
         map(response => {
-          this._rootsLastUpdated[project.projectName+":"+service.serviceName] = new Date(response.headers.get("date"));
+          this._rootsLastUpdated[project.projectName] = new Date(response.headers.get("date"));
           return response.body;
         }),
         map(result => result.events||[]),
@@ -170,18 +170,14 @@ export class DataService {
           from(roots).pipe(
             mergeMap(
               root => {
-                let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
-                this._tracesLastUpdated[root.shkeptncontext] = new Date();
-
-                return this.apiService.getTraces(root.shkeptncontext, root.data.project, fromTime ? fromTime.toISOString() : null)
+                return this.apiService.getTraces(root.shkeptncontext, root.data.project)
                   .pipe(
                     map(response => {
                       this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
                       return response.body;
                     }),
                     map(result => result.events||[]),
-                    map(traces => traces.map(trace => Trace.fromJSON(trace))),
-                    map(traces => traces.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())),
+                    map(this.traceMapper),
                     map(traces => ({ ...root, traces}))
                   )
               }
@@ -192,8 +188,11 @@ export class DataService {
         map(roots => roots.map(root => Root.fromJSON(root)))
       )
       .subscribe((roots: Root[]) => {
-        service.roots = [...roots||[], ...service.roots||[]].sort(DateUtil.compareTraceTimes);
-        this._roots.next(service.roots);
+        project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
+        project.getServices().forEach(service => {
+          service.roots = project.sequences.filter(s => s.getService() == service.serviceName);
+        });
+        this._roots.next(project.sequences);
         roots.forEach(root => {
           this.updateApprovals(root);
         })
@@ -214,7 +213,7 @@ export class DataService {
         map(traces => traces.map(trace => Trace.fromJSON(trace)))
       )
       .subscribe((traces: Trace[]) => {
-        root.traces = [...traces||[], ...root.traces||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        root.traces = this.traceMapper([...traces||[], ...root.traces||[]]);
         this.updateApprovals(root);
       });
   }
@@ -251,7 +250,7 @@ export class DataService {
     if(root.traces.length > 0) {
       this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
       if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort(DateUtil.compareTraceTimes));
+        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort(DateUtil.compareTraceTimesAsc));
     }
   }
 
@@ -264,5 +263,22 @@ export class DataService {
           triggerEvent: evaluation
         });
       });
+  }
+
+  private traceMapper(traces: Trace[]) {
+    return traces
+      .map(trace => Trace.fromJSON(trace))
+      .sort(DateUtil.compareTraceTimesDesc)
+      .reduce((result: Trace[], trace) => {
+        if(trace.triggeredid) {
+          let trigger = result.find(t => t.id == trace.triggeredid);
+          if(trigger)
+            trigger.traces.push(trace);
+          else
+            result.push(trace);
+        } else
+          result.push(trace);
+        return result;
+      }, []);
   }
 }

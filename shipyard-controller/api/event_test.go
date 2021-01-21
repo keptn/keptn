@@ -806,7 +806,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := newMockConfigurationService()
+	mockCS := newMockConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
@@ -1084,7 +1084,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := newMockConfigurationService()
+	mockCS := newMockConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
@@ -1180,7 +1180,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := newMockConfigurationService()
+	mockCS := newMockConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
@@ -1276,7 +1276,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := newMockConfigurationService()
+	mockCS := newMockConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
@@ -1443,6 +1443,43 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 		return
 	}
 
+}
+
+// Scenario 5: Received .triggered event for project with invalid shipyard version -> send .finished event with result = fail
+func Test_shipyardController_Scenario5(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc := getTestShipyardController()
+
+	mockCS := newMockConfigurationService(testShipyardResourceWithInvalidVersion)
+	defer mockCS.Close()
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := newMockEventbroker(t,
+		func(meb *mockEventBroker, event *models.Event) {
+			meb.receivedEvents = append(meb.receivedEvents, *event)
+		},
+		func(meb *mockEventBroker) {
+
+		})
+	defer mockEV.server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+	if len(mockEV.receivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.receivedEvents))
+		return
+	}
+	shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "", nil)
 }
 
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *mockEventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
@@ -1621,6 +1658,16 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 	return shouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
 }
 
+const testShipyardResourceWithInvalidVersion = `{
+      "resourceContent": "YXBpVmVyc2lvbjogMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJk",
+      "resourceURI": "shipyard.yaml"
+    }`
+
+const testShipyardFileWithInvalidVersion = `apiVersion: 0
+kind: Shipyard
+metadata:
+  name: test-shipyard`
+
 const testShipyardResource = `{
       "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
       "resourceURI": "shipyard.yaml"
@@ -1676,10 +1723,10 @@ spec:
       - name: remediation
       - name: evaluation`
 
-func newMockConfigurationService() *httptest.Server {
+func newMockConfigurationService(shipyardContent string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(testShipyardResource))
+		_, _ = w.Write([]byte(shipyardContent))
 	}))
 	return ts
 }

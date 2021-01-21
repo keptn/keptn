@@ -1689,6 +1689,10 @@ func init() {
           "description": "Shipyard file content",
           "type": "string"
         },
+        "shipyardVersion": {
+          "description": "Version of the shipyard file",
+          "type": "string"
+        },
         "stages": {
           "type": "array",
           "items": {
@@ -4313,6 +4317,10 @@ func init() {
         },
         "shipyard": {
           "description": "Shipyard file content",
+          "type": "string"
+        },
+        "shipyardVersion": {
+          "description": "Version of the shipyard file",
           "type": "string"
         },
         "stages": {

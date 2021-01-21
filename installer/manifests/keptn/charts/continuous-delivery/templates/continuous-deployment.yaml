@@ -92,7 +92,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
             - name: PUBSUB_TOPIC
-              value: 'sh.keptn.events.evaluation-done,sh.keptn.event.approval.>'
+              value: 'sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
 ---
@@ -193,6 +193,12 @@ spec:
                 configMapKeyRef:
                   name: ingress-config
                   key: istio_gateway
+                  optional: true
+            - name: HOSTNAME_TEMPLATE
+              valueFrom:
+                configMapKeyRef:
+                  name: ingress-config
+                  key: hostname_template
                   optional: true
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}

@@ -20,6 +20,7 @@ import (
 )
 
 const eventbroker = "EVENTBROKER"
+const configurationService = "CONFIGURATION_SERVICE"
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
