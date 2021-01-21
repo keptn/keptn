@@ -30,6 +30,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   public _indicatorResultsFail: any = [];
   public _indicatorResultsWarning: any = [];
   public _indicatorResultsPass: any = [];
+  public tableEntries: any;
 
   @Input()
   get indicatorResults(): any {
@@ -48,6 +49,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {
+    this.tableEntries = this.assembleTablesEntries(this.indicatorResults);
   }
 
   formatNumber(number) {
@@ -62,6 +64,34 @@ export class KtbSliBreakdownComponent implements OnInit {
       n = Math.floor(n);
 
     return n;
+  }
+
+  assembleTablesEntries(indicatorRestults): any {
+    var tableEntries = [];
+    
+    for (let indicatorRestult of indicatorRestults) {
+      let name = indicatorRestult.value.metric;
+      let value = this.formatNumber(indicatorRestult.value.value);
+      let result = indicatorRestult.status;
+      let score = indicatorRestult.score;
+      let criteria = "";
+
+      for (let target of indicatorRestult.targets) {
+        criteria += target.criteria + ' '
+      }
+
+      let entry = {
+        name: name,
+        value: value,
+        result: result,
+        score: score,
+        criteria: criteria
+      }
+
+      tableEntries.push(entry);
+    } 
+
+    return tableEntries;
   }
 
 }
