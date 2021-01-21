@@ -32,6 +32,9 @@ var mutex sync.Mutex
 
 var projectLocks = map[string]*sync.Mutex{}
 
+// keep track of created indexes in memory to save some calls to the mongodb API
+var createdIndexes = map[string]bool{}
+
 // LockProject locks the collections for a project
 func LockProject(project string) {
 	if projectLocks[project] == nil {
@@ -134,20 +137,12 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 		logger.Debug("Storing invalidated event to dedicated collection " + invalidatedCollectionName)
 		invalidatedCollection := client.Database(mongoDBName).Collection(invalidatedCollectionName)
 
-		logger.Debug("ensuring index for " + invalidatedCollectionName + " exists")
-		indexDefinition := mongo.IndexModel{
-			Keys: bson.M{
-				"triggeredid": 1,
-				"type":        1,
-			},
-		}
-		// CreateOne() is idempotent - this operation checks if the index exists and only creates a new one when not available
-		_, err := invalidatedCollection.Indexes().CreateOne(ctx, indexDefinition)
-		if err != nil {
-			// log the error, but continue anyway - index is not required for the query to work
-			logger.Debug("could not create index for " + invalidatedCollectionName + ": " + err.Error())
-		}
-		logger.Debug("created index for " + invalidatedCollectionName)
+		ensureIndexExistsOnCollection(
+			ctx,
+			invalidatedCollection,
+			"triggeredid",
+			logger,
+		)
 		_, err = invalidatedCollection.InsertOne(ctx, eventInterface)
 		if err != nil {
 			err := fmt.Errorf("failed to insert into collection: %v", err)
@@ -176,6 +171,31 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 
 	logger.Debug(fmt.Sprintf("inserted mapping %s->%s", event.Shkeptncontext, collectionName))
 	return nil
+}
+
+func ensureIndexExistsOnCollection(ctx context.Context, collection *mongo.Collection, indexName string, logger *keptncommon.Logger) {
+	logger.Debug("ensuring index for " + collection.Name() + " exists")
+	indexID := collection.Name() + "-" + indexName
+
+	// if this index has already been created, there is no need to do so again
+	if createdIndexes[indexID] {
+		return
+	}
+
+	indexDefinition := mongo.IndexModel{
+		Keys: bson.M{
+			indexName: 1,
+		},
+	}
+	// CreateOne() is idempotent - this operation checks if the index exists and only creates a new one when not available
+	_, err := collection.Indexes().CreateOne(ctx, indexDefinition)
+	if err != nil {
+		// log the error, but continue anyway - index is not required for the query to work
+		logger.Debug("could not create index for " + collection.Name() + ": " + err.Error())
+	}
+	// keep track (in memory) that this index already exists
+	createdIndexes[indexID] = true
+	logger.Debug("created index for " + collection.Name())
 }
 
 func getInvalidatedCollectionName(collectionName string) string {
@@ -467,6 +487,24 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	// make sure the index 'data.service' exists
+	ensureIndexExistsOnCollection(
+		ctx,
+		collection,
+		"data.service",
+		logger,
+	)
+
+	if !onlyRootEvents {
+		// make sure the index for 'shkeptncontext' exists - not needed for rootEvents collection
+		ensureIndexExistsOnCollection(
+			ctx,
+			collection,
+			"shkeptncontext",
+			logger,
+		)
+	}
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
