@@ -130,11 +130,11 @@ func runVersionCheck() {
 		kvChecker := version.NewKeptnVersionChecker()
 		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, clusterVersion, true)
 		if keptnMsgPrinted {
-			fmt.Fprintf(os.Stderr, "* Your Keptn cluster version: %s", clusterVersion)
+			fmt.Fprintf(os.Stderr, "* Your Keptn cluster version: %s\n", clusterVersion)
 		}
 
 		if clusterVersion != Version {
-			fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.", Version, clusterVersion)
+			fmt.Fprintf(os.Stderr, "* Warning: Your Keptn CLI version (%s) and Keptn cluster version (%s) don't match. This can lead to problems. Please make sure to use the same versions.\n", Version, clusterVersion)
 		}
 	}
 
