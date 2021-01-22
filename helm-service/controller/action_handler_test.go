@@ -3,7 +3,6 @@ package controller
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/stretchr/testify/assert"
@@ -14,10 +13,10 @@ func TestCreateActionHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
+	//ce := cloudevents.NewEvent()
+	//keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 
-	instance := NewActionTriggeredHandler(keptn, mocks.NewMockIConfigurationChanger(ctrl), "")
+	instance := NewActionTriggeredHandler(&MockedHandler{}, mocks.NewMockIConfigurationChanger(ctrl), "")
 	assert.NotNil(t, instance)
 }
 

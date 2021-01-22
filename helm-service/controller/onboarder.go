@@ -30,7 +30,6 @@ type Onboarder interface {
 type onboarder struct {
 	Handler
 	namespaceManager namespacemanager.INamespaceManager
-	serviceHandler   types.IServiceHandler
 	chartStorer      types.IChartStorer
 	chartGenerator   helm.ChartGenerator
 	chartPackager    types.IChartPackager
@@ -38,18 +37,15 @@ type onboarder struct {
 
 // NewOnboarder creates a new onboarder instance
 func NewOnboarder(
-	keptnHandler *keptnv2.Keptn,
+	keptnHandler Handler,
 	namespaceManager namespacemanager.INamespaceManager,
-	serviceHandler types.IServiceHandler,
 	chartStorer types.IChartStorer,
 	chartGenerator helm.ChartGenerator,
-	chartPackager types.IChartPackager,
-	configServiceURL string) Onboarder {
+	chartPackager types.IChartPackager) Onboarder {
 
 	return &onboarder{
-		Handler:          NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:          keptnHandler,
 		namespaceManager: namespaceManager,
-		serviceHandler:   serviceHandler,
 		chartStorer:      chartStorer,
 		chartGenerator:   chartGenerator,
 		chartPackager:    chartPackager,
@@ -84,8 +80,7 @@ func (o *onboarder) OnboardService(stageName string, event *keptnv2.ServiceCreat
 
 // OnboardGeneratedChart generates the generated chart using the Helm manifests of the user chart
 // as well as the specified deployment strategy
-func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData,
-	strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
+func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error) {
 
 	helmChartName := helm.GetChartName(event.Service, true)
 

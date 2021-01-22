@@ -6,7 +6,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"github.com/keptn/keptn/helm-service/pkg/types"
 )
 
@@ -17,14 +16,9 @@ type OnboardHandler struct {
 	onboarder      Onboarder
 }
 
-func NewOnboardHandler(keptnHandler *keptnv2.Keptn,
-	projectHandler types.IProjectHandler,
-	namespaceManager namespacemanager.INamespaceManager,
-	stagesHandler types.IStagesHandler,
-	onboarder Onboarder,
-	configServiceURL string) *OnboardHandler {
+func NewOnboardHandler(keptnHandler Handler, projectHandler types.IProjectHandler, stagesHandler types.IStagesHandler, onboarder Onboarder) *OnboardHandler {
 	return &OnboardHandler{
-		Handler:        NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:        keptnHandler,
 		projectHandler: projectHandler,
 		stagesHandler:  stagesHandler,
 		onboarder:      onboarder,

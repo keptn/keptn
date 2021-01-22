@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -21,8 +20,8 @@ type HandlerBase struct {
 }
 
 // NewHandlerBase creates a new HandlerBase
-func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *HandlerBase {
-	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger, namespacemanager.NewNamespaceManager(keptnHandler.Logger))
+func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor, configServiceURL string) *HandlerBase {
+
 	return &HandlerBase{
 		keptnHandler:     keptnHandler,
 		helmExecutor:     helmExecutor,

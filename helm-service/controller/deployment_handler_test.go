@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -33,7 +34,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 			Service: "my-service",
 		},
 		ConfigurationChange: keptnv2.ConfigurationChange{},
-		Deployment: keptnv2.DeploymentWithStrategy{
+		Deployment: keptnv2.DeploymentTriggeredData{
 			DeploymentStrategy: keptn.Direct.String(),
 		},
 	}
@@ -42,13 +43,13 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
 	deploymentHandler.HandleEvent(ce)
 
-	expectedActionFinishedEvent := cloudevents.NewEvent()
-	expectedActionFinishedEvent.SetType("sh.keptn.event.deployment.finished")
-	expectedActionFinishedEvent.SetSource("helm-service")
-	expectedActionFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	expectedActionFinishedEvent.SetExtension("triggeredid", "")
-	expectedActionFinishedEvent.SetExtension("shkeptncontext", "")
-	expectedActionFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.DeploymentFinishedEventData{
+	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
+	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
+	expectedDeploymentFinishedEvent.SetSource("helm-service")
+	expectedDeploymentFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedDeploymentFinishedEvent.SetExtension("triggeredid", "")
+	expectedDeploymentFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedDeploymentFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.DeploymentFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
@@ -57,7 +58,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 			Result:  keptnv2.ResultPass,
 			Message: "Successfully deployed",
 		},
-		Deployment: keptnv2.DeploymentData{
+		Deployment: keptnv2.DeploymentFinishedData{
 			DeploymentStrategy:   "direct",
 			DeploymentURIsLocal:  []string{"http://my-service.my-project-my-stage:80"},
 			DeploymentURIsPublic: []string{"http://my-service.my-project-my-stage.svc.cluster.local:80"},
@@ -67,7 +68,7 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 	})
 
 	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
-	assert.Equal(t, expectedActionFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
+	assert.Equal(t, expectedDeploymentFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
 	require.Equal(t, 2, len(mockedBaseHandler.upgradeChartInvocations))
 	assert.Equal(t, "carts", mockedBaseHandler.upgradeChartInvocations[0].ch.Metadata.Name)
 	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[0].event)
@@ -75,4 +76,44 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 	assert.Equal(t, "carts-generated", mockedBaseHandler.upgradeChartInvocations[1].ch.Metadata.Name)
 	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[1].event)
 	assert.Equal(t, keptn.Direct, mockedBaseHandler.upgradeChartInvocations[1].strategy)
+}
+
+func TestHandleEventWithPreviousResultFailed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
+	mockedMesh := mocks.NewMockMesh(ctrl)
+	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
+	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
+
+	instance := NewDeploymentHandler(mockedBaseHandler, mockedMesh, mockedOnboarder, mockedChartGenerator)
+	deploymentTriggeredEventData := keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Result: keptnv2.ResultFailed,
+		},
+	}
+
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+
+	instance.HandleEvent(ce)
+
+	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
+	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
+	expectedDeploymentFinishedEvent.SetSource("helm-service")
+	expectedDeploymentFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedDeploymentFinishedEvent.SetExtension("triggeredid", "")
+	expectedDeploymentFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedDeploymentFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultFailed,
+			Message: "No deployment has been executed",
+		},
+	})
+
+	fmt.Println(len(mockedBaseHandler.sentCloudEvents))
+	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
+	assert.Equal(t, expectedDeploymentFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
+
 }

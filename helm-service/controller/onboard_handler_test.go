@@ -6,7 +6,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/golang/mock/gomock"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/helm-service/mocks"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -17,93 +16,6 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 )
-
-const helmManifestResource = `
----
-# Source: carts/templates/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
- name: carts
-spec:
- type: ClusterIP
- ports:
- - name: http
-   port: 80
-   protocol: TCP
-   targetPort: 8080
- selector:
-   app: carts
----
-# Source: carts/templates/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
- name: carts
-spec:
- replicas: 1
- strategy:
-   rollingUpdate:
-     maxUnavailable: 0
-   type: RollingUpdate
- selector:
-   matchLabels:
-     app: carts
- template:
-   metadata:
-     labels:
-       app: carts
-   spec:
-     containers:
-     - name: carts
-       image: "docker.io/keptnexamples/carts:0.10.1"
-       imagePullPolicy: IfNotPresent
-       ports:
-       - name: http
-         protocol: TCP
-         containerPort: 8080
-       env:
-       - name: DT_CUSTOM_PROP
-         value: "keptn_project=sockshop keptn_service=carts keptn_stage=dev keptn_deployment=direct"
-       - name: POD_NAME
-         valueFrom:
-           fieldRef:
-             fieldPath: "metadata.name"
-       - name: DEPLOYMENT_NAME
-         valueFrom:
-           fieldRef:
-             fieldPath: "metadata.labels['deployment']"
-       - name: CONTAINER_IMAGE
-         value: "docker.io/keptnexamples/carts:0.10.1"
-       - name: KEPTN_PROJECT
-         value: "carts"
-       - name: KEPTN_STAGE
-         valueFrom:
-           fieldRef:
-             fieldPath: "metadata.namespace"
-       - name: KEPTN_SERVICE
-         value: "carts"
-       livenessProbe:
-         httpGet:
-           path: /health
-           port: 8080
-         initialDelaySeconds: 60
-         periodSeconds: 10
-         timeoutSeconds: 15
-       readinessProbe:
-         httpGet:
-           path: /health
-           port: 8080
-         initialDelaySeconds: 60
-         periodSeconds: 10
-         timeoutSeconds: 15
-       resources:
-         limits:
-             cpu: 1000m
-             memory: 2048Mi
-         requests:
-             cpu: 500m
-             memory: 1024Mi`
 
 //mockColleciton holds all the mocks
 type mocksCollection struct {
@@ -156,20 +68,16 @@ func newTestOnboardHandlerCreator(t *testing.T, mockedBaseHandlerOptions ...Mock
 func TestCreateOnboarderHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	mockedBaseHandler := createKeptnBaseHandlerMock()
 	mockedProjectHandler := mocks.NewMockIProjectHandler(ctrl)
-	mockedNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
 	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
 	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
 
-	ce := cloudevents.NewEvent()
-	keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
 	handler := NewOnboardHandler(
-		keptn,
+		mockedBaseHandler,
 		mockedProjectHandler,
-		mockedNamespaceManager,
 		mockedStagesHandler,
-		mockedOnboarder,
-		"")
+		mockedOnboarder)
 
 	assert.NotNil(t, handler)
 
