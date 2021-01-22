@@ -48,6 +48,9 @@ docker push "${IMAGE}:${VERSION}"
 
 if [[ $? -ne 0 ]]; then
   echo "::warning file=${FOLDER}/Dockerfile::Failed to push ${IMAGE}:${VERSION}.${DATETIME} to DockerHub, continuing anyway"
+  echo "* Failed to push ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${FOLDER})" >> ../docker_build_report/report.txt
+else
+  echo "* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${FOLDER})" >> ../docker_build_report/report.txt
 fi
 
 # change back to previous directory

@@ -489,6 +489,12 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
 
+      # Docker Build Report: store successful image builds in docker_build_report/report.txt, so we can report
+      # them to the PR later
+      - id: prepare_docker_build_report
+        run: |
+          mkdir docker_build_report
+
       - id: prepare_manifest
         name: Prepare Build Manifest
         run: |
@@ -605,3 +611,21 @@ jobs:
           FOLDER: ${{ env.MONGODB_DS_FOLDER }}
         run: |
           ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+      
+      - id: create_docker_build_report
+        name: Create Docker Build Report
+        run: |
+          echo "The following Docker Images have been built: " > docker_build_report.txt
+          cat docker_build_report/*.txt >> docker_build_report.txt || echo "* No images have been built or uploaded" >> docker_build_report.txt
+          echo "---"
+          cat docker_build_report.txt
+
+      - id: report_docker_build_to_pr
+        name: Report Docker Build to PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: docker_build_report.txt
+          recreate: true
+          
