@@ -216,7 +216,7 @@ sleep 10
 
 # try to fetch a evaluation.finished event
 echo "Getting evaluation.finished event with context-id: ${keptn_context_id}"
-response=$(get_event get_evaluation_finished_event ${keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
