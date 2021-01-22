@@ -113,10 +113,11 @@ jobs:
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
           CLOUDSDK_REGION: "us-central1"
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
           CLUSTER_NAME_NIGHTLY=gh-nightly
-          BRANCH_SLUG=master
+          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
           export CLUSTER_NAME_NIGHTLY=${CLUSTER_NAME_NIGHTLY}-${BRANCH_SLUG:0:15}-gke${GKE_VERSION//./}
           echo $CLUSTER_NAME_NIGHTLY
           echo "Installing gcloud CLI"
@@ -432,7 +433,7 @@ jobs:
           path: test-report-*.txt
 
 
-  create-draft-release-for-master:
+  publish-artifacts-as-pre-release:
     needs: integration-test
     if: always() # run report-to-pr always, even if the previous required job fails
     runs-on: ubuntu-20.04
@@ -482,16 +483,16 @@ jobs:
           path: ./dist
 
       - name: Show content of dist folder
-        run: ls -la ./dist
+        run: ls -la ./dist/*
       
       - name: Show build-config.env
-        run: cat ./dist/build-config.env
+        run: cat ./dist/build-config/build-config.env
 
-      - name: Load Build-Config Environemnt from ./dist/build-config.env
+      - name: Load Build-Config Environemnt from ./dist/build-config/build-config.env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v2
         with:
-          env-file: ./dist/build-config.env
+          env-file: ./dist/build-config/build-config.env
 
       - name: DEBUG Build-Config
         run: |
@@ -503,7 +504,7 @@ jobs:
           echo "# DEV BUILD ${VERSION} ON ${BRANCH}" > release-notes.txt
           echo "This is a developer build, please use with caution." >> release-notes.txt
           echo "## Docker Images" >> release-notes.txt
-          cat dist/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker_build_report.txt" >> release-notes.txt
+          cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
           echo "## Integration Tests" >> release-notes.txt
           cat final-test-report.txt >> release-notes.txt
 
@@ -513,6 +514,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
           prerelease: true
           body_path: release-notes.txt # ${{ github.workflow }}-CHANGELOG.txt
           files: |
