@@ -294,6 +294,7 @@
             <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
           </dt-info-group>
         </div>
+        <ktb-sequence-timeline [currentRoot]="currentSequence"></ktb-sequence-timeline>
         <ktb-events-list [events]="currentSequence.traces" [focusedEventId]="eventId"></ktb-events-list>
         <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
           <dt-tag-list aria-label="fetch-info">

@@ -54,6 +54,14 @@ export class Root extends Trace {
     return this.traces ? this.traces[this.traces.length - 1] : null;
   }
 
+  getTracesOfStage(stage: string): Trace[] {
+    return this.traces?.filter(trace => trace.data.stage === stage);
+  }
+
+  getFirstTraceOfStage(stage: string): Trace {
+    return this.getTracesOfStage(stage)?.[0];
+  }
+
   getStages(): String[] {
     let result: String[] = [];
     if(this.traces) {

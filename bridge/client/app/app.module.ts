@@ -75,6 +75,7 @@ import { AppRouting } from './app.routing';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from "./evaluation-board/evaluation-board.component";
+import { KtbSequenceTimelineComponent } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -106,6 +107,7 @@ registerLocaleData(localeEn, 'en');
     KtbApprovalItemComponent,
     KtbCopyToClipboardComponent,
     KtbMarkdownComponent,
+    KtbSequenceTimelineComponent,
   ],
   imports: [
     BrowserModule,
