@@ -108,7 +108,6 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		if !mocking {
 			_, err := apiHandler.CreateProject(project)
 			if err != nil {
-				fmt.Println("Create project was unsuccessful")
 				return fmt.Errorf("Create project was unsuccessful.\n%s", *err.Message)
 			}
 
