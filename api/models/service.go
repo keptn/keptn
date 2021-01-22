@@ -21,7 +21,7 @@ type Service struct {
 	DeploymentStrategies map[string]string `json:"deploymentStrategies,omitempty"`
 
 	// helm chart
-	HelmChart string `json:"helmChart,omitempty"`
+	HelmChart string `json:"helmChartf,omitempty"`
 
 	// service name
 	// Required: true
