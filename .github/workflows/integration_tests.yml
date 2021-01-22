@@ -148,7 +148,7 @@ jobs:
         run: kubectl get services --all-namespaces
       - name: Debug - Get Kubernetes Deployments
         run: kubectl get deployments --all-namespaces -owide
-      - name: Download CLI artifact from master branch
+      - name: Download CLI artifact from specified branch
         uses: dawidd6/action-download-artifact@v2
         with:
           # Optional, GitHub token
@@ -432,7 +432,7 @@ jobs:
           path: test-report-*.txt
 
 
-  report-to-pr:
+  create-draft-release-for-master:
     needs: integration-test
     if: always() # run report-to-pr always, even if the previous required job fails
     runs-on: ubuntu-20.04
@@ -441,6 +441,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: test-report
+          
       - name: Print Test Report
         id: print_test_report
         run: |
@@ -461,4 +462,61 @@ jobs:
           name: test-report
           path: final-test-report.txt
 
-      # ToDo: Report to slack, E-mail, PR, or whatever
+      - name: Download all artifacts from previous build and specified branch
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          # Optional, GitHub token
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          # Required, workflow file name or ID
+          workflow: CI.yml
+          # Optional, the status or conclusion of a completed workflow to search for
+          # Can be one of a workflow conculsion::
+          # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
+          # Or a workflow status:
+          # "completed", "in_progress", "queued"
+          # Default: "completed"
+          workflow_conclusion: success
+          # Use the branch
+          branch: ${{ github.event.inputs.branch }}
+          # Optional, directory where to extract artifact
+          path: ./dist
+
+      - name: Show content of dist folder
+        run: ls -la ./dist
+      
+      - name: Show build-config.env
+        run: cat ./dist/build-config.env
+
+      - name: Load Build-Config Environemnt from ./dist/build-config.env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v2
+        with:
+          env-file: ./dist/build-config.env
+
+      - name: DEBUG Build-Config
+        run: |
+          echo VERSION=${VERSION}
+          echo BRANCH=${BRANCH}
+       
+      - name: Create a Release message
+        run: |
+          echo "# DEV BUILD ${VERSION} ON ${BRANCH}" > release-notes.txt
+          echo "This is a developer build, please use with caution." >> release-notes.txt
+          echo "## Docker Images" >> release-notes.txt
+          cat dist/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker_build_report.txt" >> release-notes.txt
+          echo "## Integration Tests" >> release-notes.txt
+          cat final-test-report.txt >> release-notes.txt
+
+      # Create a pre release
+      - name: Create Pre Release
+        id: create_pre_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.VERSION }}
+          prerelease: true
+          body_path: release-notes.txt # ${{ github.workflow }}-CHANGELOG.txt
+          files: |
+            dist/keptn-cli/keptn-*.tar.gz
+            dist/keptn-installer/keptn*.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
