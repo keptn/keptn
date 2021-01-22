@@ -226,7 +226,7 @@ function verify_test_step() {
 
 function wait_for_url() {
   URL=$1
-  RETRY=0; RETRY_MAX=50;
+  RETRY=0; RETRY_MAX=40;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     curl $URL -k
@@ -262,7 +262,7 @@ function verify_image_of_deployment() {
 
 function wait_for_deployment_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;
-  RETRY=0; RETRY_MAX=50;
+  RETRY=0; RETRY_MAX=40;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
@@ -293,7 +293,7 @@ function wait_for_deployment_in_namespace() {
 
 function wait_for_deployment_with_image_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;  IMAGE=$3
-  RETRY=0; RETRY_MAX=50;
+  RETRY=0; RETRY_MAX=40;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     DEPLOYMENT_IMAGE=$(eval kubectl get deployment $DEPLOYMENT -n $NAMESPACE -o=jsonpath='{$.spec.template.spec.containers[:1].image}' --ignore-not-found)
@@ -323,7 +323,7 @@ function wait_for_deployment_with_image_in_namespace() {
 
 function wait_for_pod_number_in_deployment_in_namespace() {
   DEPLOYMENT=$1; POD_COUNT=$2; NAMESPACE=$3;
-  RETRY=0; RETRY_MAX=50;
+  RETRY=0; RETRY_MAX=40;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
@@ -352,7 +352,7 @@ function wait_for_pod_number_in_deployment_in_namespace() {
 
 function wait_for_daemonset_in_namespace() {
   DAEMONSET=$1; NAMESPACE=$2;
-  RETRY=0; RETRY_MAX=50;
+  RETRY=0; RETRY_MAX=40;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     DAEMONSET_LIST=$(eval "kubectl get daemonset -n ${NAMESPACE} | awk '/$DAEMONSET /'" | awk '{print $1}')
