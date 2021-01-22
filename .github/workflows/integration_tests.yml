@@ -14,6 +14,10 @@ on:
         description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
+      publish_as_release:
+        description: 'Whether or not to publish the build as a GH release (0=no, 1=yes)'
+        required: true
+        default: 0
 defaults:
   run:
     shell: bash
@@ -510,6 +514,7 @@ jobs:
 
       # Create a pre release
       - name: Create Pre Release
+        if: inputs.publish_as_release == '1'
         id: create_pre_release
         uses: softprops/action-gh-release@v1
         with:
