@@ -1,0 +1,23 @@
+
+.ktb-sequence-timeline-container {
+  position: relative;
+
+  .timeline {
+    border: black solid 1px;
+    position: absolute;
+    margin-top: 30px;
+    width: 100%;
+  }
+
+  .text-center {
+    text-align: center;
+    span {
+      vertical-align: top;
+    }
+  }
+
+  .pointer {
+    cursor: pointer;
+  }
+}
+

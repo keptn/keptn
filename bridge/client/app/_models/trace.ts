@@ -215,6 +215,10 @@ class Trace {
     if(!this.isFinished())
       return "idle";
 
+    return this.getIconType();
+  }
+
+  getIconType(): string {
     if(!this.icon) {
       if(this.isApprovalFinished()) {
         this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
