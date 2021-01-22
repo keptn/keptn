@@ -295,28 +295,33 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collectionName := getProjectOfEvent(event)
-	collection := client.Database(mongoDBName).Collection(collectionName)
-	rootEventsCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
-	invalidatedEventsCollection := client.Database(mongoDBName).Collection(getInvalidatedCollectionName(collectionName))
+	projectName := getProjectOfEvent(event)
+	projectCollection := client.Database(mongoDBName).Collection(projectName)
+	rootEventsCollection := client.Database(mongoDBName).Collection(projectName + rootEventCollectionSuffix)
+	invalidatedEventsCollection := client.Database(mongoDBName).Collection(getInvalidatedCollectionName(projectName))
 
-	logger.Debug(fmt.Sprintf("Delete all events of project %s", collectionName))
-	err := collection.Drop(ctx)
+	logger.Debug(fmt.Sprintf("Delete all events of project %s", projectName))
+
+	createdIndexes[projectCollection.Name()+"-shkeptncontext"] = false
+	createdIndexes[projectCollection.Name()+"-data.service"] = false
+	err := projectCollection.Drop(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to drop collection %s: %v", collectionName, err)
+		err := fmt.Errorf("failed to drop collection %s: %v", projectCollection.Name(), err)
 		logger.Error(err.Error())
 		return err
 	}
 
-	logger.Debug(fmt.Sprintf("Delete all root events of project %s", collectionName))
+	logger.Debug(fmt.Sprintf("Delete all root events of project %s", projectName))
+	createdIndexes[rootEventsCollection.Name()+"-data.service"] = false
 	err = rootEventsCollection.Drop(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to drop collection %s: %v", collectionName+rootEventCollectionSuffix, err)
+		err := fmt.Errorf("failed to drop collection %s: %v", rootEventsCollection.Name(), err)
 		logger.Error(err.Error())
 		return err
 	}
 
-	logger.Debug(fmt.Sprintf("Delete all invalidated events of project %s", collectionName))
+	logger.Debug(fmt.Sprintf("Delete all invalidated events of project %s", projectName))
+	createdIndexes[invalidatedEventsCollection.Name()+"-triggeredid"] = false
 	err = invalidatedEventsCollection.Drop(ctx)
 	if err != nil {
 		// log the error but continue
@@ -324,10 +329,10 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 		logger.Error(err.Error())
 	}
 
-	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", collectionName))
+	logger.Debug(fmt.Sprintf("Delete context-to-project mappings of project %s", projectName))
 	contextToProjectCollection := client.Database(mongoDBName).Collection(contextToProjectCollection)
-	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": collectionName}); err != nil {
-		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", collectionName, err)
+	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": projectName}); err != nil {
+		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", projectName, err)
 		logger.Error(err.Error())
 		return err
 	}
