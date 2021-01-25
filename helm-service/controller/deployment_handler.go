@@ -170,14 +170,7 @@ func (h *DeploymentHandler) getDeploymentURIs(e keptnv2.EventData) ([]string, []
 	services := helm.GetServices(userChartManifest)
 	if len(services) > 0 {
 		if len(services[0].Spec.Ports) > 0 {
-			lowestPort := int32(math.MaxInt32)
-			foundPort := false
-			for _, port := range services[0].Spec.Ports {
-				if port.Protocol == corev1.ProtocolTCP && port.Port < lowestPort {
-					lowestPort = port.Port
-					foundPort = true
-				}
-			}
+			lowestPort, foundPort := getPortOfService(services[0])
 			if foundPort {
 				localDeploymentURI := mesh.GetLocalDeploymentURI(e, fmt.Sprintf("%d", lowestPort))
 				publicDeploymentURI := mesh.GetPublicDeploymentURI(e)
@@ -188,6 +181,27 @@ func (h *DeploymentHandler) getDeploymentURIs(e keptnv2.EventData) ([]string, []
 		}
 	}
 	return nil, nil, nil
+}
+
+func getPortOfService(service *corev1.Service) (int32, bool) {
+	lowestPort := int32(math.MaxInt32)
+	foundPort := false
+	for _, port := range service.Spec.Ports {
+		if port.Protocol == corev1.ProtocolTCP && port.Port < lowestPort {
+			lowestPort = port.Port
+			foundPort = true
+		}
+	}
+	// if no port explicitly marked as TCP port could be found, take the lowest port number of all specified ports
+	if !foundPort {
+		for _, port := range service.Spec.Ports {
+			if port.Port < lowestPort {
+				lowestPort = port.Port
+				foundPort = true
+			}
+		}
+	}
+	return lowestPort, foundPort
 }
 
 func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) keptnv2.DeploymentStartedEventData {
