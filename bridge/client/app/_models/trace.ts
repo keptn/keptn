@@ -179,7 +179,7 @@ class Trace {
   }
 
   public isDeployment(): string {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED ? this.data.stage : null;
+    return this.type === EventTypes.DEPLOYMENT_TRIGGERED ? this.data.stage : null;
   }
 
   public isEvaluation(): string {
