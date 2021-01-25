@@ -303,6 +303,7 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 	logger.Debug(fmt.Sprintf("Delete all events of project %s", projectName))
 
 	createdIndexes[projectCollection.Name()+"-shkeptncontext"] = false
+	createdIndexes[projectCollection.Name()+"-type"] = false
 	createdIndexes[projectCollection.Name()+"-data.service"] = false
 	err := projectCollection.Drop(ctx)
 	if err != nil {
@@ -507,6 +508,12 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 			ctx,
 			collection,
 			"shkeptncontext",
+			logger,
+		)
+		ensureIndexExistsOnCollection(
+			ctx,
+			collection,
+			"type",
 			logger,
 		)
 	}
