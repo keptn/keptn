@@ -16,6 +16,12 @@ function cleanup() {
 
   echo "Removing secret dynatrace-credentials-${PROJECT}"
   kubectl -n ${KEPTN_NAMESPACE} delete secret dynatrace-credentials-${PROJECT}
+
+  # print logs of dynatrace-sli-service
+  echo "Logs from: dynatrace-sli-service"
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  echo "Logs from: lighthouse-service"
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/lighthouse-service -c lighthouse-service
 }
 trap cleanup EXIT SIGINT
 
@@ -283,7 +289,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   # exit 1 - Todo - see below
 fi
@@ -334,11 +339,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  echo "Logs from: dynatrace-sli-service"
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
-  echo "Logs from: lighthouse-service"
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/lighthouse-service -c lighthouse-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
@@ -416,8 +416,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
@@ -497,8 +495,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
@@ -580,8 +576,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
