@@ -62,6 +62,9 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 			return err
 		}
 		if !mocking {
+			if *upgradeParams.PatchNamespace {
+				return patchNamespace()
+			}
 			return doUpgrade()
 		}
 		fmt.Println("Skipping upgrade due to mocking flag")
