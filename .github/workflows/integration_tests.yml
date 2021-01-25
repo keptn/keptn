@@ -514,7 +514,7 @@ jobs:
 
       # Create a pre release
       - name: Create Pre Release
-        if: inputs.publish_as_release == '1'
+        if: github.event.inputs.publish_as_release == '1'
         id: create_pre_release
         uses: softprops/action-gh-release@v1
         with:
