@@ -9,6 +9,8 @@ import (
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
 
+// TODO: call this function
+// CheckAndSetServiceName checks for validity of the service name
 func CheckAndSetServiceName(event *keptnv2.ServiceCreateFinishedEventData) error {
 
 	errorMsg := "Service name contains upper case letter(s) or special character(s).\n " +

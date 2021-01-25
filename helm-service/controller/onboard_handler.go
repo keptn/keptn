@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/types"
 )
 
+// OnboardHandler handles sh.keptn.events.service.create.finished events
 type OnboardHandler struct {
 	Handler
 	projectHandler types.IProjectHandler
@@ -16,6 +17,7 @@ type OnboardHandler struct {
 	onboarder      Onboarder
 }
 
+// NewOnboardeHandler creates a new OnboardHandler
 func NewOnboardHandler(keptnHandler Handler, projectHandler types.IProjectHandler, stagesHandler types.IStagesHandler, onboarder Onboarder) *OnboardHandler {
 	return &OnboardHandler{
 		Handler:        keptnHandler,
@@ -25,6 +27,7 @@ func NewOnboardHandler(keptnHandler Handler, projectHandler types.IProjectHandle
 	}
 }
 
+// HandleEvent takes the sh.keptn.events.create.service.finished eventually onboards all services in the given stages/namespaces
 func (o *OnboardHandler) HandleEvent(ce cloudevents.Event) {
 
 	e := &keptnv2.ServiceCreateFinishedEventData{}
