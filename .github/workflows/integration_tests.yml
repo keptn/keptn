@@ -100,6 +100,7 @@ jobs:
 
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
+        timeout-minutes: 15
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: |
           test/utils/download_and_install_oc_cli.sh
@@ -178,6 +179,7 @@ jobs:
           sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
 
       - name: Verify Keptn CLI works
+        timeout-minutes: 1
         run: keptn version
 
       - name: Extract name of helm chart
@@ -192,6 +194,7 @@ jobs:
 
       - name: Install Keptn
         id: keptn_install
+        timeout-minutes: 10
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
         run: |
@@ -282,6 +285,7 @@ jobs:
 
       - name: Authenticate Keptn CLI with API
         id: authenticate_keptn_cli
+        timeout-minutes: 5
         run: |
           source test/utils.sh
           # authenticate at Keptn API
@@ -306,10 +310,12 @@ jobs:
           verify_test_step $? "Could not authenticate at Keptn API"
 
       - name: Verify that Keptn CLI is authenticated using keptn status
+        timeout-minutes: 1
         run: keptn status
 
       - name: Test Linking Stages
         id: test_linking_stages
+        timeout-minutes: 5
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -317,6 +323,7 @@ jobs:
 
       - name: Test Quality Gates Standalone
         id: test_quality_gates
+        timeout-minutes: 10
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -328,6 +335,7 @@ jobs:
 
       - name: Test Self Healing
         id: test_self_healing
+        timeout-minutes: 10
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -336,6 +344,7 @@ jobs:
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant
+        timeout-minutes: 5
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -346,6 +355,7 @@ jobs:
       - name: Test Continuous Delivery (with sockshop)
         id: test_continuous_delivery
         if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        timeout-minutes: 45
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -383,10 +393,12 @@ jobs:
         run: kubectl -n ${KEPTN_NAMESPACE} get pods
 
       - name: Uninstall Keptn
+        timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
 
       - name: Uninstall Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
+        timeout-minutes: 5
         run: test/utils/uninstall_istio.sh
 
       # one last time: debug infos
@@ -405,6 +417,7 @@ jobs:
 
       - name: Cleanup GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
+        timeout-minutes: 5
         env:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
@@ -416,6 +429,7 @@ jobs:
 
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
+        timeout-minutes: 3
         run: |
           minishift stop
           minishift delete profile keptn-dev
