@@ -3,7 +3,7 @@
 source test/utils.sh
 
 # install istio
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.14 sh -
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.8.2 sh -
 cd istio-*
 export PATH=$PWD/bin:$PATH
 istioctl install --set profile=demo
