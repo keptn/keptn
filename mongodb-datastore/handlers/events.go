@@ -314,6 +314,7 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 
 	logger.Debug(fmt.Sprintf("Delete all root events of project %s", projectName))
 	createdIndexes[rootEventsCollection.Name()+"-data.service"] = false
+	createdIndexes[rootEventsCollection.Name()+"-time"] = false
 	err = rootEventsCollection.Drop(ctx)
 	if err != nil {
 		err := fmt.Errorf("failed to drop collection %s: %v", rootEventsCollection.Name(), err)
@@ -514,6 +515,13 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 			ctx,
 			collection,
 			"type",
+			logger,
+		)
+	} else {
+		ensureIndexExistsOnCollection(
+			ctx,
+			collection,
+			"time",
 			logger,
 		)
 	}
