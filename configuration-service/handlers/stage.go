@@ -13,6 +13,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/stage"
 	"io/ioutil"
+	"sort"
 )
 
 func getStages(params stage.GetProjectProjectNameStageParams) ([]*models.Stage, errors.Error) {
@@ -125,9 +126,16 @@ func GetProjectProjectNameStageHandlerFunc(params stage.GetProjectProjectNameSta
 
 	paginationInfo := common.Paginate(len(prj.Stages), params.PageSize, params.NextPageKey)
 
-	totalCount := len(prj.Stages)
+	allStagesOfProject := prj.Stages
+
+	//sort stages alphabetically
+	sort.Slice(allStagesOfProject, func(i, j int) bool {
+		return allStagesOfProject[i].StageName < allStagesOfProject[j].StageName
+	})
+
+	totalCount := len(allStagesOfProject)
 	if paginationInfo.NextPageKey < int64(totalCount) {
-		for _, stg := range prj.Stages[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+		for _, stg := range allStagesOfProject[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 			payload.Stages = append(payload.Stages, stg)
 		}
 	}

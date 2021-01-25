@@ -4,6 +4,7 @@ import (
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
@@ -45,10 +46,15 @@ func GetProjectProjectNameStageStageNameServiceHandlerFunc(params service.GetPro
 
 	for _, stg := range prj.Stages {
 		if stg.StageName == params.StageName {
-			paginationInfo := common.Paginate(len(stg.Services), params.PageSize, params.NextPageKey)
-			totalCount := len(stg.Services)
+			allServicesInStage := stg.Services
+			//sort services alphabetically
+			sort.Slice(allServicesInStage, func(i, j int) bool {
+				return allServicesInStage[i].ServiceName < allServicesInStage[j].ServiceName
+			})
+			paginationInfo := common.Paginate(len(allServicesInStage), params.PageSize, params.NextPageKey)
+			totalCount := len(allServicesInStage)
 			if paginationInfo.NextPageKey < int64(totalCount) {
-				for _, svc := range stg.Services[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+				for _, svc := range allServicesInStage[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
 					payload.Services = append(payload.Services, svc)
 				}
 			}
