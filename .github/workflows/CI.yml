@@ -655,7 +655,10 @@ jobs:
 
       - id: report_docker_build_to_pr
         name: Report Docker Build to PR
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't comment on the PR in this case
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
