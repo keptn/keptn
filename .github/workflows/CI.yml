@@ -10,6 +10,7 @@ on:
     branches:
       - 'master'
       - 'release-*'
+    type: [labeled]
 defaults:
   run:
     shell: bash
@@ -70,7 +71,7 @@ jobs:
         continue-on-error: true
 
       - name: Process all artifacts (for push on master/release branches)
-        if: github.event_name == 'push'
+        if: (github.event_name == 'push') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
@@ -230,6 +231,34 @@ jobs:
           echo "::set-output name=DATE::$(date +'%Y%m%d')"
           echo "::set-output name=TIME::$(date +'%H%M')"
           echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
+
+  store-output-in-build-config:
+    name: "Store output of last step in build-config.env"
+    needs: prepare_ci_run
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Create build config file
+        env:
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+          BRANCH_SLUG: ${{ needs.prepare_ci_run.outputs.BRANCH_SLUG }}
+          BUILD_EVERYTHING: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
+          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+        run: |
+          echo "BRANCH=${BRANCH}" >> build-config.env
+          echo "BRANCH_SLUG=${BRANCH_SLUG}" >> build-config.env
+          echo "BUILD_EVERYTHING=${BUILD_EVERYTHING}" >> build-config.env
+          echo "VERSION=${VERSION}" >> build-config.env
+          echo "DATETIME=${DATETIME}" >> build-config.env
+          echo "GIT_SHA=${GIT_SHA}" >> build-config.env
+
+      - name: Upload build config as artifact
+        id: upload_build_config
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-config
+          path: build-config.env
 
   ############################################################################
   # Unit tests                                                               #
@@ -447,7 +476,14 @@ jobs:
 
       - name: Build Helm Charts
         id: build_helm_charts
-        run: ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}"
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the image tag (e.g., nightly build)
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}"
+          else
+            # just use VERSION for the image tag
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}"
+          fi
 
       - name: Upload Helm Chart as an artifact
         id: upload_helm_chart
@@ -625,3 +661,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           path: docker_build_report_final.txt
           recreate: true
+
+      - name: Upload Docker Build Report as an artifact
+        id: upload_docker_build_report
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-build-report
+          path: docker_build_report.txt
