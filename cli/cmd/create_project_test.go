@@ -58,48 +58,6 @@ func TestCreateProjectCmd(t *testing.T) {
 	}
 }
 
-// TestCreateProjectIncorrectProjectNameCmd tests whether the create project command aborts
-// due to a project name with upper case character
-func TestCreateProjectIncorrectProjectNameCmd(t *testing.T) {
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-
-	shipyardFilePath := "./shipyard.yaml"
-	defer testShipyard(t, shipyardFilePath, "")()
-
-	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFilePath)
-	_, err := executeActionCommandC(cmd)
-
-	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
-		t.Errorf("missing expected error, but got %v", err)
-	}
-}
-
-// TestCreateProjectIncorrectProjectNameCmd tests whether the create project command aborts
-// due to a stage name, which contains a special character (-)
-func TestCreateProjectIncorrectStageNameCmd(t *testing.T) {
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-
-	shipyardFilePath := "./shipyard.yaml"
-	shipyardContent := `stages:
-- name: dev
-  deployment_strategy: direct
-- name: staging-projectA
-  deployment_strategy: blue_green_service
-- name: production
-  deployment_strategy: blue_green_service`
-
-	defer testShipyard(t, shipyardFilePath, shipyardContent)()
-
-	cmd := fmt.Sprintf("create project Sockshop --shipyard=%s --mock", shipyardFilePath)
-	_, err := executeActionCommandC(cmd)
-
-	if !errorContains(err, "contains upper case letter(s) or special character(s)") {
-		t.Errorf("missing expected error, but got %v", err)
-	}
-}
-
 // TestCreateProjectCmdWithGitMissingParam tests whether the create project command aborts
 // due to a missing flag for defining a git upstream
 func TestCreateProjectCmdWithGitMissingParam(t *testing.T) {

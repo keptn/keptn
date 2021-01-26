@@ -50,7 +50,7 @@ func CreateProject(c *gin.Context) {
 	if err := validateCreateProjectParams(createProjectParams); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
-			Message: stringp("Could not validate payload: " + err.Error()),
+			Message: stringp(err.Error()),
 		})
 		return
 	}
@@ -544,7 +544,11 @@ func validateCreateProjectParams(createProjectParams *operations.CreateProjectPa
 		return errors.New("project name missing")
 	}
 	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
-		return errors.New("provided project name is not a valid Keptn entity name")
+		errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
+		errorMsg += "Keptn relies on the following conventions: "
+		errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
+		errorMsg += "Please update project name and try again."
+		return errors.New(errorMsg)
 	}
 	if createProjectParams.Shipyard == nil || *createProjectParams.Shipyard == "" {
 		return errors.New("shipyard must contain a valid shipyard spec encoded in base64")
