@@ -34,7 +34,7 @@ gcloud beta container --project "$GCLOUD_PROJECT_NAME" clusters create "$CLUSTER
  --addons $ADDONS \
  --no-enable-autoupgrade --no-enable-autorepair \
  --enable-shielded-nodes \
- --labels owner=CI,expiry=auto-delete
+ --labels owner=ci,expiry=auto-delete
 
 if [[ $? != '0' ]]; then
     echo "gcloud cluster create failed"

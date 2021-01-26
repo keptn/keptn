@@ -516,8 +516,8 @@ jobs:
 
       - id: docker_login
         name: Docker Login
-        # only run docker login if this is not a fork
-        if: github.event.pull_request.head.repo.full_name == github.repository
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: (github.event_name == 'push') || (github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         env:
