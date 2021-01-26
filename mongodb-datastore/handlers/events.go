@@ -32,8 +32,12 @@ var mutex sync.Mutex
 
 var projectLocks = map[string]*sync.Mutex{}
 
+var rootEventsIndexes = []string{"data.service", "time"}
+var projectEventsIndexes = []string{"data.service", "shkeptncontext", "type"}
+var invalidatedEventsIndexes = []string{"triggeredid"}
+
 // keep track of created indexes in memory to save some calls to the mongodb API
-var createdIndexes = map[string]bool{}
+var skipCreateIndex = map[string]bool{}
 
 // LockProject locks the collections for a project
 func LockProject(project string) {
@@ -151,6 +155,16 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 		}
 
 	}
+
+	for _, indexName := range projectEventsIndexes {
+		ensureIndexExistsOnCollection(
+			ctx,
+			collection,
+			indexName,
+			logger,
+		)
+	}
+
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		err := fmt.Errorf("failed to insert into collection: %v", err)
@@ -175,10 +189,10 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 
 func ensureIndexExistsOnCollection(ctx context.Context, collection *mongo.Collection, indexName string, logger *keptncommon.Logger) {
 	logger.Debug("ensuring index for " + collection.Name() + " exists")
-	indexID := collection.Name() + "-" + indexName
+	indexID := getIndexIDForCollection(collection.Name(), indexName)
 
 	// if this index has already been created, there is no need to do so again
-	if createdIndexes[indexID] {
+	if skipCreateIndex[indexID] {
 		return
 	}
 
@@ -188,14 +202,19 @@ func ensureIndexExistsOnCollection(ctx context.Context, collection *mongo.Collec
 		},
 	}
 	// CreateOne() is idempotent - this operation checks if the index exists and only creates a new one when not available
-	_, err := collection.Indexes().CreateOne(ctx, indexDefinition)
+	createdIndex, err := collection.Indexes().CreateOne(ctx, indexDefinition)
 	if err != nil {
 		// log the error, but continue anyway - index is not required for the query to work
 		logger.Debug("could not create index for " + collection.Name() + ": " + err.Error())
 	}
+	fmt.Println(createdIndex)
 	// keep track (in memory) that this index already exists
-	createdIndexes[indexID] = true
+	skipCreateIndex[indexID] = true
 	logger.Debug("created index for " + collection.Name())
+}
+
+func getIndexIDForCollection(collectionName string, indexName string) string {
+	return collectionName + "-" + indexName
 }
 
 func getInvalidatedCollectionName(collectionName string) string {
@@ -210,6 +229,15 @@ func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx conte
 	}
 
 	rootEventsForProjectCollection := client.Database(mongoDBName).Collection(collectionName + rootEventCollectionSuffix)
+
+	for _, indexName := range rootEventsIndexes {
+		ensureIndexExistsOnCollection(
+			ctx,
+			rootEventsForProjectCollection,
+			indexName,
+			logger,
+		)
+	}
 
 	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": event.Shkeptncontext})
 
@@ -300,11 +328,18 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 	rootEventsCollection := client.Database(mongoDBName).Collection(projectName + rootEventCollectionSuffix)
 	invalidatedEventsCollection := client.Database(mongoDBName).Collection(getInvalidatedCollectionName(projectName))
 
+	for _, indexName := range projectEventsIndexes {
+		skipCreateIndex[getIndexIDForCollection(projectCollection.Name(), indexName)] = false
+	}
+	for _, indexName := range rootEventsIndexes {
+		skipCreateIndex[getIndexIDForCollection(rootEventsCollection.Name(), indexName)] = false
+	}
+	for _, indexName := range invalidatedEventsIndexes {
+		skipCreateIndex[getIndexIDForCollection(invalidatedEventsCollection.Name(), indexName)] = false
+	}
+
 	logger.Debug(fmt.Sprintf("Delete all events of project %s", projectName))
 
-	createdIndexes[projectCollection.Name()+"-shkeptncontext"] = false
-	createdIndexes[projectCollection.Name()+"-type"] = false
-	createdIndexes[projectCollection.Name()+"-data.service"] = false
 	err := projectCollection.Drop(ctx)
 	if err != nil {
 		err := fmt.Errorf("failed to drop collection %s: %v", projectCollection.Name(), err)
@@ -313,8 +348,7 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 	}
 
 	logger.Debug(fmt.Sprintf("Delete all root events of project %s", projectName))
-	createdIndexes[rootEventsCollection.Name()+"-data.service"] = false
-	createdIndexes[rootEventsCollection.Name()+"-time"] = false
+
 	err = rootEventsCollection.Drop(ctx)
 	if err != nil {
 		err := fmt.Errorf("failed to drop collection %s: %v", rootEventsCollection.Name(), err)
@@ -323,7 +357,8 @@ func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExt
 	}
 
 	logger.Debug(fmt.Sprintf("Delete all invalidated events of project %s", projectName))
-	createdIndexes[invalidatedEventsCollection.Name()+"-triggeredid"] = false
+
+	skipCreateIndex[invalidatedEventsCollection.Name()+"-triggeredid"] = false
 	err = invalidatedEventsCollection.Drop(ctx)
 	if err != nil {
 		// log the error but continue
@@ -494,37 +529,6 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	// make sure the index 'data.service' exists
-	ensureIndexExistsOnCollection(
-		ctx,
-		collection,
-		"data.service",
-		logger,
-	)
-
-	if !onlyRootEvents {
-		// make sure the index for 'shkeptncontext' exists - not needed for rootEvents collection
-		ensureIndexExistsOnCollection(
-			ctx,
-			collection,
-			"shkeptncontext",
-			logger,
-		)
-		ensureIndexExistsOnCollection(
-			ctx,
-			collection,
-			"type",
-			logger,
-		)
-	} else {
-		ensureIndexExistsOnCollection(
-			ctx,
-			collection,
-			"time",
-			logger,
-		)
-	}
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
 	if err != nil {
