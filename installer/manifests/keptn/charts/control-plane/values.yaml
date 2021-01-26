@@ -1,7 +1,9 @@
 mongodb:
   enabled: true
-  host: mongodb
-  port: 27017
+  host: mongodb:27017
+  user: null
+  password: null
+  adminPassword: null
 
 prefixPath: ""
 
