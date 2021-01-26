@@ -19,6 +19,7 @@ import { DtDrawerModule } from '@dynatrace/barista-components/drawer';
 import { DtEmptyStateModule } from '@dynatrace/barista-components/empty-state';
 import { DtExpandablePanelModule } from '@dynatrace/barista-components/expandable-panel';
 import { DtExpandableTextModule } from '@dynatrace/barista-components/expandable-text';
+import { DtExpandableSectionModule } from "@dynatrace/barista-components/expandable-section";
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtIndicatorModule } from '@dynatrace/barista-components/indicator';
 import { DtInfoGroupModule } from '@dynatrace/barista-components/info-group';
@@ -43,8 +44,6 @@ import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
 
 import { MomentModule } from 'ngx-moment';
-import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
-import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
 
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
@@ -61,17 +60,20 @@ import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading
 import { KtbApprovalItemComponent } from "./_components/ktb-approval-item/ktb-approval-item.component";
 import { KtbCopyToClipboardComponent } from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
 import { KtbMarkdownComponent } from "./_components/ktb-markdown/ktb-markdown.component";
+import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
+import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
+import { KtbTaskItemComponent, KtbTaskItemDetail } from "./_components/ktb-task-item/ktb-task-item.component";
+import { KtbSequenceTasksListComponent } from "./_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
+
+import { AtobPipe } from './_pipes/atob.pipe';
 
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
 import { HttpDefaultInterceptor } from "./_interceptors/http-default-interceptor";
 
-import { AtobPipe } from './_pipes/atob.pipe';
-import { AppHeaderComponent } from './app-header/app-header.component';
 import { AppComponent } from './app.component';
-
 import { AppRouting } from './app.routing';
-
+import { AppHeaderComponent } from './app-header/app-header.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from "./evaluation-board/evaluation-board.component";
@@ -80,6 +82,8 @@ import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-e
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
+
+import { KtbSequenceOverviewComponent } from "./_views/ktb-sequence-overview/ktb-sequence-overview.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -90,6 +94,9 @@ registerLocaleData(localeEn, 'en');
     AppHeaderComponent,
     ProjectBoardComponent,
     EvaluationBoardComponent,
+
+    KtbSequenceOverviewComponent,
+
     KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
@@ -105,6 +112,9 @@ registerLocaleData(localeEn, 'en');
     AtobPipe,
     KtbEventItemComponent,
     KtbEventItemDetail,
+    KtbSequenceTasksListComponent,
+    KtbTaskItemComponent,
+    KtbTaskItemDetail,
     KtbEvaluationDetailsComponent,
     KtbSliBreakdownComponent,
     KtbNotificationBarComponent,
@@ -142,6 +152,7 @@ registerLocaleData(localeEn, 'en');
     DtTagModule,
     DtExpandableTextModule,
     DtExpandablePanelModule,
+    DtExpandableSectionModule,
     DtShowMoreModule,
     DtIndicatorModule,
     DtProgressCircleModule,

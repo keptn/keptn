@@ -57,6 +57,14 @@ export class DataService {
     return this._evaluationResults;
   }
 
+  public getProject(projectName): Observable<Project> {
+    return this.projects.pipe(
+      map(projects => projects ? projects.find(project => {
+        return project.projectName === projectName;
+      }) : null)
+    );
+  }
+
   public getRootsLastUpdated(project: Project): Date {
     return this._rootsLastUpdated[project.projectName];
   }

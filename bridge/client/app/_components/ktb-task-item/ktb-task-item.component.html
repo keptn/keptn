@@ -1,0 +1,78 @@
+<ktb-expandable-tile [expanded]="false" *ngIf="_task && (project$ | async) as project">
+  <ktb-expandable-tile-header>
+    <div fxLayout="row">
+      <div fxFlex>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+          <p class="m-0 mt-1 mb-1" [textContent]="_task.time | amDateFormat:getTimeFormat()"></p>
+          <dt-icon class="event-icon" [class.error]="_task.isFaulty()" [class.success]="_task.isSuccessful()" [class.highlight]="_task.isApproval()" [name]="_task.getIcon()"></dt-icon>
+          <h4 class="m-0 mt-1 mb-1" [class.error]="_task.isFaulty()" [textContent]="_task.getLabel()"></h4>
+          <a *ngIf="_task.data.deploymentURIPublic" [href]="_task.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+        </div>
+        <div *ngIf="_task.data.canary">
+          <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_task.data.canary.action"></span> <span [textContent]="_task.data.canary.value"></span></p>
+        </div>
+        <div *ngIf="_task.data.teststrategy">
+          <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_task.data.teststrategy"></span></p>
+        </div>
+        <div *ngIf="_task.data.ImpactedEntity">
+          <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_task.data.ImpactedEntity"></span></p>
+        </div>
+      </div>
+      <div fxLayout="column" fxLayoutAlign="start end">
+        <div fxLayout="row" fxLayoutAlign="start start">
+          <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _task.shkeptncontext, _task.data.stage]" *ngIf="_task.data.evaluation"><dt-icon name="chart-bar"></dt-icon></button>
+          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="_task.data.ProblemDetails">
+      <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_task.data.ProblemDetails.tagsOfAffectedEntities">
+        <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
+        <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
+          <dt-tag *ngFor="let tag of _task.data.ProblemDetails.tagsOfAffectedEntities">
+            <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
+            <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
+          </dt-tag>
+        </dt-tag-list>
+      </div>
+    </div>
+    <div *ngIf="_task.hasLabels()">
+      <div fxLayout="row" fxLayoutAlign="start center">
+        <p class="bold">Labels: </p>
+        <dt-tag-list aria-label="evaluation-labels">
+          <dt-tag *ngFor="let label of _task.data.labels | keyvalue">
+            <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+            <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
+          </dt-tag>
+        </dt-tag-list>
+      </div>
+    </div>
+    <div *ngIf="_task.isApproval() && project.getRootEvent(project.getService(_task.data.service), _task).isApproval() == _task.data.stage">
+      <table>
+        <tr>
+          <td><p class="m-0">Currently deployed artifact: </p></td>
+          <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_task.data.service), project.getStage(_task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        </tr>
+        <tr>
+          <td><p class="m-0">Deployable artifact: </p></td>
+          <td><ktb-approval-item [event]="_task"></ktb-approval-item></td>
+        </tr>
+      </table>
+    </div>
+  </ktb-expandable-tile-header>
+  <ng-content
+    select="ktb-task-item-detail,
+        [ktb-task-item-detail],
+        [ktbEventItemDetail]"></ng-content>
+</ktb-expandable-tile>
+<!--ktb-selectable-tile [error]="_task.isFaulty()" [warning]="_task.isWarning()" [success]="_task.isSuccessful()" [highlight]="_task.isApproval()" *ngIf="_task && (project$ | async) as project"></ktb-selectable-tile-->
+<ng-template #eventPayloadDialog let-data>
+  <h1 mat-dialog-title>Event payload</h1>
+  <div mat-dialog-content>
+    <pre>{{ data | json }}</pre>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="copyEventPayload(data)">Copy</button>
+    <button dt-button (click)="closeEventPayloadDialog()">Close</button>
+  </div>
+</ng-template>

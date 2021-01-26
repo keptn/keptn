@@ -1,0 +1,36 @@
+<div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="project$ | async as project">
+  <div fxFlex fxLayout="column" fxLayoutGap="15px">
+    <dt-quick-filter [dataSource]="_filterDataSource" [filters]="_seqFilters" (filterChanges)="filtersChanged($event)" aria-label="Filter By Input value" label="Filter by" clearAllLabel="Clear all">
+      <div class="container p-0">
+        <ktb-root-events-list [events]="getFilteredSequences(project.sequences)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)"></ktb-root-events-list>
+        <div class="mb-3"></div>
+      </div>
+    </dt-quick-filter>
+  </div>
+</div>
+<div class="container dark" fxFlex="60" fxLayout="column" fxLayoutGap="15px">
+  <div *ngIf="currentSequence" fxFlex fxLayout="column" fxLayoutGap="15px">
+    <div>
+      <dt-info-group>
+        <dt-info-group-title>
+          <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+            <div fxLayout="row" fxLayoutAlign="start center">
+              <button dt-icon-button disabled variant="nested" *ngIf="currentSequence.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
+              <p *ngIf="currentSequence.getShortImageName()" [textContent]="currentSequence.getShortImageName()"></p>
+              <p *ngIf="!currentSequence.getShortImageName()" [textContent]="currentSequence.getService()"></p>
+            </div>
+          </div>
+        </dt-info-group-title>
+        <p class="m-0" *ngIf="currentSequence.data.valuesCanary"><span class="bold">New artifact: </span><span [textContent]="currentSequence.data.valuesCanary.image"></span></p>
+        <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
+      </dt-info-group>
+    </div>
+    <ktb-sequence-tasks-list [tasks]="currentSequence.traces"></ktb-sequence-tasks-list>
+    <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
+      <dt-tag-list aria-label="fetch-info">
+        <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:getCalendarFormats()"></span></dt-tag>
+        <dt-tag *ngIf="showReloadButton(currentSequence)"><button dt-button (click)="loadTraces(currentSequence)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
+      </dt-tag-list>
+    </div>
+  </div>
+</div>
