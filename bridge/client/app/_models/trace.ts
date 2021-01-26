@@ -62,10 +62,9 @@ class Trace {
       shkeptncontext: string;
       token: string;
     };
-    configurationChange: {
-      values: {
-        image: string
-      }
+
+    valuesCanary: {
+      image: string
     };
 
     evaluation: {
