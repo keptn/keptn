@@ -32,6 +32,7 @@ var mutex sync.Mutex
 
 var projectLocks = map[string]*sync.Mutex{}
 
+// define the indexes that should be created for each collection
 var rootEventsIndexes = []string{"data.service", "time"}
 var projectEventsIndexes = []string{"data.service", "shkeptncontext", "type"}
 var invalidatedEventsIndexes = []string{"triggeredid"}
