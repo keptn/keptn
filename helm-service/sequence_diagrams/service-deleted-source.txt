@@ -1,0 +1,12 @@
+title helm-service: handle service.deleted event
+
+shipyard-controller->helm-service: RETRIEVED service.deleted
+
+helm-service->config-service: GET stages
+
+loop all stages
+helm-service->helm: UNINSTALL release of //user-chart//
+helm-service->helm: UNINSTALL release of //generated-chart//
+end
+
+helm-service-->NATS: SEND service.deleted
