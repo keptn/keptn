@@ -252,7 +252,7 @@
                 </div>
               </div>
             </dt-info-group-title>
-            <p class="m-0" *ngIf="currentRoot.data.valuesCanary"><span class="bold">New artifact: </span><span [textContent]="currentRoot.data.valuesCanary.image"></span></p>
+            <p class="m-0" *ngIf="currentRoot.data.configurationChange?.values"><span class="bold">New artifact: </span><span [textContent]="currentRoot.data.configurationChange.values.image"></span></p>
             <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentRoot.shkeptncontext"></span></p>
           </dt-info-group>
         </div>
@@ -290,7 +290,7 @@
                 </div>
               </div>
             </dt-info-group-title>
-            <p class="m-0" *ngIf="currentSequence.data.valuesCanary"><span class="bold">New artifact: </span><span [textContent]="currentSequence.data.valuesCanary.image"></span></p>
+            <p class="m-0" *ngIf="currentSequence.data.configurationChange?.values"><span class="bold">New artifact: </span><span [textContent]="currentSequence.data.configurationChange.values.image"></span></p>
             <p class="m-0"><span class="bold">Keptn ID: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
           </dt-info-group>
         </div>

@@ -52,8 +52,10 @@ class Trace {
       shkeptncontext: string;
       token: string;
     };
-    valuesCanary: {
-      image: string;
+    configurationChange: {
+      values: {
+        image: string
+      }
     };
 
     evaluation: {
@@ -177,7 +179,7 @@ class Trace {
   }
 
   public isDeployment(): string {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED ? this.data.stage : null;
+    return this.type === EventTypes.DEPLOYMENT_TRIGGERED ? this.data.stage : null;
   }
 
   public isEvaluation(): string {
@@ -235,8 +237,8 @@ class Trace {
         this.image = [this.data.image.split("/").pop(), this.data.tag].join(":");
       else if(this.data.image)
         this.image = this.data.image.split("/").pop();
-      else if(this.data.valuesCanary)
-        this.image = this.data.valuesCanary.image.split("/").pop();
+      else if(this.data.configurationChange?.values)
+        this.image = this.data.configurationChange.values.image.split("/").pop();
     }
 
     return this.image;
