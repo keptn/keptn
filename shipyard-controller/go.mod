@@ -17,7 +17,6 @@ require (
 	github.com/go-test/deep v1.0.5
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
