@@ -50,6 +50,12 @@ func TestPrintEvents(t *testing.T) {
 			aStruct,
 			`value:value`,
 		},
+		{
+			bytes.Buffer{},
+			"",
+			HelpersTestStuct{Value: "<=+75%"},
+			`{"value":"\u003c=+75%"}`,
+		},
 	}
 
 	for _, e := range tests {

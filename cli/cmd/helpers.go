@@ -70,12 +70,12 @@ func PrintEvents(writer io.Writer, format string, content interface{}) {
 // PrintAsYAML prints events in YAML format to std::out
 func PrintAsYAML(writer io.Writer, events interface{}) {
 	eventsYAML, _ := yaml.Marshal(events)
-	fmt.Fprintf(writer, string(eventsYAML)+"\n")
+	fmt.Fprintf(writer, "%s\n", string(eventsYAML))
 
 }
 
 // PrintAsJSON prints events in JSON format to std::out
 func PrintAsJSON(writer io.Writer, events interface{}) {
 	eventsJSON, _ := json.MarshalIndent(events, "", "    ")
-	fmt.Fprintf(writer, string(eventsJSON)+"\n")
+	fmt.Fprintf(writer, "%s\n", string(eventsJSON))
 }
