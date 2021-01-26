@@ -226,7 +226,13 @@ export class DataService {
     this.apiService.getEvaluationResults(event.data.project, event.data.service, event.data.stage, event.source, fromTime ? fromTime.toISOString() : null)
       .pipe(
         map(result => result.events||[]),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+        map(traces => traces.map(trace => Trace.fromJSON(trace))),
+        map( traces => traces.map((trace: Trace) => {
+          if(trace.data.evaluation.indicatorResults){
+            trace.data.evaluation.indicatorResults.sort( (resultA, resultB) => resultA.value.metric.localeCompare(resultB.value.metric))
+          }
+          return trace;
+        }))
       )
       .subscribe((traces: Trace[]) => {
         this._evaluationResults.next({
