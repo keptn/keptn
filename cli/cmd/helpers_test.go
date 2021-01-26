@@ -49,6 +49,11 @@ func TestPrintEvents(t *testing.T) {
 			"yaml",
 			aStruct,
 			`value:value`,
+		}, {
+			bytes.Buffer{},
+			"",
+			HelpersTestStuct{Value: "<=+75%"},
+			`{"value":"\u003c=+75%"}`,
 		},
 	}
 
