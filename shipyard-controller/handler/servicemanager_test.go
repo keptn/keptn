@@ -1,7 +1,11 @@
 package handler
 
 import (
-	"github.com/go-test/deep"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -9,9 +13,44 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"os"
-	"testing"
 )
+
+func Test_validateServiceName(t *testing.T) {
+	testcases := []struct {
+		name          string
+		projectName   string
+		stageName     string
+		serviceName   string
+		expectedError bool
+	}{
+		{
+			name:          "Valid Service name",
+			projectName:   "project-1",
+			stageName:     "testing",
+			serviceName:   "my-service",
+			expectedError: false,
+		},
+		{
+			name:          "Invalid Service name",
+			projectName:   "project-honk",
+			stageName:     "production",
+			serviceName:   "my-honk-service-invalid",
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateServiceName(tc.projectName, tc.stageName, tc.serviceName)
+			if tc.expectedError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
 
 func Test_serviceManager_createService(t *testing.T) {
 	projectName := "my-project"
@@ -24,11 +63,13 @@ func Test_serviceManager_createService(t *testing.T) {
 	})
 
 	defer mockEV.Server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
+	err := os.Setenv("EVENTBROKER", mockEV.Server.URL)
+	require.NoError(t, err)
 
 	mockCS := fake.NewSimpleMockConfigurationService()
 	defer mockCS.Server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
+	err = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
+	require.NoError(t, err)
 
 	mockCS.Projects = []*keptnapimodels.Project{
 		{
@@ -47,7 +88,8 @@ func Test_serviceManager_createService(t *testing.T) {
 		},
 	}
 
-	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	require.NoError(t, err)
 
 	sm := &serviceManager{
 		apiBase: &apiBase{
@@ -72,9 +114,8 @@ func Test_serviceManager_createService(t *testing.T) {
 		HelmChart:   "",
 	}
 
-	if err := sm.createService(projectName, params); err != nil {
-		t.Error("received error: " + err.Error())
-	}
+	err = sm.createService(projectName, params)
+	require.NoError(t, err)
 
 	expectedProjects := []*keptnapimodels.Project{
 		{
@@ -108,26 +149,19 @@ func Test_serviceManager_createService(t *testing.T) {
 		},
 	}
 
-	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
-		t.Errorf("project has not been created correctly")
-		for _, d := range diff {
-			t.Log(d)
-		}
-	}
-
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
-		t.Error("event broker did not receive service.create.started event")
-	}
-
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
-		t.Error("event broker did not receive service.create.started event")
-	}
+	require.Equal(t, expectedProjects, mockCS.Projects)
+	require.False(t, fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), "", nil))
+	require.False(t, fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), "", nil))
 
 	// create the service again - should return error
-	err := sm.createService(projectName, params)
-	if err != errServiceAlreadyExists {
-		t.Errorf("expected errProjectAlreadyExists")
-	}
+	err = sm.createService(projectName, params)
+	require.Error(t, err)
+	require.EqualError(t, err, errServiceAlreadyExists.Error())
+
+	// should not create the service, name too long
+	serviceName = "name-too-long-honk-1234567890"
+	err = sm.createService(projectName, params)
+	require.Error(t, err)
 }
 
 func Test_serviceManager_deleteService(t *testing.T) {
@@ -140,11 +174,13 @@ func Test_serviceManager_deleteService(t *testing.T) {
 	})
 
 	defer mockEV.Server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
+	err := os.Setenv("EVENTBROKER", mockEV.Server.URL)
+	require.NoError(t, err)
 
 	mockCS := fake.NewSimpleMockConfigurationService()
 	defer mockCS.Server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
+	err = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
+	require.NoError(t, err)
 
 	mockCS.Projects = []*keptnapimodels.Project{
 		{
@@ -178,7 +214,8 @@ func Test_serviceManager_deleteService(t *testing.T) {
 		},
 	}
 
-	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	require.NoError(t, err)
 
 	sm := &serviceManager{
 		apiBase: &apiBase{
@@ -198,9 +235,8 @@ func Test_serviceManager_deleteService(t *testing.T) {
 		},
 	}
 
-	if err := sm.deleteService(projectName, serviceName); err != nil {
-		t.Error("received error: " + err.Error())
-	}
+	err = sm.deleteService(projectName, serviceName)
+	require.NoError(t, err)
 
 	expectedProjects := []*keptnapimodels.Project{
 		{
@@ -222,19 +258,7 @@ func Test_serviceManager_deleteService(t *testing.T) {
 		},
 	}
 
-	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
-		t.Errorf("project has not been created correctly")
-		for _, d := range diff {
-			t.Log(d)
-		}
-	}
-
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
-		t.Error("event broker did not receive service.delete.started event")
-	}
-
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
-		t.Error("event broker did not receive service.delete.finished event")
-	}
-
+	require.Equal(t, expectedProjects, mockCS.Projects)
+	require.False(t, fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), "", nil))
+	require.False(t, fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), "", nil))
 }
