@@ -3,7 +3,7 @@ apiVersion: skaffold/v1beta13
 kind: Config
 build:
   artifacts:
-    - image: keptnsandbox/statistics-service
+    - image: keptn/statistics-service
       docker:
         dockerfile: Dockerfile
         buildArgs:
