@@ -20,7 +20,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210127065043-2e5862ec5683
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/swaggo/swag v1.6.7

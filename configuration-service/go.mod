@@ -18,7 +18,7 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210127065043-2e5862ec5683
 	github.com/keptn/kubernetes-utils v0.8.0-alpha
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
@@ -39,6 +39,4 @@ require (
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
-replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
-)
+replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
