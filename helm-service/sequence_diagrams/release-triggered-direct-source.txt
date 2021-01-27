@@ -1,0 +1,7 @@
+title helm-service: handle release.triggered event for a promote/rollback of a direct deployment
+
+shipyard-controller->helm-service: RETRIEVED release.triggered
+
+helm-service-->NATS: SEND release.started
+
+helm-service-->NATS: SEND release.finished

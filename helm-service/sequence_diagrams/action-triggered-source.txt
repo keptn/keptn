@@ -1,0 +1,12 @@
+title helm-service: handle action.triggered event (scaling-action)
+
+remediation-service->helm-service: RETRIEVED action.triggered
+
+helm-service-->NATS: SEND action.started
+
+note over helm-service: Scale primary deployment contained in //generated-chart//
+helm-service->config-service: GET //generated-chart//
+helm-service->config-service: PUT updated //generated-chart//
+helm-service->helm: UPGRADE //generated-chart// (with updated replicas)
+
+helm-service-->NATS: SEND action.finished

@@ -1,0 +1,15 @@
+title helm-service: handle service.created event (i.e. onboard the service)
+
+shipyard-controller->helm-service: RETRIEVED service.created
+
+helm-service->config-service: GET project and stages
+
+loop all stages
+helm-service->k8s: CREATE namespaces for all stages
+end
+
+loop all stages
+helm-service->config-service: POST //user-chart//
+end
+
+helm-service-->NATS: SEND service.created

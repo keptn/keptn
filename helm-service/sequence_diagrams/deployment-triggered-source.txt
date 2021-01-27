@@ -1,0 +1,19 @@
+title helm-service: handle deployment.triggered event
+
+shipyard-controller->helm-service: RETRIEVED deployment.triggered
+helm-service-->NATS: SEND deployment.started
+
+alt !event.result
+helm-service->NATS: SEND deployment.finished
+end
+helm-service->config-service: GET //user-chart//
+alt event.configurationChange available
+helm-service->config-service: PUT updated //user-chart//
+end
+helm-service->helm: UPGRADE //user-chart//
+helm-service->config-service: GET //generated-chart//
+alt generated-chart == unavailable
+helm-service->config-service: POST //generated-chart//
+end
+helm-service->helm: UPGRADE //generated-chart// (canary deployment in //user-chart// retrieves 100% traffic)
+helm-service->NATS: SEND deployment.finished
