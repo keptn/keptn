@@ -44,7 +44,7 @@ http://keptn-api-url.com/api/statistics/v1/statistics?from=1600656105&to=1600696
 cURL Example:
 
 ```
-curl -X GET "http://keptn-api-url.com/api/statistics/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json"
+curl -X GET "http://keptn-api-url.com/api/statistics/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json" -H "x-token: <keptn-api-token>"
 ```
 
 *Note*: You can generate timestamps using [epochconverter.com](https://www.epochconverter.com/).
