@@ -89,7 +89,7 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 			}
 
 			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
+			w.Init(os.Stdout, 10, 8, 2, '\t', 0)
 
 			if *getService.outputFormat == "" {
 				fmt.Fprintln(w, "NAME\tPROJECT\tSTAGE\tCREATION DATE")

@@ -99,9 +99,9 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 		if !mocking {
 
 			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 10, 8, 0, '\t', 0)
+			w.Init(os.Stdout, 10, 8, 2, '\t', 0)
 			if *getProject.outputFormat == "" {
-				fmt.Fprintln(w, "NAME\tCREATION DATE")
+				fmt.Fprintln(w, "NAME\tCREATION DATE\tSHIPYARD VERSION")
 			}
 
 			projects, err := projectsHandler.GetAllProjects()
@@ -133,7 +133,7 @@ keptn get project sockshop -output=json  # Returns project details in JSON forma
 					}
 					fmt.Println(string(jsonBytes))
 				} else {
-					fmt.Fprintln(w, project.ProjectName+"\t"+parseCreationDate(project.CreationDate))
+					fmt.Fprintln(w, project.ProjectName+"\t"+parseCreationDate(project.CreationDate)+"\t"+project.ShipyardVersion)
 				}
 			}
 			w.Flush()
