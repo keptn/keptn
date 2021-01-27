@@ -447,10 +447,13 @@ jobs:
           path: test-report-*.txt
 
 
-  publish-draft-release-for-release-branch:
+  #######################################################################
+  # This job publishes a draft release based on the previous steps      #
+  #######################################################################
+  publish-draft-release:
     name: Publish Draft release
     needs: integration-test
-    if: always()
+    if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     steps:
       - name: Check out code
@@ -510,6 +513,7 @@ jobs:
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
 
+      # Part of this job is to check if a releasenotes file exists and to use it as the release message
       - name: Try getting release notes
         id: get_releasenotes
         run: |
@@ -523,16 +527,26 @@ jobs:
 
           echo "##[set-output name=RELEASENOTES_FILENAME;]$(echo ${filename})"
 
+      # Create release message by concatenating releasenotes with the test/build report
       - name: Create a Release message
         env:
           RELEASENOTES_FILENAME: ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
         run: |
+          # print release notes
           cat $RELEASENOTES_FILENAME > release-notes.txt
-          echo "# CI Information: BUILD ${VERSION} ON ${BRANCH}" >> release-notes.txt
-          echo "## Docker Images" >> release-notes.txt
+          # print CI information
+          echo "<details><summary>CI Information</summary>"
+          echo "<p>" >> release-notes.txt
+          echo "**BUILD ${VERSION} ON ${BRANCH}**" >> release-notes.txt
+          echo "**DATETIME**: $DATETIME" >> release-notes.txt
+          echo "**GIT_SHA**: $GIT_SHA" >> release-notes.txt
+          echo "**ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
+          echo "**Docker Images**" >> release-notes.txt
           cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
-          echo "## Integration Tests" >> release-notes.txt
+          echo "**Integration Tests" >> release-notes.txt
           cat final-test-report.txt >> release-notes.txt
+          echo "</p>" >> release-notes.txt
+          echo "</details>" >> release-notes.txt
 
       - name: Abort if (published) release already exists
         uses: actions/github-script@v3
@@ -609,8 +623,9 @@ jobs:
         with:
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
-          draft: true
-          body_path: release-notes.txt # ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
+          draft: true       # we only want to publish draft releases here - a human should review it and push the button eventually
+          prerelease: true  # mark as pre-release for now, a human can always change it to a non-prerelease afterwards
+          body_path: release-notes.txt
           files: |
             dist/keptn-cli/keptn-*.tar.gz
             dist/keptn-installer/keptn*.tgz
