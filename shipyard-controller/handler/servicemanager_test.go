@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"github.com/go-test/deep"
@@ -6,6 +6,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"os"
@@ -16,20 +17,20 @@ func Test_serviceManager_createService(t *testing.T) {
 	projectName := "my-project"
 	serviceName := "my-service"
 
-	mockEV := newMockEventbroker(t, func(meb *mockEventBroker, event *models.Event) {
-		meb.receivedEvents = append(meb.receivedEvents, *event)
-	}, func(meb *mockEventBroker) {
+	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+	}, func(meb *fake.MockEventBroker) {
 
 	})
 
-	defer mockEV.server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
 
-	mockCS := newSimpleMockConfigurationService()
-	defer mockCS.server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.server.URL)
+	mockCS := fake.NewSimpleMockConfigurationService()
+	defer mockCS.Server.Close()
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
 
-	mockCS.projects = []*keptnapimodels.Project{
+	mockCS.Projects = []*keptnapimodels.Project{
 		{
 			ProjectName: projectName,
 			Stages: []*keptnapimodels.Stage{
@@ -54,11 +55,11 @@ func Test_serviceManager_createService(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &mockSecretStore{
-				create: func(name string, content map[string][]byte) error {
+			secretStore: &fake.MockSecretStore{
+				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
-				delete: func(name string) error {
+				DeleteFunc: func(name string) error {
 					return nil
 				},
 			},
@@ -107,18 +108,18 @@ func Test_serviceManager_createService(t *testing.T) {
 		},
 	}
 
-	if diff := deep.Equal(expectedProjects, mockCS.projects); len(diff) > 0 {
+	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
 		t.Errorf("project has not been created correctly")
 		for _, d := range diff {
 			t.Log(d)
 		}
 	}
 
-	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
+	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
 		t.Error("event broker did not receive service.create.started event")
 	}
 
-	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
+	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
 		t.Error("event broker did not receive service.create.started event")
 	}
 
@@ -132,20 +133,20 @@ func Test_serviceManager_createService(t *testing.T) {
 func Test_serviceManager_deleteService(t *testing.T) {
 	projectName := "my-project"
 	serviceName := "my-service"
-	mockEV := newMockEventbroker(t, func(meb *mockEventBroker, event *models.Event) {
-		meb.receivedEvents = append(meb.receivedEvents, *event)
-	}, func(meb *mockEventBroker) {
+	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+	}, func(meb *fake.MockEventBroker) {
 
 	})
 
-	defer mockEV.server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
 
-	mockCS := newSimpleMockConfigurationService()
-	defer mockCS.server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.server.URL)
+	mockCS := fake.NewSimpleMockConfigurationService()
+	defer mockCS.Server.Close()
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
 
-	mockCS.projects = []*keptnapimodels.Project{
+	mockCS.Projects = []*keptnapimodels.Project{
 		{
 			ProjectName: projectName,
 			Stages: []*keptnapimodels.Stage{
@@ -185,11 +186,11 @@ func Test_serviceManager_deleteService(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &mockSecretStore{
-				create: func(name string, content map[string][]byte) error {
+			secretStore: &fake.MockSecretStore{
+				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
-				delete: func(name string) error {
+				DeleteFunc: func(name string) error {
 					return nil
 				},
 			},
@@ -221,18 +222,18 @@ func Test_serviceManager_deleteService(t *testing.T) {
 		},
 	}
 
-	if diff := deep.Equal(expectedProjects, mockCS.projects); len(diff) > 0 {
+	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
 		t.Errorf("project has not been created correctly")
 		for _, d := range diff {
 			t.Log(d)
 		}
 	}
 
-	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
+	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
 		t.Error("event broker did not receive service.delete.started event")
 	}
 
-	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
+	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
 		t.Error("event broker did not receive service.delete.finished event")
 	}
 

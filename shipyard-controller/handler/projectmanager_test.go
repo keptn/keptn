@@ -1,20 +1,16 @@
-package api
+package handler
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/go-test/deep"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -108,191 +104,6 @@ const testBase64EncodedShipyardContent = `YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLj
 const testBase64EncodedShipyardContentWithInvalidVersion = `YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiBzaGlweWFyZC1zb2Nrc2hvcApzcGVjOgogIHN0YWdlczoKICAtIG5hbWU6IGRldgogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0YXNrczoKICAgICAgLSBuYW1lOiBkZXBsb3ltZW50CiAgICAgICAgcHJvcGVydGllczogIAogICAgICAgICAgc3RyYXRlZ3k6IGRpcmVjdAogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOgogICAgICAgICAga2luZDogZnVuY3Rpb25hbAogICAgICAtIG5hbWU6IGV2YWx1YXRpb24gCiAgICAgIC0gbmFtZTogcmVsZWFzZQ==`
 const testBase64EncodedShipyardContentWithInvalidStage = `YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjEuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiBzaGlweWFyZC1zb2Nrc2hvcApzcGVjOgogIHN0YWdlczoKICAtIHNlcXVlbmNlczoKICAgIC0gbmFtZTogYXJ0aWZhY3QtZGVsaXZlcnkKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6ICAKICAgICAgICAgIHN0cmF0ZWd5OiBkaXJlY3QKICAgICAgLSBuYW1lOiB0ZXN0CiAgICAgICAgcHJvcGVydGllczoKICAgICAgICAgIGtpbmQ6IGZ1bmN0aW9uYWwKICAgICAgLSBuYW1lOiBldmFsdWF0aW9uIAogICAgICAtIG5hbWU6IHJlbGVhc2U=`
 
-type mockSecretStore struct {
-	create func(name string, content map[string][]byte) error
-	delete func(name string) error
-	get    func(name string) (map[string][]byte, error)
-	update func(name string, content map[string][]byte) error
-}
-
-func (ms *mockSecretStore) CreateSecret(name string, content map[string][]byte) error {
-	return ms.create(name, content)
-}
-
-func (ms *mockSecretStore) DeleteSecret(name string) error {
-	return ms.delete(name)
-}
-
-func (ms *mockSecretStore) GetSecret(name string) (map[string][]byte, error) {
-	return ms.get(name)
-}
-
-func (ms *mockSecretStore) UpdateSecret(name string, content map[string][]byte) error {
-	return ms.update(name, content)
-}
-
-type mockConfigurationService struct {
-	projects          []*keptnapimodels.Project
-	receivedResources []string
-	server            *httptest.Server
-}
-
-func (mcs *mockConfigurationService) get(path string) (interface{}, error) {
-	if strings.Contains(path, "/service/") {
-		for _, project := range mcs.projects {
-			if strings.Contains(path, "/project/"+project.ProjectName) {
-				for _, stage := range project.Stages {
-					if strings.Contains(path, "stage/"+stage.StageName) {
-						for _, service := range stage.Services {
-							if strings.Contains(path, "/service/"+service.ServiceName) {
-								return service, nil
-							}
-						}
-					}
-				}
-			}
-		}
-
-	} else if strings.Contains(path, "/stage/") {
-		for _, project := range mcs.projects {
-			if strings.Contains(path, "/project/"+project.ProjectName) {
-				for _, stage := range project.Stages {
-					if strings.Contains(path, "stage/"+stage.StageName) {
-						return stage, nil
-					}
-				}
-			}
-		}
-
-	} else if strings.Contains(path, "/project/") {
-		for _, project := range mcs.projects {
-			if strings.Contains(path, "/project/"+project.ProjectName) {
-				return project, nil
-			}
-		}
-	}
-	return nil, nil
-}
-
-func (mcs *mockConfigurationService) post(body interface{}, path string) (interface{}, error) {
-	marshal, _ := json.Marshal(body)
-	if strings.Contains(path, "/service") {
-		service := &keptnapimodels.Service{}
-		_ = json.Unmarshal(marshal, service)
-		for _, project := range mcs.projects {
-			if strings.Contains(path, "/project/"+project.ProjectName) {
-				for _, stage := range project.Stages {
-					if strings.Contains(path, "stage/"+stage.StageName) {
-						stage.Services = append(stage.Services, service)
-						return nil, nil
-					}
-				}
-			}
-		}
-
-	} else if strings.Contains(path, "/stage") {
-		stage := &keptnapimodels.Stage{}
-		_ = json.Unmarshal(marshal, stage)
-		for _, project := range mcs.projects {
-			if strings.Contains(path, "/project/"+project.ProjectName) {
-				project.Stages = append(project.Stages, stage)
-			}
-		}
-	} else if strings.Contains(path, "/resource") {
-		resources := &keptnapimodels.Resources{}
-		_ = json.Unmarshal(marshal, resources)
-		if len(resources.Resources) > 0 {
-			mcs.receivedResources = append(mcs.receivedResources, *resources.Resources[0].ResourceURI)
-		}
-		return &keptnapimodels.Version{
-			Version: "",
-		}, nil
-	} else if strings.Contains(path, "/project") {
-		project := &keptnapimodels.Project{}
-		_ = json.Unmarshal(marshal, project)
-		mcs.projects = append(mcs.projects, project)
-		return nil, nil
-	}
-	return nil, nil
-}
-
-func (mcs *mockConfigurationService) put(body interface{}, path string) (interface{}, error) {
-	return nil, nil
-}
-
-func (mcs *mockConfigurationService) delete(path string) (interface{}, error) {
-	if strings.Contains(path, "/service") {
-		for _, project := range mcs.projects {
-			if strings.Contains(path, "/project/"+project.ProjectName) {
-				for _, stage := range project.Stages {
-					newServices := []*keptnapimodels.Service{}
-					for svcI, svc := range stage.Services {
-						if !strings.Contains(path, "/service/"+svc.ServiceName) {
-							newServices = append(newServices, stage.Services[svcI])
-						}
-					}
-					stage.Services = newServices
-				}
-			}
-		}
-		return nil, nil
-	} else if strings.Contains(path, "/project") {
-		newProjects := []*keptnapimodels.Project{}
-
-		for index, project := range mcs.projects {
-			if !strings.Contains(path, "/project/"+project.ProjectName) {
-				newProjects = append(newProjects, mcs.projects[index])
-			}
-		}
-		mcs.projects = newProjects
-		return nil, nil
-	}
-	return nil, nil
-}
-
-func newSimpleMockConfigurationService() *mockConfigurationService {
-	mcs := &mockConfigurationService{
-		projects:          []*keptnapimodels.Project{},
-		receivedResources: []string{},
-	}
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		var itf interface{}
-		bytes, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(""))
-		}
-		json.Unmarshal(bytes, &itf)
-
-		var response interface{}
-		switch r.Method {
-		case http.MethodGet:
-			response, _ = mcs.get(r.URL.Path)
-		case http.MethodPost:
-			response, _ = mcs.post(itf, r.URL.Path)
-		case http.MethodDelete:
-			response, _ = mcs.delete(r.URL.Path)
-		case http.MethodPut:
-			response, _ = mcs.put(itf, r.URL.Path)
-		}
-		if response != nil {
-			w.WriteHeader(http.StatusOK)
-			marshal, _ := json.Marshal(response)
-			_, _ = w.Write(marshal)
-		} else {
-			if r.Method == http.MethodGet {
-				w.WriteHeader(http.StatusNotFound)
-			} else {
-				w.WriteHeader(http.StatusOK)
-			}
-		}
-
-	}))
-	mcs.server = ts
-	return mcs
-}
-
 func Test_validateUpdateProjectParams(t *testing.T) {
 	type args struct {
 		createProjectParams *operations.CreateProjectParams
@@ -376,7 +187,7 @@ func Test_validateCreateProjectParams(t *testing.T) {
 			args: args{
 				createProjectParams: &operations.CreateProjectParams{
 					Name:     stringp("my-project"),
-					Shipyard: stringp(testShipyardFile),
+					Shipyard: stringp(fake.TestShipyardFile),
 				},
 			},
 			wantErr: true,
@@ -464,8 +275,8 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			name: "create secret succeeds",
 			fields: fields{
 				apiBase: &apiBase{
-					secretStore: &mockSecretStore{
-						update: func(name string, content map[string][]byte) error {
+					secretStore: &fake.MockSecretStore{
+						UpdateFunc: func(name string, content map[string][]byte) error {
 							return nil
 						},
 					},
@@ -487,8 +298,8 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			name: "create secret does not succeed",
 			fields: fields{
 				apiBase: &apiBase{
-					secretStore: &mockSecretStore{
-						update: func(name string, content map[string][]byte) error {
+					secretStore: &fake.MockSecretStore{
+						UpdateFunc: func(name string, content map[string][]byte) error {
 							return errors.New("")
 						},
 					},
@@ -519,19 +330,19 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 	}
 }
 
-func Test_projectManager_CreateProjectScenario1(t *testing.T) {
-	mockEV := newMockEventbroker(t, func(meb *mockEventBroker, event *models.Event) {
-		meb.receivedEvents = append(meb.receivedEvents, *event)
-	}, func(meb *mockEventBroker) {
+func Test_projectManager_CreateProjectTwice(t *testing.T) {
+	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+	}, func(meb *fake.MockEventBroker) {
 
 	})
 
-	defer mockEV.server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
 
-	mockCS := newSimpleMockConfigurationService()
-	defer mockCS.server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.server.URL)
+	mockCS := fake.NewSimpleMockConfigurationService()
+	defer mockCS.Server.Close()
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
 
 	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
 
@@ -541,11 +352,11 @@ func Test_projectManager_CreateProjectScenario1(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &mockSecretStore{
-				create: func(name string, content map[string][]byte) error {
+			secretStore: &fake.MockSecretStore{
+				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
-				delete: func(name string) error {
+				DeleteFunc: func(name string) error {
 					return nil
 				},
 			},
@@ -581,7 +392,7 @@ func Test_projectManager_CreateProjectScenario1(t *testing.T) {
 		},
 	}
 
-	if diff := deep.Equal(expectedProjects, mockCS.projects); len(diff) > 0 {
+	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
 		t.Errorf("project has not been created correctly")
 		for _, d := range diff {
 			t.Log(d)
@@ -589,18 +400,18 @@ func Test_projectManager_CreateProjectScenario1(t *testing.T) {
 	}
 
 	expectedResources := []string{"shipyard.yaml"}
-	if diff := deep.Equal(expectedResources, mockCS.receivedResources); len(diff) > 0 {
+	if diff := deep.Equal(expectedResources, mockCS.ReceivedResources); len(diff) > 0 {
 		t.Errorf("project resources have not been created correctly")
 		for _, d := range diff {
 			t.Log(d)
 		}
 	}
 
-	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetStartedEventType(keptnv2.ProjectCreateTaskName), "", nil) {
+	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ProjectCreateTaskName), "", nil) {
 		t.Error("event broker did not receive project.create.started event")
 	}
 
-	if shouldContainEvent(t, mockEV.receivedEvents, keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), "", nil) {
+	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), "", nil) {
 		t.Error("event broker did not receive project.create.started event")
 	}
 
@@ -612,20 +423,20 @@ func Test_projectManager_CreateProjectScenario1(t *testing.T) {
 }
 
 func Test_projectManager_DeleteProject(t *testing.T) {
-	mockEV := newMockEventbroker(t, func(meb *mockEventBroker, event *models.Event) {
-		meb.receivedEvents = append(meb.receivedEvents, *event)
-	}, func(meb *mockEventBroker) {
+	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+	}, func(meb *fake.MockEventBroker) {
 
 	})
 
-	defer mockEV.server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.server.URL)
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
 
-	mockCS := newSimpleMockConfigurationService()
-	defer mockCS.server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.server.URL)
+	mockCS := fake.NewSimpleMockConfigurationService()
+	defer mockCS.Server.Close()
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
 
-	mockCS.projects = []*keptnapimodels.Project{
+	mockCS.Projects = []*keptnapimodels.Project{
 		{
 			ProjectName: "my-project",
 			Stages: []*keptnapimodels.Stage{
@@ -650,26 +461,26 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &mockSecretStore{
-				create: func(name string, content map[string][]byte) error {
+			secretStore: &fake.MockSecretStore{
+				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
-				delete: func(name string) error {
+				DeleteFunc: func(name string) error {
 					return nil
 				},
-				get: func(name string) (map[string][]byte, error) {
+				GetFunc: func(name string) (map[string][]byte, error) {
 					return map[string][]byte{}, nil
 				},
 			},
 			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
 		},
-		eventRepo: &mockEventRepo{
-			deleteCollections: func(project string) error {
+		eventRepo: &fake.MockEventRepo{
+			DeleteEventCollectionsFunc: func(project string) error {
 				return nil
 			},
 		},
-		taskSequenceRepo: &mockTaskSequenceRepo{
-			deleteTaskSequenceCollection: func(project string) error {
+		taskSequenceRepo: &fake.MockTaskSequenceRepo{
+			DeleteTaskSequenceCollectionFunc: func(project string) error {
 				return nil
 			},
 		},
@@ -680,7 +491,7 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 	// verify
 	expectedProjects := []*keptnapimodels.Project{}
 
-	if diff := deep.Equal(expectedProjects, mockCS.projects); len(diff) > 0 {
+	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
 		t.Errorf("project has not been created correctly")
 		for _, d := range diff {
 			t.Log(d)
