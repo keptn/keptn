@@ -515,7 +515,7 @@ jobs:
           path: ./dist
 
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
-        id: load_ci_env
+        id: load_build_env
         uses: c-py/action-dotenv-to-setenv@v2
         with:
           env-file: ./dist/build-config/build-config.env
