@@ -27,6 +27,8 @@ const rootEventCollectionSuffix = "-rootEvents"
 const invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 const unmappedEventsCollectionName = "keptnUnmappedEvents"
 
+const keptn07EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+
 var client *mongo.Client
 var mutex sync.Mutex
 
@@ -495,6 +497,25 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *kep
 			continue
 		}
 
+		// backwards compatibility: transform evaluation-done events to evaluation.finished events
+		if keptnEvent.Type == keptn07EvaluationDoneEventType {
+			eventMap := map[string]interface{}{}
+			convertedEvent := &keptnv2.EvaluationFinishedEventData{}
+			if err := keptnv2.Decode(keptnEvent.Data, &eventMap); err != nil {
+				logger.Error(fmt.Sprintf("failed to transform evaluation-done event to evaluation.finished event %v", err))
+			}
+			if err := keptnv2.Decode(keptnEvent.Data, convertedEvent); err != nil {
+				logger.Error(fmt.Sprintf("failed to transform evaluation-done event to evaluation.finished event %v", err))
+			}
+			if eventMap["evaluationdetails"] != nil {
+				evaluationDetails := &keptnv2.EvaluationDetails{}
+				if err := keptnv2.Decode(eventMap["evaluationdetails"], evaluationDetails); err != nil {
+					logger.Error(fmt.Sprintf("failed to transform evaluationDetails of evaluation-done event: %v", err))
+				}
+				convertedEvent.Evaluation = *evaluationDetails
+			}
+		}
+
 		result.Events = append(result.Events, &keptnEvent)
 	}
 
@@ -622,7 +643,15 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 		searchOptions["shkeptncontext"] = *params.KeptnContext
 	}
 	if params.Type != nil {
-		searchOptions["type"] = *params.Type
+		// for backwards compatibility: if evaluation.finished events are queried, also retrieve evaluation-done events
+		if *params.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) {
+			searchOptions["$or"] = []bson.M{
+				{"type": *params.Type},
+				{"type": keptn07EvaluationDoneEventType},
+			}
+		} else {
+			searchOptions["type"] = *params.Type
+		}
 	}
 	if params.Source != nil {
 		searchOptions["source"] = *params.Source
