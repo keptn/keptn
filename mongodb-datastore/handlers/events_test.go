@@ -151,6 +151,38 @@ func Test_getSearchOptions(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "get search options for evaluation.finished events query",
+			args: args{
+				params: event.GetEventsParams{
+					HTTPRequest:  nil,
+					FromTime:     stringp("1"),
+					KeptnContext: stringp("test-context"),
+					NextPageKey:  nil,
+					PageSize:     nil,
+					Project:      stringp("sockshop"),
+					Root:         nil,
+					Service:      stringp("carts"),
+					Source:       stringp("test-service"),
+					Stage:        stringp("dev"),
+					Type:         stringp(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)),
+				},
+			},
+			want: bson.M{
+				"data.project": "sockshop",
+				"data.stage":   "dev",
+				"data.service": "carts",
+				"source":       "test-service",
+				"$or": []bson.M{
+					{"type": keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)},
+					{"type": keptn07EvaluationDoneEventType},
+				},
+				"shkeptncontext": "test-context",
+				"time": bson.M{
+					"$gt": "1",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
