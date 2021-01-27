@@ -2,43 +2,6 @@
 
 This service provides usage statistics about a Keptn installation.
 
-## Compatibilty Matrix
-
-| Keptn Version    | [Statistics Service](https://hub.docker.com/r/keptnsandbox/statistics-service/tags?page=1&ordering=last_updated) | Kubernetes Versions                      |
-|:----------------:|:----------------------------------------:|:----------------------------------------:|
-|       0.7.1      | keptnsandbox/statistics-service:0.1.0    | 1.14 - 1.19                              |
-|       0.7.2      | keptnsandbox/statistics-service:0.1.1    | 1.14 - 1.19                              |
-|       0.7.3      | keptnsandbox/statistics-service:0.2.0    | 1.14 - 1.19                              |
-
-
-## Deploy in your Kubernetes cluster
-
-Please note that the installation of the **statistics-service** differs slightly, depending on your installed Keptn version. Depending on your installed Keptn version, please follow the instructions below. 
-
-### For Keptn versions < 0.8.0
-
-To deploy the current version of the *statistics-service* in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it.
-
-```console
-kubectl apply -f deploy/service.yaml -n keptn
-```
-
-### For Keptn versions >= 0.8.0
-
-To deploy the current version of the *statistics-service* in your Keptn Kubernetes cluster, use the file `deploy/service_keptn_080.yaml` from this repository and apply it.
-
-```console
-kubectl apply -f deploy/service_keptn_080.yaml -n keptn
-```
-
-## Delete in your Kubernetes cluster
-
-To delete a deployed *statistics-service*, use `deploy/service.yaml` from this repository and delete the Kubernetes resources:
-
-```console
-kubectl delete -f deploy/service.yaml -n keptn
-```
-
 ### Generate  Swagger doc from source
 
 First, the following go modules have to be installed:
@@ -57,11 +20,17 @@ swag init
 
 ## How to use the service
 
-Once the service is deployed in your cluster, you can access it using `port-forward`:
+You can access the service via the Keptn API under the `statistics` path, e.g.:
 
 ```
-kubectl port-forward -n keptn svc/statistics-service 8080
+http://keptn-api-url.com/api/statistics
 ``` 
+
+Or, if you would like to view the swagger UI of the service, you can use the following URL: 
+
+```
+http://keptn-api-url.com/api/swagger-ui/?urls.primaryName=statistics
+```
 
 You can then browse the API docs at by opening the Swagger docs in your [browser](http://localhost:8080/swagger-ui/index.html).
 
@@ -69,13 +38,13 @@ To retrieve usage statistics for a certain time frame, you need to provide the [
 E.g.:
 
 ```
-http://localhost:8080/v1/statistics?from=1600656105&to=1600696105
+http://keptn-api-url.com/api/statistics/v1/statistics?from=1600656105&to=1600696105
 ```
 
 cURL Example:
 
 ```
-curl -X GET "http://localhost:8080/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json"
+curl -X GET "http://keptn-api-url.com/api/statistics/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json"
 ```
 
 *Note*: You can generate timestamps using [epochconverter.com](https://www.epochconverter.com/).
