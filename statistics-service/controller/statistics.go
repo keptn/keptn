@@ -53,7 +53,7 @@ func GetStatisticsBucketInstance() *StatisticsBucket {
 	return statisticsBucketInstance
 }
 
-// GetCutoffTime
+// GetCutoffTime returns the cutoff time (=time window in which the service holds its data in memory)
 func (sb *StatisticsBucket) GetCutoffTime() time.Time {
 	return sb.cutoffTime
 }
