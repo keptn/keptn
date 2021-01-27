@@ -74,12 +74,16 @@ export class KtbSliBreakdownComponent implements OnInit {
 
   assembleTablesEntries(indicatorRestults): any {
     var tableEntries = [];
+
+    let totalscore  = 0;
+    indicatorRestults.forEach(result => totalscore += result.score);
+
     
     for (let indicatorRestult of indicatorRestults) {
       let name = indicatorRestult.value.metric;
       let value = this.formatNumber(indicatorRestult.value.value);
       let result = indicatorRestult.status;
-      let score = indicatorRestult.score;
+      let score = (indicatorRestult.score / totalscore).toFixed(2);
       let criteria = "";
 
       for (let target of indicatorRestult.targets) {
