@@ -14,10 +14,6 @@ on:
         description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
-      publish_as_release:
-        description: 'Whether or not to publish the build as a GH release (0=no, 1=yes)'
-        required: true
-        default: 0
 defaults:
   run:
     shell: bash
@@ -451,16 +447,26 @@ jobs:
           path: test-report-*.txt
 
 
-  publish-artifacts-as-pre-release:
+  publish-draft-release-for-release-branch:
+    name: Publish Draft release
     needs: integration-test
-    if: always() # run report-to-pr always, even if the previous required job fails
+    if: always()
     runs-on: ubuntu-20.04
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Load CI Environment from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v2
+        with:
+          env-file: .ci_env
+
       - name: Download test reports
         uses: actions/download-artifact@v2
         with:
           name: test-report
-          
+
       - name: Print Test Report
         id: print_test_report
         run: |
@@ -481,32 +487,19 @@ jobs:
           name: test-report
           path: final-test-report.txt
 
-      - name: Download all artifacts from previous build and specified branch
+      - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2
         with:
-          # Optional, GitHub token
           github_token: ${{secrets.GITHUB_TOKEN}}
           # Required, workflow file name or ID
           workflow: CI.yml
-          # Optional, the status or conclusion of a completed workflow to search for
-          # Can be one of a workflow conculsion::
-          # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
-          # Or a workflow status:
-          # "completed", "in_progress", "queued"
-          # Default: "completed"
           workflow_conclusion: success
           # Use the branch
           branch: ${{ github.event.inputs.branch }}
           # Optional, directory where to extract artifact
           path: ./dist
 
-      - name: Show content of dist folder
-        run: ls -la ./dist/*
-      
-      - name: Show build-config.env
-        run: cat ./dist/build-config/build-config.env
-
-      - name: Load Build-Config Environemnt from ./dist/build-config/build-config.env
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v2
         with:
@@ -516,26 +509,108 @@ jobs:
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
-       
-      - name: Create a Release message
+
+      - name: Try getting release notes
+        id: get_releasenotes
         run: |
-          echo "# DEV BUILD ${VERSION} ON ${BRANCH}" > release-notes.txt
-          echo "This is a developer build, please use with caution." >> release-notes.txt
+          filename="releasenotes/releasenotes_V${VERSION}.md"
+          if [[ -f "$filename" ]]; then
+            echo "Found releasenotes in $filename"
+          else
+            echo "::warning Could not find release notes $filename, using releasenotes_develop"
+            filename="releasenotes/releasenotes_develop.md"
+          fi
+
+          echo "##[set-output name=RELEASENOTES_FILENAME;]$(echo ${filename})"
+
+      - name: Create a Release message
+        env:
+          RELEASENOTES_FILENAME: ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
+        run: |
+          cat $RELEASENOTES_FILENAME > release-notes.txt
+          echo "# CI Information: BUILD ${VERSION} ON ${BRANCH}" >> release-notes.txt
           echo "## Docker Images" >> release-notes.txt
           cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
           echo "## Integration Tests" >> release-notes.txt
           cat final-test-report.txt >> release-notes.txt
 
-      # Create a pre release
-      - name: Create Pre Release
-        if: github.event.inputs.publish_as_release == '1'
-        id: create_pre_release
+      - name: Abort if (published) release already exists
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            let tag = "${{ env.VERSION }}";
+            console.log(`Trying to fetch release by tag '${tag}'...`);
+
+            try {
+              release = await github.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: "${{ steps.get_version.outputs.VERSION }}"
+              });
+              console.log("::error Release already exists... Aborting!");
+              core.setFailed("Release already exists... Aborting!");
+
+              return 1; // failure
+            } catch (error) {
+              // release not found -> okay
+              console.log("No release found -> okay");
+              return 0;
+            }
+
+      - name: Delete draft release if it already exists
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            let tag = "${{ env.VERSION }}";
+            console.log(`Trying to fetch DRAFT release by tag '${tag}'...`);
+
+            try {
+              let draftRelease;
+              let releases = await github.repos.listReleases({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              // find a draft release
+              let release = releases.data.find(release => release.tag_name === tag);
+              if (release) {
+                // found a release with specified tag; check if it is a draft release
+                if (release.draft) {
+                  // found a draft release
+                  console.log(`🥳 Found a draft release with id ${release.id}, deleting it`);
+
+                  github.repos.deleteRelease({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    release_id: release.id
+                  });
+
+                  console.log("Deleted! -> okay");
+                } else {
+                  console.log("::error Release with tag found, but it's not a draft release");
+                  core.setFailed("Release with tag found, but it's not a draft release");
+                }
+              } else {
+                console.log("No draft release found -> okay");
+              }
+
+              return 0;
+            } catch (error) {
+              // error happened
+              console.log("An error happened while trying to fetch all releases:");
+              console.log(error);
+              throw error;
+            }
+
+      - name: Draft Release with Releasenotes
+        id: create_draft_release
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
-          prerelease: true
-          body_path: release-notes.txt # ${{ github.workflow }}-CHANGELOG.txt
+          draft: true
+          body_path: release-notes.txt # ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
           files: |
             dist/keptn-cli/keptn-*.tar.gz
             dist/keptn-installer/keptn*.tgz
