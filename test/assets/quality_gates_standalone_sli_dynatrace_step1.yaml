@@ -1,8 +1,8 @@
 ---
 spec_version: '1.0'
 indicators:
-  throughput: "metricSelector=builtin:service.requestCount.total:merge(0):sum&entitySelector=type(SERVICE),tag(FrontEnd),tag(testdeploy)"
-  error_rate: "metricSelector=builtin:service.errors.total.count:merge(0):avg&entitySelector=type(SERVICE),tag(FrontEnd),tag(testdeploy)"
-  response_time_p50: "metricSelector=builtin:service.response.time:merge(0):percentile(50)&entitySelector=type(SERVICE),tag(FrontEnd),tag(testdeploy)"
-  response_time_p90: "metricSelector=builtin:service.response.time:merge(0):percentile(90)&entitySelector=type(SERVICE),tag(FrontEnd),tag(testdeploy)"
-  response_time_p95: "metricSelector=builtin:service.response.time:merge(0):percentile(95)&entitySelector=type(SERVICE),tag(FrontEnd),tag(testdeploy)"
+  throughput: "metricSelector=builtin:service.requestCount.total:merge(0):sum&entitySelector=type(SERVICE),tag(EasyTravel),tag(testdeploy),tag(evalservice)"
+  error_rate: "metricSelector=builtin:service.errors.total.count:merge(0):avg&entitySelector=type(SERVICE),tag(EasyTravel),tag(testdeploy),tag(evalservice)"
+  response_time_p50: "metricSelector=builtin:service.response.time:merge(0):percentile(50)&entitySelector=type(SERVICE),tag(EasyTravel),tag(testdeploy),tag(evalservice)"
+  response_time_p90: "metricSelector=builtin:service.response.time:merge(0):percentile(90)&entitySelector=type(SERVICE),tag(EasyTravel),tag(testdeploy),tag(evalservice)"
+  response_time_p95: "metricSelector=builtin:service.response.time:merge(0):percentile(95)&entitySelector=type(SERVICE),tag(EasyTravel),tag(testdeploy),tag(evalservice)"
