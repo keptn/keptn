@@ -1,5 +1,6 @@
-import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
 import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
+import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
 
 @Component({
   selector: 'ktb-sli-breakdown',
@@ -7,6 +8,8 @@ import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
   styleUrls: ['./ktb-sli-breakdown.component.scss']
 })
 export class KtbSliBreakdownComponent implements OnInit {
+
+  @ViewChild('sortable', { read: DtSort, static: true }) sortable: DtSort;
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -30,7 +33,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   public _indicatorResultsFail: any = [];
   public _indicatorResultsWarning: any = [];
   public _indicatorResultsPass: any = [];
-  public tableEntries: any;
+  public tableEntries: DtTableDataSource<object>;
 
   @Input()
   get indicatorResults(): any {
@@ -49,7 +52,10 @@ export class KtbSliBreakdownComponent implements OnInit {
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {
-    this.tableEntries = this.assembleTablesEntries(this.indicatorResults);
+    this.tableEntries = new DtTableDataSource(this.assembleTablesEntries(this.indicatorResults));
+
+    // Set the dtSort reference on the dataSource, so it can react to sorting.
+    this.tableEntries.sort = this.sortable;
   }
 
   formatNumber(number) {
