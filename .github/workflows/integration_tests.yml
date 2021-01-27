@@ -30,30 +30,35 @@ jobs:
             VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             VERSION: "v1.19.5+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             VERSION: "1.15"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             VERSION: "1.17"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -63,6 +68,7 @@ jobs:
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
+      COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -218,9 +224,12 @@ jobs:
 
       # Gather resource limits directly after installation of Keptn
       - name: Gather resource limits
+        if: env.COLLECT_RESOURCE_LIMITS == 'true'
         env:
-          TEST_REPORT_FILENAME: test-report-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
-        run: test/utils/k8s_gather_resource_limits.sh ${KEPTN_NAMESPACE} > $TEST_REPORT_FILENAME
+          TEST_REPORT_FILENAME: test-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
+        run: |
+          echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
+          test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
 
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
@@ -277,15 +286,21 @@ jobs:
           source test/utils.sh
           echo "Verifying that services and namespaces have been created"
 
-          # verify the deployments within the keptn namespace
+          # verify the deployments within the keptn namespace (for keptn control plane)
           verify_deployment_in_namespace "api-gateway-nginx" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
+
+          # verify deployments for continuous delivery
+          if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
+            verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
+          fi
 
           # verify the datastore deployments
           verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
@@ -352,6 +367,8 @@ jobs:
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant
+        # Delivery Assistant only works when we install keptn with continuous delivery use-case
+        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
         timeout-minutes: 5
         continue-on-error: true
         env:
@@ -456,7 +473,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: test-report
-          path: test-report-*.txt
+          path: test-*.txt
 
 
   #######################################################################
@@ -502,6 +519,14 @@ jobs:
           name: test-report
           path: final-test-report.txt
 
+      - name: Summarize Resource Usage
+        id: print_resource_usage
+        run: |
+          echo "**Resource Limits**" > final-resource-limits.txt
+          ls -la test-resource-limits*.txt
+          cat test-resource-limits*.txt >> final-resource-limits.txt
+          # Todo: some calculations should be done...
+
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -543,20 +568,34 @@ jobs:
       - name: Create a Release message
         env:
           RELEASENOTES_FILENAME: ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
+          RESOURCE_LIMITS_FILENAME: "final-resource-limits.txt"
         run: |
           # print release notes
           cat $RELEASENOTES_FILENAME > release-notes.txt
           # print CI information
-          echo "<details><summary>CI Information</summary>"
+          echo ""  >> release-notes.txt
+          echo "<details><summary>CI Information</summary>"  >> release-notes.txt
           echo "<p>" >> release-notes.txt
-          echo "**BUILD ${VERSION} ON ${BRANCH}**" >> release-notes.txt
-          echo "**DATETIME**: $DATETIME" >> release-notes.txt
-          echo "**GIT_SHA**: $GIT_SHA" >> release-notes.txt
-          echo "**ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "* **BUILD ${VERSION} ON ${BRANCH}**" >> release-notes.txt
+          echo "* **DATETIME**: $DATETIME" >> release-notes.txt
+          echo "* **GIT_SHA**: $GIT_SHA" >> release-notes.txt
+          echo "* **ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
+          echo "" >> release-notes.txt
           echo "**Docker Images**" >> release-notes.txt
           cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
-          echo "**Integration Tests" >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "**Integration Tests**" >> release-notes.txt
           cat final-test-report.txt >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "</p>" >> release-notes.txt
+          echo "</details>" >> release-notes.txt
+          echo "" >> release-notes.txt
+          # print final-resource-limits.txt
+          echo "<details><summary>Kubernetes Resource Data</summary>" >> release-notes.txt
+          echo "<p>" >> release-notes.txt
+          echo ""  >> release-notes.txt
+          cat $RESOURCE_LIMITS_FILENAME >> release-notes.txt
           echo "</p>" >> release-notes.txt
           echo "</details>" >> release-notes.txt
 
