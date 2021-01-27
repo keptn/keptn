@@ -206,9 +206,21 @@ jobs:
             echo "{}" > creds.json # empty credentials file
           fi
 
-          # install Keptn using the develop version, which refers to the :latest docker images
+          # Determine use case
+          USE_CASE=""
+          if [[ $RUN_CONTINUOUS_DELIVERY_TEST == "true" ]]; then
+            USE_CASE="--use-case=continuous-delivery"
+          fi
+
+          # Install Keptn
           keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
-             --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose --use-case=continuous-delivery
+             --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
+
+      # Gather resource limits directly after installation of Keptn
+      - name: Gather resource limits
+        env:
+          TEST_REPORT_FILENAME: test-report-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
+        run: test/utils/k8s_gather_resource_limits.sh ${KEPTN_NAMESPACE} > $TEST_REPORT_FILENAME
 
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
