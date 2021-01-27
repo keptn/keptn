@@ -590,6 +590,7 @@ func transformEvaluationDonEvent(keptnEvent *models.KeptnContextExtendedCE) erro
 	}
 	keptnEvent.Type = models.Type(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 	keptnEvent.Data = convertedEvent
+	keptnEvent.Specversion = "1.0"
 	return nil
 }
 
