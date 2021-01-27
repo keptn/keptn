@@ -1,0 +1,87 @@
+---
+# Deployment of our statistics-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statistics-service
+spec:
+  selector:
+    matchLabels:
+      run: statistics-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: statistics-service
+    spec:
+      containers:
+        - name: statistics-service
+          image: keptn/statistics-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: AGGREGATION_INTERVAL_SECONDS
+              value: '1800'
+            - name: NEXT_GEN_EVENTS
+              value: 'true'
+            - name: MONGODB_HOST
+              value: 'mongodb:27017'
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: password
+            - name: MONGO_DB_NAME
+              value: 'keptn'
+        - name: distributor
+          image: keptn/distributor:latest
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/v1/event'
+---
+# Expose statistics-service via Port 8080 within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: statistics-service
+  labels:
+    run: statistics-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: statistics-service
