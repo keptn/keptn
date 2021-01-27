@@ -14,7 +14,7 @@
           <p class="m-0 mr-2 mt-1" [textContent]="event.time | amCalendar:getCalendarFormats()"></p>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
             <dt-tag-list aria-label="stages">
-              <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="stage == event.isApproval()" (click)="$event.stopPropagation();selectEvent(event, stage)"></dt-tag>
+              <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)" (click)="$event.stopPropagation();selectEvent(event, stage)"></dt-tag>
             </dt-tag-list>
           </div>
         </div>

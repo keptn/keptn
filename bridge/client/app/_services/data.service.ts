@@ -252,11 +252,12 @@ export class DataService {
       });
   }
 
-  private updateApprovals(root) {
+  private updateApprovals(root: Root) {
     if(root.traces.length > 0) {
       this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-      if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort(DateUtil.compareTraceTimesAsc));
+      const approvals = root.getPendingApprovals();
+      if (approvals.length !== 0)
+        this._openApprovals.next([...this._openApprovals.getValue(), ...approvals].sort(DateUtil.compareTraceTimesAsc));
     }
   }
 

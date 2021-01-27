@@ -162,6 +162,16 @@ class Trace {
     return this.type === EventTypes.APPROVAL_TRIGGERED ? this.data.stage : null;
   }
 
+  public isApprovalPending(): boolean {
+    let pending = true;
+    for (let i = 0; i < this.traces.length && pending; ++i) {
+      if (this.traces[i].isApprovalFinished()) {
+        pending = false;
+      }
+    }
+    return pending;
+  }
+
   private isApprovalFinished(): boolean {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
