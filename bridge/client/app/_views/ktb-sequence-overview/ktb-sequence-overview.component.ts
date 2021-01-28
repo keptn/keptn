@@ -1,20 +1,19 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {Trace} from "../../_models/trace";
-import DateUtil from "../../_utils/date.utils";
-import {ActivatedRoute, Router} from "@angular/router";
-import {Location} from "@angular/common";
-import {EventTypes} from "../../_models/event-types";
-import {
-  DtQuickFilterDefaultDataSource,
-  DtQuickFilterDefaultDataSourceConfig
-} from "@dynatrace/barista-components/experimental/quick-filter";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation} from '@angular/core';
+import {ActivatedRoute} from "@angular/router";
+import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from "@dynatrace/barista-components/experimental/quick-filter";
 import {isObject} from "@dynatrace/barista-components/core";
-import {filter, map, take, takeUntil} from "rxjs/operators";
+
 import {Observable, Subject, Subscription, timer} from "rxjs";
-import {Project} from "../../_models/project";
-import {DataService} from "../../_services/data.service";
-import {Root} from "../../_models/root";
+import {filter, take, takeUntil} from "rxjs/operators";
+
 import * as moment from "moment";
+
+import {Root} from "../../_models/root";
+import {Stage} from "../../_models/stage";
+import {Project} from "../../_models/project";
+
+import {DataService} from "../../_services/data.service";
+import {DateUtil} from "../../_utils/date.utils";
 
 @Component({
   selector: 'ktb-sequence-overview',
@@ -69,6 +68,7 @@ export class KtbSequenceOverviewComponent implements OnInit {
 
   public project$: Observable<Project>;
   public currentSequence: Root;
+  public selectedStage: String;
 
   public _filterDataSource = new DtQuickFilterDefaultDataSource(
     this.filterFieldData,
@@ -76,10 +76,9 @@ export class KtbSequenceOverviewComponent implements OnInit {
   );
   public _seqFilters = [];
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, public dateUtil: DateUtil) { }
 
   ngOnInit() {
-    console.log("ktb-sequence-overview ngOnInit");
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
@@ -167,12 +166,7 @@ export class KtbSequenceOverviewComponent implements OnInit {
     return moment().subtract(1, 'day').isAfter(root.time);
   }
 
-  getCalendarFormats() {
-    return DateUtil.getCalendarFormats(true);
-  }
-
   ngOnDestroy(): void {
-    console.log("ktb-sequence-overview ngOnDestroy");
     this.unsubscribe$.next();
   }
 }

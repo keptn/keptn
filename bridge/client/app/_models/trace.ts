@@ -40,7 +40,7 @@ class Trace {
       deploymentURIsPublic: string[];
       deploymentstrategy: string;
       gitCommit: string;
-    };
+    }
 
     deploymentURILocal: string;
     deploymentURIPublic: string;
@@ -62,9 +62,10 @@ class Trace {
       shkeptncontext: string;
       token: string;
     };
-
-    valuesCanary: {
-      image: string
+    configurationChange: {
+      values: {
+        image: string
+      }
     };
 
     evaluation: {

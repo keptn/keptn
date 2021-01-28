@@ -6,6 +6,10 @@
   color: $white;
 }
 
+::ng-deep .dt-quick-filter-content {
+  padding: 0 !important;
+}
+
 ktb-event-item.focused {
   box-shadow: 0 0 0 0 rgba(180, 180, 180, 1);
   transform: scale(1);
