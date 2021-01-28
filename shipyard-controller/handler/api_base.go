@@ -1,7 +1,6 @@
-package api
+package handler
 
 import (
-	"errors"
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -35,9 +34,4 @@ func newAPIBase() (*apiBase, error) {
 		secretStore: secretStore,
 		logger:      keptncommon.NewLogger("", "", "shipyard-controller"),
 	}, nil
-}
-
-func (b *apiBase) logAndReturnError(msg string) error {
-	b.logger.Error(msg)
-	return errors.New(msg)
 }

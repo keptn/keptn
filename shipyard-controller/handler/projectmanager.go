@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"encoding/base64"
@@ -6,186 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ghodss/yaml"
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"net/http"
 	"strings"
 )
 
-type gitCredentials struct {
-	User      string `json:"user,omitempty"`
-	Token     string `json:"token,omitempty"`
-	RemoteURI string `json:"remoteURI,omitempty"`
-}
-
-// CreateProject godoc
-// @Summary Create a new project
-// @Description Create a new project
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 200 {object} operations.CreateProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project [post]
-func CreateProject(c *gin.Context) {
-	// validate the input
-	createProjectParams := &operations.CreateProjectParams{}
-	if err := c.ShouldBindJSON(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
-		return
-	}
-	if err := validateCreateProjectParams(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp(err.Error()),
-		})
-		return
-	}
-
-	pm, err := newProjectManager()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if secretCreated, err := pm.createProject(createProjectParams); err != nil {
-		if secretCreated {
-			if err2 := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(*createProjectParams.Name)); err2 != nil {
-				pm.logger.Error(fmt.Sprintf("could not delete git credentials for project %s: %s", *createProjectParams.Name, err.Error()))
-			}
-		}
-		if err == errProjectAlreadyExists {
-			c.JSON(http.StatusConflict, models.Error{
-				Code:    http.StatusConflict,
-				Message: stringp(err.Error()),
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
-		return
-	}
-	c.Status(http.StatusCreated)
-}
-
-// UpdateProject godoc
-// @Summary Updates a project
-// @Description Updates project
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 200 {object} operations.CreateProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project [put]
-func UpdateProject(c *gin.Context) {
-	// validate the input
-	createProjectParams := &operations.CreateProjectParams{}
-	if err := c.ShouldBindJSON(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
-		return
-	}
-	if err := validateUpdateProjectParams(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Could not validate payload: " + err.Error()),
-		})
-		return
-	}
-
-	pm, err := newProjectManager()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if err := pm.updateProject(createProjectParams); err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
-		return
-	}
-}
-
-// DeleteProject godoc
-// @Summary Delete a project
-// @Description Delete a project
-// @Tags Projects
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   project     path    string     true        "Project name"
-// @Success 200 {object} operations.DeleteProjectResponse	"ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /project/:project [delete]
-func DeleteProject(c *gin.Context) {
-	projectName := c.Param("project")
-
-	if projectName == "" {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Must provide a project name"),
-		})
-	}
-
-	pm, err := newProjectManager()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	response, err := pm.deleteProject(projectName)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, response)
-}
-
 var errProjectAlreadyExists = errors.New("project already exists")
-
-type projectManager struct {
-	*apiBase
-	eventRepo        db.EventRepo
-	taskSequenceRepo db.TaskSequenceRepo
-}
 
 func newProjectManager() (*projectManager, error) {
 	base, err := newAPIBase()
@@ -201,6 +31,18 @@ func newProjectManager() (*projectManager, error) {
 			Logger: base.logger,
 		},
 	}, nil
+}
+
+type projectManager struct {
+	*apiBase
+	eventRepo        db.EventRepo
+	taskSequenceRepo db.TaskSequenceRepo
+}
+
+type gitCredentials struct {
+	User      string `json:"user,omitempty"`
+	Token     string `json:"token,omitempty"`
+	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
 func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteProjectResponse, error) {
@@ -536,53 +378,4 @@ func getUpstreamRepoCredsSecretName(projectName string) string {
 func (pm *projectManager) logAndReturnError(msg string) error {
 	pm.logger.Error(msg)
 	return errors.New(msg)
-}
-
-func validateCreateProjectParams(createProjectParams *operations.CreateProjectParams) error {
-
-	if createProjectParams.Name == nil || *createProjectParams.Name == "" {
-		return errors.New("project name missing")
-	}
-	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
-		errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
-		errorMsg += "Keptn relies on the following conventions: "
-		errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
-		errorMsg += "Please update project name and try again."
-		return errors.New(errorMsg)
-	}
-	if createProjectParams.Shipyard == nil || *createProjectParams.Shipyard == "" {
-		return errors.New("shipyard must contain a valid shipyard spec encoded in base64")
-	}
-	shipyard := &keptnv2.Shipyard{}
-	decodeString, err := base64.StdEncoding.DecodeString(*createProjectParams.Shipyard)
-	if err != nil {
-		return errors.New("could not decode shipyard content using base64 decoder: " + err.Error())
-	}
-
-	err = yaml.Unmarshal(decodeString, shipyard)
-	if err != nil {
-		return fmt.Errorf("could not unmarshal provided shipyard content: %s", err.Error())
-	}
-
-	if err := common.ValidateShipyardVersion(shipyard); err != nil {
-		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
-	}
-
-	if err := common.ValidateShipyardStages(shipyard); err != nil {
-		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
-	}
-
-	return nil
-}
-
-func validateUpdateProjectParams(createProjectParams *operations.CreateProjectParams) error {
-
-	if createProjectParams.Name == nil || *createProjectParams.Name == "" {
-		return errors.New("project name missing")
-	}
-	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
-		return errors.New("provided project name is not a valid Keptn entity name")
-	}
-
-	return nil
 }
