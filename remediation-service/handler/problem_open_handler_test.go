@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/remediation-service/handler"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -34,7 +35,7 @@ const shipyardResource = `{
     }`
 
 const remediationYamlContent = `apiVersion: spec.keptn.sh/0.1.4
-kind: Remediation
+kind: RemediationHandler
 metadata:
   name: remediation-configuration
 spec:
@@ -129,18 +130,18 @@ func createTestCloudEvent(ceType, data string) cloudevents.Event {
 }
 
 type MockConfigurationService struct {
-	ExpectedRemediations    []*remediationStatus
-	ReceivedRemediations    []*remediationStatus
+	ExpectedRemediations    []*handler.Remediation
+	ReceivedRemediations    []*handler.Remediation
 	RemediationYamlResource string
 	Server                  *httptest.Server
 	ReceivedAllRequests     bool
 	ReturnedRemediations    string
 }
 
-func NewMockConfigurationService(expectedRemediations []*remediationStatus, remediationYamlResource string, returnedRemediations string) *MockConfigurationService {
+func NewMockConfigurationService(expectedRemediations []*handler.Remediation, remediationYamlResource string, returnedRemediations string) *MockConfigurationService {
 	svc := &MockConfigurationService{
 		ExpectedRemediations:    expectedRemediations,
-		ReceivedRemediations:    []*remediationStatus{},
+		ReceivedRemediations:    []*handler.Remediation{},
 		RemediationYamlResource: remediationYamlResource,
 		ReturnedRemediations:    returnedRemediations,
 		Server:                  nil,
@@ -173,7 +174,7 @@ func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http
 		return
 	} else if strings.Contains(r.RequestURI, "/remediation") {
 		if r.Method == http.MethodDelete {
-			cs.ReceivedRemediations = []*remediationStatus{}
+			cs.ReceivedRemediations = []*handler.Remediation{}
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(`{}`))
@@ -185,7 +186,7 @@ func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http
 			w.Write([]byte(cs.ReturnedRemediations))
 			return
 		}
-		rem := &remediationStatus{}
+		rem := &handler.Remediation{}
 
 		defer r.Body.Close()
 		bytes, _ := ioutil.ReadAll(r.Body)
@@ -300,7 +301,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 		fields                             fields
 		wantErr                            bool
 		returnedRemediationYamlResource    string
-		expectedRemediationOnConfigService []*remediationStatus
+		expectedRemediationOnConfigService []*handler.Remediation
 		expectedEventOnEventbroker         []*keptnapi.KeptnContextExtendedCE
 	}{
 		{
@@ -310,7 +311,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*remediationStatus{
+			expectedRemediationOnConfigService: []*handler.Remediation{
 				{
 					Action:       "",
 					EventID:      "",
@@ -369,7 +370,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                            true,
 			returnedRemediationYamlResource:    remediationYamlResourceWithInvalidSpecVersion,
-			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedRemediationOnConfigService: []*handler.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -391,7 +392,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithNoRemediations,
-			expectedRemediationOnConfigService: []*remediationStatus{
+			expectedRemediationOnConfigService: []*handler.Remediation{
 				{
 					Action:       "",
 					EventID:      "",
@@ -440,7 +441,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: mockCS.Server.URL,
 			})
 
-			remediation := &Remediation{
+			remediation := &RemediationHandler{
 				Keptn: testKeptnHandler,
 			}
 

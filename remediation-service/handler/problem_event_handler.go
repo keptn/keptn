@@ -12,7 +12,7 @@ type ProblemEventHandler struct {
 	KeptnHandler *keptnv2.Keptn
 	Logger       keptncommon.LoggerInterface
 	Event        cloudevents.Event
-	Remediation  *Remediation
+	Remediation  *RemediationHandler
 }
 
 // HandleEvent handles the event

@@ -6,6 +6,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/remediation-service/handler"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -182,7 +183,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		fields                             fields
 		wantErr                            bool
 		returnedRemediationYamlResource    string
-		expectedRemediationOnConfigService []*remediationStatus
+		expectedRemediationOnConfigService []*handler.Remediation
 		expectedEventOnEventbroker         []*keptnapi.KeptnContextExtendedCE
 		returnedRemediations               string
 		returnedEvents                     map[string]string
@@ -194,7 +195,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediationAndMultipleActions,
-			expectedRemediationOnConfigService: []*remediationStatus{
+			expectedRemediationOnConfigService: []*handler.Remediation{
 				{
 					Action:       "escalate",
 					EventID:      "",
@@ -240,7 +241,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedRemediationOnConfigService: []*handler.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -267,7 +268,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedRemediationOnConfigService: []*handler.Remediation{},
 			expectedEventOnEventbroker:         []*keptnapi.KeptnContextExtendedCE{},
 			returnedRemediations:               emptyRemediations,
 			returnedEvents: map[string]string{
@@ -282,7 +283,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedRemediationOnConfigService: []*handler.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -309,7 +310,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                            false,
 			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*remediationStatus{},
+			expectedRemediationOnConfigService: []*handler.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -347,7 +348,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: mockCS.Server.URL,
 			})
 
-			remediation := &Remediation{
+			remediation := &RemediationHandler{
 				Keptn: testKeptnHandler,
 			}
 

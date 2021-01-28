@@ -7,6 +7,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/remediation-service/handler"
 	"github.com/mitchellh/mapstructure"
 	"os"
 )
@@ -15,7 +16,7 @@ import (
 type EvaluationFinishedEventHandler struct {
 	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
-	Remediation  *Remediation
+	Remediation  *RemediationHandler
 }
 
 // HandleEvent handles the event
@@ -40,7 +41,7 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 	}
 
 	if evaluationDoneEventData.Result == "pass" || evaluationDoneEventData.Result == "warning" {
-		msg := "Remediation successful. Remediation actions resulted in evaluation result: " + string(evaluationDoneEventData.Result)
+		msg := "RemediationHandler successful. RemediationHandler actions resulted in evaluation result: " + string(evaluationDoneEventData.Result)
 		eh.KeptnHandler.Logger.Info(msg)
 		return eh.Remediation.sendRemediationFinishedEvent(keptnv2.StatusSucceeded, keptnv2.ResultPass, msg)
 	}
@@ -94,8 +95,8 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 	return eh.Remediation.sendRemediationFinishedEvent(keptnv2.StatusSucceeded, keptnv2.ResultFailed, msg)
 }
 
-func (eh *EvaluationFinishedEventHandler) getLastRemediationStatusChangedEvent(remediations []*remediationStatus) (*keptnv2.RemediationStatusChangedEventData, error) {
-	var lastRemediationStatusChanged *remediationStatus
+func (eh *EvaluationFinishedEventHandler) getLastRemediationStatusChangedEvent(remediations []*handler.Remediation) (*keptnv2.RemediationStatusChangedEventData, error) {
+	var lastRemediationStatusChanged *handler.Remediation
 	for index := range remediations {
 		remediation := remediations[len(remediations)-1-index]
 		if remediation.Type == keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName) {
@@ -130,8 +131,8 @@ func (eh *EvaluationFinishedEventHandler) getLastRemediationStatusChangedEvent(r
 	return remediationStatusChangedEvent, nil
 }
 
-func (eh *EvaluationFinishedEventHandler) getRemediationTriggeredEvent(remediations []*remediationStatus) (*keptnv2.RemediationTriggeredEventData, error) {
-	var remediationTriggered *remediationStatus
+func (eh *EvaluationFinishedEventHandler) getRemediationTriggeredEvent(remediations []*handler.Remediation) (*keptnv2.RemediationTriggeredEventData, error) {
+	var remediationTriggered *handler.Remediation
 	for _, remediation := range remediations {
 		if remediation.Type == keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName) {
 			remediationTriggered = remediation

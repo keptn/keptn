@@ -68,7 +68,7 @@ func TestActionFinishedEventHandler_HandleEvent(t *testing.T) {
 				EventBrokerURL: mockEV.Server.URL,
 			})
 
-			remediation := &Remediation{
+			remediation := &RemediationHandler{
 				Keptn: testKeptnHandler,
 			}
 
