@@ -23,7 +23,7 @@ import (
 )
 
 func TestSkipUpgradeCheck(t *testing.T) {
-	noSkipMsg := "Failed to check if Keptn release is available in namespace keptn: invalid configuration: no configuration has been provided"
+	noSkipMsg := "Failed to check if Keptn release is available in namespace keptn"
 	skipMsg := "Skipping upgrade compatibility check!"
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
