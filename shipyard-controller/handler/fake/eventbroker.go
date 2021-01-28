@@ -17,10 +17,6 @@ type MockEventBroker struct {
 	VerificationFunc func(meb *MockEventBroker)
 }
 
-func (meb *MockEventBroker) handleEvent(event *models.Event) {
-	meb.HandleEventFunc(meb, event)
-}
-
 func NewMockEventbroker(test *testing.T, handleEventFunc func(meb *MockEventBroker, event *models.Event), verificationFunc func(meb *MockEventBroker)) *MockEventBroker {
 	meb := &MockEventBroker{
 		Server:           nil,
