@@ -13,8 +13,8 @@ func NewProjectController(projectService handler.IProjectHandler) Controller {
 	return &ProjectController{ProjectService: projectService}
 }
 
-func (controller ProjectController) Inject(engine *gin.Engine) {
-	engine.POST("/project", controller.ProjectService.CreateProject)
-	engine.PUT("/project", controller.ProjectService.UpdateProject)
-	engine.DELETE("/project/:project", controller.ProjectService.DeleteProject)
+func (controller ProjectController) Inject(apiGroup *gin.RouterGroup) {
+	apiGroup.POST("/project", controller.ProjectService.CreateProject)
+	apiGroup.PUT("/project", controller.ProjectService.UpdateProject)
+	apiGroup.DELETE("/project/:project", controller.ProjectService.DeleteProject)
 }

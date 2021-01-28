@@ -13,7 +13,7 @@ func NewServiceController(serviceHandler handler.IServiceHandler) Controller {
 	return &ServiceController{ServiceHandler: serviceHandler}
 }
 
-func (controller ServiceController) Inject(engine *gin.Engine) {
-	engine.POST("/project/:project/service", controller.ServiceHandler.CreateService)
-	engine.PUT("/project/:project/service/:service", controller.ServiceHandler.DeleteService)
+func (controller ServiceController) Inject(apiGroup *gin.RouterGroup) {
+	apiGroup.POST("/project/:project/service", controller.ServiceHandler.CreateService)
+	apiGroup.PUT("/project/:project/service/:service", controller.ServiceHandler.DeleteService)
 }

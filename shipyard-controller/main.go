@@ -32,17 +32,18 @@ func main() {
 	}
 
 	engine := gin.Default()
+	apiV1 := engine.Group("/v1")
 	projectService := handler.NewProjectHandler()
 	projectController := controller.NewProjectController(projectService)
-	projectController.Inject(engine)
+	projectController.Inject(apiV1)
 
 	serviceHandler := handler.NewServiceHandler()
 	serviceController := controller.NewServiceController(serviceHandler)
-	serviceController.Inject(engine)
+	serviceController.Inject(apiV1)
 
 	eventHandler := handler.NewEventHandler()
 	eventController := controller.NewEventController(eventHandler)
-	eventController.Inject(engine)
+	eventController.Inject(apiV1)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()

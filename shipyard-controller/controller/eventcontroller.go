@@ -13,7 +13,7 @@ func NewEventController(eventHandler handler.IEventHandler) Controller {
 	return &EventController{EventHandler: eventHandler}
 }
 
-func (controller EventController) Inject(engine *gin.Engine) {
-	engine.GET("/event/triggered/:eventType", controller.EventHandler.GetTriggeredEvents)
-	engine.POST("/event", controller.EventHandler.HandleEvent)
+func (controller EventController) Inject(apiGroup *gin.RouterGroup) {
+	apiGroup.GET("/event/triggered/:eventType", controller.EventHandler.GetTriggeredEvents)
+	apiGroup.POST("/event", controller.EventHandler.HandleEvent)
 }
