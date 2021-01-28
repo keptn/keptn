@@ -11,7 +11,7 @@ import {Project} from "../_models/project";
 
 import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
-import DateUtil from "../_utils/date.utils";
+import {DateUtil} from "../_utils/date.utils";
 import {Trace} from "../_models/trace";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {EVENT_LABELS} from "../_models/event-labels";
@@ -44,7 +44,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
     this.route.params
@@ -162,10 +162,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       this.dataService.loadTraces(root);
       this._tracesTimer = Subscription.EMPTY;
     }
-  }
-
-  getCalendarFormats() {
-    return DateUtil.getCalendarFormats(true);
   }
 
   getRootsLastUpdated(project: Project): Date {

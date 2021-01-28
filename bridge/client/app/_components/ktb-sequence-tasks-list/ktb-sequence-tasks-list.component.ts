@@ -1,9 +1,9 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {Trace} from "../../_models/trace";
-import DateUtil from "../../_utils/date.utils";
 import {Router} from "@angular/router";
 import {Location} from "@angular/common";
-import {EventTypes} from "../../_models/event-types";
+
+import {Trace} from "../../_models/trace";
+import {DateUtil} from "../../_utils/date.utils";
 
 @Component({
   selector: 'ktb-sequence-tasks-list',
@@ -19,6 +19,7 @@ import {EventTypes} from "../../_models/event-types";
 export class KtbSequenceTasksListComponent implements OnInit {
 
   public _tasks: Trace[] = [];
+  public _stage: String;
   public _focusedEventId: string;
 
   @Input()
@@ -28,6 +29,17 @@ export class KtbSequenceTasksListComponent implements OnInit {
   set tasks(value: Trace[]) {
     if (this._tasks !== value) {
       this._tasks = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+
+  @Input()
+  get stage(): String {
+    return this._stage;
+  }
+  set stage(value: String) {
+    if (this._stage !== value) {
+      this._stage = value;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -43,17 +55,13 @@ export class KtbSequenceTasksListComponent implements OnInit {
     }
   }
 
-  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) { }
 
   ngOnInit() {
   }
 
   identifyEvent(index, item) {
     return item ? item.time : null;
-  }
-
-  getCalendarFormats() {
-    return DateUtil.getCalendarFormats();
   }
 
   private currentScrollElement;
@@ -72,6 +80,10 @@ export class KtbSequenceTasksListComponent implements OnInit {
       let routeUrl = this.router.createUrlTree(['/project', event.getProject(), event.getService(), event.shkeptncontext, event.id]);
       this.location.go(routeUrl.toString());
     }
+  }
+
+  getTasksByStage(tasks: Trace[], stage: String) {
+    return tasks.filter(t => t.data?.stage == stage);
   }
 
   isInvalidated(event) {

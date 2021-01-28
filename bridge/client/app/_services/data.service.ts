@@ -8,10 +8,10 @@ import {Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {Project} from "../_models/project";
 import {Service} from "../_models/service";
+import {EventTypes} from "../_models/event-types";
 
 import {ApiService} from "./api.service";
-import {EventTypes} from "../_models/event-types";
-import DateUtil from "../_utils/date.utils";
+import {DateUtil} from "../_utils/date.utils";
 
 @Injectable({
   providedIn: 'root'
@@ -290,15 +290,19 @@ export class DataService {
     return traces
       .map(trace => Trace.fromJSON(trace))
       .sort(DateUtil.compareTraceTimesDesc)
-      .reduce((result: Trace[], trace) => {
-        if(trace.triggeredid) {
-          let trigger = result.find(t => t.id == trace.triggeredid);
-          if(trigger)
-            trigger.traces.push(trace);
+      .reduce((result: Trace[], trace: Trace) => {
+        let trigger = result.find(t => {
+          if(trace.triggeredid)
+            return t.id == trace.triggeredid;
           else
-            result.push(trace);
-        } else
+            return t.getShortType() == trace.getShortType() && t.data.stage == trace.data.stage;
+        });
+
+        if(trigger)
+          trigger.traces.push(trace);
+        else
           result.push(trace);
+
         return result;
       }, []);
   }

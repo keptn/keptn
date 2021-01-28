@@ -33,10 +33,18 @@ class Trace {
     image: string;
     tag: string;
 
+    deployment: {
+      deploymentNames: string[];
+      deploymentURIsLocal: string[];
+      deploymentURIsPublic: string[];
+      deploymentstrategy: string;
+      gitCommit: string;
+    }
+
     deploymentURILocal: string;
     deploymentURIPublic: string;
 
-    deploymentstrategy: string;
+
     labels: Map<string, string>;
     result: string;
     teststrategy: string;
@@ -52,9 +60,10 @@ class Trace {
       shkeptncontext: string;
       token: string;
     };
-
-    valuesCanary: {
-      image: string
+    configurationChange: {
+      values: {
+        image: string
+      }
     };
 
     evaluation: {
@@ -104,7 +113,9 @@ class Trace {
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.isFailed() || (this.isProblem() && !this.isProblemResolvedOrClosed())) {
+      if(this.isFailed() ||
+        (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
+        this.traces.some(t => t.isFailed() || (t.isProblem() && !t.isProblemResolvedOrClosed()))) {
         result = this.data.stage;
       }
     }
@@ -175,8 +186,8 @@ class Trace {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
 
-  isDirectDeployment(): boolean {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data.deploymentstrategy == "direct";
+  public isDirectDeployment(): boolean {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data?.deployment?.deploymentstrategy == "direct";
   }
 
   private isApproved(): boolean {
@@ -218,24 +229,23 @@ class Trace {
     return this.label;
   }
 
+  getStage(): string {
+    return this.data?.stage;
+  }
+
   getShortType(): string {
-    return this.type.split(".").slice(3, -1).join(".");
+    let parts = this.type.split(".");
+    if(parts.length == 6)
+      return parts[4];
+    else if(parts.length == 5)
+      return parts[3];
+    else
+      return this.type;
   }
 
-  getIcon() {
-    if(!this.isFinished())
-      return "idle";
-
-    return this.getIconType();
-  }
-
-  getIconType(): string {
+  getIcon(): string {
     if(!this.icon) {
-      if(this.isApprovalFinished()) {
-        this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
-      } else {
-        this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
-      }
+      this.icon = EVENT_ICONS[this.getShortType()] || DEFAULT_ICON;
     }
     return this.icon;
   }

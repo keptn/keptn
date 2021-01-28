@@ -4,14 +4,17 @@
       <div fxLayout="row">
         <div fxFlex>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-icon class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.getIcon()"></dt-icon>
+            <dt-icon *ngIf="event.isFinished()" class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.getIcon()"></dt-icon>
+            <button *ngIf="!event.isFinished()" class="m-0 p-0" dt-button disabled variant="nested">
+              <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+            </button>
             <h4 class="m-0 mt-1 mb-1" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [textContent]="event.getLabel()"></h4>
           </div>
           <p class="m-0" *ngIf="event.getShortImageName()"><span class="m-0" [textContent]="event.getShortImageName()"></span></p>
           <p class="m-0" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
         </div>
         <div fxLayout="column" fxLayoutAlign="start end">
-          <p class="m-0 mr-2 mt-1" [textContent]="event.time | amCalendar:getCalendarFormats()"></p>
+          <p class="m-0 mr-2 mt-1" [textContent]="event.time | amCalendar:dateUtil.getCalendarFormats()"></p>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
             <dt-tag-list aria-label="stages">
               <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)" (click)="$event.stopPropagation();selectEvent(event, stage)"></dt-tag>

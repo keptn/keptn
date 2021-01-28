@@ -3,10 +3,12 @@
     <div fxLayout="row">
       <div fxFlex>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-          <p class="m-0 mt-1 mb-1" [textContent]="_task.time | amDateFormat:getTimeFormat()"></p>
-          <dt-icon class="event-icon" [class.error]="_task.isFaulty()" [class.success]="_task.isSuccessful()" [class.highlight]="_task.isApproval()" [name]="_task.getIcon()"></dt-icon>
+          <p class="m-0 mt-1 mb-1 mr-2" [textContent]="_task.time | amDateFormat:dateUtil.getTimeFormat()"></p>
+          <button *ngIf="!_task.isFinished()" class="m-0 p-0" dt-button disabled variant="nested">
+            <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+          </button>
+          <dt-icon *ngIf="_task.isFinished()" class="event-icon" [class.error]="_task.isFaulty()" [class.success]="_task.isSuccessful()" [class.highlight]="_task.isApproval()" [name]="_task.getIcon()"></dt-icon>
           <h4 class="m-0 mt-1 mb-1" [class.error]="_task.isFaulty()" [textContent]="_task.getLabel()"></h4>
-          <a *ngIf="_task.data.deploymentURIPublic" [href]="_task.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
         </div>
         <div *ngIf="_task.data.canary">
           <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_task.data.canary.action"></span> <span [textContent]="_task.data.canary.value"></span></p>
@@ -19,9 +21,14 @@
         </div>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
-        <div fxLayout="row" fxLayoutAlign="start start">
-          <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _task.shkeptncontext, _task.data.stage]" *ngIf="_task.data.evaluation"><dt-icon name="chart-bar"></dt-icon></button>
-          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+        <div class="task-buttons" fxLayout="row" fxLayoutAlign="start start">
+          <ng-container *ngIf="_task.isDeployment()">
+            <a *ngFor="let deploymentURIPublic of _task.data?.deployment?.deploymentURIsPublic" [href]="deploymentURIPublic" target="_blank">
+              <button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button>
+            </a>
+          </ng-container>
+          <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _task.shkeptncontext, _task.getStage()]" *ngIf="_task.isEvaluation() && _task.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
+          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event)"><dt-icon name="coding"></dt-icon></button>
         </div>
       </div>
     </div>
@@ -66,7 +73,7 @@
         [ktbEventItemDetail]"></ng-content>
 </ktb-expandable-tile>
 <!--ktb-selectable-tile [error]="_task.isFaulty()" [warning]="_task.isWarning()" [success]="_task.isSuccessful()" [highlight]="_task.isApproval()" *ngIf="_task && (project$ | async) as project"></ktb-selectable-tile-->
-<ng-template #eventPayloadDialog let-data>
+<ng-template #taskPayloadDialog let-data>
   <h1 mat-dialog-title>Event payload</h1>
   <div mat-dialog-content>
     <pre>{{ data | json }}</pre>
