@@ -18,7 +18,15 @@ import (
 
 const maxRepoReadRetries = 30
 
+var errNoMatchingEvent = errors.New("no matching event found")
+
 var shipyardControllerInstance *shipyardController
+
+type IShipyardController interface {
+	GetAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error)
+	GetTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error)
+	HandleIncomingEvent(event models.Event) error
+}
 
 type shipyardController struct {
 	projectRepo      db.ProjectRepo
@@ -27,7 +35,7 @@ type shipyardController struct {
 	logger           *keptncommon.Logger
 }
 
-func getShipyardControllerInstance() *shipyardController {
+func GetShipyardControllerInstance() *shipyardController {
 	if shipyardControllerInstance == nil {
 		logger := keptncommon.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
@@ -46,7 +54,7 @@ func getShipyardControllerInstance() *shipyardController {
 	return shipyardControllerInstance
 }
 
-func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
+func (sc *shipyardController) GetAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
 	projects, err := sc.projectRepo.GetProjects()
 
 	if err != nil {
@@ -64,12 +72,12 @@ func (sc *shipyardController) getAllTriggeredEvents(filter db.EventFilter) ([]mo
 	return allEvents, nil
 }
 
-func (sc *shipyardController) getTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
+func (sc *shipyardController) GetTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
 	sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events with filter: %s", printObject(filter)))
 	return sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
 }
 
-func (sc *shipyardController) handleIncomingEvent(event models.Event) error {
+func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 	// check if the status type is either 'triggered', 'started', or 'finished'
 	split := strings.Split(*event.Type, ".")
 
@@ -138,7 +146,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	} else if startedEvents == nil || len(startedEvents) == 0 {
 		msg := "no matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		sc.logger.Error(msg)
-		return errors.New(msg)
+		return errNoMatchingEvent
 	}
 
 	// persist the .finished event
@@ -172,7 +180,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		if triggeredEvents == nil || len(triggeredEvents) == 0 {
 			msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 			sc.logger.Error(msg)
-			return errors.New(msg)
+			return errNoMatchingEvent
 		}
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
 		sc.logger.Info("triggered event will be deleted")
@@ -347,7 +355,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	} else if events == nil || len(events) == 0 {
 		msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		sc.logger.Error(msg)
-		return errors.New(msg)
+		return errNoMatchingEvent
 	}
 
 	return sc.eventRepo.InsertEvent(eventScope.Project, event, db.StartedEvent)

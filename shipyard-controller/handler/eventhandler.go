@@ -16,6 +16,7 @@ type IEventHandler interface {
 }
 
 type EventHandler struct {
+	ShipyardController IShipyardController
 }
 
 type NextTaskSequence struct {
@@ -57,7 +58,6 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 		TotalCount:  0,
 		Events:      []*models.Event{},
 	}
-	sc := getShipyardControllerInstance()
 
 	var events []models.Event
 	var err error
@@ -70,9 +70,9 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if params.Project != nil && *params.Project != "" {
-		events, err = sc.getTriggeredEventsOfProject(*params.Project, eventFilter)
+		events, err = service.ShipyardController.GetTriggeredEventsOfProject(*params.Project, eventFilter)
 	} else {
-		events, err = sc.getAllTriggeredEvents(eventFilter)
+		events, err = service.ShipyardController.GetAllTriggeredEvents(eventFilter)
 	}
 
 	if err != nil {
@@ -114,11 +114,14 @@ func (service *EventHandler) HandleEvent(c *gin.Context) {
 			Message: stringp("Invalid request format"),
 		})
 	}
-	sc := getShipyardControllerInstance()
 
-	err := sc.handleIncomingEvent(*event)
+	err := service.ShipyardController.HandleIncomingEvent(*event)
 	if err != nil {
-		sendInternalServerErrorResponse(err, c)
+		if err == errNoMatchingEvent {
+			sendBadRequestResponse(err, c)
+		} else {
+			sendInternalServerErrorResponse(err, c)
+		}
 		return
 	}
 	c.Status(http.StatusOK)
@@ -126,13 +129,23 @@ func (service *EventHandler) HandleEvent(c *gin.Context) {
 }
 
 func NewEventHandler() IEventHandler {
-	return &EventHandler{}
+	return &EventHandler{
+		ShipyardController: GetShipyardControllerInstance(),
+	}
 }
 
 func sendInternalServerErrorResponse(err error, c *gin.Context) {
 	msg := err.Error()
 	c.JSON(http.StatusInternalServerError, models.Error{
-		Code:    500,
+		Code:    http.StatusBadRequest,
+		Message: &msg,
+	})
+}
+
+func sendBadRequestResponse(err error, c *gin.Context) {
+	msg := err.Error()
+	c.JSON(http.StatusBadRequest, models.Error{
+		Code:    http.StatusBadRequest,
 		Message: &msg,
 	})
 }

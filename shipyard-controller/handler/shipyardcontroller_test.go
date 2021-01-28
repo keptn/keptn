@@ -58,13 +58,13 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.triggeredEventRepo,
 			}
-			got, err := em.getAllTriggeredEvents(tt.args.filter)
+			got, err := em.GetAllTriggeredEvents(tt.args.filter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getAllTriggeredEvents() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetAllTriggeredEvents() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getAllTriggeredEvents() got = %v, want %v", got, tt.want)
+				t.Errorf("GetAllTriggeredEvents() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -111,13 +111,13 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.triggeredEventRepo,
 			}
-			got, err := em.getTriggeredEventsOfProject(tt.args.project, tt.args.filter)
+			got, err := em.GetTriggeredEventsOfProject(tt.args.project, tt.args.filter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getTriggeredEventsOfProject() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetTriggeredEventsOfProject() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getTriggeredEventsOfProject() got = %v, want %v", got, tt.want)
+				t.Errorf("GetTriggeredEventsOfProject() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -234,10 +234,11 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 		event models.Event
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name                   string
+		fields                 fields
+		args                   args
+		wantErr                bool
+		wantErrNoMatchingEvent bool
 	}{
 		{
 			name: "received started event with matching triggered event",
@@ -292,7 +293,8 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
 			},
-			wantErr: true,
+			wantErr:                true,
+			wantErrNoMatchingEvent: true,
 		},
 	}
 	for _, tt := range tests {
@@ -302,8 +304,12 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 				eventRepo:   tt.fields.eventRepo,
 				logger:      tt.fields.logger,
 			}
-			if err := em.handleStartedEvent(tt.args.event); (err != nil) != tt.wantErr {
+			err := em.handleStartedEvent(tt.args.event)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("handleStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErrNoMatchingEvent && (err != errNoMatchingEvent) {
+				t.Errorf("handleStartedEvent() expected errNoMatchingEvent but got %v", err)
 			}
 		})
 	}
@@ -657,9 +663,9 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
 	if err != nil {
-		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
 	}
 
@@ -935,9 +941,9 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
 	if err != nil {
-		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
 	}
 
@@ -1031,9 +1037,9 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
 	if err != nil {
-		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
 	}
 
@@ -1127,9 +1133,9 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
 	if err != nil {
-		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
 	}
 
@@ -1300,9 +1306,9 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.handleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
 	if err != nil {
-		t.Errorf("STEP 1 failed: handleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
 	}
 
@@ -1315,9 +1321,9 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 }
 
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
-	err := sc.handleIncomingEvent(finishedEvent)
+	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
-		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
+		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
 		return "", true
 	}
 
@@ -1372,9 +1378,9 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 }
 
 func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, taskSequence string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) bool {
-	err := sc.handleIncomingEvent(finishedEvent)
+	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
-		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
+		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
 		return true
 	}
 
@@ -1415,9 +1421,9 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 }
 
 func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string) bool {
-	err := sc.handleIncomingEvent(finishedEvent)
+	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
-		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
+		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
 		return true
 	}
 
@@ -1475,9 +1481,9 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 }
 
 func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) bool {
-	err := sc.handleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource))
+	err := sc.HandleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource))
 	if err != nil {
-		t.Errorf("STEP failed: handleIncomingEvent(%s.started) returned %v", taskName, err)
+		t.Errorf("STEP failed: HandleIncomingEvent(%s.started) returned %v", taskName, err)
 		return true
 	}
 	// check startedEvent collection -> should contain <taskName>.started event
