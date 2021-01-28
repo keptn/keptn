@@ -33,8 +33,12 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &fake.ProjectRepository{GetProjectsFunc: func() ([]string, error) {
-					return []string{"sockshop", "rockshop"}, nil
+				projectRepo: &fake.ProjectRepository{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+					return []*models.ExpandedProject{{
+						ProjectName: "sockshop",
+					}, {
+						ProjectName: "rockshop",
+					}}, nil
 				}},
 				triggeredEventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {

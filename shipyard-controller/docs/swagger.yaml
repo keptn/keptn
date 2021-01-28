@@ -50,6 +50,18 @@ definitions:
           Required: true
         type: string
     type: object
+  models.EventContext:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
   models.Events:
     properties:
       events:
@@ -66,6 +78,106 @@ definitions:
       totalCount:
         description: Total number of events
         type: number
+    type: object
+  models.ExpandedProject:
+    properties:
+      creationDate:
+        description: Creation date of the project
+        type: string
+      gitRemoteURI:
+        description: Git remote URI
+        type: string
+      gitUser:
+        description: Git User
+        type: string
+      lastEventContext:
+        $ref: '#/definitions/models.EventContext'
+        description: last event context
+      projectName:
+        description: Project name
+        type: string
+      shipyard:
+        description: Shipyard file content
+        type: string
+      shipyardVersion:
+        description: Version of the shipyard file
+        type: string
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+    type: object
+  models.ExpandedProjects:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      projects:
+        description: projects
+        items:
+          $ref: '#/definitions/models.ExpandedProject'
+        type: array
+      totalCount:
+        description: Total number of projects
+        type: number
+    type: object
+  models.ExpandedService:
+    properties:
+      creationDate:
+        description: Creation date of the service
+        type: string
+      deployedImage:
+        description: Currently deployed image
+        type: string
+      lastEventTypes:
+        additionalProperties:
+          $ref: '#/definitions/models.EventContext'
+        description: last event types
+        type: object
+      openRemediations:
+        description: open remediations
+        items:
+          $ref: '#/definitions/models.Remediation'
+        type: array
+      serviceName:
+        description: Service name
+        type: string
+    type: object
+  models.ExpandedStage:
+    properties:
+      lastEventContext:
+        $ref: '#/definitions/models.EventContext'
+        description: last event context
+      services:
+        description: services
+        items:
+          $ref: '#/definitions/models.ExpandedService'
+        type: array
+      stageName:
+        description: Stage name
+        type: string
+    type: object
+  models.Remediation:
+    properties:
+      action:
+        description: Executed action
+        type: string
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+      type:
+        description: Type of the event
+        type: string
     type: object
   operations.CreateProjectParams:
     properties:
@@ -93,12 +205,12 @@ definitions:
     type: object
   operations.CreateServiceParams:
     properties:
-      helm:
+      helmChart:
         description: |-
           shipyard
           Required: true
         type: string
-      name:
+      serviceName:
         description: |-
           name
           Required: true
@@ -205,6 +317,40 @@ paths:
       tags:
       - Events
   /project:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of all projects
+      parameters:
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      - description: Disable sync of upstream repo before reading content
+        in: query
+        name: disableUpstreamSync
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedProjects'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all projects
+      tags:
+      - Projects
     post:
       consumes:
       - application/json

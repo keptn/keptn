@@ -2,27 +2,23 @@ package db
 
 import (
 	"context"
+	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
-// ProjectMongoDBRepo retrieves projects from a mongodb collection
-type ProjectMongoDBRepo struct {
+const projectsCollectionName = "keptnProjectsMV"
+
+type MongoDBProjectsRepo struct {
 	DbConnection MongoDBConnection
 	Logger       keptncommon.LoggerInterface
 }
 
-const projectsCollectionName = "keptnProjectsMV"
-
-type project struct {
-	ProjectName string `json:"projectName"`
-}
-
-// GetProjects returns all available projects
-func (mdbrepo *ProjectMongoDBRepo) GetProjects() ([]string, error) {
-	result := []string{}
+func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, error) {
+	result := []*models.ExpandedProject{}
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -33,23 +29,24 @@ func (mdbrepo *ProjectMongoDBRepo) GetProjects() ([]string, error) {
 	projectCollection := mdbrepo.getProjectsCollection()
 	cursor, err := projectCollection.Find(ctx, bson.M{})
 	if err != nil {
-		mdbrepo.Logger.Error("Error retrieving projects from mongoDB: " + err.Error())
+		fmt.Println("Error retrieving projects from mongoDB: " + err.Error())
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		project := &project{}
-		err := cursor.Decode(project)
+		projectResult := &models.ExpandedProject{}
+		err := cursor.Decode(projectResult)
 		if err != nil {
-			mdbrepo.Logger.Error("Could not cast to *models.Project")
+			fmt.Println("Could not cast to *models.Project")
 		}
-		result = append(result, project.ProjectName)
+		result = append(result, projectResult)
 	}
 
 	return result, nil
+
 }
 
-func (mdbrepo *ProjectMongoDBRepo) getProjectsCollection() *mongo.Collection {
+func (mdbrepo *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
 	projectCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(projectsCollectionName)
 	return projectCollection
 }

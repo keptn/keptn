@@ -39,7 +39,7 @@ func GetShipyardControllerInstance() *shipyardController {
 	if shipyardControllerInstance == nil {
 		logger := keptncommon.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
-			projectRepo: &db.ProjectMongoDBRepo{
+			projectRepo: &db.MongoDBProjectsRepo{
 				Logger: logger,
 			},
 			eventRepo: &db.MongoDBEventsRepo{
@@ -63,8 +63,8 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter db.EventFilter) ([]mo
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events of project %s with filter: %s", project, printObject(filter)))
-		events, err := sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
+		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events of project %s with filter: %s", project.ProjectName, printObject(filter)))
+		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, db.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
 		}

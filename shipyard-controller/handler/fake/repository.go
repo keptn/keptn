@@ -59,12 +59,12 @@ func (mts TaskSequenceRepository) DeleteTaskSequenceCollection(project string) e
 	return mts.DeleteTaskSequenceCollectionFunc(project)
 }
 
-type getProjectsMock func() ([]string, error)
+type getProjectsMock func() ([]*models.ExpandedProject, error)
 
 type ProjectRepository struct {
 	GetProjectsFunc getProjectsMock
 }
 
-func (p ProjectRepository) GetProjects() ([]string, error) {
+func (p ProjectRepository) GetProjects() ([]*models.ExpandedProject, error) {
 	return p.GetProjectsFunc()
 }

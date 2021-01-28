@@ -1,20 +1,81 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
+	"sort"
 )
 
 type IProjectHandler interface {
+	GetAllProjects(context *gin.Context)
 	CreateProject(context *gin.Context)
 	UpdateProject(context *gin.Context)
 	DeleteProject(context *gin.Context)
 }
 
 type ProjectHandler struct {
+	ProjectManager IProjectManager
+}
+
+func NewProjectHandler(projectmanager IProjectManager) *ProjectHandler {
+	return &ProjectHandler{ProjectManager: projectmanager}
+}
+
+// GetTriggeredEvents godoc
+// @Summary Get all projects
+// @Description Get the list of all projects
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept	json
+// @Produce  json
+// @Param	pageSize			query		int			false	"The number of items to return"
+// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
+// @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
+// @Success 200 {object} models.ExpandedProjects	"ok"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project [get]
+func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
+
+	getProjectsParams := &operations.GetProjectParams{}
+	if err := c.ShouldBindJSON(getProjectsParams); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    400,
+			Message: stringp("Invalid request format: " + err.Error()),
+		})
+		return
+	}
+
+	allProjects, err := service.ProjectManager.GetProjects()
+	if err != nil {
+		sendInternalServerErrorResponse(err, c)
+		return
+	}
+
+	sort.Slice(allProjects, func(i, j int) bool {
+		return allProjects[i].ProjectName < allProjects[j].ProjectName
+	})
+
+	var payload = &models.ExpandedProjects{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Projects:    []*models.ExpandedProject{},
+	}
+
+	paginationInfo := common.Paginate(len(allProjects), getProjectsParams.PageSize, getProjectsParams.NextPageKey)
+	totalCount := len(allProjects)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Projects = append(payload.Projects, project)
+		}
+	}
+
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+	c.JSON(http.StatusOK, payload)
 }
 
 // CreateProject godoc
@@ -48,20 +109,20 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	pm, err := newProjectManager()
-	if err != nil {
+	//pm, err := newProjectManager()
+	//if err != nil {
+	//
+	//	c.JSON(http.StatusInternalServerError, models.Error{
+	//		Code:    500,
+	//		Message: stringp("Could not process request: " + err.Error()),
+	//	})
+	//	return
+	//}
 
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if secretCreated, err := pm.createProject(createProjectParams); err != nil {
+	if secretCreated, err := service.ProjectManager.CreateProject(createProjectParams); err != nil {
 		if secretCreated {
-			if err2 := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(*createProjectParams.Name)); err2 != nil {
-				pm.logger.Error(fmt.Sprintf("could not delete git credentials for project %s: %s", *createProjectParams.Name, err.Error()))
+			if err2 := service.ProjectManager.DeleteSecret(getUpstreamRepoCredsSecretName(*createProjectParams.Name)); err2 != nil {
+				//TODO//pm.logger.Error(fmt.Sprintf("could not delete git credentials for project %s: %s", *createProjectParams.Name, err.Error()))
 			}
 		}
 		if err == errProjectAlreadyExists {
@@ -110,17 +171,17 @@ func (service *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	pm, err := newProjectManager()
-	if err != nil {
+	//pm, err := newProjectManager()
+	//if err != nil {
+	//
+	//	c.JSON(http.StatusInternalServerError, models.Error{
+	//		Code:    500,
+	//		Message: stringp("Could not process request: " + err.Error()),
+	//	})
+	//	return
+	//}
 
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if err := pm.updateProject(createProjectParams); err != nil {
+	if err := service.ProjectManager.UpdateProject(createProjectParams); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
 			Message: stringp(err.Error()),
@@ -151,17 +212,7 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 		})
 	}
 
-	pm, err := newProjectManager()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	response, err := pm.deleteProject(projectName)
+	response, err := service.ProjectManager.DeleteProject(projectName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
@@ -170,8 +221,4 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response)
-}
-
-func NewProjectHandler() IProjectHandler {
-	return &ProjectHandler{}
 }

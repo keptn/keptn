@@ -153,6 +153,59 @@ var doc = `{
             }
         },
         "/project": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get the list of all projects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get all projects",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Disable sync of upstream repo before reading content",
+                        "name": "disableUpstreamSync",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedProjects"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -475,6 +528,23 @@ var doc = `{
                 }
             }
         },
+        "models.EventContext": {
+            "type": "object",
+            "properties": {
+                "eventId": {
+                    "description": "ID of the event",
+                    "type": "string"
+                },
+                "keptnContext": {
+                    "description": "Keptn Context ID of the event",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "Time of the event",
+                    "type": "string"
+                }
+            }
+        },
         "models.Events": {
             "type": "object",
             "properties": {
@@ -496,6 +566,146 @@ var doc = `{
                 "totalCount": {
                     "description": "Total number of events",
                     "type": "number"
+                }
+            }
+        },
+        "models.ExpandedProject": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "description": "Creation date of the project",
+                    "type": "string"
+                },
+                "gitRemoteURI": {
+                    "description": "Git remote URI",
+                    "type": "string"
+                },
+                "gitUser": {
+                    "description": "Git User",
+                    "type": "string"
+                },
+                "lastEventContext": {
+                    "description": "last event context",
+                    "$ref": "#/definitions/models.EventContext"
+                },
+                "projectName": {
+                    "description": "Project name",
+                    "type": "string"
+                },
+                "shipyard": {
+                    "description": "Shipyard file content",
+                    "type": "string"
+                },
+                "shipyardVersion": {
+                    "description": "Version of the shipyard file",
+                    "type": "string"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedStage"
+                    }
+                }
+            }
+        },
+        "models.ExpandedProjects": {
+            "type": "object",
+            "properties": {
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
+                    "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "projects": {
+                    "description": "projects",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedProject"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of projects",
+                    "type": "number"
+                }
+            }
+        },
+        "models.ExpandedService": {
+            "type": "object",
+            "properties": {
+                "creationDate": {
+                    "description": "Creation date of the service",
+                    "type": "string"
+                },
+                "deployedImage": {
+                    "description": "Currently deployed image",
+                    "type": "string"
+                },
+                "lastEventTypes": {
+                    "description": "last event types",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.EventContext"
+                    }
+                },
+                "openRemediations": {
+                    "description": "open remediations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Remediation"
+                    }
+                },
+                "serviceName": {
+                    "description": "Service name",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ExpandedStage": {
+            "type": "object",
+            "properties": {
+                "lastEventContext": {
+                    "description": "last event context",
+                    "$ref": "#/definitions/models.EventContext"
+                },
+                "services": {
+                    "description": "services",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedService"
+                    }
+                },
+                "stageName": {
+                    "description": "Stage name",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Remediation": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "Executed action",
+                    "type": "string"
+                },
+                "eventId": {
+                    "description": "ID of the event",
+                    "type": "string"
+                },
+                "keptnContext": {
+                    "description": "Keptn Context ID of the event",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "Time of the event",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Type of the event",
+                    "type": "string"
                 }
             }
         },
@@ -530,11 +740,11 @@ var doc = `{
         "operations.CreateServiceParams": {
             "type": "object",
             "properties": {
-                "helm": {
+                "helmChart": {
                     "description": "shipyard\nRequired: true",
                     "type": "string"
                 },
-                "name": {
+                "serviceName": {
                     "description": "name\nRequired: true",
                     "type": "string"
                 }

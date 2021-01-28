@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
+	"log"
 	"os"
 )
 
@@ -31,9 +32,13 @@ func main() {
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
+	projectManager, err := handler.NewProjectManager()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
-	projectService := handler.NewProjectHandler()
+	projectService := handler.NewProjectHandler(projectManager)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 

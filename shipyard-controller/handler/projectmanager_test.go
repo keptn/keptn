@@ -286,7 +286,7 @@ func Test_projectManager_CreateProjectTwice(t *testing.T) {
 		Name:         &projectName,
 		Shipyard:     stringp(testBase64EncodedShipyardContent),
 	}
-	_, _ = pm.createProject(createParams)
+	_, _ = pm.CreateProject(createParams)
 
 	// verify
 	expectedProjects := []*keptnapimodels.Project{
@@ -330,7 +330,7 @@ func Test_projectManager_CreateProjectTwice(t *testing.T) {
 	}
 
 	// create the project again - should return error
-	_, err := pm.createProject(createParams)
+	_, err := pm.CreateProject(createParams)
 	if err != errProjectAlreadyExists {
 		t.Errorf("expected errProjectAlreadyExists")
 	}
@@ -400,7 +400,7 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 		},
 	}
 
-	_, _ = pm.deleteProject("my-project")
+	_, _ = pm.DeleteProject("my-project")
 
 	// verify
 	expectedProjects := []*keptnapimodels.Project{}

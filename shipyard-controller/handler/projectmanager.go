@@ -11,13 +11,22 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"strings"
 )
 
 var errProjectAlreadyExists = errors.New("project already exists")
 
-func newProjectManager() (*projectManager, error) {
+type IProjectManager interface {
+	DeleteProject(projectName string) (*operations.DeleteProjectResponse, error)
+	UpdateProject(params *operations.CreateProjectParams) error
+	CreateProject(params *operations.CreateProjectParams) (bool, error)
+	DeleteSecret(name string) error
+	GetProjects() ([]*models.ExpandedProject, error)
+}
+
+func NewProjectManager() (*projectManager, error) {
 	base, err := newAPIBase()
 	if err != nil {
 		return nil, err
@@ -30,6 +39,9 @@ func newProjectManager() (*projectManager, error) {
 		taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
 			Logger: base.logger,
 		},
+		projectRepo: &db.MongoDBProjectsRepo{
+			Logger: base.logger,
+		},
 	}, nil
 }
 
@@ -37,6 +49,7 @@ type projectManager struct {
 	*apiBase
 	eventRepo        db.EventRepo
 	taskSequenceRepo db.TaskSequenceRepo
+	projectRepo      db.ProjectRepo
 }
 
 type gitCredentials struct {
@@ -45,7 +58,16 @@ type gitCredentials struct {
 	RemoteURI string `json:"remoteURI,omitempty"`
 }
 
-func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteProjectResponse, error) {
+func (pm *projectManager) GetProjects() ([]*models.ExpandedProject, error) {
+	pm.logger.Info("Getting all projects")
+	allProjects, err := pm.projectRepo.GetProjects()
+	if err != nil {
+		return nil, err
+	}
+	return allProjects, nil
+}
+
+func (pm *projectManager) DeleteProject(projectName string) (*operations.DeleteProjectResponse, error) {
 	pm.logger.Info("Deleting project " + projectName)
 	result := &operations.DeleteProjectResponse{
 		Message: "",
@@ -100,6 +122,10 @@ func (pm *projectManager) deleteProject(projectName string) (*operations.DeleteP
 	return result, nil
 }
 
+func (pm *projectManager) DeleteSecret(name string) error {
+	return nil
+}
+
 func getShipyardNotAvailableError(project string) string {
 	return fmt.Sprintf("Shipyard of project %s cannot be retrieved anymore. "+
 		"After deleting the project, the namespaces containing the services are still available. "+
@@ -128,7 +154,7 @@ func (pm *projectManager) getDeleteInfoMessage(project string) string {
 	return strings.TrimSpace(msg)
 }
 
-func (pm *projectManager) updateProject(params *operations.CreateProjectParams) error {
+func (pm *projectManager) UpdateProject(params *operations.CreateProjectParams) error {
 	pm.logger.Info(fmt.Sprintf("checking if project %s exists before updating it", *params.Name))
 	project, err := pm.projectAPI.GetProject(keptnapimodels.Project{
 		ProjectName: *params.Name,
@@ -195,7 +221,7 @@ func (pm *projectManager) updateProject(params *operations.CreateProjectParams) 
 	return nil
 }
 
-func (pm *projectManager) createProject(params *operations.CreateProjectParams) (bool, error) {
+func (pm *projectManager) CreateProject(params *operations.CreateProjectParams) (bool, error) {
 	secretCreated := false
 	keptnContext := uuid.New().String()
 	// check if the project already exists
