@@ -9,13 +9,13 @@ import (
 	"strings"
 )
 
-type MockConfigurationService struct {
+type ConfigurationService struct {
 	Projects          []*keptnapimodels.Project
 	ReceivedResources []string
 	Server            *httptest.Server
 }
 
-func NewMockConfigurationService(shipyardContent string) *httptest.Server {
+func NewConfigurationService(shipyardContent string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(shipyardContent))
@@ -23,7 +23,7 @@ func NewMockConfigurationService(shipyardContent string) *httptest.Server {
 	return ts
 }
 
-func (mcs *MockConfigurationService) get(path string) (interface{}, error) {
+func (mcs *ConfigurationService) get(path string) (interface{}, error) {
 	if strings.Contains(path, "/service/") {
 		for _, project := range mcs.Projects {
 			if strings.Contains(path, "/project/"+project.ProjectName) {
@@ -60,7 +60,7 @@ func (mcs *MockConfigurationService) get(path string) (interface{}, error) {
 	return nil, nil
 }
 
-func (mcs *MockConfigurationService) post(body interface{}, path string) (interface{}, error) {
+func (mcs *ConfigurationService) post(body interface{}, path string) (interface{}, error) {
 	marshal, _ := json.Marshal(body)
 	if strings.Contains(path, "/service") {
 		service := &keptnapimodels.Service{}
@@ -102,11 +102,11 @@ func (mcs *MockConfigurationService) post(body interface{}, path string) (interf
 	return nil, nil
 }
 
-func (mcs *MockConfigurationService) put(body interface{}, path string) (interface{}, error) {
+func (mcs *ConfigurationService) put(body interface{}, path string) (interface{}, error) {
 	return nil, nil
 }
 
-func (mcs *MockConfigurationService) delete(path string) (interface{}, error) {
+func (mcs *ConfigurationService) delete(path string) (interface{}, error) {
 	if strings.Contains(path, "/service") {
 		for _, project := range mcs.Projects {
 			if strings.Contains(path, "/project/"+project.ProjectName) {
@@ -136,8 +136,8 @@ func (mcs *MockConfigurationService) delete(path string) (interface{}, error) {
 	return nil, nil
 }
 
-func NewSimpleMockConfigurationService() *MockConfigurationService {
-	mcs := &MockConfigurationService{
+func NewSimpleMockConfigurationService() *ConfigurationService {
+	mcs := &ConfigurationService{
 		Projects:          []*keptnapimodels.Project{},
 		ReceivedResources: []string{},
 	}

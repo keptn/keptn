@@ -189,7 +189,7 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			name: "create secret succeeds",
 			fields: fields{
 				apiBase: &apiBase{
-					secretStore: &fake.MockSecretStore{
+					secretStore: &fake.SecretStore{
 						UpdateFunc: func(name string, content map[string][]byte) error {
 							return nil
 						},
@@ -212,7 +212,7 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			name: "create secret does not succeed",
 			fields: fields{
 				apiBase: &apiBase{
-					secretStore: &fake.MockSecretStore{
+					secretStore: &fake.SecretStore{
 						UpdateFunc: func(name string, content map[string][]byte) error {
 							return errors.New("")
 						},
@@ -245,9 +245,9 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 }
 
 func Test_projectManager_CreateProjectTwice(t *testing.T) {
-	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t, func(meb *fake.EventBroker, event *models.Event) {
 		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-	}, func(meb *fake.MockEventBroker) {
+	}, func(meb *fake.EventBroker) {
 
 	})
 
@@ -266,7 +266,7 @@ func Test_projectManager_CreateProjectTwice(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &fake.MockSecretStore{
+			secretStore: &fake.SecretStore{
 				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
@@ -337,9 +337,9 @@ func Test_projectManager_CreateProjectTwice(t *testing.T) {
 }
 
 func Test_projectManager_DeleteProject(t *testing.T) {
-	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t, func(meb *fake.EventBroker, event *models.Event) {
 		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-	}, func(meb *fake.MockEventBroker) {
+	}, func(meb *fake.EventBroker) {
 
 	})
 
@@ -375,7 +375,7 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &fake.MockSecretStore{
+			secretStore: &fake.SecretStore{
 				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
@@ -388,12 +388,12 @@ func Test_projectManager_DeleteProject(t *testing.T) {
 			},
 			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
 		},
-		eventRepo: &fake.MockEventRepo{
+		eventRepo: &fake.EventRepository{
 			DeleteEventCollectionsFunc: func(project string) error {
 				return nil
 			},
 		},
-		taskSequenceRepo: &fake.MockTaskSequenceRepo{
+		taskSequenceRepo: &fake.TaskSequenceRepository{
 			DeleteTaskSequenceCollectionFunc: func(project string) error {
 				return nil
 			},

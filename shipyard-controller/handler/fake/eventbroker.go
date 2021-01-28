@@ -9,16 +9,16 @@ import (
 	"testing"
 )
 
-type MockEventBroker struct {
+type EventBroker struct {
 	Server           *httptest.Server
 	ReceivedEvents   []models.Event
 	Test             *testing.T
-	HandleEventFunc  func(meb *MockEventBroker, event *models.Event)
-	VerificationFunc func(meb *MockEventBroker)
+	HandleEventFunc  func(meb *EventBroker, event *models.Event)
+	VerificationFunc func(meb *EventBroker)
 }
 
-func NewMockEventbroker(test *testing.T, handleEventFunc func(meb *MockEventBroker, event *models.Event), verificationFunc func(meb *MockEventBroker)) *MockEventBroker {
-	meb := &MockEventBroker{
+func NewEventBroker(test *testing.T, handleEventFunc func(meb *EventBroker, event *models.Event), verificationFunc func(meb *EventBroker)) *EventBroker {
+	meb := &EventBroker{
 		Server:           nil,
 		ReceivedEvents:   []models.Event{},
 		Test:             test,

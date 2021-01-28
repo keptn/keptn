@@ -33,10 +33,10 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &fake.ProjectRepoMock{GetProjectsFunc: func() ([]string, error) {
+				projectRepo: &fake.ProjectRepository{GetProjectsFunc: func() ([]string, error) {
 					return []string{"sockshop", "rockshop"}, nil
 				}},
-				triggeredEventRepo: &fake.MockEventRepo{
+				triggeredEventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
@@ -90,7 +90,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			name: "Get triggered events for project",
 			fields: fields{
 				projectRepo: nil,
-				triggeredEventRepo: &fake.MockEventRepo{
+				triggeredEventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
@@ -243,7 +243,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			name: "received started event with matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.MockEventRepo{
+				eventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						if status == db.TriggeredEvent {
 							return []models.Event{fake.GetTestTriggeredEvent()}, nil
@@ -272,7 +272,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.MockEventRepo{
+				eventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						if status == db.TriggeredEvent {
 							return nil, nil
@@ -328,7 +328,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.MockEventRepo{
+				eventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						if status == db.TriggeredEvent {
 							return nil, nil
@@ -389,7 +389,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 			name: "get event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.MockEventRepo{
+				eventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
@@ -408,7 +408,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 			name: "get event after retry",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.MockEventRepo{
+				eventRepo: &fake.EventRepository{
 					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 						if eventAvailable {
 							return []models.Event{fake.GetTestTriggeredEvent()}, nil
@@ -638,18 +638,18 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := fake.NewMockConfigurationService(testShipyardResource)
+	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
-	mockEV := fake.NewMockEventbroker(t,
-		func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
 			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
 		},
-		func(meb *fake.MockEventBroker) {
+		func(meb *fake.EventBroker) {
 
 		})
 	defer mockEV.Server.Close()
@@ -916,18 +916,18 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := fake.NewMockConfigurationService(testShipyardResource)
+	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
-	mockEV := fake.NewMockEventbroker(t,
-		func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
 			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
 		},
-		func(meb *fake.MockEventBroker) {
+		func(meb *fake.EventBroker) {
 
 		})
 	defer mockEV.Server.Close()
@@ -1012,18 +1012,18 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := fake.NewMockConfigurationService(testShipyardResource)
+	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
-	mockEV := fake.NewMockEventbroker(t,
-		func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
 			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
 		},
-		func(meb *fake.MockEventBroker) {
+		func(meb *fake.EventBroker) {
 
 		})
 	defer mockEV.Server.Close()
@@ -1108,18 +1108,18 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := fake.NewMockConfigurationService(testShipyardResource)
+	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
-	mockEV := fake.NewMockEventbroker(t,
-		func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
 			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
 		},
-		func(meb *fake.MockEventBroker) {
+		func(meb *fake.EventBroker) {
 
 		})
 	defer mockEV.Server.Close()
@@ -1283,16 +1283,16 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController()
 
-	mockCS := fake.NewMockConfigurationService(testShipyardResourceWithInvalidVersion)
+	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
 	defer mockCS.Close()
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
 
-	mockEV := fake.NewMockEventbroker(t,
-		func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
 			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
 		},
-		func(meb *fake.MockEventBroker) {
+		func(meb *fake.EventBroker) {
 
 		})
 	defer mockEV.Server.Close()
@@ -1314,7 +1314,7 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 	fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "", nil)
 }
 
-func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.MockEventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
+func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
 	err := sc.handleIncomingEvent(finishedEvent)
 	if err != nil {
 		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -1371,7 +1371,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	return triggeredID, false
 }
 
-func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, taskSequence string, mockEV *fake.MockEventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) bool {
+func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, taskSequence string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) bool {
 	err := sc.handleIncomingEvent(finishedEvent)
 	if err != nil {
 		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -1414,7 +1414,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 	return false
 }
 
-func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.MockEventBroker, nextStage string) bool {
+func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string) bool {
 	err := sc.handleIncomingEvent(finishedEvent)
 	if err != nil {
 		t.Errorf("STEP failed: handleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -1599,7 +1599,7 @@ func getTestShipyardController() *shipyardController {
 
 	em := &shipyardController{
 		projectRepo: nil,
-		eventRepo: &fake.MockEventRepo{
+		eventRepo: &fake.EventRepository{
 			GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
 				if status == db.TriggeredEvent {
 					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
@@ -1655,7 +1655,7 @@ func getTestShipyardController() *shipyardController {
 				return nil
 			},
 		},
-		taskSequenceRepo: &fake.MockTaskSequenceRepo{
+		taskSequenceRepo: &fake.TaskSequenceRepository{
 			GetTaskSequenceFund: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
 				for _, ts := range taskSequenceCollection {
 					if ts.TriggeredEventID == triggeredID {

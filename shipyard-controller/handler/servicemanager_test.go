@@ -17,9 +17,9 @@ func Test_serviceManager_createService(t *testing.T) {
 	projectName := "my-project"
 	serviceName := "my-service"
 
-	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t, func(meb *fake.EventBroker, event *models.Event) {
 		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-	}, func(meb *fake.MockEventBroker) {
+	}, func(meb *fake.EventBroker) {
 
 	})
 
@@ -55,7 +55,7 @@ func Test_serviceManager_createService(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &fake.MockSecretStore{
+			secretStore: &fake.SecretStore{
 				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
@@ -133,9 +133,9 @@ func Test_serviceManager_createService(t *testing.T) {
 func Test_serviceManager_deleteService(t *testing.T) {
 	projectName := "my-project"
 	serviceName := "my-service"
-	mockEV := fake.NewMockEventbroker(t, func(meb *fake.MockEventBroker, event *models.Event) {
+	mockEV := fake.NewEventBroker(t, func(meb *fake.EventBroker, event *models.Event) {
 		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-	}, func(meb *fake.MockEventBroker) {
+	}, func(meb *fake.EventBroker) {
 
 	})
 
@@ -186,7 +186,7 @@ func Test_serviceManager_deleteService(t *testing.T) {
 			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
 			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
 			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &fake.MockSecretStore{
+			secretStore: &fake.SecretStore{
 				CreateFunc: func(name string, content map[string][]byte) error {
 					return nil
 				},
