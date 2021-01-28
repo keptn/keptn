@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -153,11 +154,13 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 			iCli.Namespace = namespace
 			iCli.ReleaseName = releaseName
 			iCli.Wait = true
+			iCli.Timeout = 10 * time.Minute
 			release, err = iCli.Run(ch, vals)
 		} else {
 			iCli := action.NewUpgrade(cfg)
 			iCli.Namespace = namespace
 			iCli.Wait = true
+			iCli.Timeout = 10 * time.Minute
 			iCli.ReuseValues = true
 			release, err = iCli.Run(releaseName, ch, vals)
 		}
