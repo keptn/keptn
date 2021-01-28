@@ -85,17 +85,19 @@ func doUpgradePreRunCheck() error {
 		return err
 	}
 
-	res, err := isUpgradeCompatible()
-	if err != nil {
-		return err
-	}
-	if !res {
-		installedKeptnVerison, err := getInstalledKeptnVersion()
+	if !*upgradeParams.SkipUpgradeCheck {
+		res, err := isUpgradeCompatible()
 		if err != nil {
 			return err
 		}
-		return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
-			installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+		if !res {
+			installedKeptnVerison, err := getInstalledKeptnVersion()
+			if err != nil {
+				return err
+			}
+			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
+				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+		}
 	}
 
 	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
@@ -185,6 +187,7 @@ func init() {
 		"", "URL of the Keptn Helm Chart repository")
 	upgraderCmd.Flags().MarkHidden("chart-repo")
 	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
+	upgradeParams.SkipUpgradeCheck = upgraderCmd.Flags().BoolP("skip-upgrade-check", "", false, "Skip upgrade compatibility check, useful for nightly version upgrades or upgrades to preview versions")
 }
 
 func doUpgrade() error {
