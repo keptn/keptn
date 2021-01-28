@@ -5,8 +5,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"os"
 )
 
@@ -34,19 +32,19 @@ func main() {
 	}
 
 	engine := gin.Default()
+	apiV1 := engine.Group("/v1")
 	projectService := handler.NewProjectHandler()
 	projectController := controller.NewProjectController(projectService)
-	projectController.Inject(engine)
+	projectController.Inject(apiV1)
 
 	serviceHandler := handler.NewServiceHandler()
 	serviceController := controller.NewServiceController(serviceHandler)
-	serviceController.Inject(engine)
+	serviceController.Inject(apiV1)
 
 	eventHandler := handler.NewEventHandler()
 	eventController := controller.NewEventController(eventHandler)
-	eventController.Inject(engine)
+	eventController.Inject(apiV1)
 
-	engine.GET("/swagger-ui/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
 }
