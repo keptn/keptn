@@ -5,8 +5,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"os"
 )
 
@@ -46,7 +44,6 @@ func main() {
 	eventController := controller.NewEventController(eventHandler)
 	eventController.Inject(engine)
 
-	engine.GET("/swagger-ui/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
 }
