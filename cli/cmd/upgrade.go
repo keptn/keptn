@@ -98,6 +98,8 @@ func doUpgradePreRunCheck() error {
 			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
 				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
 		}
+	}else{
+		logging.PrintLog("Skipping upgrade compatibility check!",logging.InfoLevel)
 	}
 
 	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
