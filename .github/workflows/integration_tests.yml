@@ -293,6 +293,7 @@ jobs:
           verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "statistics-service" ${KEPTN_NAMESPACE}
 
           # verify deployments for continuous delivery
           if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
