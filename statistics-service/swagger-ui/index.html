@@ -37,7 +37,6 @@
     <script src="./swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
-      const prefixPath = ""
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
         url: "swagger.yaml",
@@ -50,28 +49,12 @@
         plugins: [
           SwaggerUIBundle.plugins.DownloadUrl
         ],
-        layout: "StandaloneLayout",
-        urls: [{
-          url: prefixPath + "/api/swagger-ui/swagger.yaml",
-          name: "api-service"
-        }, {
-          url: prefixPath + "/api/configuration-service/swagger-ui/swagger.yaml",
-          name: "configuration-service"
-        }, {
-          url: prefixPath + "/api/mongodb-datastore/swagger-ui/swagger.yaml",
-          name: "mongodb-datastore"
-        }, {
-          url: prefixPath + "/api/shipyard-controller/swagger-ui/swagger.yaml",
-          name: "shipyard-controller"
-        }, {
-          url: prefixPath + "/api/statistics/swagger-ui/swagger.yaml",
-          name: "statistics"
-        }],
+        layout: "StandaloneLayout"
       })
       // End Swagger UI call region
 
       window.ui = ui
     }
-    </script>
+  </script>
   </body>
 </html>

@@ -70,3 +70,7 @@ lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
 
+statisticsService:
+  image:
+    repository: docker.io/keptn/statistics-service
+
