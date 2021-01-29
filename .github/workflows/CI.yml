@@ -390,14 +390,6 @@ jobs:
         uses: actions/setup-node@v2.1.4
         with:
           node-version: 12.x
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       - name: Install npm libs
         run: |
           npm install -g codecov
@@ -436,14 +428,6 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
         uses: actions/checkout@v2
-
-      # cache go modules
-      - uses: actions/cache@v2.1.4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-cli
 
       - name: Test cli
         run: make test-unit-cli # go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
