@@ -288,6 +288,14 @@ jobs:
         with:
           env-file: .ci_env
 
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Test api
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
         run: go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
@@ -360,12 +368,18 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install npm libs
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Checkout Code
-        uses: actions/checkout@v2
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v2
@@ -401,6 +415,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
+
       - name: Test cli
         run: go test -race -v ./...
         working-directory: ./cli
@@ -427,7 +449,13 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
         uses: actions/checkout@v2
-
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
       - name: Build cli
         env:
           PLATFORM: "${{ matrix.platform }}"
