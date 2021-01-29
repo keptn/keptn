@@ -5,7 +5,14 @@ coverage:
         # basic
         target: auto
         threshold: 2% # allow cov to drop by 2% (just in case)
+      microservices:
+        # basic
+        target: auto
+        threshold: 2% # allow cov to drop by 2% (just in case)
       bridge:
+        target: auto
+        threshold: 2% # allow cov to drop by 2% (just in case)
+      cli:
         target: auto
         threshold: 2% # allow cov to drop by 2% (just in case)
     patch:
@@ -18,3 +25,38 @@ ignore:
   - "**/*.md"         # ignore all markdown files, those are not relevant for building/testing
   - "**/Dockerfile"   # ignore Dockerfiles, those are build with travis
   - "**/*.sh"         # ignore shell scripts
+
+comment:
+  show_carryforward_flags: true # see https://docs.codecov.io/docs/carryforward-flags
+
+flags:
+  microservices:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  api:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  bridge:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  cli:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  configuration-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  distributor:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  gatekeeper-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  helm-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  jmeter-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  lighthouse-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  mongodb-datastore:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  openshift-route-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  remediation-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  shipyard-controller:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
+  statistics-service:
+    carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
