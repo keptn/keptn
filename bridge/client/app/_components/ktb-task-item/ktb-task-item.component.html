@@ -67,6 +67,18 @@
       </table>
     </div>
   </ktb-expandable-tile-header>
+  <div *ngIf="task.isApproval() && task.isApprovalPending()">
+    <table>
+      <tr>
+        <td><p class="m-0">Currently deployed artifact: </p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+      </tr>
+      <tr>
+        <td><p class="m-0">Deployable artifact: </p></td>
+        <td><ktb-approval-item [event]="task"></ktb-approval-item></td>
+      </tr>
+    </table>
+  </div>
   <div class="sub-task-item pt-2 pb-2" #subTaskRef *ngFor="let subTask of task.traces">
     <div fxLayout="row">
       <div fxFlex>
