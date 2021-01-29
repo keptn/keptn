@@ -35,7 +35,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _sequencesTimer: Subscription = Subscription.EMPTY;
 
   public project$: Observable<Project>;
-  public openApprovals$: Observable<Trace[]>;
 
   public currentRoot: Root;
   public currentSequence: Root;
@@ -50,12 +49,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public eventId: string;
 
   public view: string = 'services';
-  public selectedStage: Stage = null;
 
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
-
-  public filterEventType: string = null;
 
   public integrationsExternalDetails = null;
 
@@ -105,14 +101,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public keptnInfo: any;
   public currentTime: String;
 
-  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
-  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
-  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
-
-  public overlayConfig: DtOverlayConfig = {
-    pinnable: true
-  };
-
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService, private clipboard: ClipboardService) { }
 
   ngOnInit() {
@@ -159,7 +147,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               return project.projectName === params['projectName'];
             }) : null)
           );
-          this.openApprovals$ = this.dataService.openApprovals;
+
 
           this.project$
             .pipe(takeUntil(this.unsubscribe$))
@@ -348,10 +336,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.dataService.loadProjects();
   }
 
-  trackStage(index: number, stage: Stage) {
-    return stage.stageName;
-  }
-
   selectView(view) {
     this.view = view;
     if(this.view == 'sequences') {
@@ -417,37 +401,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         });
         return res;
       });
-  }
-
-  selectStage($event, stage: Stage, filterType?: string) {
-    this.problemFilterEventButton?.deselect();
-    this.evaluationFilterEventButton?.deselect();
-    this.approvalFilterEventButton?.deselect();
-
-    this.selectedStage = stage;
-    this.filterEventType = filterType;
-    $event.stopPropagation();
-  }
-
-  selectFilterEvent($event) {
-    if($event.isUserInput)
-      this.filterEventType = $event.source.selected ? $event.value : null;
-  }
-
-  countOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
-    return this.getOpenApprovals(openApprovals, project, stage, service).length;
-  }
-
-  getOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
-    return openApprovals.filter(approval => approval.data.project == project.projectName && approval.data.stage == stage.stageName && (!service || approval.data.service == service.serviceName));
-  }
-
-  findFailedRootEvent(failedRootEvents: Root[], service: Service) {
-    return failedRootEvents.find(root => root.data.service == service.serviceName);
-  }
-
-  findProblemEvent(problemEvents: Root[], service: Service) {
-    return problemEvents.find(root => root?.data.service == service.serviceName);
   }
 
   loadIntegrations() {
