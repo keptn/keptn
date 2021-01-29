@@ -1,4 +1,4 @@
-<div class="container" fxFlex="66" fxLayout="row" fxLayoutGap="15px">
+<div class="container" fxFlex="64" fxLayout="row" fxLayoutGap="15px">
   <div fxFlex fxLayout="column" fxLayoutGap="15px">
     <div>
       <dt-info-group>
@@ -48,7 +48,7 @@
     </div>
   </div>
 </div>
-<div class="container dark" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage">
+<div class="container dark" fxFlex="36" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage">
   <ng-container *ngIf="project.getLatestFailedRootEvents(selectedStage) as failedRootEvents">
     <ng-container *ngIf="project.getLatestProblemEvents(selectedStage) as problemEvents">
       <ng-container *ngIf="openApprovals$ | async as openApprovals">
