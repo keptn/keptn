@@ -39,11 +39,12 @@ class Trace {
       deploymentURIsPublic: string[];
       deploymentstrategy: string;
       gitCommit: string;
-    }
+    };
 
     deploymentURILocal: string;
     deploymentURIPublic: string;
 
+    message: string;
 
     labels: Map<string, string>;
     result: string;
