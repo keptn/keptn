@@ -76,6 +76,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
 import { EvaluationBoardComponent } from "./evaluation-board/evaluation-board.component";
 import { KtbSequenceTimelineComponent } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.component';
+import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -108,6 +109,7 @@ registerLocaleData(localeEn, 'en');
     KtbCopyToClipboardComponent,
     KtbMarkdownComponent,
     KtbSequenceTimelineComponent,
+    KtbEnvironmentViewComponent,
   ],
   imports: [
     BrowserModule,
