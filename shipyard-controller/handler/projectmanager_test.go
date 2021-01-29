@@ -20,7 +20,7 @@ const testBase64EncodedShipyardContentWithInvalidStage = `YXBpVmVyc2lvbjogc3BlYy
 
 func Test_validateUpdateProjectParams(t *testing.T) {
 	type args struct {
-		createProjectParams *operations.CreateProjectParams
+		updateProjectparams *operations.UpdateProjectParams
 	}
 	tests := []struct {
 		name    string
@@ -30,9 +30,8 @@ func Test_validateUpdateProjectParams(t *testing.T) {
 		{
 			name: "should contain valid Keptn entity name",
 			args: args{
-				createProjectParams: &operations.CreateProjectParams{
-					Name:     stringp("my-project"),
-					Shipyard: nil,
+				updateProjectparams: &operations.UpdateProjectParams{
+					Name: stringp("my-project"),
 				},
 			},
 			wantErr: false,
@@ -40,9 +39,8 @@ func Test_validateUpdateProjectParams(t *testing.T) {
 		{
 			name: "should contain valid Keptn entity name",
 			args: args{
-				createProjectParams: &operations.CreateProjectParams{
-					Name:     stringp("my@project"),
-					Shipyard: nil,
+				updateProjectparams: &operations.UpdateProjectParams{
+					Name: stringp("my@project"),
 				},
 			},
 			wantErr: true,
@@ -50,7 +48,7 @@ func Test_validateUpdateProjectParams(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := validateUpdateProjectParams(tt.args.createProjectParams); (err != nil) != tt.wantErr {
+			if err := validateUpdateProjectParams(tt.args.updateProjectparams); (err != nil) != tt.wantErr {
 				t.Errorf("validateUpdateProjectParams() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -177,7 +175,9 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 		apiBase *apiBase
 	}
 	type args struct {
-		params *operations.CreateProjectParams
+		projectName    string
+		gitCredentials gitCredentials
+		//params *operations.CreateProjectParams
 	}
 	tests := []struct {
 		name    string
@@ -198,12 +198,11 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 				},
 			},
 			args: args{
-				params: &operations.CreateProjectParams{
-					GitRemoteURL: "my-url",
-					GitToken:     "my-token",
-					GitUser:      "my-user",
-					Name:         stringp("test-project"),
-					Shipyard:     nil,
+				projectName: "test-project",
+				gitCredentials: gitCredentials{
+					User:      "my-user",
+					Token:     "my-token",
+					RemoteURI: "my-url",
 				},
 			},
 			wantErr: false,
@@ -221,12 +220,11 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 				},
 			},
 			args: args{
-				params: &operations.CreateProjectParams{
-					GitRemoteURL: "my-url",
-					GitToken:     "my-token",
-					GitUser:      "my-user",
-					Name:         stringp("test-project"),
-					Shipyard:     nil,
+				projectName: "my-project",
+				gitCredentials: gitCredentials{
+					User:      "my-user",
+					Token:     "my-token",
+					RemoteURI: "my-url",
 				},
 			},
 			wantErr: true,
@@ -237,7 +235,7 @@ func Test_projectManager_createUpstreamRepoCredentials(t *testing.T) {
 			pm := &projectManager{
 				apiBase: tt.fields.apiBase,
 			}
-			if err := pm.createUpstreamRepoCredentials(tt.args.params); (err != nil) != tt.wantErr {
+			if err := pm.createUpstreamRepoCredentials(tt.args.projectName, tt.args.gitCredentials); (err != nil) != tt.wantErr {
 				t.Errorf("createUpstreamRepoCredentials() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

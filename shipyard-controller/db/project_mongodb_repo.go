@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -43,7 +44,90 @@ func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, er
 	}
 
 	return result, nil
+}
 
+func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
+	err := mdbrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	projectCollection := mdbrepo.getProjectsCollection()
+	result := projectCollection.FindOne(ctx, bson.M{"projectName": projectName})
+	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	projectResult := &models.ExpandedProject{}
+	err = result.Decode(projectResult)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Could not cast %v to *models.Project\n", result))
+		return nil, err
+	}
+	return projectResult, nil
+}
+
+func (mbdrepo *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) error {
+	err := mbdrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	prjInterface := transformProjectToInterface(project)
+
+	projectCollection := mbdrepo.getProjectsCollection()
+	_, err = projectCollection.InsertOne(ctx, prjInterface)
+	if err != nil {
+		fmt.Println("Could not create project " + project.ProjectName + ": " + err.Error())
+	}
+	return nil
+}
+
+func (mbdrepo *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
+	err := mbdrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	prjInterface := transformProjectToInterface(project)
+	projectCollection := mbdrepo.getProjectsCollection()
+	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
+	if err != nil {
+		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
+		return err
+	}
+	return nil
+}
+
+func (mdbrepo *MongoDBProjectsRepo) DeleteProject(projectName string) error {
+	err := mdbrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	projectCollection := mdbrepo.getProjectsCollection()
+	_, err = projectCollection.DeleteMany(ctx, bson.M{"projectName": projectName})
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Could not delete project %s : %s\n", projectName, err.Error()))
+		return err
+	}
+	fmt.Println("Deleted project " + projectName)
+	return nil
+}
+
+func transformProjectToInterface(prj *models.ExpandedProject) interface{} {
+	// marshall and unmarshall again because for some reason the json tags of the golang struct of the project type are not considered
+	marshal, _ := json.Marshal(prj)
+	var prjInterface interface{}
+	json.Unmarshal(marshal, &prjInterface)
+	return prjInterface
 }
 
 func (mdbrepo *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {

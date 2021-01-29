@@ -2,9 +2,21 @@ package operations
 
 import "net/http"
 
-// CreateProjectParams contains all the bound params for the CreateProject operation
-// typically these are obtained from a http.Request
-//
+type UpdateProjectParams struct {
+	// git remote URL
+	GitRemoteURL string `json:"gitRemoteURL,omitempty"`
+
+	// git token
+	GitToken string `json:"gitToken,omitempty"`
+
+	// git user
+	GitUser string `json:"gitUser,omitempty"`
+
+	// name
+	// Required: true
+	Name *string `json:"name"`
+}
+
 // swagger:parameters handle event
 type CreateProjectParams struct {
 
@@ -26,9 +38,6 @@ type CreateProjectParams struct {
 	Shipyard *string `json:"shipyard"`
 }
 
-// GetProjectParams contains all the bound params for the get project operation
-// typically these are obtained from a http.Request
-//
 // swagger:parameters GetProject
 type GetProjectParams struct {
 
@@ -53,11 +62,25 @@ type GetProjectParams struct {
 	PageSize *int64
 }
 
-// CreateProjectResponse contains information about the result of the CreateProject operation
+// swagger:parameters GetProjectProjectName
+type GetProjectProjectNameParams struct {
+
+	// HTTP Request Object
+	HTTPRequest *http.Request `json:"-"`
+
+	/*Name of the project
+	  Required: true
+	  In: path
+	*/
+	ProjectName string
+}
+
 type CreateProjectResponse struct {
 }
 
-// DeleteProjectResponse contains information about the deleted project
+type UpdateProjectResponse struct {
+}
+
 type DeleteProjectResponse struct {
 	Message string `json:"message"`
 }

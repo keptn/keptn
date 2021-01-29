@@ -60,11 +60,35 @@ func (mts TaskSequenceRepository) DeleteTaskSequenceCollection(project string) e
 }
 
 type getProjectsMock func() ([]*models.ExpandedProject, error)
+type createProjectMock func(*models.ExpandedProject) error
+type deleteProjectMock func(string) error
+type getProjectMock func(string) (*models.ExpandedProject, error)
+type updateProjectMock func(project *models.ExpandedProject) error
 
 type ProjectRepository struct {
-	GetProjectsFunc getProjectsMock
+	GetProjectsFunc   getProjectsMock
+	GetProjectFunc    getProjectMock
+	CreateProjectFunc createProjectMock
+	DeleteProjectFunc deleteProjectMock
+	UpdateProjectFunc updateProjectMock
 }
 
 func (p ProjectRepository) GetProjects() ([]*models.ExpandedProject, error) {
 	return p.GetProjectsFunc()
+}
+
+func (p ProjectRepository) CreateProject(project *models.ExpandedProject) error {
+	return p.CreateProjectFunc(project)
+}
+
+func (p ProjectRepository) DeleteProject(projectName string) error {
+	return p.DeleteProjectFunc(projectName)
+}
+
+func (p ProjectRepository) GetProject(projectName string) (*models.ExpandedProject, error) {
+	return p.GetProjectFunc(projectName)
+}
+
+func (p ProjectRepository) UpdateProject(project *models.ExpandedProject) error {
+	return p.UpdateProjectFunc(project)
 }

@@ -11,6 +11,7 @@ import (
 
 type IProjectHandler interface {
 	GetAllProjects(context *gin.Context)
+	GetProjectByName(context *gin.Context)
 	CreateProject(context *gin.Context)
 	UpdateProject(context *gin.Context)
 	DeleteProject(context *gin.Context)
@@ -39,8 +40,8 @@ func NewProjectHandler(projectmanager IProjectManager) *ProjectHandler {
 // @Router /project [get]
 func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
 
-	getProjectsParams := &operations.GetProjectParams{}
-	if err := c.ShouldBindJSON(getProjectsParams); err != nil {
+	params := &operations.GetProjectParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
 			Message: stringp("Invalid request format: " + err.Error()),
@@ -65,7 +66,7 @@ func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
 		Projects:    []*models.ExpandedProject{},
 	}
 
-	paginationInfo := common.Paginate(len(allProjects), getProjectsParams.PageSize, getProjectsParams.NextPageKey)
+	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
 	totalCount := len(allProjects)
 	if paginationInfo.NextPageKey < int64(totalCount) {
 		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
@@ -76,6 +77,47 @@ func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
 	payload.TotalCount = float64(totalCount)
 	payload.NextPageKey = paginationInfo.NewNextPageKey
 	c.JSON(http.StatusOK, payload)
+}
+
+// GetTriggeredEvents godoc
+// @Summary Get a project by name
+// @Description Get a project by its name
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept	json
+// @Produce  json
+// @Param	projectName		path	string	true	"The name of the project"
+// @Success 200 {object} models.ExpandedProject	"ok"
+// @Failure 404 {object} models.Error "Not found"
+// @Failure 500 {object} models.Error "Internal Error)
+// @Router /project/{projectName} [get]
+func (service *ProjectHandler) GetProjectByName(c *gin.Context) {
+	params := &operations.GetProjectProjectNameParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
+		c.JSON(http.StatusBadRequest, models.Error{
+			Code:    http.StatusBadRequest,
+			Message: stringp("Invalid request format: " + err.Error()),
+		})
+		return
+	}
+
+	project, err := service.ProjectManager.GetProjectByName(params.ProjectName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    http.StatusInternalServerError,
+			Message: stringp(err.Error()),
+		})
+		return
+	}
+	if project == nil {
+		c.JSON(http.StatusInternalServerError, models.Error{
+			Code:    http.StatusInternalServerError,
+			Message: stringp("Project not found: " + params.ProjectName),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, project)
+
 }
 
 // CreateProject godoc
@@ -92,7 +134,7 @@ func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Router /project [post]
 func (service *ProjectHandler) CreateProject(c *gin.Context) {
 
-	// validate the input
+	// validate input
 	createProjectParams := &operations.CreateProjectParams{}
 	if err := c.ShouldBindJSON(createProjectParams); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
@@ -108,16 +150,6 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 		})
 		return
 	}
-
-	//pm, err := newProjectManager()
-	//if err != nil {
-	//
-	//	c.JSON(http.StatusInternalServerError, models.Error{
-	//		Code:    500,
-	//		Message: stringp("Could not process request: " + err.Error()),
-	//	})
-	//	return
-	//}
 
 	if secretCreated, err := service.ProjectManager.CreateProject(createProjectParams); err != nil {
 		if secretCreated {
@@ -148,22 +180,22 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 200 {object} operations.CreateProjectResponse	"ok"
+// @Param   project     body    operations.UpdateProjectParams     true        "Project"
+// @Success 200 {object} operations.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
 func (service *ProjectHandler) UpdateProject(c *gin.Context) {
 	// validate the input
-	createProjectParams := &operations.CreateProjectParams{}
-	if err := c.ShouldBindJSON(createProjectParams); err != nil {
+	params := &operations.UpdateProjectParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
 			Message: stringp("Invalid request format: " + err.Error()),
 		})
 		return
 	}
-	if err := validateUpdateProjectParams(createProjectParams); err != nil {
+	if err := validateUpdateProjectParams(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
 			Message: stringp("Could not validate payload: " + err.Error()),
@@ -171,17 +203,7 @@ func (service *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	//pm, err := newProjectManager()
-	//if err != nil {
-	//
-	//	c.JSON(http.StatusInternalServerError, models.Error{
-	//		Code:    500,
-	//		Message: stringp("Could not process request: " + err.Error()),
-	//	})
-	//	return
-	//}
-
-	if err := service.ProjectManager.UpdateProject(createProjectParams); err != nil {
+	if err := service.ProjectManager.UpdateProject(params); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
 			Message: stringp(err.Error()),

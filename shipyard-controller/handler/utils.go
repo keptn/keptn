@@ -52,12 +52,12 @@ func validateCreateProjectParams(createProjectParams *operations.CreateProjectPa
 	return nil
 }
 
-func validateUpdateProjectParams(createProjectParams *operations.CreateProjectParams) error {
+func validateUpdateProjectParams(updateProjectParams *operations.UpdateProjectParams) error {
 
-	if createProjectParams.Name == nil || *createProjectParams.Name == "" {
+	if updateProjectParams.Name == nil || *updateProjectParams.Name == "" {
 		return errors.New("project name missing")
 	}
-	if !keptncommon.ValidateKeptnEntityName(*createProjectParams.Name) {
+	if !keptncommon.ValidateKeptnEntityName(*updateProjectParams.Name) {
 		return errors.New("provided project name is not a valid Keptn entity name")
 	}
 
