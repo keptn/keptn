@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/remediation-service/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,12 +12,12 @@ import (
 // RemediationMongoDBRepo godoc
 type RemediationMongoDBRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptncommon.LoggerInterface
 }
 
 const remediationCollectionNameSuffix = "-remediations"
 
-func (mdbrepo *RemediationMongoDBRepo) GetRemediation(project, keptnContext string) (*models.Remediation, error) {
+func (mdbrepo *RemediationMongoDBRepo) GetRemediations(keptnContext, project string) ([]*models.Remediation, error) {
+	result := []*models.Remediation{}
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -27,24 +26,24 @@ func (mdbrepo *RemediationMongoDBRepo) GetRemediation(project, keptnContext stri
 	defer cancel()
 
 	collection := mdbrepo.getRemediationCollection(project)
-	res := collection.FindOne(ctx, bson.M{"keptnContext": keptnContext})
-	if res.Err() != nil {
-		if res.Err() == mongo.ErrNoDocuments {
+	cursor, err := collection.Find(ctx, bson.M{"keptnContext": keptnContext})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		mdbrepo.Logger.Error("Error retrieving projects from mongoDB: " + err.Error())
-		return nil, err
+		return nil, fmt.Errorf("error retrieving projects from mongoDB: %s", err.Error())
 	}
 
-	remediation := &models.Remediation{}
-	err = res.Decode(remediation)
-
-	if err != nil {
-		mdbrepo.Logger.Error("Could not cast to *models.Remediation: " + err.Error())
-		return nil, err
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		remediation := &models.Remediation{}
+		if err := cursor.Decode(remediation); err != nil {
+			return nil, fmt.Errorf("could not cast to *models.Remediation: %s", err.Error())
+		}
+		result = append(result, remediation)
 	}
 
-	return remediation, nil
+	return result, nil
 }
 
 func (mdbrepo *RemediationMongoDBRepo) CreateRemediation(project string, remediation *models.Remediation) error {
@@ -59,8 +58,7 @@ func (mdbrepo *RemediationMongoDBRepo) CreateRemediation(project string, remedia
 
 	_, err = collection.InsertOne(ctx, remediation)
 	if err != nil {
-		mdbrepo.Logger.Error("Could not store remediation for context" + remediation.KeptnContext + ": " + err.Error())
-		return err
+		return fmt.Errorf("could not store remediation for context %s: %s", remediation.KeptnContext, err.Error())
 	}
 	return nil
 }
@@ -77,20 +75,17 @@ func (mdbrepo *RemediationMongoDBRepo) DeleteRemediation(keptnContext, project s
 
 	_, err = collection.DeleteMany(ctx, bson.M{"keptnContext": keptnContext})
 	if err != nil {
-		mdbrepo.Logger.Error("Could not delete remediation  with context " + keptnContext + " in stage: " + err.Error())
-		return err
+		return fmt.Errorf("Could not delete remediation  with context %s: %s", keptnContext, err.Error())
 	}
 	return nil
 }
 
 func (mdbrepo *RemediationMongoDBRepo) deleteCollection(collection *mongo.Collection) error {
-	mdbrepo.Logger.Debug(fmt.Sprintf("Delete collection: %s", collection.Name()))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	err := collection.Drop(ctx)
 	if err != nil {
-		err := fmt.Errorf("failed to drop collection %s: %v", collection.Name(), err)
-		return err
+		return fmt.Errorf("failed to drop collection %s: %v", collection.Name(), err)
 	}
 	return nil
 }

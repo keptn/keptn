@@ -2,31 +2,17 @@ package models
 
 type Remediation struct {
 	// Executed action
-	Action string `json:"action,omitempty"`
+	Action string `json:"action,omitempty" bson:"action"`
 
 	// ID of the event
-	EventID string `json:"eventId,omitempty"`
+	EventID string `json:"eventId,omitempty" bson:"eventId"`
 
 	// Keptn Context ID of the event
-	KeptnContext string `json:"keptnContext,omitempty"`
+	KeptnContext string `json:"keptnContext,omitempty" bson:"keptnContext"`
 
 	// Time of the event
-	Time string `json:"time,omitempty"`
+	Time string `json:"time,omitempty" bson:"time"`
 
 	// Type of the event
-	Type string `json:"type,omitempty"`
-}
-
-type RemediationList struct {
-	// Pointer to next page, base64 encoded
-	NextPageKey string `json:"nextPageKey,omitempty"`
-
-	// Size of returned page
-	PageSize float64 `json:"pageSize,omitempty"`
-
-	// remediations
-	Remediations []*Remediation `json:"remediations"`
-
-	// Total number of stages
-	TotalCount float64 `json:"totalCount,omitempty"`
+	Type string `json:"type,omitempty" bson:"type"`
 }

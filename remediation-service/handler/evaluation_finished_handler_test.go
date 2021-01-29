@@ -3,42 +3,36 @@ package handler
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-test/deep"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/remediation-service/handler"
+	"github.com/keptn/keptn/remediation-service/handler/fake"
+	"github.com/keptn/keptn/remediation-service/models"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 )
 
-var previousRemediations = `{
-    "nextPageKey": "0",
-    "remediations": [
-        {
-            "eventId": "test-id-1",
-            "keptnContext": "` + testKeptnContext + `",
-            "time": "1",
-            "type": "` + keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName) + `"
-        },
-		{
-            "eventId": "test-id-2",
-            "keptnContext": "` + testKeptnContext + `",
-            "time": "2",
-			"action": "togglefeature",
-            "type": "` + keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName) + `"
-        }
-    ],
-    "totalCount": 2
-}`
+var previousRemediations = []*models.Remediation{
+	{
+		Action:       "",
+		EventID:      "test-id-1",
+		KeptnContext: testKeptnContext,
+		Time:         "1",
+		Type:         keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName),
+	},
+	{
+		Action:       "togglefeature",
+		EventID:      "test-id-2",
+		KeptnContext: testKeptnContext,
+		Time:         "2",
+		Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
+	},
+}
 
-const emptyRemediations = `{
-    "nextPageKey": "0",
-    "remediations": [
-    ],
-    "totalCount": 2
-}`
+var emptyRemediations = []*models.Remediation{}
 
 const previousRemediationStatusChangedEvent = `{
     "nextPageKey": "0",
@@ -179,14 +173,14 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 		Event cloudevents.Event
 	}
 	tests := []struct {
-		name                               string
-		fields                             fields
-		wantErr                            bool
-		returnedRemediationYamlResource    string
-		expectedRemediationOnConfigService []*handler.Remediation
-		expectedEventOnEventbroker         []*keptnapi.KeptnContextExtendedCE
-		returnedRemediations               string
-		returnedEvents                     map[string]string
+		name                            string
+		fields                          fields
+		wantErr                         bool
+		returnedRemediationYamlResource string
+		expectedCreatedRemediations     []*models.Remediation
+		expectedEventOnEventbroker      []*keptnapi.KeptnContextExtendedCE
+		returnedRemediations            []*models.Remediation
+		returnedEvents                  map[string]string
 	}{
 		{
 			name: "get and send next action",
@@ -195,12 +189,11 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediationAndMultipleActions,
-			expectedRemediationOnConfigService: []*handler.Remediation{
+			expectedCreatedRemediations: []*models.Remediation{
 				{
 					Action:       "escalate",
-					EventID:      "",
 					KeptnContext: testKeptnContext,
-					Time:         "",
+					Time:         "0001-01-01 00:00:00 +0000 UTC",
 					Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
 				},
 			},
@@ -239,9 +232,9 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultFailed),
 			},
-			wantErr:                            false,
-			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*handler.Remediation{},
+			wantErr:                         false,
+			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
+			expectedCreatedRemediations:     []*models.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -266,11 +259,11 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventWithIrrelevantTestStrategyPayload),
 			},
-			wantErr:                            false,
-			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*handler.Remediation{},
-			expectedEventOnEventbroker:         []*keptnapi.KeptnContextExtendedCE{},
-			returnedRemediations:               emptyRemediations,
+			wantErr:                         false,
+			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
+			expectedCreatedRemediations:     []*models.Remediation{},
+			expectedEventOnEventbroker:      []*keptnapi.KeptnContextExtendedCE{},
+			returnedRemediations:            emptyRemediations,
 			returnedEvents: map[string]string{
 				"test-id-1": previousRemediationTriggeredEvent,
 				"test-id-2": previousRemediationStatusChangedEvent,
@@ -281,9 +274,9 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultPass),
 			},
-			wantErr:                            false,
-			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*handler.Remediation{},
+			wantErr:                         false,
+			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
+			expectedCreatedRemediations:     []*models.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -308,9 +301,9 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: createTestCloudEvent(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationDoneEventPayloadWithResultWarning),
 			},
-			wantErr:                            false,
-			returnedRemediationYamlResource:    remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*handler.Remediation{},
+			wantErr:                         false,
+			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
+			expectedCreatedRemediations:     []*models.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -334,7 +327,7 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCS := NewMockConfigurationService(tt.expectedRemediationOnConfigService, tt.returnedRemediationYamlResource, tt.returnedRemediations)
+			mockCS := NewMockConfigurationService(tt.returnedRemediationYamlResource)
 			defer mockCS.Server.Close()
 
 			mockEV := NewMockEventbroker(tt.expectedEventOnEventbroker)
@@ -348,8 +341,11 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: mockCS.Server.URL,
 			})
 
+			fakeRemediationRepo := &fake.RemediationRepo{}
+			fakeRemediationRepo.Remediations = tt.returnedRemediations
 			remediation := &RemediationHandler{
-				Keptn: testKeptnHandler,
+				Keptn:           testKeptnHandler,
+				RemediationRepo: fakeRemediationRepo,
 			}
 
 			eh := &EvaluationFinishedEventHandler{
@@ -361,13 +357,10 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if len(mockCS.ExpectedRemediations) == 0 && len(mockCS.ReceivedRemediations) == 0 {
-				t.Log("Received all required events on configuration service")
-			} else {
-				if mockCS.ReceivedAllRequests {
-					t.Log("Received all required events on configuration service")
-				} else {
-					t.Errorf("Did not receive all required events on configuration service")
+			if diff := deep.Equal(tt.expectedCreatedRemediations, fakeRemediationRepo.GetReceivedRemediations()); len(diff) > 0 {
+				t.Errorf("Did not create all required remediations")
+				for _, d := range diff {
+					t.Log(d)
 				}
 			}
 

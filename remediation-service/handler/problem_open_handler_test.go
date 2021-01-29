@@ -2,20 +2,21 @@ package handler
 
 import (
 	"encoding/json"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-test/deep"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/remediation-service/handler"
+	"github.com/keptn/keptn/remediation-service/handler/fake"
+	"github.com/keptn/keptn/remediation-service/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/go-openapi/strfmt"
-	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 const shipyardContent = `stages:
@@ -130,20 +131,15 @@ func createTestCloudEvent(ceType, data string) cloudevents.Event {
 }
 
 type MockConfigurationService struct {
-	ExpectedRemediations    []*handler.Remediation
-	ReceivedRemediations    []*handler.Remediation
 	RemediationYamlResource string
 	Server                  *httptest.Server
 	ReceivedAllRequests     bool
 	ReturnedRemediations    string
 }
 
-func NewMockConfigurationService(expectedRemediations []*handler.Remediation, remediationYamlResource string, returnedRemediations string) *MockConfigurationService {
+func NewMockConfigurationService(remediationYamlResource string) *MockConfigurationService {
 	svc := &MockConfigurationService{
-		ExpectedRemediations:    expectedRemediations,
-		ReceivedRemediations:    []*handler.Remediation{},
 		RemediationYamlResource: remediationYamlResource,
-		ReturnedRemediations:    returnedRemediations,
 		Server:                  nil,
 	}
 
@@ -159,9 +155,6 @@ func NewMockConfigurationService(expectedRemediations []*handler.Remediation, re
 }
 
 func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http.Request) {
-	if len(cs.ExpectedRemediations) == 0 {
-		cs.ReceivedAllRequests = true
-	}
 	if strings.Contains(r.RequestURI, "shipyard.yaml") {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
@@ -172,53 +165,6 @@ func (cs *MockConfigurationService) HandleRequest(w http.ResponseWriter, r *http
 		w.WriteHeader(200)
 		w.Write([]byte(cs.RemediationYamlResource))
 		return
-	} else if strings.Contains(r.RequestURI, "/remediation") {
-		if r.Method == http.MethodDelete {
-			cs.ReceivedRemediations = []*handler.Remediation{}
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(200)
-			w.Write([]byte(`{}`))
-			return
-		}
-		if r.Method == http.MethodGet {
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(200)
-			w.Write([]byte(cs.ReturnedRemediations))
-			return
-		}
-		rem := &handler.Remediation{}
-
-		defer r.Body.Close()
-		bytes, _ := ioutil.ReadAll(r.Body)
-		_ = json.Unmarshal(bytes, rem)
-
-		cs.ReceivedRemediations = append(cs.ReceivedRemediations, rem)
-
-		if len(cs.ExpectedRemediations) != len(cs.ReceivedRemediations) {
-			cs.ReceivedAllRequests = false
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(200)
-			w.Write([]byte(`{}`))
-			return
-		}
-		receivedAllExpectedRemediations := true
-		for _, expectedRemediation := range cs.ExpectedRemediations {
-			foundExpected := false
-			for _, receivedRemediation := range cs.ReceivedRemediations {
-				if receivedRemediation.Type == expectedRemediation.Type &&
-					receivedRemediation.KeptnContext == expectedRemediation.KeptnContext &&
-					receivedRemediation.Action == expectedRemediation.Action {
-					foundExpected = true
-					break
-				}
-			}
-			if !foundExpected {
-				receivedAllExpectedRemediations = false
-				break
-			}
-		}
-
-		cs.ReceivedAllRequests = receivedAllExpectedRemediations
 	}
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
@@ -297,12 +243,12 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 		Event cloudevents.Event
 	}
 	tests := []struct {
-		name                               string
-		fields                             fields
-		wantErr                            bool
-		returnedRemediationYamlResource    string
-		expectedRemediationOnConfigService []*handler.Remediation
-		expectedEventOnEventbroker         []*keptnapi.KeptnContextExtendedCE
+		name                            string
+		fields                          fields
+		wantErr                         bool
+		returnedRemediationYamlResource string
+		expectedCreatedRemediations     []*models.Remediation
+		expectedEventOnEventbroker      []*keptnapi.KeptnContextExtendedCE
 	}{
 		{
 			name: "valid remediation.yaml found, specific remediation action executed",
@@ -311,19 +257,19 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithValidRemediation,
-			expectedRemediationOnConfigService: []*handler.Remediation{
+			expectedCreatedRemediations: []*models.Remediation{
 				{
 					Action:       "",
 					EventID:      "",
 					KeptnContext: testKeptnContext,
-					Time:         "",
+					Time:         "0001-01-01 00:00:00 +0000 UTC",
 					Type:         keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName),
 				},
 				{
 					Action:       "togglefeature",
 					EventID:      "",
 					KeptnContext: testKeptnContext,
-					Time:         "",
+					Time:         "0001-01-01 00:00:00 +0000 UTC",
 					Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
 				},
 			},
@@ -368,9 +314,9 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Event: createTestCloudEvent(keptn.ProblemOpenEventType, responseTimeProblemEventPayload),
 			},
-			wantErr:                            true,
-			returnedRemediationYamlResource:    remediationYamlResourceWithInvalidSpecVersion,
-			expectedRemediationOnConfigService: []*handler.Remediation{},
+			wantErr:                         true,
+			returnedRemediationYamlResource: remediationYamlResourceWithInvalidSpecVersion,
+			expectedCreatedRemediations:     []*models.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -392,15 +338,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			},
 			wantErr:                         false,
 			returnedRemediationYamlResource: remediationYamlResourceWithNoRemediations,
-			expectedRemediationOnConfigService: []*handler.Remediation{
-				{
-					Action:       "",
-					EventID:      "",
-					KeptnContext: testKeptnContext,
-					Time:         "",
-					Type:         keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName),
-				},
-			},
+			expectedCreatedRemediations:     []*models.Remediation{},
 			expectedEventOnEventbroker: []*keptnapi.KeptnContextExtendedCE{
 				{
 					Contenttype:    "application/json",
@@ -430,7 +368,7 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockCS := NewMockConfigurationService(tt.expectedRemediationOnConfigService, tt.returnedRemediationYamlResource, "")
+			mockCS := NewMockConfigurationService(tt.returnedRemediationYamlResource)
 			defer mockCS.Server.Close()
 
 			mockEV := NewMockEventbroker(tt.expectedEventOnEventbroker)
@@ -441,8 +379,10 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				ConfigurationServiceURL: mockCS.Server.URL,
 			})
 
+			fakeRemediationRepo := &fake.RemediationRepo{}
 			remediation := &RemediationHandler{
-				Keptn: testKeptnHandler,
+				Keptn:           testKeptnHandler,
+				RemediationRepo: fakeRemediationRepo,
 			}
 
 			eh := &ProblemOpenEventHandler{
@@ -454,7 +394,14 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if mockCS.ReceivedAllRequests && mockEV.ReceivedAllRequests {
+			if diff := deep.Equal(tt.expectedCreatedRemediations, fakeRemediationRepo.GetReceivedRemediations()); len(diff) > 0 {
+				t.Errorf("Did not create all required remediations")
+				for _, d := range diff {
+					t.Log(d)
+				}
+			}
+
+			if mockEV.ReceivedAllRequests {
 				t.Log("Received all required events")
 			} else {
 				t.Errorf("Did not receive all required events")

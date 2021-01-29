@@ -6,6 +6,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/remediation-service/handler/fake"
 	"testing"
 )
 
@@ -68,8 +69,10 @@ func TestActionFinishedEventHandler_HandleEvent(t *testing.T) {
 				EventBrokerURL: mockEV.Server.URL,
 			})
 
+			fakeRemediationRepo := &fake.RemediationRepo{}
 			remediation := &RemediationHandler{
-				Keptn: testKeptnHandler,
+				Keptn:           testKeptnHandler,
+				RemediationRepo: fakeRemediationRepo,
 			}
 
 			eh := &ActionFinishedEventHandler{
