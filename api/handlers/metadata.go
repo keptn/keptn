@@ -33,7 +33,7 @@ func newMetadataHandler() metadataHandler {
 	logger := keptnutils.NewLogger("", "", "api")
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		logger.Debug("Could not get InClusterConfig, will skip k8s-deployments.")
+		logger.Debug(fmt.Sprintf("Could not get InClusterConfig, will skip k8s-deployments: %s", err.Error()))
 	} else {
 		// creates the clientset
 		clientSet, err = kubernetes.NewForConfig(config)
