@@ -155,10 +155,11 @@ func verifyAuthParams(authParams *authCmdParams) error {
 
 	if !mocking {
 		if !*authParams.skipNamespaceListing && (authParams.endPoint == nil || *authParams.endPoint == "") && (authParams.apiToken == nil || *authParams.apiToken == "") {
-			namespace, err = smartKeptnCLIAuth()
-			if err != nil {
-				return err
-			}
+			return fmt.Errorf("keptn auth requires api-token and endpoint \n\n"+
+				"For more information on how to obtain token and endpoint to go https://keptn.sh/docs/%s/reference/cli/#authenticate-keptn-cli \n\n"+
+				"Alternatively,To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI: \n"+
+				"- kubectl -n keptn port-forward service/api-gateway-nginx 8080:80 \n"+
+				"- keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)", keptnReleaseDocsURL)
 		}
 		if authParams.endPoint == nil || *authParams.endPoint == "" {
 			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
@@ -179,6 +180,10 @@ func verifyAuthParams(authParams *authCmdParams) error {
 			if err != nil {
 				return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
 			}
+		}
+		namespace, err = smartKeptnCLIAuth()
+		if err != nil {
+			return err
 		}
 	}
 	return nil
