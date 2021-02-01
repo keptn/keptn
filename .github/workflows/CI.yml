@@ -290,66 +290,88 @@ jobs:
 
       - name: Test api
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
-        run: go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+        run: |
+          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+          bash <(curl -s https://codecov.io/bash) -c -F api
         working-directory: ./api
 
       - name: Test os route svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
         working-directory: ./platform-support/openshift-route-service
 
       - name: Test jmeter svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
         working-directory: ./jmeter-service
 
       - name: Test helm svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F helm-service
         working-directory: ./helm-service
 
       - name: Test gatekeeper svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
         working-directory: ./gatekeeper-service
 
       - name: Test distributor svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F distributor-service
         working-directory: ./distributor
 
       - name: Test shipyard controller svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
         working-directory: ./shipyard-controller
 
       - name: Test configuration svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
         working-directory: ./configuration-service
 
       - name: Test remediation svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
         working-directory: ./remediation-service
 
       - name: Test lighthouse svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
         working-directory: ./lighthouse-service
 
       - name: Test mongodb datastore svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
         working-directory: ./mongodb-datastore
 
       - name: Test statistics svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
         working-directory: ./statistics-service
 
-      - name: Coverage report
-        run: bash <(curl -s https://codecov.io/bash)
 
   unit-tests-node:
     needs: prepare_ci_run
@@ -379,7 +401,7 @@ jobs:
         working-directory: ./bridge
       - name: Coverage report
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: bash <(curl -s https://codecov.io/bash) -F moduleA
+        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
 
 
   unit-tests-cli:
@@ -402,8 +424,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test cli
-        run: go test -race -v ./...
+        run: go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./cli
+
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash) -c -F cli
 
   ############################################################################
   # Build CLI                                                                #
