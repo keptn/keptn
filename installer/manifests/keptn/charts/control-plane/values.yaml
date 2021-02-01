@@ -1,5 +1,9 @@
 mongodb:
   enabled: true
+  host: mongodb:27017
+  user: null
+  password: null
+  adminPassword: null
 
 prefixPath: ""
 
