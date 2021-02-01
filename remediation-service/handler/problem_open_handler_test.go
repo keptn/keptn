@@ -260,16 +260,12 @@ func TestProblemOpenEventHandler_HandleEvent(t *testing.T) {
 			expectedCreatedRemediations: []*models.Remediation{
 				{
 					Action:       "",
-					EventID:      "",
 					KeptnContext: testKeptnContext,
-					Time:         "0001-01-01 00:00:00 +0000 UTC",
 					Type:         keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName),
 				},
 				{
 					Action:       "togglefeature",
-					EventID:      "",
 					KeptnContext: testKeptnContext,
-					Time:         "0001-01-01 00:00:00 +0000 UTC",
 					Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
 				},
 			},

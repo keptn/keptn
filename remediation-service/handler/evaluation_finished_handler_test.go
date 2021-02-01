@@ -20,14 +20,12 @@ var previousRemediations = []*models.Remediation{
 		Action:       "",
 		EventID:      "test-id-1",
 		KeptnContext: testKeptnContext,
-		Time:         "1",
 		Type:         keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName),
 	},
 	{
 		Action:       "togglefeature",
 		EventID:      "test-id-2",
 		KeptnContext: testKeptnContext,
-		Time:         "2",
 		Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
 	},
 }
@@ -193,7 +191,6 @@ func TestEvaluationDoneEventHandler_HandleEvent(t *testing.T) {
 				{
 					Action:       "escalate",
 					KeptnContext: testKeptnContext,
-					Time:         "0001-01-01 00:00:00 +0000 UTC",
 					Type:         keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName),
 				},
 			},

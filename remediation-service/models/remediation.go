@@ -5,7 +5,7 @@ type Remediation struct {
 	Action string `json:"action,omitempty" bson:"action"`
 
 	// ID of the event
-	EventID string `json:"eventId,omitempty" bson:"eventId"`
+	EventID string `json:"eventId,omitempty" bson:"eventId" deep:"-"`
 
 	// Keptn Context ID of the event
 	KeptnContext string `json:"keptnContext,omitempty" bson:"keptnContext"`
