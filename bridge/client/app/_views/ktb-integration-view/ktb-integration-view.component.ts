@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {filter, takeUntil} from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
 import {Subject, timer} from 'rxjs';
 import * as moment from 'moment';
