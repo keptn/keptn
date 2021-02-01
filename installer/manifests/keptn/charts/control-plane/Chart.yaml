@@ -25,6 +25,7 @@ appVersion: latest
 dependencies:
   - name: mongodb
     version: 0.1.0
+    condition: mongodb.enabled
   - name: nats
     version: 0.4.2
     repository: https://nats-io.github.io/k8s/helm/charts/
