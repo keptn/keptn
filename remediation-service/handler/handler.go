@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/remediation-service/db"
@@ -119,13 +120,14 @@ func (r *RemediationHandler) sendRemediationTriggeredEvent(problemDetails *keptn
 	}
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
 	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", r.Keptn.KeptnContext)
 	event.SetData(cloudevents.ApplicationJSON, eventData)
 
-	err := r.createRemediation(event.ID(), event.Time().String(), keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName), "")
+	err := r.createRemediation(event.ID(), keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName), "")
 	if err != nil {
 		r.Keptn.Logger.Error("Could not create remediation: " + err.Error())
 		return err
@@ -146,12 +148,11 @@ func getRemediationsEndpoint(configurationServiceEndpoint url.URL, project, stag
 	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, keptnContext)
 }
 
-func (r *RemediationHandler) createRemediation(eventID, time, remediationEventType, action string) error {
+func (r *RemediationHandler) createRemediation(eventID, remediationEventType, action string) error {
 	newRemediation := &models.Remediation{
 		Action:       action,
 		EventID:      eventID,
 		KeptnContext: r.Keptn.KeptnBase.KeptnContext,
-		Time:         time,
 		Type:         remediationEventType,
 	}
 
@@ -331,6 +332,7 @@ func (r *RemediationHandler) sendRemediationStatusChangedEvent(action *v0_1_4.Re
 	source, _ := url.Parse("remediation-service")
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
 	event.SetType(keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
@@ -340,7 +342,7 @@ func (r *RemediationHandler) sendRemediationStatusChangedEvent(action *v0_1_4.Re
 	}
 	event.SetData(cloudevents.ApplicationJSON, remediationStatusChangedEventData)
 
-	err = r.createRemediation(event.ID(), event.Time().String(), keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName), action.Action)
+	err = r.createRemediation(event.ID(), keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName), action.Action)
 	if err != nil {
 		r.Keptn.Logger.Error("Could not create remediation: " + err.Error())
 		return err
