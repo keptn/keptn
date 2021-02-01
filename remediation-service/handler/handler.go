@@ -141,13 +141,6 @@ func (r *RemediationHandler) sendRemediationTriggeredEvent(problemDetails *keptn
 	return nil
 }
 
-func getRemediationsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, keptnContext string) string {
-	if keptnContext == "" {
-		return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
-	}
-	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, keptnContext)
-}
-
 func (r *RemediationHandler) createRemediation(eventID, remediationEventType, action string) error {
 	newRemediation := &models.Remediation{
 		Action:       action,
