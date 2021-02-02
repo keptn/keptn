@@ -13,19 +13,6 @@ export class KtbEnvironmentViewComponent implements OnInit {
   get project() {
     return this._project;
   }
-<<<<<<< HEAD
-  set project(project: Project) {
-    if (this._project !== project) {
-      this._project = project;
-    }
-  }
-
-  constructor() {
-  }
-
-  ngOnInit(): void {
-  }
-=======
 
   set project(project: Project) {
     if (this._project !== project) {
@@ -34,8 +21,7 @@ export class KtbEnvironmentViewComponent implements OnInit {
     }
   }
 
-  constructor(private dataService: DataService, private _changeDetectorRef: ChangeDetectorRef) {
-  }
+  constructor(private dataService: DataService, private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.openApprovals$ = this.dataService.openApprovals;
@@ -71,5 +57,4 @@ export class KtbEnvironmentViewComponent implements OnInit {
     return failedRootEvents.find(root => root.data.service === service.serviceName);
   }
 
->>>>>>> directory change, environment layout adjustment
 }
