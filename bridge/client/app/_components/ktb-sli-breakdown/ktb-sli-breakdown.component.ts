@@ -1,5 +1,6 @@
-import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
 import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
+import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
 
 @Component({
   selector: 'ktb-sli-breakdown',
@@ -7,6 +8,8 @@ import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
   styleUrls: ['./ktb-sli-breakdown.component.scss']
 })
 export class KtbSliBreakdownComponent implements OnInit {
+
+  @ViewChild('sortable', { read: DtSort, static: true }) sortable: DtSort;
 
   public _evaluationColor = {
     'pass': '#7dc540',
@@ -30,6 +33,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   public _indicatorResultsFail: any = [];
   public _indicatorResultsWarning: any = [];
   public _indicatorResultsPass: any = [];
+  public tableEntries: DtTableDataSource<object>;
 
   @Input()
   get indicatorResults(): any {
@@ -48,6 +52,10 @@ export class KtbSliBreakdownComponent implements OnInit {
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {
+    this.tableEntries = new DtTableDataSource(this.assembleTablesEntries(this.indicatorResults));
+
+    // Set the dtSort reference on the dataSource, so it can react to sorting.
+    this.tableEntries.sort = this.sortable;
   }
 
   formatNumber(number) {
@@ -62,6 +70,38 @@ export class KtbSliBreakdownComponent implements OnInit {
       n = Math.floor(n);
 
     return n;
+  }
+
+  assembleTablesEntries(indicatorRestults): any {
+    var tableEntries = [];
+
+    let totalscore  = 0;
+    indicatorRestults.forEach(result => totalscore += result.score);
+
+    
+    for (let indicatorRestult of indicatorRestults) {
+      let name = indicatorRestult.value.metric;
+      let value = this.formatNumber(indicatorRestult.value.value);
+      let result = indicatorRestult.status;
+      let score = (indicatorRestult.score / totalscore).toFixed(2);
+      let criteria = "";
+
+      for (let target of indicatorRestult.targets) {
+        criteria += target.criteria + ' '
+      }
+
+      let entry = {
+        name: name,
+        value: value,
+        result: result,
+        score: score,
+        criteria: criteria
+      }
+
+      tableEntries.push(entry);
+    } 
+
+    return tableEntries;
   }
 
 }
