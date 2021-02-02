@@ -425,7 +425,7 @@ jobs:
     strategy:
       matrix:
         go-version: [ 1.13.x ]
-        platform: [ ubuntu-20.04 ] #[ ubuntu-20.04, macOS-11.0 ] # , windows-2019
+        platform: [ ubuntu-20.04 ] #, macOS-11.0, windows-2019 ]
     runs-on: ${{ matrix.platform }}
     env:
       KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
@@ -446,8 +446,7 @@ jobs:
             ${{ runner.os }}-go-cli
 
       - name: Test cli
-        run: go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
-        working-directory: ./cli
+        run: make test-unit-cli # go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Coverage report
         run: bash <(curl -s https://codecov.io/bash) -c -F cli
@@ -461,8 +460,26 @@ jobs:
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
     strategy:
       matrix:
-        go-version: [ 1.13.x ]
-        platform: [ ubuntu-20.04, windows-2019 ] #[ ubuntu-20.04, macOS-11.0, windows-2019 ]
+        include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "amd64"
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "arm"
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "arm64"
+          - platform: "macOS-11.0" # cross-compiling the CLI for macos does not work - see https://github.com/keptn/keptn/issues/2738
+            GOOS: "darwin"
+            GOARCH: "amd64"
+          # support for apple silicon (arm64 on macos) is pending Go 1.16 release
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macos does not work - see https://github.com/keptn/keptn/issues/2738
+#            GOOS: "darwin"
+#            GOARCH: "arm64"
+          - platform: "ubuntu-20.04"
+            GOOS: "windows"
+            GOARCH: "amd64"
     env:
       KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
 
@@ -471,7 +488,7 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: "1.13.x"
       - name: Checkout Code
         uses: actions/checkout@v2
       # cache go modules
@@ -484,44 +501,41 @@ jobs:
       - name: Build cli
         env:
           PLATFORM: "${{ matrix.platform }}"
-          GOARCH: "amd64"
+          GOARCH: "${{ matrix.GOARCH }}"
+          GOOS: "${{ matrix.GOOS }}"
           BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
           VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
           DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
           GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-        working-directory: ./cli
         run: |
           FILE_ENDING=""
-          CPU_ARCHITECTURE=amd64
-          if [[ "$OSTYPE" == "linux-gnu" ]]; then
-            DISTR="linux"
-          elif [[ "$OSTYPE" == "darwin"* ]]; then
-            DISTR="darwin"
-          elif [[ "$PLATFORM" == "windows-2019" ]]; then
-            DISTR="windows"
+          # overwrite file ending for windows binaries
+          if [[ "$GOOS" == "windows" ]]; then
             FILE_ENDING=".exe"
-          else
-            echo "Unknown Operating System; PlATFORM=${PLATFORM},OSTYPE=${OSTYPE}"
-            exit 1
           fi
 
-          # determine output file name based on version, distribution, architecture
-          OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
-          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}" # no need for file-ending in the archive name
-          mkdir dist
+          # determine output file name based on version, go os, architecture
+          OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
 
           if [[ "$BRANCH" == "master" ]]; then
             # use VERSION.DATETIME for the cli version (e.g., nightly build)
             VERSION=${VERSION}.${DATETIME}
           fi
 
-          go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
-          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTEABLE_NAME}
+          # build the binary using makefile
+          make build-cli OUTPUT_EXECUTEABLE_NAME="$OUTPUT_EXECUTEABLE_NAME"
+          # verify output file exists
+          ls bin/${OUTPUT_EXECUTEABLE_NAME}
+
+          # create a .tar.gz archive of the binary
+          mkdir dist
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTEABLE_NAME}
       - name: Upload Keptn CLI as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: keptn-cli
-          path: cli/dist/
+          path: dist/
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)                   #
