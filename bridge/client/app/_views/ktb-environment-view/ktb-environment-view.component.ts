@@ -31,45 +31,41 @@ export class KtbEnvironmentViewComponent implements OnInit {
   get project() {
     return this._project;
   }
+
   set project(project: Project) {
     if (this._project !== project) {
       this._project = project;
     }
   }
 
-  constructor(private dataService: DataService) { }
+  constructor(private dataService: DataService) {
+  }
 
   ngOnInit(): void {
     this.openApprovals$ = this.dataService.openApprovals;
   }
 
-  selectStage($event, stage: Stage, filterType?: string) {
+  selectStage($event) {
     this.problemFilterEventButton?.deselect();
     this.evaluationFilterEventButton?.deselect();
     this.approvalFilterEventButton?.deselect();
-
-    this.selectedStage = stage;
-    this.filterEventType = filterType;
-    $event.stopPropagation();
+    this.selectedStage = $event.stage;
+    this.filterEventType = $event.filterType;
   }
 
-  trackStage(index: number, stage: Stage) {
-    return stage.stageName;
+  countOpenApprovals(project: Project, stage: Stage, service?: Service): number {
+    return this.getOpenApprovals(project, stage, service).length;
   }
 
-  countOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
-    return this.getOpenApprovals(openApprovals, project, stage, service).length;
+  getOpenApprovals(project: Project, stage: Stage, service?: Service): Trace[] {
+    return this.dataService.getOpenApprovals(project, stage, service);
   }
 
-  getOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
-    return openApprovals.filter(approval => approval.data.project === project.projectName && approval.data.stage === stage.stageName && (!service || approval.data.service === service.serviceName));
-  }
-
-  findProblemEvent(problemEvents: Root[], service: Service) {
+  findProblemEvent(problemEvents: Root[], service: Service): Root {
     return problemEvents.find(root => root?.data.service === service.serviceName);
   }
 
-  findFailedRootEvent(failedRootEvents: Root[], service: Service) {
+  findFailedRootEvent(failedRootEvents: Root[], service: Service): Root {
     return failedRootEvents.find(root => root.data.service === service.serviceName);
   }
 

@@ -261,6 +261,10 @@ export class DataService {
     }
   }
 
+  public getOpenApprovals(project: Project, stage: Stage, service?: Service): Trace[]{
+    return this._openApprovals.getValue().filter(approval => approval.data.project === project.projectName && approval.data.stage === stage.stageName && (!service || approval.data.service === service.serviceName));
+  }
+
   public invalidateEvaluation(evaluation: Trace, reason: string) {
     this.apiService.sendEvaluationInvalidated(evaluation, reason)
       .pipe(take(1))
