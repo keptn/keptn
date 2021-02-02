@@ -222,6 +222,7 @@ export class DataService {
       )
       .subscribe((traces: Trace[]) => {
         root.traces = this.traceMapper([...traces||[], ...root.traces||[]]);
+        this._roots.next([...this._roots.getValue()]);
         this.updateApprovals(root);
       });
   }
