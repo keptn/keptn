@@ -4,7 +4,6 @@ import (
 	"fmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"github.com/keptn/keptn/shipyard-controller/common"
 )
 
 type apiBase struct {
@@ -12,7 +11,7 @@ type apiBase struct {
 	stagesAPI   *keptnapi.StageHandler
 	servicesAPI *keptnapi.ServiceHandler
 	resourceAPI *keptnapi.ResourceHandler
-	secretStore common.SecretStore
+	secretStore SecretStore
 	logger      keptncommon.LoggerInterface
 }
 
@@ -21,7 +20,7 @@ func newAPIBase() (*apiBase, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not get configuration-service URL: %s", err.Error())
 	}
-	secretStore, err := common.NewK8sSecretStore()
+	secretStore, err := NewK8sSecretStore()
 	if err != nil {
 		return nil, fmt.Errorf("could not initilize secret store: " + err.Error())
 	}

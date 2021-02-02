@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/controller"
+	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"log"
@@ -32,13 +35,36 @@ func main() {
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
-	projectManager, err := handler.NewProjectManager()
+	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatalf("could not get configuration-service URL: %s", err.Error())
 	}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+
+	secretStore, err := handler.NewK8sSecretStore()
+	if err != nil {
+		log.Fatal(err)
+	}
+	configurationStore := handler.NewGitConfigurationStore(csEndpoint.String())
+	eventRepository := &db.MongoDBEventsRepo{Logger: logger}
+	projectRepository := &db.MongoDBProjectsRepo{Logger: logger}
+	taskSequenceRepository := &db.TaskSequenceMongoDBRepo{Logger: logger}
+
+	projectManager := handler.NewProjectManager(
+		configurationStore,
+		secretStore,
+		projectRepository,
+		taskSequenceRepository,
+		eventRepository)
+
+	eventSender, err := v0_2_0.NewHTTPEventSender("")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
-	projectService := handler.NewProjectHandler(projectManager)
+	projectService := handler.NewProjectHandler(projectManager, eventSender)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 

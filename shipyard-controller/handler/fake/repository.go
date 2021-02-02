@@ -63,14 +63,16 @@ type getProjectsMock func() ([]*models.ExpandedProject, error)
 type createProjectMock func(*models.ExpandedProject) error
 type deleteProjectMock func(string) error
 type getProjectMock func(string) (*models.ExpandedProject, error)
+type updateProjectUpstreamMock func(string, string, string) error
 type updateProjectMock func(project *models.ExpandedProject) error
 
 type ProjectRepository struct {
-	GetProjectsFunc   getProjectsMock
-	GetProjectFunc    getProjectMock
-	CreateProjectFunc createProjectMock
-	DeleteProjectFunc deleteProjectMock
-	UpdateProjectFunc updateProjectMock
+	GetProjectsFunc           getProjectsMock
+	GetProjectFunc            getProjectMock
+	CreateProjectFunc         createProjectMock
+	DeleteProjectFunc         deleteProjectMock
+	UpdateProjectUpstreamFunc updateProjectUpstreamMock
+	UpdateProjectFunc         updateProjectMock
 }
 
 func (p ProjectRepository) GetProjects() ([]*models.ExpandedProject, error) {
@@ -87,6 +89,10 @@ func (p ProjectRepository) DeleteProject(projectName string) error {
 
 func (p ProjectRepository) GetProject(projectName string) (*models.ExpandedProject, error) {
 	return p.GetProjectFunc(projectName)
+}
+
+func (p ProjectRepository) UpdateProjectUpstream(projectName string, uri string, user string) error {
+	return p.UpdateProjectUpstreamFunc(projectName, uri, user)
 }
 
 func (p ProjectRepository) UpdateProject(project *models.ExpandedProject) error {

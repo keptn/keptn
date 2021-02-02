@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/google/martian/log"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 	"sort"
@@ -23,6 +24,7 @@ type projectMetadata struct {
 	CreationTimestamp string
 }
 
+//TODO: DELETE
 // GetProjectHandlerFunc gets a list of projects
 func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder {
 	var payload = &models.ExpandedProjects{
@@ -59,6 +61,7 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	return project.NewGetProjectOK().WithPayload(payload)
 }
 
+//TODO: DELETE MONGO PART
 // PostProjectHandlerFunc creates a new project
 func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Responder {
 	logger := keptncommon.NewLogger("", "", "configuration-service")
@@ -138,6 +141,7 @@ func PostProjectHandlerFunc(params project.PostProjectParams) middleware.Respond
 	return project.NewPostProjectNoContent()
 }
 
+// TODO: DELETE
 // GetProjectProjectNameHandlerFunc gets a project by its name
 func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams) middleware.Responder {
 
@@ -156,9 +160,26 @@ func GetProjectProjectNameHandlerFunc(params project.GetProjectProjectNameParams
 	return project.NewGetProjectProjectNameOK().WithPayload(prj)
 }
 
+// TODO: DELETE MONOGPART
 // PutProjectProjectNameHandlerFunc updates a project
 func PutProjectProjectNameHandlerFunc(params project.PutProjectProjectNameParams) middleware.Responder {
 	logger := keptncommon.NewLogger("", "", "configuration-service")
+
+	projectName := params.Project.ProjectName
+
+	if common.ProjectExists(projectName) {
+		common.LockProject(projectName)
+		defer common.UnlockProject(projectName)
+
+		gitCredentials, err := common.GetCredentials(projectName)
+		if err == nil && gitCredentials != nil {
+			log.Infof("Storing Git credentials for project %s", projectName)
+			err := common.UpdateOrCreateOrigin(projectName)
+
+		}
+
+	}
+///OLD
 	// check if the project already exists
 	if common.ProjectExists(params.Project.ProjectName) {
 		common.LockProject(params.Project.ProjectName)

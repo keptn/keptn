@@ -32,6 +32,7 @@ type EventFilter struct {
 var ErrNoEventFound = errors.New("no matching event found")
 
 // EventRepo is an interface for retrieving and storing events
+//go:generate moq -pkg db_mock -out ./mock/event_repo_moq.go . EventRepo
 type EventRepo interface {
 	// GetEvents gets all events of a project, based on the provided filter
 	GetEvents(project string, filter EventFilter, status EventStatus) ([]models.Event, error)

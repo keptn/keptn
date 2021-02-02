@@ -3,6 +3,7 @@ package db
 import "github.com/keptn/keptn/shipyard-controller/models"
 
 // TaskSequenceRepo godoc
+//go:generate moq -pkg db_mock -out ./mock/task_sequence_repo_moq.go . TaskSequenceRepo
 type TaskSequenceRepo interface {
 	// GetTaskSequence godoc
 	GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error)

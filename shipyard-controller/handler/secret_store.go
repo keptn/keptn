@@ -1,6 +1,7 @@
-package common
+package handler
 
 import (
+	"github.com/keptn/keptn/shipyard-controller/common"
 	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,6 +10,7 @@ import (
 )
 
 // SecretStore godoc
+//go:generate moq -out ./secret_store_moq.go . SecretStore
 type SecretStore interface {
 	// CreateSecret godoc
 	CreateSecret(name string, content map[string][]byte) error
@@ -36,7 +38,7 @@ func NewK8sSecretStore() (*K8sSecretStore, error) {
 
 // CreateSecret godoc
 func (k *K8sSecretStore) CreateSecret(name string, content map[string][]byte) error {
-	namespace := GetKeptnNamespace()
+	namespace := common.GetKeptnNamespace()
 	secret := k.createSecretObj(name, namespace, content)
 	_, err := k.client.CoreV1().Secrets(namespace).Create(secret)
 	if err != nil {
@@ -47,13 +49,13 @@ func (k *K8sSecretStore) CreateSecret(name string, content map[string][]byte) er
 
 // DeleteSecret godoc
 func (k *K8sSecretStore) DeleteSecret(name string) error {
-	namespace := GetKeptnNamespace()
+	namespace := common.GetKeptnNamespace()
 	return k.client.CoreV1().Secrets(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 
 // GetSecret godoc
 func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
-	namespace := GetKeptnNamespace()
+	namespace := common.GetKeptnNamespace()
 	get, err := k.client.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
 		return nil, nil
@@ -66,7 +68,7 @@ func (k *K8sSecretStore) GetSecret(name string) (map[string][]byte, error) {
 
 // UpdateSecret godoc
 func (k *K8sSecretStore) UpdateSecret(name string, content map[string][]byte) error {
-	namespace := GetKeptnNamespace()
+	namespace := common.GetKeptnNamespace()
 	secret := k.createSecretObj(name, namespace, content)
 
 	_, err := k.client.CoreV1().Secrets(namespace).Update(secret)

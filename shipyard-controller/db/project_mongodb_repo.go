@@ -86,20 +86,21 @@ func (mbdrepo *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProjec
 	return nil
 }
 
-func (mbdrepo *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
-	err := mbdrepo.DbConnection.EnsureDBConnection()
+func (mbdrepo *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
+	existingProject, err := mbdrepo.GetProject(projectName)
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	prjInterface := transformProjectToInterface(project)
-	projectCollection := mbdrepo.getProjectsCollection()
-	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
-	if err != nil {
-		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
-		return err
+	if existingProject == nil {
+		return nil
+	}
+	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
+		existingProject.GitRemoteURI = uri
+		existingProject.GitUser = user
+		if err := mbdrepo.updateProject(existingProject); err != nil {
+			mbdrepo.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+			return err
+		}
 	}
 	return nil
 }
@@ -119,6 +120,24 @@ func (mdbrepo *MongoDBProjectsRepo) DeleteProject(projectName string) error {
 		return err
 	}
 	fmt.Println("Deleted project " + projectName)
+	return nil
+}
+
+func (mbdrepo *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) error {
+	err := mbdrepo.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	prjInterface := transformProjectToInterface(project)
+	projectCollection := mbdrepo.getProjectsCollection()
+	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
+	if err != nil {
+		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
+		return err
+	}
 	return nil
 }
 
