@@ -248,7 +248,7 @@ class Trace {
       else if(this.data.image)
         this.image = this.data.image.split("/").pop();
       else if(this.data.configurationChange?.values)
-        this.image = this.data.configurationChange.values.image.split("/").pop();
+        this.image = this.data.configurationChange.values.image?.split("/").pop();
     }
 
     return this.image;
