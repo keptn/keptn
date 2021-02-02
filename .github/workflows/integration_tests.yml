@@ -69,6 +69,8 @@ jobs:
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
+    outputs:
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -514,9 +516,14 @@ jobs:
     needs: integration-test
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+
+      - name: Debug - Output Branch
+        run: echo $BRANCH
 
       - name: Load CI Environment from .ci_env
         id: load_ci_env
@@ -565,7 +572,7 @@ jobs:
           workflow: CI.yml
           workflow_conclusion: success
           # Use the branch
-          branch: ${{ github.event.inputs.branch }}
+          branch: ${{ env.BRANCH}}
           # Optional, directory where to extract artifact
           path: ./dist
 
@@ -574,6 +581,15 @@ jobs:
         uses: c-py/action-dotenv-to-setenv@v2
         with:
           env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
 
       - name: DEBUG Build-Config
         run: |
@@ -641,7 +657,7 @@ jobs:
               release = await github.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                tag: "${{ steps.get_version.outputs.VERSION }}"
+                tag: tag
               });
               console.log("::error Release already exists... Aborting!");
               core.setFailed("Release already exists... Aborting!");
