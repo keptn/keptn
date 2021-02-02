@@ -132,3 +132,22 @@ func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload i
 	}
 	return nil
 }
+
+// SendEventWithPayload godoc
+func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) cloudevents.Event {
+	source, _ := url.Parse("shipyard-controller")
+	event := cloudevents.NewEvent()
+	event.SetType(eventType)
+	event.SetSource(source.String())
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	if keptnContext == "" {
+		event.SetExtension("shkeptncontext", uuid.New().String())
+	} else {
+		event.SetExtension("shkeptncontext", keptnContext)
+	}
+	if triggeredID != "" {
+		event.SetExtension("triggeredid", triggeredID)
+	}
+	event.SetData(cloudevents.ApplicationJSON, payload)
+	return event
+}

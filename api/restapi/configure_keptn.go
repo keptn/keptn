@@ -5,7 +5,6 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -73,12 +72,12 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	api.ConfigurationGetConfigBridgeHandler = configuration.GetConfigBridgeHandlerFunc(handlers.GetConfigureBridgeHandlerFunc)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
-	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
+	//api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Metadata endpoint
 	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
-	api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
+	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	api.ServerShutdown = func() {}
 

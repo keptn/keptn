@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
+	"log"
 	"os"
 )
 
@@ -44,6 +47,19 @@ func main() {
 	eventHandler := handler.NewEventHandler()
 	eventController := controller.NewEventController(eventHandler)
 	eventController.Inject(apiV1)
+
+	eventSender, err := keptnv2.NewHTTPEventSender("")
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, nil, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
+	evaluationHandler := handler.NewEvaluationHandler(evaluationManager)
+	evaluationController := controller.NewEvaluationController(evaluationHandler)
+	evaluationController.Inject(apiV1)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
