@@ -201,7 +201,7 @@ jobs:
         uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
       - name: 'Get next patch version'
         id: get_next_semver_tag
-        uses: "WyriHaximus/github-action-next-semvers@v1"
+        uses: "WyriHaximus/github-action-next-semvers@v1.1.0"
         with:
           version: ${{ steps.get_previous_tag.outputs.tag }}
       - name: Get the version
