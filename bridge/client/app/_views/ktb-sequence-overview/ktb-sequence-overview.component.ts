@@ -92,6 +92,12 @@ export class KtbSequenceOverviewComponent implements OnInit {
           .subscribe(project => {
             this.updateFilterDataSource(project);
           });
+
+        this.dataService.roots
+          .pipe(takeUntil(this.unsubscribe$))
+          .subscribe(roots => {
+            this._changeDetectorRef.markForCheck();
+          });
       });
   }
 
