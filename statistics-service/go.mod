@@ -15,12 +15,10 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.7.1
 	github.com/mailru/easyjson v0.7.6 // indirect
-	github.com/stretchr/testify v1.4.0
-	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
-	github.com/swaggo/gin-swagger v1.2.0
+	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/swag v1.6.7
 	github.com/ugorji/go v1.1.8 // indirect
-	go.mongodb.org/mongo-driver v1.4.1
+	go.mongodb.org/mongo-driver v1.4.6
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	golang.org/x/sys v0.0.0-20200916084744-dbad9cb7cb7a // indirect
 	golang.org/x/tools v0.0.0-20200915201639-f4cefd1cb5ba // indirect
