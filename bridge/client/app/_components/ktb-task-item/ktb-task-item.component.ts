@@ -55,9 +55,9 @@ export class KtbTaskItemComponent {
     );
   }
 
-  showEventPayloadDialog(event) {
+  showEventPayloadDialog(event, task) {
     event.stopPropagation();
-    this.taskPayloadDialogRef = this.dialog.open(this.taskPayloadDialog, { data: this.task.plainEvent });
+    this.taskPayloadDialogRef = this.dialog.open(this.taskPayloadDialog, { data: task.plainEvent });
   }
 
   closeEventPayloadDialog() {
