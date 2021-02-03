@@ -22,8 +22,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
+
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -53,6 +56,9 @@ type envConfig struct {
 	PubSubRecipient     string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
 	PubSubRecipientPort string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
 	PubSubRecipientPath string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
+	ProjectFilter       string `envconfig:"PROJECT_FILTER" default:""`
+	StageFilter         string `envconfig:"STAGE_FILTER" default:""`
+	ServiceFilter       string `envconfig:"SERVICE_FILTER" default:""`
 }
 
 var httpClient cloudevents.Client
@@ -671,8 +677,28 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
+// Primitive filtering: Only for prototype
+func matchesFilter(e cloudevents.Event) bool {
+
+	keptnBase := &v0_2_0.EventData{}
+	if err := e.DataAs(keptnBase); err != nil {
+		return true
+	}
+	if env.ProjectFilter != "" && keptnBase.Project != env.ProjectFilter ||
+		env.StageFilter != "" && keptnBase.Stage != env.StageFilter ||
+		env.ServiceFilter != "" && keptnBase.Service != env.ServiceFilter {
+		return false
+	}
+	return true
+}
+
 func sendEvent(event cloudevents.Event) error {
 	client := createRecipientConnection()
+
+	if !matchesFilter(event) {
+		// Do not send cloud event if it does not match the filter
+		return nil
+	}
 
 	ctx := cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
