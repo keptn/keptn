@@ -576,6 +576,7 @@ jobs:
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+      DOCKER_PLATFORMS: "linux/amd64,linux/arm/v7,linux/arm64"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -586,22 +587,31 @@ jobs:
         with:
           env-file: .ci_env
 
+      - name: Set up QEMU (Docker Multi-Arch Build/BuildX)
+        # needed for docker multi-architecture build
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx (Docker Multi-Arch Build/BuildX)
+        # needed for docker multi-architecture build
+        uses: docker/setup-buildx-action@v1
+
       - id: docker_login
         name: Docker Login
         # only run docker login on pushes; also for PRs, but only if this is not a fork
         if: (github.event_name == 'push') || (github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
-        env:
-          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-        run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - id: docker_build_api
         name: Docker Build api-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}"
@@ -610,8 +620,9 @@ jobs:
       - id: docker_build_bridge
         name: Docker Build Bridge
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE }}"
@@ -620,8 +631,9 @@ jobs:
       - id: docker_build_distributor
         name: Docker Build Distributor
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE }}"
@@ -630,8 +642,9 @@ jobs:
       - id: docker_build_jmeter_service
         name: Docker Build jmeter-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE }}"
@@ -640,8 +653,9 @@ jobs:
       - id: docker_build_helm_service
         name: Docker Build helm-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
@@ -650,8 +664,9 @@ jobs:
       - id: docker_build_gatekeeper_service
         name: Docker Build gatekeeper-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE }}"
@@ -660,8 +675,9 @@ jobs:
       - id: docker_build_os_route_service
         name: Docker Build openshift-route-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE }}"
@@ -670,8 +686,9 @@ jobs:
       - id: docker_build_shipyard_controller
         name: Docker Build shipyard-controller
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
@@ -680,8 +697,9 @@ jobs:
       - id: docker_build_configuration_service
         name: Docker Build configuration-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE }}"
@@ -690,8 +708,9 @@ jobs:
       - id: docker_build_remediation_service
         name: Docker Build remediation-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE }}"
@@ -700,8 +719,9 @@ jobs:
       - id: docker_build_lighthouse_service
         name: Docker Build lighthouse-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE }}"
@@ -710,8 +730,9 @@ jobs:
       - id: docker_build_mongodb_ds
         name: Docker Build mongodb-datastore
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE }}"
@@ -720,8 +741,9 @@ jobs:
       - id: docker_build_statistics_service
         name: Docker Build statistics-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
+        uses: keptn/gh-action-build-docker-image@multi_platform_build
         with:
+          PLATFORMS: ${{ env.DOCKER_PLATFORMS }}
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE }}"
