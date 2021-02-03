@@ -18,13 +18,13 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210203160825-243d3da6aab9
 	github.com/keptn/kubernetes-utils v0.8.0-alpha
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.4.2
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.mongodb.org/mongo-driver v1.3.1
 	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
