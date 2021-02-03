@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/alecthomas/jsonschema v0.0.0-20201129101101-7b852d451add
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
-	github.com/cloudevents/sdk-go/v2 v2.2.0
+	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153 // indirect
@@ -16,7 +16,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210126110620-14959675036c
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
 	github.com/keptn/kubernetes-utils v0.8.0-alpha
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
@@ -27,7 +27,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.4.0
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.7.0
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible

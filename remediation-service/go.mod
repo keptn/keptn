@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/Azure/go-autorest/autorest v0.9.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/cloudevents/sdk-go/v2 v2.2.0
+	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/gogo/protobuf v1.3.1 // indirect
@@ -13,7 +13,7 @@ require (
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210119093614-eab1c3bafadb
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
 	github.com/mitchellh/mapstructure v1.2.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
