@@ -24,8 +24,6 @@
         <p class="m-0">
           <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName()" [textContent]="currentSequence.getShortImageName()"></dt-tag>
           <dt-tag class="mr-1" *ngIf="!currentSequence.getShortImageName()" [textContent]="currentSequence.getService()"></dt-tag>
-          in
-          <dt-tag class="ml-1" *ngFor="let stage of currentSequence.getStages()" [textContent]="stage"></dt-tag>
         </p>
       </dt-info-group>
     </div>
