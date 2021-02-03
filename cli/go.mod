@@ -20,7 +20,7 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/mattn/go-runewidth v0.0.4 // indirect
-	github.com/mattn/go-shellwords v1.0.10
+	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/onsi/ginkgo v1.11.0 // indirect
