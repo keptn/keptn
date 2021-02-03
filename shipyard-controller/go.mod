@@ -22,9 +22,8 @@ require (
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/stretchr/testify v1.5.1
-	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
-	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.7
+	github.com/ugorji/go v1.1.13 // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.4.0
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
