@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, Input, OnInit, Output, EventEmitter} from '@angular/core';
-import {Root} from "../../_models/root";
+import {Root} from '../../_models/root';
 
 @Component({
   selector: 'ktb-sequence-timeline',
@@ -7,25 +7,32 @@ import {Root} from "../../_models/root";
   styleUrls: ['./ktb-sequence-timeline.component.scss']
 })
 export class KtbSequenceTimelineComponent implements OnInit {
-  private _currentRoot: Root;
+  private _currentSequence: Root;
+  public selectedStage: String;
 
   @Output() selectedStageChange: EventEmitter<String> = new EventEmitter();
 
   @Input()
-  get currentRoot(): Root {
-    return this._currentRoot;
+  get currentSequence(): Root {
+    return this._currentSequence;
   }
-  set currentRoot(root: Root) {
-    if (this._currentRoot !== root) {
-      this._currentRoot = root;
-      const stages = this._currentRoot.getStages();
-      this.selectStage(stages[stages.length-1]);
-      this._changeDetectorRef.markForCheck();
+  set currentSequence(root: Root) {
+    if (this._currentSequence !== root) {
+      this._currentSequence = root;
+      const stages = this._currentSequence.getStages();
+      this.stageChanged(stages[stages.length - 1]);
     }
   }
 
-
   selectStage(stage: String) {
+    if (this.selectedStage !== stage) {
+      this.stageChanged(stage);
+    }
+  }
+
+  stageChanged(stage: String) {
+    this.selectedStage = stage;
+    this._changeDetectorRef.markForCheck();
     this.selectedStageChange.emit(stage);
   }
 
