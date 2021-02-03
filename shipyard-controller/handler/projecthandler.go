@@ -168,7 +168,7 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 	err, rollback := service.ProjectManager.Create(createProjectParams)
 	if err != nil {
 		if err := service.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
-			//LOG MESSAGE ONLY
+			//TODO: LOG MESSAGE ONLY
 		}
 		rollback()
 		if err == ErrProjectAlreadyExists {
@@ -186,7 +186,7 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 	}
 	if err := service.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
-		//LOG MESSAGE ONLY
+		//TODO: LOG MESSAGE ONLY
 	}
 
 	c.Status(http.StatusCreated)
@@ -257,9 +257,10 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 			Code:    http.StatusBadRequest,
 			Message: stringp("Must provide a project name"),
 		})
+		return
 	}
 
-	err, response := service.ProjectManager.Delete(projectName)
+	err, responseMessage := service.ProjectManager.Delete(projectName)
 	if err != nil {
 		if err := service.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
 			//LOG MESSAGE ONLY
@@ -276,7 +277,9 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 		//LOG MESSAGE ONLY
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, operations.DeleteProjectResponse{
+		Message: responseMessage,
+	})
 }
 
 func (service *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {

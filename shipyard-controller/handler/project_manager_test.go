@@ -92,7 +92,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(in1 string) (*keptnapimodels.Project, error) {
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("Whoops...")
 	}
 
@@ -117,8 +117,8 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(in1 string) (*keptnapimodels.Project, error) {
-		project := &keptnapimodels.Project{
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		project := &models.ExpandedProject{
 			ProjectName: "existing-project",
 		}
 		return project, nil
@@ -145,9 +145,10 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(in1 string) (*keptnapimodels.Project, error) {
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
+
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
 		return errors.New("whoops...")
 	}
@@ -180,9 +181,10 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(in1 string) (*keptnapimodels.Project, error) {
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
+
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
 		return nil
 	}
@@ -236,7 +238,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(in1 string) (*keptnapimodels.Project, error) { return nil, nil }
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error { return nil }
 	configStore.CreateStageFunc = func(projectName string, stageName string) error { return nil }
 	configStore.CreateProjectShipyardFunc = func(projectName string, resoureces []*keptnapimodels.Resource) error { return nil }
@@ -273,9 +275,10 @@ func TestCreate(t *testing.T) {
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(in1 string) (*keptnapimodels.Project, error) {
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
+
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
 		return nil
 	}
@@ -354,7 +357,7 @@ func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 		return nil, nil
 	}
-	configStore.GetProjectFunc = func(projectName string) (*keptnapimodels.Project, error) {
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("Whoops...")
 	}
 
@@ -386,10 +389,9 @@ func TestUpdate_FailsWhenUpdateingGitRepositorySecretFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return errors.New("Whoops...")
 	}
-	configStore.GetProjectFunc = func(projectName string) (*keptnapimodels.Project, error) {
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
-
 	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
@@ -424,6 +426,15 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 		RemoteURI: "git-url",
 	})
 
+	oldProject := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "http://my-old-remote.uri",
+		GitUser:         "my-old-user",
+		ProjectName:     "my-project",
+		Shipyard:        "",
+		ShipyardVersion: "v1",
+	}
+
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 
 		return map[string][]byte{"git-credentials": oldSecretsEncoded}, nil
@@ -432,8 +443,8 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	configStore.GetProjectFunc = func(projectName string) (*keptnapimodels.Project, error) {
-		return nil, nil
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return oldProject, nil
 	}
 
 	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
@@ -485,14 +496,13 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		RemoteURI: "git-url",
 	})
 
-	oldProject := keptnapimodels.Project{
+	oldProject := &models.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
-		GitToken:        "my-old-token",
 		GitUser:         "my-old-user",
 		ProjectName:     "my-project",
+		Shipyard:        "",
 		ShipyardVersion: "v1",
-		Stages:          nil,
 	}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
@@ -503,8 +513,8 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	configStore.GetProjectFunc = func(projectName string) (*keptnapimodels.Project, error) {
-		return &oldProject, nil
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return oldProject, nil
 	}
 
 	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
@@ -540,7 +550,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 	assert.Equal(t, "git-user", projectRepo.UpdateProjectUpstreamCalls()[0].User)
 	assert.Equal(t, "git-url", projectRepo.UpdateProjectUpstreamCalls()[0].URI)
 
-	assert.Equal(t, oldProject, configStore.UpdateProjectCalls()[1].Project)
+	assert.Equal(t, toModelProject(*oldProject), configStore.UpdateProjectCalls()[1].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
 	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
 
@@ -566,14 +576,13 @@ func TestUpdate(t *testing.T) {
 		RemoteURI: "git-url",
 	})
 
-	oldProject := keptnapimodels.Project{
+	oldProject := &models.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
-		GitToken:        "my-old-token",
 		GitUser:         "my-old-user",
 		ProjectName:     "my-project",
+		Shipyard:        "",
 		ShipyardVersion: "v1",
-		Stages:          nil,
 	}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
@@ -584,8 +593,8 @@ func TestUpdate(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	configStore.GetProjectFunc = func(projectName string) (*keptnapimodels.Project, error) {
-		return &oldProject, nil
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return oldProject, nil
 	}
 
 	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
@@ -631,17 +640,18 @@ func TestDelete(t *testing.T) {
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &ConfigurationStoreMock{}
 
-	configStore.GetProjectFunc = func(projectName string) (*keptnapimodels.Project, error) {
-		p := keptnapimodels.Project{
+	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+
+		p := &models.ExpandedProject{
 			CreationDate:    "creationdate",
 			GitRemoteURI:    "http://my-remote.uri",
-			GitToken:        "my-token",
 			GitUser:         "my-user",
 			ProjectName:     "my-project",
+			Shipyard:        "",
 			ShipyardVersion: "v1",
-			Stages:          nil,
 		}
-		return &p, nil
+
+		return p, nil
 	}
 
 	secretEncoded, _ := json.Marshal(gitCredentials{

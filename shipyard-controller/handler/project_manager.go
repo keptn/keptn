@@ -74,7 +74,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 
 func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error, rollbackfunc) {
 
-	existingProject, err := pu.ConfigurationStore.GetProject(*params.Name)
+	existingProject, err := pu.ProjectRepository.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
@@ -99,10 +99,17 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	})
 
 	if err != nil {
+		pu.Logger.Error(fmt.Sprintf("Error occured while creating project in configuration service: %s", err.Error()))
 		return err, func() error {
-			return pu.deleteGITRepositorySecret(*params.Name)
+			pu.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+			if err := pu.deleteGITRepositorySecret(*params.Name); err != nil {
+				pu.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+				return err
+			}
+			return nil
 		}
 	}
+	pu.Logger.Info(fmt.Sprintf("Created project in configuration service: %s", *params.Name))
 
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 	shipyard, err := common.UnmarshalShipyard(string(decodedShipyard))
@@ -122,12 +129,16 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		},
 	}
 	if err := pu.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
+		pu.Logger.Error(fmt.Sprintf("Error occured while uploading shipyard resource to configuraiton service: %s", err.Error()))
 		return err, func() error {
-
+			pu.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
 			if err := pu.ConfigurationStore.DeleteProject(*params.Name); err != nil {
+				pu.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error()))
 				return err
 			}
+			pu.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
 			if err := pu.deleteGITRepositorySecret(*params.Name); err != nil {
+				pu.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
 				return err
 			}
 			return nil
@@ -154,7 +165,7 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	if err != nil {
 		return err, nilRollback
 	}
-	oldProject, err := pu.ConfigurationStore.GetProject(*params.Name)
+	oldProject, err := pu.ProjectRepository.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
@@ -175,6 +186,14 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		ProjectName:  *params.Name,
 	}
 
+	projectToRollback := apimodels.Project{
+		CreationDate:    oldProject.CreationDate,
+		GitRemoteURI:    oldProject.GitRemoteURI,
+		GitUser:         oldProject.GitUser,
+		ProjectName:     oldProject.ProjectName,
+		ShipyardVersion: oldProject.ShipyardVersion,
+	}
+
 	err = pu.ConfigurationStore.UpdateProject(projectToUpdate)
 	if err != nil {
 		return err, func() error {
@@ -190,7 +209,7 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	if err != nil {
 		return err, func() error {
 
-			errConfigStoreRollback := pu.ConfigurationStore.UpdateProject(*oldProject)
+			errConfigStoreRollback := pu.ConfigurationStore.UpdateProject(projectToRollback)
 			if errConfigStoreRollback != nil {
 				return errConfigStoreRollback
 			}
@@ -209,7 +228,7 @@ func (pu *ProjectManager) Delete(projectName string) (error, string) {
 	pu.Logger.Info(fmt.Sprintf("Deleting project %s", projectName))
 	var resultMessage strings.Builder
 
-	project, err := pu.ConfigurationStore.GetProject(projectName)
+	project, err := pu.ProjectRepository.GetProject(projectName)
 	if err != nil {
 		resultMessage.WriteString(fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.\n", projectName))
 	} else if project != nil && project.GitRemoteURI != "" {
@@ -342,6 +361,26 @@ func getShipyardNotAvailableError(project string) string {
 	return fmt.Sprintf("Shipyard of project %s cannot be retrieved anymore. "+
 		"After deleting the project, the namespaces containing the services are still available. "+
 		"This may cause problems if a project with the same name is created later.", project)
+}
+
+func toModelProject(project models.ExpandedProject) apimodels.Project {
+	return apimodels.Project{
+		CreationDate:    project.CreationDate,
+		GitRemoteURI:    project.GitRemoteURI,
+		GitUser:         project.GitUser,
+		ProjectName:     project.ProjectName,
+		ShipyardVersion: project.ShipyardVersion,
+	}
+}
+
+func toExpandedProject(project apimodels.Project) models.ExpandedProject {
+	return models.ExpandedProject{
+		CreationDate:    project.CreationDate,
+		GitRemoteURI:    project.GitRemoteURI,
+		GitUser:         project.GitUser,
+		ProjectName:     project.ProjectName,
+		ShipyardVersion: project.ShipyardVersion,
+	}
 }
 
 type gitCredentials struct {

@@ -30,9 +30,6 @@ var _ ConfigurationStore = &ConfigurationStoreMock{}
 //             DeleteProjectFunc: func(projectName string) error {
 // 	               panic("mock out the DeleteProject method")
 //             },
-//             GetProjectFunc: func(projectName string) (*models.Project, error) {
-// 	               panic("mock out the GetProject method")
-//             },
 //             GetProjectResourceFunc: func(projectName string, resourceURI string) (*models.Resource, error) {
 // 	               panic("mock out the GetProjectResource method")
 //             },
@@ -57,9 +54,6 @@ type ConfigurationStoreMock struct {
 
 	// DeleteProjectFunc mocks the DeleteProject method.
 	DeleteProjectFunc func(projectName string) error
-
-	// GetProjectFunc mocks the GetProject method.
-	GetProjectFunc func(projectName string) (*models.Project, error)
 
 	// GetProjectResourceFunc mocks the GetProjectResource method.
 	GetProjectResourceFunc func(projectName string, resourceURI string) (*models.Resource, error)
@@ -93,11 +87,6 @@ type ConfigurationStoreMock struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 		}
-		// GetProject holds details about calls to the GetProject method.
-		GetProject []struct {
-			// ProjectName is the projectName argument value.
-			ProjectName string
-		}
 		// GetProjectResource holds details about calls to the GetProjectResource method.
 		GetProjectResource []struct {
 			// ProjectName is the projectName argument value.
@@ -115,7 +104,6 @@ type ConfigurationStoreMock struct {
 	lockCreateProjectShipyard sync.RWMutex
 	lockCreateStage           sync.RWMutex
 	lockDeleteProject         sync.RWMutex
-	lockGetProject            sync.RWMutex
 	lockGetProjectResource    sync.RWMutex
 	lockUpdateProject         sync.RWMutex
 }
@@ -249,37 +237,6 @@ func (mock *ConfigurationStoreMock) DeleteProjectCalls() []struct {
 	mock.lockDeleteProject.RLock()
 	calls = mock.calls.DeleteProject
 	mock.lockDeleteProject.RUnlock()
-	return calls
-}
-
-// GetProject calls GetProjectFunc.
-func (mock *ConfigurationStoreMock) GetProject(projectName string) (*models.Project, error) {
-	if mock.GetProjectFunc == nil {
-		panic("ConfigurationStoreMock.GetProjectFunc: method is nil but ConfigurationStore.GetProject was just called")
-	}
-	callInfo := struct {
-		ProjectName string
-	}{
-		ProjectName: projectName,
-	}
-	mock.lockGetProject.Lock()
-	mock.calls.GetProject = append(mock.calls.GetProject, callInfo)
-	mock.lockGetProject.Unlock()
-	return mock.GetProjectFunc(projectName)
-}
-
-// GetProjectCalls gets all the calls that were made to GetProject.
-// Check the length with:
-//     len(mockedConfigurationStore.GetProjectCalls())
-func (mock *ConfigurationStoreMock) GetProjectCalls() []struct {
-	ProjectName string
-} {
-	var calls []struct {
-		ProjectName string
-	}
-	mock.lockGetProject.RLock()
-	calls = mock.calls.GetProject
-	mock.lockGetProject.RUnlock()
 	return calls
 }
 

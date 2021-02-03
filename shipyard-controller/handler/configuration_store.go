@@ -8,7 +8,6 @@ import (
 
 //go:generate moq  -out ./configuration_store_moq.go . ConfigurationStore
 type ConfigurationStore interface {
-	GetProject(projectName string) (*keptnapimodels.Project, error)
 	CreateProject(project keptnapimodels.Project) error
 	UpdateProject(project keptnapimodels.Project) error
 	CreateProjectShipyard(projectName string, resoureces []*keptnapimodels.Resource) error
@@ -37,17 +36,12 @@ func (g GitConfigurationStore) GetProjectResource(projectName string, resourceUR
 	return g.resourceAPI.GetProjectResource(projectName, resourceURI)
 }
 
-func (g GitConfigurationStore) GetProject(projectName string) (*keptnapimodels.Project, error) {
-	p := keptnapimodels.Project{
-		ProjectName: projectName,
-	}
-	project, err := g.projectAPI.GetProject(p)
-	return project, errors.New(*err.Message)
-}
-
 func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) error {
-	_, err := g.projectAPI.CreateProject(project)
-	return errors.New(*err.Message)
+	if _, err := g.projectAPI.CreateProject(project); err != nil {
+		return errors.New(*err.Message)
+	}
+	return nil
+
 }
 
 func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) error {
@@ -59,16 +53,22 @@ func (g GitConfigurationStore) DeleteProject(projectName string) error {
 	p := keptnapimodels.Project{
 		ProjectName: projectName,
 	}
-	_, err := g.projectAPI.DeleteProject(p)
-	return errors.New(*err.Message)
+	if _, err := g.projectAPI.DeleteProject(p); err != nil {
+		return errors.New(*err.Message)
+	}
+	return nil
 }
 
 func (g GitConfigurationStore) CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error {
-	_, err := g.resourceAPI.CreateProjectResources(projectName, resources)
-	return err
+	if _, err := g.resourceAPI.CreateProjectResources(projectName, resources); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (g GitConfigurationStore) CreateStage(projectName string, stageName string) error {
-	_, err := g.stagesAPI.CreateStage(projectName, stageName)
-	return errors.New(*err.Message)
+	if _, err := g.stagesAPI.CreateStage(projectName, stageName); err != nil {
+		return errors.New(*err.Message)
+	}
+	return nil
 }
