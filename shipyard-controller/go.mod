@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/swag v0.19.9
 	github.com/go-openapi/validate v0.19.5
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
-	github.com/go-test/deep v1.0.5
+	github.com/go-test/deep v1.0.7
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
