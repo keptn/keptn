@@ -5,27 +5,24 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
-	"github.com/keptn/keptn/api/handlers"
-
 	"github.com/go-openapi/errors"
+	openapierrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	openapierrors "github.com/go-openapi/errors"
-
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/api/handlers"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
+	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )

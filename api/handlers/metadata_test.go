@@ -3,11 +3,14 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-test/deep"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
-	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,11 +19,9 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	fakeappsv1 "k8s.io/client-go/kubernetes/typed/apps/v1/fake"
 	test "k8s.io/client-go/testing"
-	"net/http"
-	"net/http/httptest"
-	"os"
-	"testing"
 
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
