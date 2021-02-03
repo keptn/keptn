@@ -18,7 +18,7 @@ require (
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210126110620-14959675036c
 	github.com/keptn/kubernetes-utils v0.8.0-alpha
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/magiconair/properties v1.8.1
+	github.com/magiconair/properties v1.8.4
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
