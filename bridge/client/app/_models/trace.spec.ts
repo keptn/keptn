@@ -4,7 +4,8 @@ import {async} from "@angular/core/testing";
 describe('Trace', () => {
 
   it('should create instances from json', async(() => {
-    let rootTraces: Trace[] = [{
+    let rootTraces: Trace[] = [
+      {
       "contenttype": "application/json",
       "data": {
         "deploymentStrategies": {},
@@ -1825,6 +1826,24 @@ describe('Trace', () => {
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
         "shkeptncontext": "42e8e409-5afc-4ee5-abdb-f41926ab2583"
       }]
+    }, {
+      "data": {
+        "configurationChange": {
+          "values": {}
+        },
+        "deployment": {
+          "deploymentstrategy": ""
+        },
+        "project": "keptn",
+        "service": "control-plane",
+        "stage": "dev"
+      },
+      "id": "3b209b06-597c-413e-9401-b80e4855a313",
+      "source": "https://github.com/keptn/keptn/cli#configuration-change",
+      "specversion": "1.0",
+      "time": "2021-02-02T08:52:39.186Z",
+      "type": "sh.keptn.event.dev.artifact-delivery.triggered",
+      "shkeptncontext": "0ede19b7-dc65-4f04-9882-ddadf3703019"
     }].map(trace => Trace.fromJSON(trace));
     let evaluationTraces: Trace[] = [{
       "contenttype": "application/json",
@@ -2130,6 +2149,16 @@ describe('Trace', () => {
     expect(rootTraces[2].isSuccessful()).toBe(null);
     expect(rootTraces[2].getProject()).toBe('sockshop');
     expect(rootTraces[2].getService()).toBe('carts');
+
+    expect(rootTraces[8].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
+    expect(rootTraces[8].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[8].getShortImageName()).toBe(undefined, 'ShortImageName for third trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "undefined"');
+    expect(rootTraces[8].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[8].isFaulty()).toBe(null);
+    expect(rootTraces[8].isWarning()).toBe(null);
+    expect(rootTraces[8].isSuccessful()).toBe(null);
+    expect(rootTraces[8].getProject()).toBe('keptn');
+    expect(rootTraces[8].getService()).toBe('control-plane');
 
     expect(evaluationTraces[0].type).toBe('sh.keptn.event.evaluation.finished');
     expect(evaluationTraces[0].getLabel()).toBe('Evaluation finished', 'Label for trace "sh.keptn.event.evaluation.finished" should be "Evaluation finished"');

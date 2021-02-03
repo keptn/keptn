@@ -125,12 +125,12 @@ func runVersionCheck() {
 
 	clusterVersion, err := getKeptnServerVersion()
 	if err != nil {
-		logging.PrintLog(err.Error(), logging.InfoLevel)
+		fmt.Fprintf(os.Stderr, "* Warning: could not check Keptn server version: %s\n", err.Error())
 	} else {
 		kvChecker := version.NewKeptnVersionChecker()
 		keptnChecked, keptnMsgPrinted = kvChecker.CheckKeptnVersion(Version, clusterVersion, true)
 		if keptnMsgPrinted {
-			fmt.Fprintf(os.Stderr, "* Your Keptn cluster version: %s", clusterVersion)
+			fmt.Fprintf(os.Stderr, "* Your Keptn cluster version: %s\n", clusterVersion)
 		}
 
 		if clusterVersion != Version {

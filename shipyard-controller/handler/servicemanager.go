@@ -3,10 +3,16 @@ package handler
 import (
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/operations"
+)
+
+const (
+	serviceNameMaxLen = 53
 )
 
 var errServiceAlreadyExists = errors.New("project already exists")
@@ -36,6 +42,13 @@ func (sm *serviceManager) createService(projectName string, params *operations.C
 	if err != nil {
 		_ = sendServiceCreateFailedFinishedEvent(keptnContext, projectName, params)
 		return sm.logAndReturnError(fmt.Sprintf("could not get stages of project %s: %s", projectName, err.Error()))
+	}
+
+	for _, stage := range stages {
+		sm.logger.Info(fmt.Sprintf("Validating service %s", *params.ServiceName))
+		if err := validateServiceName(projectName, stage.StageName, *params.ServiceName); err != nil {
+			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.ServiceName, stage.StageName, projectName, err.Error()))
+		}
 	}
 
 	for _, stage := range stages {
@@ -186,4 +199,13 @@ func sendServiceCreateFailedFinishedEvent(keptnContext string, projectName strin
 func (sm *serviceManager) logAndReturnError(msg string) error {
 	sm.logger.Error(msg)
 	return errors.New(msg)
+}
+
+func validateServiceName(projectName, stage, serviceName string) error {
+	allowedLength := serviceNameMaxLen - len(projectName) - len(stage) - len("generated")
+	if len(serviceName) > allowedLength {
+		return fmt.Errorf("Service name need to be less than %d characters", allowedLength)
+	}
+
+	return nil
 }
