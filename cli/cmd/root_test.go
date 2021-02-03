@@ -146,6 +146,9 @@ func Test_runVersionCheck(t *testing.T) {
 
 			runVersionCheck()
 
+			// reset version
+			Version = ""
+
 			out := r.revertStdErr()
 			if out != tt.wantOutput {
 				t.Errorf("unexpected output: '%s', expected '%s'", out, tt.wantOutput)
