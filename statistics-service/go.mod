@@ -9,15 +9,13 @@ require (
 	github.com/go-openapi/spec v0.19.9 // indirect
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
-	github.com/go-test/deep v1.0.5
+	github.com/go-test/deep v1.0.7
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.7.1
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/stretchr/testify v1.4.0
-	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
-	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.7
 	github.com/ugorji/go v1.1.8 // indirect
 	go.mongodb.org/mongo-driver v1.4.1
