@@ -8,3 +8,10 @@
 .task-buttons {
   margin-right: 37px;
 }
+
+.sub-task-item {
+  border-bottom: 1px solid $gray-200;
+}
+.sub-task-item:last-child {
+  border-bottom: none;
+}

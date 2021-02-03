@@ -15,14 +15,6 @@
     </p>
   </div>
   <div #taskRef fxLayout="column" fxLayoutGap="15px" *ngFor="let task of getTasksByStage(tasks, stage) | slice:1; let i = index; trackBy: identifyEvent">
-    <ktb-task-item [task]="task" [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)" (click)="focusEvent(task)">
-      <ktb-task-item-detail>
-        <div #subTaskRef *ngFor="let subTask of task.traces; let i = index; trackBy: identifyEvent">
-          <p *ngIf="!subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> started</p>
-          <p *ngIf="subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> finished with result <span class="italic" [textContent]="subTask.data.result"></span></p>
-          <p class="m-0 small" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></p>
-        </div>
-      </ktb-task-item-detail>
-    </ktb-task-item>
+    <ktb-task-item [task]="task" [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)" (click)="focusEvent(task)"></ktb-task-item>
   </div>
 </div>

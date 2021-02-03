@@ -1,4 +1,4 @@
-<ktb-expandable-tile [expanded]="false" *ngIf="_task && (project$ | async) as project">
+<ktb-expandable-tile [expanded]="false" [error]="_task.isFaulty()" [warning]="_task.isWarning()" [success]="_task.isSuccessful()" [highlight]="_task.isApproval()" *ngIf="_task && (project$ | async) as project">
   <ktb-expandable-tile-header>
     <div fxLayout="row">
       <div fxFlex>
@@ -28,7 +28,7 @@
             </a>
           </ng-container>
           <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _task.shkeptncontext, _task.getStage()]" *ngIf="_task.isEvaluation() && _task.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
-          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event)"><dt-icon name="coding"></dt-icon></button>
+          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event, _task)"><dt-icon name="coding"></dt-icon></button>
         </div>
       </div>
     </div>
@@ -67,12 +67,23 @@
       </table>
     </div>
   </ktb-expandable-tile-header>
+  <div class="sub-task-item pt-2 pb-2" #subTaskRef *ngFor="let subTask of task.traces">
+    <div fxLayout="row">
+      <div fxFlex>
+        <p class="m-0" *ngIf="!subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> started</p>
+        <p class="m-0" *ngIf="subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> finished with result <span class="italic" [textContent]="subTask.data.result"></span></p>
+        <p class="m-0 small" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></p>
+      </div>
+      <div fxLayout="column" fxLayoutAlign="start end">
+        <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event, subTask)"><dt-icon name="coding"></dt-icon></button>
+      </div>
+    </div>
+  </div>
   <ng-content
     select="ktb-task-item-detail,
         [ktb-task-item-detail],
         [ktbEventItemDetail]"></ng-content>
 </ktb-expandable-tile>
-<!--ktb-selectable-tile [error]="_task.isFaulty()" [warning]="_task.isWarning()" [success]="_task.isSuccessful()" [highlight]="_task.isApproval()" *ngIf="_task && (project$ | async) as project"></ktb-selectable-tile-->
 <ng-template #taskPayloadDialog let-data>
   <h1 mat-dialog-title>Event payload</h1>
   <div mat-dialog-content>
