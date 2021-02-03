@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/mock v1.2.0
+	github.com/golang/mock v1.4.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
 	github.com/keptn/kubernetes-utils v0.8.0-alpha
