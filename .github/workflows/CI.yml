@@ -201,7 +201,7 @@ jobs:
         uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
       - name: 'Get next patch version'
         id: get_next_semver_tag
-        uses: "WyriHaximus/github-action-next-semvers@v1"
+        uses: "WyriHaximus/github-action-next-semvers@v1.1.0"
         with:
           version: ${{ steps.get_previous_tag.outputs.tag }}
       - name: Get the version
@@ -287,6 +287,14 @@ jobs:
         uses: c-py/action-dotenv-to-setenv@v2
         with:
           env-file: .ci_env
+
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Test api
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
@@ -382,12 +390,18 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install npm libs
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Checkout Code
-        uses: actions/checkout@v2
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v2
@@ -423,6 +437,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
+
       - name: Test cli
         run: go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./cli
@@ -452,11 +474,18 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
         uses: actions/checkout@v2
-
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
       - name: Build cli
         env:
           PLATFORM: "${{ matrix.platform }}"
           GOARCH: "amd64"
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
           VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
           DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
           GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
@@ -480,6 +509,12 @@ jobs:
           OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}" # no need for file-ending in the archive name
           mkdir dist
+
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+          fi
+
           go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
           tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTEABLE_NAME}
       - name: Upload Keptn CLI as an artifact
