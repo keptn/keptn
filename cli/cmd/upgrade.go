@@ -153,6 +153,10 @@ func doUpgradePreRunCheck() error {
 }
 
 func getInstalledKeptnVersion() (string, error) {
+	if mocking {
+		// return a fake version
+		return "0.7.0", nil
+	}
 	lastRelease, err := getLatestKeptnRelease()
 	if err != nil {
 		return "", err
