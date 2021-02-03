@@ -10,6 +10,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
+
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -21,7 +22,6 @@ import (
 
 // TriggerEvaluationHandlerFunc triggers a new evaluation by sending a start-evaluation event
 func TriggerEvaluationHandlerFunc(params evaluation.TriggerEvaluationParams, principal *models.Principal) middleware.Responder {
-
 	serviceHandler := keptnapi.NewServiceHandler("http://configuration-service:8080")
 	_, err := serviceHandler.GetService(params.ProjectName, params.StageName, params.ServiceName)
 	if err != nil {
