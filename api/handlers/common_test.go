@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"github.com/keptn/keptn/api/utils"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-openapi/runtime/middleware"
+
+	"github.com/keptn/keptn/api/utils"
 )
 
 func Test_sanitizeURL(t *testing.T) {

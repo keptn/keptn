@@ -10,12 +10,12 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
+
 	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/utils"
-
-	"github.com/keptn/keptn/api/models"
 )
 
 func Test_createOrApplyKeptnContext(t *testing.T) {

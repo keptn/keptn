@@ -8,12 +8,11 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"gopkg.in/yaml.v2"
-
-	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
