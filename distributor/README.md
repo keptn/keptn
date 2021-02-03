@@ -3,8 +3,8 @@
 A distributor queries event messages from NATS and sends the events to services that have a subscription to the event topic.
 Thus, each service has its own distributor that is configured by the two environment variables:
 
-- `KEPTN_API_ENDPOINT` - Keptn API Endpoint - needed when the distributor runs outside of the Keptn cluster. default = `"""`
-- `KEPTN_API_TOKEN` - Keptn API Token - needed when the distributor runs outside of the Keptn cluster. default = `"""`
+- `KEPTN_API_ENDPOINT` - Keptn API Endpoint - needed when the distributor runs outside of the Keptn cluster. default = `""`
+- `KEPTN_API_TOKEN` - Keptn API Token - needed when the distributor runs outside of the Keptn cluster. default = `""`
 - `API_PROXY_PORT` - Port on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `8081`.
 - `API_PROXY_PATH` - Path on which the distributor will listen for incoming Keptn API requests by its execution plane service. default = `/`.
 - `HTTP_POLLING_INTERVAL` - Interval (in seconds) in which the distributor will check for new triggered events on the Keptn API. default = `10`
@@ -15,8 +15,11 @@ Thus, each service has its own distributor that is configured by the two environ
 - `PUBSUB_RECIPIENT` - Hostname of the execution plane service the distributor should forward incoming CloudEvents to. default = `http://127.0.0.1`
 - `PUBSUB_RECIPIENT_PORT` - Port of the execution plane service the distributor should forward incoming CloudEvents to. default = `8080`
 - `PUBSUB_RECIPIENT_PATH` - Path of the execution plane service the distributor should forward incoming CloudEvents to. default = `/`
+- `PROJECT_FILTER` - Filter events for a specific project. default = `""`
+- `STAGE_FILTER` - Filter events for a specific stage. default = `""`
+- `SERVICE_FILTER` - Filter events for a specific service. default = `""`
 
-All cloud events specified in `PUBSUB_TOPIC` are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
+All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 
 ### Configuration examples
 
