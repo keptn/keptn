@@ -27,13 +27,12 @@ $transition-time: 500ms;
     }
   }
 
-  .stage-selected {
-    font-size: $default-font-size + 2px;
-    font-weight: bold;
-  }
-
   .stage-transition {
     transition: font-size $transition-time, font-weight $transition-time;
+    &.focused {
+      font-size: $default-font-size + 2px;
+      font-weight: bold;
+    }
   }
 }
 
