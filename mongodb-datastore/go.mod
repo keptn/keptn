@@ -10,12 +10,11 @@ require (
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9
 	github.com/go-openapi/validate v0.19.10
-	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210118153845-86a445dfcb86
 	github.com/magiconair/properties v1.8.1
 	github.com/xdg/stringprep v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.3.4
+	go.mongodb.org/mongo-driver v1.4.6
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 )
