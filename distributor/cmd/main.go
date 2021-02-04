@@ -22,24 +22,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/url"
-
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/keptn/keptn/distributor/pkg/lib"
-
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats.go"
+
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/distributor/pkg/lib"
 )
 
 type envConfig struct {
