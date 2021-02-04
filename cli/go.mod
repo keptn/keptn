@@ -22,7 +22,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.3.3
+	github.com/mitchellh/mapstructure v1.4.1
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/spf13/cobra v1.0.0
