@@ -8,6 +8,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"os"
@@ -1692,7 +1693,11 @@ func getTestShipyardController() *shipyardController {
 				return nil
 			},
 		},
-		logger: keptncommon.NewLogger("", "", ""),
+		eventsDbOperations: &db_mock.EventsDbOperationsMock{
+			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+				return nil
+			},
+		},
 	}
 	return em
 }

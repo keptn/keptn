@@ -29,24 +29,24 @@ type IShipyardController interface {
 }
 
 type shipyardController struct {
-	projectRepo      db.ProjectRepo
-	eventRepo        db.EventRepo
-	taskSequenceRepo db.TaskSequenceRepo
-	logger           *keptncommon.Logger
+	projectRepo        db.ProjectRepo
+	eventRepo          db.EventRepo
+	taskSequenceRepo   db.TaskSequenceRepo
+	eventsDbOperations db.EventsDbOperations
+	logger             *keptncommon.Logger
 }
 
 func GetShipyardControllerInstance() *shipyardController {
 	if shipyardControllerInstance == nil {
 		logger := keptncommon.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
-			projectRepo: &db.MongoDBProjectsRepo{
-				Logger: logger,
-			},
-			eventRepo: &db.MongoDBEventsRepo{
-				Logger: logger,
-			},
-			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
-				Logger: logger,
+			projectRepo:      &db.MongoDBProjectsRepo{Logger: logger},
+			eventRepo:        &db.MongoDBEventsRepo{Logger: logger},
+			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{Logger: logger},
+			eventsDbOperations: &db.ProjectsMaterializedView{
+				ProjectRepo:     &db.MongoDBProjectsRepo{Logger: logger},
+				EventsRetriever: &db.MongoDBEventsRepo{Logger: logger},
+				Logger:          logger,
 			},
 			logger: logger,
 		}
@@ -83,6 +83,16 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 
 	statusType := split[len(split)-1]
 
+	if err := sc.eventsDbOperations.UpdateEventOfService(
+		event.Data,
+		*event.Type,
+		event.Shkeptncontext,
+		event.ID,
+		event.Triggeredid,
+	); err != nil {
+		return err
+	}
+
 	switch statusType {
 	case string(common.TriggeredEvent):
 		return sc.handleTriggeredEvent(event)
@@ -93,6 +103,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 	default:
 		return nil
 	}
+
 }
 
 func getEventScope(event models.Event) (*keptnv2.EventData, error) {
