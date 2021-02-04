@@ -2151,9 +2151,9 @@ describe('Trace', () => {
     expect(rootTraces[2].getService()).toBe('carts');
 
     expect(rootTraces[8].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[8].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[8].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[8].getShortImageName()).toBe(undefined, 'ShortImageName for third trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "undefined"');
-    expect(rootTraces[8].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[8].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[8].isFaulty()).toBe(null);
     expect(rootTraces[8].isWarning()).toBe(null);
     expect(rootTraces[8].isSuccessful()).toBe(null);
