@@ -3,7 +3,7 @@ module github.com/keptn/keptn/helm-service
 go 1.13
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.2.0
+	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
