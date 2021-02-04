@@ -14,9 +14,18 @@
       <dt-info-group>
         <dt-info-group-title>
           <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-            <div fxLayout="row" fxLayoutAlign="start center">
-              <button dt-icon-button disabled variant="nested" *ngIf="currentSequence.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-              <p class="m-0 mb-1"><span class="bold" [textContent]="currentSequence.getLabel()"></span> started</p>
+            <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
+              <p class="m-0">
+                <span class="bold" [textContent]="currentSequence.getLabel()"></span>
+                <span *ngIf="!currentSequence.isFinished(); else finishedText"> started</span>
+                <ng-template #finishedText>
+                  <span *ngIf="!currentSequence.isFaulty(); else faultyText"> succeeded</span>
+                  <ng-template #faultyText>
+                    <span> failed</span>
+                    <button dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+                  </ng-template>
+                </ng-template>
+              </p>
             </div>
           </div>
         </dt-info-group-title>

@@ -53,7 +53,7 @@ import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
-import { KtbSelectableTileComponent } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
+import { KtbSelectableTileComponent, KtbSelectableTileHeader } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
 import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
@@ -101,6 +101,7 @@ registerLocaleData(localeEn, 'en');
     KtbExpandableTileComponent,
     KtbExpandableTileHeader,
     KtbSelectableTileComponent,
+    KtbSelectableTileHeader,
     KtbHorizontalSeparatorComponent,
     KtbHorizontalSeparatorTitle,
     KtbRootEventsListComponent,
