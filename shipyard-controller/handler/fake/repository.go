@@ -1,13 +1,13 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-type getEventsMock func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
-type insertEventMock func(project string, event models.Event, status db.EventStatus) error
-type deleteEventMock func(project string, eventID string, status db.EventStatus) error
+type getEventsMock func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
+type insertEventMock func(project string, event models.Event, status common.EventStatus) error
+type deleteEventMock func(project string, eventID string, status common.EventStatus) error
 type deleteEventCollectionsMock func(project string) error
 
 type EventRepository struct {
@@ -17,15 +17,15 @@ type EventRepository struct {
 	DeleteEventCollectionsFunc deleteEventCollectionsMock
 }
 
-func (t EventRepository) GetEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-	return t.GetEventsFunc(project, filter, status)
+func (t EventRepository) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+	return t.GetEventsFunc(project, filter, status...)
 }
 
-func (t EventRepository) InsertEvent(project string, event models.Event, status db.EventStatus) error {
+func (t EventRepository) InsertEvent(project string, event models.Event, status common.EventStatus) error {
 	return t.InsertEventFunc(project, event, status)
 }
 
-func (t EventRepository) DeleteEvent(project string, eventID string, status db.EventStatus) error {
+func (t EventRepository) DeleteEvent(project string, eventID string, status common.EventStatus) error {
 	return t.DeleteEventFunc(project, eventID, status)
 }
 

@@ -21,12 +21,12 @@ import (
 var ErrProjectAlreadyExists = errors.New("project already exists")
 
 type ProjectManager struct {
-	Logger                 keptncommon.LoggerInterface
-	ConfigurationStore     ConfigurationStore
-	SecretStore            SecretStore
-	ProjectRepository      db.ProjectRepo
-	TaskSequenceRepository db.TaskSequenceRepo
-	EventRpository         db.EventRepo
+	Logger                  keptncommon.LoggerInterface
+	ConfigurationStore      common.ConfigurationStore
+	SecretStore             common.SecretStore
+	ProjectMaterializedView db.ProjectsDBOperations
+	TaskSequenceRepository  db.TaskSequenceRepo
+	EventRpository          db.EventRepo
 }
 
 type rollbackfunc func() error
@@ -36,26 +36,26 @@ var nilRollback = func() error {
 }
 
 func NewProjectManager(
-	configurationStore ConfigurationStore,
-	secretStore SecretStore,
-	projectRepo db.ProjectRepo,
+	configurationStore common.ConfigurationStore,
+	secretStore common.SecretStore,
+	dbProjectsOperations db.ProjectsDBOperations,
 	taskSequenceRepo db.TaskSequenceRepo,
 	eventRepo db.EventRepo) *ProjectManager {
 
 	projectUpdater := &ProjectManager{
-		ConfigurationStore:     configurationStore,
-		SecretStore:            secretStore,
-		ProjectRepository:      projectRepo,
-		TaskSequenceRepository: taskSequenceRepo,
-		EventRpository:         eventRepo,
-		Logger:                 keptncommon.NewLogger("", "", "shipyard-controller"),
+		ConfigurationStore:      configurationStore,
+		SecretStore:             secretStore,
+		ProjectMaterializedView: dbProjectsOperations,
+		TaskSequenceRepository:  taskSequenceRepo,
+		EventRpository:          eventRepo,
+		Logger:                  keptncommon.NewLogger("", "", "shipyard-controller"),
 	}
 	return projectUpdater
 }
 
 func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
 	pm.Logger.Info("Getting all projects")
-	allProjects, err := pm.ProjectRepository.GetProjects()
+	allProjects, err := pm.ProjectMaterializedView.GetProjects()
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
 
 func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject, error) {
 	pm.Logger.Info("Getting project with name " + projectName)
-	project, err := pm.ProjectRepository.GetProject(projectName)
+	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 
 func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error, rollbackfunc) {
 
-	existingProject, err := pu.ProjectRepository.GetProject(*params.Name)
+	existingProject, err := pu.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
@@ -165,7 +165,7 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	if err != nil {
 		return err, nilRollback
 	}
-	oldProject, err := pu.ProjectRepository.GetProject(*params.Name)
+	oldProject, err := pu.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
@@ -205,7 +205,7 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		}
 	}
 
-	err = pu.ProjectRepository.UpdateProjectUpstream(*params.Name, params.GitRemoteURL, params.GitUser)
+	err = pu.ProjectMaterializedView.UpdateUpstreamInfo(*params.Name, params.GitRemoteURL, params.GitUser)
 	if err != nil {
 		return err, func() error {
 
@@ -228,7 +228,7 @@ func (pu *ProjectManager) Delete(projectName string) (error, string) {
 	pu.Logger.Info(fmt.Sprintf("Deleting project %s", projectName))
 	var resultMessage strings.Builder
 
-	project, err := pu.ProjectRepository.GetProject(projectName)
+	project, err := pu.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		resultMessage.WriteString(fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.\n", projectName))
 	} else if project != nil && project.GitRemoteURI != "" {
@@ -261,7 +261,7 @@ func (pu *ProjectManager) Delete(projectName string) (error, string) {
 		pu.Logger.Error(fmt.Sprintf("could not delete task equence colleciton: %s", err.Error()))
 	}
 
-	if err := pu.ProjectRepository.DeleteProject(projectName); err != nil {
+	if err := pu.ProjectMaterializedView.DeleteProject(projectName); err != nil {
 		pu.Logger.Error(fmt.Sprintf("could not delete project: %s", err.Error()))
 	}
 
@@ -270,16 +270,14 @@ func (pu *ProjectManager) Delete(projectName string) (error, string) {
 }
 
 func (pu *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams) error {
-	expandedProject := &models.ExpandedProject{
-		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI:    params.GitRemoteURL,
-		GitUser:         params.GitUser,
-		ProjectName:     *params.Name,
-		Shipyard:        *params.Shipyard,
-		ShipyardVersion: "",
-		Stages:          nil,
+	p := &apimodels.Project{
+		CreationDate: strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI: params.GitRemoteURL,
+		GitToken:     params.GitToken,
+		GitUser:      params.GitUser,
+		ProjectName:  *params.Name,
 	}
-	err := pu.ProjectRepository.CreateProject(expandedProject)
+	err := pu.ProjectMaterializedView.CreateProject(p)
 	if err != nil {
 		return err
 	}

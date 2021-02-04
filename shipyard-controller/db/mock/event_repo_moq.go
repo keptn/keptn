@@ -4,51 +4,47 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// Ensure, that EventRepoMock does implement db.EventRepo.
-// If this is not the case, regenerate this file with moq.
-var _ db.EventRepo = &EventRepoMock{}
-
 // EventRepoMock is a mock implementation of db.EventRepo.
 //
-//     func TestSomethingThatUsesEventRepo(t *testing.T) {
+// 	func TestSomethingThatUsesEventRepo(t *testing.T) {
 //
-//         // make and configure a mocked db.EventRepo
-//         mockedEventRepo := &EventRepoMock{
-//             DeleteEventFunc: func(project string, eventID string, status db.EventStatus) error {
-// 	               panic("mock out the DeleteEvent method")
-//             },
-//             DeleteEventCollectionsFunc: func(project string) error {
-// 	               panic("mock out the DeleteEventCollections method")
-//             },
-//             GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-// 	               panic("mock out the GetEvents method")
-//             },
-//             InsertEventFunc: func(project string, event models.Event, status db.EventStatus) error {
-// 	               panic("mock out the InsertEvent method")
-//             },
-//         }
+// 		// make and configure a mocked db.EventRepo
+// 		mockedEventRepo := &EventRepoMock{
+// 			DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
+// 				panic("mock out the DeleteEvent method")
+// 			},
+// 			DeleteEventCollectionsFunc: func(project string) error {
+// 				panic("mock out the DeleteEventCollections method")
+// 			},
+// 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+// 				panic("mock out the GetEvents method")
+// 			},
+// 			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
+// 				panic("mock out the InsertEvent method")
+// 			},
+// 		}
 //
-//         // use mockedEventRepo in code that requires db.EventRepo
-//         // and then make assertions.
+// 		// use mockedEventRepo in code that requires db.EventRepo
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type EventRepoMock struct {
 	// DeleteEventFunc mocks the DeleteEvent method.
-	DeleteEventFunc func(project string, eventID string, status db.EventStatus) error
+	DeleteEventFunc func(project string, eventID string, status common.EventStatus) error
 
 	// DeleteEventCollectionsFunc mocks the DeleteEventCollections method.
 	DeleteEventCollectionsFunc func(project string) error
 
 	// GetEventsFunc mocks the GetEvents method.
-	GetEventsFunc func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error)
+	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
 
 	// InsertEventFunc mocks the InsertEvent method.
-	InsertEventFunc func(project string, event models.Event, status db.EventStatus) error
+	InsertEventFunc func(project string, event models.Event, status common.EventStatus) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -59,7 +55,7 @@ type EventRepoMock struct {
 			// EventID is the eventID argument value.
 			EventID string
 			// Status is the status argument value.
-			Status db.EventStatus
+			Status common.EventStatus
 		}
 		// DeleteEventCollections holds details about calls to the DeleteEventCollections method.
 		DeleteEventCollections []struct {
@@ -71,9 +67,9 @@ type EventRepoMock struct {
 			// Project is the project argument value.
 			Project string
 			// Filter is the filter argument value.
-			Filter db.EventFilter
+			Filter common.EventFilter
 			// Status is the status argument value.
-			Status db.EventStatus
+			Status []common.EventStatus
 		}
 		// InsertEvent holds details about calls to the InsertEvent method.
 		InsertEvent []struct {
@@ -82,7 +78,7 @@ type EventRepoMock struct {
 			// Event is the event argument value.
 			Event models.Event
 			// Status is the status argument value.
-			Status db.EventStatus
+			Status common.EventStatus
 		}
 	}
 	lockDeleteEvent            sync.RWMutex
@@ -92,14 +88,14 @@ type EventRepoMock struct {
 }
 
 // DeleteEvent calls DeleteEventFunc.
-func (mock *EventRepoMock) DeleteEvent(project string, eventID string, status db.EventStatus) error {
+func (mock *EventRepoMock) DeleteEvent(project string, eventID string, status common.EventStatus) error {
 	if mock.DeleteEventFunc == nil {
 		panic("EventRepoMock.DeleteEventFunc: method is nil but EventRepo.DeleteEvent was just called")
 	}
 	callInfo := struct {
 		Project string
 		EventID string
-		Status  db.EventStatus
+		Status  common.EventStatus
 	}{
 		Project: project,
 		EventID: eventID,
@@ -117,12 +113,12 @@ func (mock *EventRepoMock) DeleteEvent(project string, eventID string, status db
 func (mock *EventRepoMock) DeleteEventCalls() []struct {
 	Project string
 	EventID string
-	Status  db.EventStatus
+	Status  common.EventStatus
 } {
 	var calls []struct {
 		Project string
 		EventID string
-		Status  db.EventStatus
+		Status  common.EventStatus
 	}
 	mock.lockDeleteEvent.RLock()
 	calls = mock.calls.DeleteEvent
@@ -162,14 +158,14 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 }
 
 // GetEvents calls GetEventsFunc.
-func (mock *EventRepoMock) GetEvents(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+func (mock *EventRepoMock) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 	if mock.GetEventsFunc == nil {
 		panic("EventRepoMock.GetEventsFunc: method is nil but EventRepo.GetEvents was just called")
 	}
 	callInfo := struct {
 		Project string
-		Filter  db.EventFilter
-		Status  db.EventStatus
+		Filter  common.EventFilter
+		Status  []common.EventStatus
 	}{
 		Project: project,
 		Filter:  filter,
@@ -178,7 +174,7 @@ func (mock *EventRepoMock) GetEvents(project string, filter db.EventFilter, stat
 	mock.lockGetEvents.Lock()
 	mock.calls.GetEvents = append(mock.calls.GetEvents, callInfo)
 	mock.lockGetEvents.Unlock()
-	return mock.GetEventsFunc(project, filter, status)
+	return mock.GetEventsFunc(project, filter, status...)
 }
 
 // GetEventsCalls gets all the calls that were made to GetEvents.
@@ -186,13 +182,13 @@ func (mock *EventRepoMock) GetEvents(project string, filter db.EventFilter, stat
 //     len(mockedEventRepo.GetEventsCalls())
 func (mock *EventRepoMock) GetEventsCalls() []struct {
 	Project string
-	Filter  db.EventFilter
-	Status  db.EventStatus
+	Filter  common.EventFilter
+	Status  []common.EventStatus
 } {
 	var calls []struct {
 		Project string
-		Filter  db.EventFilter
-		Status  db.EventStatus
+		Filter  common.EventFilter
+		Status  []common.EventStatus
 	}
 	mock.lockGetEvents.RLock()
 	calls = mock.calls.GetEvents
@@ -201,14 +197,14 @@ func (mock *EventRepoMock) GetEventsCalls() []struct {
 }
 
 // InsertEvent calls InsertEventFunc.
-func (mock *EventRepoMock) InsertEvent(project string, event models.Event, status db.EventStatus) error {
+func (mock *EventRepoMock) InsertEvent(project string, event models.Event, status common.EventStatus) error {
 	if mock.InsertEventFunc == nil {
 		panic("EventRepoMock.InsertEventFunc: method is nil but EventRepo.InsertEvent was just called")
 	}
 	callInfo := struct {
 		Project string
 		Event   models.Event
-		Status  db.EventStatus
+		Status  common.EventStatus
 	}{
 		Project: project,
 		Event:   event,
@@ -226,12 +222,12 @@ func (mock *EventRepoMock) InsertEvent(project string, event models.Event, statu
 func (mock *EventRepoMock) InsertEventCalls() []struct {
 	Project string
 	Event   models.Event
-	Status  db.EventStatus
+	Status  common.EventStatus
 } {
 	var calls []struct {
 		Project string
 		Event   models.Event
-		Status  db.EventStatus
+		Status  common.EventStatus
 	}
 	mock.lockInsertEvent.RLock()
 	calls = mock.calls.InsertEvent

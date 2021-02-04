@@ -4,39 +4,34 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// Ensure, that TaskSequenceRepoMock does implement db.TaskSequenceRepo.
-// If this is not the case, regenerate this file with moq.
-var _ db.TaskSequenceRepo = &TaskSequenceRepoMock{}
-
 // TaskSequenceRepoMock is a mock implementation of db.TaskSequenceRepo.
 //
-//     func TestSomethingThatUsesTaskSequenceRepo(t *testing.T) {
+// 	func TestSomethingThatUsesTaskSequenceRepo(t *testing.T) {
 //
-//         // make and configure a mocked db.TaskSequenceRepo
-//         mockedTaskSequenceRepo := &TaskSequenceRepoMock{
-//             CreateTaskSequenceMappingFunc: func(project string, taskSequenceEvent models.TaskSequenceEvent) error {
-// 	               panic("mock out the CreateTaskSequenceMapping method")
-//             },
-//             DeleteTaskSequenceCollectionFunc: func(project string) error {
-// 	               panic("mock out the DeleteTaskSequenceCollection method")
-//             },
-//             DeleteTaskSequenceMappingFunc: func(keptnContext string, project string, stage string, taskSequenceName string) error {
-// 	               panic("mock out the DeleteTaskSequenceMapping method")
-//             },
-//             GetTaskSequenceFunc: func(project string, triggeredID string) (*models.TaskSequenceEvent, error) {
-// 	               panic("mock out the GetTaskSequence method")
-//             },
-//         }
+// 		// make and configure a mocked db.TaskSequenceRepo
+// 		mockedTaskSequenceRepo := &TaskSequenceRepoMock{
+// 			CreateTaskSequenceMappingFunc: func(project string, taskSequenceEvent models.TaskSequenceEvent) error {
+// 				panic("mock out the CreateTaskSequenceMapping method")
+// 			},
+// 			DeleteTaskSequenceCollectionFunc: func(project string) error {
+// 				panic("mock out the DeleteTaskSequenceCollection method")
+// 			},
+// 			DeleteTaskSequenceMappingFunc: func(keptnContext string, project string, stage string, taskSequenceName string) error {
+// 				panic("mock out the DeleteTaskSequenceMapping method")
+// 			},
+// 			GetTaskSequenceFunc: func(project string, triggeredID string) (*models.TaskSequenceEvent, error) {
+// 				panic("mock out the GetTaskSequence method")
+// 			},
+// 		}
 //
-//         // use mockedTaskSequenceRepo in code that requires db.TaskSequenceRepo
-//         // and then make assertions.
+// 		// use mockedTaskSequenceRepo in code that requires db.TaskSequenceRepo
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type TaskSequenceRepoMock struct {
 	// CreateTaskSequenceMappingFunc mocks the CreateTaskSequenceMapping method.
 	CreateTaskSequenceMappingFunc func(project string, taskSequenceEvent models.TaskSequenceEvent) error

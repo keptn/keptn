@@ -4,42 +4,40 @@
 package db_mock
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
-// Ensure, that ProjectRepoMock does implement db.ProjectRepo.
-// If this is not the case, regenerate this file with moq.
-var _ db.ProjectRepo = &ProjectRepoMock{}
-
 // ProjectRepoMock is a mock implementation of db.ProjectRepo.
 //
-//     func TestSomethingThatUsesProjectRepo(t *testing.T) {
+// 	func TestSomethingThatUsesProjectRepo(t *testing.T) {
 //
-//         // make and configure a mocked db.ProjectRepo
-//         mockedProjectRepo := &ProjectRepoMock{
-//             CreateProjectFunc: func(project *models.ExpandedProject) error {
-// 	               panic("mock out the CreateProject method")
-//             },
-//             DeleteProjectFunc: func(projectName string) error {
-// 	               panic("mock out the DeleteProject method")
-//             },
-//             GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
-// 	               panic("mock out the GetProject method")
-//             },
-//             GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
-// 	               panic("mock out the GetProjects method")
-//             },
-//             UpdateProjectUpstreamFunc: func(projectName string, uri string, user string) error {
-// 	               panic("mock out the UpdateProjectUpstream method")
-//             },
-//         }
+// 		// make and configure a mocked db.ProjectRepo
+// 		mockedProjectRepo := &ProjectRepoMock{
+// 			CreateProjectFunc: func(project *models.ExpandedProject) error {
+// 				panic("mock out the CreateProject method")
+// 			},
+// 			DeleteProjectFunc: func(projectName string) error {
+// 				panic("mock out the DeleteProject method")
+// 			},
+// 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+// 				panic("mock out the GetProject method")
+// 			},
+// 			GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+// 				panic("mock out the GetProjects method")
+// 			},
+// 			UpdateProjectFunc: func(project *models.ExpandedProject) error {
+// 				panic("mock out the UpdateProject method")
+// 			},
+// 			UpdateProjectUpstreamFunc: func(projectName string, uri string, user string) error {
+// 				panic("mock out the UpdateProjectUpstream method")
+// 			},
+// 		}
 //
-//         // use mockedProjectRepo in code that requires db.ProjectRepo
-//         // and then make assertions.
+// 		// use mockedProjectRepo in code that requires db.ProjectRepo
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type ProjectRepoMock struct {
 	// CreateProjectFunc mocks the CreateProject method.
 	CreateProjectFunc func(project *models.ExpandedProject) error
@@ -52,6 +50,9 @@ type ProjectRepoMock struct {
 
 	// GetProjectsFunc mocks the GetProjects method.
 	GetProjectsFunc func() ([]*models.ExpandedProject, error)
+
+	// UpdateProjectFunc mocks the UpdateProject method.
+	UpdateProjectFunc func(project *models.ExpandedProject) error
 
 	// UpdateProjectUpstreamFunc mocks the UpdateProjectUpstream method.
 	UpdateProjectUpstreamFunc func(projectName string, uri string, user string) error
@@ -76,6 +77,11 @@ type ProjectRepoMock struct {
 		// GetProjects holds details about calls to the GetProjects method.
 		GetProjects []struct {
 		}
+		// UpdateProject holds details about calls to the UpdateProject method.
+		UpdateProject []struct {
+			// Project is the project argument value.
+			Project *models.ExpandedProject
+		}
 		// UpdateProjectUpstream holds details about calls to the UpdateProjectUpstream method.
 		UpdateProjectUpstream []struct {
 			// ProjectName is the projectName argument value.
@@ -90,6 +96,7 @@ type ProjectRepoMock struct {
 	lockDeleteProject         sync.RWMutex
 	lockGetProject            sync.RWMutex
 	lockGetProjects           sync.RWMutex
+	lockUpdateProject         sync.RWMutex
 	lockUpdateProjectUpstream sync.RWMutex
 }
 
@@ -209,6 +216,37 @@ func (mock *ProjectRepoMock) GetProjectsCalls() []struct {
 	mock.lockGetProjects.RLock()
 	calls = mock.calls.GetProjects
 	mock.lockGetProjects.RUnlock()
+	return calls
+}
+
+// UpdateProject calls UpdateProjectFunc.
+func (mock *ProjectRepoMock) UpdateProject(project *models.ExpandedProject) error {
+	if mock.UpdateProjectFunc == nil {
+		panic("ProjectRepoMock.UpdateProjectFunc: method is nil but ProjectRepo.UpdateProject was just called")
+	}
+	callInfo := struct {
+		Project *models.ExpandedProject
+	}{
+		Project: project,
+	}
+	mock.lockUpdateProject.Lock()
+	mock.calls.UpdateProject = append(mock.calls.UpdateProject, callInfo)
+	mock.lockUpdateProject.Unlock()
+	return mock.UpdateProjectFunc(project)
+}
+
+// UpdateProjectCalls gets all the calls that were made to UpdateProject.
+// Check the length with:
+//     len(mockedProjectRepo.UpdateProjectCalls())
+func (mock *ProjectRepoMock) UpdateProjectCalls() []struct {
+	Project *models.ExpandedProject
+} {
+	var calls []struct {
+		Project *models.ExpandedProject
+	}
+	mock.lockUpdateProject.RLock()
+	calls = mock.calls.UpdateProject
+	mock.lockUpdateProject.RUnlock()
 	return calls
 }
 

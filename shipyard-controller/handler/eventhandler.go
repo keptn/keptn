@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
@@ -62,7 +61,7 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	var events []models.Event
 	var err error
 
-	eventFilter := db.EventFilter{
+	eventFilter := common.EventFilter{
 		Type:    params.EventType,
 		Stage:   params.Stage,
 		Service: params.Service,

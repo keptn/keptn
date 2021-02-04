@@ -1,240 +1,352 @@
 package handler
 
 import (
-	"github.com/go-test/deep"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"errors"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/handler/fake"
+	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
+	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"os"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func Test_serviceManager_createService(t *testing.T) {
-	projectName := "my-project"
-	serviceName := "my-service"
-
-	mockEV := fake.NewEventBroker(t, func(meb *fake.EventBroker, event *models.Event) {
-		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-	}, func(meb *fake.EventBroker) {
-
-	})
-
-	defer mockEV.Server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
-
-	mockCS := fake.NewSimpleMockConfigurationService()
-	defer mockCS.Server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
-
-	mockCS.Projects = []*keptnapimodels.Project{
-		{
-			ProjectName: projectName,
-			Stages: []*keptnapimodels.Stage{
-				{
-					StageName: "dev",
-				},
-				{
-					StageName: "hardening",
-				},
-				{
-					StageName: "production",
-				},
-			},
-		},
-	}
-
-	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
-
-	sm := &serviceManager{
-		apiBase: &apiBase{
-			projectAPI:  keptnapi.NewProjectHandler(csEndpoint.String()),
-			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
-			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
-			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &fake.SecretStore{
-				CreateFunc: func(name string, content map[string][]byte) error {
-					return nil
-				},
-				DeleteFunc: func(name string) error {
-					return nil
-				},
-			},
-			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
-		},
-	}
+func TestCreateService_GettingStagesFails(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
 
 	params := &operations.CreateServiceParams{
-		ServiceName: &serviceName,
+		ServiceName: stringp("service-name"),
 		HelmChart:   "",
 	}
 
-	if err := sm.createService(projectName, params); err != nil {
-		t.Error("received error: " + err.Error())
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return nil, errors.New("Whoops...")
 	}
 
-	expectedProjects := []*keptnapimodels.Project{
-		{
-			ProjectName: projectName,
-			Stages: []*keptnapimodels.Stage{
-				{
-					StageName: "dev",
-					Services: []*keptnapimodels.Service{
-						{
-							ServiceName: serviceName,
-						},
-					},
-				},
-				{
-					StageName: "hardening",
-					Services: []*keptnapimodels.Service{
-						{
-							ServiceName: serviceName,
-						},
-					},
-				},
-				{
-					StageName: "production",
-					Services: []*keptnapimodels.Service{
-						{
-							ServiceName: serviceName,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
-		t.Errorf("project has not been created correctly")
-		for _, d := range diff {
-			t.Log(d)
-		}
-	}
-
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
-		t.Error("event broker did not receive service.create.started event")
-	}
-
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), "", nil) {
-		t.Error("event broker did not receive service.create.started event")
-	}
-
-	// create the service again - should return error
-	err := sm.createService(projectName, params)
-	if err != errServiceAlreadyExists {
-		t.Errorf("expected errProjectAlreadyExists")
-	}
+	err := instance.createService("my-project", params)
+	assert.NotNil(t, err)
 }
 
-func Test_serviceManager_deleteService(t *testing.T) {
-	projectName := "my-project"
-	serviceName := "my-service"
-	mockEV := fake.NewEventBroker(t, func(meb *fake.EventBroker, event *models.Event) {
-		meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-	}, func(meb *fake.EventBroker) {
+func TestCreateService_ServiceAlreadyExists(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
 
-	})
-
-	defer mockEV.Server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
-
-	mockCS := fake.NewSimpleMockConfigurationService()
-	defer mockCS.Server.Close()
-	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.Server.URL)
-
-	mockCS.Projects = []*keptnapimodels.Project{
-		{
-			ProjectName: projectName,
-			Stages: []*keptnapimodels.Stage{
-				{
-					StageName: "dev",
-					Services: []*keptnapimodels.Service{
-						{
-							ServiceName: serviceName,
-						},
-					},
-				},
-				{
-					StageName: "hardening",
-					Services: []*keptnapimodels.Service{
-						{
-							ServiceName: serviceName,
-						},
-					},
-				},
-				{
-					StageName: "production",
-					Services: []*keptnapimodels.Service{
-						{
-							ServiceName: serviceName,
-						},
-					},
-				},
-			},
-		},
+	params := &operations.CreateServiceParams{
+		ServiceName: stringp("service-name"),
+		HelmChart:   "",
 	}
 
-	csEndpoint, _ := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
-
-	sm := &serviceManager{
-		apiBase: &apiBase{
-			projectAPI:  keptnapi.NewProjectHandler(csEndpoint.String()),
-			stagesAPI:   keptnapi.NewStageHandler(csEndpoint.String()),
-			servicesAPI: keptnapi.NewServiceHandler(csEndpoint.String()),
-			resourceAPI: keptnapi.NewResourceHandler(csEndpoint.String()),
-			secretStore: &fake.SecretStore{
-				CreateFunc: func(name string, content map[string][]byte) error {
-					return nil
-				},
-				DeleteFunc: func(name string) error {
-					return nil
-				},
-			},
-			logger: keptncommon.NewLogger("", "", "shipyard-controller"),
-		},
-	}
-
-	if err := sm.deleteService(projectName, serviceName); err != nil {
-		t.Error("received error: " + err.Error())
-	}
-
-	expectedProjects := []*keptnapimodels.Project{
-		{
-			ProjectName: "my-project",
-			Stages: []*keptnapimodels.Stage{
-				{
-					StageName: "dev",
-					Services:  []*keptnapimodels.Service{},
-				},
-				{
-					StageName: "hardening",
-					Services:  []*keptnapimodels.Service{},
-				},
-				{
-					StageName: "production",
-					Services:  []*keptnapimodels.Service{},
-				},
-			},
-		},
-	}
-
-	if diff := deep.Equal(expectedProjects, mockCS.Projects); len(diff) > 0 {
-		t.Errorf("project has not been created correctly")
-		for _, d := range diff {
-			t.Log(d)
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		service := &models.ExpandedService{
+			ServiceName: "service-name",
 		}
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
 	}
 
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
-		t.Error("event broker did not receive service.delete.started event")
+	err := instance.createService("my-project", params)
+	assert.NotNil(t, err)
+}
+
+func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	params := &operations.CreateServiceParams{
+		ServiceName: stringp("service-name"),
+		HelmChart:   "",
 	}
 
-	if fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), "", nil) {
-		t.Error("event broker did not receive service.delete.finished event")
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
 	}
 
+	configurationStore.CreateServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return errors.New("Whoops...")
+	}
+
+	err := instance.createService("my-project", params)
+	assert.NotNil(t, err)
+	assert.Equal(t, 1, len(configurationStore.CreateServiceCalls()))
+	assert.Equal(t, 0, len(servicesDBOperations.CreateServiceCalls()))
+}
+
+func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	params := &operations.CreateServiceParams{
+		ServiceName: stringp("service-name"),
+		HelmChart:   "",
+	}
+
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
+	}
+
+	configurationStore.CreateServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return nil
+	}
+
+	servicesDBOperations.CreateServiceFunc = func(project string, stage string, service string) error {
+		return errors.New("Whoops...")
+	}
+
+	err := instance.createService("my-project", params)
+	assert.NotNil(t, err)
+	assert.Equal(t, 1, len(configurationStore.CreateServiceCalls()))
+	assert.Equal(t, 1, len(servicesDBOperations.CreateServiceCalls()))
+}
+
+func TestCreateService(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	params := &operations.CreateServiceParams{
+		ServiceName: stringp("service-name"),
+		HelmChart:   "",
+	}
+
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
+	}
+
+	configurationStore.CreateServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return nil
+	}
+
+	servicesDBOperations.CreateServiceFunc = func(project string, stage string, service string) error {
+		return nil
+	}
+
+	err := instance.createService("my-project", params)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "my-project", configurationStore.CreateServiceCalls()[0].ProjectName)
+	assert.Equal(t, "dev", configurationStore.CreateServiceCalls()[0].StageName)
+	assert.Equal(t, "service-name", configurationStore.CreateServiceCalls()[0].ServiceName)
+
+	assert.Equal(t, "my-project", configurationStore.CreateServiceCalls()[1].ProjectName)
+	assert.Equal(t, "prod", configurationStore.CreateServiceCalls()[1].StageName)
+	assert.Equal(t, "service-name", configurationStore.CreateServiceCalls()[1].ServiceName)
+
+	assert.Equal(t, "my-project", servicesDBOperations.CreateServiceCalls()[0].Project)
+	assert.Equal(t, "dev", servicesDBOperations.CreateServiceCalls()[0].Stage)
+	assert.Equal(t, "service-name", servicesDBOperations.CreateServiceCalls()[0].Service)
+
+	assert.Equal(t, "my-project", servicesDBOperations.CreateServiceCalls()[1].Project)
+	assert.Equal(t, "prod", servicesDBOperations.CreateServiceCalls()[1].Stage)
+	assert.Equal(t, "service-name", servicesDBOperations.CreateServiceCalls()[1].Service)
+
+}
+
+func TestDeleteService_GettingAllStagesFails(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return nil, errors.New("Whoops...")
+	}
+
+	err := instance.deleteService("my-project", "my-service")
+	assert.NotNil(t, err)
+
+}
+
+func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		service := &models.ExpandedService{
+			ServiceName: "service-name",
+		}
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
+	}
+
+	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return errors.New("Whoops...")
+	}
+
+	err := instance.deleteService("my-project", "my-service")
+	assert.NotNil(t, err)
+	assert.Equal(t, 1, len(configurationStore.DeleteServiceCalls()))
+	assert.Equal(t, 0, len(servicesDBOperations.DeleteServiceCalls()))
+}
+
+func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		service := &models.ExpandedService{
+			ServiceName: "service-name",
+		}
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
+	}
+
+	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return nil
+	}
+
+	servicesDBOperations.DeleteServiceFunc = func(project string, stage string, service string) error {
+		return errors.New("Whoops..")
+	}
+
+	err := instance.deleteService("my-project", "my-service")
+	assert.NotNil(t, err)
+	assert.Equal(t, 1, len(configurationStore.DeleteServiceCalls()))
+	assert.Equal(t, 1, len(servicesDBOperations.DeleteServiceCalls()))
+}
+
+func TestDeleteService(t *testing.T) {
+	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
+	configurationStore := &common_mock.ConfigurationStoreMock{}
+	logger := keptncommon.NewLogger("", "", "shipyard-controller")
+	instance, _ := newServiceManager(servicesDBOperations, configurationStore, logger)
+
+	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		service := &models.ExpandedService{
+			ServiceName: "service-name",
+		}
+		stage1 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "dev",
+		}
+		stage2 := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{service},
+			StageName: "prod",
+		}
+
+		project := &models.ExpandedProject{
+			ProjectName: "my-project",
+			Stages:      []*models.ExpandedStage{stage1, stage2},
+		}
+		return project, nil
+	}
+
+	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
+		return nil
+	}
+	servicesDBOperations.DeleteServiceFunc = func(project string, stage string, service string) error {
+		return nil
+	}
+
+	err := instance.deleteService("my-project", "my-service")
+	assert.Nil(t, err)
+
+	assert.Equal(t, 2, len(configurationStore.DeleteServiceCalls()))
+	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[0].Project)
+	assert.Equal(t, "dev", servicesDBOperations.DeleteServiceCalls()[0].Stage)
+	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[0].Service)
+
+	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[1].Project)
+	assert.Equal(t, "prod", servicesDBOperations.DeleteServiceCalls()[1].Stage)
+	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[1].Service)
+
+	assert.Equal(t, 2, len(servicesDBOperations.DeleteServiceCalls()))
+	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[0].Project)
+	assert.Equal(t, "dev", servicesDBOperations.DeleteServiceCalls()[0].Stage)
+	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[0].Service)
+
+	assert.Equal(t, "my-project", servicesDBOperations.DeleteServiceCalls()[1].Project)
+	assert.Equal(t, "prod", servicesDBOperations.DeleteServiceCalls()[1].Stage)
+	assert.Equal(t, "my-service", servicesDBOperations.DeleteServiceCalls()[1].Service)
 }

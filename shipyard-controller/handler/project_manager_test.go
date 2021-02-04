@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
@@ -12,91 +13,91 @@ import (
 )
 
 func TestGetProjects(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	p1 := &models.ExpandedProject{}
 	p2 := &models.ExpandedProject{}
 	expectedProjects := []*models.ExpandedProject{p1, p2}
 
-	projectRepo.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
 		return expectedProjects, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	actualProjects, err := instance.Get()
 	assert.Nil(t, err)
 	assert.Equal(t, expectedProjects, actualProjects)
 }
 
 func TestGetProjectsErr(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
 		return nil, errors.New("Oh Oh...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	actualProjects, err := instance.Get()
 	assert.NotNil(t, err)
 	assert.Nil(t, actualProjects)
 }
 
 func TestGetByName(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return &models.ExpandedProject{}, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	project, err := instance.GetByName("my-project")
 	assert.Nil(t, err)
 	assert.NotNil(t, project)
-	assert.Equal(t, "my-project", projectRepo.GetProjectCalls()[0].ProjectName)
+	assert.Equal(t, "my-project", projectsDBOperations.GetProjectCalls()[0].ProjectName)
 }
 
 func TestGetByNameErr(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("Oh Oh...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	project, err := instance.GetByName("my-project")
 	assert.NotNil(t, err)
 	assert.Nil(t, project)
-	assert.Equal(t, "my-project", projectRepo.GetProjectCalls()[0].ProjectName)
+	assert.Equal(t, "my-project", projectsDBOperations.GetProjectCalls()[0].ProjectName)
 }
 
 func TestCreate_GettingProjectFails(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("Whoops...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -111,20 +112,20 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 }
 
 func TestCreateWithAlreadyExistingProject(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		project := &models.ExpandedProject{
 			ProjectName: "existing-project",
 		}
 		return project, nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -139,13 +140,13 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 }
 
 func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain(t *testing.T) {
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -161,7 +162,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
 		Name: stringp("my-project"),
 	}
@@ -175,13 +176,13 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 
 	encodedShipyard := "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg"
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -208,11 +209,11 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
-	projectRepo.CreateProjectFunc = func(project *models.ExpandedProject) error {
+	projectsDBOperations.CreateProjectFunc = func(prj *keptnapimodels.Project) error {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -232,24 +233,24 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 
 	encodedShipyard := "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg"
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error { return nil }
 	configStore.CreateStageFunc = func(projectName string, stageName string) error { return nil }
 	configStore.CreateProjectShipyardFunc = func(projectName string, resoureces []*keptnapimodels.Resource) error { return nil }
 	configStore.DeleteProjectFunc = func(projectName string) error { return nil }
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error { return nil }
 	secretStore.DeleteSecretFunc = func(name string) error { return nil }
-	projectRepo.CreateProjectFunc = func(project *models.ExpandedProject) error {
+	projectsDBOperations.CreateProjectFunc = func(prj *keptnapimodels.Project) error {
 		return errors.New("whoops...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -269,13 +270,13 @@ func TestCreate(t *testing.T) {
 
 	encodedShipyard := "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg"
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
 
@@ -295,11 +296,11 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	projectRepo.CreateProjectFunc = func(project *models.ExpandedProject) error {
+	projectsDBOperations.CreateProjectFunc = func(prj *keptnapimodels.Project) error {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -315,25 +316,25 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "hardening", configStore.CreateStageCalls()[1].Stage)
 	assert.Equal(t, "my-project", configStore.CreateStageCalls()[2].ProjectName)
 	assert.Equal(t, "production", configStore.CreateStageCalls()[2].Stage)
-	assert.Equal(t, "git-url", projectRepo.CreateProjectCalls()[0].Project.GitRemoteURI)
-	assert.Equal(t, "git-user", projectRepo.CreateProjectCalls()[0].Project.GitUser)
-	assert.Equal(t, "my-project", projectRepo.CreateProjectCalls()[0].Project.ProjectName)
-	assert.Equal(t, encodedShipyard, projectRepo.CreateProjectCalls()[0].Project.Shipyard)
+	assert.Equal(t, "git-url", projectsDBOperations.CreateProjectCalls()[0].Prj.GitRemoteURI)
+	assert.Equal(t, "git-user", projectsDBOperations.CreateProjectCalls()[0].Prj.GitUser)
+	assert.Equal(t, "my-project", projectsDBOperations.CreateProjectCalls()[0].Prj.ProjectName)
+	//TODO//assert.Equal(t, encodedShipyard, projectsDBOperations.CreateProjectCalls()[0].PrjShipyard)
 }
 
 func TestUpdate_FailsWhenGettingOldSecretFails(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 		return nil, errors.New("Whoops...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -348,20 +349,20 @@ func TestUpdate_FailsWhenGettingOldSecretFails(t *testing.T) {
 
 func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 		return nil, nil
 	}
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("Whoops...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -376,11 +377,11 @@ func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 
 func TestUpdate_FailsWhenUpdateingGitRepositorySecretFails(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 		return nil, nil
@@ -389,10 +390,10 @@ func TestUpdate_FailsWhenUpdateingGitRepositorySecretFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return errors.New("Whoops...")
 	}
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
 	}
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -408,11 +409,11 @@ func TestUpdate_FailsWhenUpdateingGitRepositorySecretFails(t *testing.T) {
 
 func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetRestored(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	oldSecretsEncoded, _ := json.Marshal(gitCredentials{
 		User:      "my-old-user",
@@ -443,7 +444,7 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return oldProject, nil
 	}
 
@@ -451,7 +452,7 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 		return errors.New("Whoops...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -478,11 +479,11 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 
 func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecretGetRestored(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	oldSecretsEncoded, _ := json.Marshal(gitCredentials{
 		User:      "my-old-user",
@@ -513,7 +514,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return oldProject, nil
 	}
 
@@ -521,11 +522,11 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		return nil
 	}
 
-	projectRepo.UpdateProjectUpstreamFunc = func(projectName string, uri string, user string) error {
+	projectsDBOperations.UpdateUpstreamInfoFunc = func(projectName string, uri string, user string) error {
 		return errors.New("Whoops...")
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -546,9 +547,9 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
-	assert.Equal(t, "my-project", projectRepo.UpdateProjectUpstreamCalls()[0].ProjectName)
-	assert.Equal(t, "git-user", projectRepo.UpdateProjectUpstreamCalls()[0].User)
-	assert.Equal(t, "git-url", projectRepo.UpdateProjectUpstreamCalls()[0].URI)
+	assert.Equal(t, "my-project", projectsDBOperations.UpdateUpstreamInfoCalls()[0].ProjectName)
+	assert.Equal(t, "git-user", projectsDBOperations.UpdateUpstreamInfoCalls()[0].User)
+	assert.Equal(t, "git-url", projectsDBOperations.UpdateUpstreamInfoCalls()[0].URI)
 
 	assert.Equal(t, toModelProject(*oldProject), configStore.UpdateProjectCalls()[1].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
@@ -558,11 +559,11 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 
 func TestUpdate(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
 	oldSecretsEncoded, _ := json.Marshal(gitCredentials{
 		User:      "my-old-user",
@@ -593,7 +594,7 @@ func TestUpdate(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return oldProject, nil
 	}
 
@@ -601,11 +602,11 @@ func TestUpdate(t *testing.T) {
 		return nil
 	}
 
-	projectRepo.UpdateProjectUpstreamFunc = func(projectName string, uri string, user string) error {
+	projectsDBOperations.UpdateUpstreamInfoFunc = func(projectName string, uri string, user string) error {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.UpdateProjectParams{
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
@@ -626,21 +627,21 @@ func TestUpdate(t *testing.T) {
 	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
-	assert.Equal(t, "my-project", projectRepo.UpdateProjectUpstreamCalls()[0].ProjectName)
-	assert.Equal(t, "git-user", projectRepo.UpdateProjectUpstreamCalls()[0].User)
-	assert.Equal(t, "git-url", projectRepo.UpdateProjectUpstreamCalls()[0].URI)
+	assert.Equal(t, "my-project", projectsDBOperations.UpdateUpstreamInfoCalls()[0].ProjectName)
+	assert.Equal(t, "git-user", projectsDBOperations.UpdateUpstreamInfoCalls()[0].User)
+	assert.Equal(t, "git-url", projectsDBOperations.UpdateUpstreamInfoCalls()[0].URI)
 
 }
 
 func TestDelete(t *testing.T) {
 
-	secretStore := &SecretStoreMock{}
-	projectRepo := &db_mock.ProjectRepoMock{}
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
 	eventRepo := &db_mock.EventRepoMock{}
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
-	configStore := &ConfigurationStoreMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectRepo.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
 		p := &models.ExpandedProject{
 			CreationDate:    "creationdate",
@@ -685,10 +686,10 @@ func TestDelete(t *testing.T) {
 		return nil
 	}
 
-	projectRepo.DeleteProjectFunc = func(projectName string) error {
+	projectsDBOperations.DeleteProjectFunc = func(projectName string) error {
 		return nil
 	}
 
-	instance := NewProjectManager(configStore, secretStore, projectRepo, taskSequenceRepo, eventRepo)
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	instance.Delete("my-project")
 }

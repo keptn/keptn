@@ -13,6 +13,7 @@ type IServiceHandler interface {
 }
 
 type ServiceHandler struct {
+	serviceManager *serviceManager
 }
 
 // CreateService godoc
@@ -53,17 +54,7 @@ func (service *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 
-	sm, err := newServiceManager()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if err := sm.createService(projectName, createServiceParams); err != nil {
+	if err := service.serviceManager.createService(projectName, createServiceParams); err != nil {
 		if err == errServiceAlreadyExists {
 			c.JSON(http.StatusConflict, models.Error{
 				Code:    http.StatusConflict,
@@ -108,23 +99,16 @@ func (service *ServiceHandler) DeleteService(c *gin.Context) {
 		})
 	}
 
-	sm, err := newServiceManager()
-	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if err := sm.deleteService(projectName, serviceName); err != nil {
+	//TODO: send .started event
+	if err := service.serviceManager.deleteService(projectName, serviceName); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
 			Message: stringp(err.Error()),
 		})
 		return
 	}
+
+	//TODO: send .finished event
 	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
 }
 

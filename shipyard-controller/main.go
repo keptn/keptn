@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/docs"
@@ -40,22 +41,23 @@ func main() {
 		log.Fatalf("could not get configuration-service URL: %s", err.Error())
 	}
 	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-
-	secretStore, err := handler.NewK8sSecretStore()
+	secretStore, err := common.NewK8sSecretStore()
 	if err != nil {
 		log.Fatal(err)
 	}
-	configurationStore := handler.NewGitConfigurationStore(csEndpoint.String())
-	eventRepository := &db.MongoDBEventsRepo{Logger: logger}
-	projectRepository := &db.MongoDBProjectsRepo{Logger: logger}
-	taskSequenceRepository := &db.TaskSequenceMongoDBRepo{Logger: logger}
+
+	projectesMaterializedView := &db.ProjectsMaterializedView{
+		ProjectRepo:     &db.MongoDBProjectsRepo{Logger: logger},
+		EventsRetriever: &db.MongoDBEventsRepo{Logger: logger},
+		Logger:          logger,
+	}
 
 	projectManager := handler.NewProjectManager(
-		configurationStore,
+		common.NewGitConfigurationStore(csEndpoint.String()),
 		secretStore,
-		projectRepository,
-		taskSequenceRepository,
-		eventRepository)
+		projectesMaterializedView,
+		&db.TaskSequenceMongoDBRepo{Logger: logger},
+		&db.MongoDBEventsRepo{Logger: logger})
 
 	eventSender, err := v0_2_0.NewHTTPEventSender("")
 	if err != nil {

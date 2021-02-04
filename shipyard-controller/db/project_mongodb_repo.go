@@ -86,6 +86,10 @@ func (mbdrepo *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProjec
 	return nil
 }
 
+func (mdbrepo *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
+	panic("implement me")
+}
+
 func (mbdrepo *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
 	existingProject, err := mbdrepo.GetProject(projectName)
 	if err != nil {

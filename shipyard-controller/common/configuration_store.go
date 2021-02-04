@@ -1,4 +1,4 @@
-package handler
+package common
 
 import (
 	"errors"
@@ -6,14 +6,16 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 )
 
-//go:generate moq  -out ./configuration_store_moq.go . ConfigurationStore
+//go:generate moq -pkg common_mock -out ./fake/configuration_store_moq.go . ConfigurationStore
 type ConfigurationStore interface {
 	CreateProject(project keptnapimodels.Project) error
 	UpdateProject(project keptnapimodels.Project) error
 	CreateProjectShipyard(projectName string, resoureces []*keptnapimodels.Resource) error
 	DeleteProject(projectName string) error
 	CreateStage(projectName string, stage string) error
+	CreateService(projectName string, stageName string, serviceName string) error
 	GetProjectResource(projectName string, resourceURI string) (*keptnapimodels.Resource, error)
+	DeleteService(projectName string, stageName string, serviceName string) error
 }
 
 type GitConfigurationStore struct {
@@ -68,6 +70,20 @@ func (g GitConfigurationStore) CreateProjectShipyard(projectName string, resourc
 
 func (g GitConfigurationStore) CreateStage(projectName string, stageName string) error {
 	if _, err := g.stagesAPI.CreateStage(projectName, stageName); err != nil {
+		return errors.New(*err.Message)
+	}
+	return nil
+}
+
+func (g GitConfigurationStore) CreateService(projectName string, stageName string, serviceName string) error {
+	if _, err := g.servicesAPI.CreateServiceInStage(projectName, stageName, serviceName); err != nil {
+		return errors.New(*err.Message)
+	}
+	return nil
+}
+
+func (g GitConfigurationStore) DeleteService(projectName string, stageName string, serviceName string) error {
+	if _, err := g.servicesAPI.DeleteServiceFromStage(projectName, stageName, serviceName); err != nil {
 		return errors.New(*err.Message)
 	}
 	return nil
