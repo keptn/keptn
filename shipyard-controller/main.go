@@ -59,6 +59,11 @@ func main() {
 		&db.TaskSequenceMongoDBRepo{Logger: logger},
 		&db.MongoDBEventsRepo{Logger: logger})
 
+	serviceManager := handler.NewServiceManager(
+		projectesMaterializedView,
+		common.NewGitConfigurationStore(csEndpoint.String()),
+		logger)
+
 	eventSender, err := v0_2_0.NewHTTPEventSender("")
 	if err != nil {
 		log.Fatal(err)
@@ -70,7 +75,7 @@ func main() {
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
-	serviceHandler := handler.NewServiceHandler()
+	serviceHandler := handler.NewServiceHandler(serviceManager)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
