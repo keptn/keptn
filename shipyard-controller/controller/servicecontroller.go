@@ -15,5 +15,5 @@ func NewServiceController(serviceHandler handler.IServiceHandler) Controller {
 
 func (controller ServiceController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.POST("/project/:project/service", controller.ServiceHandler.CreateService)
-	apiGroup.PUT("/project/:project/service/:service", controller.ServiceHandler.DeleteService)
+	apiGroup.DELETE("/project/:project/service/:service", controller.ServiceHandler.DeleteService)
 }
