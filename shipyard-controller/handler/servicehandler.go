@@ -33,7 +33,7 @@ type ServiceHandler struct {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/:project/service [post]
-func (service *ServiceHandler) CreateService(c *gin.Context) {
+func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 	if projectName == "" {
@@ -62,7 +62,7 @@ func (service *ServiceHandler) CreateService(c *gin.Context) {
 	if err := sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
 		//TODO LOG MESSAGE
 	}
-	if err := service.serviceManager.createService(projectName, createServiceParams); err != nil {
+	if err := sh.serviceManager.createService(projectName, createServiceParams); err != nil {
 
 		if err := sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
 			// TODO LOG MESSAGE
@@ -101,7 +101,7 @@ func (service *ServiceHandler) CreateService(c *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project/:project/service/:service [delete]
-func (service *ServiceHandler) DeleteService(c *gin.Context) {
+func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 	serviceName := c.Param("service")
@@ -122,7 +122,7 @@ func (service *ServiceHandler) DeleteService(c *gin.Context) {
 		//TODO LOG MESSAGE
 	}
 
-	if err := service.serviceManager.deleteService(projectName, serviceName); err != nil {
+	if err := sh.serviceManager.deleteService(projectName, serviceName); err != nil {
 		if err := sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName); err != nil {
 			//TODO LOG MESSAGE
 		}

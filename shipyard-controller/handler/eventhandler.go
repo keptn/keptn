@@ -39,7 +39,7 @@ type NextTaskSequence struct {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event/triggered/{eventType} [get]
-func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
+func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	eventType := c.Param("eventType")
 	params := &operations.GetTriggeredEventsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
@@ -69,9 +69,9 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if params.Project != nil && *params.Project != "" {
-		events, err = service.ShipyardController.GetTriggeredEventsOfProject(*params.Project, eventFilter)
+		events, err = eh.ShipyardController.GetTriggeredEventsOfProject(*params.Project, eventFilter)
 	} else {
-		events, err = service.ShipyardController.GetAllTriggeredEvents(eventFilter)
+		events, err = eh.ShipyardController.GetAllTriggeredEvents(eventFilter)
 	}
 
 	if err != nil {
@@ -105,7 +105,7 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event [post]
-func (service *EventHandler) HandleEvent(c *gin.Context) {
+func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	event := &models.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
@@ -114,7 +114,7 @@ func (service *EventHandler) HandleEvent(c *gin.Context) {
 		})
 	}
 
-	err := service.ShipyardController.HandleIncomingEvent(*event)
+	err := eh.ShipyardController.HandleIncomingEvent(*event)
 	if err != nil {
 		if err == errNoMatchingEvent {
 			sendBadRequestResponse(err, c)

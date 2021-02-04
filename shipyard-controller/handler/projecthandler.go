@@ -45,7 +45,7 @@ func NewProjectHandler(projectManager *ProjectManager, eventSender keptn.EventSe
 // @Success 200 {object} models.ExpandedProjects	"ok"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [get]
-func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
+func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 
 	params := &operations.GetProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
@@ -56,7 +56,7 @@ func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
 		return
 	}
 
-	allProjects, err := service.ProjectManager.Get()
+	allProjects, err := ph.ProjectManager.Get()
 	if err != nil {
 		sendInternalServerErrorResponse(err, c)
 		return
@@ -98,7 +98,7 @@ func (service *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal Error)
 // @Router /project/{projectName} [get]
-func (service *ProjectHandler) GetProjectByName(c *gin.Context) {
+func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 	params := &operations.GetProjectProjectNameParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
@@ -108,7 +108,7 @@ func (service *ProjectHandler) GetProjectByName(c *gin.Context) {
 		return
 	}
 
-	project, err := service.ProjectManager.GetByName(params.ProjectName)
+	project, err := ph.ProjectManager.GetByName(params.ProjectName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
@@ -139,7 +139,7 @@ func (service *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
-func (service *ProjectHandler) CreateProject(c *gin.Context) {
+func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
 	createProjectParams := &operations.CreateProjectParams{}
@@ -158,16 +158,16 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	if err := service.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
+	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Code:    http.StatusInternalServerError,
 			Message: stringp(err.Error()),
 		})
 	}
 
-	err, rollback := service.ProjectManager.Create(createProjectParams)
+	err, rollback := ph.ProjectManager.Create(createProjectParams)
 	if err != nil {
-		if err := service.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
+		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
 			//TODO: LOG MESSAGE ONLY
 		}
 		rollback()
@@ -185,7 +185,7 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 			return
 		}
 	}
-	if err := service.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
+	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
 		//TODO: LOG MESSAGE ONLY
 	}
 
@@ -205,7 +205,7 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
-func (service *ProjectHandler) UpdateProject(c *gin.Context) {
+func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	//validate the input
 	params := &operations.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
@@ -223,7 +223,7 @@ func (service *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	err, rollback := service.ProjectManager.Update(params)
+	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
 		c.JSON(http.StatusInternalServerError, models.Error{
@@ -248,7 +248,7 @@ func (service *ProjectHandler) UpdateProject(c *gin.Context) {
 //// @Failure 400 {object} models.Error "Invalid payload"
 //// @Failure 500 {object} models.Error "Internal error"
 //// @Router /project/:project [delete]
-func (service *ProjectHandler) DeleteProject(c *gin.Context) {
+func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 
@@ -260,9 +260,9 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 		return
 	}
 
-	err, responseMessage := service.ProjectManager.Delete(projectName)
+	err, responseMessage := ph.ProjectManager.Delete(projectName)
 	if err != nil {
-		if err := service.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
+		if err := ph.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
 			//LOG MESSAGE ONLY
 		}
 
@@ -273,7 +273,7 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 		return
 	}
 
-	if err := service.sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName); err != nil {
+	if err := ph.sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName); err != nil {
 		//LOG MESSAGE ONLY
 	}
 
@@ -282,18 +282,18 @@ func (service *ProjectHandler) DeleteProject(c *gin.Context) {
 	})
 }
 
-func (service *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
 		},
 	}
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
-	return service.EventSender.SendEvent(ce)
+	return ph.EventSender.SendEvent(ce)
 
 }
 
-func (service *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
@@ -308,10 +308,10 @@ func (service *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContex
 	}
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
-	return service.EventSender.SendEvent(ce)
+	return ph.EventSender.SendEvent(ce)
 }
 
-func (service *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
 	eventPayload := keptnv2.ProjectCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: *params.Name,
@@ -321,10 +321,10 @@ func (service *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext s
 	}
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
-	return service.EventSender.SendEvent(ce)
+	return ph.EventSender.SendEvent(ce)
 }
 
-func (service *ProjectHandler) sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName string) error {
+func (ph *ProjectHandler) sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName string) error {
 	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -334,10 +334,10 @@ func (service *ProjectHandler) sendProjectDeleteSuccessFinishedEvent(keptnContex
 	}
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
-	return service.EventSender.SendEvent(ce)
+	return ph.EventSender.SendEvent(ce)
 }
 
-func (service *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, projectName string) error {
+func (ph *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, projectName string) error {
 	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -347,5 +347,5 @@ func (service *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, 
 	}
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
-	return service.EventSender.SendEvent(ce)
+	return ph.EventSender.SendEvent(ce)
 }

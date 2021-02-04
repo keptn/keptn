@@ -43,7 +43,6 @@ func (g GitConfigurationStore) CreateProject(project keptnapimodels.Project) err
 		return errors.New(*err.Message)
 	}
 	return nil
-
 }
 
 func (g GitConfigurationStore) UpdateProject(project keptnapimodels.Project) error {

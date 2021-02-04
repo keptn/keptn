@@ -41,7 +41,6 @@ func NewProjectManager(
 	dbProjectsOperations db.ProjectsDBOperations,
 	taskSequenceRepo db.TaskSequenceRepo,
 	eventRepo db.EventRepo) *ProjectManager {
-
 	projectUpdater := &ProjectManager{
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
@@ -69,12 +68,11 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 		return nil, err
 	}
 	return project, err
-
 }
 
-func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error, rollbackfunc) {
+func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error, rollbackfunc) {
 
-	existingProject, err := pu.ProjectMaterializedView.GetProject(*params.Name)
+	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
@@ -82,7 +80,7 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		return ErrProjectAlreadyExists, nilRollback
 	}
 
-	err = pu.updateGITRepositorySecret(*params.Name, &gitCredentials{
+	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 		User:      params.GitUser,
 		Token:     params.GitToken,
 		RemoteURI: params.GitRemoteURL,
@@ -91,7 +89,7 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		return err, nilRollback
 	}
 
-	err = pu.ConfigurationStore.CreateProject(apimodels.Project{
+	err = pm.ConfigurationStore.CreateProject(apimodels.Project{
 		GitRemoteURI: params.GitRemoteURL,
 		GitToken:     params.GitToken,
 		GitUser:      params.GitUser,
@@ -99,27 +97,27 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	})
 
 	if err != nil {
-		pu.Logger.Error(fmt.Sprintf("Error occured while creating project in configuration service: %s", err.Error()))
+		pm.Logger.Error(fmt.Sprintf("Error occured while creating project in configuration service: %s", err.Error()))
 		return err, func() error {
-			pu.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
-			if err := pu.deleteGITRepositorySecret(*params.Name); err != nil {
-				pu.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
+				pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
 				return err
 			}
 			return nil
 		}
 	}
-	pu.Logger.Info(fmt.Sprintf("Created project in configuration service: %s", *params.Name))
+	pm.Logger.Info(fmt.Sprintf("Created project in configuration service: %s", *params.Name))
 
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 	shipyard, err := common.UnmarshalShipyard(string(decodedShipyard))
 	for _, shipyardStage := range shipyard.Spec.Stages {
-		if err := pu.ConfigurationStore.CreateStage(*params.Name, shipyardStage.Name); err != nil {
+		if err := pm.ConfigurationStore.CreateStage(*params.Name, shipyardStage.Name); err != nil {
 			return err, nil
 		}
-		pu.Logger.Info(fmt.Sprintf("Stage %s created", shipyardStage.Name))
+		pm.Logger.Info(fmt.Sprintf("Stage %s created", shipyardStage.Name))
 	}
-	pu.Logger.Info(fmt.Sprintf("Created all stages of project %s", *params.Name))
+	pm.Logger.Info(fmt.Sprintf("Created all stages of project %s", *params.Name))
 
 	uri := "shipyard.yaml"
 	projectResource := []*apimodels.Resource{
@@ -128,29 +126,29 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 			ResourceURI:     &uri,
 		},
 	}
-	if err := pu.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
-		pu.Logger.Error(fmt.Sprintf("Error occured while uploading shipyard resource to configuraiton service: %s", err.Error()))
+	if err := pm.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
+		pm.Logger.Error(fmt.Sprintf("Error occured while uploading shipyard resource to configuraiton service: %s", err.Error()))
 		return err, func() error {
-			pu.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
-			if err := pu.ConfigurationStore.DeleteProject(*params.Name); err != nil {
-				pu.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error()))
+			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
+			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
+				pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error()))
 				return err
 			}
-			pu.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
-			if err := pu.deleteGITRepositorySecret(*params.Name); err != nil {
-				pu.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
+				pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
 				return err
 			}
 			return nil
 		}
 	}
 
-	if err := pu.createProjectInRepository(params); err != nil {
+	if err := pm.createProjectInRepository(params); err != nil {
 		return err, func() error {
-			if err := pu.ConfigurationStore.DeleteProject(*params.Name); err != nil {
+			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
 				return err
 			}
-			if err := pu.deleteGITRepositorySecret(*params.Name); err != nil {
+			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
 				return err
 			}
 			return nil
@@ -160,17 +158,17 @@ func (pu *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 
 }
 
-func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error, rollbackfunc) {
-	oldSecret, err := pu.getGITRepositorySecret(*params.Name)
+func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error, rollbackfunc) {
+	oldSecret, err := pm.getGITRepositorySecret(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
-	oldProject, err := pu.ProjectMaterializedView.GetProject(*params.Name)
+	oldProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
 		return err, nilRollback
 	}
 
-	err = pu.updateGITRepositorySecret(*params.Name, &gitCredentials{
+	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 		User:      params.GitUser,
 		Token:     params.GitToken,
 		RemoteURI: params.GitRemoteURL,
@@ -194,10 +192,10 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		ShipyardVersion: oldProject.ShipyardVersion,
 	}
 
-	err = pu.ConfigurationStore.UpdateProject(projectToUpdate)
+	err = pm.ConfigurationStore.UpdateProject(projectToUpdate)
 	if err != nil {
 		return err, func() error {
-			return pu.updateGITRepositorySecret(*params.Name, &gitCredentials{
+			return pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 				User:      oldSecret.User,
 				Token:     oldSecret.Token,
 				RemoteURI: oldSecret.RemoteURI,
@@ -205,15 +203,15 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		}
 	}
 
-	err = pu.ProjectMaterializedView.UpdateUpstreamInfo(*params.Name, params.GitRemoteURL, params.GitUser)
+	err = pm.ProjectMaterializedView.UpdateUpstreamInfo(*params.Name, params.GitRemoteURL, params.GitUser)
 	if err != nil {
 		return err, func() error {
 
-			errConfigStoreRollback := pu.ConfigurationStore.UpdateProject(projectToRollback)
+			errConfigStoreRollback := pm.ConfigurationStore.UpdateProject(projectToRollback)
 			if errConfigStoreRollback != nil {
 				return errConfigStoreRollback
 			}
-			return pu.updateGITRepositorySecret(*params.Name, &gitCredentials{
+			return pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
 				User:      oldSecret.User,
 				Token:     oldSecret.Token,
 				RemoteURI: oldSecret.RemoteURI,
@@ -224,52 +222,52 @@ func (pu *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	return nil, nilRollback
 }
 
-func (pu *ProjectManager) Delete(projectName string) (error, string) {
-	pu.Logger.Info(fmt.Sprintf("Deleting project %s", projectName))
+func (pm *ProjectManager) Delete(projectName string) (error, string) {
+	pm.Logger.Info(fmt.Sprintf("Deleting project %s", projectName))
 	var resultMessage strings.Builder
 
-	project, err := pu.ProjectMaterializedView.GetProject(projectName)
+	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		resultMessage.WriteString(fmt.Sprintf("Project %s cannot be retrieved anymore. Any Git upstream of the project will not be deleted.\n", projectName))
 	} else if project != nil && project.GitRemoteURI != "" {
 		resultMessage.WriteString(fmt.Sprintf("The Git upstream of the project will not be deleted: %s\n", project.GitRemoteURI))
 	}
 
-	secret, err := pu.SecretStore.GetSecret("git-credentials-" + projectName)
+	secret, err := pm.SecretStore.GetSecret("git-credentials-" + projectName)
 	if err != nil {
-		pu.Logger.Error("could not delete git upstream credentials secret: " + err.Error())
+		pm.Logger.Error("could not delete git upstream credentials secret: " + err.Error())
 	}
 	if secret != nil {
-		if err := pu.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
-			pu.Logger.Error("could not delete git upstream credentials secret: " + err.Error())
+		if err := pm.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
+			pm.Logger.Error("could not delete git upstream credentials secret: " + err.Error())
 			resultMessage.WriteString("WARNING: Could not delete secret containing the git upstream repo credentials. \n")
 			resultMessage.WriteString(fmt.Sprintf("Please make sure to delete the secret manually by executing 'kubectl delete secret %s -n %s' \n", "git-credentials-"+projectName, common.GetKeptnNamespace()))
 		}
 	}
 
-	if err := pu.ConfigurationStore.DeleteProject(projectName); err != nil {
-		return pu.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error())), resultMessage.String()
+	if err := pm.ConfigurationStore.DeleteProject(projectName); err != nil {
+		return pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error())), resultMessage.String()
 	}
 
-	resultMessage.WriteString(pu.getDeleteInfoMessage(projectName))
+	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
-	if err := pu.EventRpository.DeleteEventCollections(projectName); err != nil {
-		pu.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
+	if err := pm.EventRpository.DeleteEventCollections(projectName); err != nil {
+		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
 	}
 
-	if err := pu.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
-		pu.Logger.Error(fmt.Sprintf("could not delete task equence colleciton: %s", err.Error()))
+	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
+		pm.Logger.Error(fmt.Sprintf("could not delete task equence colleciton: %s", err.Error()))
 	}
 
-	if err := pu.ProjectMaterializedView.DeleteProject(projectName); err != nil {
-		pu.Logger.Error(fmt.Sprintf("could not delete project: %s", err.Error()))
+	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
+		pm.Logger.Error(fmt.Sprintf("could not delete project: %s", err.Error()))
 	}
 
 	return nil, resultMessage.String()
 
 }
 
-func (pu *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams) error {
+func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams) error {
 	p := &apimodels.Project{
 		CreationDate: strconv.FormatInt(time.Now().UnixNano(), 10),
 		GitRemoteURI: params.GitRemoteURL,
@@ -277,15 +275,15 @@ func (pu *ProjectManager) createProjectInRepository(params *operations.CreatePro
 		GitUser:      params.GitUser,
 		ProjectName:  *params.Name,
 	}
-	err := pu.ProjectMaterializedView.CreateProject(p)
+	err := pm.ProjectMaterializedView.CreateProject(p)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (pu *ProjectManager) getGITRepositorySecret(projectName string) (*gitCredentials, error) {
-	secret, err := pu.SecretStore.GetSecret("git-credentials-" + projectName)
+func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*gitCredentials, error) {
+	secret, err := pm.SecretStore.GetSecret("git-credentials-" + projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -303,13 +301,13 @@ func (pu *ProjectManager) getGITRepositorySecret(projectName string) (*gitCreden
 	return nil, nil
 }
 
-func (pu *ProjectManager) updateGITRepositorySecret(projectName string, credentials *gitCredentials) error {
+func (pm *ProjectManager) updateGITRepositorySecret(projectName string, credentials *gitCredentials) error {
 
 	credsEncoded, err := json.Marshal(credentials)
 	if err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
-	if err := pu.SecretStore.UpdateSecret("git-credentials-"+projectName, map[string][]byte{
+	if err := pm.SecretStore.UpdateSecret("git-credentials-"+projectName, map[string][]byte{
 		"git-credentials": credsEncoded,
 	}); err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
@@ -317,19 +315,19 @@ func (pu *ProjectManager) updateGITRepositorySecret(projectName string, credenti
 	return nil
 }
 
-func (pu *ProjectManager) deleteGITRepositorySecret(projectName string) error {
-	pu.Logger.Info("deleting git credentials for project " + projectName)
+func (pm *ProjectManager) deleteGITRepositorySecret(projectName string) error {
+	pm.Logger.Info("deleting git credentials for project " + projectName)
 
-	if err := pu.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
+	if err := pm.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
 		return fmt.Errorf("could not delete git credentials: %s", err.Error())
 	}
-	pu.Logger.Info("deleted git credentials for project " + projectName)
+	pm.Logger.Info("deleted git credentials for project " + projectName)
 	return nil
 
 }
 
-func (pu *ProjectManager) getDeleteInfoMessage(project string) string {
-	res, err := pu.ConfigurationStore.GetProjectResource(project, "shipyard.yaml")
+func (pm *ProjectManager) getDeleteInfoMessage(project string) string {
+	res, err := pm.ConfigurationStore.GetProjectResource(project, "shipyard.yaml")
 	if err != nil {
 		return getShipyardNotAvailableError(project)
 	}
@@ -350,8 +348,8 @@ func (pu *ProjectManager) getDeleteInfoMessage(project string) string {
 	return strings.TrimSpace(msg)
 }
 
-func (pu *ProjectManager) logAndReturnError(msg string) error {
-	pu.Logger.Error(msg)
+func (pm *ProjectManager) logAndReturnError(msg string) error {
+	pm.Logger.Error(msg)
 	return errors.New(msg)
 }
 
@@ -363,16 +361,6 @@ func getShipyardNotAvailableError(project string) string {
 
 func toModelProject(project models.ExpandedProject) apimodels.Project {
 	return apimodels.Project{
-		CreationDate:    project.CreationDate,
-		GitRemoteURI:    project.GitRemoteURI,
-		GitUser:         project.GitUser,
-		ProjectName:     project.ProjectName,
-		ShipyardVersion: project.ShipyardVersion,
-	}
-}
-
-func toExpandedProject(project apimodels.Project) models.ExpandedProject {
-	return models.ExpandedProject{
 		CreationDate:    project.CreationDate,
 		GitRemoteURI:    project.GitRemoteURI,
 		GitUser:         project.GitUser,

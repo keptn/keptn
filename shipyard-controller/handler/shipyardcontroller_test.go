@@ -35,14 +35,14 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &fake.ProjectRepository{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+				projectRepo: &db_mock.ProjectRepoMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
 					return []*models.ExpandedProject{{
 						ProjectName: "sockshop",
 					}, {
 						ProjectName: "rockshop",
 					}}, nil
 				}},
-				triggeredEventRepo: &fake.EventRepository{
+				triggeredEventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
@@ -96,7 +96,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			name: "Get triggered events for project",
 			fields: fields{
 				projectRepo: nil,
-				triggeredEventRepo: &fake.EventRepository{
+				triggeredEventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
@@ -250,7 +250,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			name: "received started event with matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
+				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if status[0] == common.TriggeredEvent {
 							return []models.Event{fake.GetTestTriggeredEvent()}, nil
@@ -279,7 +279,7 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
+				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if status[0] == common.TriggeredEvent {
 							return nil, nil
@@ -340,7 +340,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
+				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if status[0] == common.TriggeredEvent {
 							return nil, nil
@@ -401,7 +401,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 			name: "get event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
+				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
@@ -420,7 +420,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 			name: "get event after retry",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
+				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if eventAvailable {
 							return []models.Event{fake.GetTestTriggeredEvent()}, nil
@@ -1611,7 +1611,7 @@ func getTestShipyardController() *shipyardController {
 
 	em := &shipyardController{
 		projectRepo: nil,
-		eventRepo: &fake.EventRepository{
+		eventRepo: &db_mock.EventRepoMock{
 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 				if status[0] == common.TriggeredEvent {
 					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
@@ -1667,8 +1667,8 @@ func getTestShipyardController() *shipyardController {
 				return nil
 			},
 		},
-		taskSequenceRepo: &fake.TaskSequenceRepository{
-			GetTaskSequenceFund: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
+		taskSequenceRepo: &db_mock.TaskSequenceRepoMock{
+			GetTaskSequenceFunc: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
 				for _, ts := range taskSequenceCollection {
 					if ts.TriggeredEventID == triggeredID {
 						return &ts, nil
