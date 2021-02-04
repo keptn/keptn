@@ -3,13 +3,14 @@ module github.com/keptn/keptn/remediation-service
 go 1.13
 
 require (
+	cloud.google.com/go v0.40.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.9.0 // indirect
-	github.com/cloudevents/sdk-go v0.10.0
-	github.com/cloudevents/sdk-go/v2 v2.3.1
+	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-test/deep v1.0.7
 	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
