@@ -3,20 +3,22 @@ package main
 import (
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/ghodss/yaml"
+
 	models "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
-var runlocal = (os.Getenv("env") == "runlocal")
-
-// ErrPrimaryFileNotAvailable indicates that the primary test file is not available
-var ErrPrimaryFileNotAvailable = errors.New("primary test file not available")
+var (
+	runlocal = (os.Getenv("env") == "runlocal")
+	// ErrPrimaryFileNotAvailable indicates that the primary test file is not available
+	ErrPrimaryFileNotAvailable = errors.New("primary test file not available")
+)
 
 //
 // Iterates through the JMeterConf and returns the workload configuration matching the testStrategy
@@ -49,6 +51,7 @@ func GetConfigurationServiceURL() string {
 	} else if os.Getenv("env") == "production" && os.Getenv("CONFIGURATION_SERVICE") != "" {
 		return os.Getenv("CONFIGURATION_SERVICE")
 	}
+
 	return "localhost:8080"
 }
 
@@ -99,7 +102,6 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
  * error: any error that occured
  */
 func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
-
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 
 	// Lets first get the servcie resources
@@ -157,7 +159,6 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 
 		// only store it if we really know whether and where we have to store it to!
 		if targetFileName != "" {
-
 			// now we have to download that resource first as so far we only have the resourceURI
 			downloadedResource, err := resourceHandler.GetStageResource(project, stage, *resource.ResourceURI)
 			if err != nil {
@@ -178,7 +179,6 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 	// Fallback if primary file wasn't loaded yet
 	// last effort - if we couldn't download the specific test file because, e.g: limitations of our current API - then simply go back to download this specific file
 	if !foundPrimaryFile {
-
 		primaryTestFileContent, err := GetKeptnResource(project, stage, service, primaryTestFileName)
 		if err != nil {
 			return false, fileCount, err
@@ -197,7 +197,6 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 	}
 
 	logger.Debug(fmt.Sprintf("Downloaded %d and skipped %d files for %s in %s.%s.%s", fileCount, skippedFileCount, resourceURIFolderOfInterest, project, stage, service))
-
 	return foundPrimaryFile, fileCount, nil
 }
 
@@ -209,6 +208,7 @@ func FileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
 		return true
 	}
+
 	return false
 }
 
@@ -219,7 +219,6 @@ func FileExists(filename string) bool {
  * 2: error if an error occured
  */
 func storeFile(localDirectory string, targetFileName string, resourceContent string, overwriteIfExists bool) error {
-
 	// lets construct the final directory name
 	if !strings.HasSuffix(localDirectory, "/") {
 		localDirectory = localDirectory + "/"
@@ -250,8 +249,8 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 		return err
 	}
 	defer writeToFile.Close()
-	_, err = writeToFile.Write([]byte(resourceContent))
 
+	_, err = writeToFile.Write([]byte(resourceContent))
 	if err != nil {
 		return err
 	}
@@ -274,7 +273,6 @@ func getJMeterConf(project string, stage string, service string, logger *keptnco
 			return nil, errors.New(logMessage)
 		}
 	} else {
-
 		logger.Info(fmt.Sprintf("Loading %s for %s.%s.%s", JMeterConfFilename, project, stage, service))
 
 		keptnResourceContent, err := GetKeptnResource(project, stage, service, JMeterConfFilename)
@@ -294,7 +292,6 @@ func getJMeterConf(project string, stage string, service string, logger *keptnco
 
 	var jmeterConf *JMeterConf
 	jmeterConf, err = parseJMeterConf(fileContent)
-
 	if err != nil {
 		logMessage := fmt.Sprintf("Couldn't parse %s file found for service %s in stage %s in project %s. Error: %s", JMeterConfFilename, service, stage, project, err.Error())
 		logger.Error(logMessage)
@@ -312,7 +309,6 @@ func getJMeterConf(project string, stage string, service string, logger *keptnco
 func parseJMeterConf(input []byte) (*JMeterConf, error) {
 	jmeterconf := &JMeterConf{}
 	err := yaml.Unmarshal([]byte(input), &jmeterconf)
-
 	if err != nil {
 		return nil, err
 	}

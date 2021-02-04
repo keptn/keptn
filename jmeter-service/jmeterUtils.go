@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/url"
 	"os"
 	"regexp"
@@ -11,6 +10,7 @@ import (
 	"strings"
 
 	keptnutils "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 const maxAcceptedErrorRate = 0.1

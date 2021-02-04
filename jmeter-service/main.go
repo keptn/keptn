@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"log"
 	"net/url"
 	"os"
@@ -14,13 +12,17 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	"github.com/kelseyhightower/envconfig"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
-const eventbroker = "EVENTBROKER"
-const configurationService = "CONFIGURATION_SERVICE"
+const (
+	eventbroker          = "EVENTBROKER"
+	configurationService = "CONFIGURATION_SERVICE"
+)
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
@@ -33,6 +35,7 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
 	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }
@@ -59,6 +62,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		logger.Info("Received '" + TestStrategy_RealUser + "' test strategy, hence no tests are triggered")
 		return nil
 	}
+
 	go runTests(event, shkeptncontext, *data, logger)
 
 	return nil
@@ -69,7 +73,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
 func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData, logger *keptncommon.Logger) {
-
 	sendTestsStartedEvent(shkeptncontext, event, logger)
 
 	testInfo := getTestInfo(data, shkeptncontext)
@@ -179,7 +182,6 @@ func getTestInfo(data keptnv2.TestTriggeredEventData, shkeptncontext string) *Te
 // returns the service URL that is either passed via the DeploymentURI* parameters or constructs one based on keptn naming structure
 //
 func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
-
 	if len(data.Deployment.DeploymentURIsLocal) > 0 && data.Deployment.DeploymentURIsLocal[0] != "" {
 		return url.Parse(data.Deployment.DeploymentURIsLocal[0])
 
@@ -194,7 +196,6 @@ func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 // executes the actual JMEter tests based on the workload configuration
 //
 func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, logger *keptncommon.Logger) (bool, error) {
-
 	// for testStrategy functional we enforce a 0% error policy!
 	breakOnFunctionalIssues := workload.TestStrategy == TestStrategy_Functional
 
@@ -302,7 +303,6 @@ func sendErroredTestsFinishedEvent(shkeptncontext string, incomingEvent cloudeve
 }
 
 func _main(args []string, env envConfig) int {
-
 	if runlocal {
 		log.Println("Running LOCALLY: env=runlocal")
 	}
@@ -318,8 +318,8 @@ func _main(args []string, env envConfig) int {
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
 	}
-	log.Fatal(c.StartReceiver(ctx, gotEvent))
 
+	log.Fatal(c.StartReceiver(ctx, gotEvent))
 	return 0
 }
 
