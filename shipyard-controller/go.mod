@@ -16,14 +16,12 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
 	github.com/go-test/deep v1.0.7
 	github.com/golang/protobuf v1.4.2 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
-	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.7
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.4.0
