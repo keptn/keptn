@@ -21,16 +21,28 @@
           </div>
         </div>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-          <p class="m-0 small" *ngIf="event.getShortImageName()"><span class="m-0" [textContent]="event.getShortImageName()"></span></p>
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-tag-list aria-label="stages">
-              <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)" (click)="$event.stopPropagation();selectEvent(event, stage)"></dt-tag>
-            </dt-tag-list>
-          </div>
+          <p class="m-0 small">
+            <span class="bold" [textContent]="event.getShortImageName()"></span>
+            <span> in </span>
+            <span class="bold" *ngFor="let stage of event.getStages(); let isLast=last">
+              <span [textContent]="stage" (click)="$event.stopPropagation();selectEvent(event, stage)" [class.success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)"></span>
+              <span *ngIf="!isLast">, </span>
+            </span>
+          </p>
         </div>
       </ktb-selectable-tile-header>
-
-      <p class="m-0 small" [textContent]="event.time | amCalendar:dateUtil.getCalendarFormats()"></p>
+      <p class="m-0 small">
+        Started
+        <span [textContent]="event.time | amCalendar:dateUtil.getCalendarFormats()"></span>
+        and
+        <span *ngIf="event.isFinished()">took <span [textContent]="dateUtil.getDurationFormatted(event.time, event.getLastTrace().time)"></span></span>
+        <span *ngIf="!event.isFinished()">running for <span [textContent]="dateUtil.getDurationFormatted(event.time)"></span></span>
+      </p>
+      <p class="m-0 small">
+        <span *ngIf="!event.isFinished()">Recent task:</span>
+        <span *ngIf="event.isFinished()">Last task:</span>
+        <span [textContent]="event.getLastTrace().getLabel()"></span>
+      </p>
       <p class="m-0 small" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
     </ktb-selectable-tile>
   </div>

@@ -10,7 +10,7 @@ export class DateUtil {
   public DEFAULT_DATE_FORMAT = 'YYYY-MM-DD';
   public DEFAULT_TIME_FORMAT = 'HH:mm';
 
-  public getDurationFormatted(start, end) {
+  public getDurationFormatted(start, end?) {
     let diff = moment(end).diff(moment(start));
     let duration = moment.duration(diff);
 
@@ -33,18 +33,18 @@ export class DateUtil {
   public getCalendarFormats(showSeconds?: boolean) {
     if(showSeconds) {
       return {
-        lastDay : '[Yesterday at] HH:mm:ss',
-        sameDay : '[Today at] HH:mm:ss',
-        nextDay : '[Tomorrow at] HH:mm:ss',
+        lastDay : '[yesterday at] HH:mm:ss',
+        sameDay : '[today at] HH:mm:ss',
+        nextDay : '[tomorrow at] HH:mm:ss',
         lastWeek : '[last] dddd [at] HH:mm:ss',
         nextWeek : 'dddd [at] HH:mm:ss',
         sameElse : 'YYYY-MM-DD HH:mm:ss'
       };
     }
     return {
-      lastDay : '[Yesterday at] HH:mm',
-      sameDay : '[Today at] HH:mm',
-      nextDay : '[Tomorrow at] HH:mm',
+      lastDay : '[yesterday at] HH:mm',
+      sameDay : '[today at] HH:mm',
+      nextDay : '[tomorrow at] HH:mm',
       lastWeek : '[last] dddd [at] HH:mm',
       nextWeek : 'dddd [at] HH:mm',
       sameElse : 'YYYY-MM-DD HH:mm'
