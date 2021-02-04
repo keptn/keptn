@@ -148,6 +148,13 @@ func init() {
 }
 
 func verifyAuthParams(authParams *authCmdParams) error {
+
+	const parametersRequiredMessage = "keptn auth requires api-token and endpoint \n\n" +
+		"For more information on how to obtain token and endpoint to go https://keptn.sh/docs/%s/reference/cli/#authenticate-keptn-cli \n\n" +
+		"Alternatively,To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI: \n" +
+		"- kubectl -n keptn port-forward service/api-gateway-nginx 8080:80 \n" +
+		"- keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)"
+
 	var err error
 	if *authParams.exportConfig {
 		return nil
@@ -160,32 +167,45 @@ func verifyAuthParams(authParams *authCmdParams) error {
 				return err
 			}
 		}
-		if authParams.endPoint == nil || *authParams.endPoint == "" {
-			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
-			if err != nil {
-				*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
-				if err != nil {
-					return fmt.Errorf("Error in fetching the endpoint\n" + err.Error() + "\nCLI is not authenticated")
-				}
-			}
-			if *authParams.secure {
-				smartKeptnAuth.insecurePrefix = "https://"
-			}
-			*authParams.endPoint = smartKeptnAuth.insecurePrefix + *authParams.endPoint + "/api"
-		}
 
-		if authParams.apiToken == nil || *authParams.apiToken == "" {
-			*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
-			if err != nil {
-				return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
-			}
+		err = smartFetchKeptnAuthParameters()
+		if err != nil {
+			return fmt.Errorf(err.Error()+parametersRequiredMessage, keptnReleaseDocsURL)
 		}
 	}
 	return nil
 }
 
+
 type resolveFunc func(string) ([]string, error)
 type sleepFunc func(time.Duration)
+
+func smartFetchKeptnAuthParameters() error {
+	var err error
+
+	if authParams.endPoint == nil || *authParams.endPoint == "" {
+		*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
+		if err != nil {
+			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
+			if err != nil {
+				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
+			}
+		}
+		if *authParams.secure {
+			smartKeptnAuth.insecurePrefix = "https://"
+		}
+		*authParams.endPoint = smartKeptnAuth.insecurePrefix + *authParams.endPoint + "/api"
+	}
+
+	if authParams.apiToken == nil || *authParams.apiToken == "" {
+		*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
+		if err != nil {
+			return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
+		}
+	}
+
+	return nil
+}
 
 func lookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bool {
 	if strings.HasSuffix(hostname, "xip.io") {
@@ -229,7 +249,7 @@ func smartKeptnCLIAuth() (string, error) {
 	}
 
 	if len(keptnInstallations) > 1 {
-		fmt.Println("We have found multiple Keptn Installation, Please select the one from the list below to continue")
+		fmt.Println("We have found multiple Keptn Installations, Please select the one from the list below to continue")
 		for index, keptnInstallation := range keptnInstallations {
 			fmt.Printf("\t%d - %s\n", index, keptnInstallation)
 		}
