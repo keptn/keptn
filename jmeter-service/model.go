@@ -17,11 +17,13 @@ workloads:
     loopcount: 1
     script: func.jmx
 */
-const JMeterConfFilename = "jmeter/jmeter.conf.yaml"
-const TestStrategy_Performance = "performance"
-const TestStrategy_Functional = "functional"
-const TestStrategy_HealthCheck = "healthcheck"
-const TestStrategy_RealUser = "real-user"
+const (
+	JMeterConfFilename       = "jmeter/jmeter.conf.yaml"
+	TestStrategy_Performance = "performance"
+	TestStrategy_Functional  = "functional"
+	TestStrategy_HealthCheck = "healthcheck"
+	TestStrategy_RealUser    = "real-user"
+)
 
 type JMeterConf struct {
 	SpecVersion string      `json:"spec_version" yaml:"spec_version"`
