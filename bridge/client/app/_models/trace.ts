@@ -126,7 +126,7 @@ class Trace {
   isFailedEvaluation() {
     let result: string = null;
     if(this.data) {
-      if(this.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
+      if(this.getFinishedEvent()?.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
         result = this.data.stage;
       }
     }
@@ -135,26 +135,22 @@ class Trace {
 
   isWarning(): string {
     let result: string = null;
-    if(this.data) {
-      if(this.type === EventTypes.EVALUATION_FINISHED && this.data.result == ResultTypes.WARNING) {
-        result = this.data.stage;
-      }
+    if(this.getFinishedEvent()?.data.result == ResultTypes.WARNING) {
+      result = this.data.stage;
     }
     return result;
   }
 
   isSuccessful(): string {
     let result: string = null;
-    if(this.data) {
-      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
-        result = this.data.stage;
-      }
+    if(this.getFinishedEvent()?.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
+      result = this.data.stage;
     }
     return !this.isFaulty() && result ? result : null;
   }
 
   public isFailed(): boolean {
-    return this.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
+    return this.getFinishedEvent()?.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
   }
 
   public isProblem(): boolean {
