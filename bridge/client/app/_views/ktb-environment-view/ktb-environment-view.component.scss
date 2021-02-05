@@ -1,31 +1,18 @@
 @import '~@dynatrace/barista-components/style/main';
 
-:host {
-  width: 100%;
-}
+:host ::ng-deep {
+  .stage-state-icon {
+    width: 25px;
+    height: 25px;
+    color: $gray-300;
+    fill: $gray-300;
+  }
 
-.stage-state {
-  border-top: 1px solid $gray-300;
-  border-bottom: 1px solid $gray-300;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.stage-state-icon {
-  width: 25px;
-  height: 25px;
-  color: $gray-300;
-  fill: $gray-300;
-}
-
-.no-deployment {
-  color: $gray-500;
-}
-
-.dt-icon {
-  &.highlight {
-    border: none;
-    fill: $blue-400;
+  .dt-icon {
+    &.highlight {
+      border: none;
+      fill: $blue-400;
+    }
   }
 }
 
