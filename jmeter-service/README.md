@@ -23,7 +23,7 @@ In case the tests succeeed, this service sends a `sh.keptn.events.test-finished`
 
 ## Usage
 
-The JMeter service expects JMeter test files in the project specific Keptn repo. It expects those files to be available in the jmeter subfolder for a service in the stage you want to execute tests. 
+The JMeter service expects JMeter test files in the project specific Keptn repo. It expects those files to be available in the jmeter subfolder for a service in the stage you want to execute tests.
 
 Here is an example on how to upload the `basiccheck.jmx` test file via the Keptn CLI to the dev stage of project sockshop for the service carts:
 
@@ -33,7 +33,7 @@ keptn add-resource --project=sockshop --stage=dev --service=carts --resource=jme
 
 ### Workloads
 
-When the JMeter service is handling the `sh.keptn.events.deployment-finished` event it will execute different tests with different workload parameters depending on the test strategy. 
+When the JMeter service is handling the `sh.keptn.events.deployment-finished` event it will execute different tests with different workload parameters depending on the test strategy.
 
 Following is a table that shows you which tests are executed and which parameters are passed to the JMeter script. You notice that independent of the test strategy the JMeter service will always first execute the `basiccheck.jmx` if it exists. The basiccheck is there to make sure the service is even available and not returning any errors. This is like a quick health check by running the script and making sure there is a 0% failure rate.
 
@@ -59,7 +59,7 @@ Here is an overview:
 | DT_LTN        | A unique test execution name. To be used for integrations with tool such as Dynatrace | performance_123 |
 | VUCount       | Virtual User Count | 10 |
 | LoopCount     | Loop Count | 500 |
-| ThinkTime     | Think Time | 250 | 
+| ThinkTime     | Think Time | 250 |
 
 If you look at the sample files that come with the Keptn tutorials, you will notice that the `basiccheck.jmx` and `load.jmx` leverage all these parameters. In the end,  it is up to you on whether you want to use these or hard code them into your jmx scripts.
 Here a couple of screenshots from one of the JMeter files to see how these parameters can be used in your script:

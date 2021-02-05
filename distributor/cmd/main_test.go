@@ -4,13 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/go-openapi/strfmt"
-	"github.com/kelseyhightower/envconfig"
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/nats-io/nats-server/v2/server"
-	natsserver "github.com/nats-io/nats-server/v2/test"
-	"github.com/nats-io/nats.go"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -20,6 +13,15 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/go-openapi/strfmt"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/nats-io/nats-server/v2/server"
+	natsserver "github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
+
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 )
 
 func Test_getPubSubRecipientURL(t *testing.T) {

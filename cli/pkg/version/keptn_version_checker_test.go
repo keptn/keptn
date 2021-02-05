@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-version"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetNewStableVersions(t *testing.T) {

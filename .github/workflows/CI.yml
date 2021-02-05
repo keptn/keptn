@@ -58,7 +58,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -198,10 +198,10 @@ jobs:
 
       - name: 'Get Previous tag'
         id: get_previous_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
+        uses: "WyriHaximus/github-action-get-previous-tag@v1.0.1"
       - name: 'Get next patch version'
         id: get_next_semver_tag
-        uses: "WyriHaximus/github-action-next-semvers@v1"
+        uses: "WyriHaximus/github-action-next-semvers@v1.1"
         with:
           version: ${{ steps.get_previous_tag.outputs.tag }}
       - name: Get the version
@@ -284,7 +284,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -387,7 +387,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2.1.4
         with:
           node-version: 12.x
       - name: Checkout Code
@@ -404,7 +404,7 @@ jobs:
           npm install -g libnpx@10.2.0
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
       - name: Test
@@ -485,6 +485,7 @@ jobs:
         env:
           PLATFORM: "${{ matrix.platform }}"
           GOARCH: "amd64"
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
           VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
           DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
           GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
@@ -508,6 +509,12 @@ jobs:
           OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}" # no need for file-ending in the archive name
           mkdir dist
+
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+          fi
+
           go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
           tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTEABLE_NAME}
       - name: Upload Keptn CLI as an artifact
@@ -535,7 +542,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -575,7 +582,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 

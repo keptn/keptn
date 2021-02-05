@@ -17,6 +17,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
 	"strconv"
 	"time"
 
@@ -142,7 +144,17 @@ func updateLastVersionCheck() {
 }
 
 func getKeptnServerVersion() (string, error) {
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	var endPoint url.URL
+	var apiToken string
+	var err error
+	if !mocking {
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	} else {
+		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
+		endPoint = *endPointPtr
+		apiToken = ""
+	}
+
 	if err != nil {
 		return "", errors.New(authErrorMsg)
 	}
@@ -150,12 +162,12 @@ func getKeptnServerVersion() (string, error) {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	if !mocking {
-		metadataData, errMetadata := apiHandler.GetMetadata()
-		if errMetadata != nil {
+	metadataData, errMetadata := apiHandler.GetMetadata()
+	if errMetadata != nil {
+		if errMetadata.Message != nil {
 			return "", errors.New("Error occurred with response code " + strconv.FormatInt(errMetadata.Code, 10) + " with message " + *errMetadata.Message)
 		}
-		return metadataData.Keptnversion, nil
+		return "", errors.New("received invalid response from Keptn API")
 	}
-	return "", nil
+	return metadataData.Keptnversion, nil
 }

@@ -3,9 +3,10 @@ package lib
 import (
 	"errors"
 	"fmt"
-	"github.com/nats-io/nats.go"
 	"sync"
 	"time"
+
+	"github.com/nats-io/nats.go"
 )
 
 type NatsConnectionHandler struct {

@@ -2,7 +2,9 @@ package handler
 
 import (
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
@@ -22,7 +24,6 @@ func (a *ApprovalTriggeredEventHandler) IsTypeHandled(event cloudevents.Event) b
 
 // Handle godoc
 func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn) {
-
 	data := &keptnv2.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
 		a.keptn.Logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
@@ -63,7 +64,6 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 }
 
 func (a *ApprovalTriggeredEventHandler) getApprovalStartedEvent(inputEvent keptnv2.ApprovalTriggeredEventData, triggeredID, shkeptncontext string) *cloudevents.Event {
-
 	approvalFinishedEvent := keptnv2.ApprovalStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: inputEvent.Project,
@@ -74,12 +74,12 @@ func (a *ApprovalTriggeredEventHandler) getApprovalStartedEvent(inputEvent keptn
 			Message: "",
 		},
 	}
+
 	return getCloudEvent(approvalFinishedEvent, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
 }
 
 func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent keptnv2.ApprovalTriggeredEventData,
 	result keptnv2.ResultType, triggeredID, shkeptncontext string) *cloudevents.Event {
-
 	approvalFinishedEvent := keptnv2.ApprovalFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: inputEvent.Project,
@@ -91,5 +91,6 @@ func (a *ApprovalTriggeredEventHandler) getApprovalFinishedEvent(inputEvent kept
 			Message: "",
 		},
 	}
+
 	return getCloudEvent(approvalFinishedEvent, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), shkeptncontext, triggeredID)
 }
