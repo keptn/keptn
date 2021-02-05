@@ -6,13 +6,18 @@ on:
 jobs:
   cleanup:
     name: Clean up
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
+      - name: Load CI Environemnt from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: .ci_env
       - name: Clean up outdated images
         env:
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-        run: |
-          apt-get update && apt-get install jq -y && ./gh-actions-scripts/cleanup_docker_images.sh
+          DOCKER_ORG: ${{ env.DOCKER_ORGANIZATION }}
+        run: ./gh-actions-scripts/cleanup_docker_images.sh

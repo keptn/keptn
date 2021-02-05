@@ -4,6 +4,7 @@ import (
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
+	"sort"
 	"time"
 
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
@@ -34,6 +35,11 @@ func GetProjectHandlerFunc(params project.GetProjectParams) middleware.Responder
 	mv := common.GetProjectsMaterializedView()
 
 	allProjects, err := mv.GetProjects()
+
+	//sort projects alphabetically
+	sort.Slice(allProjects, func(i, j int) bool {
+		return allProjects[i].ProjectName < allProjects[j].ProjectName
+	})
 
 	if err != nil || allProjects == nil {
 		return project.NewGetProjectDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})

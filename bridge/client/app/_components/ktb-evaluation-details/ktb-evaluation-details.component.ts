@@ -284,6 +284,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           });
         }
       });
+      chartSeries.sort((seriesA, seriesB) => seriesA.name.localeCompare(seriesB.name));
       this._chartSeries = [...chartSeries];
 
       this.updateHeatmapOptions(chartSeries);

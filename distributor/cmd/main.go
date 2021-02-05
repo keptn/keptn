@@ -16,35 +16,43 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/url"
-
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/keptn/keptn/distributor/pkg/lib"
-
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats.go"
+
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/distributor/pkg/lib"
 )
 
 type envConfig struct {
-	// Port on which to listen for cloudevents
-	Port int    `envconfig:"RCV_PORT" default:"8081"`
-	Path string `envconfig:"RCV_PATH" default:"/event"`
+	KeptnAPIEndpoint    string `envconfig:"KEPTN_API_ENDPOINT" default:""`
+	KeptnAPIToken       string `envconfig:"KEPTN_API_TOKEN" default:""`
+	APIProxyPort        int    `envconfig:"API_PROXY_PORT" default:"8081"`
+	APIProxyPath        string `envconfig:"API_PROXY_PATH" default:"/"`
+	HTTPPollingInterval string `envconfig:"HTTP_POLLING_INTERVAL" default:"10"`
+	EventForwardingPath string `envconfig:"EVENT_FORWARDING_PATH" default:"/event"`
+	VerifySSL           bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
+	PubSubURL           string `envconfig:"PUBSUB_URL" default:"nats://keptn-nats-cluster"`
+	PubSubTopic         string `envconfig:"PUBSUB_TOPIC" default:""`
+	PubSubRecipient     string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
+	PubSubRecipientPort string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
+	PubSubRecipientPath string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
 }
 
 var httpClient cloudevents.Client
@@ -57,16 +65,35 @@ var ctx context.Context
 
 var close = make(chan bool)
 
-var mux sync.Mutex
-
 var sentCloudEvents map[string][]string
 
 var pubSubConnections map[string]*cenats.Sender
 
-var recipientURL string
+var env envConfig
+
+var inClusterAPIProxyMappings = map[string]string{
+	"/mongodb-datastore":     "mongodb-datastore:8080",
+	"/datastore":             "mongodb-datastore:8080",
+	"/event-store":           "mongodb-datastore:8080",
+	"/configuration-service": "configuration-service:8080",
+	"/configuration":         "configuration-service:8080",
+	"/config":                "configuration-service:8080",
+	"/shipyard-controller":   "shipyard-controller:8080",
+	"/shipyard":              "shipyard-controller:8080",
+}
+
+var externalAPIProxyMappings = map[string]string{
+	"/mongodb-datastore":     "/mongodb-datastore",
+	"/datastore":             "/mongodb-datastore",
+	"/event-store":           "/mongodb-datastore",
+	"/configuration-service": "/configuration-service",
+	"/configuration":         "/configuration-service",
+	"/config":                "/configuration-service",
+	"/shipyard-controller":   "/shipyard-controller",
+	"/shipyard":              "/shipyard-controller",
+}
 
 func main() {
-	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		fmt.Println("Failed to process env var: " + err.Error())
 		os.Exit(1)
@@ -83,7 +110,7 @@ func _main(args []string, env envConfig) int {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	go startEventForwarder(env, wg)
+	go startAPIProxy(env, wg)
 	go startEventReceiver(wg)
 
 	wg.Wait()
@@ -93,13 +120,8 @@ func _main(args []string, env envConfig) int {
 
 func startEventReceiver(waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
-	// initialize the http client
-	connectionType := strings.ToLower(os.Getenv("CONNECTION_TYPE"))
 
-	switch connectionType {
-	case "":
-		createNATSClientConnection()
-		break
+	switch getPubSubConnectionType() {
 	case connectionTypeNATS:
 		createNATSClientConnection()
 		break
@@ -111,17 +133,28 @@ func startEventReceiver(waitGroup *sync.WaitGroup) {
 	}
 }
 
-func startEventForwarder(env envConfig, wg *sync.WaitGroup) {
+func getPubSubConnectionType() string {
+	if env.KeptnAPIEndpoint == "" {
+		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
+		return connectionTypeNATS
+	}
+	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
+	return connectionTypeHTTP
+
+}
+
+func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 	defer wg.Done()
 	pubSubConnections = map[string]*cenats.Sender{}
 	fmt.Println("Creating event forwarding endpoint")
 
-	http.HandleFunc("/event", EventForwardHandler)
-	serverURL := fmt.Sprintf("localhost:%d", env.Port)
+	http.HandleFunc(env.EventForwardingPath, EventForwardHandler)
+	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
+	serverURL := fmt.Sprintf("localhost:%d", env.APIProxyPort)
 	log.Fatal(http.ListenAndServe(serverURL, nil))
 }
 
-// EventForwardHandler godoc
+// EventForwardHandler forwards events received by the execution plane services to the Keptn API or the Nats server
 func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
@@ -142,16 +175,122 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// APIProxyHandler godoc
+func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
+	var path string
+	if req.URL.RawPath != "" {
+		path = req.URL.RawPath
+	} else {
+		path = req.URL.Path
+	}
+
+	fmt.Println(fmt.Sprintf("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String()))
+
+	proxyScheme, proxyHost, proxyPath := getProxyHost(path)
+
+	if proxyScheme == "" || proxyHost == "" {
+		fmt.Println("Could not get proxy Host URL - got empty values")
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
+
+	forwardReq.Header = req.Header
+
+	parsedProxyURL, err := url.Parse(proxyScheme + "://" + strings.TrimSuffix(proxyHost, "/") + "/" + strings.TrimPrefix(proxyPath, "/"))
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Could not decode url with scheme: %s, host: %s, path: %s - %s", proxyScheme, proxyHost, proxyPath, err.Error()))
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	forwardReq.URL = parsedProxyURL
+
+	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
+
+	if env.KeptnAPIToken != "" {
+		fmt.Println("Adding x-token header to HTTP request")
+		forwardReq.Header.Add("x-token", env.KeptnAPIToken)
+	}
+
+	client := getHTTPClient()
+	resp, err := client.Do(forwardReq)
+
+	if err != nil {
+		fmt.Println("Could not send request to API endpoint: " + err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	rw.WriteHeader(resp.StatusCode)
+
+	defer resp.Body.Close()
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Could not read response payload: " + err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println(fmt.Sprintf("Received response from API: Status=%d, Payload=%s", resp.StatusCode, string(respBytes)))
+	if _, err := rw.Write(respBytes); err != nil {
+		fmt.Println("could not send response from API: " + err.Error())
+	}
+}
+
+func getProxyHost(path string) (string, string, string) {
+	// if the endpoint is empty, redirect to the internal services
+	if env.KeptnAPIEndpoint == "" {
+		for key, value := range inClusterAPIProxyMappings {
+			if strings.HasPrefix(path, key) {
+				split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+				join := strings.Join(split[1:], "/")
+				return "http", value, join
+			}
+		}
+		return "", "", ""
+	}
+
+	parsedKeptnURL, err := url.Parse(env.KeptnAPIEndpoint)
+	if err != nil {
+		return "", "", ""
+	}
+
+	// if the endpoint is not empty, map to the correct api
+	for key, value := range externalAPIProxyMappings {
+		if strings.HasPrefix(path, key) {
+			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+			join := strings.Join(split[1:], "/")
+			path = value + "/" + join
+			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
+			if value == "/configuration-service" {
+				splitPath := strings.Split(path, "/resource/")
+				if len(splitPath) > 1 {
+					path = ""
+					for i := 0; i < len(splitPath)-1; i = i + 1 {
+						path = splitPath[i] + "/resource/"
+					}
+					path = path + url.QueryEscape(splitPath[len(splitPath)-1])
+				}
+			}
+			if parsedKeptnURL.Path != "" {
+				path = strings.TrimSuffix(parsedKeptnURL.Path, "/") + path
+			}
+			return parsedKeptnURL.Scheme, parsedKeptnURL.Host, path
+		}
+	}
+	return "", "", ""
+}
+
 const defaultPollingInterval = 10
 
 func gotEvent(event cloudevents.Event) error {
 	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
-	apiEndpoint := os.Getenv("HTTP_EVENT_FORWARDING_ENDPOINT")
-	if apiEndpoint == "" {
+	if env.KeptnAPIEndpoint == "" {
 		fmt.Println("No external API endpoint defined. Forwarding directly to NATS server ")
 		return forwardEventToNATSServer(event)
 	}
-	return forwardEventToAPI(event, apiEndpoint)
+	return forwardEventToAPI(event)
 }
 
 func forwardEventToNATSServer(event cloudevents.Event) error {
@@ -179,18 +318,12 @@ func forwardEventToNATSServer(event cloudevents.Event) error {
 }
 
 func createPubSubConnection(topic string) (*cenats.Sender, error) {
-	pubSubURL := os.Getenv("PUBSUB_URL")
-
-	if pubSubURL == "" {
-		return nil, errors.New("no PubSub URL defined")
-	}
-
 	if topic == "" {
 		return nil, errors.New("no PubSub Topic defined")
 	}
 
 	if pubSubConnections[topic] == nil {
-		p, err := cenats.NewSender(pubSubURL, topic, cenats.NatsOptions())
+		p, err := cenats.NewSender(env.PubSubURL, topic, cenats.NatsOptions())
 		if err != nil {
 			fmt.Printf("Failed to create nats protocol, %s", err.Error())
 		}
@@ -200,21 +333,22 @@ func createPubSubConnection(topic string) (*cenats.Sender, error) {
 	return pubSubConnections[topic], nil
 }
 
-func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
-	fmt.Println("Keptn API endpoint: " + apiEndpoint)
-	apiToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
+func forwardEventToAPI(event cloudevents.Event) error {
+	fmt.Println("Keptn API endpoint: " + env.KeptnAPIEndpoint)
 
 	payload, err := event.MarshalJSON()
-	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(payload))
+	req, err := http.NewRequest("POST", env.KeptnAPIEndpoint+"/v1/event", bytes.NewBuffer(payload))
 
 	req.Header.Set("Content-Type", "application/json")
 
-	if apiToken != "" {
+	if env.KeptnAPIToken != "" {
 		fmt.Println("Adding x-token header to HTTP request")
-		req.Header.Add("x-token", apiToken)
+		req.Header.Add("x-token", env.KeptnAPIToken)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := getHTTPClient()
+	resp, err := client.Do(req)
+
 	if err != nil {
 		fmt.Println("Could not send event to API endpoint: " + err.Error())
 		return err
@@ -236,8 +370,16 @@ func forwardEventToAPI(event cloudevents.Event, apiEndpoint string) error {
 	return errors.New(string(body))
 }
 
+func getHTTPClient() *http.Client {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL},
+	}
+	client := &http.Client{Transport: tr}
+	return client
+}
+
 func createHTTPConnection() {
-	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+	if env.PubSubRecipient == "" {
 		fmt.Printf("No pubsub recipient defined")
 		return
 	}
@@ -245,10 +387,9 @@ func createHTTPConnection() {
 	httpClient = createRecipientConnection()
 
 	eventEndpoint := getHTTPPollingEndpoint()
-	eventEndpointAuthToken := os.Getenv("HTTP_EVENT_ENDPOINT_AUTH_TOKEN")
-	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
+	topics := strings.Split(env.PubSubTopic, ",")
 
-	pollingInterval, err := strconv.ParseInt(os.Getenv("HTTP_POLLING_INTERVAL"), 10, 64)
+	pollingInterval, err := strconv.ParseInt(env.HTTPPollingInterval, 10, 64)
 	if err != nil {
 		pollingInterval = defaultPollingInterval
 	}
@@ -257,16 +398,18 @@ func createHTTPConnection() {
 
 	for {
 		<-pollingTicker.C
-		pollHTTPEventSource(eventEndpoint, eventEndpointAuthToken, topics, httpClient)
+		pollHTTPEventSource(eventEndpoint, env.KeptnAPIToken, topics, httpClient)
 	}
 }
 
 func getHTTPPollingEndpoint() string {
-	endpoint := os.Getenv("HTTP_EVENT_POLLING_ENDPOINT")
+	endpoint := env.KeptnAPIEndpoint
 	if endpoint == "" {
 		if endpoint == "" {
 			return "http://shipyard-controller:8080/v1/event/triggered"
 		}
+	} else {
+		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/shipyard-controller/v1/event/triggered"
 	}
 
 	parsedURL, _ := url.Parse(endpoint)
@@ -292,7 +435,7 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 	fmt.Println("Retrieving events of type " + topic)
 	events, err := getEventsFromEndpoint(endpoint, token, topic)
 	if err != nil {
-		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + endpoint)
+		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + err.Error())
 	}
 
 	fmt.Println("Received " + strconv.FormatInt(int64(len(events)), 10) + " new .triggered events")
@@ -320,7 +463,7 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 		e, err := decodeCloudEvent(marshal)
 
 		if e != nil {
-			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + os.Getenv("PUBSUB_RECIPIENT"))
+			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + env.PubSubRecipient)
 			err = sendEvent(*e)
 			if err != nil {
 				fmt.Println("Could not send CloudEvent: " + err.Error())
@@ -359,7 +502,8 @@ func getEventsFromEndpoint(endpoint string, token string, topic string) ([]*kept
 			req.Header.Add("x-token", token)
 		}
 
-		resp, err := http.DefaultClient.Do(req)
+		httpClient := getHTTPClient()
+		resp, err := httpClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -436,14 +580,18 @@ func stringp(s string) *string {
 }
 
 func createNATSClientConnection() {
-	if os.Getenv("PUBSUB_RECIPIENT") == "" {
+	if env.PubSubRecipient == "" {
 		fmt.Println("No pubsub recipient defined")
+		return
+	}
+	if env.PubSubTopic == "" {
+		fmt.Println("No pubsub topic defined. No need to create NATS client connection.")
 		return
 	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
 
-	natsURL := os.Getenv("PUBSUB_URL")
-	topics := strings.Split(os.Getenv("PUBSUB_TOPIC"), ",")
+	natsURL := env.PubSubURL
+	topics := strings.Split(env.PubSubTopic, ",")
 	nch := lib.NewNatsConnectionHandler(natsURL, topics)
 
 	nch.MessageHandler = handleMessage
@@ -474,11 +622,6 @@ func createNATSClientConnection() {
 
 func createRecipientConnection() cloudevents.Client {
 	var err error
-	recipientURL, err = getPubSubRecipientURL(
-		os.Getenv("PUBSUB_RECIPIENT"),
-		os.Getenv("PUBSUB_RECIPIENT_PORT"),
-		os.Getenv("PUBSUB_RECIPIENT_PATH"),
-	)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -533,7 +676,7 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 func sendEvent(event cloudevents.Event) error {
 	client := createRecipientConnection()
 
-	ctx := cloudevents.ContextWithTarget(context.Background(), recipientURL)
+	ctx := cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		fmt.Printf("failed to send: %s\n", result.Error())
@@ -543,19 +686,16 @@ func sendEvent(event cloudevents.Event) error {
 	return nil
 }
 
-func getPubSubRecipientURL(recipientService string, port string, path string) (string, error) {
-	if recipientService == "" {
-		return "", errors.New("no recipient service defined")
-	}
+func getPubSubRecipientURL() string {
+	recipientService := env.PubSubRecipient
 
 	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
 		recipientService = "http://" + recipientService
 	}
-	if port == "" {
-		port = "8080"
+
+	path := ""
+	if env.PubSubRecipientPath != "" {
+		path = "/" + strings.TrimPrefix(env.PubSubRecipientPath, "/")
 	}
-	if path != "" && !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	return recipientService + ":" + port + path, nil
+	return recipientService + ":" + env.PubSubRecipientPort + path
 }

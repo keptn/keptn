@@ -2,7 +2,6 @@ package common
 
 import (
 	"errors"
-	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
@@ -69,7 +68,11 @@ func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 			return errors.New("all stages within the shipyard must have a name")
 		}
 		if !keptncommon.ValidateKeptnEntityName(stage.Name) {
-			return fmt.Errorf("name of stage '%s' is not a valid Keptn entity name", stage.Name)
+			errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
+			errorMsg += "Keptn relies on the following conventions: "
+			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
+			errorMsg += "Please update stage name in your shipyard and try again."
+			return errors.New(errorMsg)
 		}
 	}
 	return nil

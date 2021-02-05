@@ -5,6 +5,7 @@
 # Required secrets/params:                                       #
 # - REGISTRY_USER                                                #
 # - REGISTRY_PASSWORD                                            #
+# - DOCKER_ORG                                                   #
 ##################################################################
 
 ##################################################################
@@ -12,20 +13,44 @@
 ##################################################################
 
 # list all images that should be checked
-DOCKER_ORG="keptn"
 MAX_AGE_DAYS=30
-IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller" "shipyard-service")
-# Todo: The list of images should be somehow configured in the repo
 
+# ensure the params/variables are set
+if [ -z "$REGISTRY_USER" ]; then
+  echo "REGISTRY_USER is not set. Please set REGISTRY_USER to the username of your container registry."
+  exit 1
+fi
+
+if [ -z "$REGISTRY_PASSWORD" ]; then
+  echo "REGISTRY_PASSWORD is not set. Please set REGISTRY_PASSWORD to the password of your container registry."
+  exit 1
+fi
+
+if [ -z "$DOCKER_ORG" ]; then
+  echo "DOCKER_ORG is not set. Please set DOCKER_ORG to the organization that you want to check stale images for."
+  exit 1
+fi
+
+
+# list of images to be checked
+IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller")
 # additional old images that we want to keep
-ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader")
+ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader" "shipyard-service" "wait-service" "pitometer-service")
+# Older than version 0.5
+ADDITIONAL_VERY_OLD_IMAGES=("keptn-authenticator" "keptn-control" "keptn-event-broker" "keptn-event-broker-ext" "slack-service" "control" "eventbroker" "eventbroker-ext" "github-service")
 
 # merge IMAGES and ADDITIONAL_OLD_IMAGES
 IMAGES=("${IMAGES[@]}" "${ADDITIONAL_OLD_IMAGES[@]}")
+IMAGES=("${IMAGES[@]}" "${ADDITIONAL_VERY_OLD_IMAGES[@]}")
 
 
 # Authenticate against DockerHub API
 DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
+  echo "Failed to authenticate on DockerHub Api."
+  exit 1
+fi
 
 
 # get all github release tags
@@ -43,7 +68,7 @@ function check_if_stale() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # for each tag, check if the tag is stale
-  for TAG in ${RELEASE_TAGS[@]}; do
+  for TAG in ${TAGS[@]}; do
     HTTP_RESPONSE=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" --write-out "HTTPSTATUS:%{http_code}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/")
 
     # extract body and status

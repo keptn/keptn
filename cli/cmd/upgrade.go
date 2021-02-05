@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -62,6 +63,9 @@ keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 			return err
 		}
 		if !mocking {
+			if *upgradeParams.PatchNamespace {
+				return patchNamespace()
+			}
 			return doUpgrade()
 		}
 		fmt.Println("Skipping upgrade due to mocking flag")
@@ -81,17 +85,29 @@ func doUpgradePreRunCheck() error {
 		return err
 	}
 
-	res, err := isUpgradeCompatible()
-	if err != nil {
-		return err
-	}
-	if !res {
-		installedKeptnVerison, err := getInstalledKeptnVersion()
+	if !*upgradeParams.SkipUpgradeCheck {
+		res, err := isUpgradeCompatible()
 		if err != nil {
 			return err
 		}
-		return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
-			installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+		if !res {
+			installedKeptnVerison, err := getInstalledKeptnVersion()
+			if err != nil {
+				return err
+			}
+			if installedKeptnVerison == getAppVersion(keptnUpgradeChart) {
+				vChecker := version.NewVersionChecker()
+				cliVersionCheck, _ := vChecker.CheckCLIVersion(Version, false)
+				if cliVersionCheck {
+					return fmt.Errorf("Please upgrade Keptn CLI to upgrade your Keptn Cluster!")
+				}
+				return fmt.Errorf("Unable to check for upgrades due to aforementioned error")
+			}
+			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
+				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+		}
+	} else {
+		logging.PrintLog("Skipping upgrade compatibility check!", logging.InfoLevel)
 	}
 
 	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn upgrade: %s", chartRepoURL), logging.InfoLevel)
@@ -137,6 +153,10 @@ func doUpgradePreRunCheck() error {
 }
 
 func getInstalledKeptnVersion() (string, error) {
+	if mocking {
+		// return a fake version
+		return "0.7.0", nil
+	}
 	lastRelease, err := getLatestKeptnRelease()
 	if err != nil {
 		return "", err
@@ -181,6 +201,7 @@ func init() {
 		"", "URL of the Keptn Helm Chart repository")
 	upgraderCmd.Flags().MarkHidden("chart-repo")
 	upgradeParams.PatchNamespace = upgraderCmd.Flags().BoolP("patch-namespace", "", false, "Patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
+	upgradeParams.SkipUpgradeCheck = upgraderCmd.Flags().BoolP("skip-upgrade-check", "", false, "Skip upgrade compatibility check, useful for nightly version upgrades or upgrades to preview versions")
 }
 
 func doUpgrade() error {
@@ -204,8 +225,8 @@ func doUpgrade() error {
 	}
 
 	if err := helm.NewHelper().UpgradeChart(keptnUpgradeChart, keptnReleaseName, keptnNamespace, nil); err != nil {
-		logging.PrintLog("Could not complete Keptn upgrade: "+err.Error(), logging.InfoLevel)
-		return err
+		msg := fmt.Sprintf("Could not complete Keptn upgrade: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
+		return errors.New(msg)
 	}
 
 	logging.PrintLog("Keptn has been successfully upgraded on your cluster.", logging.InfoLevel)

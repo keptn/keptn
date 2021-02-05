@@ -1,0 +1,151 @@
+<div class="container" fxFlex="64" fxLayout="row" fxLayoutGap="15px">
+  <div fxFlex fxLayout="column" fxLayoutGap="15px">
+    <div>
+      <dt-info-group>
+        <dt-info-group-title>
+          <p><span [textContent]="project.stages.length"></span> Stages</p>
+        </dt-info-group-title>
+        <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
+          <ktb-selectable-tile *ngFor="let stage of project.stages; trackBy:trackStage"
+                               fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%"
+                               (click)="selectStage($event, stage);" [selected]="selectedStage == stage">
+            <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
+            <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+                   *ngIf="project.getLatestProblemEvents(stage) as problemEvents"
+                   (click)="problemEvents.length > 0 && selectStage($event, stage, 'problem')">
+                <dt-icon class="stage-state-icon event-icon" name="criticalevent" [class.error]="problemEvents.length > 0"></dt-icon>
+                <span [textContent]="problemEvents.length"></span>
+              </div>
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+                   *ngIf="project.getLatestFailedRootEvents(stage) as failedRootEvents"
+                   (click)="failedRootEvents.length > 0 && selectStage($event, stage, 'evaluation')">
+                <dt-icon class="stage-state-icon event-icon" name="traffic-light" [class.error]="failedRootEvents.length > 0"></dt-icon>
+                <span [textContent]="failedRootEvents.length"></span>
+              </div>
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+                   *ngIf="openApprovals$ | async as openApprovals"
+                   (click)="countOpenApprovals(openApprovals, project, stage) > 0 && selectStage($event, stage, 'approval')">
+                <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="countOpenApprovals(openApprovals, project, stage) > 0"></dt-icon>
+                <span [textContent]="countOpenApprovals(openApprovals, project, stage)"></span>
+              </div>
+            </div>
+            <ng-container *ngIf="stage.services && stage.services.length > 0; else noService">
+              <ng-container *ngIf="openApprovals$ | async as openApprovals">
+                <dt-tag-list aria-label="services">
+                  <dt-tag *ngFor="let service of stage.services" [class.highlight]="countOpenApprovals(openApprovals, project, stage, service) > 0" [class.error]="findProblemEvent(project.getLatestProblemEvents(stage), service)">
+                    <span *ngIf="service.deployedImage; else noDeploymentOfServiceTag" [textContent]="service.getShortImageName()"></span>
+                    <ng-template #noDeploymentOfServiceTag>
+                      <span class="no-deployment" [textContent]="service.serviceName"></span>
+                    </ng-template>
+                  </dt-tag>
+                </dt-tag-list>
+              </ng-container>
+            </ng-container>
+          </ktb-selectable-tile>
+        </div>
+      </dt-info-group>
+    </div>
+  </div>
+</div>
+<div class="container dark" fxFlex="36" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage">
+  <ng-container *ngIf="project.getLatestFailedRootEvents(selectedStage) as failedRootEvents">
+    <ng-container *ngIf="project.getLatestProblemEvents(selectedStage) as problemEvents">
+      <ng-container *ngIf="openApprovals$ | async as openApprovals">
+        <h2 [textContent]="selectedStage.stageName"></h2>
+        <dt-toggle-button-group (change)="selectFilterEvent($event)">
+          <button #problemFilterEventButton dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0" [selected]="filterEventType == 'problem'">
+            <dt-toggle-button-item-icon>
+              <dt-icon class="stage-state-icon event-icon" name="criticalevent"></dt-icon>
+            </dt-toggle-button-item-icon>
+            <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length != 1">s</span> open</p>
+          </button>
+          <button #evaluationFilterEventButton dt-toggle-button-item class="default" [value]="'evaluation'" [class.error]="failedRootEvents.length > 0" [disabled]="failedRootEvents.length == 0" [selected]="filterEventType == 'evaluation'">
+            <dt-toggle-button-item-icon>
+              <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
+            </dt-toggle-button-item-icon>
+            <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed</p>
+          </button>
+          <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="countOpenApprovals(openApprovals, project, selectedStage) > 0" [disabled]="countOpenApprovals(openApprovals, project, selectedStage) == 0" [selected]="filterEventType == 'approval'">
+            <dt-toggle-button-item-icon>
+              <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
+            </dt-toggle-button-item-icon>
+            <p class="m-0"><span [textContent]="countOpenApprovals(openApprovals, project, selectedStage)"></span> Service<span *ngIf="countOpenApprovals(openApprovals, project, selectedStage) != 1">s</span> out-of-sync</p>
+          </button>
+        </dt-toggle-button-group>
+        <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
+          <dt-icon class="icon" name="information"></dt-icon>
+          <p class="m-0">No service onboarded yet. Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+        </div>
+        <ng-container *ngFor="let service of selectedStage.services">
+          <ktb-expandable-tile [expanded]="countOpenApprovals(openApprovals, project, selectedStage, service) > 0"
+                               *ngIf="!filterEventType || filterEventType == 'problem' && findProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && countOpenApprovals(openApprovals, project, selectedStage, service) > 0">
+            <ktb-expandable-tile-header>
+              <dt-info-group>
+                <dt-info-group-title>
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                    <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                    <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
+                      <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
+                    </ng-container>
+                    <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
+                      <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
+                    </ng-container>
+                    <ng-container *ngIf="openApprovals$ | async as openApprovals">
+                      <dt-icon class="stage-state-icon highlight" *ngIf="countOpenApprovals(openApprovals, project, selectedStage, service) > 0" name="deploy"></dt-icon>
+                    </ng-container>
+                    <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                      <a *ngIf="deployment.data.deploymentURIPublic" [href]="deployment.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+                    </ng-container>
+                  </div>
+                </dt-info-group-title>
+                <p class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getShortImageName()"></p>
+              </dt-info-group>
+            </ktb-expandable-tile-header>
+            <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
+              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.ImpactedEntity"></span></p>
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
+                <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
+                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage) as evaluation">
+                  <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
+                  <ng-template #evaluationOverlay>
+                    <ktb-evaluation-details [evaluationData]="evaluation" [showChart]="false"></ktb-evaluation-details>
+                  </ng-template>
+                </dt-tag-list>
+              </div>
+              <hr />
+            </ng-container>
+            <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                <p class="m-0">Quality gate of <span [textContent]="failedRootEvent.getShortImageName()"></span> failed with a score of:</p>
+                <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluation(selectedStage) as evaluation">
+                  <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
+                  <ng-template #overlay>
+                    <ktb-evaluation-details [evaluationData]="evaluation" [showChart]="false"></ktb-evaluation-details>
+                  </ng-template>
+                </dt-tag-list>
+              </div>
+              <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
+              <hr />
+            </ng-container>
+            <div *ngIf="countOpenApprovals(openApprovals, project, selectedStage, service) > 0; else noOutOfSyncDeployments">
+              <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
+              <ktb-approval-item class="mt-1" *ngFor="let approval of getOpenApprovals(openApprovals, project, selectedStage, service)" [event]="approval"></ktb-approval-item>
+            </div>
+            <ng-template #noOutOfSyncDeployments>No pending deployments for this stage available.</ng-template>
+          </ktb-expandable-tile>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>
+<ng-template #noService>
+  <div fxLayout="row" fxLayoutAlign="start center">
+    <dt-icon class="icon" name="information"></dt-icon>
+    <p class="m-0">No service onboarded yet.</p>
+  </div>
+  <p class="m-0">Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+</ng-template>
+<ng-template #noDeployment>
+  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
+</ng-template>

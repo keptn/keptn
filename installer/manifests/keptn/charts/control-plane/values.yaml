@@ -1,5 +1,9 @@
 mongodb:
   enabled: true
+  host: mongodb:27017
+  user: null
+  password: null
+  adminPassword: null
 
 prefixPath: ""
 
@@ -69,4 +73,8 @@ mongodbDatastore:
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
+
+statisticsService:
+  image:
+    repository: docker.io/keptn/statistics-service
 

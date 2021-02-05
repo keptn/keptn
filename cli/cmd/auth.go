@@ -247,6 +247,8 @@ func smartKeptnCLIAuth() (string, error) {
 			return "", fmt.Errorf("Please select the correct keptn installation")
 		}
 		return keptnInstallations[inp], nil
+	} else if len(keptnInstallations) == 0 {
+		return "", errors.New("We haven't found any Keptn Installation, Please follow the upgrade guide and patch the namespace with the annotation & label 'keptn.sh/managed-by: keptn'")
 	}
 	return keptnInstallations[0], nil
 }

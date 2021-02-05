@@ -46,12 +46,32 @@ export class Root extends Trace {
     }, null);
   }
 
-  isApproval(): string {
-    return this.getLastTrace().isApproval();
+  hasPendingApproval(stage: string): boolean {
+    const tracesOfStage = this.getTracesOfStage(stage);
+    let pending = undefined;
+
+    for(let i = 0; i < tracesOfStage.length && pending === undefined; ++i){
+      if(tracesOfStage[i].isApproval()){
+        pending = tracesOfStage[i].isApprovalPending();
+      }
+    }
+    return pending === undefined ? false : pending;
+  }
+
+  getPendingApprovals(): Trace[] {
+    return this.traces.filter(trace => trace.isApproval() && trace.isApprovalPending());
   }
 
   getLastTrace(): Trace {
     return this.traces ? this.traces[this.traces.length - 1] : null;
+  }
+
+  getTracesOfStage(stage: string): Trace[] {
+    return this.traces?.filter(trace => trace.data.stage === stage);
+  }
+
+  getFirstTraceOfStage(stage: string): Trace {
+    return this.getTracesOfStage(stage)?.[0];
   }
 
   getStages(): String[] {

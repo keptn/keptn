@@ -52,8 +52,10 @@ class Trace {
       shkeptncontext: string;
       token: string;
     };
-    valuesCanary: {
-      image: string;
+    configurationChange: {
+      values: {
+        image: string
+      }
     };
 
     evaluation: {
@@ -160,6 +162,16 @@ class Trace {
     return this.type === EventTypes.APPROVAL_TRIGGERED ? this.data.stage : null;
   }
 
+  public isApprovalPending(): boolean {
+    let pending = true;
+    for (let i = 0; i < this.traces.length && pending; ++i) {
+      if (this.traces[i].isApprovalFinished()) {
+        pending = false;
+      }
+    }
+    return pending;
+  }
+
   private isApprovalFinished(): boolean {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
@@ -177,7 +189,7 @@ class Trace {
   }
 
   public isDeployment(): string {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED ? this.data.stage : null;
+    return this.type === EventTypes.DEPLOYMENT_TRIGGERED ? this.data.stage : null;
   }
 
   public isEvaluation(): string {
@@ -215,6 +227,10 @@ class Trace {
     if(!this.isFinished())
       return "idle";
 
+    return this.getIconType();
+  }
+
+  getIconType(): string {
     if(!this.icon) {
       if(this.isApprovalFinished()) {
         this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
@@ -231,8 +247,8 @@ class Trace {
         this.image = [this.data.image.split("/").pop(), this.data.tag].join(":");
       else if(this.data.image)
         this.image = this.data.image.split("/").pop();
-      else if(this.data.valuesCanary)
-        this.image = this.data.valuesCanary.image.split("/").pop();
+      else if(this.data.configurationChange?.values)
+        this.image = this.data.configurationChange.values.image?.split("/").pop();
     }
 
     return this.image;
