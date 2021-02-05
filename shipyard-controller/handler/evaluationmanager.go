@@ -88,7 +88,7 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 		},
 	}
 
-	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), evaluationTriggeredEvent)
+	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetTriggeredEventType(stage+"."+keptnv2.EvaluationTaskName), evaluationTriggeredEvent)
 	if err := ce.Context.SetSource("https://github.com/keptn/keptn/api"); err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrSendEventFailed,
