@@ -39,8 +39,8 @@
         <span *ngIf="!event.isFinished()">running for <span [textContent]="dateUtil.getDurationFormatted(event.time)"></span></span>
       </p>
       <p class="m-0 small">
-        <span *ngIf="!event.isFinished()">Recent task:</span>
-        <span *ngIf="event.isFinished()">Last task:</span>
+        <span *ngIf="!event.isFinished()">Recent task: </span>
+        <span *ngIf="event.isFinished()">Last task: </span>
         <span [textContent]="event.getLastTrace().getLabel()"></span>
       </p>
       <p class="m-0 small" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
