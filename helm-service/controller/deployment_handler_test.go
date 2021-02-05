@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -76,44 +75,4 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 	assert.Equal(t, "carts-generated", mockedBaseHandler.upgradeChartInvocations[1].ch.Metadata.Name)
 	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[1].event)
 	assert.Equal(t, keptn.Direct, mockedBaseHandler.upgradeChartInvocations[1].strategy)
-}
-
-func TestHandleEventWithPreviousResultFailed(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockedBaseHandler := NewMockedHandler(createKeptn(), "")
-	mockedMesh := mocks.NewMockMesh(ctrl)
-	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
-	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
-
-	instance := NewDeploymentHandler(mockedBaseHandler, mockedMesh, mockedOnboarder, mockedChartGenerator)
-	deploymentTriggeredEventData := keptnv2.DeploymentTriggeredEventData{
-		EventData: keptnv2.EventData{
-			Result: keptnv2.ResultFailed,
-		},
-	}
-
-	ce := cloudevents.NewEvent()
-	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
-
-	instance.HandleEvent(ce)
-
-	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
-	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
-	expectedDeploymentFinishedEvent.SetSource("helm-service")
-	expectedDeploymentFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	expectedDeploymentFinishedEvent.SetExtension("triggeredid", "")
-	expectedDeploymentFinishedEvent.SetExtension("shkeptncontext", "")
-	expectedDeploymentFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.DeploymentFinishedEventData{
-		EventData: keptnv2.EventData{
-			Status:  keptnv2.StatusSucceeded,
-			Result:  keptnv2.ResultFailed,
-			Message: "No deployment has been executed",
-		},
-	})
-
-	fmt.Println(len(mockedBaseHandler.sentCloudEvents))
-	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
-	assert.Equal(t, expectedDeploymentFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
-
 }

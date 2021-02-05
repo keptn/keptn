@@ -13,9 +13,6 @@ func TestCreateActionHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	//ce := cloudevents.NewEvent()
-	//keptn, _ := keptnv2.NewKeptn(&ce, keptncommon.KeptnOpts{})
-
 	instance := NewActionTriggeredHandler(&MockedHandler{}, mocks.NewMockIConfigurationChanger(ctrl), "")
 	assert.NotNil(t, instance)
 }

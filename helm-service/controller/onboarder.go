@@ -108,6 +108,7 @@ func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 			return nil, err
 		}
 	} else {
+		// No need to generate further charts for other strategies, e.g., user-managed
 		o.getKeptnHandler().Logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s no futher charts are genereated",
 			event.Service, event.Stage, strategy.String()))
 		return &chart.Chart{}, nil

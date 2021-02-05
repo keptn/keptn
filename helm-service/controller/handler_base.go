@@ -84,8 +84,10 @@ func getDeploymentName(strategy keptnevents.DeploymentStrategy, generatedChart b
 		return "primary"
 	} else if strategy == keptnevents.Duplicate && !generatedChart {
 		return "canary"
-	} else if strategy == keptnevents.Direct || strategy == keptnevents.UserManaged {
+	} else if strategy == keptnevents.Direct {
 		return "direct"
+	} else if strategy == keptnevents.UserManaged {
+		return "user-managed"
 	}
 	return ""
 }
