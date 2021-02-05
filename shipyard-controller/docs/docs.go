@@ -175,8 +175,7 @@ var doc = `{
                         "type": "integer",
                         "description": "The number of items to return",
                         "name": "pageSize",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
@@ -230,7 +229,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateProjectParams"
+                            "$ref": "#/definitions/operations.UpdateProjectParams"
                         }
                     }
                 ],
@@ -238,7 +237,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/operations.CreateProjectResponse"
+                            "$ref": "#/definitions/operations.UpdateProjectResponse"
                         }
                     },
                     "400": {
@@ -461,6 +460,55 @@ var doc = `{
                     },
                     "500": {
                         "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{projectName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a project by its name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get a project by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "projectName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedProject"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Error)",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -768,6 +816,30 @@ var doc = `{
                     "type": "string"
                 }
             }
+        },
+        "operations.UpdateProjectParams": {
+            "type": "object",
+            "properties": {
+                "gitRemoteURL": {
+                    "description": "git remote URL",
+                    "type": "string"
+                },
+                "gitToken": {
+                    "description": "git token",
+                    "type": "string"
+                },
+                "gitUser": {
+                    "description": "git user",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "name\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
+        "operations.UpdateProjectResponse": {
+            "type": "object"
         }
     },
     "securityDefinitions": {

@@ -5,7 +5,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
-//go:generate moq --skip-ensure -pkg db_mock -out ./mock/projects_db_operations_moq.go . ProjectsDBOperations
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/projects_operations_mock.go . ProjectsDBOperations
 type ProjectsDBOperations interface {
 	GetProjects() ([]*models.ExpandedProject, error)
 	GetProject(projectName string) (*models.ExpandedProject, error)

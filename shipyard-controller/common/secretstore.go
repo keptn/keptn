@@ -8,7 +8,7 @@ import (
 )
 
 // SecretStore godoc
-//go:generate moq -pkg common_mock -out ./fake/secret_store_moq.go . SecretStore
+//go:generate moq -pkg common_mock -out ./fake/secretstore_mock.go . SecretStore
 type SecretStore interface {
 	// CreateSecret godoc
 	CreateSecret(name string, content map[string][]byte) error
