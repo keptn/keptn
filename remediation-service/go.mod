@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Azure/go-autorest/autorest v0.9.0 // indirect
-	github.com/cloudevents/sdk-go v0.10.0
+	github.com/cloudevents/sdk-go v0.11.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/strfmt v0.19.3
