@@ -22,8 +22,8 @@
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
         <div class="task-buttons" fxLayout="row" fxLayoutAlign="start start">
-          <ng-container *ngIf="_task.isDeployment()">
-            <a *ngFor="let deploymentURIPublic of _task.data?.deployment?.deploymentURIsPublic" [href]="deploymentURIPublic" target="_blank">
+          <ng-container *ngIf="_task.isDeployment() && _task.isFinished()">
+            <a *ngFor="let deploymentURIPublic of _task.getFinishedEvent().data?.deployment?.deploymentURIsPublic" [href]="deploymentURIPublic" target="_blank">
               <button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button>
             </a>
           </ng-container>
