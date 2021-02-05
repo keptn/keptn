@@ -6,7 +6,7 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/loads v0.19.4
 	github.com/go-openapi/runtime v0.19.4
 	github.com/go-openapi/spec v0.19.3
