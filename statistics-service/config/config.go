@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"log"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 // EnvConfig godoc

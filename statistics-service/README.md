@@ -24,9 +24,9 @@ You can access the service via the Keptn API under the `statistics` path, e.g.:
 
 ```
 http://keptn-api-url.com/api/statistics
-``` 
+```
 
-Or, if you would like to view the swagger UI of the service, you can use the following URL: 
+Or, if you would like to view the swagger UI of the service, you can use the following URL:
 
 ```
 http://keptn-api-url.com/api/swagger-ui/?urls.primaryName=statistics
@@ -52,7 +52,5 @@ curl -X GET "http://keptn-api-url.com/api/statistics/v1/statistics?from=16006561
 ### Configuring the service
 
 By default, the service aggregates data with a granularity of 30 minutes. Whenever this period has passed, the service will create
-a new entry in the Keptn-MongoDB within the Keptn cluster. If you would like to change how often statistics are stored, you can set the 
+a new entry in the Keptn-MongoDB within the Keptn cluster. If you would like to change how often statistics are stored, you can set the
 variable `AGGREGATION_INTERVAL_SECONDS` to your desired value.
-
-

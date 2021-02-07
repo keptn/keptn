@@ -1,13 +1,15 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/statistics-service/config"
 	"github.com/keptn/keptn/statistics-service/controller"
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
-	"net/http"
 )
 
 // GetStatistics godoc
