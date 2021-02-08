@@ -1,12 +1,14 @@
 package api
 
 import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
 	"github.com/keptn/keptn/statistics-service/controller"
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
-	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func Test_validateQueryTimestamps(t *testing.T) {
@@ -39,6 +41,7 @@ func Test_validateQueryTimestamps(t *testing.T) {
 			want: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := validateQueryTimestamps(tt.args.params); got != tt.want {
@@ -262,6 +265,7 @@ func Test_getStatistics(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := getStatistics(tt.args.params, tt.args.statistics)

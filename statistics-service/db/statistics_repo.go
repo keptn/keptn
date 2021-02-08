@@ -2,8 +2,9 @@ package db
 
 import (
 	"errors"
-	"github.com/keptn/keptn/statistics-service/operations"
 	"time"
+
+	"github.com/keptn/keptn/statistics-service/operations"
 )
 
 // ErrNoStatisticsFound godoc
