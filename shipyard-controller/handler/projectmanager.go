@@ -20,6 +20,15 @@ import (
 
 const shipyardVersion = "spec.keptn.sh/0.2.0"
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/projectmanager.go . IProjectManager
+type IProjectManager interface {
+	Get() ([]*models.ExpandedProject, error)
+	GetByName(projectName string) (*models.ExpandedProject, error)
+	Create(params *operations.CreateProjectParams) (error, common.RollbackFunc)
+	Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc)
+	Delete(projectName string) (error, string)
+}
+
 type ProjectManager struct {
 	Logger                  keptncommon.LoggerInterface
 	ConfigurationStore      common.ConfigurationStore
@@ -28,8 +37,6 @@ type ProjectManager struct {
 	TaskSequenceRepository  db.TaskSequenceRepo
 	EventRpository          db.EventRepo
 }
-
-type rollbackfunc func() error
 
 var nilRollback = func() error {
 	return nil
@@ -70,7 +77,7 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 	return project, err
 }
 
-func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error, rollbackfunc) {
+func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
 
 	existingProject, err := pm.ProjectMaterializedView.GetProject(*params.Name)
 	if err != nil {
@@ -158,7 +165,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 
 }
 
-func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error, rollbackfunc) {
+func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
 	oldSecret, err := pm.getGITRepositorySecret(*params.Name)
 	if err != nil {
 		return err, nilRollback

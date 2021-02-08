@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
@@ -67,7 +68,7 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectHttpStatus: http.StatusBadRequest,
 			expectJSONError: &models.Error{
 				Code:    http.StatusBadRequest,
-				Message: stringp("Invalid request format"),
+				Message: common.Stringp("Invalid request format"),
 			},
 		},
 		{
@@ -78,7 +79,7 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 					CreateEvaluationFunc: func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
 						return nil, &models.Error{
 							Code:    evaluationErrSendEventFailed,
-							Message: stringp("failed to send event"),
+							Message: common.Stringp("failed to send event"),
 						}
 					},
 				},
@@ -87,7 +88,7 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 			expectHttpStatus: http.StatusInternalServerError,
 			expectJSONError: &models.Error{
 				Code:    evaluationErrSendEventFailed,
-				Message: stringp("failed to send event"),
+				Message: common.Stringp("failed to send event"),
 			},
 		},
 	}

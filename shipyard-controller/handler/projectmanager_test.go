@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -102,8 +103,8 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("existing-project"),
-		Shipyard:     stringp("shipyard"),
+		Name:         common.Stringp("existing-project"),
+		Shipyard:     common.Stringp("shipyard"),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -130,8 +131,8 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("existing-project"),
-		Shipyard:     stringp("shipyard"),
+		Name:         common.Stringp("existing-project"),
+		Shipyard:     common.Stringp("shipyard"),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -164,7 +165,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	params := &operations.CreateProjectParams{
-		Name: stringp("my-project"),
+		Name: common.Stringp("my-project"),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -218,8 +219,8 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
-		Shipyard:     stringp(encodedShipyard),
+		Name:         common.Stringp("my-project"),
+		Shipyard:     common.Stringp(encodedShipyard),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -255,8 +256,8 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
-		Shipyard:     stringp(encodedShipyard),
+		Name:         common.Stringp("my-project"),
+		Shipyard:     common.Stringp(encodedShipyard),
 	}
 	err, rollback := instance.Create(params)
 	assert.NotNil(t, err)
@@ -305,8 +306,8 @@ func TestCreate(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
-		Shipyard:     stringp(encodedShipyard),
+		Name:         common.Stringp("my-project"),
+		Shipyard:     common.Stringp(encodedShipyard),
 	}
 	instance.Create(params)
 	assert.Equal(t, 3, len(configStore.CreateStageCalls()))
@@ -339,7 +340,7 @@ func TestUpdate_FailsWhenGettingOldSecretFails(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
+		Name:         common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -367,7 +368,7 @@ func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
+		Name:         common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -398,7 +399,7 @@ func TestUpdate_FailsWhenUpdateingGitRepositorySecretFails(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
+		Name:         common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -457,7 +458,7 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
+		Name:         common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -531,7 +532,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
+		Name:         common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -611,7 +612,7 @@ func TestUpdate(t *testing.T) {
 		GitRemoteURL: "git-url",
 		GitToken:     "git-token",
 		GitUser:      "git-user",
-		Name:         stringp("my-project"),
+		Name:         common.Stringp("my-project"),
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)

@@ -21,11 +21,11 @@ type IProjectHandler interface {
 }
 
 type ProjectHandler struct {
-	ProjectManager *ProjectManager
+	ProjectManager IProjectManager
 	EventSender    keptn.EventSender
 }
 
-func NewProjectHandler(projectManager *ProjectManager, eventSender keptn.EventSender) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSender) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager: projectManager,
 		EventSender:    eventSender,
@@ -48,11 +48,8 @@ func NewProjectHandler(projectManager *ProjectManager, eventSender keptn.EventSe
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 
 	params := &operations.GetProjectParams{}
-	if err := c.ShouldBindJSON(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 
@@ -138,7 +135,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := validateCreateProjectParams(createProjectParams); err != nil {
+	if err := common.ValidateCreateProjectParams(createProjectParams); err != nil {
 		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}
@@ -188,7 +185,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := validateUpdateProjectParams(params); err != nil {
+	if err := common.ValidateUpdateProjectParams(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}

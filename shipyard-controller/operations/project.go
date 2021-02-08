@@ -37,16 +37,11 @@ type CreateProjectParams struct {
 
 type GetProjectParams struct {
 
-	// HTTP Request Object
-	HTTPRequest *http.Request `json:"-"`
-
-	//Disable sync of upstream repo before reading content
-	DisableUpstreamSync *bool
 	//Pointer to the next set of items
-	NextPageKey *string
+	NextPageKey *string `form:"nextPageKey"`
 
 	//The number of items to return
-	PageSize *int64
+	PageSize *int64 `form:"pageSize"`
 }
 
 type GetProjectProjectNameParams struct {

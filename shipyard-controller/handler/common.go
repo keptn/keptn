@@ -2,11 +2,17 @@ package handler
 
 import (
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
 	"strings"
 )
+
+//go:generate moq -pkg fake -skip-ensure -out ./fake/eventsender.go . IEventSender
+type IEventSender interface {
+	SendEvent(event cloudevents.Event) error
+}
 
 func SetNotFoundErrorResponse(err error, c *gin.Context, message ...string) {
 	msg := errMsg(err, message)

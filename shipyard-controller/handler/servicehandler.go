@@ -45,7 +45,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := validateCreateServiceParams(createServiceParams); err != nil {
+	if err := common.ValidateCreateServiceParams(createServiceParams); err != nil {
 		SetBadRequestErrorResponse(err, c)
 		return
 	}

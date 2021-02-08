@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -18,7 +19,7 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
 
 	params := &operations.CreateServiceParams{
-		ServiceName: stringp("service-name"),
+		ServiceName: common.Stringp("service-name"),
 		HelmChart:   "",
 	}
 
@@ -37,7 +38,7 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
 
 	params := &operations.CreateServiceParams{
-		ServiceName: stringp("service-name"),
+		ServiceName: common.Stringp("service-name"),
 		HelmChart:   "",
 	}
 
@@ -72,7 +73,7 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
 
 	params := &operations.CreateServiceParams{
-		ServiceName: stringp("service-name"),
+		ServiceName: common.Stringp("service-name"),
 		HelmChart:   "",
 	}
 
@@ -111,7 +112,7 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
 
 	params := &operations.CreateServiceParams{
-		ServiceName: stringp("service-name"),
+		ServiceName: common.Stringp("service-name"),
 		HelmChart:   "",
 	}
 
@@ -154,7 +155,7 @@ func TestCreateService(t *testing.T) {
 	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
 
 	params := &operations.CreateServiceParams{
-		ServiceName: stringp("service-name"),
+		ServiceName: common.Stringp("service-name"),
 		HelmChart:   "",
 	}
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
@@ -43,7 +44,7 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 	if err := c.ShouldBindJSON(evaluation); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    http.StatusBadRequest,
-			Message: stringp("Invalid request format"),
+			Message: common.Stringp("Invalid request format"),
 		})
 		return
 	}

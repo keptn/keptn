@@ -1,4 +1,4 @@
-package handler
+package common
 
 import (
 	"encoding/base64"
@@ -7,15 +7,16 @@ import (
 	"github.com/ghodss/yaml"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 )
 
-func stringp(s string) *string {
+type RollbackFunc func() error
+
+func Stringp(s string) *string {
 	return &s
 }
 
-func validateCreateProjectParams(createProjectParams *operations.CreateProjectParams) error {
+func ValidateCreateProjectParams(createProjectParams *operations.CreateProjectParams) error {
 
 	if createProjectParams.Name == nil || *createProjectParams.Name == "" {
 		return errors.New("project name missing")
@@ -41,18 +42,18 @@ func validateCreateProjectParams(createProjectParams *operations.CreateProjectPa
 		return fmt.Errorf("could not unmarshal provided shipyard content: %s", err.Error())
 	}
 
-	if err := common.ValidateShipyardVersion(shipyard); err != nil {
+	if err := ValidateShipyardVersion(shipyard); err != nil {
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
 	}
 
-	if err := common.ValidateShipyardStages(shipyard); err != nil {
+	if err := ValidateShipyardStages(shipyard); err != nil {
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
 	}
 
 	return nil
 }
 
-func validateUpdateProjectParams(updateProjectParams *operations.UpdateProjectParams) error {
+func ValidateUpdateProjectParams(updateProjectParams *operations.UpdateProjectParams) error {
 
 	if updateProjectParams.Name == nil || *updateProjectParams.Name == "" {
 		return errors.New("project name missing")
@@ -64,7 +65,7 @@ func validateUpdateProjectParams(updateProjectParams *operations.UpdateProjectPa
 	return nil
 }
 
-func validateCreateServiceParams(params *operations.CreateServiceParams) error {
+func ValidateCreateServiceParams(params *operations.CreateServiceParams) error {
 	if params.ServiceName == nil || *params.ServiceName == "" {
 		return errors.New("Must provide a service name")
 	}

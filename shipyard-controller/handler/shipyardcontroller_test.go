@@ -482,11 +482,11 @@ func getArtifactDeliveryTriggeredEvent() models.Event {
 		Extensions:     nil,
 		ID:             "artifact-delivery-triggered-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "",
-		Type:           stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
+		Type:           common.Stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
 	}
 }
 
@@ -497,11 +497,11 @@ func getStartedEvent(stage string, triggeredID string, eventType string, source 
 		Extensions:     nil,
 		ID:             eventType + "-started-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp(source),
+		Source:         common.Stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp(keptnv2.GetStartedEventType(eventType)),
+		Type:           common.Stringp(keptnv2.GetStartedEventType(eventType)),
 	}
 }
 
@@ -526,11 +526,11 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string)
 		Extensions:     nil,
 		ID:             "deployment-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp(source),
+		Source:         common.Stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.deployment.finished"),
+		Type:           common.Stringp("sh.keptn.event.deployment.finished"),
 	}
 }
 
@@ -555,11 +555,11 @@ func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source 
 		Extensions:     nil,
 		ID:             "deployment-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp(source),
+		Source:         common.Stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.deployment.finished"),
+		Type:           common.Stringp("sh.keptn.event.deployment.finished"),
 	}
 }
 
@@ -587,11 +587,11 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.test.finished"),
+		Type:           common.Stringp("sh.keptn.event.test.finished"),
 	}
 }
 
@@ -613,11 +613,11 @@ func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result kep
 		Extensions:     nil,
 		ID:             "evaluation-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.evaluation.finished"),
+		Type:           common.Stringp("sh.keptn.event.evaluation.finished"),
 	}
 }
 
@@ -636,11 +636,11 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 		Extensions:     nil,
 		ID:             "release-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.release.finished"),
+		Type:           common.Stringp("sh.keptn.event.release.finished"),
 	}
 }
 
@@ -710,9 +710,9 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
@@ -885,7 +885,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
-		Stage: stringp("dev"),
+		Stage: common.Stringp("dev"),
 	}, common.FinishedEvent)
 
 	fake.ShouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), "dev")
@@ -965,9 +965,9 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
@@ -1061,9 +1061,9 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
@@ -1157,9 +1157,9 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
@@ -1341,8 +1341,8 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done := fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
 	if done {
@@ -1353,8 +1353,8 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(nextEventType),
 		Stage:   &nextStage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 
 	triggeredID := triggeredEvents[0].ID
@@ -1367,8 +1367,8 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
-		Service:     stringp("carts"),
-		TriggeredID: stringp(finishedEvent.Triggeredid),
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
 	}, common.StartedEvent)
 	done = fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 	if done {
@@ -1398,8 +1398,8 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done := fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
 	if done {
@@ -1410,8 +1410,8 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
-		Service:     stringp("carts"),
-		TriggeredID: stringp(finishedEvent.Triggeredid),
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
 	}, common.StartedEvent)
 	done = fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 	if done {
@@ -1441,8 +1441,8 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage, nil)
 	if done {
@@ -1453,8 +1453,8 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(nextEventType),
 		Stage:   &nextStage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
 
 	done = fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
@@ -1466,8 +1466,8 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
-		Service:     stringp("carts"),
-		TriggeredID: stringp(finishedEvent.Triggeredid),
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
 	}, common.StartedEvent)
 	if len(startedEvents) != 1 {
 		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
@@ -1495,9 +1495,9 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 	// check startedEvent collection -> should contain <taskName>.started event
 	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(taskName),
-		Stage:       stringp(stage),
-		Service:     stringp("carts"),
-		TriggeredID: stringp(triggeredID),
+		Stage:       common.Stringp(stage),
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(triggeredID),
 	}, common.StartedEvent)
 	return fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
 }

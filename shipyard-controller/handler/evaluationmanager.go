@@ -87,13 +87,13 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 	if err := ce.Context.SetSource("https://github.com/keptn/keptn/api"); err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrSendEventFailed,
-			Message: stringp(err.Error()),
+			Message: common.Stringp(err.Error()),
 		}
 	}
 	if err := em.EventSender.SendEvent(ce); err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrSendEventFailed,
-			Message: stringp(err.Error()),
+			Message: common.Stringp(err.Error()),
 		}
 	}
 
