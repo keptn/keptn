@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/validator"
@@ -31,6 +30,7 @@ var serviceCmd = &cobra.Command{
 	Long: `Onboards a new service and its Helm chart to the provided project. 
 Therefore, this command takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 `,
+	Deprecated: "please use create service and add-resource or git add/commit",
 	Example: `keptn onboard service SERVICENAME --project=PROJECTNAME --chart=FILEPATH
 
 keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
