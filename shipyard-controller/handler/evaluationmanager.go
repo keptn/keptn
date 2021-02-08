@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"strconv"
@@ -28,18 +28,13 @@ type IEvaluationManager interface {
 	CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error)
 }
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/serviceapi.go . IServiceAPI
-type IServiceAPI interface {
-	GetService(project, stage, service string) (*keptnapimodels.Service, error)
-}
-
 type EvaluationManager struct {
 	EventSender keptn.EventSender
-	ServiceAPI  IServiceAPI
+	ServiceAPI  db.ServicesDbOperations
 	Logger      keptn.LoggerInterface
 }
 
-func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI IServiceAPI, logger keptn.LoggerInterface) (*EvaluationManager, error) {
+func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI db.ServicesDbOperations, logger keptn.LoggerInterface) (*EvaluationManager, error) {
 	return &EvaluationManager{
 		EventSender: eventSender,
 		ServiceAPI:  serviceAPI,
@@ -50,13 +45,13 @@ func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI IServiceAPI,
 
 func (em *EvaluationManager) CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
 	// TODO: check service availability via materialized view after https://github.com/keptn/keptn/issues/2999 has been merged
-	//_, err := em.ServiceAPI.GetService(project, stage, service)
-	//if err != nil {
-	//	return nil, &models.Error{
-	//		Code:    evaluationErrServiceNotAvailable,
-	//		Message: swag.String(err.Error()),
-	//	}
-	//}
+	_, err := em.ServiceAPI.GetService(project, stage, service)
+	if err != nil {
+		return nil, &models.Error{
+			Code:    evaluationErrServiceNotAvailable,
+			Message: swag.String(err.Error()),
+		}
+	}
 
 	keptnContext := uuid.New().String()
 	extensions := make(map[string]interface{})

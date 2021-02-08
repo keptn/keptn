@@ -289,6 +289,28 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 	return nil
 }
 
+func (mv *ProjectsMaterializedView) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
+	project, err := mv.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+	if project == nil {
+		return nil, ErrProjectNotFound
+	}
+
+	for _, stg := range project.Stages {
+		if stg.StageName == stageName {
+			for _, svc := range stg.Services {
+				if svc.ServiceName == serviceName {
+					return svc, nil
+				}
+			}
+			return nil, ErrServiceNotFound
+		}
+	}
+	return nil, ErrStageNotFound
+}
+
 // DeleteService deletes a service
 func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)

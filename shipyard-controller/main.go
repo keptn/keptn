@@ -87,7 +87,7 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	evaluationManager, err := handler.NewEvaluationManager(eventSender, nil, logger)
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, createMaterializedView(logger), logger)
 	if err != nil {
 		log.Fatal(err)
 	}

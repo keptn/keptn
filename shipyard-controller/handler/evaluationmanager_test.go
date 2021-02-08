@@ -3,11 +3,11 @@ package handler
 import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
-	"github.com/keptn/keptn/shipyard-controller/handler/fake"
+	"github.com/keptn/keptn/shipyard-controller/db"
+	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
@@ -160,7 +160,7 @@ func Test_getStartEndTime(t *testing.T) {
 func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 	type fields struct {
 		EventSender *keptnfake.EventSender
-		ServiceAPI  IServiceAPI
+		ServiceAPI  db.ServicesDbOperations
 		Logger      keptn.LoggerInterface
 	}
 	type args struct {
@@ -185,8 +185,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "everything ok - send evaluation.triggered event",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &fake.IServiceAPIMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.Service, error) {
-					return &apimodels.Service{}, nil
+				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+					return &models.ExpandedService{}, nil
 				}},
 				Logger: keptn.NewLogger("", "", ""),
 			},
@@ -205,7 +205,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			wantErr:      nil,
 			wantEvents: []eventTypeWithPayload{
 				{
-					eventType: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName),
+					eventType: keptnv2.GetTriggeredEventType("test-stage." + keptnv2.EvaluationTaskName),
 					payload: &keptnv2.EvaluationTriggeredEventData{
 						EventData: keptnv2.EventData{
 							Project: "test-project",
@@ -225,8 +225,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			name: "invalid timeframe",
 			fields: fields{
 				EventSender: &keptnfake.EventSender{},
-				ServiceAPI: &fake.IServiceAPIMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.Service, error) {
-					return &apimodels.Service{}, nil
+				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+					return &models.ExpandedService{}, nil
 				}},
 				Logger: keptn.NewLogger("", "", ""),
 			},
@@ -255,8 +255,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 						},
 					},
 				},
-				ServiceAPI: &fake.IServiceAPIMock{GetServiceFunc: func(project string, stage string, service string) (*apimodels.Service, error) {
-					return &apimodels.Service{}, nil
+				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
+					return &models.ExpandedService{}, nil
 				}},
 				Logger: keptn.NewLogger("", "", ""),
 			},
@@ -307,7 +307,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			}
 
 			for index, event := range tt.fields.EventSender.SentEvents {
-				assert.Equal(t, event.Context.GetType(), tt.wantEvents[index].eventType)
+				assert.Equal(t, tt.wantEvents[index].eventType, event.Context.GetType())
 				receivedPayload := &keptnv2.EvaluationTriggeredEventData{}
 				if err := event.DataAs(receivedPayload); err != nil {
 					t.Errorf("could not decode received CloudEvent: %s", err.Error())

@@ -23,6 +23,9 @@ import (
 // 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 // 				panic("mock out the GetProject method")
 // 			},
+// 			GetServiceFunc: func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+// 				panic("mock out the GetService method")
+// 			},
 // 		}
 //
 // 		// use mockedServicesDbOperations in code that requires db.ServicesDbOperations
@@ -38,6 +41,9 @@ type ServicesDbOperationsMock struct {
 
 	// GetProjectFunc mocks the GetProject method.
 	GetProjectFunc func(projectName string) (*models.ExpandedProject, error)
+
+	// GetServiceFunc mocks the GetService method.
+	GetServiceFunc func(projectName string, stageName string, serviceName string) (*models.ExpandedService, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -64,10 +70,20 @@ type ServicesDbOperationsMock struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 		}
+		// GetService holds details about calls to the GetService method.
+		GetService []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// StageName is the stageName argument value.
+			StageName string
+			// ServiceName is the serviceName argument value.
+			ServiceName string
+		}
 	}
 	lockCreateService sync.RWMutex
 	lockDeleteService sync.RWMutex
 	lockGetProject    sync.RWMutex
+	lockGetService    sync.RWMutex
 }
 
 // CreateService calls CreateServiceFunc.
@@ -176,5 +192,44 @@ func (mock *ServicesDbOperationsMock) GetProjectCalls() []struct {
 	mock.lockGetProject.RLock()
 	calls = mock.calls.GetProject
 	mock.lockGetProject.RUnlock()
+	return calls
+}
+
+// GetService calls GetServiceFunc.
+func (mock *ServicesDbOperationsMock) GetService(projectName string, stageName string, serviceName string) (*models.ExpandedService, error) {
+	if mock.GetServiceFunc == nil {
+		panic("ServicesDbOperationsMock.GetServiceFunc: method is nil but ServicesDbOperations.GetService was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+		StageName   string
+		ServiceName string
+	}{
+		ProjectName: projectName,
+		StageName:   stageName,
+		ServiceName: serviceName,
+	}
+	mock.lockGetService.Lock()
+	mock.calls.GetService = append(mock.calls.GetService, callInfo)
+	mock.lockGetService.Unlock()
+	return mock.GetServiceFunc(projectName, stageName, serviceName)
+}
+
+// GetServiceCalls gets all the calls that were made to GetService.
+// Check the length with:
+//     len(mockedServicesDbOperations.GetServiceCalls())
+func (mock *ServicesDbOperationsMock) GetServiceCalls() []struct {
+	ProjectName string
+	StageName   string
+	ServiceName string
+} {
+	var calls []struct {
+		ProjectName string
+		StageName   string
+		ServiceName string
+	}
+	mock.lockGetService.RLock()
+	calls = mock.calls.GetService
+	mock.lockGetService.RUnlock()
 	return calls
 }
