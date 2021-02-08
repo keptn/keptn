@@ -10,6 +10,7 @@ on:
     branches:
       - 'master'
       - 'release-*'
+    type: [labeled]
 defaults:
   run:
     shell: bash
@@ -37,6 +38,7 @@ jobs:
       BUILD_REMEDIATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_REMEDIATION_SVC }}
       BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
       BUILD_MONGODB_DS: ${{ steps.check_modified_files.outputs.BUILD_MONGODB_DS }}
+      BUILD_STATISTICS_SVC: ${{ steps.check_modified_files.outputs.BUILD_STATISTICS_SVC }}
       # some env variables
       KUBE_CONSTRAINTS: ${{ steps.output_kube_constraints.outputs.KUBE_CONSTRAINTS }}
       # metadata
@@ -56,7 +58,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -70,7 +72,7 @@ jobs:
         continue-on-error: true
 
       - name: Process all artifacts (for push on master/release branches)
-        if: github.event_name == 'push'
+        if: (github.event_name == 'push') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
@@ -96,6 +98,7 @@ jobs:
           BUILD_REMEDIATION_SVC=false
           BUILD_LIGHTHOUSE_SVC=false
           BUILD_MONGODB_DS=false
+          BUILD_STATISTICS_SVC=false
 
           for changed_file in ${{ steps.changed_files.outputs.all }}; do
             echo "Checking if $changed_file leads to a build..."
@@ -164,6 +167,10 @@ jobs:
             if [[ $changed_file == "${MONGODB_DS_FOLDER}"* ]]; then
               BUILD_MONGODB_DS=true
             fi
+
+            if [[ $changed_file == "${STATISTICS_SVC_FOLDER}"* ]]; then
+              BUILD_STATISTICS_SVC=true
+            fi
           done
 
           # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
@@ -182,6 +189,7 @@ jobs:
           echo "##[set-output name=BUILD_REMEDIATION_SVC;]$(echo ${BUILD_REMEDIATION_SVC})"
           echo "##[set-output name=BUILD_LIGHTHOUSE_SVC;]$(echo ${BUILD_LIGHTHOUSE_SVC})"
           echo "##[set-output name=BUILD_MONGODB_DS;]$(echo ${BUILD_MONGODB_DS})"
+          echo "##[set-output name=BUILD_STATISTICS_SVC;]$(echo ${BUILD_STATISTICS_SVC})"
 
       - name: Extract branch name
         id: extract_branch
@@ -190,10 +198,10 @@ jobs:
 
       - name: 'Get Previous tag'
         id: get_previous_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
+        uses: "WyriHaximus/github-action-get-previous-tag@v1.0.1"
       - name: 'Get next patch version'
         id: get_next_semver_tag
-        uses: "WyriHaximus/github-action-next-semvers@v1"
+        uses: "WyriHaximus/github-action-next-semvers@v1.1"
         with:
           version: ${{ steps.get_previous_tag.outputs.tag }}
       - name: Get the version
@@ -231,6 +239,34 @@ jobs:
           echo "::set-output name=TIME::$(date +'%H%M')"
           echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
+  store-output-in-build-config:
+    name: "Store output of last step in build-config.env"
+    needs: prepare_ci_run
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Create build config file
+        env:
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+          BRANCH_SLUG: ${{ needs.prepare_ci_run.outputs.BRANCH_SLUG }}
+          BUILD_EVERYTHING: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
+          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+        run: |
+          echo "BRANCH=${BRANCH}" >> build-config.env
+          echo "BRANCH_SLUG=${BRANCH_SLUG}" >> build-config.env
+          echo "BUILD_EVERYTHING=${BUILD_EVERYTHING}" >> build-config.env
+          echo "VERSION=${VERSION}" >> build-config.env
+          echo "DATETIME=${DATETIME}" >> build-config.env
+          echo "GIT_SHA=${GIT_SHA}" >> build-config.env
+
+      - name: Upload build config as artifact
+        id: upload_build_config
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-config
+          path: build-config.env
+
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
@@ -248,67 +284,102 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Test api
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
-        run: go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+        run: |
+          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+          bash <(curl -s https://codecov.io/bash) -c -F api
         working-directory: ./api
 
       - name: Test os route svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
         working-directory: ./platform-support/openshift-route-service
 
       - name: Test jmeter svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
         working-directory: ./jmeter-service
 
       - name: Test helm svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F helm-service
         working-directory: ./helm-service
 
       - name: Test gatekeeper svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
         working-directory: ./gatekeeper-service
 
       - name: Test distributor svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F distributor-service
         working-directory: ./distributor
 
       - name: Test shipyard controller svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
         working-directory: ./shipyard-controller
 
       - name: Test configuration svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
         working-directory: ./configuration-service
 
       - name: Test remediation svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
         working-directory: ./remediation-service
 
       - name: Test lighthouse svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
         working-directory: ./lighthouse-service
 
       - name: Test mongodb datastore svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
         working-directory: ./mongodb-datastore
 
-      - name: Coverage report
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: Test statistics svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
+        working-directory: ./statistics-service
+
 
   unit-tests-node:
     needs: prepare_ci_run
@@ -316,18 +387,24 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2.1.4
         with:
           node-version: 12.x
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install npm libs
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Checkout Code
-        uses: actions/checkout@v2
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
       - name: Test
@@ -338,7 +415,7 @@ jobs:
         working-directory: ./bridge
       - name: Coverage report
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: bash <(curl -s https://codecov.io/bash) -F moduleA
+        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
 
 
   unit-tests-cli:
@@ -348,7 +425,7 @@ jobs:
     strategy:
       matrix:
         go-version: [ 1.13.x ]
-        platform: [ ubuntu-20.04, macOS-11.0 ] # , windows-2019
+        platform: [ ubuntu-20.04 ] #[ ubuntu-20.04, macOS-11.0 ] # , windows-2019
     runs-on: ${{ matrix.platform }}
     env:
       KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
@@ -360,9 +437,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
+
       - name: Test cli
-        run: go test -race -v ./...
+        run: go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./cli
+
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash) -c -F cli
 
   ############################################################################
   # Build CLI                                                                #
@@ -374,7 +462,7 @@ jobs:
     strategy:
       matrix:
         go-version: [ 1.13.x ]
-        platform: [ ubuntu-20.04, macOS-11.0, windows-2019 ]
+        platform: [ ubuntu-20.04, windows-2019 ] #[ ubuntu-20.04, macOS-11.0, windows-2019 ]
     env:
       KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
 
@@ -386,11 +474,18 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
         uses: actions/checkout@v2
-
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
       - name: Build cli
         env:
           PLATFORM: "${{ matrix.platform }}"
           GOARCH: "amd64"
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
           VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
           DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
           GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
@@ -414,6 +509,12 @@ jobs:
           OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}" # no need for file-ending in the archive name
           mkdir dist
+
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+          fi
+
           go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
           tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTEABLE_NAME}
       - name: Upload Keptn CLI as an artifact
@@ -441,13 +542,20 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
       - name: Build Helm Charts
         id: build_helm_charts
-        run: ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}"
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the image tag (e.g., nightly build)
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}"
+          else
+            # just use VERSION for the image tag
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}"
+          fi
 
       - name: Upload Helm Chart as an artifact
         id: upload_helm_chart
@@ -474,130 +582,174 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
       - id: docker_login
         name: Docker Login
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: (github.event_name == 'push') || (github.event.pull_request.head.repo.full_name == github.repository)
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't push images to dockerhub
         env:
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
 
-      - id: prepare_manifest
-        name: Prepare Build Manifest
-        run: |
-          ./writeManifest.sh
-          cat MANIFEST
-
       - id: docker_build_api
         name: Docker Build api-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}"
-          FOLDER: ${{ env.API_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.API_FOLDER }}
 
       - id: docker_build_bridge
         name: Docker Build Bridge
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE}}"
-          FOLDER: ${{ env.BRIDGE_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.BRIDGE_FOLDER }}
 
       - id: docker_build_distributor
         name: Docker Build Distributor
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE}}"
-          FOLDER: ${{ env.DISTRIBUTOR_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.DISTRIBUTOR_FOLDER }}
 
       - id: docker_build_jmeter_service
         name: Docker Build jmeter-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE}}"
-          FOLDER: ${{ env.JMETER_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.JMETER_SVC_FOLDER }}
 
       - id: docker_build_helm_service
         name: Docker Build helm-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE}}"
-          FOLDER: ${{ env.HELM_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.HELM_SVC_FOLDER }}
 
       - id: docker_build_gatekeeper_service
         name: Docker Build gatekeeper-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE}}"
-          FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}
 
       - id: docker_build_os_route_service
         name: Docker Build openshift-route-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE}}"
-          FOLDER: ${{ env.OS_ROUTE_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.OS_ROUTE_SVC_FOLDER }}
 
       - id: docker_build_shipyard_controller
         name: Docker Build shipyard-controller
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        env:
-          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE}}"
-          FOLDER: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
 
       - id: docker_build_configuration_service
         name: Docker Build configuration-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE}}"
-          FOLDER: ${{ env.CONFIGURATION_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.CONFIGURATION_SVC_FOLDER }}
 
       - id: docker_build_remediation_service
         name: Docker Build remediation-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE}}"
-          FOLDER: ${{ env.REMEDIATION_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.REMEDIATION_SVC_FOLDER }}
 
       - id: docker_build_lighthouse_service
         name: Docker Build lighthouse-service
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE}}"
-          FOLDER: ${{ env.LIGHTHOUSE_SVC_FOLDER }}
-        run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.LIGHTHOUSE_SVC_FOLDER }}
 
       - id: docker_build_mongodb_ds
         name: Docker Build mongodb-datastore
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        env:
-          IMAGE: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE}}"
-          FOLDER: ${{ env.MONGODB_DS_FOLDER }}
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.MONGODB_DS_FOLDER }}
+
+      - id: docker_build_statistics_service
+        name: Docker Build statistics-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.STATISTICS_SVC_FOLDER }}
+
+      - id: create_docker_build_report
+        name: Create Docker Build Report
         run: |
-          ./gh-actions-scripts/build_docker_image.sh "${IMAGE}" "${FOLDER}" "${GIT_SHA}" "${VERSION}" "${DATETIME}"
+          echo "The following Docker Images have been built: " > docker_build_report_final.txt
+          cat docker_build_report.txt >> docker_build_report_final.txt || echo "* No images have been built or uploaded" >> docker_build_report_final.txt
+          echo "---"
+          cat docker_build_report_final.txt
+
+      - id: report_docker_build_to_pr
+        name: Report Docker Build to PR
+        if: (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't comment on the PR in this case
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: docker_build_report_final.txt
+          recreate: true
+
+      - name: Upload Docker Build Report as an artifact
+        id: upload_docker_build_report
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-build-report
+          path: docker_build_report.txt

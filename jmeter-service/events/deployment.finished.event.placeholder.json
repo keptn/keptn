@@ -1,0 +1,19 @@
+{
+    "contenttype": "application/json",
+    "data": {
+        "deploymentURIPublic": "$URL",
+        "teststrategy" : "$TESTSTRATEGY",
+        "project": "$PROJECT",
+        "service": "$SERVICE",
+        "stage": "$STAGE",
+        "image": "$SERVICE",
+        "tag" : "$VERSION",
+        "labels": {
+            "user" : "$USER",
+            "buildId" : "$VERSION"
+        }
+    },
+    "source": "performance-service",
+    "specversion": "0.2",
+    "type": "sh.keptn.events.deployment-finished"
+}

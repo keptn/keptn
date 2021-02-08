@@ -49,7 +49,7 @@ spec:
         - name: PREFIX_PATH
           value: "{{ .Values.prefixPath }}"
         - name: MONGODB_HOST
-          value: 'mongodb:27017'
+          value: '{{ .Values.mongodb.host }}'
         - name: MONGODB_DATABASE
           value: 'keptn'
         - name: MONGODB_USER

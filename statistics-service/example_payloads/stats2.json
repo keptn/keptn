@@ -1,0 +1,48 @@
+{
+  "from": "2020-06-21T02:41:45Z",
+  "to": "2020-06-23T14:02:42Z",
+  "projects": [
+    {
+      "name": "my-project",
+      "services": [
+        {
+          "name": "users",
+          "events": [
+            {
+              "type": "sh.keptn.event.approval.finished",
+              "count": 1
+            },
+            {
+              "type": "sh.keptn.event.approval.triggered",
+              "count": 1
+            }
+          ],
+          "keptnServiceExecutions": [
+            {
+              "name": "gatekeeper-service",
+              "executions": [
+                {
+                  "type": "sh.keptn.event.approval.finished",
+                  "count": 1
+                },
+                {
+                  "type": "sh.keptn.event.approval.triggered",
+                  "count": 1
+                }
+              ]
+            },
+            {
+              "name": "argo-service",
+              "executions": [
+                {
+                  "type": "sh.keptn.event.deployment.finished",
+                  "count": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -226,7 +226,13 @@ export class DataService {
     this.apiService.getEvaluationResults(event.data.project, event.data.service, event.data.stage, event.source, fromTime ? fromTime.toISOString() : null)
       .pipe(
         map(result => result.events||[]),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+        map(traces => traces.map(trace => Trace.fromJSON(trace))),
+        map( traces => traces.map((trace: Trace) => {
+          if(trace.data.evaluation.indicatorResults){
+            trace.data.evaluation.indicatorResults.sort( (resultA, resultB) => resultA.value.metric.localeCompare(resultB.value.metric))
+          }
+          return trace;
+        }))
       )
       .subscribe((traces: Trace[]) => {
         this._evaluationResults.next({
@@ -246,11 +252,12 @@ export class DataService {
       });
   }
 
-  private updateApprovals(root) {
+  private updateApprovals(root: Root) {
     if(root.traces.length > 0) {
       this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-      if(root.traces[root.traces.length-1].type == EventTypes.APPROVAL_TRIGGERED)
-        this._openApprovals.next([...this._openApprovals.getValue(), root.traces[root.traces.length-1]].sort(DateUtil.compareTraceTimesAsc));
+      const approvals = root.getPendingApprovals();
+      if (approvals.length !== 0)
+        this._openApprovals.next([...this._openApprovals.getValue(), ...approvals].sort(DateUtil.compareTraceTimesAsc));
     }
   }
 

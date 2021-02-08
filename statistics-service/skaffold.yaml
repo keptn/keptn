@@ -1,0 +1,14 @@
+
+apiVersion: skaffold/v1beta13
+kind: Config
+build:
+  artifacts:
+    - image: keptn/statistics-service
+      docker:
+        dockerfile: Dockerfile
+        buildArgs:
+          debugBuild: true
+deploy:
+  kubectl:
+    manifests:
+      - deploy/service.yaml

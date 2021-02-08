@@ -30,30 +30,35 @@ jobs:
             VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             VERSION: "v1.19.5+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             VERSION: "1.15"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             VERSION: "1.17"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -63,9 +68,22 @@ jobs:
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
+      COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
+    outputs:
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
+
+      - name: Create downloads folder
+        run: mkdir ~/downloads
+
+      - name: Cache downloads paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/downloads
+          key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
       - name: Determine Target Branch for Integration Tests
         id: determine_branch
@@ -96,15 +114,24 @@ jobs:
 
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
+        timeout-minutes: 15
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: |
           test/utils/download_and_install_oc_cli.sh
+          test/utils/download_and_install_minishift.sh
           test/utils/minishift_create_cluster.sh
+
+      - name: Interact with the cluster
+        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
+        run: oc cluster status
+
       - name: Install and start K3s
         if: env.CLOUD_PROVIDER == 'k3s-on-GHA'
         env:
           K3S_VERSION: ${{ matrix.VERSION }}
-        run: test/utils/k3s_create_cluster.sh
+        run: |
+          test/utils/download_and_install_k3s.sh
+          test/utils/k3s_create_cluster.sh
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
@@ -113,15 +140,16 @@ jobs:
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
           CLOUDSDK_REGION: "us-central1"
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
           CLUSTER_NAME_NIGHTLY=gh-nightly
-          BRANCH_SLUG=master
+          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
           export CLUSTER_NAME_NIGHTLY=${CLUSTER_NAME_NIGHTLY}-${BRANCH_SLUG:0:15}-gke${GKE_VERSION//./}
           echo $CLUSTER_NAME_NIGHTLY
           echo "Installing gcloud CLI"
           export OS_TYPE="linux"
-          source ./travis-scripts/install_gcloud.sh
+          ./test/utils/download_and_install_gcloud.sh
           echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
           gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
           test/utils/gke_create_cluster.sh
@@ -131,6 +159,17 @@ jobs:
       # get some debug infos
       - name: Debug - Describe Kubernetes Nodes
         run: kubectl describe nodes
+
+      - name: Debug - cat /etc/resolv.conf
+        run: cat /etc/resolv.conf
+
+      - name: Debug - check for internet access
+        continue-on-error: true # this only serves debugging purpose, we should still continue
+        timeout-minutes: 2
+        run: |
+          sleep 30
+          kubectl run -i --restart=Never --rm test-${RANDOM} --image=alpine:3.13 -- sh -c "wget https://keptn.sh"
+
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
         run: test/utils/install_istio.sh
@@ -148,7 +187,7 @@ jobs:
         run: kubectl get services --all-namespaces
       - name: Debug - Get Kubernetes Deployments
         run: kubectl get deployments --all-namespaces -owide
-      - name: Download CLI artifact from master branch
+      - name: Download CLI artifact from specified branch
         uses: dawidd6/action-download-artifact@v2
         with:
           # Optional, GitHub token
@@ -173,6 +212,7 @@ jobs:
           sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
 
       - name: Verify Keptn CLI works
+        timeout-minutes: 1
         run: keptn version
 
       - name: Extract name of helm chart
@@ -187,6 +227,7 @@ jobs:
 
       - name: Install Keptn
         id: keptn_install
+        timeout-minutes: 10
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
         run: |
@@ -202,9 +243,24 @@ jobs:
             echo "{}" > creds.json # empty credentials file
           fi
 
-          # install Keptn using the develop version, which refers to the :latest docker images
+          # Determine use case
+          USE_CASE=""
+          if [[ $RUN_CONTINUOUS_DELIVERY_TEST == "true" ]]; then
+            USE_CASE="--use-case=continuous-delivery"
+          fi
+
+          # Install Keptn
           keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
-             --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose --use-case=continuous-delivery
+             --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
+
+      # Gather resource limits directly after installation of Keptn
+      - name: Gather resource limits
+        if: env.COLLECT_RESOURCE_LIMITS == 'true'
+        env:
+          TEST_REPORT_FILENAME: test-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
+        run: |
+          echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
+          test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
 
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
@@ -261,15 +317,22 @@ jobs:
           source test/utils.sh
           echo "Verifying that services and namespaces have been created"
 
-          # verify the deployments within the keptn namespace
+          # verify the deployments within the keptn namespace (for keptn control plane)
           verify_deployment_in_namespace "api-gateway-nginx" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "bridge" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "configuration-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
-          verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
+          verify_deployment_in_namespace "statistics-service" ${KEPTN_NAMESPACE}
+
+          # verify deployments for continuous delivery
+          if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
+            verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
+          fi
 
           # verify the datastore deployments
           verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
@@ -277,6 +340,7 @@ jobs:
 
       - name: Authenticate Keptn CLI with API
         id: authenticate_keptn_cli
+        timeout-minutes: 5
         run: |
           source test/utils.sh
           # authenticate at Keptn API
@@ -301,10 +365,12 @@ jobs:
           verify_test_step $? "Could not authenticate at Keptn API"
 
       - name: Verify that Keptn CLI is authenticated using keptn status
+        timeout-minutes: 1
         run: keptn status
 
       - name: Test Linking Stages
         id: test_linking_stages
+        timeout-minutes: 5
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -312,6 +378,7 @@ jobs:
 
       - name: Test Quality Gates Standalone
         id: test_quality_gates
+        timeout-minutes: 10
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -323,6 +390,7 @@ jobs:
 
       - name: Test Self Healing
         id: test_self_healing
+        timeout-minutes: 10
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -331,6 +399,9 @@ jobs:
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant
+        # Delivery Assistant only works when we install keptn with continuous delivery use-case
+        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        timeout-minutes: 5
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -341,6 +412,7 @@ jobs:
       - name: Test Continuous Delivery (with sockshop)
         id: test_continuous_delivery
         if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        timeout-minutes: 45
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
@@ -378,10 +450,12 @@ jobs:
         run: kubectl -n ${KEPTN_NAMESPACE} get pods
 
       - name: Uninstall Keptn
+        timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
 
       - name: Uninstall Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
+        timeout-minutes: 5
         run: test/utils/uninstall_istio.sh
 
       # one last time: debug infos
@@ -400,6 +474,7 @@ jobs:
 
       - name: Cleanup GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
+        timeout-minutes: 5
         env:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
@@ -411,6 +486,7 @@ jobs:
 
       - name: Cleanup Minishift cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
+        timeout-minutes: 3
         run: |
           minishift stop
           minishift delete profile keptn-dev
@@ -429,18 +505,37 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: test-report
-          path: test-report-*.txt
+          path: test-*.txt
 
 
-  report-to-pr:
+  #######################################################################
+  # This job publishes a draft release based on the previous steps      #
+  #######################################################################
+  publish-draft-release:
+    name: Publish Draft release
     needs: integration-test
-    if: always() # run report-to-pr always, even if the previous required job fails
+    if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Debug - Output Branch
+        run: echo $BRANCH
+
+      - name: Load CI Environment from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: .ci_env
+
       - name: Download test reports
         uses: actions/download-artifact@v2
         with:
           name: test-report
+
       - name: Print Test Report
         id: print_test_report
         run: |
@@ -461,4 +556,175 @@ jobs:
           name: test-report
           path: final-test-report.txt
 
-      # ToDo: Report to slack, E-mail, PR, or whatever
+      - name: Summarize Resource Usage
+        id: print_resource_usage
+        run: |
+          echo "**Resource Limits**" > final-resource-limits.txt
+          ls -la test-resource-limits*.txt
+          cat test-resource-limits*.txt >> final-resource-limits.txt
+          # Todo: some calculations should be done...
+
+      - name: Download all artifacts from last successful build of specified branch
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          # Required, workflow file name or ID
+          workflow: CI.yml
+          workflow_conclusion: success
+          # Use the branch
+          branch: ${{ env.BRANCH}}
+          # Optional, directory where to extract artifact
+          path: ./dist
+
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+        id: load_build_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
+
+      - name: DEBUG Build-Config
+        run: |
+          echo VERSION=${VERSION}
+          echo BRANCH=${BRANCH}
+
+      # Part of this job is to check if a releasenotes file exists and to use it as the release message
+      - name: Try getting release notes
+        id: get_releasenotes
+        run: |
+          filename="releasenotes/releasenotes_V${VERSION}.md"
+          if [[ -f "$filename" ]]; then
+            echo "Found releasenotes in $filename"
+          else
+            echo "::warning Could not find release notes $filename, using releasenotes_develop"
+            filename="releasenotes/releasenotes_develop.md"
+          fi
+
+          echo "##[set-output name=RELEASENOTES_FILENAME;]$(echo ${filename})"
+
+      # Create release message by concatenating releasenotes with the test/build report
+      - name: Create a Release message
+        env:
+          RELEASENOTES_FILENAME: ${{ steps.get_releasenotes.outputs.RELEASENOTES_FILENAME }}
+          RESOURCE_LIMITS_FILENAME: "final-resource-limits.txt"
+        run: |
+          # print release notes
+          cat $RELEASENOTES_FILENAME > release-notes.txt
+          # print CI information
+          echo ""  >> release-notes.txt
+          echo "<details><summary>CI Information</summary>"  >> release-notes.txt
+          echo "<p>" >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "* **BUILD ${VERSION} ON ${BRANCH}**" >> release-notes.txt
+          echo "* **DATETIME**: $DATETIME" >> release-notes.txt
+          echo "* **GIT_SHA**: $GIT_SHA" >> release-notes.txt
+          echo "* **ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "**Docker Images**" >> release-notes.txt
+          cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "**Integration Tests**" >> release-notes.txt
+          cat final-test-report.txt >> release-notes.txt
+          echo "" >> release-notes.txt
+          echo "</p>" >> release-notes.txt
+          echo "</details>" >> release-notes.txt
+          echo "" >> release-notes.txt
+          # print final-resource-limits.txt
+          echo "<details><summary>Kubernetes Resource Data</summary>" >> release-notes.txt
+          echo "<p>" >> release-notes.txt
+          echo ""  >> release-notes.txt
+          cat $RESOURCE_LIMITS_FILENAME >> release-notes.txt
+          echo "</p>" >> release-notes.txt
+          echo "</details>" >> release-notes.txt
+
+      - name: Abort if (published) release already exists
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            let tag = "${{ env.VERSION }}";
+            console.log(`Trying to fetch release by tag '${tag}'...`);
+
+            try {
+              release = await github.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tag
+              });
+              console.log("::error Release already exists... Aborting!");
+              core.setFailed("Release already exists... Aborting!");
+
+              return 1; // failure
+            } catch (error) {
+              // release not found -> okay
+              console.log("No release found -> okay");
+              return 0;
+            }
+
+      - name: Delete draft release if it already exists
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            let tag = "${{ env.VERSION }}";
+            console.log(`Trying to fetch DRAFT release by tag '${tag}'...`);
+
+            try {
+              let draftRelease;
+              let releases = await github.repos.listReleases({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              // find a draft release
+              let release = releases.data.find(release => release.tag_name === tag);
+              if (release) {
+                // found a release with specified tag; check if it is a draft release
+                if (release.draft) {
+                  // found a draft release
+                  console.log(`🥳 Found a draft release with id ${release.id}, deleting it`);
+
+                  github.repos.deleteRelease({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    release_id: release.id
+                  });
+
+                  console.log("Deleted! -> okay");
+                } else {
+                  console.log("::error Release with tag found, but it's not a draft release");
+                  core.setFailed("Release with tag found, but it's not a draft release");
+                }
+              } else {
+                console.log("No draft release found -> okay");
+              }
+
+              return 0;
+            } catch (error) {
+              // error happened
+              console.log("An error happened while trying to fetch all releases:");
+              console.log(error);
+              throw error;
+            }
+
+      - name: Draft Release with Releasenotes
+        id: create_draft_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          draft: true       # we only want to publish draft releases here - a human should review it and push the button eventually
+          prerelease: true  # mark as pre-release for now, a human can always change it to a non-prerelease afterwards
+          body_path: release-notes.txt
+          files: |
+            dist/keptn-cli/keptn-*.tar.gz
+            dist/keptn-installer/keptn*.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

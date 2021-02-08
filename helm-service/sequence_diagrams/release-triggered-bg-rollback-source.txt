@@ -1,0 +1,18 @@
+title helm-service: handle release.triggered event for rollback of a b/g-deployment
+
+shipyard-controller->helm-service: RETRIEVED release.triggered
+
+note over helm-service: Note, only rollback if event.result == false
+
+helm-service-->NATS: SEND release.started
+
+note over helm-service: 1.) Ensure canary deployment in //user-chart// retrieves 0% traffic
+helm-service->config-service: GET //genereated-chart//
+helm-service->config-service: PUT updated //generated-chart//
+helm-service->helm: UPGRADE //generated-chart// (canary deployment in //user-chart// retrieves 100% traffic)
+
+note over helm-service: 2.) Scale deployment in //user-chart// to 0 replicas
+helm-service->config-service: GET //user-chart//
+helm-service->helm: UPGRADE //user-chart// with 0 replicas
+
+helm-service->NATS: SEND release.finished

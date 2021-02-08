@@ -5,30 +5,29 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/keptn/keptn/api/restapi/operations/configuration"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/api/models"
+	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const useInClusterConfig = true
-
-const bridgeCredentialsSecret = "bridge-credentials"
+const (
+	useInClusterConfig      = true
+	bridgeCredentialsSecret = "bridge-credentials"
+)
 
 var namespace = os.Getenv("POD_NAMESPACE")
 
 // PostConfigureBridgeHandlerFunc handler function for POST requests
 func PostConfigureBridgeHandlerFunc(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
-
 	l := keptnutils.NewLogger("", "", "api")
 	l.Info("API received a configure Bridge POST request")
 

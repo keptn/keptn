@@ -1,0 +1,15 @@
+<ng-container *ngIf="currentSequence">
+  <div class="ktb-sequence-timeline-container">
+    <div class="timeline"></div>
+    <div fxLayout="row" fxLayoutAlign="space-between">
+      <div class="text-center pointer stage-transition" [class.focused]="stage === selectedStage"  *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
+        <div class="stage-info">
+          <dt-icon class="event-icon" [name]="isLast ?  currentSequence.getIcon() : currentSequence.getIconType()" [class.error]="stage === currentSequence.isFaulty()" [class.success]=" !isLast || stage !== currentSequence.isFaulty() && currentSequence.isFinished()" ></dt-icon>
+          <span [textContent]="stage"></span>
+        </div>
+        <p class="m-0">|</p>
+        <p class="m-0" [textContent]="currentSequence.getFirstTraceOfStage(stage)?.time | date:'HH:mm'"></p>
+      </div>
+    </div>
+  </div>
+</ng-container>

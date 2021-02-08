@@ -1,0 +1,38 @@
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+$transition-time: 500ms;
+
+.ktb-sequence-timeline-container {
+  position: relative;
+
+  .timeline {
+    border: black solid 1px;
+    position: absolute;
+    margin-top: 30px;
+    width: 100%;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .pointer {
+    cursor: pointer;
+  }
+
+  .stage-info {
+    height: 25px;
+    &> *{
+      vertical-align: middle;
+    }
+  }
+
+  .stage-transition {
+    transition: font-size $transition-time, font-weight $transition-time;
+    &.focused {
+      font-size: $default-font-size + 2px;
+      font-weight: bold;
+    }
+  }
+}
+

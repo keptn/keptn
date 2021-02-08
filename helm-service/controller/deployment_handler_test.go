@@ -4,11 +4,11 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/golang/mock/gomock"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	"testing"
 )
 
@@ -75,4 +75,86 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 	assert.Equal(t, "carts-generated", mockedBaseHandler.upgradeChartInvocations[1].ch.Metadata.Name)
 	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[1].event)
 	assert.Equal(t, keptn.Direct, mockedBaseHandler.upgradeChartInvocations[1].strategy)
+}
+
+func Test_getPortOfService(t *testing.T) {
+	type args struct {
+		service *corev1.Service
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  int32
+		want1 bool
+	}{
+		{
+			name: "get tcp port 80",
+			args: args{
+				service: &corev1.Service{
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{
+							{
+								Name:     "http",
+								Protocol: corev1.ProtocolTCP,
+								Port:     80,
+							},
+						},
+					},
+				},
+			},
+			want:  80,
+			want1: true,
+		},
+		{
+			name: "multiple tcp ports: get lowest (80)",
+			args: args{
+				service: &corev1.Service{
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{
+							{
+								Name:     "http",
+								Protocol: corev1.ProtocolTCP,
+								Port:     80,
+							},
+							{
+								Name:     "http2",
+								Protocol: corev1.ProtocolTCP,
+								Port:     8080,
+							},
+						},
+					},
+				},
+			},
+			want:  80,
+			want1: true,
+		},
+		{
+			name: "no port marked explicitly as tcp found - get port 80",
+			args: args{
+				service: &corev1.Service{
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{
+							{
+								Name: "http",
+								Port: 80,
+							},
+						},
+					},
+				},
+			},
+			want:  80,
+			want1: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := getPortOfService(tt.args.service)
+			if got != tt.want {
+				t.Errorf("getPortOfService() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("getPortOfService() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
 }

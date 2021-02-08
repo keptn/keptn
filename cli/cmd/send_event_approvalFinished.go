@@ -289,7 +289,7 @@ func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHa
 	w := new(tabwriter.Writer)
 
 	// minwidth, tabwidth, padding, padchar, flags
-	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	w.Init(os.Stdout, 8, 8, 2, '\t', 0)
 
 	defer w.Flush()
 

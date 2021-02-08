@@ -3,10 +3,19 @@
 source test/utils.sh
 
 function cleanup() {
+  # print logs of dynatrace-sli-service
+  echo "Logs from: dynatrace-sli-service"
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  echo "Logs from: lighthouse-service"
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/lighthouse-service -c lighthouse-service
+
   echo "Executing cleanup..."
 
   echo "Delete lighthouse-config configmap"
   kubectl delete configmap -n ${KEPTN_NAMESPACE} lighthouse-config
+
+  echo "Delete lighthouse-config-$PROJECT configmap"
+  kubectl delete configmap -n ${KEPTN_NAMESPACE} lighthouse-config-${PROJECT}
 
   echo "Deleting project ${PROJECT}"
   keptn delete project $PROJECT
@@ -16,6 +25,12 @@ function cleanup() {
 
   echo "Removing secret dynatrace-credentials-${PROJECT}"
   kubectl -n ${KEPTN_NAMESPACE} delete secret dynatrace-credentials-${PROJECT}
+
+  # print logs of dynatrace-sli-service
+  echo "Logs from: dynatrace-sli-service"
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
+  echo "Logs from: lighthouse-service"
+  kubectl -n ${KEPTN_NAMESPACE} logs svc/lighthouse-service -c lighthouse-service
 }
 trap cleanup EXIT SIGINT
 
@@ -23,6 +38,7 @@ trap cleanup EXIT SIGINT
 DYNATRACE_SLI_SERVICE_VERSION=${DYNATRACE_SLI_SERVICE_VERSION:-master}
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-master}
 PROJECT=${PROJECT:-easytravel}
+SERVICE=${SERVICE:-frontend}
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
@@ -88,7 +104,7 @@ fi
 ###########################################
 # create service frontend                 #
 ###########################################
-SERVICE=frontend
+
 keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} - failed"
 
@@ -216,7 +232,7 @@ sleep 10
 
 # try to fetch a evaluation.finished event
 echo "Getting evaluation.finished event with context-id: ${keptn_context_id}"
-response=$(get_event get_evaluation_finished_event ${keptn_context_id})
+response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
 
 # print the response
 echo $response | jq .
@@ -283,7 +299,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   # exit 1 - Todo - see below
 fi
@@ -334,11 +349,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  echo "Logs from: dynatrace-sli-service"
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
-  echo "Logs from: lighthouse-service"
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/lighthouse-service -c lighthouse-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
@@ -416,8 +426,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
@@ -497,8 +505,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
@@ -580,8 +586,6 @@ while [[ $RETRY -lt $RETRY_MAX ]]; do
 done
 
 if [[ $RETRY == $RETRY_MAX ]]; then
-  # print logs of dynatrace-sli-service
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/dynatrace-sli-service -c dynatrace-sli-service
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi

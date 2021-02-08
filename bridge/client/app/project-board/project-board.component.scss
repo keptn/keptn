@@ -6,34 +6,9 @@
   height: 100%;
 }
 
-.stage-state {
-  border-top: 1px solid $gray-300;
-  border-bottom: 1px solid $gray-300;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
 .icon {
   width: 20px;
   height: 20px;
-}
-.stage-state-icon {
-  width: 25px;
-  height: 25px;
-  color: $gray-300;
-  fill: $gray-300;
-}
-.no-deployment {
-  color: $gray-500;
-}
-.out-of-sync-service {
-  border: 1px solid $blue-400;
-}
-::ng-deep .dt-icon {
-  &.out-of-sync-service {
-    border: none;
-    fill: $blue-400;
-  }
 }
 
 ::ng-deep {
@@ -91,83 +66,6 @@
 
 ::ng-deep .ktb-expandable-tile .dt-show-more-icon {
   margin-right: 5px;
-}
-
-::ng-deep .dt-toggle-button-group {
-
-  .dt-toggle-button-item {
-
-    &:not([disabled]):focus {
-      outline: none;
-    }
-    &.dt-toggle-button-item-disabled {
-      .dt-toggle-button-item-icon {
-        background-color: $gray-300;
-      }
-      &.dt-toggle-button-item-selected {
-        border-color: $gray-200;
-        .dt-toggle-button-item-icon {
-          background-color: $gray-300;
-        }
-      }
-    }
-
-    &.error:not(.dt-toggle-button-item-disabled) {
-      .dt-toggle-button-item-icon {
-        background-color: $error-color;
-      }
-      &.dt-toggle-button-item-selected {
-        border-color: $error-color;
-        .dt-toggle-button-item-icon {
-          background-color: $error-color;
-        }
-      }
-    }
-    &.error:not(.dt-toggle-button-item-disabled):hover {
-      .dt-toggle-button-item-icon {
-        background-color: $error-color-hover;
-      }
-      &.dt-toggle-button-item-selected {
-        border-color: $error-color-hover;
-        .dt-toggle-button-item-icon {
-          background-color: $error-color-hover;
-        }
-      }
-    }
-
-    &.highlight:not(.dt-toggle-button-item-disabled) {
-      .dt-toggle-button-item-icon {
-        background-color: $blue-400;
-      }
-      &.dt-toggle-button-item-selected {
-        border-color: $blue-400;
-        .dt-toggle-button-item-icon {
-          background-color: $blue-400;
-        }
-      }
-    }
-    &.highlight:not(.dt-toggle-button-item-disabled):hover {
-      .dt-toggle-button-item-icon {
-        background-color: $blue-500;
-      }
-      &.dt-toggle-button-item-selected {
-        border-color: $blue-500;
-        .dt-toggle-button-item-icon {
-          background-color: $blue-500;
-        }
-      }
-    }
-
-    .dt-toggle-button-item-icon {
-      width: 32px !important;
-      height: 32px !important;
-
-      .dt-icon {
-        width: 25px;
-        height: 25px;
-      }
-    }
-  }
 }
 
 #integration-container {

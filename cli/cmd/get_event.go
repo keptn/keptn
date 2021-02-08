@@ -15,17 +15,15 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
-
-	"github.com/ghodss/yaml"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"net/url"
+	"os"
+	"time"
 )
 
 type GetEventStruct struct {
@@ -36,6 +34,8 @@ type GetEventStruct struct {
 	PageSize     *string
 	Output       *string
 	NumOfPages   *int
+	Watch        *bool
+	WatchTime    *int
 }
 
 var getEventParams GetEventStruct
@@ -52,17 +52,16 @@ var getEventCmd = &cobra.Command{
 }
 
 func getEvent(eventStruct GetEventStruct, args []string) error {
-	if len(args) == 0 {
-		return errors.New("please provide an event type as an argument")
-	}
 
-	pageSize := setParameterValue(*eventStruct.PageSize, "1")
-
-	eventType := args[0]
-
+	var eventType = ""
 	var endPoint url.URL
 	var apiToken string
 	var err error
+
+	if len(args) > 0 {
+		eventType = args[0]
+	}
+
 	if !mocking {
 		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
 	} else {
@@ -80,43 +79,38 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 			endPointErr)
 	}
 
-	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
-	events, modErr := eventHandler.GetEvents(&apiutils.EventFilter{
+	filter := &apiutils.EventFilter{
 		KeptnContext:  *eventStruct.KeptnContext,
 		Service:       *eventStruct.Service,
 		Stage:         *eventStruct.Stage,
 		Project:       *eventStruct.Project,
 		EventType:     eventType,
-		PageSize:      pageSize,
 		NumberOfPages: *eventStruct.NumOfPages,
-	})
-
-	if modErr != nil {
-		logging.PrintLog(*modErr.Message, logging.QuietLevel)
-		return errors.New(*modErr.Message)
 	}
+	eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
-	if len(events) == 0 {
-		logging.PrintLog("No event returned", logging.QuietLevel)
-		return nil
-	} else if len(events) == 1 {
-		printEvents(events[0], *eventStruct.Output)
+	if !*getEventParams.Watch {
+		events, modErr := eventHandler.GetEvents(filter)
+
+		if modErr != nil {
+			logging.PrintLog(*modErr.Message, logging.QuietLevel)
+			return errors.New(*modErr.Message)
+		}
+
+		if len(events) == 0 {
+			logging.PrintLog("No event returned", logging.QuietLevel)
+			return nil
+		} else if len(events) == 1 {
+			PrintEvents(os.Stdout, *eventStruct.Output, events[0])
+
+		} else {
+			PrintEvents(os.Stdout, *eventStruct.Output, events)
+		}
 	} else {
-		printEvents(events, *eventStruct.Output)
+		watcher := NewDefaultWatcher(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
+		PrintEventWatcher(watcher, *getEventParams.Output, os.Stdout)
 	}
-
 	return nil
-}
-
-func printEvents(events interface{}, outputType string) {
-	if outputType == "yaml" {
-		eventsYAML, _ := yaml.Marshal(events)
-		fmt.Println(string(eventsYAML))
-	} else {
-		eventsJSON, _ := json.MarshalIndent(events, "", "    ")
-		fmt.Println(string(eventsJSON))
-	}
 }
 
 func init() {
@@ -135,19 +129,13 @@ func init() {
 	getEventParams.Service = getEventCmd.Flags().StringP("service", "", "",
 		"The name of a service within a project from which to retrieve the event")
 
-	getEventParams.Output = getEventCmd.Flags().StringP("output", "o", "",
-		" Output format. One of: json|yaml")
-
 	getEventParams.PageSize = getEventCmd.Flags().StringP("page-size", "", "",
 		"Max number of return events per page (Default 1)")
 
-	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 1,
+	getEventParams.NumOfPages = getEventCmd.Flags().IntP("num-of-pages", "", 100,
 		"Number of pages that should be returned (Default 1).")
-}
 
-func setParameterValue(value string, defaultValue string) string {
-	if len(value) == 0 {
-		return defaultValue
-	}
-	return value
+	getEventParams.Watch = AddWatchFlag(getEventCmd)
+	getEventParams.WatchTime = AddWatchTimeFlag(getEventCmd)
+	getEventParams.Output = AddOutputFormatFlag(getEventCmd)
 }

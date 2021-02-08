@@ -15,7 +15,6 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	"github.com/asaskevich/govalidator"
@@ -66,14 +65,6 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 			cmd.SilenceUsage = false
 			return errors.New("required argument PROJECTNAME not set")
 		}
-
-		if !keptncommon.ValidateKeptnEntityName(args[0]) {
-			errorMsg := "Project name contains upper case letter(s) or special character(s).\n"
-			errorMsg += "Keptn relies on the following conventions: "
-			errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
-			errorMsg += "Please update project name and try again."
-			return errors.New(errorMsg)
-		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -82,17 +73,6 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
 		if err != nil {
 			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
-		}
-
-		// check stage names
-		for _, stage := range shipyard.Spec.Stages {
-			if !keptncommon.ValidateKeptnEntityName(stage.Name) {
-				errorMsg := "Stage " + stage.Name + " contains upper case letter(s) or special character(s).\n"
-				errorMsg += "Keptn relies on the following conventions: "
-				errorMsg += "start with a lower case letter, then lower case letters, numbers, and hyphens are allowed.\n"
-				errorMsg += "Please update stage name in your shipyard and try again."
-				return errors.New(errorMsg)
-			}
 		}
 
 		if err := checkGitCredentials(); err != nil {
@@ -128,8 +108,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		if !mocking {
 			_, err := apiHandler.CreateProject(project)
 			if err != nil {
-				fmt.Println("Create project was unsuccessful")
-				return fmt.Errorf("Create project was unsuccessful. %s", *err.Message)
+				return fmt.Errorf("Create project was unsuccessful.\n%s", *err.Message)
 			}
 
 			logging.PrintLog("Project created successfully", logging.InfoLevel)

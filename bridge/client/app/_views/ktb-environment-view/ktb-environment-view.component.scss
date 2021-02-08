@@ -1,0 +1,108 @@
+@import '~@dynatrace/barista-components/style/main';
+
+:host {
+  width: 100%;
+}
+
+.stage-state {
+  border-top: 1px solid $gray-300;
+  border-bottom: 1px solid $gray-300;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.stage-state-icon {
+  width: 25px;
+  height: 25px;
+  color: $gray-300;
+  fill: $gray-300;
+}
+
+.no-deployment {
+  color: $gray-500;
+}
+
+.dt-icon {
+  &.highlight {
+    border: none;
+    fill: $blue-400;
+  }
+}
+
+
+.dt-toggle-button-group {
+
+  .dt-toggle-button-item {
+
+    &:not([disabled]):focus {
+      outline: none;
+    }
+    &.dt-toggle-button-item-disabled {
+      .dt-toggle-button-item-icon {
+        background-color: $gray-300;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $gray-200;
+        .dt-toggle-button-item-icon {
+          background-color: $gray-300;
+        }
+      }
+    }
+
+    &.error:not(.dt-toggle-button-item-disabled) {
+      .dt-toggle-button-item-icon {
+        background-color: $error-color;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $error-color;
+        .dt-toggle-button-item-icon {
+          background-color: $error-color;
+        }
+      }
+    }
+    &.error:not(.dt-toggle-button-item-disabled):hover {
+      .dt-toggle-button-item-icon {
+        background-color: $error-color-hover;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $error-color-hover;
+        .dt-toggle-button-item-icon {
+          background-color: $error-color-hover;
+        }
+      }
+    }
+
+    &.highlight:not(.dt-toggle-button-item-disabled) {
+      .dt-toggle-button-item-icon {
+        background-color: $blue-400;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $blue-400;
+        .dt-toggle-button-item-icon {
+          background-color: $blue-400;
+        }
+      }
+    }
+    &.highlight:not(.dt-toggle-button-item-disabled):hover {
+      .dt-toggle-button-item-icon {
+        background-color: $blue-500;
+      }
+      &.dt-toggle-button-item-selected {
+        border-color: $blue-500;
+        .dt-toggle-button-item-icon {
+          background-color: $blue-500;
+        }
+      }
+    }
+
+    .dt-toggle-button-item-icon {
+      width: 32px !important;
+      height: 32px !important;
+
+      .dt-icon {
+        width: 25px;
+        height: 25px;
+      }
+    }
+  }
+}

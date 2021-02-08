@@ -17,8 +17,7 @@ else
     echo "No nightly cluster need to be deleted"
 fi
 
-ISTIO_CONFIG="--istio-config=auth=MTLS_PERMISSIVE"
-ADDONS="Istio,HorizontalPodAutoscaling,HttpLoadBalancing"
+ADDONS="HorizontalPodAutoscaling,HttpLoadBalancing"
 
 echo "Creating nightly cluster ${CLUSTER_NAME_NIGHTLY}"
 
@@ -32,9 +31,10 @@ gcloud beta container --project "$GCLOUD_PROJECT_NAME" clusters create "$CLUSTER
  --enable-stackdriver-kubernetes --enable-ip-alias \
  --network "projects/$GCLOUD_PROJECT_NAME/global/networks/default" --subnetwork "projects/$GCLOUD_PROJECT_NAME/regions/$CLOUDSDK_REGION/subnetworks/default" \
  --no-enable-master-authorized-networks \
- --addons $ADDONS $ISTIO_CONFIG \
+ --addons $ADDONS \
  --no-enable-autoupgrade --no-enable-autorepair \
- --labels owner=travis,expiry=auto-delete
+ --enable-shielded-nodes \
+ --labels owner=ci,expiry=auto-delete
 
 if [[ $? != '0' ]]; then
     echo "gcloud cluster create failed"

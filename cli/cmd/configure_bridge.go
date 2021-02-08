@@ -12,8 +12,6 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
-
-	keptnutils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
 type configureBridgeCmdParams struct {
@@ -73,7 +71,6 @@ func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBrid
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			DialContext:     keptnutils.ResolveXipIoWithContext,
 		},
 	}
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -115,7 +112,6 @@ func configureBridgeCredentials(endpoint string, apiToken string, configureBridg
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			DialContext:     keptnutils.ResolveXipIoWithContext,
 		},
 	}
 

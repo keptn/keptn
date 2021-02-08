@@ -1,0 +1,29 @@
+title helm-service: handle release.triggered event for promote of a b/g-deployment
+
+shipyard-controller->helm-service: RETRIEVED release.triggered
+
+note over helm-service: Note, promote only if event.result == true
+
+helm-service-->NATS: release.started
+
+note over helm-service: 1.) Ensure canary deployment in //user-chart// retrieves 100% traffic
+helm-service->config-service: GET //genereated-chart//
+helm-service->config-service: PUT updated //generated-chart//
+helm-service->helm: UPGRADE //generated-chart// (canary deployment in //user-chart// retrieves 100% traffic)
+
+note over helm-service: 2.) Update //generated-chart// with changes of //user-chart//
+
+helm-service->helm: GET-MANIFESTS of //user-chart//
+helm-service->config-service: PUT updated //generated-chart//
+helm-service->helm: UPGRADE //generated-chart// (deploy updated primary-deployment, canary deployment in //user-chart// retrieves 100% traffic)
+
+note over helm-service: 3.) Ensure canary deployment in //user-chart// retrieves 0% traffic
+helm-service->config-service: GET //genereated-chart//
+helm-service->config-service: PUT updated //generated-chart//
+helm-service->helm: UPGRADE //generated-chart// (canary deployment in //user-chart// retrieves 0% traffic)
+
+note over helm-service: 4.) Scale deployment in //user-chart// to 0 replicas
+helm-service->config-service: GET //user-chart//
+helm-service->helm: UPGRADE //user-chart// with 0 replicas
+
+helm-service-->NATS: SEND release.finished

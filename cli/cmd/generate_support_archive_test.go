@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 )

@@ -5,8 +5,6 @@ import (
 	"crypto/tls"
 	"net/http"
 	"time"
-
-	apiUtils "github.com/keptn/go-utils/pkg/api/utils"
 )
 
 var maxHTTPTimeout = 5 * time.Second
@@ -21,7 +19,6 @@ var checkEndPointStatusMock = false
 var client = http.Client{
 	Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		DialContext:     apiUtils.ResolveXipIoWithContext,
 	},
 }
 
