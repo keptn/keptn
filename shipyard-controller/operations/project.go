@@ -17,7 +17,6 @@ type UpdateProjectParams struct {
 	Name *string `json:"name"`
 }
 
-// swagger:parameters handle event
 type CreateProjectParams struct {
 
 	// git remote URL
@@ -30,48 +29,32 @@ type CreateProjectParams struct {
 	GitUser string `json:"gitUser,omitempty"`
 
 	// name
-	// Required: true
 	Name *string `json:"name"`
 
 	// shipyard
-	// Required: true
 	Shipyard *string `json:"shipyard"`
 }
 
-// swagger:parameters GetProject
 type GetProjectParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*Disable sync of upstream repo before reading content
-	  In: query
-	  Default: false
-	*/
+	//Disable sync of upstream repo before reading content
 	DisableUpstreamSync *bool
-	/*Pointer to the next set of items
-	  In: query
-	*/
+	//Pointer to the next set of items
 	NextPageKey *string
-	/*The number of items to return
-	  Maximum: 50
-	  Minimum: 1
-	  In: query
-	  Default: 20
-	*/
+
+	//The number of items to return
 	PageSize *int64
 }
 
-// swagger:parameters GetProjectProjectName
 type GetProjectProjectNameParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*Name of the project
-	  Required: true
-	  In: path
-	*/
+	//Name of the project
 	ProjectName string
 }
 
