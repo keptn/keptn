@@ -1,9 +1,11 @@
 package event_handler
 
 import (
-	"github.com/keptn/go-utils/pkg/lib"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 type getSLOTestObject struct {
@@ -332,6 +334,7 @@ total_score:
 			ExpectedError: nil,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			objectives, err := parseSLO([]byte(test.SLOFileContent))

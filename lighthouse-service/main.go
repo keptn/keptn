@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
+
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
 )
 
@@ -29,7 +30,6 @@ func main() {
 }
 
 func _main(args []string, env envConfig) int {
-
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
@@ -61,5 +61,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	if handler != nil {
 		return handler.HandleEvent()
 	}
+
 	return nil
 }
