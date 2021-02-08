@@ -9,6 +9,7 @@ export class Project {
   gitUser: string;
   gitRemoteURI: string;
   gitToken: string;
+  shipyardVersion: string;
 
   stages: Stage[];
   services: Service[];
@@ -22,6 +23,16 @@ export class Project {
       });
     }
     return this.services;
+  }
+
+  getShipyardVersion(): string {
+    return this.shipyardVersion.split('/').pop();
+  }
+
+  isShipyardNotSupported(): boolean {
+    const supported = '0.2.0'.split('.');
+    const current = this.getShipyardVersion().split('.');
+    return +current[0] <= +supported[0] && +current[1] < +supported[1];
   }
 
   getService(serviceName: string): Service {
