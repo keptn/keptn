@@ -209,7 +209,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
-	projectsDBOperations.CreateProjectFunc = func(prj *keptnapimodels.Project) error {
+	projectsDBOperations.CreateProjectFunc = func(prj *models.ExpandedProject) error {
 		return nil
 	}
 
@@ -246,7 +246,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	configStore.DeleteProjectFunc = func(projectName string) error { return nil }
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error { return nil }
 	secretStore.DeleteSecretFunc = func(name string) error { return nil }
-	projectsDBOperations.CreateProjectFunc = func(prj *keptnapimodels.Project) error {
+	projectsDBOperations.CreateProjectFunc = func(prj *models.ExpandedProject) error {
 		return errors.New("whoops...")
 	}
 
@@ -296,7 +296,7 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	projectsDBOperations.CreateProjectFunc = func(prj *keptnapimodels.Project) error {
+	projectsDBOperations.CreateProjectFunc = func(prj *models.ExpandedProject) error {
 		return nil
 	}
 

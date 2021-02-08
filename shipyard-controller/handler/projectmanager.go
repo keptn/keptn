@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-var ErrProjectAlreadyExists = errors.New("project already exists")
+const shipyardVersion = "spec.keptn.sh/0.2.0"
 
 type ProjectManager struct {
 	Logger                  keptncommon.LoggerInterface
@@ -268,13 +268,15 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 }
 
 func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams) error {
-	p := &apimodels.Project{
-		CreationDate: strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI: params.GitRemoteURL,
-		GitToken:     params.GitToken,
-		GitUser:      params.GitUser,
-		ProjectName:  *params.Name,
+	p := &models.ExpandedProject{
+		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
+		GitRemoteURI:    params.GitRemoteURL,
+		GitUser:         params.GitUser,
+		ProjectName:     *params.Name,
+		Shipyard:        *params.Shipyard,
+		ShipyardVersion: shipyardVersion,
 	}
+
 	err := pm.ProjectMaterializedView.CreateProject(p)
 	if err != nil {
 		return err

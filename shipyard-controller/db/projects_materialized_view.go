@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ghodss/yaml"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -55,7 +54,7 @@ func GetProjectsMaterializedView() *ProjectsMaterializedView {
 }
 
 // CreateProject creates a project
-func (mv *ProjectsMaterializedView) CreateProject(prj *apimodels.Project) error {
+func (mv *ProjectsMaterializedView) CreateProject(prj *models.ExpandedProject) error {
 	existingProject, err := mv.GetProject(prj.ProjectName)
 	if existingProject != nil {
 		return nil
@@ -211,19 +210,11 @@ func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) er
 	return nil
 }
 
-func (mv *ProjectsMaterializedView) createProject(prj *apimodels.Project) error {
-	expandedProject := &models.ExpandedProject{
-		CreationDate: strconv.FormatInt(time.Now().UnixNano(), 10),
-		GitRemoteURI: prj.GitRemoteURI,
-		GitUser:      prj.GitUser,
-		ProjectName:  prj.ProjectName,
-		Shipyard:     "",
-		Stages:       nil,
-	}
+func (mv *ProjectsMaterializedView) createProject(project *models.ExpandedProject) error {
 
-	err := mv.ProjectRepo.CreateProject(expandedProject)
+	err := mv.ProjectRepo.CreateProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not create project " + prj.ProjectName + ": " + err.Error())
+		mv.Logger.Error("Could not create project " + project.ProjectName + ": " + err.Error())
 		return err
 	}
 	return nil

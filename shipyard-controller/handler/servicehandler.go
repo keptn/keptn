@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
@@ -37,25 +36,17 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 	if projectName == "" {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Must provide a project name"),
-		})
+		SetBadRequestErrorResponse(nil, c, "Must provide a project name")
+		return
 	}
 	// validate the input
 	createServiceParams := &operations.CreateServiceParams{}
 	if err := c.ShouldBindJSON(createServiceParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 	if err := validateCreateServiceParams(createServiceParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Could not validate payload: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c)
 		return
 	}
 
@@ -69,16 +60,11 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		}
 
 		if err == errServiceAlreadyExists {
-			c.JSON(http.StatusConflict, models.Error{
-				Code:    http.StatusConflict,
-				Message: stringp(err.Error()),
-			})
+			SetConflictErrorResponse(err, c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
+
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 	if err := sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
@@ -106,16 +92,11 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	projectName := c.Param("project")
 	serviceName := c.Param("service")
 	if projectName == "" {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Must provide a project name"),
-		})
+		SetBadRequestErrorResponse(nil, c, "Must provide a project name")
+		return
 	}
 	if serviceName == "" {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Must provide a service name"),
-		})
+		SetBadRequestErrorResponse(nil, c, "Must provide a service name")
 	}
 
 	if err := sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName); err != nil {
@@ -127,10 +108,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 			//TODO LOG MESSAGE
 		}
 
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 

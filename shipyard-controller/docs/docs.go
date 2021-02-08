@@ -515,6 +515,62 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/project/{projectName}/stage/{stageName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a project by its name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get a project by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "projectName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The name of the stage",
+                        "name": "stageName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedStage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Error)",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -754,6 +810,30 @@ var doc = `{
                 "type": {
                     "description": "Type of the event",
                     "type": "string"
+                }
+            }
+        },
+        "models.Stages": {
+            "type": "object",
+            "properties": {
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
+                    "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "stages": {
+                    "description": "stages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedStage"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of stages",
+                    "type": "number"
                 }
             }
         },
