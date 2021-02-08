@@ -74,7 +74,7 @@ export class ApiService {
   }
 
   public getProjects(pageSize?: number): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
+    let url = `${this._baseUrl}/shipyard-controller/v1/project?disableUpstreamSync=true`;
     if(pageSize)
       url += `&pageSize=${pageSize}`;
     return this.http
@@ -82,19 +82,19 @@ export class ApiService {
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
+    let url = `${this._baseUrl}/shipyard-controller/v1/project/${projectName}/resource`;
     return this.http
       .get<Resource[]>(url);
   }
 
   public getStages(projectName): Observable<Stage[]> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage`;
+    let url = `${this._baseUrl}/shipyard-controller/v1/project/${projectName}/stage`;
     return this.http
       .get<Stage[]>(url);
   }
 
   public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
+    let url = `${this._baseUrl}/shipyard-controller/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url);
   }
