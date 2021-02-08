@@ -6,20 +6,14 @@ import (
 )
 
 const configservice = "CONFIGURATION_SERVICE"
-const eventbroker = "EVENTBROKER"
-const api = "API"
+const shipyardController = "SHIPYARD_CONTROLLER"
 
 func GetConfigServiceURL() (*url.URL, error) {
 	url, err := keptncommon.GetServiceEndpoint(configservice)
 	return &url, err
 }
 
-func GetAPIURL() (*url.URL, error) {
-	url, err := keptncommon.GetServiceEndpoint(api)
-	return &url, err
-}
-
-func GetEventbrokerURL() (*url.URL, error) {
-	url, err := keptncommon.GetServiceEndpoint(eventbroker)
+func GetShipyardControllerURL() (*url.URL, error) {
+	url, err := keptncommon.GetServiceEndpoint(shipyardController)
 	return &url, err
 }
