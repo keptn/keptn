@@ -5,7 +5,7 @@
     <p class="mt-0 mb-2" *ngIf="project.getShipyardVersion() as sv">Shipyard version: <span [textContent]="sv"></span> <dt-icon name="abort" class="error bottom" *ngIf="project.isShipyardNotSupported()"></dt-icon> </p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="project.isShipyardNotSupported()">
       <dt-icon name="information" class="info mr-1"></dt-icon>
-      <p class="small m-0">Shipyard version not supported. <br/>Please use <a href="https://keptn.sh/docs/0.7.x/operate/upgrade/" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">Keptn upgrade project</a> to upgrade to the latest shipyard version.</p>
+      <p class="small m-0">Shipyard version not supported. <br/>Please use <a href="https://keptn.sh/docs/0.7.x/operate/upgrade/" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn upgrade project</a> to upgrade to the latest shipyard version.</p>
     </div>
     <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI"><a [href]="project.gitRemoteURI" [textContent]="project.gitRemoteURI" target="_blank" (click)="$event.stopPropagation()"></a></p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!project.gitRemoteURI">
