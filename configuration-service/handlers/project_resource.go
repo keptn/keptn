@@ -3,17 +3,15 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"io/ioutil"
-	"net/url"
-	"strings"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
+	"io/ioutil"
+	"net/url"
 )
 
 // GetProjectProjectNameResourceHandlerFunc get list of project resources
@@ -75,19 +73,6 @@ func PutProjectProjectNameResourceHandlerFunc(params project_resource.PutProject
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Updating resource: " + filePath)
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
-		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
-			mv := common.GetProjectsMaterializedView()
-			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
-			decodedShipyard, err := base64.StdEncoding.DecodeString(res.ResourceContent)
-			if err != nil {
-				logger.Error(fmt.Sprintf("could not decode shipyard file content: %s", err.Error()))
-			}
-			err = mv.UpdateShipyard(params.ProjectName, string(decodedShipyard))
-			if err != nil {
-				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
-				return project_resource.NewPutProjectProjectNameResourceBadRequest().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-			}
-		}
 	}
 
 	logger.Debug("Staging Changes")
@@ -136,19 +121,6 @@ func PostProjectProjectNameResourceHandlerFunc(params project_resource.PostProje
 		filePath := projectConfigPath + "/" + *res.ResourceURI
 		logger.Debug("Adding resource: " + filePath)
 		common.WriteBase64EncodedFile(projectConfigPath+"/"+*res.ResourceURI, res.ResourceContent)
-		if strings.ToLower(*res.ResourceURI) == "shipyard.yaml" {
-			mv := common.GetProjectsMaterializedView()
-			logger.Debug("updating shipyard.yaml content for project " + params.ProjectName + " in mongoDB table")
-			decodedShipyard, err := base64.StdEncoding.DecodeString(res.ResourceContent)
-			if err != nil {
-				logger.Error(fmt.Sprintf("could not decode shipyard file content: %s", err.Error()))
-			}
-			err = mv.UpdateShipyard(params.ProjectName, string(decodedShipyard))
-			if err != nil {
-				logger.Error("Could not update shipyard.yaml content for project " + params.ProjectName + ": " + err.Error())
-				return project_resource.NewPostProjectProjectNameResourceDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
-			}
-		}
 	}
 
 	logger.Debug("Staging Changes")

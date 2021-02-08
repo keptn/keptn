@@ -153,49 +153,6 @@ definitions:
         items:
           $ref: '#/definitions/Remediation'
 
-  ServicesWithStageInfo:
-    type: object
-    properties:
-      nextPageKey:
-        type: string
-        description: Pointer to next page, base64 encoded
-      totalCount:
-        type: number
-        description: Total number of stages
-      pageSize:
-        type: number
-        description: Size of returned page
-      services:
-        type: array
-        items:
-          $ref: '#/definitions/ExpandedServiceWithStageInfo'
-
-  ExpandedServiceWithStageInfo:
-    type: object
-    properties:
-      serviceName:
-        type: string
-        description: Service name
-      creationDate:
-        type: string
-        description: Creation date of the service
-      stageInfo:
-        type: array
-        items:
-          $ref: '#/definitions/InverseServiceStageInfo'
-
-  InverseServiceStageInfo:
-    type: object
-    properties:
-      stageName:
-        type: string
-      deployedImage:
-        type: string
-        description: Currently deployed image
-      lastEventTypes:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/EventContext'
 
   EventContext:
     type: object
@@ -209,23 +166,6 @@ definitions:
       time:
         type: string
         description: Time of the event
-
-  EventContexts:
-    type: object
-    properties:
-      nextPageKey:
-        type: string
-        description: Pointer to next page, base64 encoded
-      totalCount:
-        type: number
-        description: Total number of stages
-      pageSize:
-        type: number
-        description: Size of returned page
-      eventContexts:
-        type: array
-        items:
-          $ref: '#/definitions/EventContext'
 
   Project:
     type: object
@@ -247,23 +187,6 @@ definitions:
         items:
           $ref: '#/definitions/Stage'
 
-  Projects:
-    type: object
-    properties:
-      nextPageKey: 
-        type: string
-        description: Pointer to next page, base64 encoded
-      totalCount: 
-        type: number
-        description: Total number of projects
-      pageSize: 
-        type: number
-        description: Size of returned page
-      projects:
-        type: array
-        items:
-          $ref: '#/definitions/Project'
-
   Stage:
     type: object
     properties:
@@ -275,22 +198,6 @@ definitions:
         items:
           $ref: '#/definitions/Service'
 
-  Stages:
-    type: object
-    properties:
-      nextPageKey: 
-        type: string
-        description: Pointer to next page, base64 encoded
-      totalCount: 
-        type: number
-        description: Total number of stages
-      pageSize: 
-        type: number
-        description: Size of returned page
-      stages:
-        type: array
-        items:
-          $ref: '#/definitions/ExpandedStage'
 
   Service:
     type: object
@@ -299,22 +206,6 @@ definitions:
         type: string
         description: Service name
 
-  Services:
-    type: object
-    properties:
-      nextPageKey: 
-        type: string
-        description: Pointer to next page, base64 encoded
-      totalCount: 
-        type: number
-        description: Total number of services
-      pageSize: 
-        type: number
-        description: Size of returned page
-      services:
-        type: array
-        items:
-          $ref: '#/definitions/ExpandedService'
 
   Resource:
     type: object
@@ -348,33 +239,6 @@ definitions:
         items:
           $ref: '#/definitions/Resource'
 
-  KeptnContextExtendedCE:
-    type: object
-    properties: # CloudEvents v0.2 properties (https://raw.githubusercontent.com/cloudevents/spec/v0.2/spec.json#/definitions/event)
-      shkeptncontext:
-        type: string
-      specversion:
-        type: string
-      contenttype:
-        type: string
-      data:
-        type: ["object", "string"]
-      id:
-        type: string
-      time:
-        type: string
-        format: date-time
-      type:
-        type: string
-      triggeredid:
-        type: string
-      source:
-        format: uri-reference
-        type: string
-    required:
-      - data
-      - source
-      - type
 
 parameters:
   project:
@@ -496,44 +360,10 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Project
-      parameters:
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/nextPageKey'
-        - $ref: '#/parameters/disableUpstreamSync'
-      summary: Get list of projects
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/ExpandedProjects'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error' 
 
   '/project/{projectName}':
     parameters:
       - $ref: '#/parameters/projectName'
-    get:
-      tags:
-        - Project
-      summary: Get the specified project
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/ExpandedProject'
-        '404':
-          description: Failed. Project could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'  
     put:
       tags:
         - Project
@@ -569,51 +399,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-  '/project/{projectName}/service':
-    parameters:
-      - $ref: '#/parameters/projectName'
-    get:
-      tags:
-        - Services
-      operationId: get services
-      parameters:
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/nextPageKey'
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/ServicesWithStageInfo'
-        '404':
-          description: Failed. Containing project could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
 
-  '/project/{projectName}/service/{serviceName}':
-    parameters:
-      - $ref: '#/parameters/projectName'
-      - $ref: '#/parameters/serviceName'
-    get:
-      tags:
-        - Services
-      operationId: get service
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/ExpandedServiceWithStageInfo'
-        '404':
-          description: Failed. Service could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
 
   '/project/{projectName}/resource':
     parameters:
@@ -758,51 +544,13 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Stage
-      parameters:
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/nextPageKey'
-        - $ref: '#/parameters/disableUpstreamSync'
-      summary: Get list of stages
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Stages'
-        '404':
-          description: Failed. Containing project could not be found.
-          schema:
-            $ref: '#/definitions/Error' 
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error'
+
 
   '/project/{projectName}/stage/{stageName}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
-    get:
-      tags:
-        - Stage
-      summary: Get the specified stage
-      parameters:
-        - $ref: '#/parameters/disableUpstreamSync'
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/ExpandedStage'
-        '404':
-          description: Failed. Project resource could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error' 
+
     put:
       tags:
         - Stage
@@ -985,52 +733,13 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Service
-      parameters:
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/nextPageKey'
-        - $ref: '#/parameters/disableUpstreamSync'
-      summary: Get list of services
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Services'
-        '404':
-          description: Failed. Containing project could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error' 
 
   '/project/{projectName}/stage/{stageName}/service/{serviceName}':
     parameters:
       - $ref: '#/parameters/projectName'
       - $ref: '#/parameters/stageName'
       - $ref: '#/parameters/serviceName'      
-    get:
-      tags:
-        - Service
-      summary: Get the specified service
-      parameters:
-        - $ref: '#/parameters/disableUpstreamSync'
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/ExpandedService'
-        '404':
-          description: Failed. Service could not be found.
-          schema:
-            $ref: '#/definitions/Error'
-        'default':
-          description: Error
-          schema:
-            $ref: '#/definitions/Error' 
+
     put:
       tags:
         - Service
@@ -1401,21 +1110,3 @@ paths:
           schema:
             "$ref": "#/definitions/Error"
 
-  /event:
-    post:
-      tags:
-        - event
-      operationId: handle event
-      summary: Handles an incoming event
-      parameters:
-        - name: body
-          in: body
-          schema:
-            "$ref": "#/definitions/KeptnContextExtendedCE"
-      responses:
-        200:
-          description: OK
-        default:
-          description: Error
-          schema:
-            "$ref": "#/definitions/Error"

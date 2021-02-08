@@ -32,67 +32,7 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
-    "/event": {
-      "post": {
-        "tags": [
-          "event"
-        ],
-        "summary": "Handles an incoming event",
-        "operationId": "handle event",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
     "/project": {
-      "get": {
-        "tags": [
-          "Project"
-        ],
-        "summary": "Get list of projects",
-        "parameters": [
-          {
-            "$ref": "#/parameters/pageSize"
-          },
-          {
-            "$ref": "#/parameters/nextPageKey"
-          },
-          {
-            "$ref": "#/parameters/disableUpstreamSync"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedProjects"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Project"
@@ -124,32 +64,6 @@ func init() {
       }
     },
     "/project/{projectName}": {
-      "get": {
-        "tags": [
-          "Project"
-        ],
-        "summary": "Get the specified project",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedProject"
-            }
-          },
-          "404": {
-            "description": "Failed. Project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "Project"
@@ -411,83 +325,6 @@ func init() {
         }
       ]
     },
-    "/project/{projectName}/service": {
-      "get": {
-        "tags": [
-          "Services"
-        ],
-        "operationId": "get services",
-        "parameters": [
-          {
-            "$ref": "#/parameters/pageSize"
-          },
-          {
-            "$ref": "#/parameters/nextPageKey"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ServicesWithStageInfo"
-            }
-          },
-          "404": {
-            "description": "Failed. Containing project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/projectName"
-        }
-      ]
-    },
-    "/project/{projectName}/service/{serviceName}": {
-      "get": {
-        "tags": [
-          "Services"
-        ],
-        "operationId": "get service",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedServiceWithStageInfo"
-            }
-          },
-          "404": {
-            "description": "Failed. Service could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/projectName"
-        },
-        {
-          "$ref": "#/parameters/serviceName"
-        }
-      ]
-    },
     "/project/{projectName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -694,43 +531,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage": {
-      "get": {
-        "tags": [
-          "Stage"
-        ],
-        "summary": "Get list of stages",
-        "parameters": [
-          {
-            "$ref": "#/parameters/pageSize"
-          },
-          {
-            "$ref": "#/parameters/nextPageKey"
-          },
-          {
-            "$ref": "#/parameters/disableUpstreamSync"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Stages"
-            }
-          },
-          "404": {
-            "description": "Failed. Containing project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Stage"
@@ -767,37 +567,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}": {
-      "get": {
-        "tags": [
-          "Stage"
-        ],
-        "summary": "Get the specified stage",
-        "parameters": [
-          {
-            "$ref": "#/parameters/disableUpstreamSync"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedStage"
-            }
-          },
-          "404": {
-            "description": "Failed. Project resource could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "Stage"
@@ -1071,43 +840,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}/service": {
-      "get": {
-        "tags": [
-          "Service"
-        ],
-        "summary": "Get list of services",
-        "parameters": [
-          {
-            "$ref": "#/parameters/pageSize"
-          },
-          {
-            "$ref": "#/parameters/nextPageKey"
-          },
-          {
-            "$ref": "#/parameters/disableUpstreamSync"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Services"
-            }
-          },
-          "404": {
-            "description": "Failed. Containing project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Service"
@@ -1147,37 +879,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}": {
-      "get": {
-        "tags": [
-          "Service"
-        ],
-        "summary": "Get the specified service",
-        "parameters": [
-          {
-            "$ref": "#/parameters/disableUpstreamSync"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedService"
-            }
-          },
-          "404": {
-            "description": "Failed. Service could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "Service"
@@ -1640,29 +1341,6 @@ func init() {
         }
       }
     },
-    "EventContexts": {
-      "type": "object",
-      "properties": {
-        "eventContexts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/EventContext"
-          }
-        },
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "totalCount": {
-          "description": "Total number of stages",
-          "type": "number"
-        }
-      }
-    },
     "ExpandedProject": {
       "type": "object",
       "properties": {
@@ -1753,25 +1431,6 @@ func init() {
         }
       }
     },
-    "ExpandedServiceWithStageInfo": {
-      "type": "object",
-      "properties": {
-        "creationDate": {
-          "description": "Creation date of the service",
-          "type": "string"
-        },
-        "serviceName": {
-          "description": "Service name",
-          "type": "string"
-        },
-        "stageInfo": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InverseServiceStageInfo"
-          }
-        }
-      }
-    },
     "ExpandedStage": {
       "type": "object",
       "properties": {
@@ -1786,66 +1445,6 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
-          "type": "string"
-        }
-      }
-    },
-    "InverseServiceStageInfo": {
-      "type": "object",
-      "properties": {
-        "deployedImage": {
-          "description": "Currently deployed image",
-          "type": "string"
-        },
-        "lastEventTypes": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/EventContext"
-          }
-        },
-        "stageName": {
-          "type": "string"
-        }
-      }
-    },
-    "KeptnContextExtendedCE": {
-      "type": "object",
-      "required": [
-        "data",
-        "source",
-        "type"
-      ],
-      "properties": {
-        "contenttype": {
-          "type": "string"
-        },
-        "data": {
-          "type": [
-            "object",
-            "string"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "shkeptncontext": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "format": "uri-reference"
-        },
-        "specversion": {
-          "type": "string"
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "triggeredid": {
-          "type": "string"
-        },
-        "type": {
           "type": "string"
         }
       }
@@ -1874,29 +1473,6 @@ func init() {
           "items": {
             "$ref": "#/definitions/Stage"
           }
-        }
-      }
-    },
-    "Projects": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "projects": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Project"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of projects",
-          "type": "number"
         }
       }
     },
@@ -1999,52 +1575,6 @@ func init() {
         }
       }
     },
-    "Services": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExpandedService"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of services",
-          "type": "number"
-        }
-      }
-    },
-    "ServicesWithStageInfo": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExpandedServiceWithStageInfo"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of stages",
-          "type": "number"
-        }
-      }
-    },
     "Stage": {
       "type": "object",
       "properties": {
@@ -2057,29 +1587,6 @@ func init() {
         "stageName": {
           "description": "Stage name",
           "type": "string"
-        }
-      }
-    },
-    "Stages": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "stages": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExpandedStage"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of stages",
-          "type": "number"
         }
       }
     },
@@ -2223,80 +1730,7 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
-    "/event": {
-      "post": {
-        "tags": [
-          "event"
-        ],
-        "summary": "Handles an incoming event",
-        "operationId": "handle event",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/KeptnContextExtendedCE"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
     "/project": {
-      "get": {
-        "tags": [
-          "Project"
-        ],
-        "summary": "Get list of projects",
-        "parameters": [
-          {
-            "maximum": 50,
-            "minimum": 1,
-            "type": "integer",
-            "default": 20,
-            "description": "The number of items to return",
-            "name": "pageSize",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Pointer to the next set of items",
-            "name": "nextPageKey",
-            "in": "query"
-          },
-          {
-            "type": "boolean",
-            "default": false,
-            "description": "Disable sync of upstream repo before reading content",
-            "name": "disableUpstreamSync",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedProjects"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Project"
@@ -2333,32 +1767,6 @@ func init() {
       }
     },
     "/project/{projectName}": {
-      "get": {
-        "tags": [
-          "Project"
-        ],
-        "summary": "Get the specified project",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedProject"
-            }
-          },
-          "404": {
-            "description": "Failed. Project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "Project"
@@ -2687,104 +2095,6 @@ func init() {
         }
       ]
     },
-    "/project/{projectName}/service": {
-      "get": {
-        "tags": [
-          "Services"
-        ],
-        "operationId": "get services",
-        "parameters": [
-          {
-            "maximum": 50,
-            "minimum": 1,
-            "type": "integer",
-            "default": 20,
-            "description": "The number of items to return",
-            "name": "pageSize",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Pointer to the next set of items",
-            "name": "nextPageKey",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ServicesWithStageInfo"
-            }
-          },
-          "404": {
-            "description": "Failed. Containing project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "type": "string",
-          "description": "Name of the project",
-          "name": "projectName",
-          "in": "path",
-          "required": true
-        }
-      ]
-    },
-    "/project/{projectName}/service/{serviceName}": {
-      "get": {
-        "tags": [
-          "Services"
-        ],
-        "operationId": "get service",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedServiceWithStageInfo"
-            }
-          },
-          "404": {
-            "description": "Failed. Service could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "type": "string",
-          "description": "Name of the project",
-          "name": "projectName",
-          "in": "path",
-          "required": true
-        },
-        {
-          "type": "string",
-          "description": "Name of the service",
-          "name": "serviceName",
-          "in": "path",
-          "required": true
-        }
-      ]
-    },
     "/project/{projectName}/service/{serviceName}/resource": {
       "get": {
         "tags": [
@@ -3052,56 +2362,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage": {
-      "get": {
-        "tags": [
-          "Stage"
-        ],
-        "summary": "Get list of stages",
-        "parameters": [
-          {
-            "maximum": 50,
-            "minimum": 1,
-            "type": "integer",
-            "default": 20,
-            "description": "The number of items to return",
-            "name": "pageSize",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Pointer to the next set of items",
-            "name": "nextPageKey",
-            "in": "query"
-          },
-          {
-            "type": "boolean",
-            "default": false,
-            "description": "Disable sync of upstream repo before reading content",
-            "name": "disableUpstreamSync",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Stages"
-            }
-          },
-          "404": {
-            "description": "Failed. Containing project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Stage"
@@ -3147,41 +2407,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}": {
-      "get": {
-        "tags": [
-          "Stage"
-        ],
-        "summary": "Get the specified stage",
-        "parameters": [
-          {
-            "type": "boolean",
-            "default": false,
-            "description": "Disable sync of upstream repo before reading content",
-            "name": "disableUpstreamSync",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedStage"
-            }
-          },
-          "404": {
-            "description": "Failed. Project resource could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "Stage"
@@ -3534,56 +2759,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}/service": {
-      "get": {
-        "tags": [
-          "Service"
-        ],
-        "summary": "Get list of services",
-        "parameters": [
-          {
-            "maximum": 50,
-            "minimum": 1,
-            "type": "integer",
-            "default": 20,
-            "description": "The number of items to return",
-            "name": "pageSize",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "description": "Pointer to the next set of items",
-            "name": "nextPageKey",
-            "in": "query"
-          },
-          {
-            "type": "boolean",
-            "default": false,
-            "description": "Disable sync of upstream repo before reading content",
-            "name": "disableUpstreamSync",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Services"
-            }
-          },
-          "404": {
-            "description": "Failed. Containing project could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "Service"
@@ -3636,41 +2811,6 @@ func init() {
       ]
     },
     "/project/{projectName}/stage/{stageName}/service/{serviceName}": {
-      "get": {
-        "tags": [
-          "Service"
-        ],
-        "summary": "Get the specified service",
-        "parameters": [
-          {
-            "type": "boolean",
-            "default": false,
-            "description": "Disable sync of upstream repo before reading content",
-            "name": "disableUpstreamSync",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ExpandedService"
-            }
-          },
-          "404": {
-            "description": "Failed. Service could not be found.",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "Service"
@@ -4270,29 +3410,6 @@ func init() {
         }
       }
     },
-    "EventContexts": {
-      "type": "object",
-      "properties": {
-        "eventContexts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/EventContext"
-          }
-        },
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "totalCount": {
-          "description": "Total number of stages",
-          "type": "number"
-        }
-      }
-    },
     "ExpandedProject": {
       "type": "object",
       "properties": {
@@ -4383,25 +3500,6 @@ func init() {
         }
       }
     },
-    "ExpandedServiceWithStageInfo": {
-      "type": "object",
-      "properties": {
-        "creationDate": {
-          "description": "Creation date of the service",
-          "type": "string"
-        },
-        "serviceName": {
-          "description": "Service name",
-          "type": "string"
-        },
-        "stageInfo": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InverseServiceStageInfo"
-          }
-        }
-      }
-    },
     "ExpandedStage": {
       "type": "object",
       "properties": {
@@ -4416,66 +3514,6 @@ func init() {
         },
         "stageName": {
           "description": "Stage name",
-          "type": "string"
-        }
-      }
-    },
-    "InverseServiceStageInfo": {
-      "type": "object",
-      "properties": {
-        "deployedImage": {
-          "description": "Currently deployed image",
-          "type": "string"
-        },
-        "lastEventTypes": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/EventContext"
-          }
-        },
-        "stageName": {
-          "type": "string"
-        }
-      }
-    },
-    "KeptnContextExtendedCE": {
-      "type": "object",
-      "required": [
-        "data",
-        "source",
-        "type"
-      ],
-      "properties": {
-        "contenttype": {
-          "type": "string"
-        },
-        "data": {
-          "type": [
-            "object",
-            "string"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "shkeptncontext": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string",
-          "format": "uri-reference"
-        },
-        "specversion": {
-          "type": "string"
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "triggeredid": {
-          "type": "string"
-        },
-        "type": {
           "type": "string"
         }
       }
@@ -4504,29 +3542,6 @@ func init() {
           "items": {
             "$ref": "#/definitions/Stage"
           }
-        }
-      }
-    },
-    "Projects": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "projects": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Project"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of projects",
-          "type": "number"
         }
       }
     },
@@ -4629,52 +3644,6 @@ func init() {
         }
       }
     },
-    "Services": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExpandedService"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of services",
-          "type": "number"
-        }
-      }
-    },
-    "ServicesWithStageInfo": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExpandedServiceWithStageInfo"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of stages",
-          "type": "number"
-        }
-      }
-    },
     "Stage": {
       "type": "object",
       "properties": {
@@ -4687,29 +3656,6 @@ func init() {
         "stageName": {
           "description": "Stage name",
           "type": "string"
-        }
-      }
-    },
-    "Stages": {
-      "type": "object",
-      "properties": {
-        "nextPageKey": {
-          "description": "Pointer to next page, base64 encoded",
-          "type": "string"
-        },
-        "pageSize": {
-          "description": "Size of returned page",
-          "type": "number"
-        },
-        "stages": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExpandedStage"
-          }
-        },
-        "totalCount": {
-          "description": "Total number of stages",
-          "type": "number"
         }
       }
     },
