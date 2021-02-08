@@ -14,7 +14,6 @@ import (
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/remediation"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
 
 	errors "github.com/go-openapi/errors"
@@ -133,14 +132,6 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 	api.ServicesGetServicesHandler = services.GetServicesHandlerFunc(handlers.GetServices)
 
 	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
-
-	api.RemediationCreateRemediationHandler = remediation.CreateRemediationHandlerFunc(handlers.CreateRemediation)
-
-	api.RemediationGetRemediationsHandler = remediation.GetRemediationsHandlerFunc(handlers.GetRemediations)
-
-	api.RemediationGetRemediationsForContextHandler = remediation.GetRemediationsForContextHandlerFunc(handlers.GetRemediationsForContext)
-
-	api.RemediationCloseRemediationsHandler = remediation.CloseRemediationsHandlerFunc(handlers.CloseRemediations)
 
 	api.ServerShutdown = func() {}
 

@@ -14,7 +14,7 @@ const waitTimeInMinutes = 10
 type ActionFinishedEventHandler struct {
 	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
-	Remediation  *Remediation
+	Remediation  *RemediationHandler
 	WaitFunction waitFunction
 }
 
@@ -29,7 +29,7 @@ func (eh *ActionFinishedEventHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Error("Could not parse incoming action.finished event: " + err.Error())
 		return err
 	}
-	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for remediationStatus action. result = %v, status = %v", actionFinishedEvent.Result, actionFinishedEvent.Status))
+	eh.KeptnHandler.Logger.Info(fmt.Sprintf("Received action.finished event for Remediation action. result = %v, status = %v", actionFinishedEvent.Result, actionFinishedEvent.Status))
 
 	if eh.WaitFunction == nil {
 		eh.WaitFunction = func() {
