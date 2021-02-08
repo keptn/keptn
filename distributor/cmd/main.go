@@ -230,6 +230,12 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	rw.WriteHeader(resp.StatusCode)
 
+	for name, headers := range resp.Header {
+		for _, h := range headers {
+			rw.Header().Set(name, h)
+		}
+	}
+
 	defer resp.Body.Close()
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
