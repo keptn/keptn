@@ -232,7 +232,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(fmt.Sprintf("Received response from API: Status=%d, Payload=%s", resp.StatusCode, string(respBytes)))
+	fmt.Println(fmt.Sprintf("Received response from API: Status=%d", resp.StatusCode))
 	if _, err := rw.Write(respBytes); err != nil {
 		fmt.Println("could not send response from API: " + err.Error())
 	}
