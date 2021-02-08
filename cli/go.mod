@@ -17,7 +17,7 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
-	github.com/keptn/kubernetes-utils v0.8.0-alpha
+	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11
@@ -39,7 +39,6 @@ require (
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
 	k8s.io/kubectl v0.17.2
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 // indirect
-	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
