@@ -228,6 +228,25 @@ definitions:
       message:
         type: string
     type: object
+  operations.UpdateProjectParams:
+    properties:
+      gitRemoteURL:
+        description: git remote URL
+        type: string
+      gitToken:
+        description: git token
+        type: string
+      gitUser:
+        description: git user
+        type: string
+      name:
+        description: |-
+          name
+          Required: true
+        type: string
+    type: object
+  operations.UpdateProjectResponse:
+    type: object
 info:
   contact:
     name: Keptn Team
@@ -325,7 +344,6 @@ paths:
       - description: The number of items to return
         in: query
         name: pageSize
-        required: true
         type: integer
       - description: Pointer to the next set of items
         in: query
@@ -392,14 +410,14 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/operations.CreateProjectParams'
+          $ref: '#/definitions/operations.UpdateProjectParams'
       produces:
       - application/json
       responses:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.CreateProjectResponse'
+            $ref: '#/definitions/operations.UpdateProjectResponse'
         "400":
           description: Invalid payload
           schema:
@@ -517,6 +535,37 @@ paths:
       summary: Delete a service
       tags:
       - Services
+  /project/{projectName}:
+    get:
+      consumes:
+      - application/json
+      description: Get a project by its name
+      parameters:
+      - description: The name of the project
+        in: path
+        name: projectName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedProject'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a project by name
+      tags:
+      - Projects
 securityDefinitions:
   ApiKeyAuth:
     in: header

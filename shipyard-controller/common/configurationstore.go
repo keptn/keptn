@@ -6,7 +6,7 @@ import (
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 )
 
-//go:generate moq -pkg common_mock -out ./fake/configuration_store_moq.go . ConfigurationStore
+//go:generate moq -pkg common_mock -out ./fake/configurationstore_mock.go . ConfigurationStore
 type ConfigurationStore interface {
 	CreateProject(project keptnapimodels.Project) error
 	UpdateProject(project keptnapimodels.Project) error

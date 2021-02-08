@@ -5,11 +5,10 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 // SecretStore godoc
-//go:generate moq -pkg common_mock -out ./fake/secret_store_moq.go . SecretStore
+//go:generate moq -pkg common_mock -out ./fake/secretstore_mock.go . SecretStore
 type SecretStore interface {
 	// CreateSecret godoc
 	CreateSecret(name string, content map[string][]byte) error
@@ -27,12 +26,8 @@ type K8sSecretStore struct {
 }
 
 // NewK8sSecretStore
-func NewK8sSecretStore() (*K8sSecretStore, error) {
-	client, err := GetKubeAPI()
-	if err != nil {
-		return nil, err
-	}
-	return &K8sSecretStore{client: client}, nil
+func NewK8sSecretStore(kubeAPI *kubernetes.Clientset) *K8sSecretStore {
+	return &K8sSecretStore{client: kubeAPI}
 }
 
 // CreateSecret godoc
@@ -82,22 +77,6 @@ func (k *K8sSecretStore) UpdateSecret(name string, content map[string][]byte) er
 		}
 	}
 	return nil
-}
-
-// GetKubeAPI godoc
-func GetKubeAPI() (*kubernetes.Clientset, error) {
-	var config *rest.Config
-	config, err := rest.InClusterConfig()
-
-	if err != nil {
-		return nil, err
-	}
-
-	kubeAPI, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-	return kubeAPI, nil
 }
 
 func (k *K8sSecretStore) createSecretObj(name string, namespace string, content map[string][]byte) *v1.Secret {

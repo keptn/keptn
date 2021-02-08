@@ -62,7 +62,7 @@ spec:
             memory: "256Mi"
             cpu: "500m"
           limits:
-            memory: "512Mi"
+            memory: "256Mi"
             cpu: "500m"
       - name: distributor
         image: keptn/distributor:0.8.0-alpha
