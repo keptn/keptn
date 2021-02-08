@@ -295,7 +295,7 @@ class Trace {
   }
 
   getFinishedEvent() {
-    return this.traces.find(t => t.type.includes(".finished"));
+    return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
   }
 
   static fromJSON(data: any) {
