@@ -67,6 +67,8 @@ func main() {
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		logger)
 
+	stageManager := handler.NewStageManager(createMaterializedView(logger), logger)
+
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
 	projectService := handler.NewProjectHandler(projectManager, eventSender)
@@ -80,6 +82,10 @@ func main() {
 	eventHandler := handler.NewEventHandler()
 	eventController := controller.NewEventController(eventHandler)
 	eventController.Inject(apiV1)
+
+	stageHandler := handler.NewStageHandler(stageManager)
+	stageController := controller.NewStageController(stageHandler)
+	stageController.Inject(apiV1)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()

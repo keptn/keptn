@@ -4,7 +4,6 @@
 package db_mock
 
 import (
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
@@ -15,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked db.ProjectsDBOperations
 // 		mockedProjectsDBOperations := &ProjectsDBOperationsMock{
-// 			CreateProjectFunc: func(prj *apimodels.Project) error {
+// 			CreateProjectFunc: func(prj *models.ExpandedProject) error {
 // 				panic("mock out the CreateProject method")
 // 			},
 // 			DeleteProjectFunc: func(projectName string) error {
@@ -38,7 +37,7 @@ import (
 // 	}
 type ProjectsDBOperationsMock struct {
 	// CreateProjectFunc mocks the CreateProject method.
-	CreateProjectFunc func(prj *apimodels.Project) error
+	CreateProjectFunc func(prj *models.ExpandedProject) error
 
 	// DeleteProjectFunc mocks the DeleteProject method.
 	DeleteProjectFunc func(projectName string) error
@@ -57,7 +56,7 @@ type ProjectsDBOperationsMock struct {
 		// CreateProject holds details about calls to the CreateProject method.
 		CreateProject []struct {
 			// Prj is the prj argument value.
-			Prj *apimodels.Project
+			Prj *models.ExpandedProject
 		}
 		// DeleteProject holds details about calls to the DeleteProject method.
 		DeleteProject []struct {
@@ -90,12 +89,12 @@ type ProjectsDBOperationsMock struct {
 }
 
 // CreateProject calls CreateProjectFunc.
-func (mock *ProjectsDBOperationsMock) CreateProject(prj *apimodels.Project) error {
+func (mock *ProjectsDBOperationsMock) CreateProject(prj *models.ExpandedProject) error {
 	if mock.CreateProjectFunc == nil {
 		panic("ProjectsDBOperationsMock.CreateProjectFunc: method is nil but ProjectsDBOperations.CreateProject was just called")
 	}
 	callInfo := struct {
-		Prj *apimodels.Project
+		Prj *models.ExpandedProject
 	}{
 		Prj: prj,
 	}
@@ -109,10 +108,10 @@ func (mock *ProjectsDBOperationsMock) CreateProject(prj *apimodels.Project) erro
 // Check the length with:
 //     len(mockedProjectsDBOperations.CreateProjectCalls())
 func (mock *ProjectsDBOperationsMock) CreateProjectCalls() []struct {
-	Prj *apimodels.Project
+	Prj *models.ExpandedProject
 } {
 	var calls []struct {
-		Prj *apimodels.Project
+		Prj *models.ExpandedProject
 	}
 	mock.lockCreateProject.RLock()
 	calls = mock.calls.CreateProject

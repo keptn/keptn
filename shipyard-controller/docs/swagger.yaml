@@ -179,6 +179,23 @@ definitions:
         description: Type of the event
         type: string
     type: object
+  models.Stages:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+      totalCount:
+        description: Total number of stages
+        type: number
+    type: object
   operations.CreateProjectParams:
     properties:
       gitRemoteURL:
@@ -553,6 +570,42 @@ paths:
           description: ok
           schema:
             $ref: '#/definitions/models.ExpandedProject'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a project by name
+      tags:
+      - Projects
+  /project/{projectName}/stage/{stageName}:
+    get:
+      consumes:
+      - application/json
+      description: Get a project by its name
+      parameters:
+      - description: The name of the project
+        in: path
+        name: projectName
+        required: true
+        type: string
+      - description: The name of the stage
+        in: path
+        name: stageName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedStage'
         "404":
           description: Not found
           schema:

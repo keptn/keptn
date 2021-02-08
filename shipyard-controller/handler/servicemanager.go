@@ -10,12 +10,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/operations"
 )
 
-var errServiceAlreadyExists = errors.New("project already exists")
-
-var errServiceNotFound = errors.New("service not found")
-
-var errProjectNotFound = errors.New("project not found")
-
 type serviceManager struct {
 	logger               keptncommon.LoggerInterface
 	ServicesDBOperations db.ServicesDbOperations

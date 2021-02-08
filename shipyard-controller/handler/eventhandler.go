@@ -75,7 +75,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if err != nil {
-		sendInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
@@ -117,9 +117,9 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	err := eh.ShipyardController.HandleIncomingEvent(*event)
 	if err != nil {
 		if err == errNoMatchingEvent {
-			sendBadRequestResponse(err, c)
+			SetBadRequestErrorResponse(err, c)
 		} else {
-			sendInternalServerErrorResponse(err, c)
+			SetInternalServerErrorResponse(err, c)
 		}
 		return
 	}
@@ -131,20 +131,4 @@ func NewEventHandler() IEventHandler {
 	return &EventHandler{
 		ShipyardController: GetShipyardControllerInstance(),
 	}
-}
-
-func sendInternalServerErrorResponse(err error, c *gin.Context) {
-	msg := err.Error()
-	c.JSON(http.StatusInternalServerError, models.Error{
-		Code:    http.StatusBadRequest,
-		Message: &msg,
-	})
-}
-
-func sendBadRequestResponse(err error, c *gin.Context) {
-	msg := err.Error()
-	c.JSON(http.StatusBadRequest, models.Error{
-		Code:    http.StatusBadRequest,
-		Message: &msg,
-	})
 }

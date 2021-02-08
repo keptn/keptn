@@ -58,7 +58,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 
 	allProjects, err := ph.ProjectManager.Get()
 	if err != nil {
-		sendInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
@@ -101,26 +101,17 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 	params := &operations.GetProjectProjectNameParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 
 	project, err := ph.ProjectManager.GetByName(params.ProjectName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 	if project == nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp("Project not found: " + params.ProjectName),
-		})
+		SetNotFoundErrorResponse(nil, c, "Project not found: "+params.ProjectName)
 		return
 	}
 	c.JSON(http.StatusOK, project)
@@ -144,25 +135,16 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	createProjectParams := &operations.CreateProjectParams{}
 	if err := c.ShouldBindJSON(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 	if err := validateCreateProjectParams(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp(err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}
 
 	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
+		//TODO: LOG MESSAGE ONLY
 	}
 
 	err, rollback := ph.ProjectManager.Create(createProjectParams)
@@ -172,16 +154,10 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 		rollback()
 		if err == ErrProjectAlreadyExists {
-			c.JSON(http.StatusConflict, models.Error{
-				Code:    http.StatusConflict,
-				Message: stringp(err.Error()),
-			})
+			SetConflictErrorResponse(err, c)
 			return
 		} else {
-			c.JSON(http.StatusInternalServerError, models.Error{
-				Code:    http.StatusInternalServerError,
-				Message: stringp(err.Error()),
-			})
+			SetInternalServerErrorResponse(err, c)
 			return
 		}
 	}
@@ -209,27 +185,18 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	//validate the input
 	params := &operations.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 	if err := validateUpdateProjectParams(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Could not validate payload: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}
 
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
@@ -253,10 +220,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	projectName := c.Param("project")
 
 	if projectName == "" {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Must provide a project name"),
-		})
+		SetBadRequestErrorResponse(nil, c, "ust provide a project name")
 		return
 	}
 
@@ -265,11 +229,7 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 		if err := ph.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
 			//LOG MESSAGE ONLY
 		}
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 

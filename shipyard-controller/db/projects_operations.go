@@ -1,7 +1,6 @@
 package db
 
 import (
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
@@ -11,5 +10,5 @@ type ProjectsDBOperations interface {
 	GetProject(projectName string) (*models.ExpandedProject, error)
 	UpdateUpstreamInfo(projectName string, uri string, user string) error
 	DeleteProject(projectName string) error
-	CreateProject(prj *apimodels.Project) error
+	CreateProject(prj *models.ExpandedProject) error
 }

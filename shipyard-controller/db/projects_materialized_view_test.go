@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -35,7 +34,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 		ProjectRepo ProjectRepo
 	}
 	type args struct {
-		prj *goutilsmodels.Project
+		prj *models.ExpandedProject
 	}
 	tests := []struct {
 		name    string
@@ -57,7 +56,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 				},
 			},
 			args: args{
-				prj: &goutilsmodels.Project{
+				prj: &models.ExpandedProject{
 					ProjectName: "test-project",
 				},
 			},
@@ -81,7 +80,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 				},
 			},
 			args: args{
-				prj: &goutilsmodels.Project{
+				prj: &models.ExpandedProject{
 					ProjectName: "test-project",
 				},
 			},
@@ -103,7 +102,7 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 				},
 			},
 			args: args{
-				prj: &goutilsmodels.Project{
+				prj: &models.ExpandedProject{
 					ProjectName: "test-project",
 				},
 			},
