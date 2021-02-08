@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/docs"
@@ -86,6 +85,14 @@ func main() {
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
+
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, nil, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
+	evaluationHandler := handler.NewEvaluationHandler(evaluationManager)
+	evaluationController := controller.NewEvaluationController(evaluationHandler)
+	evaluationController.Inject(apiV1)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
