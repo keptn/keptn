@@ -103,6 +103,20 @@ We are running automated code style checks for pull requests using the following
   * ``gofmt -l -s .`` 
 * [codecov.io](codecov.yml) - tracks code coverage based on unit tests
 
+### Boyscout rule
+
+> Always leave the code better than you found it!
+
+While we would all like to make the world better all the time, please apply common sense to this rule, for instance:
+
+* When you're fixing a bug, don't refactor code around the bug (in fact, this could be counter-productive for backports/cherry-picks).
+* Do not change or extend the scope of your issue (e.g., stay within the microservice/sub-directory).
+* Don't refactor multiple parts at the same time - change one thing at a time.
+* Make sure code-changes are balanced! Don't refactor 200 lines of codes when a simple change would only require 10 lines of code.
+* If you file a PR, always ask yourself: What changes within the PR would you expect as a reviewer?
+
+These rules help us to keep the scope of issues and PRs assessable.
+
 ### Run Tests
 
 Keptn currently has two types of tests:
@@ -151,4 +165,9 @@ git push --set-upstream origin feature/123/foo
 ```
 
 Finally, go to GitHub and make a Pull Request. Please describe what this PR is about and add a link to relevant GitHub issues.
+If you changed something that is visible to the user, please add a screenshot.
+In addition, please always ask yourself the following questions:
+
+**Based on the linked issue, what changes within the PR would you expect as a reviewer?**
+
 Your PR will usually be reviewed by the Keptn team within a couple of days, but feel free to let us know about your PR [via Slack](https://slack.keptn.sh).
