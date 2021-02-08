@@ -4,13 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/types"
-	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/nats-io/nats-server/v2/server"
-	natsserver "github.com/nats-io/nats-server/v2/test"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -18,6 +11,15 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/types"
+	"github.com/nats-io/nats-server/v2/server"
+	natsserver "github.com/nats-io/nats-server/v2/test"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 const TEST_PORT = 8370
@@ -52,7 +54,6 @@ func (m *MockSLIProviderConfig) GetSLIProvider(project string) (string, error) {
 }
 
 func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
-
 	type ceTypeEvent struct {
 		Type string `json:"type"`
 	}
@@ -255,7 +256,6 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 					return
 				}
 			}
-
 		})
 	}
 }
@@ -355,6 +355,7 @@ func Test_getEvaluationTimestamps(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1, err := getEvaluationTimestamps(tt.args.e)

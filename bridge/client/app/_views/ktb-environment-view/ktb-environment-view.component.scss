@@ -1,0 +1,17 @@
+@import '~@dynatrace/barista-components/style/main';
+
+:host ::ng-deep {
+  .stage-state-icon {
+    width: 25px;
+    height: 25px;
+    color: $gray-300;
+    fill: $gray-300;
+  }
+
+  .dt-icon {
+    &.highlight {
+      border: none;
+      fill: $blue-400;
+    }
+  }
+}

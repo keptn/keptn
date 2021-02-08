@@ -2,12 +2,13 @@ package handler
 
 import (
 	"fmt"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 var approvalTriggeredTests = []struct {

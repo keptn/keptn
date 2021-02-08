@@ -58,7 +58,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -198,10 +198,10 @@ jobs:
 
       - name: 'Get Previous tag'
         id: get_previous_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@1.0.0"
+        uses: "WyriHaximus/github-action-get-previous-tag@v1.0.1"
       - name: 'Get next patch version'
         id: get_next_semver_tag
-        uses: "WyriHaximus/github-action-next-semvers@v1"
+        uses: "WyriHaximus/github-action-next-semvers@v1.1"
         with:
           version: ${{ steps.get_previous_tag.outputs.tag }}
       - name: Get the version
@@ -284,72 +284,102 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
+      # cache go modules
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Test api
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
-        run: go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+        run: |
+          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+          bash <(curl -s https://codecov.io/bash) -c -F api
         working-directory: ./api
 
       - name: Test os route svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
         working-directory: ./platform-support/openshift-route-service
 
       - name: Test jmeter svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
         working-directory: ./jmeter-service
 
       - name: Test helm svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F helm-service
         working-directory: ./helm-service
 
       - name: Test gatekeeper svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
         working-directory: ./gatekeeper-service
 
       - name: Test distributor svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F distributor-service
         working-directory: ./distributor
 
       - name: Test shipyard controller svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
         working-directory: ./shipyard-controller
 
       - name: Test configuration svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
         working-directory: ./configuration-service
 
       - name: Test remediation svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
         working-directory: ./remediation-service
 
       - name: Test lighthouse svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
         working-directory: ./lighthouse-service
 
       - name: Test mongodb datastore svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
         working-directory: ./mongodb-datastore
 
       - name: Test statistics svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
         working-directory: ./statistics-service
 
-      - name: Coverage report
-        run: bash <(curl -s https://codecov.io/bash)
 
   unit-tests-node:
     needs: prepare_ci_run
@@ -357,18 +387,24 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2.1.4
         with:
           node-version: 12.x
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install npm libs
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Checkout Code
-        uses: actions/checkout@v2
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
       - name: Test
@@ -379,7 +415,7 @@ jobs:
         working-directory: ./bridge
       - name: Coverage report
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: bash <(curl -s https://codecov.io/bash) -F moduleA
+        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
 
 
   unit-tests-cli:
@@ -401,9 +437,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      # cache go modules
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
+
       - name: Test cli
-        run: go test -race -v ./...
+        run: go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
         working-directory: ./cli
+
+      - name: Coverage report
+        run: bash <(curl -s https://codecov.io/bash) -c -F cli
 
   ############################################################################
   # Build CLI                                                                #
@@ -427,11 +474,18 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
         uses: actions/checkout@v2
-
+      # cache go modules
+      - uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
       - name: Build cli
         env:
           PLATFORM: "${{ matrix.platform }}"
           GOARCH: "amd64"
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
           VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
           DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
           GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
@@ -455,6 +509,12 @@ jobs:
           OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${DISTR}-${GOARCH}" # no need for file-ending in the archive name
           mkdir dist
+
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+          fi
+
           go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
           tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz ${OUTPUT_EXECUTEABLE_NAME}
       - name: Upload Keptn CLI as an artifact
@@ -482,7 +542,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -522,7 +582,7 @@ jobs:
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 

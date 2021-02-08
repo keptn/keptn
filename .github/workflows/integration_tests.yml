@@ -29,6 +29,7 @@ jobs:
             PLATFORM: "openshift"
             VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
+            RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -36,6 +37,7 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -43,6 +45,7 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -50,6 +53,7 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -57,6 +61,7 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
@@ -67,11 +72,24 @@ jobs:
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
+    outputs:
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
+
+      - name: Create downloads folder
+        run: mkdir ~/downloads
+
+      - name: Cache downloads paths
+        uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ~/downloads
+          key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
       - name: Determine Target Branch for Integration Tests
         id: determine_branch
@@ -106,12 +124,20 @@ jobs:
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: |
           test/utils/download_and_install_oc_cli.sh
+          test/utils/download_and_install_minishift.sh
           test/utils/minishift_create_cluster.sh
+
+      - name: Interact with the cluster
+        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
+        run: oc cluster status
+
       - name: Install and start K3s
         if: env.CLOUD_PROVIDER == 'k3s-on-GHA'
         env:
           K3S_VERSION: ${{ matrix.VERSION }}
-        run: test/utils/k3s_create_cluster.sh
+        run: |
+          test/utils/download_and_install_k3s.sh
+          test/utils/k3s_create_cluster.sh
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
@@ -129,7 +155,7 @@ jobs:
           echo $CLUSTER_NAME_NIGHTLY
           echo "Installing gcloud CLI"
           export OS_TYPE="linux"
-          source ./travis-scripts/install_gcloud.sh
+          ./test/utils/download_and_install_gcloud.sh
           echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
           gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
           test/utils/gke_create_cluster.sh
@@ -139,6 +165,17 @@ jobs:
       # get some debug infos
       - name: Debug - Describe Kubernetes Nodes
         run: kubectl describe nodes
+
+      - name: Debug - cat /etc/resolv.conf
+        run: cat /etc/resolv.conf
+
+      - name: Debug - check for internet access
+        continue-on-error: true # this only serves debugging purpose, we should still continue
+        timeout-minutes: 2
+        run: |
+          sleep 30
+          kubectl run -i --restart=Never --rm test-${RANDOM} --image=alpine:3.13 -- sh -c "wget https://keptn.sh"
+
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
         run: test/utils/install_istio.sh
@@ -347,6 +384,8 @@ jobs:
 
       - name: Test Quality Gates Standalone
         id: test_quality_gates
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
         timeout-minutes: 10
         continue-on-error: true
         env:
@@ -369,7 +408,7 @@ jobs:
       - name: Test Delivery Assistant
         id: test_delivery_assistant
         # Delivery Assistant only works when we install keptn with continuous delivery use-case
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run test only if set to true
         timeout-minutes: 5
         continue-on-error: true
         env:
@@ -485,13 +524,18 @@ jobs:
     needs: integration-test
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Debug - Output Branch
+        run: echo $BRANCH
+
       - name: Load CI Environment from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
@@ -536,15 +580,24 @@ jobs:
           workflow: CI.yml
           workflow_conclusion: success
           # Use the branch
-          branch: ${{ github.event.inputs.branch }}
+          branch: ${{ env.BRANCH}}
           # Optional, directory where to extract artifact
           path: ./dist
 
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
 
       - name: DEBUG Build-Config
         run: |
@@ -612,7 +665,7 @@ jobs:
               release = await github.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                tag: "${{ steps.get_version.outputs.VERSION }}"
+                tag: tag
               });
               console.log("::error Release already exists... Aborting!");
               core.setFailed("Release already exists... Aborting!");

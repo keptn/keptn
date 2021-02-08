@@ -17,6 +17,7 @@ import (
 const triggeredEventsCollectionNameSuffix = "-triggeredEvents"
 const startedEventsCollectionNameSuffix = "-startedEvents"
 const finishedEventsCollectionNameSuffix = "-finishedEvents"
+const remediationCollectionNameSuffix = "-remediations"
 
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
@@ -142,17 +143,24 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 	startedCollection := mdbrepo.getEventsCollection(project, common.StartedEvent)
 	finishedCollection := mdbrepo.getEventsCollection(project, common.FinishedEvent)
 
+	// not the ideal place to delete the remediation collection, but the management of remediations will likely move to the shipyard controller anyway
+	remediationCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + remediationCollectionNameSuffix)
+
 	if err := mdbrepo.deleteCollection(triggeredCollection); err != nil {
+		// log the error but continue
 		mdbrepo.Logger.Error(err.Error())
-		return err
 	}
 	if err := mdbrepo.deleteCollection(startedCollection); err != nil {
+		// log the error but continue
 		mdbrepo.Logger.Error(err.Error())
-		return err
 	}
 	if err := mdbrepo.deleteCollection(finishedCollection); err != nil {
+		// log the error but continue
 		mdbrepo.Logger.Error(err.Error())
-		return err
+	}
+	if err := mdbrepo.deleteCollection(remediationCollection); err != nil {
+		// log the error but continue
+		mdbrepo.Logger.Error(err.Error())
 	}
 	return nil
 }

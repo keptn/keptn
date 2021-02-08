@@ -2,12 +2,13 @@ package lib
 
 import (
 	"fmt"
-	"github.com/nats-io/nats-server/v2/server"
-	natsserver "github.com/nats-io/nats-server/v2/test"
-	"github.com/nats-io/nats.go"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/nats-io/nats-server/v2/server"
+	natsserver "github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
 )
 
 const TEST_PORT = 8369

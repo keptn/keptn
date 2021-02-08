@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v2
+        uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
       - name: Detect stale images on DockerHub

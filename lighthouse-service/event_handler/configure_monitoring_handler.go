@@ -1,14 +1,16 @@
 package event_handler
 
 import (
+	"os"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
+
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 type ConfigureMonitoringHandler struct {

@@ -1,14 +1,14 @@
-<ng-container *ngIf="currentRoot">
+<ng-container *ngIf="currentSequence">
   <div class="ktb-sequence-timeline-container">
     <div class="timeline"></div>
     <div fxLayout="row" fxLayoutAlign="space-between">
-      <div class="text-center pointer"  *ngFor="let stage of currentRoot.getStages(); last as isLast" (click)="selectStage(stage)">
-        <div>
-          <dt-icon class="stage-state-icon event-icon" [name]="isLast ?  currentRoot.getIcon() : currentRoot.getIconType()" [class.error]="stage === currentRoot.isFaulty()" [class.success]=" !isLast || stage !== currentRoot.isFaulty() && currentRoot.isFinished()" ></dt-icon>
+      <div class="text-center pointer stage-transition" [class.focused]="stage === selectedStage"  *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
+        <div class="stage-info">
+          <dt-icon class="event-icon" [name]="isLast ?  currentSequence.getIcon() : currentSequence.getIconType()" [class.error]="stage === currentSequence.isFaulty()" [class.success]=" !isLast || stage !== currentSequence.isFaulty() && currentSequence.isFinished()" ></dt-icon>
           <span [textContent]="stage"></span>
         </div>
         <p class="m-0">|</p>
-        <p class="m-0" [textContent]="currentRoot.getFirstTraceOfStage(stage)?.time | date:'HH:mm'"></p>
+        <p class="m-0" [textContent]="currentSequence.getFirstTraceOfStage(stage)?.time | date:'HH:mm'"></p>
       </div>
     </div>
   </div>

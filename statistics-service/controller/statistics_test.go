@@ -1,15 +1,17 @@
 package controller
 
 import (
-	"github.com/go-test/deep"
-	keptn "github.com/keptn/go-utils/pkg/lib"
-	"github.com/keptn/keptn/statistics-service/db"
-	"github.com/keptn/keptn/statistics-service/operations"
 	"os"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/go-test/deep"
+
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/keptn/statistics-service/db"
+	"github.com/keptn/keptn/statistics-service/operations"
 )
 
 // MockStatisticsRepo godoc

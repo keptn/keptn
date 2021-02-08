@@ -30,6 +30,9 @@ cli/onboarding-carts/*
 configuration-service/cmd/configuration-service-server/__debug_bin
 keptn-charts/
 
+# ignore coverage reports
+*/coverage.txt
+
 # IDE files
 .vscode/
 *.iml

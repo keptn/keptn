@@ -50,6 +50,20 @@ spec:
             value: 'production'
           - name: WAIT_TIME_MINUTES
             value: '10m'
+          - name: MONGODB_HOST
+            value: 'mongodb:27017'
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: user
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: password
+          - name: MONGO_DB_NAME
+            value: 'keptn'
       - name: distributor
         image: keptn/distributor:latest
         imagePullPolicy: Always

@@ -3,10 +3,6 @@ package event_handler
 import (
 	"encoding/json"
 	"errors"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,8 +11,13 @@ import (
 	"strings"
 	"testing"
 
-	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/stretchr/testify/assert"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptnmodelsv2 "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 type operatorParserTest struct {
@@ -120,6 +121,7 @@ func TestParseCriteriaString(t *testing.T) {
 			},
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Criteria, func(t *testing.T) {
 			co, _ := parseCriteriaString(test.Criteria)
@@ -192,6 +194,7 @@ func TestEvaluateValue(t *testing.T) {
 			ExpectedError:  errors.New("no operator set"),
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			result, err := evaluateValue(test.MeasuredValue, test.ExpectedValue, test.Operator)
@@ -276,6 +279,7 @@ func TestEvaluateFixedThreshold(t *testing.T) {
 			ExpectedError:  errors.New("no operator set"),
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			result, err := evaluateFixedThreshold(test.InSLIResult, test.InCriteriaObject, test.InTarget)
@@ -315,6 +319,7 @@ func TestCalculatePercentile(t *testing.T) {
 			ExpectedValue: 10.0,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			percentile := calculatePercentile(test.InValue, test.InPercentile)
@@ -694,6 +699,7 @@ func TestEvaluateComparison(t *testing.T) {
 			ExpectedError:  nil,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			result, err := evaluateComparison(test.InSLIResult, test.InCriteriaObject, test.InPreviousResults, test.InComparison, test.InTarget)
@@ -1047,6 +1053,7 @@ func TestEvaluateSingleCriteria(t *testing.T) {
 			ExpectedError:  nil,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			result, err := evaluateSingleCriteria(test.InSLIResult, test.InCriteria, test.InPreviousResults, test.InComparison, test.InTarget)
@@ -1182,6 +1189,7 @@ func TestEvaluateCriteriaSet(t *testing.T) {
 			ExpectedError:  nil,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			result, violations, err := evaluateCriteriaSet(test.InSLIResult, test.InCriteriaSet, test.InPreviousResults, test.InComparison)
@@ -1389,6 +1397,7 @@ func TestEvaluateOrCombinedCriteria(t *testing.T) {
 			ExpectedError:  nil,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			t.Run(test.Name, func(t *testing.T) {
@@ -2181,6 +2190,7 @@ func TestEvaluateObjectives(t *testing.T) {
 			ExpectedKeySLIFailed: false,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			evaluationDoneData, maximumScore, keySLIFailed := evaluateObjectives(test.InGetSLIDoneEvent, test.InSLOConfig, test.InPreviousEvaluationEvents)
@@ -2554,6 +2564,7 @@ func TestCalculateScore(t *testing.T) {
 			ExpectedError: nil,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			err := calculateScore(test.InMaximumScore, test.InEvaluationResult, test.InSLOConfig, test.InKeySLIFailed)
@@ -2668,6 +2679,7 @@ func TestEvaluateSLIHandler_getPreviousTestExecutionResult(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
@@ -2785,6 +2797,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		returnedResult = tt.resultFromDatastore
 		t.Run(tt.name, func(t *testing.T) {

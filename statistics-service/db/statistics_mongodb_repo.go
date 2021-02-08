@@ -2,10 +2,12 @@ package db
 
 import (
 	"context"
-	"github.com/globalsign/mgo/bson"
-	"github.com/keptn/keptn/statistics-service/operations"
-	"go.mongodb.org/mongo-driver/mongo"
 	"time"
+
+	"github.com/globalsign/mgo/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/keptn/keptn/statistics-service/operations"
 )
 
 const keptnStatsCollection = "keptn-stats"

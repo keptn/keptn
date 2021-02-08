@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
-	"time"
 )
 
 // StatisticsInterface godoc

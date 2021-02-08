@@ -2,19 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"log"
 	"os"
-
-	keptn "github.com/keptn/go-utils/pkg/lib"
-
-	b64 "encoding/base64"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v2"
+
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 type envConfig struct {
@@ -78,7 +77,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func createRoutes(data *keptn.ProjectCreateEventData) error {
 	shipyard := keptn.Shipyard{}
-	decodedStr, err := b64.StdEncoding.DecodeString(data.Shipyard)
+	decodedStr, err := base64.StdEncoding.DecodeString(data.Shipyard)
 	if err != nil {
 		return err
 	}

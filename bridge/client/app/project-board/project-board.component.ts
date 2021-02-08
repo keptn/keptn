@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {filter, map, startWith, switchMap, take, takeUntil} from "rxjs/operators";
 import {Observable, Subject, Subscription, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -12,14 +12,9 @@ import {Project} from "../_models/project";
 import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
 import DateUtil from "../_utils/date.utils";
-import {Service} from "../_models/service";
 import {Trace} from "../_models/trace";
-import {Stage} from "../_models/stage";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {EVENT_LABELS} from "../_models/event-labels";
-import {DtOverlayConfig} from "@dynatrace/barista-components/overlay";
-import {DtToggleButtonItem} from "@dynatrace/barista-components/toggle-button-group";
-import {ClipboardService} from "../_services/clipboard.service";
 import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from "@dynatrace/barista-components/experimental/quick-filter";
 import {isObject} from "@dynatrace/barista-components/core";
 
@@ -35,7 +30,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _sequencesTimer: Subscription = Subscription.EMPTY;
 
   public project$: Observable<Project>;
-  public openApprovals$: Observable<Trace[]>;
 
   public currentRoot: Root;
   public currentSequence: Root;
@@ -50,19 +44,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public eventId: string;
 
   public view: string = 'services';
-  public selectedStage: Stage = null;
 
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
-
-  public filterEventType: string = null;
-
-  public integrationsExternalDetails = null;
-
-  public useCaseExamples = {
-    'cli': [],
-    'api': []
-  };
 
   /** configuration for the quick filter */
   private filterFieldData = {
@@ -102,18 +86,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public _seqFilters = [];
   private sequenceFilters = {};
 
-  public keptnInfo: any;
-  public currentTime: String;
-
-  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
-  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
-  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
-
-  public overlayConfig: DtOverlayConfig = {
-    pinnable: true
-  };
-
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService, private clipboard: ClipboardService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private location: Location, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService) { }
 
   ngOnInit() {
     this.route.params
@@ -159,7 +132,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               return project.projectName === params['projectName'];
             }) : null)
           );
-          this.openApprovals$ = this.dataService.openApprovals;
+
 
           this.project$
             .pipe(takeUntil(this.unsubscribe$))
@@ -206,81 +179,11 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             )
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe(project => {
-              this.updateIntegrations();
               this.dataService.loadServices(project);
               this.dataService.loadRoots(project);
             });
         }
       });
-
-    this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
-        this.keptnInfo = keptnInfo;
-        if(this.keptnInfo.bridgeInfo.keptnInstallationType) {
-          if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_DELIVERY") != -1) {
-            this.addDeploymentUseCaseToIntegrations();
-          }
-          if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES") != -1) {
-            this.addEvaluationUseCaseToIntegrations();
-          }
-          if(this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("CONTINUOUS_OPERATIONS") != -1) {
-            this.addRemediationUseCaseToIntegrations();
-          }
-          this.updateIntegrations();
-        }
-      });
-  }
-
-  updateIntegrations() {
-    if(this.keptnInfo && this.keptnInfo.bridgeInfo.keptnInstallationType && this.keptnInfo.bridgeInfo.keptnInstallationType.indexOf("QUALITY_GATES") != -1) {
-      this.currentTime = moment.utc().startOf('minute').format("YYYY-MM-DDTHH:mm:ss");
-      this.useCaseExamples['cli'].find(e => e.label == 'Trigger a quality gate evaluation').code = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
-      this.useCaseExamples['api'].find(e => e.label == 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
-    -H "accept: application/json; charset=utf-8" \\
-    -H "x-token: \${KEPTN_API_TOKEN}" \\
-    -H "Content-Type: application/json; charset=utf-8" \\
-    -d "{"start": "${this.currentTime}", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
-    }
-  }
-
-  addEvaluationUseCaseToIntegrations() {
-    this.useCaseExamples['cli'].push({
-      label: 'Trigger a quality gate evaluation',
-      code: ''
-    });
-    this.useCaseExamples['api'].push({
-      label: 'Trigger a quality gate evaluation',
-      code: ''
-    });
-  }
-
-  addDeploymentUseCaseToIntegrations() {
-    this.useCaseExamples['cli'].push({
-      label: 'Trigger deployment with a new artifact',
-      code: `keptn send event new-artifact --project=\${PROJECT} --service=\${SERVICE}--image=\${IMAGE} --tag=\${TAG}`
-    });
-    this.useCaseExamples['api'].push({
-      label: 'Trigger deployment with a new artifact',
-      code: `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/event" \\
-      -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{"type":"sh.keptn.event.configuration.change","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}","configurationChange":{"values":{"image":"\${IMAGE}"}}}}"`
-    });
-  }
-
-  addRemediationUseCaseToIntegrations() {
-    this.useCaseExamples['cli'].push({
-      label: 'Trigger remediation with a dummy problem event (Note: Linux/mac OS only)',
-      code: `echo '{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}' > dummy_problem.json \\
-      keptn send event -f=dummy_problem.json`
-    });
-    this.useCaseExamples['api'].push({
-      label: 'Trigger remediation with a dummy problem event',
-      code: `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/event" \\
-      -H "accept: application/json; charset=utf-8" -H "x-token: \${KEPTN_API_TOKEN}" -H "Content-Type: application/json; charset=utf-8" \\
-      -d "{"type":"sh.keptn.event.problem.open","specversion":"0.2","source":"api","contenttype":"application\\/json","data":{"State":"OPEN","ProblemID":"\${PROBLEM_ID}","ProblemTitle":"\${PROBLEM}","project":"\${PROJECT}","stage":"\${STAGE}","service":"\${SERVICE}"}}"`
-    });
   }
 
   selectRoot(event: any): void {
@@ -348,10 +251,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.dataService.loadProjects();
   }
 
-  trackStage(index: number, stage: Stage) {
-    return stage.stageName;
-  }
-
   selectView(view) {
     this.view = view;
     if(this.view == 'sequences') {
@@ -417,52 +316,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         });
         return res;
       });
-  }
-
-  selectStage($event, stage: Stage, filterType?: string) {
-    this.problemFilterEventButton?.deselect();
-    this.evaluationFilterEventButton?.deselect();
-    this.approvalFilterEventButton?.deselect();
-
-    this.selectedStage = stage;
-    this.filterEventType = filterType;
-    $event.stopPropagation();
-  }
-
-  selectFilterEvent($event) {
-    if($event.isUserInput)
-      this.filterEventType = $event.source.selected ? $event.value : null;
-  }
-
-  countOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
-    return this.getOpenApprovals(openApprovals, project, stage, service).length;
-  }
-
-  getOpenApprovals(openApprovals: Trace[], project: Project, stage: Stage, service?: Service) {
-    return openApprovals.filter(approval => approval.data.project == project.projectName && approval.data.stage == stage.stageName && (!service || approval.data.service == service.serviceName));
-  }
-
-  findFailedRootEvent(failedRootEvents: Root[], service: Service) {
-    return failedRootEvents.find(root => root.data.service == service.serviceName);
-  }
-
-  findProblemEvent(problemEvents: Root[], service: Service) {
-    return problemEvents.find(root => root?.data.service == service.serviceName);
-  }
-
-  loadIntegrations() {
-    this.integrationsExternalDetails = '<p>Loading ...</p>';
-    this.apiService.getIntegrationsPage()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((result: string) => {
-        this.integrationsExternalDetails = result;
-      }, (err: Error) => {
-        this.integrationsExternalDetails = '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
-      });
-  }
-
-  copyApiToken() {
-    this.clipboard.copy(this.keptnInfo.bridgeInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {

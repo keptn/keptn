@@ -1,8 +1,8 @@
 # lighthouse-service
 
-This service is responsible for evaluating test results. 
+This service is responsible for evaluating test results.
 Whenever an event of the type `sh.keptn.event.start-evaluation` (for the quality gates standalone use case) or `sh.keptn.events.tests-finished` is received,
-it will take first determine the SLI (Service Level Indicator) data source (e.g., Prometheus or Dynatrace), 
+it will take first determine the SLI (Service Level Indicator) data source (e.g., Prometheus or Dynatrace),
 as well as the required SLIs for the project. Afterwards, it will send out an event of the type `sh.keptn.internal.event.get-sli`, to inform
 the respective data source services to retrieve the values for the SLIs defined in the `slo.yaml` file.
 
@@ -10,8 +10,8 @@ When a data source service is finished with the retrieval of the SLI values, and
 the lighthouse-service will evaluate the SLI values based on the evaluation strategy that has been defined in the  `slo.yaml` file.
 
 # Configuring a data source
-For each project, one data source (e.g., Prometheus or Dynatrace) can be defined. To tell Keptn which data source should be used, 
-a config map with the name `lighthouse-config-<project-name>` and the following format 
+For each project, one data source (e.g., Prometheus or Dynatrace) can be defined. To tell Keptn which data source should be used,
+a config map with the name `lighthouse-config-<project-name>` and the following format
 needs to be deployed in the `keptn` namespace:
 
 ```yaml
@@ -54,7 +54,7 @@ The required SLOs for a project can be defined by adding a file called `slo.yaml
 keptn add-resource --project=sockshop --stage=staging --service=carts --resource=examples/slo.yaml --resourceUri=slo.yaml
 ```
 
-Note that the name of the file needs to be `slo.yaml`. If your file is called differently, you can ensure the correct naming of the 
+Note that the name of the file needs to be `slo.yaml`. If your file is called differently, you can ensure the correct naming of the
 file by using the `--resourceUri` parameter of the `keptn add-resource` command (as in the example above).
 
 ## Example SLO file content

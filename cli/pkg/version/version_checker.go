@@ -129,7 +129,9 @@ func (v *VersionChecker) getNewerCLIVersion(usedVersionString string) (available
 	return res, nil
 }
 
-const newCompatibleVersionMsg = `* Keptn CLI version %s is available! Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
+const newCompatibleVersionMsg = `* Keptn CLI version %s is available! 
+ - To update to the latest CLI run this command: curl -sL https://get.keptn.sh | bash
+ - For more information, please visit https://keptn.sh/docs/%s/operate/upgrade/`
 const newIncompatibleVersionMsg = `* Keptn CLI version %s is available! Please note that this version might be incompatible with your Keptn cluster ` +
 	`version and requires to update the cluster too. Please visit https://keptn.sh/docs/%s/operate/upgrade/ for more information.`
 
