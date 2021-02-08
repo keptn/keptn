@@ -40,7 +40,7 @@ flags:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   configuration-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
-  distributor:
+  distributor-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   gatekeeper-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
