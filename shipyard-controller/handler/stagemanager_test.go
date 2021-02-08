@@ -19,7 +19,7 @@ func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 		return nil, errors.New("Whoops...")
 	}
 
-	p, err := instance.getAllStages("my-project")
+	p, err := instance.GetAllStages("my-project")
 	assert.Nil(t, p)
 	assert.NotNil(t, err)
 }
@@ -33,7 +33,7 @@ func TestGetAllStages_ProjectNotFound(t *testing.T) {
 		return nil, nil
 	}
 
-	stage, err := instance.getAllStages("my-project")
+	stage, err := instance.GetAllStages("my-project")
 	assert.Nil(t, stage)
 	assert.Equal(t, errProjectNotFound, err)
 
@@ -59,7 +59,7 @@ func TestGetAllStages(t *testing.T) {
 		return p, nil
 	}
 
-	stages, err := instance.getAllStages("my-project")
+	stages, err := instance.GetAllStages("my-project")
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(stages))
 	assert.Equal(t, "my-project", stagesDbOperations.GetProjectCalls()[0].ProjectName)
@@ -74,7 +74,7 @@ func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
 		return nil, errors.New("Whoops...")
 	}
 
-	stage, err := instance.getStage("my-project", "the-stage")
+	stage, err := instance.GetStage("my-project", "the-stage")
 	assert.Nil(t, stage)
 	assert.NotNil(t, err)
 }
@@ -88,7 +88,7 @@ func TestGetStage_ProjectNotFound(t *testing.T) {
 		return nil, nil
 	}
 
-	stage, err := instance.getStage("my-project", "the-stage")
+	stage, err := instance.GetStage("my-project", "the-stage")
 	assert.Nil(t, stage)
 	assert.Equal(t, errProjectNotFound, err)
 
@@ -113,7 +113,7 @@ func TestGetStage_StageNotFound(t *testing.T) {
 		}
 		return p, nil
 	}
-	stage, err := instance.getStage("my-project", "unknown-stage")
+	stage, err := instance.GetStage("my-project", "unknown-stage")
 	assert.Nil(t, stage)
 	assert.Equal(t, errStageNotFound, err)
 }

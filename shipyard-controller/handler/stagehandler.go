@@ -15,10 +15,10 @@ type IStageHandler interface {
 }
 
 type StageHandler struct {
-	StageManager *StageManager
+	StageManager IStageManager
 }
 
-func NewStageHandler(stageManager *StageManager) *StageHandler {
+func NewStageHandler(stageManager IStageManager) *StageHandler {
 	return &StageHandler{
 		StageManager: stageManager,
 	}
@@ -40,13 +40,17 @@ func NewStageHandler(stageManager *StageManager) *StageHandler {
 // @Router /project [get]
 func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
+	project := c.Param("projectName")
+
 	params := &operations.GetStagesParams{}
-	if err := c.ShouldBindJSON(params); err != nil {
+	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
 
-	allStages, err := sh.StageManager.getAllStages(params.ProjectName)
+	params.ProjectName = project
+
+	allStages, err := sh.StageManager.GetAllStages(params.ProjectName)
 	if err != nil {
 
 		if err == errProjectNotFound {
@@ -95,19 +99,16 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal Error)
 // @Router /project/{projectName}/stage/{stageName} [get]
 func (sh *StageHandler) GetStage(c *gin.Context) {
-	params := &operations.GetStageParams{}
-	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
-		return
-	}
+	projectName := c.Param("projectName")
+	stageName := c.Param("stageName")
 
-	stage, err := sh.StageManager.getStage(params.ProjectName, params.StageName)
+	stage, err := sh.StageManager.GetStage(projectName, stageName)
 	if err != nil {
 		if err == errProjectNotFound {
 			SetNotFoundErrorResponse(err, c)
 			return
 		}
-		if err == errStageNotFound || stage == nil {
+		if err == errStageNotFound {
 			SetNotFoundErrorResponse(err, c)
 		}
 

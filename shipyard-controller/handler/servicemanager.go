@@ -24,7 +24,7 @@ func NewServiceManager(servicesDBOperations db.ServicesDbOperations, configurati
 	}
 }
 
-func (sm *serviceManager) getAllStages(projectName string) ([]*models.ExpandedStage, error) {
+func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedStage, error) {
 	project, err := sm.ServicesDBOperations.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (sm *serviceManager) getService(projectName, stageName, serviceName string)
 func (sm *serviceManager) createService(projectName string, params *operations.CreateServiceParams) error {
 	sm.logger.Info(fmt.Sprintf("Received request to create service %s in project %s", *params.ServiceName, projectName))
 
-	stages, err := sm.getAllStages(projectName)
+	stages, err := sm.GetAllStages(projectName)
 	if err != nil {
 		return sm.logAndReturnError(fmt.Sprintf("could not get stages of project %s: %s", projectName, err.Error()))
 	}
@@ -95,7 +95,7 @@ func (sm *serviceManager) deleteService(projectName, serviceName string) error {
 
 	sm.logger.Info(fmt.Sprintf("Deleting service %s from project %s", serviceName, projectName))
 
-	stages, err := sm.getAllStages(projectName)
+	stages, err := sm.GetAllStages(projectName)
 	if err != nil {
 		return sm.logAndReturnError(fmt.Sprintf("could not retrieve stages of project %s: %s", projectName, err.Error()))
 	}
