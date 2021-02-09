@@ -15,6 +15,7 @@ require (
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208115652-e651ccaed539
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.5.1
+	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.1.2
 	k8s.io/api v0.17.2
