@@ -59,6 +59,10 @@ func Test_obfuscateErrorMessage(t *testing.T) {
 }
 
 func Test_addRepoURIToMetadata(t *testing.T) {
+
+	stringp := func(s string) *string {
+		return &s
+	}
 	type args struct {
 		credentials *GitCredentials
 		err         error
