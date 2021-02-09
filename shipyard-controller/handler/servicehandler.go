@@ -220,6 +220,7 @@ func NewServiceHandler(serviceManager IServiceManager, eventSender keptncommon.E
 	return &ServiceHandler{
 		serviceManager: serviceManager,
 		logger:         logger,
+		EventSender:    eventSender,
 	}
 }
 
