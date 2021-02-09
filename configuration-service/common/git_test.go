@@ -148,3 +148,7 @@ func Test_getRepoURI(t *testing.T) {
 		})
 	}
 }
+
+func stringp(s string) *string {
+	return &s
+}
