@@ -96,21 +96,19 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal Error)
 // @Router /project/{projectName} [get]
 func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
-	params := &operations.GetProjectProjectNameParams{}
-	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
-		return
-	}
+	projectName := c.Param("projectName")
 
-	project, err := ph.ProjectManager.GetByName(params.ProjectName)
+	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
+		if project == nil && err == errProjectNotFound {
+			SetNotFoundErrorResponse(nil, c, "Project not found: "+projectName)
+			return
+		}
+
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
-	if project == nil {
-		SetNotFoundErrorResponse(nil, c, "Project not found: "+params.ProjectName)
-		return
-	}
+
 	c.JSON(http.StatusOK, project)
 
 }
@@ -215,11 +213,6 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
-
-	if projectName == "" {
-		SetBadRequestErrorResponse(nil, c, "ust provide a project name")
-		return
-	}
 
 	err, responseMessage := ph.ProjectManager.Delete(projectName)
 	if err != nil {
