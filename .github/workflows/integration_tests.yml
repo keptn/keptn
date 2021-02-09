@@ -29,6 +29,7 @@ jobs:
             PLATFORM: "openshift"
             VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
+            RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -36,6 +37,7 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -43,6 +45,7 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -50,6 +53,7 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -57,6 +61,7 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
@@ -67,6 +72,7 @@ jobs:
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
     outputs:
@@ -79,7 +85,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         with:
           path: |
             ~/downloads
@@ -378,6 +384,8 @@ jobs:
 
       - name: Test Quality Gates Standalone
         id: test_quality_gates
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
         timeout-minutes: 10
         continue-on-error: true
         env:
@@ -400,7 +408,7 @@ jobs:
       - name: Test Delivery Assistant
         id: test_delivery_assistant
         # Delivery Assistant only works when we install keptn with continuous delivery use-case
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run test only if set to true
         timeout-minutes: 5
         continue-on-error: true
         env:

@@ -244,8 +244,10 @@ export class DataService {
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean) {
-    this.apiService.sendApprovalEvent(approval, approve)
-      .pipe(take(1))
+    this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_STARTED, 'approval.started')
+      .pipe(
+        mergeMap(()=> this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished'))
+      )
       .subscribe(() => {
         let root = this._projects.getValue().find(p => p.projectName == approval.data.project).services.find(s => s.serviceName == approval.data.service).roots.find(r => r.shkeptncontext == approval.shkeptncontext);
         this.loadTraces(root);
@@ -259,6 +261,10 @@ export class DataService {
       if (approvals.length !== 0)
         this._openApprovals.next([...this._openApprovals.getValue(), ...approvals].sort(DateUtil.compareTraceTimesAsc));
     }
+  }
+
+  public getOpenApprovals(project: Project, stage: Stage, service?: Service): Trace[]{
+    return this._openApprovals.getValue().filter(approval => approval.data.project === project.projectName && approval.data.stage === stage.stageName && (!service || approval.data.service === service.serviceName));
   }
 
   public invalidateEvaluation(evaluation: Trace, reason: string) {

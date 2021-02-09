@@ -22,7 +22,6 @@ import (
 	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project_resource"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/remediation"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_default_resource"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service_resource"
@@ -43,6 +42,7 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
@@ -169,23 +169,11 @@ func NewConfigurationServiceAPI(spec *loads.Document) *ConfigurationServiceAPI {
 		ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler: service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(func(params service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
 			return middleware.NotImplemented("operation service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
 		}),
-		RemediationCloseRemediationsHandler: remediation.CloseRemediationsHandlerFunc(func(params remediation.CloseRemediationsParams) middleware.Responder {
-			return middleware.NotImplemented("operation remediation.CloseRemediations has not yet been implemented")
-		}),
-		RemediationCreateRemediationHandler: remediation.CreateRemediationHandlerFunc(func(params remediation.CreateRemediationParams) middleware.Responder {
-			return middleware.NotImplemented("operation remediation.CreateRemediation has not yet been implemented")
-		}),
 		ServicesGetServiceHandler: services.GetServiceHandlerFunc(func(params services.GetServiceParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetService has not yet been implemented")
 		}),
 		ServicesGetServicesHandler: services.GetServicesHandlerFunc(func(params services.GetServicesParams) middleware.Responder {
 			return middleware.NotImplemented("operation services.GetServices has not yet been implemented")
-		}),
-		RemediationGetRemediationsHandler: remediation.GetRemediationsHandlerFunc(func(params remediation.GetRemediationsParams) middleware.Responder {
-			return middleware.NotImplemented("operation remediation.GetRemediations has not yet been implemented")
-		}),
-		RemediationGetRemediationsForContextHandler: remediation.GetRemediationsForContextHandlerFunc(func(params remediation.GetRemediationsForContextParams) middleware.Responder {
-			return middleware.NotImplemented("operation remediation.GetRemediationsForContext has not yet been implemented")
 		}),
 		EventHandleEventHandler: event.HandleEventHandlerFunc(func(params event.HandleEventParams) middleware.Responder {
 			return middleware.NotImplemented("operation event.HandleEvent has not yet been implemented")
@@ -204,6 +192,7 @@ type ConfigurationServiceAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -302,18 +291,10 @@ type ConfigurationServiceAPI struct {
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandler
 	// ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler sets the operation handler for the put project project name stage stage name service service name resource resource URI operation
 	ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler
-	// RemediationCloseRemediationsHandler sets the operation handler for the close remediations operation
-	RemediationCloseRemediationsHandler remediation.CloseRemediationsHandler
-	// RemediationCreateRemediationHandler sets the operation handler for the create remediation operation
-	RemediationCreateRemediationHandler remediation.CreateRemediationHandler
 	// ServicesGetServiceHandler sets the operation handler for the get service operation
 	ServicesGetServiceHandler services.GetServiceHandler
 	// ServicesGetServicesHandler sets the operation handler for the get services operation
 	ServicesGetServicesHandler services.GetServicesHandler
-	// RemediationGetRemediationsHandler sets the operation handler for the get remediations operation
-	RemediationGetRemediationsHandler remediation.GetRemediationsHandler
-	// RemediationGetRemediationsForContextHandler sets the operation handler for the get remediations for context operation
-	RemediationGetRemediationsForContextHandler remediation.GetRemediationsForContextHandler
 	// EventHandleEventHandler sets the operation handler for the handle event operation
 	EventHandleEventHandler event.HandleEventHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -333,6 +314,16 @@ type ConfigurationServiceAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *ConfigurationServiceAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *ConfigurationServiceAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -499,23 +490,11 @@ func (o *ConfigurationServiceAPI) Validate() error {
 	if o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler == nil {
 		unregistered = append(unregistered, "service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler")
 	}
-	if o.RemediationCloseRemediationsHandler == nil {
-		unregistered = append(unregistered, "remediation.CloseRemediationsHandler")
-	}
-	if o.RemediationCreateRemediationHandler == nil {
-		unregistered = append(unregistered, "remediation.CreateRemediationHandler")
-	}
 	if o.ServicesGetServiceHandler == nil {
 		unregistered = append(unregistered, "services.GetServiceHandler")
 	}
 	if o.ServicesGetServicesHandler == nil {
 		unregistered = append(unregistered, "services.GetServicesHandler")
-	}
-	if o.RemediationGetRemediationsHandler == nil {
-		unregistered = append(unregistered, "remediation.GetRemediationsHandler")
-	}
-	if o.RemediationGetRemediationsForContextHandler == nil {
-		unregistered = append(unregistered, "remediation.GetRemediationsForContextHandler")
 	}
 	if o.EventHandleEventHandler == nil {
 		unregistered = append(unregistered, "event.HandleEventHandler")
@@ -766,14 +745,6 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/resource/{resourceURI}"] = service_resource.NewPutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI(o.context, o.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler)
-	if o.handlers["DELETE"] == nil {
-		o.handlers["DELETE"] = make(map[string]http.Handler)
-	}
-	o.handlers["DELETE"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}"] = remediation.NewCloseRemediations(o.context, o.RemediationCloseRemediationsHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation"] = remediation.NewCreateRemediation(o.context, o.RemediationCreateRemediationHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -782,14 +753,6 @@ func (o *ConfigurationServiceAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/project/{projectName}/service"] = services.NewGetServices(o.context, o.ServicesGetServicesHandler)
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation"] = remediation.NewGetRemediations(o.context, o.RemediationGetRemediationsHandler)
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/project/{projectName}/stage/{stageName}/service/{serviceName}/remediation/{keptnContext}"] = remediation.NewGetRemediationsForContext(o.context, o.RemediationGetRemediationsForContextHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

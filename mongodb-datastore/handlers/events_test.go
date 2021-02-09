@@ -1,16 +1,17 @@
 package handlers
 
 import (
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/mongodb-datastore/models"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 	"testing"
 
 	"github.com/magiconair/properties/assert"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 )
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
@@ -152,6 +153,7 @@ func Test_getSearchOptions(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getSearchOptions(tt.args.params); !reflect.DeepEqual(got, tt.want) {
@@ -205,6 +207,7 @@ func Test_transformEventToInterface(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := transformEventToInterface(tt.args.event)
@@ -265,6 +268,7 @@ func Test_parseFilter(t *testing.T) {
 			want: bson.M{},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := parseFilter(tt.args.filter); !reflect.DeepEqual(got, tt.want) {
@@ -327,6 +331,7 @@ func Test_validateFilter(t *testing.T) {
 			want: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := validateFilter(tt.args.searchOptions); got != tt.want {
@@ -417,6 +422,7 @@ func Test_getAggregationPipeline(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getAggregationPipeline(tt.args.params, tt.args.collectionName, tt.args.matchFields); !reflect.DeepEqual(got, tt.want) {
@@ -457,6 +463,7 @@ func Test_getInvalidatedEventType(t *testing.T) {
 			want: "sh.keptn.event.evaluation.invalidated",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getInvalidatedEventType(tt.args.params); got != tt.want {

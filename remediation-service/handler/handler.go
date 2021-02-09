@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"io/ioutil"
-	"net/http"
+	"github.com/keptn/keptn/remediation-service/db"
+	"github.com/keptn/keptn/remediation-service/models"
 	"net/url"
 	"strings"
 	"time"
@@ -51,74 +50,41 @@ func NewHandler(event cloudevents.Event) (Handler, error) {
 	}
 
 	keptnHandler.Logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
-
+	remediationHandler := &RemediationHandler{
+		Keptn:           keptnHandler,
+		RemediationRepo: &db.RemediationMongoDBRepo{},
+	}
 	switch event.Type() {
 	case keptn.ProblemOpenEventType:
 		return &ProblemOpenEventHandler{
 			KeptnHandler: keptnHandler,
 			Event:        event,
-			Remediation: &Remediation{
-				Keptn: keptnHandler,
-			},
+			Remediation:  remediationHandler,
 		}, nil
 	case keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName):
 		return &EvaluationFinishedEventHandler{
 			KeptnHandler: keptnHandler,
 			Event:        event,
-			Remediation: &Remediation{
-				Keptn: keptnHandler,
-			},
+			Remediation:  remediationHandler,
 		}, nil
 	case keptnv2.GetFinishedEventType(keptnv2.ActionTaskName):
 		return &ActionFinishedEventHandler{
 			KeptnHandler: keptnHandler,
 			Event:        event,
-			Remediation: &Remediation{
-				Keptn: keptnHandler,
-			},
+			Remediation:  remediationHandler,
 		}, nil
 	default:
 		return nil, errors.New("no event handler found for type: " + event.Type())
 	}
 }
 
-type remediationStatus struct {
-	// Executed action
-	Action string `json:"action,omitempty"`
-
-	// ID of the event
-	EventID string `json:"eventId,omitempty"`
-
-	// Keptn Context ID of the event
-	KeptnContext string `json:"keptnContext,omitempty"`
-
-	// Time of the event
-	Time string `json:"time,omitempty"`
-
-	// Type of the event
-	Type string `json:"type,omitempty"`
+// RemediationHandler provides functions to access all resources related to the remediation workflow
+type RemediationHandler struct {
+	Keptn           *keptnv2.Keptn
+	RemediationRepo db.IRemediationRepo
 }
 
-type remediationStatusList struct {
-	// Pointer to next page, base64 encoded
-	NextPageKey string `json:"nextPageKey,omitempty"`
-
-	// Size of returned page
-	PageSize float64 `json:"pageSize,omitempty"`
-
-	// remediations
-	Remediations []*remediationStatus `json:"remediations"`
-
-	// Total number of stages
-	TotalCount float64 `json:"totalCount,omitempty"`
-}
-
-// Remediation provides functions to access all resources related to the remediation workflow
-type Remediation struct {
-	Keptn *keptnv2.Keptn
-}
-
-func (r *Remediation) getActionForProblemType(remediationData v0_1_4.Remediation, problemType string, index int) *v0_1_4.RemediationActionsOnOpen {
+func (r *RemediationHandler) getActionForProblemType(remediationData v0_1_4.Remediation, problemType string, index int) *v0_1_4.RemediationActionsOnOpen {
 	for _, remediation := range remediationData.Spec.Remediations {
 		if strings.HasPrefix(problemType, remediation.ProblemType) {
 			r.Keptn.Logger.Info("Found remediation for problem type " + remediation.ProblemType)
@@ -130,7 +96,7 @@ func (r *Remediation) getActionForProblemType(remediationData v0_1_4.Remediation
 	return nil
 }
 
-func (r *Remediation) sendRemediationTriggeredEvent(problemDetails *keptn.ProblemEventData) error {
+func (r *RemediationHandler) sendRemediationTriggeredEvent(problemDetails *keptn.ProblemEventData) error {
 	source, _ := url.Parse("remediation-service")
 
 	eventData := &keptnv2.RemediationTriggeredEventData{
@@ -154,13 +120,14 @@ func (r *Remediation) sendRemediationTriggeredEvent(problemDetails *keptn.Proble
 	}
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
 	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", r.Keptn.KeptnContext)
 	event.SetData(cloudevents.ApplicationJSON, eventData)
 
-	err := createRemediation(event.ID(), r.Keptn.KeptnContext, event.Time().String(), r.Keptn.KeptnBase.Event, keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName), "")
+	err := r.createRemediation(event.ID(), keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName), "")
 	if err != nil {
 		r.Keptn.Logger.Error("Could not create remediation: " + err.Error())
 		return err
@@ -174,154 +141,26 @@ func (r *Remediation) sendRemediationTriggeredEvent(problemDetails *keptn.Proble
 	return nil
 }
 
-func getRemediationsEndpoint(configurationServiceEndpoint url.URL, project, stage, service, keptnContext string) string {
-	if keptnContext == "" {
-		return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service)
-	}
-	return fmt.Sprintf("%s://%s/v1/project/%s/stage/%s/service/%s/remediation/%s", configurationServiceEndpoint.Scheme, configurationServiceEndpoint.Host, project, stage, service, keptnContext)
-}
-
-func createRemediation(eventID, keptnContext, time string, keptnBase keptncommon.EventProperties, remediationEventType, action string) error {
-	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint(configurationserviceconnection)
-	if err != nil {
-		return errors.New("could not retrieve configuration-service URL")
-	}
-
-	newRemediation := &remediationStatus{
+func (r *RemediationHandler) createRemediation(eventID, remediationEventType, action string) error {
+	newRemediation := &models.Remediation{
 		Action:       action,
 		EventID:      eventID,
-		KeptnContext: keptnContext,
-		Time:         time,
+		KeptnContext: r.Keptn.KeptnBase.KeptnContext,
 		Type:         remediationEventType,
 	}
 
-	queryURL := getRemediationsEndpoint(configurationServiceEndpoint, keptnBase.GetProject(), keptnBase.GetStage(), keptnBase.GetService(), "")
-	client := &http.Client{}
-	payload, err := json.Marshal(newRemediation)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest("POST", queryURL, bytes.NewReader(payload))
-	if err != nil {
-		return err
-	}
-	req.Header.Add("content-type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return errors.New(string(body))
-	}
-
-	return nil
+	return r.RemediationRepo.CreateRemediation(r.Keptn.KeptnBase.Event.GetProject(), newRemediation)
 }
 
-func deleteRemediation(keptnContext string, keptnBase keptncommon.EventProperties) error {
-	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint(configurationserviceconnection)
-	if err != nil {
-		return errors.New("could not retrieve configuration-service URL")
-	}
-
-	queryURL := getRemediationsEndpoint(configurationServiceEndpoint, keptnBase.GetProject(), keptnBase.GetStage(), keptnBase.GetService(), keptnContext)
-	client := &http.Client{}
-
-	req, err := http.NewRequest("DELETE", queryURL, nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Add("content-type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return errors.New(string(body))
-	}
-
-	return nil
+func (r *RemediationHandler) deleteRemediation() error {
+	return r.RemediationRepo.DeleteRemediation(r.Keptn.KeptnBase.KeptnContext, r.Keptn.KeptnBase.Event.GetProject())
 }
 
-func getRemediationsByContext(keptnContext string, keptnBase keptncommon.EventProperties) ([]*remediationStatus, error) {
-	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint(configurationserviceconnection)
-	if err != nil {
-		return nil, errors.New("could not retrieve configuration-service URL")
-	}
-
-	remediations := []*remediationStatus{}
-
-	nextPageKey := ""
-
-	for {
-		queryURL := getRemediationsEndpoint(configurationServiceEndpoint, keptnBase.GetProject(), keptnBase.GetStage(), keptnBase.GetService(), keptnContext)
-
-		url, err := url.Parse(queryURL)
-		if err != nil {
-			return nil, err
-		}
-		q := url.Query()
-		if nextPageKey != "" {
-			q.Set("nextPageKey", nextPageKey)
-			url.RawQuery = q.Encode()
-		}
-		client := &http.Client{}
-
-		req, err := http.NewRequest("GET", url.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Add("content-type", "application/json")
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-			return nil, errors.New(string(body))
-		}
-
-		remediationList := &remediationStatusList{}
-
-		err = json.Unmarshal(body, remediationList)
-		if err != nil {
-			return nil, err
-		}
-
-		remediations = append(remediations, remediationList.Remediations...)
-
-		if remediationList.NextPageKey == "" || remediationList.NextPageKey == "0" {
-			break
-		}
-		nextPageKey = remediationList.NextPageKey
-	}
-	return remediations, nil
-
+func (r *RemediationHandler) getRemediationsByContext() ([]*models.Remediation, error) {
+	return r.RemediationRepo.GetRemediations(r.Keptn.KeptnBase.KeptnContext, r.Keptn.KeptnBase.Event.GetProject())
 }
 
-func (r *Remediation) sendEvaluationTriggeredEvent() error {
+func (r *RemediationHandler) sendEvaluationTriggeredEvent() error {
 	source, _ := url.Parse("remediation-service")
 
 	waitTime := getWaitTime()
@@ -363,11 +202,11 @@ func (r *Remediation) sendEvaluationTriggeredEvent() error {
 	return nil
 }
 
-func (r *Remediation) sendRemediationFinishedEvent(status keptnv2.StatusType, result keptnv2.ResultType, message string) error {
+func (r *RemediationHandler) sendRemediationFinishedEvent(status keptnv2.StatusType, result keptnv2.ResultType, message string) error {
 	source, _ := url.Parse("remediation-service")
 
 	triggeredID := ""
-	remediations, err := getRemediationsByContext(r.Keptn.KeptnContext, r.Keptn.Event)
+	remediations, err := r.getRemediationsByContext()
 	if err != nil {
 		r.Keptn.Logger.Error("could not retrieve open remediation: " + err.Error())
 	}
@@ -401,7 +240,7 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptnv2.StatusType, re
 	}
 	event.SetData(cloudevents.ApplicationJSON, remediationFinishedEventData)
 
-	err = deleteRemediation(r.Keptn.KeptnContext, r.Keptn.Event)
+	err = r.deleteRemediation()
 	if err != nil {
 		r.Keptn.Logger.Error("Could not close remediation: " + err.Error())
 	}
@@ -414,7 +253,7 @@ func (r *Remediation) sendRemediationFinishedEvent(status keptnv2.StatusType, re
 	return nil
 }
 
-func (r *Remediation) getActionTriggeredEventData(problemDetails keptnv2.ProblemDetails, action *v0_1_4.RemediationActionsOnOpen) (keptnv2.ActionTriggeredEventData, error) {
+func (r *RemediationHandler) getActionTriggeredEventData(problemDetails keptnv2.ProblemDetails, action *v0_1_4.RemediationActionsOnOpen) (keptnv2.ActionTriggeredEventData, error) {
 	return keptnv2.ActionTriggeredEventData{
 		EventData: keptnv2.EventData{
 			Project: r.Keptn.Event.GetProject(),
@@ -432,7 +271,7 @@ func (r *Remediation) getActionTriggeredEventData(problemDetails keptnv2.Problem
 	}, nil
 }
 
-func (r *Remediation) sendActionTriggeredEvent(actionTriggeredEventData keptnv2.ActionTriggeredEventData) error {
+func (r *RemediationHandler) sendActionTriggeredEvent(actionTriggeredEventData keptnv2.ActionTriggeredEventData) error {
 
 	source, _ := url.Parse("remediation-service")
 
@@ -451,10 +290,10 @@ func (r *Remediation) sendActionTriggeredEvent(actionTriggeredEventData keptnv2.
 	return nil
 }
 
-func (r *Remediation) sendRemediationStatusChangedEvent(action *v0_1_4.RemediationActionsOnOpen, actionIndex int) error {
+func (r *RemediationHandler) sendRemediationStatusChangedEvent(action *v0_1_4.RemediationActionsOnOpen, actionIndex int) error {
 
 	triggeredID := ""
-	remediations, err := getRemediationsByContext(r.Keptn.KeptnContext, r.Keptn.Event)
+	remediations, err := r.getRemediationsByContext()
 	if err != nil {
 		r.Keptn.Logger.Error("could not retrieve open remediation: " + err.Error())
 	}
@@ -486,6 +325,7 @@ func (r *Remediation) sendRemediationStatusChangedEvent(action *v0_1_4.Remediati
 	source, _ := url.Parse("remediation-service")
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
 	event.SetType(keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
@@ -495,7 +335,7 @@ func (r *Remediation) sendRemediationStatusChangedEvent(action *v0_1_4.Remediati
 	}
 	event.SetData(cloudevents.ApplicationJSON, remediationStatusChangedEventData)
 
-	err = createRemediation(event.ID(), r.Keptn.KeptnContext, event.Time().String(), r.Keptn.Event, keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName), action.Action)
+	err = r.createRemediation(event.ID(), keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName), action.Action)
 	if err != nil {
 		r.Keptn.Logger.Error("Could not create remediation: " + err.Error())
 		return err
@@ -508,7 +348,7 @@ func (r *Remediation) sendRemediationStatusChangedEvent(action *v0_1_4.Remediati
 	return nil
 }
 
-func (r *Remediation) getRemediationFile() (*configmodels.Resource, error) {
+func (r *RemediationHandler) getRemediationFile() (*configmodels.Resource, error) {
 	var resource *configmodels.Resource
 	var err error
 	if r.Keptn.Event.GetService() != "" {
@@ -529,7 +369,7 @@ func (r *Remediation) getRemediationFile() (*configmodels.Resource, error) {
 	return resource, nil
 }
 
-func (r *Remediation) getRemediation(resource *configmodels.Resource) (*v0_1_4.Remediation, error) {
+func (r *RemediationHandler) getRemediation(resource *configmodels.Resource) (*v0_1_4.Remediation, error) {
 	remediationData := &v0_1_4.Remediation{}
 	err := yaml.Unmarshal([]byte(resource.ResourceContent), remediationData)
 	if err != nil {
@@ -542,7 +382,7 @@ func (r *Remediation) getRemediation(resource *configmodels.Resource) (*v0_1_4.R
 	return remediationData, nil
 }
 
-func (r *Remediation) triggerAction(action *v0_1_4.RemediationActionsOnOpen, actionIndex int, problemDetails keptnv2.ProblemDetails) error {
+func (r *RemediationHandler) triggerAction(action *v0_1_4.RemediationActionsOnOpen, actionIndex int, problemDetails keptnv2.ProblemDetails) error {
 	err := r.sendRemediationStatusChangedEvent(action, actionIndex)
 	if err != nil {
 		return fmt.Errorf("could not send remediation.status.changed event: %s", err.Error())

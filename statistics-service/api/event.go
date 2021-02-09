@@ -1,10 +1,12 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+
 	"github.com/keptn/keptn/statistics-service/controller"
 	"github.com/keptn/keptn/statistics-service/operations"
-	"net/http"
 )
 
 // HandleEvent godoc
