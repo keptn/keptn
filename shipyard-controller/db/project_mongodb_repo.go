@@ -68,8 +68,8 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.Expa
 	return projectResult, nil
 }
 
-func (mbdrepo *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) error {
-	err := mbdrepo.DbConnection.EnsureDBConnection()
+func (m *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) error {
+	err := m.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (mbdrepo *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProjec
 
 	prjInterface := transformProjectToInterface(project)
 
-	projectCollection := mbdrepo.getProjectsCollection()
+	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.InsertOne(ctx, prjInterface)
 	if err != nil {
 		fmt.Println("Could not create project " + project.ProjectName + ": " + err.Error())
@@ -86,12 +86,26 @@ func (mbdrepo *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProjec
 	return nil
 }
 
-func (mdbrepo *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
-	panic("implement me")
+func (m *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
+	err := m.DbConnection.EnsureDBConnection()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	prjInterface := transformProjectToInterface(project)
+	projectCollection := m.getProjectsCollection()
+	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
+	if err != nil {
+		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
+		return err
+	}
+	return nil
 }
 
-func (mbdrepo *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
-	existingProject, err := mbdrepo.GetProject(projectName)
+func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
+	existingProject, err := m.GetProject(projectName)
 	if err != nil {
 		return err
 	}
@@ -101,23 +115,23 @@ func (mbdrepo *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, ur
 	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
-		if err := mbdrepo.updateProject(existingProject); err != nil {
-			mbdrepo.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+		if err := m.updateProject(existingProject); err != nil {
+			m.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
 			return err
 		}
 	}
 	return nil
 }
 
-func (mdbrepo *MongoDBProjectsRepo) DeleteProject(projectName string) error {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
+	err := m.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	projectCollection := mdbrepo.getProjectsCollection()
+	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.DeleteMany(ctx, bson.M{"projectName": projectName})
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Could not delete project %s : %s\n", projectName, err.Error()))
@@ -127,8 +141,8 @@ func (mdbrepo *MongoDBProjectsRepo) DeleteProject(projectName string) error {
 	return nil
 }
 
-func (mbdrepo *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) error {
-	err := mbdrepo.DbConnection.EnsureDBConnection()
+func (m *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) error {
+	err := m.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -136,7 +150,7 @@ func (mbdrepo *MongoDBProjectsRepo) updateProject(project *models.ExpandedProjec
 	defer cancel()
 
 	prjInterface := transformProjectToInterface(project)
-	projectCollection := mbdrepo.getProjectsCollection()
+	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
 	if err != nil {
 		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
@@ -145,15 +159,15 @@ func (mbdrepo *MongoDBProjectsRepo) updateProject(project *models.ExpandedProjec
 	return nil
 }
 
+func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
+	projectCollection := m.DbConnection.Client.Database(databaseName).Collection(projectsCollectionName)
+	return projectCollection
+}
+
 func transformProjectToInterface(prj *models.ExpandedProject) interface{} {
 	// marshall and unmarshall again because for some reason the json tags of the golang struct of the project type are not considered
 	marshal, _ := json.Marshal(prj)
 	var prjInterface interface{}
 	json.Unmarshal(marshal, &prjInterface)
 	return prjInterface
-}
-
-func (mdbrepo *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
-	projectCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(projectsCollectionName)
-	return projectCollection
 }
