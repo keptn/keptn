@@ -1,1 +1,0 @@
-<html><body>You are being <a href="https://github.com/dynatrace/dynatrace-operator/releases/download/v0.1.0/install.sh">redirected</a>.</body></html>
