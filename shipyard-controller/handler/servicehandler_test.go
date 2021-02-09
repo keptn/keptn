@@ -3,7 +3,9 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"github.com/gin-gonic/gin"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
@@ -102,6 +104,27 @@ func TestServiceHandler_CreateService(t *testing.T) {
 				Message: stringp("Service name contains special character(s). \" +\n\t\t\t\"The service name has to be a valid Unix directory name. For details see \" +\n\t\t\t\"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/"),
 			},
 		},
+		{
+			name: "internal error - return 500",
+			fields: fields{
+				serviceManager: &fake.IServiceManagerMock{
+					CreateServiceFunc: func(projectName string, params *operations.CreateServiceParams) error {
+						return errors.New("internal error")
+					},
+				},
+			},
+			jsonPayload:                   `{"serviceName":"my-service"}`,
+			expectCreateServiceToBeCalled: false,
+			expectCreateServiceParams: &operations.CreateServiceParams{
+				ServiceName: &testServiceName,
+			},
+			expectHttpStatus:   http.StatusInternalServerError,
+			expectJSONResponse: &operations.CreateServiceResponse{},
+			expectJSONError: &models.Error{
+				Code:    http.StatusInternalServerError,
+				Message: stringp("internal error"),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -116,6 +139,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 
 			sh := &ServiceHandler{
 				serviceManager: tt.fields.serviceManager,
+				logger:         keptncommon.NewLogger("", "", ""),
 			}
 
 			sh.CreateService(c)
