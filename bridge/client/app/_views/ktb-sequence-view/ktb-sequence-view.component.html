@@ -22,12 +22,14 @@
         </dt-info-group-title>
         <p class="m-0 mb-1"><span class="bold">Keptn ID: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
         <p class="m-0">
-          <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName()" [textContent]="currentSequence.getShortImageName()"></dt-tag>
-          <dt-tag class="mr-1" *ngIf="!currentSequence.getShortImageName()" [textContent]="currentSequence.getService()"></dt-tag>
+          <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName(); else noImageName" [textContent]="currentSequence.getShortImageName()"></dt-tag>
+          <ng-template #noImageName>
+            <dt-tag class="mr-1" *ngIf="currentSequence.getService()" [textContent]="currentSequence.getService()"></dt-tag>
+          </ng-template>
         </p>
       </dt-info-group>
     </div>
-    <ktb-sequence-timeline [currentSequence]="currentSequence" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
+    <ktb-sequence-timeline *ngIf="currentSequence.getStages()" [currentSequence]="currentSequence" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
     <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag-list aria-label="fetch-info">
