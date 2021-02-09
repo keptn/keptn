@@ -14,5 +14,5 @@ func NewEvaluationController(evaluationHandler handler.IEvaluationHandler) *Eval
 }
 
 func (controller EvaluationController) Inject(apiGroup *gin.RouterGroup) {
-	apiGroup.POST("/")
+	apiGroup.POST("/project/:project/stage/:stage/service/:service/evaluation", controller.EvaluationHandler.CreateEvaluation)
 }

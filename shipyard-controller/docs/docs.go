@@ -159,7 +159,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get the list of all projects",
+                "description": "Get the list of stages of a project",
                 "consumes": [
                     "application/json"
                 ],
@@ -167,9 +167,9 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Stage"
                 ],
-                "summary": "Get all projects",
+                "summary": "Get all stages of a project",
                 "parameters": [
                     {
                         "type": "integer",
@@ -194,7 +194,13 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedProjects"
+                            "$ref": "#/definitions/models.Stages"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
                         }
                     },
                     "500": {
@@ -353,7 +359,112 @@ var doc = `{
                 }
             }
         },
-        "/project/:project/service": {
+        "/project/{projectName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a project by its name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get a project by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "projectName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedProject"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Error)",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{projectName}/stage/{stageName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a stage of a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get a stage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "projectName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The name of the stage",
+                        "name": "stageName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedStage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Error)",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{project}/service": {
             "post": {
                 "security": [
                     {
@@ -411,7 +522,73 @@ var doc = `{
                 }
             }
         },
-        "/project/:project/service/:service": {
+        "/project/{project}/service/{service}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Gets all services of a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Gets all services of a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage",
+                        "name": "stage",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedServices"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "security": [
                     {
@@ -467,14 +644,14 @@ var doc = `{
                 }
             }
         },
-        "/project/{projectName}": {
-            "get": {
+        "/project/{project}/stage/{stage}/service/{service}/evaluation": {
+            "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "ApiKeyAutth": []
                     }
                 ],
-                "description": "Get a project by its name",
+                "description": "Trigger a new evaluation for a service within a project",
                 "consumes": [
                     "application/json"
                 ],
@@ -482,89 +659,56 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Evaluation"
                 ],
-                "summary": "Get a project by name",
+                "summary": "Trigger a new evaluation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "The name of the project",
-                        "name": "projectName",
+                        "description": "Project",
+                        "name": "project",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage",
+                        "name": "stage",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Service",
+                        "name": "service",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Evaluation",
+                        "name": "evaluation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/operations.CreateEvaluationParams"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedProject"
+                            "$ref": "#/definitions/operations.CreateEvaluationResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not found",
+                    "400": {
+                        "description": "Invalid payload",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
                     },
                     "500": {
-                        "description": "Internal Error)",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/project/{projectName}/stage/{stageName}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get a project by its name",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Get a project by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The name of the project",
-                        "name": "projectName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The name of the stage",
-                        "name": "stageName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/models.ExpandedStage"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error)",
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -690,6 +834,7 @@ var doc = `{
                 },
                 "lastEventContext": {
                     "description": "last event context",
+                    "type": "object",
                     "$ref": "#/definitions/models.EventContext"
                 },
                 "projectName": {
@@ -768,11 +913,36 @@ var doc = `{
                 }
             }
         },
+        "models.ExpandedServices": {
+            "type": "object",
+            "properties": {
+                "nextPageKey": {
+                    "description": "Pointer to next page, base64 encoded",
+                    "type": "string"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "number"
+                },
+                "services": {
+                    "description": "projects",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ExpandedService"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of projects",
+                    "type": "number"
+                }
+            }
+        },
         "models.ExpandedStage": {
             "type": "object",
             "properties": {
                 "lastEventContext": {
                     "description": "last event context",
+                    "type": "object",
                     "$ref": "#/definitions/models.EventContext"
                 },
                 "services": {
@@ -837,6 +1007,42 @@ var doc = `{
                 }
             }
         },
+        "operations.CreateEvaluationParams": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "description": "end",
+                    "type": "string",
+                    "example": "2021-01-02T15:10:00"
+                },
+                "labels": {
+                    "description": "labels",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "start": {
+                    "description": "start",
+                    "type": "string",
+                    "example": "2021-01-02T15:00:00"
+                },
+                "timeframe": {
+                    "description": "timeframe",
+                    "type": "string",
+                    "example": "5m"
+                }
+            }
+        },
+        "operations.CreateEvaluationResponse": {
+            "type": "object",
+            "properties": {
+                "keptnContext": {
+                    "description": "keptnContext",
+                    "type": "string"
+                }
+            }
+        },
         "operations.CreateProjectParams": {
             "type": "object",
             "properties": {
@@ -853,11 +1059,11 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
-                    "description": "name\nRequired: true",
+                    "description": "name",
                     "type": "string"
                 },
                 "shipyard": {
-                    "description": "shipyard\nRequired: true",
+                    "description": "shipyard",
                     "type": "string"
                 }
             }
@@ -869,11 +1075,11 @@ var doc = `{
             "type": "object",
             "properties": {
                 "helmChart": {
-                    "description": "shipyard\nRequired: true",
+                    "description": "shipyard",
                     "type": "string"
                 },
                 "serviceName": {
-                    "description": "name\nRequired: true",
+                    "description": "name",
                     "type": "string"
                 }
             }

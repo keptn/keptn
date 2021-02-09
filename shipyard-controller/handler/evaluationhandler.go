@@ -34,7 +34,7 @@ func NewEvaluationHandler(evaluationManager IEvaluationManager) *EvaluationHandl
 // @Success 200 {object} operations.CreateEvaluationResponse "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/stage/{stage}/service/{service}/evaluation
+// @Router /project/{project}/stage/{stage}/service/{service}/evaluation [post]
 func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 	project := c.Param("project")
 	stage := c.Param("stage")
