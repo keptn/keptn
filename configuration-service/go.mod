@@ -3,6 +3,7 @@ module github.com/keptn/keptn/configuration-service
 go 1.13
 
 require (
+	github.com/cloudevents/sdk-go v0.10.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
@@ -13,13 +14,15 @@ require (
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.5
+	github.com/go-test/deep v1.0.5 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
+	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
-	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210209144942-423d7b79a6cd
+	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.4.2

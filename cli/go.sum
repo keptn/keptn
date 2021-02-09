@@ -378,10 +378,13 @@ github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa
 github.com/keptn/go-utils v0.6.3-0.20201021140127-a974f80c5982/go.mod h1:jD+ZvrkwYyDMgeKANzVZsBSYgjYQxTJvxw/RB3vYFAE=
 github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d h1:xipClYXVwXpJ9VbBQVR8klPAEUhUUZjOZzXswjXC4wM=
 github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d/go.mod h1:CC9l+2jIa6xyfEPJa6oklL0uiKQNb9C1PpbVO/tt5eI=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210209144942-423d7b79a6cd/go.mod h1:B6e/cl9IA+pimOFWKDFVh3OmYHJuwjJVPn9M81hg/1c=
 github.com/keptn/kubernetes-utils v0.8.0-alpha h1:lO+LFARbXO4pDO7a2mgExyhVXfUlOzQQiCcvRck5fVo=
 github.com/keptn/kubernetes-utils v0.8.0-alpha/go.mod h1:SBBDjHietAY/5O40Epep9k+45l91XhYPy1Vdj0ZIrMM=
 github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4 h1:JVt8SxC1UsPdA2TE+xQGKC0K20dTyFL8/p7kS/5kXB0=
 github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4/go.mod h1:Up8oRAI3+278NpTHg1/PPjNEQThnhJF0lehdDXnnKzQ=
+github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7 h1:cbM90PLCLzERlHrQ8O/5lRdtVzVPFhSAC1GTHkqqMwE=
+github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7/go.mod h1:hH0u+6lk/G4Q+Yl7Bw/prBmnLiDnVUj4jVimXi8HQAA=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
