@@ -17,7 +17,7 @@ require (
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210209153241-3c858340d072
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
