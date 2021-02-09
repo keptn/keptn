@@ -5,12 +5,15 @@ import (
 	"os"
 )
 
-var mongoDBHost = os.Getenv("MONGODB_HOST")
-var mongoDBName = os.Getenv("MONGODB_DATABASE")
-var mongoDBUser = os.Getenv("MONGODB_USER")
-var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
+var (
+	mongoDBHost       = os.Getenv("MONGODB_HOST")
+	mongoDBName       = os.Getenv("MONGODB_DATABASE")
+	mongoDBUser       = os.Getenv("MONGODB_USER")
+	mongoDBPassword   = os.Getenv("MONGODB_PASSWORD")
+	mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName)
+)
 
-var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName)
-
-const eventsCollectionName = "keptnUnmappedEvents"
-const serviceName = "mongodb-datastore"
+const (
+	eventsCollectionName = "keptnUnmappedEvents"
+	serviceName          = "mongodb-datastore"
+)

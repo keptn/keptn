@@ -1,5 +1,4 @@
 // This file is safe to edit. Once it exists it will not be overwritten
-
 package restapi
 
 import (
@@ -10,13 +9,12 @@ import (
 	"os"
 	"strings"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/mongodb-datastore/handlers"
 	"github.com/keptn/keptn/mongodb-datastore/models"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations"
