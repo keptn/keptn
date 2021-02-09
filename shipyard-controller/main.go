@@ -71,7 +71,7 @@ func main() {
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
-	projectService := handler.NewProjectHandler(projectManager, eventSender)
+	projectService := handler.NewProjectHandler(projectManager, eventSender, logger)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 

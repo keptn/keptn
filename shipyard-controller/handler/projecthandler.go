@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
@@ -23,12 +24,17 @@ type IProjectHandler interface {
 type ProjectHandler struct {
 	ProjectManager IProjectManager
 	EventSender    keptn.EventSender
+	Logger         keptn.LoggerInterface
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSender) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSender, logger keptn.LoggerInterface) *ProjectHandler {
+	if logger == nil {
+		logger = keptn.NewLogger("", "", "shipyard-controller")
+	}
 	return &ProjectHandler{
 		ProjectManager: projectManager,
 		EventSender:    eventSender,
+		Logger:         logger,
 	}
 }
 
@@ -139,13 +145,13 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	}
 
 	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
-		//TODO: LOG MESSAGE ONLY
+		ph.Logger.Error(fmt.Sprintf("could not send project.create.started event: %s", err.Error()))
 	}
 
 	err, rollback := ph.ProjectManager.Create(createProjectParams)
 	if err != nil {
 		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
-			//TODO: LOG MESSAGE ONLY
+			ph.Logger.Error(fmt.Sprintf("could not send project.create.finished event: %s", err.Error()))
 		}
 		rollback()
 		if err == ErrProjectAlreadyExists {
@@ -157,7 +163,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 	}
 	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
-		//TODO: LOG MESSAGE ONLY
+		ph.Logger.Error(fmt.Sprintf("could not send project.create.finished event: %s", err.Error()))
 	}
 
 	c.Status(http.StatusCreated)
@@ -209,7 +215,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 //// @Success 200 {object} operations.DeleteProjectResponse	"ok"
 //// @Failure 400 {object} models.Error "Invalid payload"
 //// @Failure 500 {object} models.Error "Internal error"
-//// @Router /project/:project [delete]
+//// @Router /project/{project} [delete]
 func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
