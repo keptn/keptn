@@ -26,13 +26,13 @@ export class Project {
   }
 
   getShipyardVersion(): string {
-    return this.shipyardVersion.split('/').pop();
+    return this.shipyardVersion?.split('/').pop();
   }
 
   isShipyardNotSupported(): boolean {
     const supported = '0.2.0'.split('.');
-    const current = this.getShipyardVersion().split('.');
-    return +current[0] <= +supported[0] && +current[1] < +supported[1];
+    const current = this.getShipyardVersion()?.split('.');
+    return current && +current[0] <= +supported[0] && +current[1] < +supported[1];
   }
 
   getService(serviceName: string): Service {
