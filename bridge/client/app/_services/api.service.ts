@@ -82,7 +82,7 @@ export class ApiService {
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
-    let url = `${this._baseUrl}/shipyard-controller/v1/project/${projectName}/resource`;
+    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
     return this.http
       .get<Resource[]>(url);
   }
