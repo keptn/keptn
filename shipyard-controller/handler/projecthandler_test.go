@@ -242,7 +242,10 @@ func TestCreateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
-						return ErrProjectAlreadyExists, func() error { return nil }
+						return ErrProjectAlreadyExists, func() error {
+
+							return nil
+						}
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
