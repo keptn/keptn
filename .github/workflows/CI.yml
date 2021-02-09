@@ -331,11 +331,11 @@ jobs:
           bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
         working-directory: ./gatekeeper-service
 
-      - name: Test distributor svc
+      - name: Test distributor
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
         run: |
           go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F distributor-service
+          bash <(curl -s https://codecov.io/bash) -c -F distributor
         working-directory: ./distributor
 
       - name: Test shipyard controller svc
