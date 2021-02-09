@@ -107,8 +107,10 @@
               <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
                 <div fxLayout="row" fxLayoutAlign="start center">
                   <button dt-icon-button disabled variant="nested" *ngIf="currentRoot.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-                  <p *ngIf="currentRoot.getShortImageName()" [textContent]="currentRoot.getShortImageName()"></p>
-                  <p *ngIf="!currentRoot.getShortImageName()" [textContent]="currentRoot.getService()"></p>
+                  <p *ngIf="currentRoot.getShortImageName(); else noImageName" [textContent]="currentRoot.getShortImageName()"></p>
+                  <ng-template #noImageName>
+                    <p class="mr-1" *ngIf="currentRoot.getService()" [textContent]="currentRoot.getService()"></p>
+                  </ng-template>
                 </div>
               </div>
             </dt-info-group-title>
