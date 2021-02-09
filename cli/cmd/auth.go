@@ -151,7 +151,7 @@ func verifyAuthParams(authParams *authCmdParams) error {
 
 	const parametersRequiredMessage = "keptn auth requires api-token and endpoint \n\n" +
 		"For more information on how to obtain token and endpoint to go https://keptn.sh/docs/%s/reference/cli/#authenticate-keptn-cli \n\n" +
-		"Alternatively,To quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI: \n" +
+		"Alternatively, to quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI: \n" +
 		"- kubectl -n keptn port-forward service/api-gateway-nginx 8080:80 \n" +
 		"- keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)"
 
@@ -175,7 +175,6 @@ func verifyAuthParams(authParams *authCmdParams) error {
 	}
 	return nil
 }
-
 
 type resolveFunc func(string) ([]string, error)
 type sleepFunc func(time.Duration)
@@ -249,7 +248,7 @@ func smartKeptnCLIAuth() (string, error) {
 	}
 
 	if len(keptnInstallations) > 1 {
-		fmt.Println("We have found multiple Keptn Installations, Please select the one from the list below to continue")
+		fmt.Println("There are multiple Keptn installations on your Kubernetes cluster, please select the correct one from the list below to continue")
 		for index, keptnInstallation := range keptnInstallations {
 			fmt.Printf("\t%d - %s\n", index, keptnInstallation)
 		}
