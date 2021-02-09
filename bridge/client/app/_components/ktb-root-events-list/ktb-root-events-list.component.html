@@ -22,7 +22,10 @@
         </div>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
           <p class="m-0 small">
-            <span class="bold" *ngIf="event.getShortImageName()" [textContent]="event.getShortImageName()"></span>
+            <span class="bold" *ngIf="event.getShortImageName(); else noImageName" [textContent]="event.getShortImageName()"></span>
+            <ng-template #noImageName>
+              <span class="bold" *ngIf="event.getService()" [textContent]="event.getService()"></span>
+            </ng-template>
             <span *ngIf="event.getStages().length > 0"> in </span>
             <span class="bold" *ngFor="let stage of event.getStages(); let isLast=last">
               <span [textContent]="stage" (click)="$event.stopPropagation();selectEvent(event, stage)" [class.success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)"></span>
