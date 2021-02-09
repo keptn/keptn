@@ -56,11 +56,7 @@ We manage the Keptn *core components* in versions. The respective images in thei
 The versions of the Keptn *core components* and the services are compatible with each other. However, contributed services
 as well as services that are not considered *core components* might not follow the same versioning schema.
 
-Since Keptn 0.6.1, we are tracking compatibility of those services [on our website](https://keptn.sh/docs/integrations/).
-
-You can find information on older versions 
-[here](https://github.com/keptn/keptn/tree/release-0.6.0/#versions-compatibilities) and on the
- [GitHub releases page](https://github.com/keptn/keptn/releases).
+We are tracking compatibility of those services [on our website](https://keptn.sh/docs/integrations/).
 
 ## Contributions
 
