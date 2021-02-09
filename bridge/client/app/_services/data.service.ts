@@ -70,7 +70,8 @@ export class DataService {
       availableVersions: this.apiService.getAvailableVersions(),
       bridgeInfo: this.apiService.getKeptnInfo(),
       keptnVersion: this.apiService.getKeptnVersion(),
-      versionCheckEnabled: of(this.apiService.isVersionCheckEnabled())
+      versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
+      metadata: this.apiService.getMetadata()
     }).subscribe((result) => {
         if(result.bridgeInfo.showApiToken) {
           if(window.location.href.indexOf('bridge') != -1)

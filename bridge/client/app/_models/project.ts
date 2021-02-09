@@ -1,3 +1,4 @@
+import semver from 'semver';
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
@@ -29,10 +30,9 @@ export class Project {
     return this.shipyardVersion?.split('/').pop();
   }
 
-  isShipyardNotSupported(): boolean {
-    const supported = '0.2.0'.split('.');
-    const current = this.getShipyardVersion()?.split('.');
-    return current && +current[0] <= +supported[0] && +current[1] < +supported[1];
+  isShipyardNotSupported(supportedVersion: string): boolean {
+    const version = this.getShipyardVersion();
+    return !version || !supportedVersion || semver.lt(version, supportedVersion);
   }
 
   getService(serviceName: string): Service {

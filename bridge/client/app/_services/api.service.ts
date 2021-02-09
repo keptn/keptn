@@ -11,6 +11,7 @@ import {EventResult} from "../_models/event-result";
 import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
+import {Metadata} from '../_models/metadata';
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +80,10 @@ export class ApiService {
       url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
+  }
+
+  public getMetadata(): Observable<Metadata> {
+    return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
