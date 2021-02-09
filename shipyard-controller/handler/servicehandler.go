@@ -24,6 +24,7 @@ type IServiceHandler interface {
 type ServiceHandler struct {
 	serviceManager IServiceManager
 	logger         keptncommon.LoggerInterface
+	EventSender    keptncommon.EventSender
 }
 
 // CreateService godoc
@@ -57,12 +58,12 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 
-	if err := sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
+	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
 		sh.logger.Error(fmt.Sprintf("could not send service.create.started event: %s", err.Error()))
 	}
 	if err := sh.serviceManager.CreateService(projectName, createServiceParams); err != nil {
 
-		if err := sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
+		if err := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
 			sh.logger.Error(fmt.Sprintf("could not send service.create.finished event: %s", err.Error()))
 		}
 
@@ -74,7 +75,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
-	if err := sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
+	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
 		sh.logger.Error(fmt.Sprintf("could not send service.create.finished event: %s", err.Error()))
 	}
 
@@ -106,12 +107,12 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 		SetBadRequestErrorResponse(nil, c, "Must provide a service name")
 	}
 
-	if err := sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName); err != nil {
+	if err := sh.sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName); err != nil {
 		sh.logger.Error(fmt.Sprintf("could not send service.delete.started event: %s", err.Error()))
 	}
 
 	if err := sh.serviceManager.DeleteService(projectName, serviceName); err != nil {
-		if err := sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName); err != nil {
+		if err := sh.sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName); err != nil {
 			sh.logger.Error(fmt.Sprintf("could not send service.delete.finished event: %s", err.Error()))
 		}
 
@@ -119,7 +120,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 		return
 	}
 
-	if err := sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceName); err != nil {
+	if err := sh.sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceName); err != nil {
 		sh.logger.Error(fmt.Sprintf("could not send service.delete.finished event: %s", err.Error()))
 	}
 
@@ -215,14 +216,14 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func NewServiceHandler(serviceManager *serviceManager, logger keptncommon.LoggerInterface) IServiceHandler {
+func NewServiceHandler(serviceManager IServiceManager, eventSender keptncommon.EventSender, logger keptncommon.LoggerInterface) IServiceHandler {
 	return &ServiceHandler{
 		serviceManager: serviceManager,
 		logger:         logger,
 	}
 }
 
-func sendServiceCreateStartedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
+func (sh *ServiceHandler) sendServiceCreateStartedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
 	eventPayload := keptnv2.ServiceCreateStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -230,13 +231,15 @@ func sendServiceCreateStartedEvent(keptnContext string, projectName string, para
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
+	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceCreateTaskName), eventPayload)
+
+	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil
 }
 
-func sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
+func (sh *ServiceHandler) sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
 	eventPayload := keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -246,13 +249,14 @@ func sendServiceCreateSuccessFinishedEvent(keptnContext string, projectName stri
 		},
 		Helm: keptnv2.Helm{Chart: params.HelmChart},
 	}
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
+	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), eventPayload)
+	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.finished event: " + err.Error())
 	}
 	return nil
 }
 
-func sendServiceCreateFailedFinishedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
+func (sh *ServiceHandler) sendServiceCreateFailedFinishedEvent(keptnContext string, projectName string, params *operations.CreateServiceParams) error {
 	eventPayload := keptnv2.ServiceCreateFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -262,13 +266,14 @@ func sendServiceCreateFailedFinishedEvent(keptnContext string, projectName strin
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), eventPayload); err != nil {
+	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), eventPayload)
+	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.finished event: " + err.Error())
 	}
 	return nil
 }
 
-func sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName string) error {
+func (sh *ServiceHandler) sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName string) error {
 	eventPayload := keptnv2.ServiceDeleteStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -276,13 +281,14 @@ func sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName string
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), eventPayload); err != nil {
+	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ServiceDeleteTaskName), eventPayload)
+	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil
 }
 
-func sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceName string) error {
+func (sh *ServiceHandler) sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceName string) error {
 	eventPayload := keptnv2.ServiceDeleteFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -292,13 +298,14 @@ func sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceNam
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), eventPayload); err != nil {
+	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), eventPayload)
+	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil
 }
 
-func sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName string) error {
+func (sh *ServiceHandler) sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName string) error {
 	eventPayload := keptnv2.ServiceDeleteFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: projectName,
@@ -308,7 +315,9 @@ func sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName
 		},
 	}
 
-	if err := common.SendEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), eventPayload); err != nil {
+	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName), eventPayload)
+
+	if err := sh.EventSender.SendEvent(event); err != nil {
 		return errors.New("could not send create.service.started event: " + err.Error())
 	}
 	return nil
