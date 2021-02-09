@@ -275,16 +275,20 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 }
 
 func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams) error {
+	decodedShipyard, err := base64.StdEncoding.DecodeString(*params.Shipyard)
+	if err != nil {
+		return fmt.Errorf("could not decode shipyard content of project: %s", err.Error())
+	}
 	p := &models.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
 		GitRemoteURI:    params.GitRemoteURL,
 		GitUser:         params.GitUser,
 		ProjectName:     *params.Name,
-		Shipyard:        *params.Shipyard,
+		Shipyard:        string(decodedShipyard),
 		ShipyardVersion: shipyardVersion,
 	}
 
-	err := pm.ProjectMaterializedView.CreateProject(p)
+	err = pm.ProjectMaterializedView.CreateProject(p)
 	if err != nil {
 		return err
 	}
