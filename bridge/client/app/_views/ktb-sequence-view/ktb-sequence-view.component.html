@@ -29,7 +29,7 @@
         </p>
       </dt-info-group>
     </div>
-    <ktb-sequence-timeline *ngIf="currentSequence.getStages()" [currentSequence]="currentSequence" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
+    <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
     <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag-list aria-label="fetch-info">
