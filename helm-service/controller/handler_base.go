@@ -20,8 +20,8 @@ type HandlerBase struct {
 }
 
 // NewHandlerBase creates a new HandlerBase
-func NewHandlerBase(keptnHandler *keptnv2.Keptn, configServiceURL string) *HandlerBase {
-	helmExecutor := helm.NewHelmV3Executor(keptnHandler.Logger)
+func NewHandlerBase(keptnHandler *keptnv2.Keptn, helmExecutor helm.HelmExecutor, configServiceURL string) *HandlerBase {
+
 	return &HandlerBase{
 		keptnHandler:     keptnHandler,
 		helmExecutor:     helmExecutor,
@@ -86,19 +86,19 @@ func getDeploymentName(strategy keptnevents.DeploymentStrategy, generatedChart b
 		return "canary"
 	} else if strategy == keptnevents.Direct {
 		return "direct"
+	} else if strategy == keptnevents.UserManaged {
+		return "user-managed"
 	}
 	return ""
 }
 
-func (h *HandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
-	strategy keptnevents.DeploymentStrategy) error {
+func (h *HandlerBase) upgradeChart(ch *chart.Chart, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) error {
 	generated := strings.HasSuffix(ch.Name(), "-generated")
 	releasename := helm.GetReleaseName(event.Project, event.Stage, event.Service, generated)
 	namespace := event.Project + "-" + event.Stage
 
 	return h.helmExecutor.UpgradeChart(ch, releasename, namespace,
-		getKeptnValues(event.Project, event.Stage, event.Service,
-			getDeploymentName(strategy, generated)))
+		getKeptnValues(event.Project, event.Stage, event.Service, getDeploymentName(strategy, generated)))
 }
 
 func (h *HandlerBase) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,

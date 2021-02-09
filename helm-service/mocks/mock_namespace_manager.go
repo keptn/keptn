@@ -33,18 +33,18 @@ func (m *MockINamespaceManager) EXPECT() *MockINamespaceManagerMockRecorder {
 	return m.recorder
 }
 
-// InitNamespaces mocks base method.
-func (m *MockINamespaceManager) InitNamespaces(arg0 string, arg1 []string) error {
+// CreateNamespaceIfNotExists mocks base method.
+func (m *MockINamespaceManager) CreateNamespaceIfNotExists(arg0 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitNamespaces", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateNamespaceIfNotExists", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// InitNamespaces indicates an expected call of InitNamespaces.
-func (mr *MockINamespaceManagerMockRecorder) InitNamespaces(arg0, arg1 interface{}) *gomock.Call {
+// CreateNamespaceIfNotExists indicates an expected call of CreateNamespaceIfNotExists.
+func (mr *MockINamespaceManagerMockRecorder) CreateNamespaceIfNotExists(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitNamespaces", reflect.TypeOf((*MockINamespaceManager)(nil).InitNamespaces), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNamespaceIfNotExists", reflect.TypeOf((*MockINamespaceManager)(nil).CreateNamespaceIfNotExists), arg0)
 }
 
 // InjectIstio mocks base method.
