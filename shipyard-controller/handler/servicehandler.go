@@ -6,17 +6,21 @@ import (
 	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
+	"sort"
 )
 
 type IServiceHandler interface {
 	CreateService(context *gin.Context)
 	DeleteService(context *gin.Context)
+	GetService(context *gin.Context)
+	GetServices(context *gin.Context)
 }
 
 type ServiceHandler struct {
-	serviceManager *serviceManager
+	serviceManager IServiceManager
 }
 
 // CreateService godoc
@@ -31,7 +35,7 @@ type ServiceHandler struct {
 // @Success 200 {object} operations.CreateServiceResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/:project/service [post]
+// @Router /project/{project}/service [post]
 func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
@@ -53,7 +57,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	if err := sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
 		//TODO LOG MESSAGE
 	}
-	if err := sh.serviceManager.createService(projectName, createServiceParams); err != nil {
+	if err := sh.serviceManager.CreateService(projectName, createServiceParams); err != nil {
 
 		if err := sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
 			// TODO LOG MESSAGE
@@ -86,7 +90,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 // @Success 200 {object} operations.DeleteServiceResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/:project/service/:service [delete]
+// @Router /project/{project}/service/{service} [delete]
 func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
@@ -103,7 +107,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 		//TODO LOG MESSAGE
 	}
 
-	if err := sh.serviceManager.deleteService(projectName, serviceName); err != nil {
+	if err := sh.serviceManager.DeleteService(projectName, serviceName); err != nil {
 		if err := sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName); err != nil {
 			//TODO LOG MESSAGE
 		}
@@ -117,6 +121,95 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
+}
+
+// GetService godoc
+// @Summary Gets a service by its name
+// @Description Gets a service by its name
+// @Tags Services
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     path    string     true        "Project"
+// @Param   stage     path    string     true        "Stage"
+// @Param   service     path    string     true        "Service"
+// @Success 200 {object} models.ExpandedService	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project/{project}/service/{service} [get]
+func (sh *ServiceHandler) GetService(c *gin.Context) {
+	projectName := c.Param("project")
+	stageName := c.Param("stage")
+	serviceName := c.Param("service")
+
+	service, err := sh.serviceManager.GetService(projectName, stageName, serviceName)
+	if err != nil {
+		if err == errProjectNotFound || err == errStageNotFound || err == errServiceNotFound {
+			SetNotFoundErrorResponse(err, c)
+			return
+		}
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, service)
+}
+
+// GetServices godoc
+// @Summary Gets all services of a stage in a project
+// @Description Gets all services of a stage in a project
+// @Tags Services
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     path    string     true        "Project"
+// @Param   stage     path    string     true        "Stage"
+// @Param	pageSize			query		int			false	"The number of items to return"
+// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
+// @Success 200 {object} models.ExpandedServices	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project/{project}/service/{service} [get]
+func (sh *ServiceHandler) GetServices(c *gin.Context) {
+	projectName := c.Param("project")
+	stageName := c.Param("stage")
+
+	params := &operations.GetServiceParams{}
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
+	}
+
+	services, err := sh.serviceManager.GetAllServices(projectName, stageName)
+	if err != nil {
+		if err == errProjectNotFound || err == errStageNotFound {
+			SetNotFoundErrorResponse(err, c)
+			return
+		}
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	payload := &models.ExpandedServices{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Services:    []*models.ExpandedService{},
+	}
+	sort.Slice(services, func(i, j int) bool {
+		return services[i].ServiceName < services[j].ServiceName
+	})
+	paginationInfo := common.Paginate(len(services), params.PageSize, params.NextPageKey)
+	totalCount := len(services)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		for _, svc := range services[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Services = append(payload.Services, svc)
+		}
+	}
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+
+	c.JSON(http.StatusOK, payload)
 }
 
 func NewServiceHandler(serviceManager *serviceManager) IServiceHandler {

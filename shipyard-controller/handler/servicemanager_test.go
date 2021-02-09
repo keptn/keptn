@@ -27,7 +27,7 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 		return nil, errors.New("Whoops...")
 	}
 
-	err := instance.createService("my-project", params)
+	err := instance.CreateService("my-project", params)
 	assert.NotNil(t, err)
 }
 
@@ -62,7 +62,7 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 		return project, nil
 	}
 
-	err := instance.createService("my-project", params)
+	err := instance.CreateService("my-project", params)
 	assert.NotNil(t, err)
 }
 
@@ -99,7 +99,7 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 		return errors.New("Whoops...")
 	}
 
-	err := instance.createService("my-project", params)
+	err := instance.CreateService("my-project", params)
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.CreateServiceCalls()))
 	assert.Equal(t, 0, len(servicesDBOperations.CreateServiceCalls()))
@@ -142,7 +142,7 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 		return errors.New("Whoops...")
 	}
 
-	err := instance.createService("my-project", params)
+	err := instance.CreateService("my-project", params)
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.CreateServiceCalls()))
 	assert.Equal(t, 1, len(servicesDBOperations.CreateServiceCalls()))
@@ -185,7 +185,7 @@ func TestCreateService(t *testing.T) {
 		return nil
 	}
 
-	err := instance.createService("my-project", params)
+	err := instance.CreateService("my-project", params)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "my-project", configurationStore.CreateServiceCalls()[0].ProjectName)
@@ -216,7 +216,7 @@ func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 		return nil, errors.New("Whoops...")
 	}
 
-	err := instance.deleteService("my-project", "my-service")
+	err := instance.DeleteService("my-project", "my-service")
 	assert.NotNil(t, err)
 
 }
@@ -251,7 +251,7 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 		return errors.New("Whoops...")
 	}
 
-	err := instance.deleteService("my-project", "my-service")
+	err := instance.DeleteService("my-project", "my-service")
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.DeleteServiceCalls()))
 	assert.Equal(t, 0, len(servicesDBOperations.DeleteServiceCalls()))
@@ -291,7 +291,7 @@ func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 		return errors.New("Whoops..")
 	}
 
-	err := instance.deleteService("my-project", "my-service")
+	err := instance.DeleteService("my-project", "my-service")
 	assert.NotNil(t, err)
 	assert.Equal(t, 1, len(configurationStore.DeleteServiceCalls()))
 	assert.Equal(t, 1, len(servicesDBOperations.DeleteServiceCalls()))
@@ -330,7 +330,7 @@ func TestDeleteService(t *testing.T) {
 		return nil
 	}
 
-	err := instance.deleteService("my-project", "my-service")
+	err := instance.DeleteService("my-project", "my-service")
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, len(configurationStore.DeleteServiceCalls()))

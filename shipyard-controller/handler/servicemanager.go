@@ -10,6 +10,14 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/operations"
 )
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/servicemanager.go . IServiceManager
+type IServiceManager interface {
+	CreateService(projectName string, params *operations.CreateServiceParams) error
+	DeleteService(projectName, serviceName string) error
+	GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error)
+	GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error)
+}
+
 type serviceManager struct {
 	logger               keptncommon.LoggerInterface
 	ServicesDBOperations db.ServicesDbOperations
@@ -37,7 +45,7 @@ func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedSt
 
 }
 
-func (sm *serviceManager) getService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
+func (sm *serviceManager) GetService(projectName, stageName, serviceName string) (*models.ExpandedService, error) {
 	project, err := sm.ServicesDBOperations.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -56,10 +64,27 @@ func (sm *serviceManager) getService(projectName, stageName, serviceName string)
 			return nil, errServiceNotFound
 		}
 	}
-	return nil, errServiceNotFound
+	return nil, errStageNotFound
 }
 
-func (sm *serviceManager) createService(projectName string, params *operations.CreateServiceParams) error {
+func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error) {
+	project, err := sm.ServicesDBOperations.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+	if project == nil {
+		return nil, errProjectNotFound
+	}
+
+	for _, stg := range project.Stages {
+		if stg.StageName == stageName {
+			return stg.Services, nil
+		}
+	}
+	return nil, errStageNotFound
+}
+
+func (sm *serviceManager) CreateService(projectName string, params *operations.CreateServiceParams) error {
 	sm.logger.Info(fmt.Sprintf("Received request to create service %s in project %s", *params.ServiceName, projectName))
 
 	stages, err := sm.GetAllStages(projectName)
@@ -70,7 +95,7 @@ func (sm *serviceManager) createService(projectName string, params *operations.C
 	for _, stage := range stages {
 		sm.logger.Info(fmt.Sprintf("Checking if service %s already exists in project %s", *params.ServiceName, projectName))
 		// check if the service exists, do not continue if yes
-		service, _ := sm.getService(projectName, stage.StageName, *params.ServiceName)
+		service, _ := sm.GetService(projectName, stage.StageName, *params.ServiceName)
 		if service != nil {
 			sm.logger.Info(fmt.Sprintf("Service %s already exists in project %s", *params.ServiceName, projectName))
 			//_ = sendServiceCreateFailedFinishedEvent(keptnContext, projectName, params)
@@ -91,7 +116,7 @@ func (sm *serviceManager) createService(projectName string, params *operations.C
 	return nil
 }
 
-func (sm *serviceManager) deleteService(projectName, serviceName string) error {
+func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 
 	sm.logger.Info(fmt.Sprintf("Deleting service %s from project %s", serviceName, projectName))
 

@@ -99,10 +99,6 @@ func TestEvaluationHandler_CreateEvaluation(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
-			c.Set("project", "test-project")
-			c.Set("stage", "test-stage")
-			c.Set("service", "test-service")
-
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: "test-project"},
 				gin.Param{Key: "stage", Value: "test-stage"},
