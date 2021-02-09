@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
 	"os"
 	"path/filepath"
+	"time"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
@@ -142,12 +143,14 @@ func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace st
 			iCli.Namespace = namespace
 			iCli.ReleaseName = releaseName
 			iCli.Wait = true
+			iCli.Timeout = time.Minute * 3
 			release, err = iCli.Run(ch, vals)
 		} else {
 			iCli := action.NewUpgrade(cfg)
 			iCli.Namespace = namespace
 			iCli.Wait = true
 			iCli.ResetValues = true
+			iCli.Timeout = time.Minute * 3
 			release, err = iCli.Run(releaseName, ch, vals)
 		}
 		if err != nil {
