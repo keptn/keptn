@@ -16,17 +16,17 @@ import {DataService} from "../../_services/data.service";
 import {DateUtil} from "../../_utils/date.utils";
 
 @Component({
-  selector: 'ktb-sequence-overview',
-  templateUrl: './ktb-sequence-overview.component.html',
-  styleUrls: ['./ktb-sequence-overview.component.scss'],
+  selector: 'ktb-sequence-view',
+  templateUrl: './ktb-sequence-view.component.html',
+  styleUrls: ['./ktb-sequence-view.component.scss'],
   host: {
-    class: 'ktb-sequence-overview'
+    class: 'ktb-sequence-view'
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceOverviewComponent implements OnInit {
+export class KtbSequenceViewComponent implements OnInit {
 
   private readonly unsubscribe$ = new Subject<void>();
 

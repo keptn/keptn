@@ -126,9 +126,7 @@
       </div>
     </div>
   </ng-container>
-  <ng-container *ngIf="view == 'sequences'">
-    <ktb-sequence-overview fxFlex="100"></ktb-sequence-overview>
-  </ng-container>
+  <ktb-sequence-view *ngIf="view == 'sequences" fxFlex="100"></ktb-sequence-view>
   <ktb-integration-view *ngIf="view === 'integration'"></ktb-integration-view>
 </div>
 <ng-template #noDeployment>

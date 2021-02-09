@@ -1,12 +1,12 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbSequenceOverviewComponent } from './ktb-sequence-overview.component';
+import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { AppModule } from '../../app.module';
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbEventsListComponent', () => {
-  let component: KtbSequenceOverviewComponent;
-  let fixture: ComponentFixture<KtbSequenceOverviewComponent>;
+  let component: KtbSequenceViewComponent;
+  let fixture: ComponentFixture<KtbSequenceViewComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -21,7 +21,7 @@ describe('KtbEventsListComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSequenceOverviewComponent);
+    fixture = TestBed.createComponent(KtbSequenceViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
