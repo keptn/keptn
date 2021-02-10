@@ -1,6 +1,6 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <div *ngFor="let event of _events;trackBy: identifyEvent">
-    <ktb-selectable-tile (click)="selectEvent(event)" [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())" [success]="event.isProblem() && event.isSuccessful()" [selected]="_selectedEvent == event" *ngIf="event">
+    <ktb-selectable-tile (click)="selectEvent(event)" [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())" [success]="event.isProblem() && event.isSuccessful()" [highlight]="event.getPendingApprovals().length > 0" [selected]="_selectedEvent == event" *ngIf="event">
       <ktb-selectable-tile-header>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
           <dt-icon *ngIf="!event.isLoading()" class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"></dt-icon>
