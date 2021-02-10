@@ -29,17 +29,17 @@ describe('KtbSelectableTileComponent', () => {
     let selectableTileDebugElement = fixture.debugElement.query(By.directive(KtbSelectableTileComponent));
     let selectableTileInstance = selectableTileDebugElement.componentInstance;
     let selectableTileNativeElement = selectableTileDebugElement.nativeElement;
-    let testComponentInstace = fixture.debugElement.componentInstance;
+    let testComponentInstance = fixture.debugElement.componentInstance;
 
     expect(selectableTileInstance.selected).toBe(false);
 
-    testComponentInstace.isSelected = true;
+    testComponentInstance.isSelected = true;
     fixture.detectChanges();
 
     expect(selectableTileInstance.selected).toBe(true);
     expect(selectableTileNativeElement.classList).toContain('ktb-tile-selected');
 
-    testComponentInstace.isSelected = false;
+    testComponentInstance.isSelected = false;
     fixture.detectChanges();
 
     expect(selectableTileInstance.selected).toBe(false);
