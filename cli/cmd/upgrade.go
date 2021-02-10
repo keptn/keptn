@@ -53,7 +53,7 @@ For more information, please follow the installation guide [Upgrade Keptn](https
 `,
 	Example: `keptn upgrade # upgrades Keptn
 
-keptn upgrade --platform=openshift # upgrades Keptn on Openshift
+keptn upgrade --platform=openshift # upgrades Keptn on OpenShift
 
 keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 `,

@@ -62,7 +62,7 @@ For more information, please follow the installation guide [Install Keptn](https
 `,
 	Example: `keptn install                                                          # install on Kubernetes
 
-keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on Openshift
+keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on OpenShift
 
 keptn install --platform=kubernetes --endpoint-service-type=NodePort   # install on Kubernetes with gateway NodePort
 

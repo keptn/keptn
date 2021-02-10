@@ -84,7 +84,7 @@ func (p openShiftPlatform) readCreds() {
 func (p openShiftPlatform) readOpenshiftClusterURL() {
 	readUserInput(&p.creds.OpenshiftURL,
 		"",
-		"Openshift Server URL",
+		"OpenShift Server URL",
 		"Please enter a valid Server URL.",
 	)
 }
@@ -92,7 +92,7 @@ func (p openShiftPlatform) readOpenshiftClusterURL() {
 func (p openShiftPlatform) readOpenshiftUser() {
 	readUserInput(&p.creds.OpenshiftUser,
 		"",
-		"Openshift User",
+		"OpenShift User",
 		"Please enter a valid user name.",
 	)
 }
@@ -100,7 +100,7 @@ func (p openShiftPlatform) readOpenshiftUser() {
 func (p openShiftPlatform) readOpenshiftPassword() {
 	readUserInput(&p.creds.OpenshiftPassword,
 		"",
-		"Openshift Password",
+		"OpenShift Password",
 		"Please enter a valid password.",
 	)
 }
@@ -132,7 +132,7 @@ func readUserInput(value *string, regex string, promptMessage string, regexViola
 }
 
 func (p openShiftPlatform) authenticateAtCluster() (bool, error) {
-	logging.PrintLog("Authenticating at Openshift cluster: oc login "+p.creds.OpenshiftURL, logging.VerboseLevel)
+	logging.PrintLog("Authenticating at OpenShift cluster: oc login "+p.creds.OpenshiftURL, logging.VerboseLevel)
 	out, err := keptnutils.ExecuteCommand("oc", []string{
 		"login",
 		p.creds.OpenshiftURL,
@@ -152,6 +152,6 @@ func (p openShiftPlatform) authenticateAtCluster() (bool, error) {
 }
 
 func (p openShiftPlatform) printCreds() {
-	fmt.Println("Openshift Server URL: " + p.creds.OpenshiftURL)
-	fmt.Println("Openshift User: " + p.creds.OpenshiftUser)
+	fmt.Println("OpenShift Server URL: " + p.creds.OpenshiftURL)
+	fmt.Println("OpenShift User: " + p.creds.OpenshiftUser)
 }
