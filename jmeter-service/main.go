@@ -192,7 +192,7 @@ func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 }
 
 //
-// executes the actual JMEter tests based on the workload configuration
+// executes the actual JMeter tests based on the workload configuration
 //
 func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, logger *keptncommon.Logger) (bool, error) {
 	// for testStrategy functional we enforce a 0% error policy!
