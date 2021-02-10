@@ -14,8 +14,8 @@
       <dt-info-group>
         <dt-info-group-title>
           <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-            <div class="mt-1 mb-1">
-              <p class="m-0" fxLayout="row" fxLayoutAlign="start center">
+            <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
+              <p class="m-0">
                 <span class="bold" [textContent]="currentSequence.getLabel()"></span>
                 <span *ngIf="!currentSequence.isFinished(); else finishedText"> started</span>
                 <ng-template #finishedText>
