@@ -47,7 +47,7 @@ var keptnUpgradeChart *chart.Chart
 var upgraderCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "Upgrades Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
 `,
