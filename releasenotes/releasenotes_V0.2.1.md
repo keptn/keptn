@@ -28,6 +28,6 @@ keptn is installed by using these images from the [keptn Dockerhub registry](htt
 ## Known Limitations
 
 - Installation currently only on GKE (more platforms to come)
-- Only one GitHub organization can be configured with the keptn server (will be adressed in #210)
-- For use cases that require Dynatrace: support for Dynatrace SaaS tenants only (will be adressed in #255)
-- keptn CLI output not reliably reflecting success/error of keptn services: the CLI only reflects the successful acknowledgment of the CLI command but not its successful execution (will be adressed in #203 #143)
+- Only one GitHub organization can be configured with the keptn server (will be addressed in #210)
+- For use cases that require Dynatrace: support for Dynatrace SaaS tenants only (will be addressed in #255)
+- keptn CLI output not reliably reflecting success/error of keptn services: the CLI only reflects the successful acknowledgment of the CLI command but not its successful execution (will be addressed in #203 #143)
