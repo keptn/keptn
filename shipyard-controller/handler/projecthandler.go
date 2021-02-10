@@ -102,7 +102,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal Error)
 // @Router /project/{projectName} [get]
 func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
-	projectName := c.Param("projectName")
+	projectName := c.Param("project")
 
 	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
