@@ -99,7 +99,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
  * Return:
  * foundPrimaryFile: true if it was downloaded
  * no of resources: total number of downloaded resources
- * error: any error that occured
+ * error: any error that occurred
  */
 func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
@@ -216,7 +216,7 @@ func FileExists(filename string) bool {
  * Stores the content to the local file system under the targetFileName (can also contain directories)
  * Returns:
  * 1: true if file was actually written, e.g: will be false if file exists and overwriteIfExists==False
- * 2: error if an error occured
+ * 2: error if an error occurred
  */
 func storeFile(localDirectory string, targetFileName string, resourceContent string, overwriteIfExists bool) error {
 	// lets construct the final directory name
