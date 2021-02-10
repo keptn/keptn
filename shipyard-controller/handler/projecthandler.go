@@ -100,7 +100,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Success 200 {object} models.ExpandedProject	"ok"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal Error)
-// @Router /project/{projectName} [get]
+// @Router /project/{project} [get]
 func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 	projectName := c.Param("project")
 
