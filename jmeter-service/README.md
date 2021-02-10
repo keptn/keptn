@@ -5,7 +5,7 @@ The *jmeter-service* has been updated with the implementation from the Keptn-Con
 The *jmeter-service* listens to Keptn events of type:
 - `sh.keptn.events.deployment-finished`
 
-In case the tests succeeed, this service sends a `sh.keptn.events.test-finished` event with `pass` as `result`. In case the tests do not succeed (e.g., the error rate is too high), this service sends an `sh.keptn.events.test-finished` event with `fail` as `result`.
+In case the tests succeed, this service sends a `sh.keptn.events.test-finished` event with `pass` as `result`. In case the tests do not succeed (e.g., the error rate is too high), this service sends an `sh.keptn.events.test-finished` event with `fail` as `result`.
 
 ## Installation
 
