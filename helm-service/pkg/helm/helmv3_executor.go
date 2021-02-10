@@ -110,7 +110,7 @@ func (h *HelmV3Executor) GetManifest(releaseName, namespace string) (string, err
 
 	release, err := getAction.Run(releaseName)
 	if err != nil {
-		return "", fmt.Errorf("Error when quering the manifest of chart %s in namespace %s: %s",
+		return "", fmt.Errorf("Error when querying the manifest of chart %s in namespace %s: %s",
 			releaseName, namespace, err.Error())
 	}
 	return release.Manifest, nil

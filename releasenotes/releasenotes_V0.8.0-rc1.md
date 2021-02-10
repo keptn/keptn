@@ -164,7 +164,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Adapt query for excluding `evaluation.invalidated` events [3270](https://github.com/keptn/keptn/issues/2949)
   - Support backwards compatibility for `evaluation-done` events used in Keptn < 0.8 [2949](https://github.com/keptn/keptn/issues/2949)
   - Improve MongoDB datastore performance [2925](https://github.com/keptn/keptn/issues/2925)
-  - Improved quering (root) events from mongodb-datastore when there are many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
+  - Improved querying (root) events from mongodb-datastore when there are many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
   - *Fixed*: mongodb-datastore does not contain `triggeredid` in input [2514](https://github.com/keptn/keptn/issues/2514)
 
 - *remediation-service*
