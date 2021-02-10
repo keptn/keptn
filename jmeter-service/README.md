@@ -116,4 +116,4 @@ With this file, the defaults for the *performance* test strategy are overwritten
 }
 ```
 
-This now gives you a lot of flexibilty when implementing "*Performance Testing as a Self-Service*". If you want to learn more also check out the tutorial on this topic: https://github.com/keptn-sandbox/performance-testing-as-selfservice-tutorial
+This now gives you a lot of flexibility when implementing "*Performance Testing as a Self-Service*". If you want to learn more also check out the tutorial on this topic: https://github.com/keptn-sandbox/performance-testing-as-selfservice-tutorial
