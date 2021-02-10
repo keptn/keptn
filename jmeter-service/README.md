@@ -54,7 +54,7 @@ Here is an overview:
 | ------------- | ----------- | ------------ |
 | PROTOCOL      | Protocol    | https |
 | SERVER_URL    | Value passed in deploymentURILocal or deploymentURIPublic | carts.staging.svc.local |
-| CHECK_PATH    | This is meant for the basiccheck.jmx and defines the URL that shoudl be used for the health check | /health |
+| CHECK_PATH    | This is meant for the basiccheck.jmx and defines the URL that should be used for the health check | /health |
 | SERVER_PORT   | Port to be tested against | 8080 |
 | DT_LTN        | A unique test execution name. To be used for integrations with tool such as Dynatrace | performance_123 |
 | VUCount       | Virtual User Count | 10 |
