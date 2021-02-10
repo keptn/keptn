@@ -13,20 +13,17 @@ require (
 	github.com/go-openapi/validate v0.19.10
 	github.com/go-test/deep v1.0.7
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
-	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.17.4
-	k8s.io/apimachinery v0.17.4
-	k8s.io/client-go v0.17.4
-	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 // indirect
+	k8s.io/api v0.20.2
+	k8s.io/apimachinery v0.20.2
+	k8s.io/client-go v0.20.2
 )
 
 replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
