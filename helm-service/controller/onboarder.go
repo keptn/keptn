@@ -137,7 +137,7 @@ func (o *onboarder) HandleEvent(ce cloudevents.Event) {
 func (o *onboarder) getStages(e *keptnv2.ServiceCreateFinishedEventData) ([]string, error) {
 	allStages, err := o.stagesHandler.GetAllStages(e.Project)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retriev stages: %v", err.Error())
+		return nil, fmt.Errorf("failed to retrieve stages: %v", err.Error())
 	}
 	var stages []string = nil
 	for _, availableStage := range allStages {

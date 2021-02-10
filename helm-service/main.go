@@ -95,7 +95,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
 		go actionHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
-		deleteHandler := createDeleteHandler(configServiceURL, nil, keptnHandler)
+		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
 		go deleteHandler.HandleEvent(event)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")

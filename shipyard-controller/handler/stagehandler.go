@@ -37,10 +37,10 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 // @Success 200 {object} models.Stages	"ok"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project [get]
+// @Router /project/{project}/stage [get]
 func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
-	project := c.Param("projectName")
+	project := c.Param("project")
 
 	params := &operations.GetStagesParams{}
 	if err := c.ShouldBindQuery(params); err != nil {

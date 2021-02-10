@@ -66,7 +66,7 @@ func TestGetStage(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 			c.Params = gin.Params{
-				gin.Param{Key: "projectName", Value: "my-project"},
+				gin.Param{Key: "project", Value: "my-project"},
 				gin.Param{Key: "stageName", Value: "my-stage"},
 			}
 			handler := NewStageHandler(tt.fields.StageManager)
