@@ -107,7 +107,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <p>
 
 - Update UI look-and-feel [#1974](https://github.com/keptn/keptn/issues/1974)
-- Splitted UI into *Environment* and *Services* view [#1698](https://github.com/keptn/keptn/issues/1698)
+- Split UI into *Environment* and *Services* view [#1698](https://github.com/keptn/keptn/issues/1698)
 - *Environment view:* Click on stage shows stage information and currently deployed services in a panel on the right-side [#1699](https://github.com/keptn/keptn/issues/1699)
 - *Environment view:* Displays that a service is *out-of-sync* in stage overview and detail info [#1700](https://github.com/keptn/keptn/issues/1700)
 - *Environment view:* Introduced buttons to approve/decline a deployment of a service that is *out-of-sync* [#1701](https://github.com/keptn/keptn/issues/1701)
