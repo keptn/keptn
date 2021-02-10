@@ -20,10 +20,10 @@ type ActionTriggeredHandler struct {
 const ActionScaling = "scaling"
 
 // NewActionTriggeredHandler creates a new ActionTriggeredHandler
-func NewActionTriggeredHandler(keptnHandler *keptnv2.Keptn, configChanger configurationchanger.IConfigurationChanger, configServiceURL string) *ActionTriggeredHandler {
+func NewActionTriggeredHandler(keptnHandler Handler, configChanger configurationchanger.IConfigurationChanger, configServiceURL string) *ActionTriggeredHandler {
 
 	return &ActionTriggeredHandler{
-		Handler:       NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:       keptnHandler,
 		configChanger: configChanger,
 	}
 }

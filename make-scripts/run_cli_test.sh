@@ -1,5 +1,5 @@
 #!/bin/bash
 
 # run cli tests
-cd ./cli/cmd
-go test -v
+cd ./cli || return
+go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...

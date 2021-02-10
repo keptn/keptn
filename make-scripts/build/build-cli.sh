@@ -1,33 +1,17 @@
 #!/bin/bash
 
-VERSION=${1:-develop}
-KUBE_CONSTRAINTS=$2
+VERSION=${VERSION:-$(git describe --abbrev=1 --tags || echo "dev")}
+KUBE_CONSTRAINTS=${KUBE_CONSTRAINT:-""}
+OUTPUT_EXECUTEABLE_NAME=${OUTPUT_EXECUTEABLE_NAME:-"keptn"}
 
-cd ./cli/
+cd ./cli/ || return
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    ############################################
-    # Linux
-    ############################################
-    echo "Building Keptn CLI for Linux"
-    env GOOS=linux GOARCH=amd64 go mod download
-    env GOOS=linux GOARCH=amd64 go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn
 
-    if [ $? -ne 0 ]; then
+echo "Building Keptn CLI"
+env go mod download
+env go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTEABLE_NAME}"
+
+if [ $? -ne 0 ]; then
     echo "Error compiling Keptn CLI, exiting ..."
     exit 1
-    fi
-
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    ############################################
-    # MAC OS
-    ############################################
-    echo "Building Keptn CLI for OSX"
-    env GOOS=darwin GOARCH=amd64 go mod download
-    env GOOS=darwin GOARCH=amd64 go build -v -x  -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o keptn
-
-    if [ $? -ne 0 ]; then
-    echo "Error compiling Keptn CLI, exiting ..."
-    exit 1
-    fi
 fi
