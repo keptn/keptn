@@ -196,7 +196,6 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
 
-	req.URL.q
 	forwardReq.Header = req.Header
 
 	parsedProxyURL, err := url.Parse(proxyScheme + "://" + strings.TrimSuffix(proxyHost, "/") + "/" + strings.TrimPrefix(proxyPath, "/"))
