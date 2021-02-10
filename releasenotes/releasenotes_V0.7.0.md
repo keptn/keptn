@@ -53,7 +53,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <p>
 
 - Polished the user output and checked links [#2042](https://github.com/keptn/keptn/issues/2042)
-- Removed `--scheme=http` when using Keptn CLI with HTTP instead of HTTPs [#1948](https://github.com/keptn/keptn/issues/1948)
+- Removed `--scheme=http` when using Keptn CLI with HTTP instead of HTTPS [#1948](https://github.com/keptn/keptn/issues/1948)
 - `keptn onboard service` is aborted when continuous.delivery is not installed [#2047](https://github.com/keptn/keptn/issues/2047)
 - `keptn install` removed anything related to Istio and NGINX [#1961](https://github.com/keptn/keptn/issues/1961)
 - `keptn install` only differentiates between Kubernetes and Openshift in the `--platform` flag [#1967](https://github.com/keptn/keptn/issues/1967)
