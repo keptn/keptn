@@ -267,8 +267,17 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			if err != nil {
 				sc.logger.Error("Could not determine scope of .finished event with ID " + finishedEvent.ID + ": " + err.Error())
 				continueTaskSequence = false
-			} else if finishedEventScope.Status == keptnv2.StatusErrored {
-				sc.logger.Info("Finished event with ID " + finishedEvent.ID + " reported an error. Will abort task sequence " + sequence.Name + " with KeptnContext " + event.Shkeptncontext)
+			} else if finishedEventScope.Status == keptnv2.StatusErrored || finishedEventScope.Result == keptnv2.ResultFailed {
+				sc.logger.Info(
+					fmt.Sprintf(
+						"Finished event with ID %s reported an error (status=%s, result=%s). Will abort task sequence %s with KeptnContext %s",
+						finishedEvent.ID,
+						finishedEventScope.Status,
+						finishedEventScope.Result,
+						sequence.Name,
+						finishedEvent.Shkeptncontext,
+					),
+				)
 				continueTaskSequence = false
 			}
 			marshal, _ := json.Marshal(allFinishedEventsForTask[index].Data)
@@ -505,7 +514,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 			sc.logger.Error("Could not complete task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
 			return err
 		}
-		if eventScope.Result == keptnv2.ResultPass {
+		if eventScope.Result != keptnv2.ResultFailed {
 			return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents, inputEvent)
 		}
 		return nil

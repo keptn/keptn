@@ -810,8 +810,8 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	// STEP 7
-	// send evaluation.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, "pass"), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
+	// send evaluation.finished event -> result = warning should not abort the task sequence
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
 	if done {
 		return
 	}
@@ -1114,7 +1114,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	}
 }
 
-// Scenario 4: Received .finished event with result "fail" - next .triggered event should contain result "fail" as well
+// Scenario 4: Received .finished event with result "fail" - stop task sequence
 func Test_shipyardController_Scenario4(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
@@ -1258,31 +1258,36 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 7
 	// send evaluation.finished event with result=fail
-	triggeredID, done = sendAndVerifyFinishedEvent(t,
+
+	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
+		t,
 		sc,
 		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed),
 		keptnv2.EvaluationTaskName,
-		keptnv2.ReleaseTaskName,
+		"dev.artifact-delivery",
 		mockEV,
 		"",
 		func(t *testing.T, e models.Event) bool {
 			marshal, _ := json.Marshal(e.Data)
-			testData := &keptnv2.ReleaseTriggeredEventData{}
+			eventData := &keptnv2.EventData{}
 
-			err := json.Unmarshal(marshal, testData)
+			err := json.Unmarshal(marshal, eventData)
 
 			if err != nil {
-				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				t.Errorf("could not convert event data: %v: %s", e.Data, err.Error())
 				return true
 			}
 
-			if testData.Result != keptnv2.ResultFailed {
-				t.Errorf("Result property was not transmitted correctly: %s", testData.Result)
+			if eventData.Status != keptnv2.StatusErrored {
+				t.Errorf("Expected Status %s, but got %s", keptnv2.StatusErrored, eventData.Status)
+				return true
+			}
+			if eventData.Result != keptnv2.ResultFailed {
+				t.Errorf("Expected Result %s, but got %s", keptnv2.ResultFailed, eventData.Result)
 				return true
 			}
 			return false
-		},
-	)
+		})
 	if done {
 		return
 	}
