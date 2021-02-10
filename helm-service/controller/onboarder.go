@@ -22,7 +22,7 @@ type Onboarder interface {
 	OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error)
 }
 
-// onboarder is an implemntation of Onboarder
+// onboarder is an implementation of Onboarder
 type onboarder struct {
 	Handler
 	namespaceManager namespacemanager.INamespaceManager
