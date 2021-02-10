@@ -16,7 +16,7 @@
           <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
             <div fxLayout="row" fxLayoutAlign="start center">
               <button dt-icon-button disabled variant="nested" *ngIf="currentSequence.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-              <p class="mb-1"><span class="bold" [textContent]="currentSequence.getLabel()"></span> started</p>
+              <p class="m-0 mb-1"><span class="bold" [textContent]="currentSequence.getLabel()"></span> started</p>
             </div>
           </div>
         </dt-info-group-title>
