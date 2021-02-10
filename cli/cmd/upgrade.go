@@ -91,11 +91,11 @@ func doUpgradePreRunCheck() error {
 			return err
 		}
 		if !res {
-			installedKeptnVerison, err := getInstalledKeptnVersion()
+			installedKeptnVersion, err := getInstalledKeptnVersion()
 			if err != nil {
 				return err
 			}
-			if installedKeptnVerison == getAppVersion(keptnUpgradeChart) {
+			if installedKeptnVersion == getAppVersion(keptnUpgradeChart) {
 				vChecker := version.NewVersionChecker()
 				cliVersionCheck, _ := vChecker.CheckCLIVersion(Version, false)
 				if cliVersionCheck {
@@ -104,7 +104,7 @@ func doUpgradePreRunCheck() error {
 				return fmt.Errorf("Unable to check for upgrades due to aforementioned error")
 			}
 			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
-				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+				installedKeptnVersion, getAppVersion(keptnUpgradeChart))
 		}
 	} else {
 		logging.PrintLog("Skipping upgrade compatibility check!", logging.InfoLevel)
