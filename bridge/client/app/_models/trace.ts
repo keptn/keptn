@@ -286,7 +286,7 @@ class Trace {
 
   isStarted() {
     if(!this.started) {
-      this.finished = this.traces.some(t => t.type.includes(".started"));
+      this.started = this.traces.some(t => t.type.includes(".started"));
     }
 
     return this.started;
