@@ -16,6 +16,7 @@ class Trace {
   id: string;
   shkeptncontext: string;
   triggeredid: string;
+  started: boolean;
   finished: boolean;
   source: string;
   time: Date;
@@ -283,6 +284,14 @@ class Trace {
     this.heatmapLabel = label;
   }
 
+  isStarted() {
+    if(!this.started) {
+      this.finished = this.traces.some(t => t.type.includes(".started"));
+    }
+
+    return this.started;
+  }
+
   isFinished() {
     if(!this.finished) {
       if(!this.traces || this.traces.length == 0)
@@ -292,6 +301,10 @@ class Trace {
     }
 
     return this.finished;
+  }
+
+  isLoading() {
+    return this.isStarted() && !this.isFinished();
   }
 
   getFinishedEvent() {
