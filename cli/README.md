@@ -70,7 +70,7 @@ The following table includes short descriptions and the general syntax for all o
 | `create`  | Create currently allows to create a project |
 | `help`  | Help about any command |
 | `install`  | Install Keptn on your Kubernetes cluster |
-| `onboard`  | Onboard allows to onbard a new service |
+| `onboard`  | Onboard allows to onboard a new service |
 | `send`  | Send a Keptn event in combination with the subcommand *event* |
 | `status`  | Checks the status of the CLI |
 | `uninstall`  | Uninstalls Keptn on your Kubernetes cluster |
