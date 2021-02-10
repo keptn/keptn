@@ -1,6 +1,6 @@
 # GOLANG Debugging Guide for Keptn
 
-## Pre-Requesits
+## Pre-Requisites
 
 * GoLand IDE (VSCode might work too, this guide was written for GoLand however)
 * [Cloud Code](https://plugins.jetbrains.com/plugin/8079-cloud-code/) Plugin for GoLand
