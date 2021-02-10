@@ -85,7 +85,7 @@ For instance, if a new feature or bug branch is created, the workflow is to crea
 
 We have automated builds for several services and containers using Travis-CI. This automatically creates new builds for
 
-* every [Github Release](https://github.com/keptn/keptn/releases) tagged with the version number (e.g., 0.5.0),
+* every [GitHub Release](https://github.com/keptn/keptn/releases) tagged with the version number (e.g., 0.5.0),
 * every change in the [master branch](https://github.com/keptn/keptn/tree/develop) (unstable) tagged as **latest** as 
   well as the build-datetime,
 * every pull request (unstable).
