@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
@@ -40,13 +39,13 @@ type NextTaskSequence struct {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event/triggered/{eventType} [get]
-func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
+func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	eventType := c.Param("eventType")
 	params := &operations.GetTriggeredEventsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
-			Message: stringp("Invalid request format"),
+			Message: common.Stringp("Invalid request format"),
 		})
 	}
 
@@ -62,7 +61,7 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	var events []models.Event
 	var err error
 
-	eventFilter := db.EventFilter{
+	eventFilter := common.EventFilter{
 		Type:    params.EventType,
 		Stage:   params.Stage,
 		Service: params.Service,
@@ -70,13 +69,13 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	}
 
 	if params.Project != nil && *params.Project != "" {
-		events, err = service.ShipyardController.GetTriggeredEventsOfProject(*params.Project, eventFilter)
+		events, err = eh.ShipyardController.GetTriggeredEventsOfProject(*params.Project, eventFilter)
 	} else {
-		events, err = service.ShipyardController.GetAllTriggeredEvents(eventFilter)
+		events, err = eh.ShipyardController.GetAllTriggeredEvents(eventFilter)
 	}
 
 	if err != nil {
-		sendInternalServerErrorResponse(err, c)
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
@@ -106,21 +105,21 @@ func (service *EventHandler) GetTriggeredEvents(c *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /event [post]
-func (service *EventHandler) HandleEvent(c *gin.Context) {
+func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	event := &models.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
-			Message: stringp("Invalid request format"),
+			Message: common.Stringp("Invalid request format"),
 		})
 	}
 
-	err := service.ShipyardController.HandleIncomingEvent(*event)
+	err := eh.ShipyardController.HandleIncomingEvent(*event)
 	if err != nil {
 		if err == errNoMatchingEvent {
-			sendBadRequestResponse(err, c)
+			SetBadRequestErrorResponse(err, c)
 		} else {
-			sendInternalServerErrorResponse(err, c)
+			SetInternalServerErrorResponse(err, c)
 		}
 		return
 	}
@@ -132,20 +131,4 @@ func NewEventHandler() IEventHandler {
 	return &EventHandler{
 		ShipyardController: GetShipyardControllerInstance(),
 	}
-}
-
-func sendInternalServerErrorResponse(err error, c *gin.Context) {
-	msg := err.Error()
-	c.JSON(http.StatusInternalServerError, models.Error{
-		Code:    http.StatusBadRequest,
-		Message: &msg,
-	})
-}
-
-func sendBadRequestResponse(err error, c *gin.Context) {
-	msg := err.Error()
-	c.JSON(http.StatusBadRequest, models.Error{
-		Code:    http.StatusBadRequest,
-		Message: &msg,
-	})
 }

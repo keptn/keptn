@@ -22,7 +22,6 @@ import (
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
 	"github.com/keptn/keptn/api/restapi/operations/configuration"
-	"github.com/keptn/keptn/api/restapi/operations/evaluation"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
@@ -70,12 +69,12 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	api.ConfigurationGetConfigBridgeHandler = configuration.GetConfigBridgeHandlerFunc(handlers.GetConfigureBridgeHandlerFunc)
 
 	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
-	api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
+	//api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Metadata endpoint
 	api.MetadataMetadataHandler = metadata.MetadataHandlerFunc(handlers.GetMetadataHandlerFunc)
 
-	api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
+	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
 	api.ServerShutdown = func() {}
 
