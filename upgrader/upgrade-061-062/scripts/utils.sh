@@ -123,7 +123,7 @@ function wait_for_all_pods_in_namespace() {
   fi
 }
 
-# Waits for all custom resource defintions to be created successfully.
+# Waits for all custom resource definitions to be created successfully.
 function wait_for_crds() {
   CRDS=$1; # list of custom resource definitions
   RETRY=0; RETRY_MAX=24;
