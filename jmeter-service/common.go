@@ -64,7 +64,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 	resource, err := resourceHandler.GetServiceResource(project, stage, service, resourceUri)
 	if err != nil && err == configutils.ResourceNotFoundError {
-		// if not found on serivce level - lets try it on stage level
+		// if not found on service level - lets try it on stage level
 		resource, err = resourceHandler.GetStageResource(project, stage, resourceUri)
 
 		if err != nil && err == configutils.ResourceNotFoundError {
@@ -104,7 +104,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
 func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 
-	// Lets first get the servcie resources
+	// Lets first get the service resources
 	// TODO: This endpoint is not yet implemented and therefore this always fails - https://github.com/keptn/keptn/issues/1924
 	/* resourceList, err := resourceHandler.GetAllServiceResources(project, stage, service)
 	if err != nil {
