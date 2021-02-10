@@ -165,7 +165,7 @@ func _main(args []string, env envConfig) int {
 	// Check admin rights
 	adminRights, err := hasAdminRights()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to check wheter helm-service has admin right: %v", err))
+		log.Fatal(fmt.Sprintf("failed to check whether helm-service has admin right: %v", err))
 	}
 	if !adminRights {
 		log.Fatal("helm-service has insufficient RBAC rights.")
