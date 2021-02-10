@@ -413,7 +413,7 @@ type HTTPRoute struct {
 // be specified for a specific route destination or for all destinations.
 // The following VirtualService adds a `test` header with the value `true`
 // to requests that are routed to any `reviews` service destination.
-// It also romoves the `foo` response header, but only from responses
+// It also removes the `foo` response header, but only from responses
 // coming from the `v1` subset (version) of the `reviews` service.
 //
 // ```yaml
