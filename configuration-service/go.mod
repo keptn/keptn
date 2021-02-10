@@ -14,6 +14,7 @@ require (
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.5
 	github.com/google/gofuzz v1.1.0 // indirect
+	github.com/google/martian v2.1.0+incompatible
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0

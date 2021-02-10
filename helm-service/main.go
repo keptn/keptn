@@ -66,9 +66,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	url, err := serviceutils.GetConfigServiceURL()
+	configServiceURL, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting configServiceURL: %s", err.Error()))
+		return err
+	}
+
+	shipyardControllerURL, err := serviceutils.GetShipyardControllerURL()
+	if err != nil {
+		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting shipyardControllerURL: %s", err.Error()))
 		return err
 	}
 
@@ -78,19 +84,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
+		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
 		deploymentHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
-		releaseHandler := createReleaseHandler(url, mesh, keptnHandler)
+		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
 		releaseHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
-		onboardHandler := createOnboardHandler(url, keptnHandler, mesh)
+		onboardHandler := createOnboardHandler(configServiceURL, shipyardControllerURL, keptnHandler, mesh)
 		onboardHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
-		actionHandler := createActionTriggeredHandler(url, keptnHandler)
+		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
 		actionHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
-		deleteHandler := createDeleteHandler(url, keptnHandler)
+		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
 		deleteHandler.HandleEvent(event)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")
@@ -107,17 +113,17 @@ func createKeptnBaseHandler(url *url.URL, keptn *keptnv2.Keptn) controller.Handl
 
 }
 
-func createDeleteHandler(url *url.URL, keptn *keptnv2.Keptn) *controller.DeleteHandler {
-	stagesHandler := configutils.NewStageHandler(url.String())
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	deleteHandler := controller.NewDeleteHandler(keptnBaseHandler, stagesHandler, url.String())
+func createDeleteHandler(configServiceURL *url.URL, shipyardControllerURL *url.URL, keptn *keptnv2.Keptn) *controller.DeleteHandler {
+	stagesHandler := configutils.NewStageHandler(shipyardControllerURL.String())
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
+	deleteHandler := controller.NewDeleteHandler(keptnBaseHandler, stagesHandler, configServiceURL.String())
 	return deleteHandler
 }
 
-func createActionTriggeredHandler(url *url.URL, keptn *keptnv2.Keptn) *controller.ActionTriggeredHandler {
-	configChanger := configurationchanger.NewConfigurationChanger(url.String())
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	actionHandler := controller.NewActionTriggeredHandler(keptnBaseHandler, configChanger, url.String())
+func createActionTriggeredHandler(configServiceURL *url.URL, keptn *keptnv2.Keptn) *controller.ActionTriggeredHandler {
+	configChanger := configurationchanger.NewConfigurationChanger(configServiceURL.String())
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
+	actionHandler := controller.NewActionTriggeredHandler(keptnBaseHandler, configChanger, configServiceURL.String())
 	return actionHandler
 }
 
@@ -131,21 +137,21 @@ func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Kep
 	return releaseHandler
 }
 
-func createOnboarder(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
+func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
 	namespaceManager := namespacemanager.NewNamespaceManager(keptn.Logger)
-	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(configServiceURL.String()))
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
 	chartPackager := keptnutils.NewChartPackager()
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
 	onBoarder := controller.NewOnboarder(keptnBaseHandler, namespaceManager, chartStorer, chartGenerator, chartPackager)
 	return onBoarder
 }
 
-func createOnboardHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.OnboardHandler {
-	projectHandler := keptnapi.NewProjectHandler(url.String())
-	stagesHandler := configutils.NewStageHandler(url.String())
-	onBoarder := createOnboarder(url, keptn, mesh)
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
+func createOnboardHandler(configServiceURL *url.URL, shipyardControllerURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.OnboardHandler {
+	projectHandler := keptnapi.NewProjectHandler(shipyardControllerURL.String())
+	stagesHandler := configutils.NewStageHandler(shipyardControllerURL.String())
+	onBoarder := createOnboarder(configServiceURL, keptn, mesh)
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
 	return controller.NewOnboardHandler(keptnBaseHandler, projectHandler, stagesHandler, onBoarder)
 }
 

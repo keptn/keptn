@@ -415,20 +415,6 @@ spec:
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
-            - name: MONGODB_HOST
-              value: '{{ .Values.mongodb.host }}'
-            - name: MONGODB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: user
-            - name: MONGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: password
-            - name: MONGO_DB_NAME
-              value: 'keptn'
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -447,22 +433,6 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: configuration-volume
-        - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          {{- include "keptn.distributor.resources" . | nindent 10 }}
-          env:
-            - name: PUBSUB_URL
-              value: 'nats://keptn-nats-cluster'
-            - name: PUBSUB_TOPIC
-              value: 'sh.keptn.>'
-            - name: PUBSUB_RECIPIENT
-              value: '127.0.0.1'
-            - name: PUBSUB_RECIPIENT_PATH
-              value: '/v1/event'
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
