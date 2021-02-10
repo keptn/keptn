@@ -34,7 +34,7 @@ func getWorkload(jmeterconf *JMeterConf, teststrategy string) (*Workload, error)
 		}
 	}
 
-	// if we didnt find it in the config go through the defaults
+	// if we didn't find it in the config go through the defaults
 	for _, workload := range defaultWorkloads {
 		if workload.TestStrategy == teststrategy {
 			return &workload, nil
