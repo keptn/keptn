@@ -83,14 +83,27 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 
 	statusType := split[len(split)-1]
 
-	if err := sc.eventsDbOperations.UpdateEventOfService(
-		event.Data,
-		*event.Type,
-		event.Shkeptncontext,
-		event.ID,
-		event.Triggeredid,
-	); err != nil {
+	eventData := &keptnv2.EventData{}
+	err := keptnv2.Decode(event, eventData)
+	if err != nil {
+		sc.logger.Error("Could not parse event data: " + err.Error())
 		return err
+	}
+
+	if eventData.Project != "" {
+		go func() {
+			common.LockProject(eventData.Project)
+			defer common.UnlockProject(eventData.Project)
+			if err := sc.eventsDbOperations.UpdateEventOfService(
+				event.Data,
+				*event.Type,
+				event.Shkeptncontext,
+				event.ID,
+				event.Triggeredid,
+			); err != nil {
+				sc.logger.Error(fmt.Sprintf("could not update event for project %s: %s", eventData.Project, err.Error()))
+			}
+		}()
 	}
 
 	switch statusType {

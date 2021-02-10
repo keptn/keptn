@@ -120,7 +120,7 @@ func (mv *ProjectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	return nil
 }
 
-// DeleteUpstreamInfo deletes the Upstream Rpository URL and git user of a project
+// DeleteUpstreamInfo deletes the Upstream Repository URL and git user of a project
 func (mv *ProjectsMaterializedView) DeleteUpstreamInfo(projectName string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
@@ -348,7 +348,6 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 
 // UpdateEventOfService updates a service event
 func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
-
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event, eventData)
 	if err != nil {

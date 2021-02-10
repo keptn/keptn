@@ -58,6 +58,9 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
+
 	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
 		sh.logger.Error(fmt.Sprintf("could not send service.create.started event: %s", err.Error()))
 	}
@@ -106,6 +109,9 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	if serviceName == "" {
 		SetBadRequestErrorResponse(nil, c, "Must provide a service name")
 	}
+
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
 
 	if err := sh.sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName); err != nil {
 		sh.logger.Error(fmt.Sprintf("could not send service.delete.started event: %s", err.Error()))

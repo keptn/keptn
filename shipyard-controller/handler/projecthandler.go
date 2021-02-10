@@ -144,6 +144,9 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
+	common.LockProject(*createProjectParams.Name)
+	defer common.UnlockProject(*createProjectParams.Name)
+
 	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
 		ph.Logger.Error(fmt.Sprintf("could not send project.create.started event: %s", err.Error()))
 	}
@@ -194,6 +197,9 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
+	common.LockProject(*params.Name)
+	defer common.UnlockProject(*params.Name)
+
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
@@ -220,6 +226,8 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
 	err, responseMessage := ph.ProjectManager.Delete(projectName)
 	if err != nil {
 		if err := ph.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
