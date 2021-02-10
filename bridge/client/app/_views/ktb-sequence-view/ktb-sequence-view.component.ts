@@ -90,6 +90,8 @@ export class KtbSequenceViewComponent implements OnInit {
             take(1)
           )
           .subscribe(project => {
+            this.currentSequence = null;
+            this.selectedStage = null;
             this.updateFilterDataSource(project);
           });
 
