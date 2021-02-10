@@ -32,10 +32,8 @@
     <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
     <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
-      <dt-tag-list aria-label="fetch-info">
-        <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
-        <dt-tag *ngIf="showReloadButton(currentSequence)"><button dt-button (click)="loadTraces(currentSequence)"><dt-icon name="refresh"></dt-icon> Reload</button></dt-tag>
-      </dt-tag-list>
+      <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
+      <button class="ml-2" dt-button (click)="loadTraces(currentSequence)" *ngIf="showReloadButton(currentSequence)"><dt-icon name="refresh"></dt-icon> Reload</button>
     </div>
   </div>
 </div>
