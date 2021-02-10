@@ -6,7 +6,7 @@ The *approval-service* listens to Keptn events of type:
 - `sh.keptn.event.approval.triggered`
 
 The `approval.triggered` contains the approval strategy, as well as the result of the previous service execution (e.g., an evaluation). If the result is positive (e.g., 
- `result = "pass" || result = "warning"`), and the approval strategyy is set to `automatic`, the service will automatically send out a `approval.finished` event to continue the task sequence for the associated Keptn context.
+ `result = "pass" || result = "warning"`), and the approval strategy is set to `automatic`, the service will automatically send out a `approval.finished` event to continue the task sequence for the associated Keptn context.
  If the strategy is set to `manual`, the service will not respond with any further events. In this case, the user is responsible for sending an `approval.finished` events to continue the task sequence for the associated Keptn context.
  If the result of the previous service execution is set to `fail`, the approval service will automatically send an `approval.finished` event with the result set to `fail`.
 
