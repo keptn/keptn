@@ -8,7 +8,7 @@ import (
 	"github.com/mattn/go-shellwords"
 )
 
-// ExecuteCommand exectues the command using the args
+// ExecuteCommand executes the command using the args
 func ExecuteCommand(command string, argStr string) (string, error) {
 	args, err := shellwords.Parse(argStr)
 	if err != nil {
