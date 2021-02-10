@@ -14,7 +14,7 @@ This folder contains docs for developers. If you are looking for the usage docum
   You can find more information in [here](integration_tests.md).
 * Kubernetes CLI tool [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * Docker
-* Dockerhub Account (any other container registry works too)
+* Docker Hub Account (any other container registry works too)
 * Go (Version 1.13.x)
 * GitHub Account (required for making Pull Requests)
 * If you want to use in-cluster debugging, please take a look at our [debugging guide](debugging.md).

@@ -13,7 +13,7 @@ This release is a stability improvement release. It does not add any new use cas
 
 ## Version dependencies:
 
-keptn is installed by using these images from the [keptn Dockerhub registry](https://hub.docker.com/u/keptn):
+keptn is installed by using these images from the [keptn Docker Hub registry](https://hub.docker.com/u/keptn):
 
 - keptn/keptn-authenticator:0.2.1
 - keptn/keptn-control:0.2.1
