@@ -62,7 +62,7 @@ var imageAvailabilityTests = []struct {
 	{"keptn/installer", "0.6.1", nil},
 }
 
-func TestCheckImageAvailablity(t *testing.T) {
+func TestCheckImageAvailability(t *testing.T) {
 	client := NewTestClient(func(req *http.Request) *http.Response {
 		// Test request parameters
 		if strings.Contains(req.URL.String(), "docker.io") {
