@@ -317,7 +317,7 @@ func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 		}
 		return "http://" + endpoint + ":" + port + "/api", nil
 	case "LoadBalancer":
-		// Fetching the EXTERNAL-IP of the api-gateway-ngix loadbalancer service
+		// Fetching the EXTERNAL-IP of the api-gateway-nginx loadbalancer service
 		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.status.loadBalancer.ingress[0].ip}'"})
 		if err != nil {
 			return "", err

@@ -59,7 +59,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 <p>
 
 - Lower Kubernetes resource limits for distributors [2649](https://github.com/keptn/keptn/issues/2649) 
-- Upgrade of NGNIX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
+- Upgrade of NGINX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
 - Test Keptn Keptn Control-plane for Kubernetes 1.19 using K3s [2411](https://github.com/keptn/keptn/issues/2411) 
 - *Fixed*: `keptn install` hangs in case of ImagePullBackOff [2988](https://github.com/keptn/keptn/issues/2988) 
 
