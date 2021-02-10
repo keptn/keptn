@@ -150,7 +150,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		}
 	}
 
-	if err := pm.createProjectInRepository(params); err != nil {
+	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard); err != nil {
 		return err, func() error {
 			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
 				return err
@@ -274,11 +274,18 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 
 }
 
-func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams) error {
-	decodedShipyard, err := base64.StdEncoding.DecodeString(*params.Shipyard)
-	if err != nil {
-		return fmt.Errorf("could not decode shipyard content of project: %s", err.Error())
+func (pm *ProjectManager) createProjectInRepository(params *operations.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
+
+	var expandedStages []*models.ExpandedStage
+
+	for _, s := range shipyard.Spec.Stages {
+		es := &models.ExpandedStage{
+			Services:  []*models.ExpandedService{},
+			StageName: s.Name,
+		}
+		expandedStages = append(expandedStages, es)
 	}
+
 	p := &models.ExpandedProject{
 		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
 		GitRemoteURI:    params.GitRemoteURL,
@@ -286,9 +293,10 @@ func (pm *ProjectManager) createProjectInRepository(params *operations.CreatePro
 		ProjectName:     *params.Name,
 		Shipyard:        string(decodedShipyard),
 		ShipyardVersion: shipyardVersion,
+		Stages:          expandedStages,
 	}
 
-	err = pm.ProjectMaterializedView.CreateProject(p)
+	err := pm.ProjectMaterializedView.CreateProject(p)
 	if err != nil {
 		return err
 	}
