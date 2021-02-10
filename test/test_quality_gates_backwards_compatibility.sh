@@ -20,7 +20,7 @@ legacy_event_context_id=$(send_event_json ./test/assets/07x_evaluation_done_even
 sleep 5
 
 echo "Trying to retrieve event using the sh.keptn.event.evaluation.finished type filter"
-# check if the event is returned when checking for sh.keptn.event.evluation.finished
+# check if the event is returned when checking for sh.keptn.event.evaluation.finished
 response=$(get_event sh.keptn.event.evaluation.finished "${legacy_event_context_id}" "legacy-project")
 
 # print the response

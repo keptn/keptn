@@ -61,7 +61,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - **Project** endpoints have been moved to: `/api/controlPlane/v1/project`
 - **Stage** endpoints have been moved to: `/api/controlPlane/v1/stage`
 - **Service** endpoints have been moved to: `/api/controlPlane/v1/service`
-- **Evaluation** endpoint for triggering an evaluaiton has been moved to: `/api/v1/project​/{project}​/stage​/{stage}​/service​/{service}​/evaluation`
+- **Evaluation** endpoint for triggering an evaluation has been moved to: `/api/v1/project​/{project}​/stage​/{stage}​/service​/{service}​/evaluation`
 - **Events** /GET endpoint has been moved to: `/api/mongodb-datastore/event`
 
 ### CLI
