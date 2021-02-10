@@ -38,14 +38,14 @@ The cli consists of
 Use the following syntax to run Keptn commands from your terminal window:
 
 ```console
-keptn [command] [entitiy] [name] [flags]
+keptn [command] [entity] [name] [flags]
 ```
 
 where **command**, **entity**, **name**, and **flags** are:
 
 - **command**: Specifies the operation that you want to perform, for example, install, create, onboard, send.
 
-- **entitiy**: Specifies the entity type. For example, the following commands run a create, onboard, and update operation on the project, service, and domain entity:
+- **entity**: Specifies the entity type. For example, the following commands run a create, onboard, and update operation on the project, service, and domain entity:
 
     ```console
     keptn create project 
@@ -53,7 +53,7 @@ where **command**, **entity**, **name**, and **flags** are:
     keptn configure domain
     ```
 
-- **name**: Specifies the name of the enitiy. Names are case-sensitive. 
+- **name**: Specifies the name of the entity. Names are case-sensitive. 
 
 - **flags**: Specifies additional parameters and flags the command requires.
 
