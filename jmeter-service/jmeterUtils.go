@@ -73,7 +73,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
 
 	logger.Debug(jmeterCommandResult)
 
-	summary := getLastOccurence(strings.Split(jmeterCommandResult, "\n"), "summary =")
+	summary := getLastOccurrence(strings.Split(jmeterCommandResult, "\n"), "summary =")
 	if summary == "" {
 		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
 	}
@@ -239,7 +239,7 @@ func derivePath(url *url.URL) string {
 	return "/health"
 }
 
-func getLastOccurence(vs []string, prefix string) string {
+func getLastOccurrence(vs []string, prefix string) string {
 	for i := len(vs) - 1; i >= 0; i-- {
 		if strings.HasPrefix(vs[i], prefix) {
 			return vs[i]
