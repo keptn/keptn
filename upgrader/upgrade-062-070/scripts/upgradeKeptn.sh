@@ -20,9 +20,9 @@ then
 
   for release in $RELEASES; do
     helm3 2to3 convert "$release" --dry-run
-    verify_install_step $? "Helm2-to3 release convertion dry-run failed"
+    verify_install_step $? "Helm2-to3 release conversion dry-run failed"
     helm3 2to3 convert "$release"
-    verify_install_step $? "Helm2-to3 release convertion failed"
+    verify_install_step $? "Helm2-to3 release conversion failed"
   done
 
   yes y | helm3 2to3 cleanup --tiller-cleanup
