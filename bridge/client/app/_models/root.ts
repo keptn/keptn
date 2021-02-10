@@ -117,7 +117,7 @@ export class Root extends Trace {
   }
 
   isFinished() {
-    return this.getLastTrace()?.isFinished();
+    return this.traces.every(t => t.isFinished());
   }
 
   getSequenceName() {

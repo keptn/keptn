@@ -16,6 +16,7 @@ class Trace {
   id: string;
   shkeptncontext: string;
   triggeredid: string;
+  started: boolean;
   finished: boolean;
   source: string;
   time: Date;
@@ -33,10 +34,19 @@ class Trace {
     image: string;
     tag: string;
 
+    deployment: {
+      deploymentNames: string[];
+      deploymentURIsLocal: string[];
+      deploymentURIsPublic: string[];
+      deploymentstrategy: string;
+      gitCommit: string;
+    };
+
     deploymentURILocal: string;
     deploymentURIPublic: string;
 
-    deploymentstrategy: string;
+    message: string;
+
     labels: Map<string, string>;
     result: string;
     teststrategy: string;
@@ -105,7 +115,9 @@ class Trace {
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.isFailed() || (this.isProblem() && !this.isProblemResolvedOrClosed())) {
+      if(this.isFailed() ||
+        (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
+        this.traces.some(t => t.isFailed() || (t.isProblem() && !t.isProblemResolvedOrClosed()))) {
         result = this.data.stage;
       }
     }
@@ -115,7 +127,7 @@ class Trace {
   isFailedEvaluation() {
     let result: string = null;
     if(this.data) {
-      if(this.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
+      if(this.getFinishedEvent()?.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
         result = this.data.stage;
       }
     }
@@ -124,26 +136,22 @@ class Trace {
 
   isWarning(): string {
     let result: string = null;
-    if(this.data) {
-      if(this.type === EventTypes.EVALUATION_FINISHED && this.data.result == ResultTypes.WARNING) {
-        result = this.data.stage;
-      }
+    if(this.getFinishedEvent()?.data.result == ResultTypes.WARNING) {
+      result = this.data.stage;
     }
     return result;
   }
 
   isSuccessful(): string {
     let result: string = null;
-    if(this.data) {
-      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
-        result = this.data.stage;
-      }
+    if(this.getFinishedEvent()?.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
+      result = this.data.stage;
     }
     return !this.isFaulty() && result ? result : null;
   }
 
   public isFailed(): boolean {
-    return this.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
+    return this.getFinishedEvent()?.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
   }
 
   public isProblem(): boolean {
@@ -176,8 +184,8 @@ class Trace {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
 
-  isDirectDeployment(): boolean {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data.deploymentstrategy == "direct";
+  public isDirectDeployment(): boolean {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data?.deployment?.deploymentstrategy == "direct";
   }
 
   private isApproved(): boolean {
@@ -219,24 +227,23 @@ class Trace {
     return this.label;
   }
 
+  getStage(): string {
+    return this.data?.stage;
+  }
+
   getShortType(): string {
-    return this.type.split(".").slice(3, -1).join(".");
+    let parts = this.type.split(".");
+    if(parts.length == 6)
+      return parts[4];
+    else if(parts.length == 5)
+      return parts[3];
+    else
+      return this.type;
   }
 
-  getIcon() {
-    if(!this.isFinished())
-      return "idle";
-
-    return this.getIconType();
-  }
-
-  getIconType(): string {
+  getIcon(): string {
     if(!this.icon) {
-      if(this.isApprovalFinished()) {
-        this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
-      } else {
-        this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
-      }
+      this.icon = EVENT_ICONS[this.getShortType()] || DEFAULT_ICON;
     }
     return this.icon;
   }
@@ -277,6 +284,14 @@ class Trace {
     this.heatmapLabel = label;
   }
 
+  isStarted() {
+    if(!this.started) {
+      this.started = this.traces.some(t => t.type.includes(".started"));
+    }
+
+    return this.started;
+  }
+
   isFinished() {
     if(!this.finished) {
       if(!this.traces || this.traces.length == 0)
@@ -288,8 +303,12 @@ class Trace {
     return this.finished;
   }
 
+  isLoading() {
+    return this.isStarted() && !this.isFinished();
+  }
+
   getFinishedEvent() {
-    return this.traces.find(t => t.type.includes(".finished"));
+    return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
   }
 
   static fromJSON(data: any) {

@@ -1,8 +1,16 @@
 import * as moment from "moment";
 import {Trace} from "../_models/trace";
+import {Injectable} from "@angular/core";
 
-export default class DateUtil {
-  static getDurationFormatted(start, end) {
+@Injectable({
+  providedIn: 'root'
+})
+export class DateUtil {
+
+  public DEFAULT_DATE_FORMAT = 'YYYY-MM-DD';
+  public DEFAULT_TIME_FORMAT = 'HH:mm';
+
+  public getDurationFormatted(start, end) {
     let diff = moment(end).diff(moment(start));
     let duration = moment.duration(diff);
 
@@ -22,7 +30,7 @@ export default class DateUtil {
     return result;
   }
 
-  static getCalendarFormats(showSeconds?: boolean) {
+  public getCalendarFormats(showSeconds?: boolean) {
     if(showSeconds) {
       return {
         lastDay : '[Yesterday at] HH:mm:ss',
@@ -41,6 +49,14 @@ export default class DateUtil {
       nextWeek : 'dddd [at] HH:mm',
       sameElse : 'YYYY-MM-DD HH:mm'
     };
+  }
+
+  public getDateTimeFormat() {
+    return [this.DEFAULT_DATE_FORMAT, this.DEFAULT_TIME_FORMAT].join(" ");
+  }
+
+  public getTimeFormat() {
+    return this.DEFAULT_TIME_FORMAT;
   }
 
   static compareTraceTimesAsc(a: Trace, b: Trace) {
