@@ -3,11 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
 	"os"
-	"path"
-
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -79,8 +77,6 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			},
 		}
 
-		endPoint.Path = path.Join(endPoint.Path, "configuration-service")
-
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
@@ -100,8 +96,6 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			(addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") || (addResourceCmdParams.Project == nil || *addResourceCmdParams.Project == "")) {
 			return errors.New("--service and --project need to be supplied when using --all-stages")
 		}
-
-
 
 		// Handle different cases of adding resource to a projects default branch, stage branch, and/or service sub-directory
 		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages) {
@@ -123,13 +117,12 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 		if !mocking {
 			if addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages {
 				// Upload to all stages
-
 				// get stages
 				stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String() + "/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
 
-				stages, err := stagesHandler.GetAllStages(*stageParameter.project)
+				stages, err := stagesHandler.GetAllStages(*addResourceCmdParams.Project)
 				if err != nil {
-					return fmt.Errorf("Failed to retrieve stages for project %s: %v", *stageParameter.project, err)
+					return fmt.Errorf("Failed to retrieve stages for project %s: %v", *addResourceCmdParams.Project, err)
 				}
 
 				if len(stages) == 0 {
