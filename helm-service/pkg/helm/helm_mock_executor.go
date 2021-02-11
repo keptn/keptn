@@ -56,6 +56,31 @@ spec:
         imagePullPolicy: IfNotPresent        
 `
 
+const renderedUserDeployment = `--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carts
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: carts
+  template:
+    metadata:
+      labels:
+        app: carts
+    spec:
+      containers:
+      - name: carts
+        image: "docker.io/keptnexamples/carts:0.8.1"
+        imagePullPolicy: IfNotPresent        
+`
+
 // GeneratedCanaryDestinationRule is a DestinationRule manifest for tests
 const GeneratedCanaryDestinationRule = `---
 apiVersion: networking.istio.io/v1alpha3
@@ -93,7 +118,7 @@ spec:
     targetPort: 8080
   selector:
     app: carts
-  type: ClusterIP
+  type: LoadBalancer
 status:
   loadBalancer: {}
 `
@@ -113,7 +138,7 @@ spec:
     targetPort: 8080
   selector:
     app: carts-primary
-  type: ClusterIP
+  type: LoadBalancer
 status:
   loadBalancer: {}
 `
@@ -130,7 +155,7 @@ spec:
   - public-gateway.istio-system
   - mesh
   hosts:
-  - carts.sockshop-NAMESPACE_PLACEHOLDER.demo.keptn.sh
+  - carts.sockshop-NAMESPACE_PLACEHOLDER.svc.cluster.local
   - carts
   http:
   - route:
