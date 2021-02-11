@@ -214,8 +214,8 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 							Labels:  map[string]string{"foo": "bar"},
 						},
 						Evaluation: keptnv2.Evaluation{
-							Start: "2020-01-02 15:00:00 +0000 UTC",
-							End:   "2020-01-02 16:00:00 +0000 UTC",
+							Start: "2020-01-02T15:00:00.000Z",
+							End:   "2020-01-02T16:00:00.000Z",
 						},
 					},
 				},

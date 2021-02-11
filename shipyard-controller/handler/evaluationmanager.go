@@ -78,8 +78,8 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 			Start string `json:"start"`
 			End   string `json:"end"`
 		}{
-			Start: start.String(),
-			End:   end.String(),
+			Start: start.Format("2006-01-02T15:04:05.000Z"),
+			End:   end.Format("2006-01-02T15:04:05.000Z"),
 		},
 	}
 

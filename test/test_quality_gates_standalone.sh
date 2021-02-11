@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source test/utils.sh
+ source test/utils.sh
 
 function cleanup() {
   # print logs of dynatrace-sli-service
@@ -117,7 +117,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage harden
 response=$(send_start_evaluation_request $PROJECT hardening wrong-service)
 
 # check if the error response tells us that the service does not exist
-if [[ $response != *"Service not found"* ]]; then
+if [[ "${response,,}" != *"service not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
 fi
@@ -132,7 +132,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong
 response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
 
 # check if the error response tells us that the stage does not exist
-if [[ $response != *"Stage not found"* ]]; then
+if [[ "${response,,}" != *"stage not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
 fi
@@ -146,7 +146,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong
 response=$(send_start_evaluation_request wrong-project wrong-stage wrong-service)
 
 # check if the error response tells us that the project does not exist
-if [[ $response != *"Project not found"* ]]; then
+if [[ "${response,,}" != *"project not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
 fi
