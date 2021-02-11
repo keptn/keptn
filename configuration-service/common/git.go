@@ -308,8 +308,10 @@ func GetCredentials(project string) (*GitCredentials, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &credentials, nil
+	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+		return &credentials, nil
+	}
+	return nil, nil
 }
 
 func getK8sClient() (*kubernetes.Clientset, error) {
