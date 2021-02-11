@@ -1,17 +1,18 @@
 package handlers
 
 import (
-	"github.com/go-test/deep"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/mongodb-datastore/models"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 	"testing"
 
+	"github.com/go-test/deep"
+	"github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	"github.com/magiconair/properties/assert"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 // TestFlattenRecursivelyNestedDocuments checks whether the flattening works with nested bson.D (documents)
