@@ -84,30 +84,17 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 				*addResourceCmdParams.Resource, endPointErr)
 		}
 
-
-		// Prevent setting --stage and --all-stages at the same time
-		if (addResourceCmdParams.Stage != nil  && *addResourceCmdParams.Stage != "") &&
-			(addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages) {
-			return errors.New("Cannot use --stage and --all-stages at the same time")
-		}
-
-		// When setting --all-stages, project and service needs to be set
-		if (addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages) && (
-			(addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") || (addResourceCmdParams.Project == nil || *addResourceCmdParams.Project == "")) {
-			return errors.New("--service and --project need to be supplied when using --all-stages")
-		}
-
 		// Handle different cases of adding resource to a projects default branch, stage branch, and/or service sub-directory
-		if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages) {
+		if isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) {
 			// add to all stages
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to all stages of project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if (addResourceCmdParams.Service != nil && *addResourceCmdParams.Service != "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
+		} else if isStringFlagSet(addResourceCmdParams.Service) && isStringFlagSet(addResourceCmdParams.Stage) {
 			// add to service and stage
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if (addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") && (addResourceCmdParams.Stage != nil && *addResourceCmdParams.Stage != "") {
+		} else if !isStringFlagSet(addResourceCmdParams.Service) && isStringFlagSet(addResourceCmdParams.Stage) {
 			// service is empty, add to stage
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if (addResourceCmdParams.Service == nil || *addResourceCmdParams.Service == "") && (addResourceCmdParams.Stage == nil || *addResourceCmdParams.Stage == "") {
+		} else if !isStringFlagSet(addResourceCmdParams.Service) && !isStringFlagSet(addResourceCmdParams.Stage) {
 			// service and stage are empty, add to default branch
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to project "+*addResourceCmdParams.Project, logging.InfoLevel)
 		} else {
@@ -118,7 +105,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			if addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages {
 				// Upload to all stages
 				// get stages
-				stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String() + "/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
+				stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
 
 				stages, err := stagesHandler.GetAllStages(*addResourceCmdParams.Project)
 				if err != nil {
@@ -150,6 +137,19 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 		fmt.Println("Skipping add resource due to mocking flag set to true")
 		return nil
 	},
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		// Prevent setting --stage and --all-stages at the same time
+		if isStringFlagSet(addResourceCmdParams.Stage) && isBoolFlagSet(addResourceCmdParams.AllStages) {
+			return errors.New("Cannot use --stage and --all-stages at the same time")
+		}
+
+		// When setting --all-stages, project and service needs to be set
+		if isBoolFlagSet(addResourceCmdParams.AllStages) &&
+			!areStringFlagsSet(addResourceCmdParams.Service, addResourceCmdParams.Project) {
+			return errors.New("--service and --project need to be supplied when using --all-stages")
+		}
+		return nil
+	},
 }
 
 func fileExists(path string) bool {
@@ -169,7 +169,7 @@ func init() {
 
 	addResourceCmdParams.Stage = addResourceCmd.Flags().StringP("stage", "s", "", "The name of the stage (cannot be used together with (--all-stages)")
 
-	addResourceCmdParams.AllStages = addResourceCmd.Flags().Bool("all-stages",  false, "Add resource to all stages (can not be used together with (--stage)")
+	addResourceCmdParams.AllStages = addResourceCmd.Flags().Bool("all-stages", false, "Add resource to all stages (can not be used together with (--stage)")
 
 	addResourceCmdParams.Service = addResourceCmd.Flags().StringP("service", "", "", "The name of the service within the project")
 
