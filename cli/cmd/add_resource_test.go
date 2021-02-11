@@ -16,6 +16,22 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
+func setup() {
+	credentialmanager.MockAuthCreds = true
+	checkEndPointStatusMock = true
+
+	*addResourceCmdParams.AllStages = false
+	*addResourceCmdParams.Stage = ""
+	*addResourceCmdParams.Service = ""
+	*addResourceCmdParams.Project = ""
+	*addResourceCmdParams.Resource = ""
+	*addResourceCmdParams.ResourceURI = ""
+}
+
+func teardown() {
+
+}
+
 // testResource writes a default file
 func testResource(t *testing.T, fileName string, fileContent string) func() {
 	if fileContent == "" {
@@ -35,8 +51,8 @@ func testResource(t *testing.T, fileName string, fileContent string) func() {
 // TestAddResourceToProjectStageService
 func TestAddResourceToProjectStageService(t *testing.T) {
 
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
+	setup()
+	defer teardown()
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -49,11 +65,79 @@ func TestAddResourceToProjectStageService(t *testing.T) {
 	}
 }
 
+// TestAddResourceToProjectStageAndAllStages tests that using --stage and --all-stages together doesn't work
+func TestAddResourceToProjectStageAndAllStages(t *testing.T) {
+
+	setup()
+	defer teardown()
+
+	resourceFileName := "testResource.txt"
+	defer testResource(t, resourceFileName, "")()
+
+	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --all-stages --service=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "dev", "carts", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
+	if err.Error() != "Cannot use --stage and --all-stages at the same time" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestAddResourceToProjectAndStage tests that using --project and --stage (without --service) works
+func TestAddResourceToProjectAndStage(t *testing.T) {
+
+	setup()
+	defer teardown()
+
+	resourceFileName := "testResource.txt"
+	defer testResource(t, resourceFileName, "")()
+
+	cmd := fmt.Sprintf("add-resource --project=%s --stage=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "dev", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestAddResourceAllStagesWithoutService tests that using --all-stages without --service doesn't work
+func TestAddResourceAllStagesWithoutService(t *testing.T) {
+
+	setup()
+	defer teardown()
+
+	resourceFileName := "testResource.txt"
+	defer testResource(t, resourceFileName, "")()
+
+	cmd := fmt.Sprintf("add-resource --all-stages --project=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
+	if err.Error() != "--service and --project need to be supplied when using --all-stages" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestAddResourceToProjectServiceAllStages tests that using --project, --service and --all-stages works
+func TestAddResourceToProjectServiceAllStages(t *testing.T) {
+
+	setup()
+	defer teardown()
+
+	resourceFileName := "testResource.txt"
+	defer testResource(t, resourceFileName, "")()
+
+	cmd := fmt.Sprintf("add-resource --project=%s --service=%s --all-stages --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "carts", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
 // TestAddResourceToProjectStage
 func TestAddResourceToProjectStage(t *testing.T) {
 
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
+	setup()
+	defer teardown()
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -69,8 +153,8 @@ func TestAddResourceToProjectStage(t *testing.T) {
 // TestAddResourceToProject
 func TestAddResourceToProject(t *testing.T) {
 
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
+	setup()
+	defer teardown()
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -86,10 +170,8 @@ func TestAddResourceToProject(t *testing.T) {
 // TestAddResourceToProjectService
 func TestAddResourceToProjectService(t *testing.T) {
 
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-
-	*addResourceCmdParams.Stage = ""
+	setup()
+	defer teardown()
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
@@ -105,8 +187,8 @@ func TestAddResourceToProjectService(t *testing.T) {
 // TestAddResourceWhenArgsArePresent
 func TestAddResourceWhenArgsArePresent(t *testing.T) {
 
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
+	setup()
+	defer teardown()
 
 	resourceFileName := "testResource.txt"
 	defer testResource(t, resourceFileName, "")()
