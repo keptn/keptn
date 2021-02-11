@@ -309,7 +309,7 @@ func GetCredentials(project string) (*GitCredentials, error) {
 		return nil, err
 	}
 
-	return nil, nil
+	return &credentials, nil
 }
 
 func getK8sClient() (*kubernetes.Clientset, error) {
