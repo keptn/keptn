@@ -32,8 +32,6 @@ github.com/aws/aws-sdk-go v1.29.15 h1:0ms/213murpsujhsnxnNKNeVouW60aJqSd992Ks3mx
 github.com/aws/aws-sdk-go v1.29.15/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudevents/sdk-go/v2 v2.2.0 h1:FlBJg7W0QywbOjuZGmRXUyFk8qkCHx2euETp+tuopSU=
-github.com/cloudevents/sdk-go/v2 v2.2.0/go.mod h1:3CTrpB4+u7Iaj6fd7E2Xvm5IxMdRoaAhqaRVnOr2rCU=
 github.com/cloudevents/sdk-go/v2 v2.3.1 h1:QRTu0yRA4FbznjRSds0/4Hy6cVYpWV2wInlNJSHWAtw=
 github.com/cloudevents/sdk-go/v2 v2.3.1/go.mod h1:4fO2UjPMYYR1/7KPJQCwTPb0lFA8zYuitkUpAZFSY1Q=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
@@ -246,8 +244,8 @@ github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
-github.com/keptn/go-utils v0.8.0-alpha.0.20210202144925-d1e5badeeab1 h1:L81ro+/HTVS6lflJ8m4RoJLAdk5QLL90QM8HE50Y22I=
-github.com/keptn/go-utils v0.8.0-alpha.0.20210202144925-d1e5badeeab1/go.mod h1:K8ZE1XraoVWyNe15E8hpMVWOyF1ag1PzYI0hteYsH00=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210211072226-737e673e5205 h1:GfQOuHCk0TmHXxYmcbBTGUI128EmAcyA37ieSOcEQQY=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210211072226-737e673e5205/go.mod h1:B6e/cl9IA+pimOFWKDFVh3OmYHJuwjJVPn9M81hg/1c=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.9.5 h1:U+CaK85mrNNb4k8BNOfgJtJ/gr6kswUCFj6miSzVC6M=
@@ -345,6 +343,8 @@ github.com/stretchr/testify v1.5.1 h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
+github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/swaggo/swag v1.7.0 h1:5bCA/MTLQoIqDXXyHfOpMeDvL9j68OY/udlK4pQoo4E=
 github.com/swaggo/swag v1.7.0/go.mod h1:BdPIL73gvS9NBsdi7M1JOxLvlbfvNRaBP8m6WT6Aajo=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=

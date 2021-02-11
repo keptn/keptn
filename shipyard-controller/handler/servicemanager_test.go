@@ -20,7 +20,6 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
-		HelmChart:   "",
 	}
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
@@ -39,7 +38,6 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
-		HelmChart:   "",
 	}
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
@@ -74,7 +72,6 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
-		HelmChart:   "",
 	}
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
@@ -113,7 +110,6 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
-		HelmChart:   "",
 	}
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
@@ -156,7 +152,6 @@ func TestCreateService(t *testing.T) {
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
-		HelmChart:   "",
 	}
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
