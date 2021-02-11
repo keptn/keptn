@@ -69,6 +69,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Keptnversion = "N/A"
 	payload.Keptnlabel = "keptn"
 	payload.Bridgeversion = "N/A"
+	payload.Shipyardversion = "0.2.0"
 
 	if h.k8sClient != nil {
 		deploymentsClient := h.k8sClient.AppsV1().Deployments(namespace)

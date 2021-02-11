@@ -5,42 +5,42 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/jeremywohl/flatten"
-
-	"github.com/keptn/keptn/mongodb-datastore/models"
-	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/mongodb-datastore/models"
+	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 )
 
-const contextToProjectCollection = "contextToProject"
-const rootEventCollectionSuffix = "-rootEvents"
-const invalidatedEventsCollectionSuffix = "-invalidatedEvents"
-const unmappedEventsCollectionName = "keptnUnmappedEvents"
+const (
+	contextToProjectCollection        = "contextToProject"
+	rootEventCollectionSuffix         = "-rootEvents"
+	invalidatedEventsCollectionSuffix = "-invalidatedEvents"
+	unmappedEventsCollectionName      = "keptnUnmappedEvents"
+	keptn07EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+)
 
-const keptn07EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+var (
+	client *mongo.Client
+	mutex  sync.Mutex
 
-var client *mongo.Client
-var mutex sync.Mutex
-
-var projectLocks = map[string]*sync.Mutex{}
-
-// define the indexes that should be created for each collection
-var rootEventsIndexes = []string{"data.service", "time"}
-var projectEventsIndexes = []string{"data.service", "shkeptncontext", "type"}
-var invalidatedEventsIndexes = []string{"triggeredid"}
-
-// keep track of created indexes in memory to save some calls to the mongodb API
-var skipCreateIndex = map[string]bool{}
+	projectLocks = map[string]*sync.Mutex{}
+	// define the indexes that should be created for each collection
+	rootEventsIndexes        = []string{"data.service", "time"}
+	projectEventsIndexes     = []string{"data.service", "shkeptncontext", "type"}
+	invalidatedEventsIndexes = []string{"triggeredid"}
+	// keep track of created indexes in memory to save some calls to the mongodb API
+	skipCreateIndex = map[string]bool{}
+)
 
 // LockProject locks the collections for a project
 func LockProject(project string) {
@@ -49,6 +49,7 @@ func LockProject(project string) {
 		defer mutex.Unlock()
 		projectLocks[project] = &sync.Mutex{}
 	}
+
 	projectLocks[project].Lock()
 }
 
@@ -59,6 +60,7 @@ func UnlockProject(project string) {
 		defer mutex.Unlock()
 		projectLocks[project] = &sync.Mutex{}
 	}
+
 	projectLocks[project].Unlock()
 }
 
@@ -77,6 +79,7 @@ func ensureDBConnection(logger *keptncommon.Logger) error {
 		logger.Debug("MongoDB client lost connection. Attempt reconnect.")
 		return connectMongoDBClient()
 	}
+
 	return nil
 }
 
@@ -96,6 +99,7 @@ func connectMongoDBClient() error {
 		err := fmt.Errorf("failed to connect client to MongoDB: %v", err)
 		return err
 	}
+
 	return nil
 }
 
@@ -113,11 +117,11 @@ func ProcessEvent(event *models.KeptnContextExtendedCE) error {
 	if string(event.Type) == keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName) {
 		return dropProjectEvents(logger, event)
 	}
+
 	return insertEvent(logger, event)
 }
 
 func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE) error {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -156,7 +160,6 @@ func insertEvent(logger *keptncommon.Logger, event *models.KeptnContextExtendedC
 			logger.Error(err.Error())
 			return err
 		}
-
 	}
 
 	for _, indexName := range projectEventsIndexes {
@@ -243,7 +246,6 @@ func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx conte
 	}
 
 	result := rootEventsForProjectCollection.FindOne(ctx, bson.M{"shkeptncontext": event.Shkeptncontext})
-
 	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
 		err := storeEventInCollection(event, rootEventsForProjectCollection, ctx)
 		if err != nil {
@@ -277,6 +279,7 @@ func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx conte
 			logger.Debug("Stored new root event for KeptnContext: " + event.Shkeptncontext)
 		}
 	}
+
 	logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
 	return nil
 }
@@ -292,6 +295,7 @@ func storeEventInCollection(event *models.KeptnContextExtendedCE, collection *mo
 		err := fmt.Errorf("Failed to store root event for KeptnContext "+event.Shkeptncontext+": %v", err.Error())
 		return err
 	}
+
 	return nil
 }
 
@@ -318,11 +322,11 @@ func storeContextToProjectMapping(logger *keptncommon.Logger, event *models.Kept
 			return err
 		}
 	}
+
 	return nil
 }
 
 func dropProjectEvents(logger *keptncommon.Logger, event *models.KeptnContextExtendedCE) error {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -393,6 +397,7 @@ func transformEventToInterface(event interface{}) (interface{}, error) {
 		err := fmt.Errorf("failed to unmarshal event: %v", err)
 		return nil, err
 	}
+
 	return eventInterface, nil
 }
 
@@ -407,6 +412,7 @@ func getProjectOfEvent(event *models.KeptnContextExtendedCE) string {
 			collectionName = collectionNameStr
 		}
 	}
+
 	return collectionName
 }
 
@@ -439,25 +445,22 @@ func GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return (*event.GetEventsOKBody)(result), nil
 }
 
 type getEventsResult struct {
 	// Events
 	Events []*models.KeptnContextExtendedCE `json:"events"`
-
 	// Pointer to the next page
 	NextPageKey string `json:"nextPageKey,omitempty"`
-
 	// Size of the returned page
 	PageSize int64 `json:"pageSize,omitempty"`
-
 	// Total number of events
 	TotalCount int64 `json:"totalCount,omitempty"`
 }
 
 func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *keptncommon.Logger) (*getEventsResult, error) {
-
 	collection := client.Database(mongoDBName).Collection(collectionName)
 
 	result := &getEventsResult{
@@ -481,7 +484,6 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *kep
 }
 
 func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onlyRootEvents bool, searchOptions bson.M, logger *keptncommon.Logger) (*getEventsResult, error) {
-
 	var newNextPageKey int64
 	var nextPageKey int64 = 0
 	if nextPageKeyStr != nil {
@@ -611,6 +613,7 @@ func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger)
 			return "", err
 		}
 	}
+
 	return collectionName, nil
 }
 
@@ -660,6 +663,7 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 			"$gt": *params.FromTime,
 		}
 	}
+
 	return searchOptions
 }
 
@@ -676,7 +680,6 @@ func setEventTypeMatchCriteria(eventType string, searchOptions bson.M) bson.M {
 }
 
 func flattenRecursively(i interface{}, logger *keptncommon.Logger) (interface{}, error) {
-
 	if _, ok := i.(bson.D); ok {
 		d := i.(bson.D)
 		myMap := d.Map()
@@ -708,6 +711,7 @@ func flattenRecursively(i interface{}, logger *keptncommon.Logger) (interface{},
 		}
 		return a, nil
 	}
+
 	return i, nil
 }
 
@@ -825,6 +829,7 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 	} else {
 		aggregationPipeline = mongo.Pipeline{matchStage, lookupStage, matchInvalidatedStage, sortStage}
 	}
+
 	return aggregationPipeline
 }
 
@@ -836,6 +841,7 @@ func getInvalidatedEventType(eventType string) string {
 	for i := 1; i < len(split)-1; i = i + 1 {
 		invalidatedEventType = invalidatedEventType + "." + split[i]
 	}
+
 	invalidatedEventType = invalidatedEventType + ".invalidated"
 	return invalidatedEventType
 }

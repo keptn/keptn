@@ -5,12 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptn "github.com/keptn/go-utils/pkg/lib"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/mitchellh/mapstructure"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -18,6 +12,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/ghodss/yaml"
+	"github.com/mitchellh/mapstructure"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 type datastoreResult struct {
@@ -98,8 +100,10 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 					Labels:  e.Labels,
 				},
 			}
+
 			return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationResult)
 		}
+
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), "", eh.KeptnHandler, e)
 	}
 
@@ -249,6 +253,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 	}
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
+
 	return evaluationResult, maximumAchievableScore, keySLIFailed
 }
 
@@ -297,6 +302,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 		evaluationResult.Result = keptnv2.ResultFailed
 		evaluationResult.Status = keptnv2.StatusSucceeded
 	}
+
 	return nil
 }
 
@@ -306,6 +312,7 @@ func getSLIResult(results []*keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
 			return sliResult
 		}
 	}
+
 	return nil
 }
 
@@ -323,6 +330,7 @@ func evaluateOrCombinedCriteria(result *keptnv2.SLIResult, sloCriteria []*keptn.
 			sliTargets = append(sliTargets, evaluatedTarget)
 		}
 	}
+
 	return satisfied, sliTargets, nil
 }
 
@@ -343,6 +351,7 @@ func evaluateCriteriaSet(result *keptnv2.SLIResult, sloCriteria *keptn.SLOCriter
 		}
 		sliTargets = append(sliTargets, target)
 	}
+
 	return satisfied, sliTargets, nil
 }
 
@@ -426,6 +435,7 @@ func calculateAverage(values []float64) float64 {
 	if len(values) > 0 {
 		return sum / float64(len(values))
 	}
+
 	return 0.0
 }
 
@@ -452,6 +462,7 @@ func calculatePercentile(values sort.Float64Slice, perc float64) float64 {
 			}
 		}
 	}
+
 	return scores[0]
 }
 
@@ -619,6 +630,6 @@ func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnv2.GetSLIFi
 		eh.KeptnHandler.Logger.Error("Cannot decode approval.triggered event: " + err.Error())
 		return nil, err
 	}
-	return testsFinishedEvent, nil
 
+	return testsFinishedEvent, nil
 }

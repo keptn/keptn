@@ -1,3 +1,4 @@
+import semver from 'semver';
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
@@ -9,6 +10,7 @@ export class Project {
   gitUser: string;
   gitRemoteURI: string;
   gitToken: string;
+  shipyardVersion: string;
 
   stages: Stage[];
   services: Service[];
@@ -22,6 +24,15 @@ export class Project {
       });
     }
     return this.services;
+  }
+
+  getShipyardVersion(): string {
+    return this.shipyardVersion?.split('/').pop();
+  }
+
+  isShipyardNotSupported(supportedVersion: string): boolean {
+    const version = this.getShipyardVersion();
+    return !version || !supportedVersion || semver.lt(version, supportedVersion);
   }
 
   getService(serviceName: string): Service {

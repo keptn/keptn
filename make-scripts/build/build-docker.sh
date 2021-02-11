@@ -3,7 +3,7 @@
 set -e
 
 DOCKER_ORG_NAME="keptn"
-DOCKER_VERSION=$(git describe --abbrev=1 --tags)
+DOCKER_VERSION=${DOCKER_VERSION:-$(git describe --abbrev=1 --tags || echo "dev")}
 DOCKER_ROOT_PATH="./"
 
 cd "$DOCKER_ROOT_PATH"
@@ -53,5 +53,5 @@ for dockerfile in "${DOCKERFILE_LIST[@]}"; do
   DOCKER_TAG="$DOCKER_ORG_NAME/$DOCKER_NAME:$DOCKER_VERSION"
 
   echo "Building docker image $DOCKER_TAG using $dockerfile"
-  docker build -t $DOCKER_TAG "$DOCKER_PATH"
+  docker build -t "$DOCKER_TAG" "$DOCKER_PATH"
 done

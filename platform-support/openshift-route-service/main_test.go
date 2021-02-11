@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
 	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
@@ -36,6 +37,7 @@ func Test_getEnableMeshCommandArgs(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getEnableMeshCommandArgs(tt.args.project, tt.args.stage); !reflect.DeepEqual(got, tt.want) {
@@ -46,7 +48,6 @@ func Test_getEnableMeshCommandArgs(t *testing.T) {
 }
 
 func Test_gotEvent(t *testing.T) {
-
 	testEvent := cloudevents.NewEvent()
 	testEvent.SetID("123")
 	testEvent.SetType("some-event")
@@ -69,6 +70,7 @@ func Test_gotEvent(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := gotEvent(tt.args.ctx, tt.args.event); (err != nil) != tt.wantErr {
@@ -96,6 +98,7 @@ func Test_createRoutes(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 		})
@@ -125,6 +128,7 @@ func Test__main(t *testing.T) {
 			want: 0,
 		},
 	}
+
 	for _, tt := range tests {
 		ctx := context.Background()
 		t.Run(tt.name, func(t *testing.T) {

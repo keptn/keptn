@@ -1,0 +1,12 @@
+@import '~@dynatrace/barista-components/style/main';
+
+.stage-state {
+  border-top: 1px solid $gray-300;
+  border-bottom: 1px solid $gray-300;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.no-deployment {
+  color: $gray-500;
+}

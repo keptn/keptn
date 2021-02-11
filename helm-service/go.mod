@@ -3,13 +3,14 @@ module github.com/keptn/keptn/helm-service
 go 1.13
 
 require (
+	cloud.google.com/go v0.40.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.4.4
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
-	github.com/keptn/kubernetes-utils v0.8.0-alpha
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210209153241-3c858340d072
+	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible

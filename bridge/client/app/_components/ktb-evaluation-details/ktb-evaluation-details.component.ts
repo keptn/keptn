@@ -17,16 +17,17 @@ Treemap(Highcharts);
 
 import * as moment from 'moment';
 import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {DtChart, DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";
 
-import {DataService} from "../../_services/data.service";
-import DateUtil from "../../_utils/date.utils";
-import {Trace} from "../../_models/trace";
-import SearchUtil from "../../_utils/search.utils";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
-import { ClipboardService } from '../../_services/clipboard.service';
+
+import {ClipboardService} from '../../_services/clipboard.service';
+import {DataService} from "../../_services/data.service";
+import {DateUtil} from "../../_utils/date.utils";
+
+import {Trace} from "../../_models/trace";
 
 @Component({
   selector: 'ktb-evaluation-details',
@@ -174,7 +175,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
     if(this._evaluationData) {
@@ -410,14 +411,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
-  }
-
-  getCalendarFormat() {
-    return DateUtil.getCalendarFormats().sameElse;
-  }
-
-  getDuration(start, end) {
-    return DateUtil.getDurationFormatted(start, end);
   }
 
   showSloDialog() {

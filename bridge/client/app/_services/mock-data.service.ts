@@ -4,7 +4,7 @@ import {Project} from "../_models/project";
 import {Root} from "../_models/root";
 import {Service} from "../_models/service";
 import {Trace} from "../_models/trace";
-import DateUtil from "../_utils/date.utils";
+import {DateUtil} from "../_utils/date.utils";
 
 @Injectable({
   providedIn: 'root'

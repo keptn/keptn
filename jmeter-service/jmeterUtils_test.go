@@ -3,14 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
+
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 func Test_executeJMeter(t *testing.T) {

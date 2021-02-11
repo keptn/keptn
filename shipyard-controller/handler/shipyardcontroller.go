@@ -23,30 +23,30 @@ var errNoMatchingEvent = errors.New("no matching event found")
 var shipyardControllerInstance *shipyardController
 
 type IShipyardController interface {
-	GetAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error)
-	GetTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error)
+	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
+	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
 	HandleIncomingEvent(event models.Event) error
 }
 
 type shipyardController struct {
-	projectRepo      db.ProjectRepo
-	eventRepo        db.EventRepo
-	taskSequenceRepo db.TaskSequenceRepo
-	logger           *keptncommon.Logger
+	projectRepo        db.ProjectRepo
+	eventRepo          db.EventRepo
+	taskSequenceRepo   db.TaskSequenceRepo
+	eventsDbOperations db.EventsDbOperations
+	logger             *keptncommon.Logger
 }
 
 func GetShipyardControllerInstance() *shipyardController {
 	if shipyardControllerInstance == nil {
 		logger := keptncommon.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
-			projectRepo: &db.ProjectMongoDBRepo{
-				Logger: logger,
-			},
-			eventRepo: &db.MongoDBEventsRepo{
-				Logger: logger,
-			},
-			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{
-				Logger: logger,
+			projectRepo:      &db.MongoDBProjectsRepo{Logger: logger},
+			eventRepo:        &db.MongoDBEventsRepo{Logger: logger},
+			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{Logger: logger},
+			eventsDbOperations: &db.ProjectsMaterializedView{
+				ProjectRepo:     &db.MongoDBProjectsRepo{Logger: logger},
+				EventsRetriever: &db.MongoDBEventsRepo{Logger: logger},
+				Logger:          logger,
 			},
 			logger: logger,
 		}
@@ -54,7 +54,7 @@ func GetShipyardControllerInstance() *shipyardController {
 	return shipyardControllerInstance
 }
 
-func (sc *shipyardController) GetAllTriggeredEvents(filter db.EventFilter) ([]models.Event, error) {
+func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error) {
 	projects, err := sc.projectRepo.GetProjects()
 
 	if err != nil {
@@ -63,8 +63,8 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter db.EventFilter) ([]mo
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events of project %s with filter: %s", project, printObject(filter)))
-		events, err := sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
+		sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events of project %s with filter: %s", project.ProjectName, printObject(filter)))
+		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
 		}
@@ -72,9 +72,9 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter db.EventFilter) ([]mo
 	return allEvents, nil
 }
 
-func (sc *shipyardController) GetTriggeredEventsOfProject(project string, filter db.EventFilter) ([]models.Event, error) {
+func (sc *shipyardController) GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error) {
 	sc.logger.Info(fmt.Sprintf("Retrieving all .triggered events with filter: %s", printObject(filter)))
-	return sc.eventRepo.GetEvents(project, filter, db.TriggeredEvent)
+	return sc.eventRepo.GetEvents(project, filter, common.TriggeredEvent)
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
@@ -83,16 +83,40 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 
 	statusType := split[len(split)-1]
 
+	eventData := &keptnv2.EventData{}
+	err := keptnv2.Decode(event, eventData)
+	if err != nil {
+		sc.logger.Error("Could not parse event data: " + err.Error())
+		return err
+	}
+
+	if eventData.Project != "" {
+		go func() {
+			common.LockProject(eventData.Project)
+			defer common.UnlockProject(eventData.Project)
+			if err := sc.eventsDbOperations.UpdateEventOfService(
+				event.Data,
+				*event.Type,
+				event.Shkeptncontext,
+				event.ID,
+				event.Triggeredid,
+			); err != nil {
+				sc.logger.Error(fmt.Sprintf("could not update event for project %s: %s", eventData.Project, err.Error()))
+			}
+		}()
+	}
+
 	switch statusType {
-	case string(db.TriggeredEvent):
+	case string(common.TriggeredEvent):
 		return sc.handleTriggeredEvent(event)
-	case string(db.StartedEvent):
+	case string(common.StartedEvent):
 		return sc.handleStartedEvent(event)
-	case string(db.FinishedEvent):
+	case string(common.FinishedEvent):
 		return sc.handleFinishedEvent(event)
 	default:
 		return nil
 	}
+
 }
 
 func getEventScope(event models.Event) (*keptnv2.EventData, error) {
@@ -131,13 +155,13 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
-	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.FinishedEvent))
+	trimmedEventType := strings.TrimSuffix(*event.Type, string(common.FinishedEvent))
 	// get corresponding 'started' event for the incoming 'finished' event
-	filter := db.EventFilter{
-		Type:        trimmedEventType + string(db.StartedEvent),
+	filter := common.EventFilter{
+		Type:        trimmedEventType + string(common.StartedEvent),
 		TriggeredID: &event.Triggeredid,
 	}
-	startedEvents, err := sc.getEvents(eventScope.Project, filter, db.StartedEvent, maxRepoReadRetries)
+	startedEvents, err := sc.getEvents(eventScope.Project, filter, common.StartedEvent, maxRepoReadRetries)
 
 	if err != nil {
 		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
@@ -150,14 +174,14 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 
 	// persist the .finished event
-	err = sc.eventRepo.InsertEvent(eventScope.Project, event, db.FinishedEvent)
+	err = sc.eventRepo.InsertEvent(eventScope.Project, event, common.FinishedEvent)
 	if err != nil {
 		sc.logger.Error("Could not store .finished event: " + err.Error())
 	}
 
 	for _, startedEvent := range startedEvents {
 		if *event.Source == *startedEvent.Source {
-			err = sc.eventRepo.DeleteEvent(eventScope.Project, startedEvent.ID, db.StartedEvent)
+			err = sc.eventRepo.DeleteEvent(eventScope.Project, startedEvent.ID, common.StartedEvent)
 			if err != nil {
 				msg := "could not delete '.started' event with ID " + startedEvent.ID + ": " + err.Error()
 				sc.logger.Error(msg)
@@ -167,11 +191,11 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
-		triggeredEventFilter := db.EventFilter{
-			Type: trimmedEventType + string(db.TriggeredEvent),
+		triggeredEventFilter := common.EventFilter{
+			Type: trimmedEventType + string(common.TriggeredEvent),
 			ID:   &event.Triggeredid,
 		}
-		triggeredEvents, err := sc.getEvents(eventScope.Project, triggeredEventFilter, db.TriggeredEvent, maxRepoReadRetries)
+		triggeredEvents, err := sc.getEvents(eventScope.Project, triggeredEventFilter, common.TriggeredEvent, maxRepoReadRetries)
 		if err != nil {
 			msg := "could not retrieve '.triggered' event with ID " + event.Triggeredid + ": " + err.Error()
 			sc.logger.Error(msg)
@@ -184,7 +208,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 		// if the previously deleted '.started' event was the last, the '.triggered' event can be removed
 		sc.logger.Info("triggered event will be deleted")
-		err = sc.eventRepo.DeleteEvent(eventScope.Project, triggeredEvents[0].ID, db.TriggeredEvent)
+		err = sc.eventRepo.DeleteEvent(eventScope.Project, triggeredEvents[0].ID, common.TriggeredEvent)
 		if err != nil {
 			msg := "Could not delete .triggered event with ID " + event.Triggeredid + ": " + err.Error()
 			sc.logger.Error(msg)
@@ -220,13 +244,13 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 
 		sc.logger.Info("retrieving all .finished events for task " + trimmedEventType + " triggered by " + event.Triggeredid + " to aggregate data")
-		allFinishedEventsForTask, err := sc.eventRepo.GetEvents(eventScope.Project, db.EventFilter{
+		allFinishedEventsForTask, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 			Type:    "",
 			Stage:   &eventScope.Stage,
 			Service: &eventScope.Service,
 			// TriggeredID: &event.Triggeredid,
 			KeptnContext: &event.Shkeptncontext,
-		}, db.FinishedEvent)
+		}, common.FinishedEvent)
 		if err != nil {
 			msg := "Could not retrieve " + *event.Type + " events: " + err.Error()
 			sc.logger.Error(msg)
@@ -315,7 +339,7 @@ func merge(in1, in2 interface{}) interface{} {
 	return in1
 }
 
-func (sc *shipyardController) getEvents(project string, filter db.EventFilter, status db.EventStatus, nrRetries int) ([]models.Event, error) {
+func (sc *shipyardController) getEvents(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
 	sc.logger.Info(string("Trying to get " + status + " events"))
 	for i := 0; i <= nrRetries; i++ {
 		startedEvents, err := sc.eventRepo.GetEvents(project, filter, status)
@@ -339,14 +363,14 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
-	trimmedEventType := strings.TrimSuffix(*event.Type, string(db.StartedEvent))
+	trimmedEventType := strings.TrimSuffix(*event.Type, string(common.StartedEvent))
 	// get corresponding 'triggered' event for the incoming 'started' event
-	filter := db.EventFilter{
-		Type: trimmedEventType + string(db.TriggeredEvent),
+	filter := common.EventFilter{
+		Type: trimmedEventType + string(common.TriggeredEvent),
 		ID:   &event.Triggeredid,
 	}
 
-	events, err := sc.getEvents(eventScope.Project, filter, db.TriggeredEvent, maxRepoReadRetries)
+	events, err := sc.getEvents(eventScope.Project, filter, common.TriggeredEvent, maxRepoReadRetries)
 
 	if err != nil {
 		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
@@ -358,7 +382,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		return errNoMatchingEvent
 	}
 
-	return sc.eventRepo.InsertEvent(eventScope.Project, event, db.StartedEvent)
+	return sc.eventRepo.InsertEvent(eventScope.Project, event, common.StartedEvent)
 }
 
 func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
@@ -426,7 +450,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return err
 	}
 
-	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, db.TriggeredEvent); err != nil {
+	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
 		sc.logger.Info("could not store event that triggered task sequence: " + err.Error())
 	}
 
@@ -451,11 +475,11 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask)
 	if err != nil && err == errNoFurtherTaskForSequence {
 		// get the input for te .triggered event that triggered the previous sequence and append it to the list of previous events to gather all required data for the next stage
-		events, err := sc.eventRepo.GetEvents(eventScope.Project, db.EventFilter{
+		events, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 			Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequence.Name),
 			Stage:        &eventScope.Stage,
 			KeptnContext: &event.Shkeptncontext,
-		}, db.TriggeredEvent)
+		}, common.TriggeredEvent)
 
 		if err != nil {
 			sc.logger.Error("Could not load event that triggered task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
@@ -526,10 +550,10 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 
 	sc.logger.Info("Deleting all task.finished events of task sequence " + taskSequenceName + " with context " + keptnContext)
 	// delete all finished events of this sequence
-	finishedEvents, err := sc.eventRepo.GetEvents(eventScope.Project, db.EventFilter{
+	finishedEvents, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 		Stage:        &eventScope.Stage,
 		KeptnContext: &keptnContext,
-	}, db.FinishedEvent)
+	}, common.FinishedEvent)
 
 	if err != nil {
 		sc.logger.Error("could not retrieve task.finished events: " + err.Error())
@@ -537,7 +561,7 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 	}
 
 	for _, event := range finishedEvents {
-		err = sc.eventRepo.DeleteEvent(eventScope.Project, event.ID, db.FinishedEvent)
+		err = sc.eventRepo.DeleteEvent(eventScope.Project, event.ID, common.FinishedEvent)
 		if err != nil {
 			sc.logger.Error("could not delete " + *event.Type + " event with ID " + event.ID + ": " + err.Error())
 			return err
@@ -659,7 +683,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	if err != nil {
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
-	if err := sc.eventRepo.InsertEvent(eventScope.Project, *toEvent, db.TriggeredEvent); err != nil {
+	if err := sc.eventRepo.InsertEvent(eventScope.Project, *toEvent, common.TriggeredEvent); err != nil {
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
 
@@ -725,7 +749,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 		return err
 	}
 
-	err = sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, db.TriggeredEvent)
+	err = sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent)
 	if err != nil {
 		sc.logger.Error("Could not store event: " + err.Error())
 		return err

@@ -6,7 +6,7 @@ ARG version=develop
 # Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/platform-support/openshift-route-service
 
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
@@ -28,7 +28,7 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 COPY . .
 
 # Build the command inside the container.
-# (You may fetch or manage dependencies here, 
+# (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o  openshift-route-service
 
@@ -38,7 +38,7 @@ FROM alpine:3.11
 RUN apk add --no-cache ca-certificates libc6-compat
 
 ARG OC_VERSION=3.11.0
-RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v$OC_VERSION-0cbc58b-linux-64bit.tar.gz && \ 
+RUN wget https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v$OC_VERSION-0cbc58b-linux-64bit.tar.gz && \
   tar xzvf openshift*tar.gz && \
   cp openshift-origin-client-tools-*/oc /bin/oc && \
   cp openshift-origin-client-tools-*/oc /usr/local/bin && \

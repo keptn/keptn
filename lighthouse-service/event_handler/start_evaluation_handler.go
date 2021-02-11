@@ -3,9 +3,11 @@ package event_handler
 import (
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 type StartEvaluationHandler struct {
@@ -15,7 +17,6 @@ type StartEvaluationHandler struct {
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
-
 	var keptnContext string
 	_ = eh.Event.ExtensionAs("shkeptncontext", &keptnContext)
 

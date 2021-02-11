@@ -6,7 +6,7 @@ ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
@@ -25,7 +25,7 @@ ARG debugBuild
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-# Copy local code to the container image. 
+# Copy local code to the container image.
 COPY . .
 
 ENV REPLACE="version: ${version}"

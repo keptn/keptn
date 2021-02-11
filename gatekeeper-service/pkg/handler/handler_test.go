@@ -1,19 +1,20 @@
 package handler
 
 import (
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"reflect"
 
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
-const shkeptncontext = "1234-4567"
-const eventID = "2345-6789"
+const (
+	shkeptncontext = "1234-4567"
+	eventID        = "2345-6789"
+)
 
 func compareEventContext(in1 cloudevents.Event, in2 cloudevents.Event) bool {
-
 	return in1.Type() == in2.Type() && in1.Source() == in2.Source() &&
 		in1.DataContentType() == in2.DataContentType() && reflect.DeepEqual(in1.Extensions(), in2.Extensions()) &&
 		reflect.DeepEqual(in1.Data(), in2.Data())
@@ -24,7 +25,6 @@ func getPtr(s string) *string {
 }
 
 func getShipyardWithoutApproval() keptnevents.Shipyard {
-
 	return keptnevents.Shipyard{
 		Stages: []struct {
 			Name                string                              `json:"name" yaml:"name"`
@@ -79,7 +79,6 @@ func getApprovalTriggeredTestData(result keptnv2.ResultType, passStrategy, warni
 }
 
 func getApprovalFinishedTestData(result keptnv2.ResultType, status keptnv2.StatusType) keptnv2.ApprovalFinishedEventData {
-
 	return keptnv2.ApprovalFinishedEventData{
 		EventData: keptnv2.EventData{
 			Project: "sockshop",
@@ -96,7 +95,6 @@ func getApprovalFinishedTestData(result keptnv2.ResultType, status keptnv2.Statu
 }
 
 func getApprovalStartedTestData(status keptnv2.StatusType) keptnv2.ApprovalStartedEventData {
-
 	return keptnv2.ApprovalStartedEventData{
 		EventData: keptnv2.EventData{
 			Project: "sockshop",

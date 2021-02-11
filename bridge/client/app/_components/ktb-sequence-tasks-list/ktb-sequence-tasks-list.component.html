@@ -1,0 +1,20 @@
+<div fxLayout="column" fxLayoutGap="15px">
+  <div *ngIf="getTasksByStage(tasks, stage)[0] as sequence">
+    <p class="mb-1">
+      <span class="bold" [textContent]="sequence.getLabel()"></span>
+      started in
+      <span class="bold" [textContent]="sequence.getStage()"></span>
+      at
+      <span [textContent]="sequence.time | amDateFormat:dateUtil.getTimeFormat()"></span>
+      <span *ngIf="sequence.traces[0] as sequenceFinished">
+        and finished with result
+        <span [class.success]="sequenceFinished.isSuccessful()" [class.error]="sequenceFinished.isFaulty()" [textContent]="sequenceFinished.data.result"></span>
+        at
+        <span [textContent]="sequenceFinished.time | amDateFormat:dateUtil.getTimeFormat()"></span>
+      </span>
+    </p>
+  </div>
+  <div #taskRef fxLayout="column" fxLayoutGap="15px" *ngFor="let task of getTasksByStage(tasks, stage) | slice:1; let i = index; trackBy: identifyEvent">
+    <ktb-task-item [task]="task" [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)" (click)="focusEvent(task)"></ktb-task-item>
+  </div>
+</div>

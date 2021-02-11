@@ -3,17 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"keptn/gatekeeper-service/pkg/handler"
 	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/kelseyhightower/envconfig"
 
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-
-	"github.com/kelseyhightower/envconfig"
 )
 
 type envConfig struct {
@@ -27,6 +26,7 @@ func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
+
 	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(os.Args[1:], env))
 }

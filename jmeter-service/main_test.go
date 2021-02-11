@@ -1,11 +1,12 @@
 package main
 
 import (
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"log"
 	"net/url"
 	"reflect"
 	"testing"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 var serviceURLTests = []struct {
