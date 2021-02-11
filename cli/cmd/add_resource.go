@@ -88,7 +88,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 		if isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) {
 			// add to all stages
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to all stages of project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if isStringFlagSet(addResourceCmdParams.Service) && isStringFlagSet(addResourceCmdParams.Stage) {
+		} else if areStringFlagsSet(addResourceCmdParams.Service, addResourceCmdParams.Stage) {
 			// add to service and stage
 			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
 		} else if !isStringFlagSet(addResourceCmdParams.Service) && isStringFlagSet(addResourceCmdParams.Stage) {
