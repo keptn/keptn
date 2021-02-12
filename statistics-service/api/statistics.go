@@ -1,11 +1,11 @@
 package api
 
 import (
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/statistics-service/config"
 	"github.com/keptn/keptn/statistics-service/controller"
 	"github.com/keptn/keptn/statistics-service/db"
@@ -26,7 +26,7 @@ import (
 // @Failure 500 {object} operations.Error "Internal error"
 // @Router /statistics [get]
 func GetStatistics(c *gin.Context) {
-	logger := keptn.NewLogger("", "", "statistics-service")
+	logger := keptncommon.NewLogger("", "", "statistics-service")
 	params := &operations.GetStatisticsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, operations.Error{

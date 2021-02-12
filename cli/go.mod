@@ -18,9 +18,8 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210211072226-737e673e5205
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
