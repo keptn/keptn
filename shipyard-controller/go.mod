@@ -7,10 +7,11 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3
-	github.com/go-openapi/errors v0.19.9
-	github.com/go-openapi/strfmt v0.20.0
-	github.com/go-openapi/swag v0.19.14
-	github.com/go-openapi/validate v0.20.2
+	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/spec v0.20.2 // indirect
+	github.com/go-openapi/strfmt v0.19.3
+	github.com/go-openapi/swag v0.19.13
+	github.com/go-openapi/validate v0.19.5
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-test/deep v1.0.5
 	github.com/golang/protobuf v1.4.3 // indirect
