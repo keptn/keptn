@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/spf13/cobra"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -13,7 +14,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/validator"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
-	"github.com/spf13/cobra"
 )
 
 type onboardServiceCmdParams struct {
@@ -30,7 +30,6 @@ var serviceCmd = &cobra.Command{
 	Long: `Onboards a new service and its Helm chart to the provided project. 
 Therefore, this command takes a folder to a Helm chart or an already packed Helm chart as .tgz.
 `,
-	Deprecated: "please use create service and add-resource or git add/commit",
 	Example: `keptn onboard service SERVICENAME --project=PROJECTNAME --chart=FILEPATH
 
 keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
@@ -67,15 +66,15 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 			return err
 		}
 
-		chartData, err := keptnutils.PackageChart(chart)
+		chartData, err := keptnutils.NewChartPackager().Package(chart)
 		if err != nil {
 			return err
 		}
 
-		helmChart := base64.StdEncoding.EncodeToString(chartData)
+		serviceName := args[0]
+
 		service := apimodels.CreateService{
-			ServiceName: &args[0],
-			HelmChart:   helmChart,
+			ServiceName: &serviceName,
 		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
@@ -84,8 +83,40 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 		if !mocking {
 			_, err := apiHandler.CreateService(*onboardServiceParams.Project, service)
 			if err != nil {
-				logging.PrintLog("Onboard service was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("Onboard service was unsuccessful. %s", *err.Message)
+				logging.PrintLog("Onboard service: Create service was unsuccessful", logging.QuietLevel)
+				return fmt.Errorf("Onboard service: Create service was unsuccessful. %s", *err.Message)
+			}
+
+			// initialize handlers
+			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+			stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
+			chartStorer := keptnutils.NewChartStorer(resourceHandler)
+
+			// get all stages
+			stages, err2 := stagesHandler.GetAllStages(*onboardServiceParams.Project)
+
+			if err2 != nil {
+				return fmt.Errorf("Failed to retrieve stages for project %s: %v", *stageParameter.project, err)
+			}
+
+			if len(stages) == 0 {
+				fmt.Println("No stages found")
+				return nil
+			}
+
+			for _, stage := range stages {
+				storeOpts := keptnutils.StoreChartOptions{
+					Project:   *onboardServiceParams.Project,
+					Service:   serviceName,
+					Stage:     stage.StageName,
+					ChartName: serviceName,
+					HelmChart: chartData,
+				}
+
+				if _, err := chartStorer.Store(storeOpts); err != nil {
+					logging.PrintLog("Error when storing the Helm Chart: "+err.Error(), logging.QuietLevel)
+					return fmt.Errorf("Onboard service: Storing charts was unsuccessful. %v", err)
+				}
 			}
 
 			logging.PrintLog("Service onboarded successfully", logging.InfoLevel)

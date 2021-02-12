@@ -89,9 +89,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
 		releaseHandler.HandleEvent(event)
-	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
-		onboardHandler := createOnboardHandler(configServiceURL, shipyardControllerURL, keptnHandler, mesh)
-		onboardHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
 		actionHandler.HandleEvent(event)
@@ -145,14 +142,6 @@ func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh
 	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
 	onBoarder := controller.NewOnboarder(keptnBaseHandler, namespaceManager, chartStorer, chartGenerator, chartPackager)
 	return onBoarder
-}
-
-func createOnboardHandler(configServiceURL *url.URL, shipyardControllerURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.OnboardHandler {
-	projectHandler := keptnapi.NewProjectHandler(shipyardControllerURL.String())
-	stagesHandler := configutils.NewStageHandler(shipyardControllerURL.String())
-	onBoarder := createOnboarder(configServiceURL, keptn, mesh)
-	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
-	return controller.NewOnboardHandler(keptnBaseHandler, projectHandler, stagesHandler, onBoarder)
 }
 
 func createDeploymentHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
