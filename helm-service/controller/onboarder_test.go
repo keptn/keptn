@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/base64"
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
@@ -10,7 +9,6 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/mocks"
-	"github.com/keptn/keptn/helm-service/pkg/helm"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
@@ -312,88 +310,6 @@ func TestOnboardGeneratedChart_chartStorageFails(t *testing.T) {
 	generatedChart, err := instance.OnboardGeneratedChart(helmManifestResource, keptnv2.EventData{Project: "myproject", Stage: "mydev", Service: "myservice"}, keptnevents.Duplicate)
 	assert.NotNil(t, err)
 	assert.Nil(t, generatedChart)
-}
-
-func TestOnboardService(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
-	mockChartStorer := mocks.NewMockIChartStorer(ctrl)
-	mockChartGenerator := mocks.NewMockChartGenerator(ctrl)
-	mockChartPackager := mocks.NewMockIChartPackager(ctrl)
-	mockBaseHandler := NewMockedHandler(createKeptn(), "")
-
-	helmData := helm.CreateTestHelmChartData(t)
-	e := &keptnv2.ServiceCreateFinishedEventData{
-		EventData: keptnv2.EventData{
-			Project: "project",
-			Stage:   "dev",
-			Service: "service",
-		},
-		Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(helmData)},
-	}
-
-	storeOpts := keptnutils.StoreChartOptions{
-		Project:   e.Project,
-		Service:   e.Service,
-		Stage:     "dev",
-		ChartName: helm.GetChartName(e.Service, false),
-		HelmChart: helmData,
-	}
-
-	instance := NewOnboarder(mockBaseHandler, mockNamespaceManager, mockChartStorer, mockChartGenerator, mockChartPackager)
-	mockChartStorer.EXPECT().Store(storeOpts).Return("version", nil)
-	err := instance.OnboardService("dev", e)
-	assert.Nil(t, err)
-}
-
-func TestOnboardServiceReceivingInvalidHelmChartData(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
-	mockChartStorer := mocks.NewMockIChartStorer(ctrl)
-	mockChartGenerator := mocks.NewMockChartGenerator(ctrl)
-	mockChartPackager := mocks.NewMockIChartPackager(ctrl)
-	mockBaseHandler := NewMockedHandler(createKeptn(), "") //NewMockHandler(ctrl)
-
-	e := &keptnv2.ServiceCreateFinishedEventData{
-		EventData: keptnv2.EventData{
-			Project: "project",
-			Stage:   "dev",
-			Service: "service",
-		},
-		Helm: keptnv2.Helm{Chart: "&&&&&&&&&&"},
-	}
-
-	mockChartStorer.EXPECT().Store(gomock.Any()).Times(0)
-	instance := NewOnboarder(mockBaseHandler, mockNamespaceManager, mockChartStorer, mockChartGenerator, mockChartPackager)
-	err := instance.OnboardService("dev", e)
-	assert.NotNil(t, err)
-}
-
-func TestOnboardServiceChartStoringChartsFails(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockNamespaceManager := mocks.NewMockINamespaceManager(ctrl)
-	mockChartStorer := mocks.NewMockIChartStorer(ctrl)
-	mockChartGenerator := mocks.NewMockChartGenerator(ctrl)
-	mockChartPackager := mocks.NewMockIChartPackager(ctrl)
-	mockBaseHandler := NewMockedHandler(createKeptn(), "")
-
-	helmData := helm.CreateTestHelmChartData(t)
-	e := &keptnv2.ServiceCreateFinishedEventData{
-		EventData: keptnv2.EventData{
-			Project: "project",
-			Stage:   "dev",
-			Service: "service",
-		},
-		Helm: keptnv2.Helm{Chart: base64.StdEncoding.EncodeToString(helmData)},
-	}
-
-	instance := NewOnboarder(mockBaseHandler, mockNamespaceManager, mockChartStorer, mockChartGenerator, mockChartPackager)
-	mockChartStorer.EXPECT().Store(gomock.Any()).Return("", errors.New("FAILED TO STORE CHART"))
-	err := instance.OnboardService("dev", e)
-	assert.NotNil(t, err)
 }
 
 func createUnparsableEvent() event.Event {
