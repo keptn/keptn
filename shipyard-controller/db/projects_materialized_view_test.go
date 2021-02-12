@@ -895,7 +895,7 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 								ConfigurationChange: keptnv2.ConfigurationChange{
 									Values: map[string]interface{}{"image": "the-service-image:latest"},
 								},
-								Deployment: keptnv2.DeploymentWithStrategy{},
+								Deployment: keptnv2.DeploymentTriggeredData{},
 							},
 							ID: "the-triggered-id",
 						}

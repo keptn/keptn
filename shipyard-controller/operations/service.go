@@ -3,9 +3,6 @@ package operations
 type CreateServiceParams struct {
 	// name
 	ServiceName *string `json:"serviceName"`
-
-	// shipyard
-	HelmChart string `json:"helmChart"`
 }
 
 type CreateServiceResponse struct {
