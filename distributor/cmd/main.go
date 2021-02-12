@@ -206,6 +206,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	forwardReq.URL = parsedProxyURL
+	forwardReq.URL.RawQuery = req.URL.RawQuery
 
 	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
 
@@ -222,6 +223,13 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	for name, headers := range resp.Header {
+		for _, h := range headers {
+			rw.Header().Set(name, h)
+		}
+	}
+
 	rw.WriteHeader(resp.StatusCode)
 
 	defer resp.Body.Close()
