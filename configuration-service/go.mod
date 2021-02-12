@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/runtime v0.19.4
 	github.com/go-openapi/spec v0.19.3
 	github.com/go-openapi/strfmt v0.19.3
-	github.com/go-openapi/swag v0.19.5
+	github.com/go-openapi/swag v0.19.14
 	github.com/go-openapi/validate v0.19.5
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/martian v2.1.0+incompatible
@@ -19,7 +19,7 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210203161317-67ac0f2ba06d
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210208085038-093c00d82da4
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
