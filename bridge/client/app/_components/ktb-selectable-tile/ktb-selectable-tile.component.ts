@@ -1,4 +1,18 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Directive,
+  Input,
+  OnInit,
+  ViewEncapsulation
+} from '@angular/core';
+
+@Directive({
+  selector: `ktb-selectable-tile-header, [ktb-selectable-tile-header], [ktbSelectableTileHeader]`,
+  exportAs: 'ktbSelectableTileHeader',
+})
+export class KtbSelectableTileHeader {}
 
 @Component({
   selector: 'ktb-selectable-tile',

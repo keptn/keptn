@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source test/utils.sh
+ source test/utils.sh
 
 function cleanup() {
   # print logs of dynatrace-sli-service
@@ -57,7 +57,7 @@ if [[ $? -eq 0 ]]; then
 fi
 
 # verify that the project does not exist yet via the Keptn API
-response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
+response=$(curl -X GET "${KEPTN_ENDPOINT}/shipyard-controller/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
   echo "Project ${PROJECT} already exists. Please delete it using:"
@@ -91,7 +91,7 @@ verify_test_step $? "keptn create project {$PROJECT} - failed"
 
 
 # verify that the project has been created via the Keptn API
-response=$(curl -X GET "${KEPTN_ENDPOINT}/configuration-service/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
+response=$(curl -X GET "${KEPTN_ENDPOINT}/shipyard-controller/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" != "${PROJECT}" ]]; then
   echo "Failed to check that the project exists via the API"
@@ -117,7 +117,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage harden
 response=$(send_start_evaluation_request $PROJECT hardening wrong-service)
 
 # check if the error response tells us that the service does not exist
-if [[ $response != *"Service not found"* ]]; then
+if [[ "${response,,}" != *"service not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
 fi
@@ -132,7 +132,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong
 response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
 
 # check if the error response tells us that the stage does not exist
-if [[ $response != *"Stage not found"* ]]; then
+if [[ "${response,,}" != *"stage not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
 fi
@@ -146,7 +146,7 @@ echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong
 response=$(send_start_evaluation_request wrong-project wrong-stage wrong-service)
 
 # check if the error response tells us that the project does not exist
-if [[ $response != *"Project not found"* ]]; then
+if [[ "${response,,}" != *"project not found"* ]]; then
   echo "Did not receive expected response from Keptn API"
   exit 1
 fi

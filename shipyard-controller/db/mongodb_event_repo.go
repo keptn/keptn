@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jeremywohl/flatten"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,6 +17,7 @@ import (
 const triggeredEventsCollectionNameSuffix = "-triggeredEvents"
 const startedEventsCollectionNameSuffix = "-startedEvents"
 const finishedEventsCollectionNameSuffix = "-finishedEvents"
+const remediationCollectionNameSuffix = "-remediations"
 
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
@@ -24,7 +26,7 @@ type MongoDBEventsRepo struct {
 }
 
 // GetEvents gets all events of a project, based on the provided filter
-func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter, status EventStatus) ([]models.Event, error) {
+func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -32,7 +34,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter, 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.getEventsCollection(project, status)
+	collection := mdbrepo.getEventsCollection(project, status...)
 
 	if collection == nil {
 		return nil, errors.New("invalid event type")
@@ -77,7 +79,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter EventFilter, 
 }
 
 // InsertEvent inserts an event into the collection of the specified project
-func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event, status EventStatus) error {
+func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event, status common.EventStatus) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -108,7 +110,7 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 }
 
 // DeleteEvent deletes an event from the collection
-func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status EventStatus) error {
+func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status common.EventStatus) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
@@ -137,21 +139,28 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 	if err != nil {
 		return err
 	}
-	triggeredCollection := mdbrepo.getEventsCollection(project, TriggeredEvent)
-	startedCollection := mdbrepo.getEventsCollection(project, StartedEvent)
-	finishedCollection := mdbrepo.getEventsCollection(project, FinishedEvent)
+	triggeredCollection := mdbrepo.getEventsCollection(project, common.TriggeredEvent)
+	startedCollection := mdbrepo.getEventsCollection(project, common.StartedEvent)
+	finishedCollection := mdbrepo.getEventsCollection(project, common.FinishedEvent)
+
+	// not the ideal place to delete the remediation collection, but the management of remediations will likely move to the shipyard controller anyway
+	remediationCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + remediationCollectionNameSuffix)
 
 	if err := mdbrepo.deleteCollection(triggeredCollection); err != nil {
+		// log the error but continue
 		mdbrepo.Logger.Error(err.Error())
-		return err
 	}
 	if err := mdbrepo.deleteCollection(startedCollection); err != nil {
+		// log the error but continue
 		mdbrepo.Logger.Error(err.Error())
-		return err
 	}
 	if err := mdbrepo.deleteCollection(finishedCollection); err != nil {
+		// log the error but continue
 		mdbrepo.Logger.Error(err.Error())
-		return err
+	}
+	if err := mdbrepo.deleteCollection(remediationCollection); err != nil {
+		// log the error but continue
+		mdbrepo.Logger.Error(err.Error())
 	}
 	return nil
 }
@@ -168,20 +177,24 @@ func (mdbrepo *MongoDBEventsRepo) deleteCollection(collection *mongo.Collection)
 	return nil
 }
 
-func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string, status EventStatus) *mongo.Collection {
-	switch status {
-	case TriggeredEvent:
+func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string, status ...common.EventStatus) *mongo.Collection {
+	if len(status) == 0 {
+		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project)
+	}
+
+	switch status[0] {
+	case common.TriggeredEvent:
 		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + triggeredEventsCollectionNameSuffix)
-	case StartedEvent:
+	case common.StartedEvent:
 		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + startedEventsCollectionNameSuffix)
-	case FinishedEvent:
+	case common.FinishedEvent:
 		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + finishedEventsCollectionNameSuffix)
 	default:
 		return nil
 	}
 }
 
-func getSearchOptions(filter EventFilter) bson.M {
+func getSearchOptions(filter common.EventFilter) bson.M {
 	searchOptions := bson.M{}
 	if filter.Type != "" {
 		searchOptions["type"] = filter.Type

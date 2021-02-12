@@ -14,6 +14,8 @@ func NewServiceController(serviceHandler handler.IServiceHandler) Controller {
 }
 
 func (controller ServiceController) Inject(apiGroup *gin.RouterGroup) {
+	apiGroup.GET("/project/:project/stage/:stage/service", controller.ServiceHandler.GetServices)
+	apiGroup.GET("/project/:project/stage/:stage/service/:service", controller.ServiceHandler.GetService)
 	apiGroup.POST("/project/:project/service", controller.ServiceHandler.CreateService)
 	apiGroup.DELETE("/project/:project/service/:service", controller.ServiceHandler.DeleteService)
 }

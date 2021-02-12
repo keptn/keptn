@@ -6,7 +6,6 @@
         <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
         <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
       </div>
-      <p class="m-0 nobreak"><span class="bold">Source: </span><span [textContent]="_event.source"></span></p>
       <div *ngIf="_event.data.canary">
         <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
       </div>
@@ -18,9 +17,9 @@
       </div>
     </div>
     <div fxLayout="column" fxLayoutAlign="start end">
-      <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:getCalendarFormat()"></p>
       <div fxLayout="row" fxLayoutAlign="start start">
-        <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _event.shkeptncontext, _event.data.stage]" *ngIf="_event.data.evaluation"><dt-icon name="chart-bar"></dt-icon></button>
+        <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
+        <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
         <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
       </div>
     </div>

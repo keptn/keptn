@@ -160,7 +160,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 		// only store it if we really know whether and where we have to store it to!
 		if targetFileName != "" {
 			// now we have to download that resource first as so far we only have the resourceURI
-			downloadedResource, err := resourceHandler.GetStageResource(project, stage, *resource.ResourceURI)
+			downloadedResource, err := resourceHandler.GetStageResource(project, stage, strings.TrimPrefix(*resource.ResourceURI, "/"))
 			if err != nil {
 				return false, fileCount, err
 			}

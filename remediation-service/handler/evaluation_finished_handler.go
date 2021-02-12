@@ -7,7 +7,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/mitchellh/mapstructure"
+	"github.com/keptn/keptn/remediation-service/models"
 	"os"
 )
 
@@ -15,7 +15,7 @@ import (
 type EvaluationFinishedEventHandler struct {
 	KeptnHandler *keptnv2.Keptn
 	Event        cloudevents.Event
-	Remediation  *Remediation
+	Remediation  *RemediationHandler
 }
 
 // HandleEvent handles the event
@@ -28,7 +28,7 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 		return err
 	}
 
-	remediations, err := getRemediationsByContext(eh.KeptnHandler.KeptnContext, eh.KeptnHandler.Event)
+	remediations, err := eh.Remediation.getRemediationsByContext()
 	if err != nil {
 		eh.KeptnHandler.Logger.Error(fmt.Sprintf("could not retrieve open remediations for keptnContext %s: %s", eh.KeptnHandler.KeptnContext, err.Error()))
 		return err
@@ -40,7 +40,7 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 	}
 
 	if evaluationDoneEventData.Result == "pass" || evaluationDoneEventData.Result == "warning" {
-		msg := "Remediation successful. Remediation actions resulted in evaluation result: " + string(evaluationDoneEventData.Result)
+		msg := "RemediationHandler successful. RemediationHandler actions resulted in evaluation result: " + string(evaluationDoneEventData.Result)
 		eh.KeptnHandler.Logger.Info(msg)
 		return eh.Remediation.sendRemediationFinishedEvent(keptnv2.StatusSucceeded, keptnv2.ResultPass, msg)
 	}
@@ -94,8 +94,8 @@ func (eh *EvaluationFinishedEventHandler) HandleEvent() error {
 	return eh.Remediation.sendRemediationFinishedEvent(keptnv2.StatusSucceeded, keptnv2.ResultFailed, msg)
 }
 
-func (eh *EvaluationFinishedEventHandler) getLastRemediationStatusChangedEvent(remediations []*remediationStatus) (*keptnv2.RemediationStatusChangedEventData, error) {
-	var lastRemediationStatusChanged *remediationStatus
+func (eh *EvaluationFinishedEventHandler) getLastRemediationStatusChangedEvent(remediations []*models.Remediation) (*keptnv2.RemediationStatusChangedEventData, error) {
+	var lastRemediationStatusChanged *models.Remediation
 	for index := range remediations {
 		remediation := remediations[len(remediations)-1-index]
 		if remediation.Type == keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName) {
@@ -123,15 +123,14 @@ func (eh *EvaluationFinishedEventHandler) getLastRemediationStatusChangedEvent(r
 	}
 	remediationStatusChangedEvent := &keptnv2.RemediationStatusChangedEventData{}
 
-	err := mapstructure.Decode(events[0].Data, remediationStatusChangedEvent)
-	if err != nil {
+	if err := keptnv2.Decode(events[0].Data, remediationStatusChangedEvent); err != nil {
 		return nil, fmt.Errorf("could not decode remediation.status.changed event: %s", err.Error())
 	}
 	return remediationStatusChangedEvent, nil
 }
 
-func (eh *EvaluationFinishedEventHandler) getRemediationTriggeredEvent(remediations []*remediationStatus) (*keptnv2.RemediationTriggeredEventData, error) {
-	var remediationTriggered *remediationStatus
+func (eh *EvaluationFinishedEventHandler) getRemediationTriggeredEvent(remediations []*models.Remediation) (*keptnv2.RemediationTriggeredEventData, error) {
+	var remediationTriggered *models.Remediation
 	for _, remediation := range remediations {
 		if remediation.Type == keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName) {
 			remediationTriggered = remediation

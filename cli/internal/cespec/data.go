@@ -91,7 +91,7 @@ var deploymentTriggeredEventData = keptnv2.DeploymentTriggeredEventData{
 	ConfigurationChange: keptnv2.ConfigurationChange{
 		Values: map[string]interface{}{"key": "value"},
 	},
-	Deployment: keptnv2.DeploymentWithStrategy{
+	Deployment: keptnv2.DeploymentTriggeredData{
 		DeploymentStrategy: keptn.Direct.String(),
 	},
 }
@@ -106,7 +106,7 @@ var deploymentStatusChangedEventData = keptnv2.DeploymentStatusChangedEventData{
 
 var deploymentFinishedEventData = keptnv2.DeploymentFinishedEventData{
 	EventData: commonEventData,
-	Deployment: keptnv2.DeploymentData{
+	Deployment: keptnv2.DeploymentFinishedData{
 		DeploymentStrategy:   keptn.Direct.String(),
 		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
 		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
@@ -209,7 +209,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 
 var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 	EventData: commonEventData,
-	Deployment: keptnv2.DeploymentWithStrategy{
+	Deployment: keptnv2.DeploymentFinishedData{
 		DeploymentStrategy: keptn.Duplicate.String(),
 	},
 }

@@ -33,14 +33,6 @@ keptn add-resource --project=$PROJECT --service=carts --stage=staging --resource
 ###########################################
 keptn onboard service carts-db --project=$PROJECT --chart=./carts-db
 verify_test_step $? "keptn onboard service carts-db - failed"
-sleep 10
-
-# check which namespaces exist
-echo "Verifying that the following namespaces are available:"
-
-verify_namespace_exists "$PROJECT-dev"
-verify_namespace_exists "$PROJECT-staging"
-verify_namespace_exists "$PROJECT-prod"
 
 echo "Onboarding done ✓"
 

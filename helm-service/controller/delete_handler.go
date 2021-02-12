@@ -16,9 +16,9 @@ type DeleteHandler struct {
 }
 
 // NewDeleteHandler creates a new DeleteHandler
-func NewDeleteHandler(keptnHandler *keptnv2.Keptn, stagesHandler types.IStagesHandler, configServiceURL string) *DeleteHandler {
+func NewDeleteHandler(keptnHandler Handler, stagesHandler types.IStagesHandler, configServiceURL string) *DeleteHandler {
 	return &DeleteHandler{
-		Handler:       NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:       keptnHandler,
 		stagesHandler: stagesHandler,
 	}
 }

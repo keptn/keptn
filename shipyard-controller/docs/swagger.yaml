@@ -50,6 +50,18 @@ definitions:
           Required: true
         type: string
     type: object
+  models.EventContext:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
   models.Events:
     properties:
       events:
@@ -67,7 +79,210 @@ definitions:
         description: Total number of events
         type: number
     type: object
+  models.ExpandedProject:
+    properties:
+      creationDate:
+        description: Creation date of the project
+        type: string
+      gitRemoteURI:
+        description: Git remote URI
+        type: string
+      gitUser:
+        description: Git User
+        type: string
+      lastEventContext:
+        $ref: '#/definitions/models.EventContext'
+        description: last event context
+        type: object
+      projectName:
+        description: Project name
+        type: string
+      shipyard:
+        description: Shipyard file content
+        type: string
+      shipyardVersion:
+        description: Version of the shipyard file
+        type: string
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+    type: object
+  models.ExpandedProjects:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      projects:
+        description: projects
+        items:
+          $ref: '#/definitions/models.ExpandedProject'
+        type: array
+      totalCount:
+        description: Total number of projects
+        type: number
+    type: object
+  models.ExpandedService:
+    properties:
+      creationDate:
+        description: Creation date of the service
+        type: string
+      deployedImage:
+        description: Currently deployed image
+        type: string
+      lastEventTypes:
+        additionalProperties:
+          $ref: '#/definitions/models.EventContext'
+        description: last event types
+        type: object
+      openRemediations:
+        description: open remediations
+        items:
+          $ref: '#/definitions/models.Remediation'
+        type: array
+      serviceName:
+        description: Service name
+        type: string
+    type: object
+  models.ExpandedServices:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      services:
+        description: projects
+        items:
+          $ref: '#/definitions/models.ExpandedService'
+        type: array
+      totalCount:
+        description: Total number of projects
+        type: number
+    type: object
+  models.ExpandedStage:
+    properties:
+      lastEventContext:
+        $ref: '#/definitions/models.EventContext'
+        description: last event context
+        type: object
+      services:
+        description: services
+        items:
+          $ref: '#/definitions/models.ExpandedService'
+        type: array
+      stageName:
+        description: Stage name
+        type: string
+    type: object
+  models.Remediation:
+    properties:
+      action:
+        description: Executed action
+        type: string
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+      type:
+        description: Type of the event
+        type: string
+    type: object
+  models.Stages:
+    properties:
+      nextPageKey:
+        description: Pointer to next page, base64 encoded
+        type: string
+      pageSize:
+        description: Size of returned page
+        type: number
+      stages:
+        description: stages
+        items:
+          $ref: '#/definitions/models.ExpandedStage'
+        type: array
+      totalCount:
+        description: Total number of stages
+        type: number
+    type: object
+  operations.CreateEvaluationParams:
+    properties:
+      end:
+        description: end
+        example: 2021-01-02T15:10:00
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        description: labels
+        type: object
+      start:
+        description: start
+        example: 2021-01-02T15:00:00
+        type: string
+      timeframe:
+        description: timeframe
+        example: 5m
+        type: string
+    type: object
+  operations.CreateEvaluationResponse:
+    properties:
+      keptnContext:
+        description: keptnContext
+        type: string
+    type: object
   operations.CreateProjectParams:
+    properties:
+      gitRemoteURL:
+        description: git remote URL
+        type: string
+      gitToken:
+        description: git token
+        type: string
+      gitUser:
+        description: git user
+        type: string
+      name:
+        description: name
+        type: string
+      shipyard:
+        description: shipyard
+        type: string
+    type: object
+  operations.CreateProjectResponse:
+    type: object
+  operations.CreateServiceParams:
+    properties:
+      helmChart:
+        description: shipyard
+        type: string
+      serviceName:
+        description: name
+        type: string
+    type: object
+  operations.CreateServiceResponse:
+    type: object
+  operations.DeleteProjectResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  operations.DeleteServiceResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  operations.UpdateProjectParams:
     properties:
       gitRemoteURL:
         description: git remote URL
@@ -83,38 +298,8 @@ definitions:
           name
           Required: true
         type: string
-      shipyard:
-        description: |-
-          shipyard
-          Required: true
-        type: string
     type: object
-  operations.CreateProjectResponse:
-    type: object
-  operations.CreateServiceParams:
-    properties:
-      helm:
-        description: |-
-          shipyard
-          Required: true
-        type: string
-      name:
-        description: |-
-          name
-          Required: true
-        type: string
-    type: object
-  operations.CreateServiceResponse:
-    type: object
-  operations.DeleteProjectResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  operations.DeleteServiceResponse:
-    properties:
-      message:
-        type: string
+  operations.UpdateProjectResponse:
     type: object
 info:
   contact:
@@ -205,6 +390,43 @@ paths:
       tags:
       - Events
   /project:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of stages of a project
+      parameters:
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      - description: Disable sync of upstream repo before reading content
+        in: query
+        name: disableUpstreamSync
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.Stages'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all stages of a project
+      tags:
+      - Stage
     post:
       consumes:
       - application/json
@@ -246,14 +468,14 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/operations.CreateProjectParams'
+          $ref: '#/definitions/operations.UpdateProjectParams'
       produces:
       - application/json
       responses:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/operations.CreateProjectResponse'
+            $ref: '#/definitions/operations.UpdateProjectResponse'
         "400":
           description: Invalid payload
           schema:
@@ -298,7 +520,7 @@ paths:
       summary: Delete a project
       tags:
       - Projects
-  /project/:project/service:
+  /project/{project}/service:
     post:
       consumes:
       - application/json
@@ -335,7 +557,7 @@ paths:
       summary: Create a new service
       tags:
       - Services
-  /project/:project/service/:service:
+  /project/{project}/service/{service}:
     delete:
       consumes:
       - application/json
@@ -371,6 +593,163 @@ paths:
       summary: Delete a service
       tags:
       - Services
+    get:
+      consumes:
+      - application/json
+      description: Gets all services of a stage in a project
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Stage
+        in: path
+        name: stage
+        required: true
+        type: string
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedServices'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Gets all services of a stage in a project
+      tags:
+      - Services
+  /project/{project}/stage/{stage}/service/{service}/evaluation:
+    post:
+      consumes:
+      - application/json
+      description: Trigger a new evaluation for a service within a project
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Stage
+        in: path
+        name: stage
+        required: true
+        type: string
+      - description: Service
+        in: path
+        name: service
+        required: true
+        type: string
+      - description: Evaluation
+        in: body
+        name: evaluation
+        required: true
+        schema:
+          $ref: '#/definitions/operations.CreateEvaluationParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/operations.CreateEvaluationResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAutth: []
+      summary: Trigger a new evaluation
+      tags:
+      - Evaluation
+  /project/{projectName}:
+    get:
+      consumes:
+      - application/json
+      description: Get a project by its name
+      parameters:
+      - description: The name of the project
+        in: path
+        name: projectName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedProject'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a project by name
+      tags:
+      - Projects
+  /project/{projectName}/stage/{stageName}:
+    get:
+      consumes:
+      - application/json
+      description: Get a stage of a project
+      parameters:
+      - description: The name of the project
+        in: path
+        name: projectName
+        required: true
+        type: string
+      - description: The name of the stage
+        in: path
+        name: stageName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedStage'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a stage
+      tags:
+      - Projects
 securityDefinitions:
   ApiKeyAuth:
     in: header

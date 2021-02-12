@@ -9,7 +9,6 @@
     border-radius: 3px;
     border: 1px solid $gray-200;
     text-decoration: none;
-    padding: 8px 11px;
     background-color: $white;
   }
 
@@ -18,7 +17,10 @@
   }
   &.ktb-tile-selected .ktb-selectable-tile-container {
     border-color: $gray-300;
-    background-color: $gray-100;
+
+    .ktb-selectable-tile-header {
+      background-color: $gray-130;
+    }
   }
   &.ktb-tile-error .ktb-selectable-tile-container {
     border-color: $error-color;

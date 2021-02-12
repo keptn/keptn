@@ -38,7 +38,7 @@ paths:
         200:
           description: Success
           schema:
-            $ref: "response_model.yaml#/definitions/metadata"              
+            $ref: "#/definitions/metadata"
 
   /event:
     post:
@@ -49,72 +49,16 @@ paths:
         - name: body
           in: body
           schema:
-            $ref: "response_model.yaml#/definitions/keptnContextExtendedCE"
+            $ref: "#/definitions/keptnContextExtendedCE"
       responses:
         200:
           description: Forwarded
           schema:
-            $ref: "response_model.yaml#/definitions/eventContext"
+            $ref: "#/definitions/eventContext"
         default:
           description: Error
           schema:
-            $ref: "response_model.yaml#/definitions/error"
-    get:
-      tags:
-        - Event
-      deprecated: true
-      summary: 'Deprecated endpoint - please use /mongodb-datastore/v1/event'
-      parameters:
-        - name: keptnContext
-          in: query
-          type: string
-          required: true
-          description: KeptnContext of the events to get
-        - name: type
-          in: query
-          type: string
-          required: true
-          description: Type of the Keptn cloud event
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: "response_model.yaml#/definitions/keptnContextExtendedCE"
-        404:
-          description: Failed. Event could not be found.
-          schema:
-            $ref: "response_model.yaml#/definitions/error"
-        default:
-          description: Error
-          schema:
-            $ref: "response_model.yaml#/definitions/error"
-
-  /project/{projectName}/stage/{stageName}/service/{serviceName}/evaluation:
-    parameters:
-      - $ref: "#/parameters/projectName"
-      - $ref: "#/parameters/stageName"
-      - $ref: "#/parameters/serviceName"
-    post:
-      tags:
-        - evaluation
-      summary: Trigger a new evaluation
-      operationId: triggerEvaluation
-      parameters:
-        - $ref: "#/parameters/evaluation"
-      responses:
-        200:
-          description: Evaluation has been triggered
-          schema:
-            $ref: "response_model.yaml#/definitions/eventContext"
-        400:
-          description: Evaluation could not be triggered
-          schema:
-            $ref: "response_model.yaml#/definitions/error"
-        default:
-          description: Error
-          schema:
-            $ref: "response_model.yaml#/definitions/error"
-
+            $ref: "#/definitions/error"
 
   /config/bridge:
     post:
@@ -131,76 +75,110 @@ paths:
         400:
           description: Bridge credentials could not be set
           schema:
-            $ref: "response_model.yaml#/definitions/error"
+            $ref: "#/definitions/error"
         default:
           description: Error
           schema:
-            $ref: "response_model.yaml#/definitions/error"
+            $ref: "#/definitions/error"
 
     get:
       tags:
         - configuration
-      summary: get bridge credentials
+      summary: Get bridge credentials
       responses:
         200:
           description: Bridge credentials have been retrieved
           schema:
-            $ref: "configure_model.yaml#/definitions/configureBridge"
+            $ref: "#/definitions/configureBridge"
         400:
           description: Bridge credentials could not be retrieved
           schema:
-            $ref: "response_model.yaml#/definitions/error"
+            $ref: "#/definitions/error"
         default:
           description: Error
           schema:
-            $ref: "response_model.yaml#/definitions/error"
+            $ref: "#/definitions/error"
 
 parameters:
-  project:
-    in: body
-    name: project
-    description: Project entity
-    schema:
-      $ref: "project_model.yaml#/definitions/project"
-
-  projectName:
-    in: path
-    name: projectName
-    required: true
-    type: string
-    description: Name of the project
-
-  stageName:
-    in: path
-    name: stageName
-    required: true
-    type: string
-    description: Name of the stage
-
-  serviceName:
-    in: path
-    name: serviceName
-    required: true
-    type: string
-    description: Name of the service
-
-  service:
-    in: body
-    name: service
-    description: Service entity
-    schema:
-      $ref: "service_model.yaml#/definitions/service"
-
   configureBridge:
     in: body
     name: configureBridge
     description: Parameters for configuring the bridge access
     schema:
-      $ref: "configure_model.yaml#/definitions/configureBridge"
+      $ref: "#/definitions/configureBridge"
 
-  evaluation:
-    in: body
-    name: evaluation
-    description: Evaluation
-    schema:
-      $ref: "evaluation_model.yaml#/definitions/evaluation"
+definitions:
+  eventContext:
+    type: object
+    required:
+      - keptnContext
+    properties:
+      keptnContext:
+        type: string
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+      fields:
+        type: string
+
+  keptnContextExtendedCE:
+    type: object
+    properties: # CloudEvents v1.0 properties (https://raw.githubusercontent.com/cloudevents/spec/v1.0/spec.json#/definitions/event)
+      shkeptncontext:
+        type: string
+      triggeredid:
+        type: string
+      specversion:
+        type: string
+      contenttype:
+        type: string
+      data:
+        type: [ "object", "string" ]
+      id:
+        type: string
+      time:
+        type: string
+        format: date-time
+      type:
+        type: string
+      extensions:
+        type: object
+      source:
+        format: uri-reference
+        type: string
+    required:
+      - data
+      - source
+      - type
+
+  metadata:
+    type: object
+    properties:
+      namespace:
+        type: string
+      keptnlabel:
+        type: string
+      keptnversion:
+        type: string
+      bridgeversion:
+        type: string
+      keptnservices:
+        type: [ "object", "string" ]
+
+  configureBridge:
+    type: object
+    required:
+      - user
+      - password
+    properties:
+      user:
+        type: string
+      password:
+        type: string

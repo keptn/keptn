@@ -3,9 +3,10 @@ package helm
 import (
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"strings"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 
@@ -52,7 +53,13 @@ func (c *GeneratedChartGenerator) GenerateDuplicateChart(helmManifest string, pr
 	ch := chart.Chart{Metadata: meta}
 
 	svcs := GetServices(helmManifest)
+	if len(svcs) > 1 {
+		return nil, errors.New("Chart contains multiple Kubernetes services but only 1 is allowed")
+	}
 	depls := GetDeployments(helmManifest)
+	if len(depls) > 1 {
+		return nil, errors.New("Chart contains multiple Kubernetes deployments but only 1 is allowed")
+	}
 
 	for _, svc := range svcs {
 		templates, err := c.generateServices(svc, project, stageName)

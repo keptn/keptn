@@ -22,7 +22,7 @@ func TestHandleReleaseTriggeredEvent_WhenDeploymentStrategyDirect_ThenNoActionRe
 
 	releaseTriggeredEventData := ReleaseTriggeredEventData{
 		EventData: EventData{},
-		Deployment: DeploymentWithStrategy{
+		Deployment: DeploymentFinishedData{
 			DeploymentStrategy: keptnevents.Direct.String(),
 		},
 	}
@@ -80,7 +80,7 @@ func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T)
 
 	releaseTriggeredEventData := ReleaseTriggeredEventData{
 		EventData: EventData{},
-		Deployment: DeploymentWithStrategy{
+		Deployment: DeploymentFinishedData{
 			DeploymentStrategy: "???", // <-- OHOH
 		},
 	}

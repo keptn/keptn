@@ -1,9 +1,82 @@
 package helm
 
 import (
+	"errors"
+	"log"
 	"os"
+	"strings"
 	"testing"
+
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/helm-service/pkg/mesh"
+	"github.com/stretchr/testify/assert"
+
+	"sigs.k8s.io/yaml"
 )
+
+func TestGenerateDuplicateChart(t *testing.T) {
+
+	logger := keptn.NewLogger("", "", "test")
+	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh(), logger)
+
+	ch, err := generator.GenerateDuplicateChart(userService+renderedUserDeployment, "sockshop", "dev", "carts")
+
+	const nsPlaceholder = "NAMESPACE_PLACEHOLDER"
+	const ns = "dev"
+
+	assert.Nil(t, err)
+	var expectedValues map[string]interface{}
+	assert.Equal(t, expectedValues, ch.Values)
+
+	assert.Equal(t, "templates/carts-canary-service.yaml", ch.Templates[0].Name)
+	assert.Equal(t, yamlUnmarshal([]byte(GeneratedCanaryService)), yamlUnmarshal(ch.Templates[0].Data))
+
+	assert.Equal(t, "templates/carts-canary-istio-destinationrule.yaml", ch.Templates[1].Name)
+	assert.Equal(t, yamlUnmarshal([]byte(strings.Replace(GeneratedCanaryDestinationRule, nsPlaceholder, ns, -1))), yamlUnmarshal(ch.Templates[1].Data))
+
+	assert.Equal(t, "templates/carts-primary-service.yaml", ch.Templates[2].Name)
+	assert.Equal(t, yamlUnmarshal([]byte(strings.Replace(GeneratedPrimaryService, nsPlaceholder, ns, -1))), yamlUnmarshal(ch.Templates[2].Data))
+
+	assert.Equal(t, "templates/carts-primary-istio-destinationrule.yaml", ch.Templates[3].Name)
+	assert.Equal(t, yamlUnmarshal([]byte(strings.Replace(GeneratedPrimaryDestinationRule, nsPlaceholder, ns, -1))), yamlUnmarshal(ch.Templates[3].Data))
+
+	assert.Equal(t, "templates/carts-istio-virtualservice.yaml", ch.Templates[4].Name)
+	assert.Equal(t, yamlUnmarshal([]byte(strings.Replace(GeneratedVirtualService, nsPlaceholder, ns, -1))), yamlUnmarshal(ch.Templates[4].Data))
+
+	assert.Equal(t, "templates/carts-primary-deployment.yaml", ch.Templates[5].Name)
+	assert.Equal(t, yamlUnmarshal([]byte(strings.Replace(GeneratedPrimaryDeployment, nsPlaceholder, ns, -1))), yamlUnmarshal(ch.Templates[5].Data))
+}
+
+func TestGenerateDuplicateChartWithTwoServices(t *testing.T) {
+
+	logger := keptn.NewLogger("", "", "test")
+	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh(), logger)
+
+	ch, err := generator.GenerateDuplicateChart(userService+userService+renderedUserDeployment, "sockshop", "dev", "carts")
+
+	assert.Nil(t, ch)
+	assert.Equal(t, errors.New("Chart contains multiple Kubernetes services but only 1 is allowed"), err)
+}
+
+func TestGenerateDuplicateChartWithTwoDeployments(t *testing.T) {
+
+	logger := keptn.NewLogger("", "", "test")
+	generator := NewGeneratedChartGenerator(mesh.NewIstioMesh(), logger)
+
+	ch, err := generator.GenerateDuplicateChart(userService+renderedUserDeployment+renderedUserDeployment, "sockshop", "dev", "carts")
+
+	assert.Nil(t, ch)
+	assert.Equal(t, errors.New("Chart contains multiple Kubernetes deployments but only 1 is allowed"), err)
+}
+
+func yamlUnmarshal(data []byte) interface{} {
+	var obj interface{}
+	err := yaml.Unmarshal(data, &obj)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return obj
+}
 
 func Test_getVirtualServicePublicHost(t *testing.T) {
 	type args struct {
