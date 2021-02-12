@@ -66,17 +66,15 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 			return err
 		}
 
-		chartData, err := keptnutils.PackageChart(chart) // ToDo: use chartPackager.package
+		chartData, err := keptnutils.NewChartPackager().Package(chart)
 		if err != nil {
 			return err
 		}
 
-		//helmChart := base64.StdEncoding.EncodeToString(chartData)
 		serviceName := args[0]
 
 		service := apimodels.CreateService{
 			ServiceName: &serviceName,
-			// HelmChart:   helmChart,
 		}
 
 		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
@@ -116,7 +114,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 				}
 
 				if _, err := chartStorer.Store(storeOpts); err != nil {
-					logging.PrintLog("Error when storing the Helm Chart: " + err.Error(), logging.QuietLevel)
+					logging.PrintLog("Error when storing the Helm Chart: "+err.Error(), logging.QuietLevel)
 					return fmt.Errorf("Onboard service: Storing charts was unsuccessful. %v", err)
 				}
 			}
