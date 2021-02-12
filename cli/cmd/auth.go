@@ -152,8 +152,8 @@ func verifyAuthParams(authParams *authCmdParams) error {
 	const parametersRequiredMessage = "keptn auth requires api-token and endpoint \n\n" +
 		"For more information on how to obtain token and endpoint to go https://keptn.sh/docs/%s/reference/cli/#authenticate-keptn-cli \n\n" +
 		"Alternatively, to quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI: \n" +
-		"- kubectl -n keptn port-forward service/api-gateway-nginx 8080:80 \n" +
-		"- keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)"
+		"- kubectl -n %s port-forward service/api-gateway-nginx 8080:80 \n" +
+		"- keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n %s -ojsonpath={.data.keptn-api-token} | base64 --decode)"
 
 	var err error
 	if *authParams.exportConfig {
@@ -170,7 +170,7 @@ func verifyAuthParams(authParams *authCmdParams) error {
 
 		err = smartFetchKeptnAuthParameters()
 		if err != nil {
-			return fmt.Errorf(err.Error()+parametersRequiredMessage, keptnReleaseDocsURL)
+			return fmt.Errorf(err.Error()+parametersRequiredMessage, keptnReleaseDocsURL, namespace, namespace)
 		}
 	}
 	return nil
