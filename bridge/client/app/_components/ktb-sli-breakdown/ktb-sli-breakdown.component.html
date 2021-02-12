@@ -1,13 +1,8 @@
 <p class="mb-0">SLI breakdown</p>
 <dt-table [dataSource]="tableEntries" dtSort #sortable>
-  <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="6">
-    <dt-header-cell *dtHeaderCellDef>Name</dt-header-cell>
+  <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="5">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
     <dt-cell *dtCellDef="let row">{{ row.name }}</dt-cell>
-  </ng-container>
-
-  <ng-container dtColumnDef="result" dtColumnAlign="text" dtColumnProportion="1">
-    <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
-    <dt-cell *dtCellDef="let row">{{ row.result }}</dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="value" dtColumnAlign="number" dtColumnProportion="1">
@@ -15,29 +10,42 @@
     <dt-cell *dtCellDef="let row">{{ row.value }}</dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="score" dtColumnAlign="number" dtColumnProportion="1">
-    <dt-header-cell *dtHeaderCellDef>Score</dt-header-cell>
-    <dt-cell *dtCellDef="let row">{{ row.score }}</dt-cell>
+
+  <ng-container dtColumnDef="targets" dtColumnAlign="number"dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>Criteria</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <span class="ml-1" *ngFor="let target of row.targets; let isLast = last">
+        <span [class.error-line]="target.violated" [class.error]="target.violated">{{target.criteria}}</span>
+        {{ (!isLast ? ' and ' : '')}}
+      </span>
+    </dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="criteria" dtColumnAlign="number"dtColumnProportion="2">
-    <dt-header-cell *dtHeaderCellDef>Criteria</dt-header-cell>
-    <dt-cell *dtCellDef="let row">{{ row.criteria }}</dt-cell>
+  <ng-container dtColumnDef="result" dtColumnAlign="text" dtColumnProportion="1">
+    <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
+    <dt-cell *dtCellDef="let row">{{ evaluationState[row.result] }}</dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="score" dtColumnAlign="number" dtColumnProportion="1">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Score</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <span [class.error]="row.result === 'fail'" [class.warning]="row.result === 'warning'" [textContent]="row.score"></span>
+    </dt-cell>
   </ng-container>
 
   <dt-header-row
     *dtHeaderRowDef="[
         'name',
-        'result',
         'value',
-        'score',
-        'criteria'
+        'targets',
+        'result',
+        'score'
       ]"
   ></dt-header-row>
   <dt-row
     *dtRowDef="
         let row;
-        columns: ['name', 'result', 'value', 'score', 'criteria']
+        columns: ['name', 'value', 'targets', 'result', 'score']
       "
   ></dt-row>
 </dt-table>
