@@ -7,17 +7,17 @@
       <ng-container [ngSwitch]="error">
         <ng-container *ngSwitchCase="'project'">
           <dt-empty-state-item-title class="mt-2" aria-level="2">Project doesn't exist</dt-empty-state-item-title>
-          <p>Sorry, the project could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.7.x/manage/project/" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <p>Sorry, the project could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
           <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
         </ng-container>
         <ng-container *ngSwitchCase="'trace'">
           <dt-empty-state-item-title class="mt-2" aria-level="2">Traces for <span class="italic" [textContent]="contextId"></span> not found</dt-empty-state-item-title>
-          <p>Sorry, traces with this shkeptncontext could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.7.x/manage/project/" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <p>Sorry, traces with this shkeptncontext could not be loaded. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
           <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
         </ng-container>
         <ng-container *ngSwitchDefault>
           <dt-empty-state-item-title class="mt-2" aria-level="2">Some error occured</dt-empty-state-item-title>
-          <p>Sorry, some error occured. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a href="https://keptn.sh/docs/0.7.x/manage/project/" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
+          <p>Sorry, some error occured. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> or go back to <a [routerLink]="['/dashboard']">your dashboard</a>.</p>
           <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
         </ng-container>
       </ng-container>
@@ -52,7 +52,7 @@
         </div>
         <div fxLayout="row" fxLayoutAlign="start center" *ngIf="project.getServices().length == 0">
           <dt-icon class="icon" name="information"></dt-icon>
-          <p>No service onboarded yet. Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+          <p>No service onboarded yet. Follow the intructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
         </div>
         <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName">
           <ktb-expandable-tile-header>
@@ -134,5 +134,5 @@
   <ktb-integration-view *ngIf="view === 'integration'"></ktb-integration-view>
 </div>
 <ng-template #noDeployment>
-  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
+  <p class="m-0">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_send_event_new-artifact/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
 </ng-template>

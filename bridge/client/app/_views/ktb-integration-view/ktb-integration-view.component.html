@@ -1,9 +1,9 @@
 <div id="integration-container" class="container" fxFlex fxLayout="column">
-  <p>Integrate Keptn using the <a href="https://keptn.sh/docs/0.7.x/reference/cli/">Keptn CLI</a> or <a href="https://keptn.sh/docs/0.7.x/reference/api/">Keptn API</a>.</p>
+  <p>Integrate Keptn using the <a [href]="'/reference/cli/' | keptnUrl">Keptn CLI</a> or <a [href]="'/reference/api/' | keptnUrl">Keptn API</a>.</p>
   <h2>Keptn CLI</h2>
   <ol>
     <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
-    <li>Authenticate CLI with: <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_auth/" rel="noopener noreferrer" target="_blank">keptn auth</a></li>
+    <li>Authenticate CLI with: <a [href]="'/reference/cli/commands/keptn_auth/' | keptnUrl" rel="noopener noreferrer" target="_blank">keptn auth</a></li>
   </ol>
   <p class="bold mt-2" *ngIf="useCaseExamples.cli.length > 0">Use Cases:</p>
   <ul class="list-style-none">
@@ -21,7 +21,7 @@
       <li>Access <a [href]="keptnInfo.bridgeInfo.apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a></li>
     </ng-container>
     <ng-template #noApiToken>
-      <li><a href="https://keptn.sh/docs/0.7.x/operate/api_token/" rel="noopener noreferrer" target="_blank">Retrieve API token</a></li>
+      <li><a [href]="'/operate/api_token/' | keptnUrl" rel="noopener noreferrer" target="_blank">Retrieve API token</a></li>
       <li>Access Keptn API</li>
     </ng-template>
   </ol>
@@ -36,5 +36,5 @@
   </ul>
   <p *ngIf="!integrationsExternalDetails"><button dt-button (click)="loadIntegrations()"><dt-icon name="xhr-load-action"></dt-icon> Load more information about integrations</button></p>
   <ktb-markdown [html]="integrationsExternalDetails"></ktb-markdown>
-  <p class="small light">Additional information about integrations will be loaded from external sources and Keptn will collect statistical data. Details can be found at <a href="https://keptn.sh/docs/0.7.x/reference/load_information" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/0.7.x/reference/load_information</a></p>
+  <p class="small light">Additional information about integrations will be loaded from external sources and Keptn will collect statistical data. Details can be found at <a [href]="'/reference/load_information/' | keptnUrl" target="_blank" rel="noopener noreferrer">{{'/reference/load_information/' | keptnUrl}}</a></p>
 </div>
