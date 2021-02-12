@@ -144,14 +144,6 @@ func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh
 	return onBoarder
 }
 
-func createOnboardHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.OnboardHandler {
-	projectHandler := keptnapi.NewProjectHandler(url.String())
-	stagesHandler := configutils.NewStageHandler(url.String())
-	onBoarder := createOnboarder(url, keptn, mesh)
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	return controller.NewOnboardHandler(keptnBaseHandler, projectHandler, stagesHandler, onBoarder)
-}
-
 func createDeploymentHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
 	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
 	onBoarder := createOnboarder(url, keptn, mesh)
