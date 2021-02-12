@@ -63,14 +63,16 @@
                     <h2 class="m-0" [textContent]="service.serviceName"></h2>
                   </div>
                   <div fxLayout="column" fxLayoutAlign="start end" *ngIf="eventTypes">
-                    <button dt-icon-button (click)="$event.stopPropagation()" [dtContextDialogTrigger]="filterEventsDialog" variant="nested" aria-label="Open context dialog">
-                      <dt-icon name="filter"></dt-icon>
-                    </button>
-                    <dt-context-dialog #filterEventsDialog aria-label="Open context dialog" ariaLabelClose="Close context dialog">
-                      <p *ngFor="let eventType of eventTypes">
-                        <dt-checkbox (change)="filterEvents($event, eventType)" [checked]="true || isFilteredEvent(eventType)">{{getEventLabel(eventType)}}</dt-checkbox>
-                      </p>
-                    </dt-context-dialog>
+                    <div class="buttons-container" fxLayout="row" fxLayoutAlign="start start">
+                      <button dt-icon-button (click)="$event.stopPropagation()" [dtContextDialogTrigger]="filterEventsDialog" variant="nested" aria-label="Open context dialog">
+                        <dt-icon name="filter"></dt-icon>
+                      </button>
+                      <dt-context-dialog #filterEventsDialog aria-label="Open context dialog" ariaLabelClose="Close context dialog">
+                        <p *ngFor="let eventType of eventTypes">
+                          <dt-checkbox (change)="filterEvents($event, eventType)" [checked]="true || isFilteredEvent(eventType)">{{getEventLabel(eventType)}}</dt-checkbox>
+                        </p>
+                      </dt-context-dialog>
+                    </div>
                   </div>
                 </div>
               </dt-info-group-title>
@@ -107,8 +109,10 @@
               <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
                 <div fxLayout="row" fxLayoutAlign="start center">
                   <button dt-icon-button disabled variant="nested" *ngIf="currentRoot.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-                  <p *ngIf="currentRoot.getShortImageName()" [textContent]="currentRoot.getShortImageName()"></p>
-                  <p *ngIf="!currentRoot.getShortImageName()" [textContent]="currentRoot.getService()"></p>
+                  <p *ngIf="currentRoot.getShortImageName(); else noImageName" [textContent]="currentRoot.getShortImageName()"></p>
+                  <ng-template #noImageName>
+                    <p class="mr-1" *ngIf="currentRoot.getService()" [textContent]="currentRoot.getService()"></p>
+                  </ng-template>
                 </div>
               </div>
             </dt-info-group-title>

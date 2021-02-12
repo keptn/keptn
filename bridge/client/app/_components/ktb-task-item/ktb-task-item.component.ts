@@ -35,6 +35,7 @@ export class KtbTaskItemComponent {
   get task(): Trace {
     return this._task;
   }
+
   set task(value: Trace) {
     if (this._task !== value) {
       this._task = value;

@@ -6,8 +6,17 @@
   color: $white;
 }
 
-::ng-deep .dt-quick-filter-content {
-  padding: 0 !important;
+.dt-quick-filter {
+  display: flex !important;
+  flex-direction: column !important;
+
+  .dt-drawer-container {
+    flex: 1 1 0;
+
+    .dt-quick-filter-content {
+      padding: 0 !important;
+    }
+  }
 }
 
 ktb-event-item.focused {

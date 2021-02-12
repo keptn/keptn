@@ -1,27 +1,52 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <div *ngFor="let event of _events;trackBy: identifyEvent">
-    <ktb-selectable-tile (click)="selectEvent(event)" [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())" [success]="event.isProblem() && event.isSuccessful()" [selected]="_selectedEvent == event" *ngIf="event">
-      <div fxLayout="row">
-        <div fxFlex>
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-icon *ngIf="event.isFinished()" class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.getIcon()"></dt-icon>
-            <button *ngIf="!event.isFinished()" class="m-0 p-0" dt-button disabled variant="nested">
-              <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-            </button>
-            <h4 class="m-0 mt-1 mb-1" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [textContent]="event.getLabel()"></h4>
+    <ktb-selectable-tile (click)="selectEvent(event)" [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())" [success]="event.isProblem() && event.isSuccessful()" [highlight]="event.getPendingApprovals().length > 0" [selected]="_selectedEvent == event" *ngIf="event">
+      <ktb-selectable-tile-header>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+          <dt-icon *ngIf="!event.isLoading()" class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"></dt-icon>
+          <button *ngIf="event.isLoading()" class="m-0 p-0" dt-button disabled variant="nested">
+            <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+          </button>
+          <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
+            <p class="m-0" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()">
+              <span class="bold" [textContent]="event.getLabel()"></span>
+              <span *ngIf="!event.isFinished(); else finishedText"> started</span>
+              <ng-template #finishedText>
+                <span *ngIf="!event.isFaulty(); else faultyText"> succeeded</span>
+                <ng-template #faultyText>
+                  <span> failed</span>
+                </ng-template>
+              </ng-template>
+            </p>
           </div>
-          <p class="m-0" *ngIf="event.getShortImageName()"><span class="m-0" [textContent]="event.getShortImageName()"></span></p>
-          <p class="m-0" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
         </div>
-        <div fxLayout="column" fxLayoutAlign="start end">
-          <p class="m-0 mr-2 mt-1" [textContent]="event.time | amCalendar:dateUtil.getCalendarFormats()"></p>
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-tag-list aria-label="stages">
-              <dt-tag *ngFor="let stage of event.getStages()" [textContent]="stage" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)" (click)="$event.stopPropagation();selectEvent(event, stage)"></dt-tag>
-            </dt-tag-list>
-          </div>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+          <p class="m-0 small">
+            <span class="bold" *ngIf="event.getShortImageName(); else noImageName" [textContent]="event.getShortImageName()"></span>
+            <ng-template #noImageName>
+              <span class="bold" *ngIf="event.getService()" [textContent]="event.getService()"></span>
+            </ng-template>
+            <span *ngIf="event.getStages().length > 0"> in </span>
+            <span class="bold" *ngFor="let stage of event.getStages(); let isLast=last">
+              <span [textContent]="stage" (click)="$event.stopPropagation();selectEvent(event, stage)" [class.success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)"></span>
+              <span *ngIf="!isLast">, </span>
+            </span>
+          </p>
         </div>
-      </div>
+      </ktb-selectable-tile-header>
+      <p class="m-0 small">
+        Started
+        <span [textContent]="event.time | amCalendar:dateUtil.getCalendarFormats()"></span>
+        and
+        <span *ngIf="event.isFinished()">took <span [textContent]="dateUtil.getDurationFormatted(event.time, event.getLastTrace().time)"></span></span>
+        <span *ngIf="!event.isFinished()">running for <span [textContent]="dateUtil.getDurationFormatted(event.time)"></span></span>
+      </p>
+      <p class="m-0 small">
+        <span *ngIf="!event.isFinished()">Recent task: </span>
+        <span *ngIf="event.isFinished()">Last task: </span>
+        <span [textContent]="event.getLastTrace().getLabel()"></span>
+      </p>
+      <p class="m-0 small" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
     </ktb-selectable-tile>
   </div>
 </div>

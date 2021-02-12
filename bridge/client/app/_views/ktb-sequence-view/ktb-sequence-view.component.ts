@@ -90,6 +90,8 @@ export class KtbSequenceViewComponent implements OnInit {
             take(1)
           )
           .subscribe(project => {
+            this.currentSequence = null;
+            this.selectedStage = null;
             this.updateFilterDataSource(project);
           });
 
@@ -138,6 +140,9 @@ export class KtbSequenceViewComponent implements OnInit {
       this.filterFieldData,
       this._config,
     );
+
+    this.filtersChanged({ filters: [] });
+    this._changeDetectorRef.markForCheck();
   }
 
   getFilteredSequences(sequences: Root[]) {

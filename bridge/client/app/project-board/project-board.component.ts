@@ -84,6 +84,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           this.contextId = params["contextId"];
           this.eventId = params["eventId"];
           this.currentRoot = null;
+          this.filterEventTypes = [];
 
           this.project$ = this.dataService.getProject(params['projectName']);
 
