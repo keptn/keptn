@@ -2121,9 +2121,9 @@ describe('Trace', () => {
     expect(rootTraces[0] instanceof Trace).toBe(true, 'instance of Trace');
 
     expect(rootTraces[0].type).toBe('sh.keptn.event.service.create.started');
-    expect(rootTraces[0].getLabel()).toBe('service.create', 'Label for trace "sh.keptn.event.service.create.started" should be "service.create"');
+    expect(rootTraces[0].getLabel()).toBe('create', 'Label for trace "sh.keptn.event.service.create.started" should be "create"');
     expect(rootTraces[0].getShortImageName()).toBe(undefined);
-    expect(rootTraces[0].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.service.create.started" should be "idle"');
+    expect(rootTraces[0].getIcon()).toBe('information', 'Icon for trace "sh.keptn.event.service.create.started" should be "information"');
     expect(rootTraces[0].isFaulty()).toBe(null);
     expect(rootTraces[0].isWarning()).toBe(null);
     expect(rootTraces[0].isSuccessful()).toBe(null);
@@ -2131,9 +2131,9 @@ describe('Trace', () => {
     expect(rootTraces[0].getService()).toBe('carts');
 
     expect(rootTraces[1].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[1].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[1].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[1].getShortImageName()).toBe('carts:0.10.1', 'ShortImageName for first trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "carts:0.10.1"');
-    expect(rootTraces[1].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[1].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[1].isFaulty()).toBe(null);
     expect(rootTraces[1].isWarning()).toBe(null);
     expect(rootTraces[1].isSuccessful()).toBe(null);
@@ -2141,9 +2141,9 @@ describe('Trace', () => {
     expect(rootTraces[1].getService()).toBe('carts');
 
     expect(rootTraces[2].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[2].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[2].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[2].getShortImageName()).toBe('carts:0.10.2', 'ShortImageName for second trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "carts:0.10.2"');
-    expect(rootTraces[2].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[2].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[2].isFaulty()).toBe(null);
     expect(rootTraces[2].isWarning()).toBe(null);
     expect(rootTraces[2].isSuccessful()).toBe(null);
@@ -2151,9 +2151,9 @@ describe('Trace', () => {
     expect(rootTraces[2].getService()).toBe('carts');
 
     expect(rootTraces[8].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[8].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[8].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[8].getShortImageName()).toBe(undefined, 'ShortImageName for third trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "undefined"');
-    expect(rootTraces[8].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[8].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[8].isFaulty()).toBe(null);
     expect(rootTraces[8].isWarning()).toBe(null);
     expect(rootTraces[8].isSuccessful()).toBe(null);

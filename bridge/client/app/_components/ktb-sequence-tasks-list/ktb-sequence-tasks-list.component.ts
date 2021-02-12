@@ -1,31 +1,45 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {Trace} from "../../_models/trace";
 import {Router} from "@angular/router";
 import {Location} from "@angular/common";
 
+import {Trace} from "../../_models/trace";
+import {DateUtil} from "../../_utils/date.utils";
+
 @Component({
-  selector: 'ktb-events-list',
-  templateUrl: './ktb-events-list.component.html',
-  styleUrls: ['./ktb-events-list.component.scss'],
+  selector: 'ktb-sequence-tasks-list',
+  templateUrl: './ktb-sequence-tasks-list.component.html',
+  styleUrls: ['./ktb-sequence-tasks-list.component.scss'],
   host: {
-    class: 'ktb-events-list'
+    class: 'ktb-sequence-tasks-list'
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbEventsListComponent implements OnInit {
+export class KtbSequenceTasksListComponent implements OnInit {
 
-  public _events: Trace[] = [];
+  public _tasks: Trace[] = [];
+  public _stage: String;
   public _focusedEventId: string;
 
   @Input()
-  get events(): Trace[] {
-    return this._events;
+  get tasks(): Trace[] {
+    return this._tasks;
   }
-  set events(value: Trace[]) {
-    if (this._events !== value) {
-      this._events = value;
+  set tasks(value: Trace[]) {
+    if (this._tasks !== value) {
+      this._tasks = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+
+  @Input()
+  get stage(): String {
+    return this._stage;
+  }
+  set stage(value: String) {
+    if (this._stage !== value) {
+      this._stage = value;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -41,7 +55,7 @@ export class KtbEventsListComponent implements OnInit {
     }
   }
 
-  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) { }
 
   ngOnInit() {
   }
@@ -68,7 +82,11 @@ export class KtbEventsListComponent implements OnInit {
     }
   }
 
+  getTasksByStage(tasks: Trace[], stage: String) {
+    return tasks.filter(t => t.data?.stage == stage);
+  }
+
   isInvalidated(event) {
-    return !!this.events.find(e => e.isEvaluationInvalidation() && e.triggeredid == event.id);
+    return !!this.tasks.find(e => e.isEvaluationInvalidation() && e.triggeredid == event.id);
   }
 }

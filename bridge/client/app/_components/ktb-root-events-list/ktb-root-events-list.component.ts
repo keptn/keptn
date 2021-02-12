@@ -8,7 +8,7 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import {Root} from "../../_models/root";
-import DateUtil from "../../_utils/date.utils";
+import {DateUtil} from "../../_utils/date.utils";
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -50,7 +50,7 @@ export class KtbRootEventsListComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) { }
 
   ngOnInit() {
   }
@@ -58,10 +58,6 @@ export class KtbRootEventsListComponent implements OnInit {
   selectEvent(event: Root, stage?: String) {
     this.selectedEvent = event;
     this.selectedEventChange.emit({ root: event, stage: stage });
-  }
-
-  getCalendarFormats() {
-    return DateUtil.getCalendarFormats();
   }
 
   identifyEvent(index, item) {

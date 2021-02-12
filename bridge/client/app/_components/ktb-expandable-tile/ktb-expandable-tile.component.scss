@@ -26,7 +26,7 @@
     .dt-show-more {
       position: absolute;
       right: 10px;
-      bottom: 10px;
+      top: 13px;
       width: auto;
 
       .dt-icon {
@@ -36,10 +36,23 @@
     }
   }
 
+  &:hover .ktb-expandable-tile-container {
+    border-color: $gray-300;
+  }
+  &.ktb-tile-selected .ktb-expandable-tile-container {
+    border-color: $gray-300;
+    background-color: $gray-100;
+  }
   &.ktb-tile-error .ktb-expandable-tile-container {
     border-color: $error-color;
   }
+  &.ktb-tile-warning .ktb-expandable-tile-container {
+    border-color: $warning-color;
+  }
   &.ktb-tile-success .ktb-expandable-tile-container {
     border-color: $cta-color;
+  }
+  &.ktb-tile-highlight .ktb-expandable-tile-container {
+    border-color: $blue-400;
   }
 }
