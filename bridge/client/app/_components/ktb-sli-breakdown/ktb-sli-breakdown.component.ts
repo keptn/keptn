@@ -66,14 +66,12 @@ export class KtbSliBreakdownComponent implements OnInit {
 
   private assembleTablesEntries(indicatorResults): any {
     const totalscore  = indicatorResults.reduce((acc, result) => acc + result.score, 0);
-    let fakeScore = 0.1;
     return indicatorResults.map(indicatorResult =>  {
-      fakeScore += 0.1;
       return {
         name: indicatorResult.value.metric,
         value: this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
-        score: fakeScore,//this.round(indicatorResult.score / totalscore, 2),
+        score: this.round(indicatorResult.score / totalscore, 2),
         targets: indicatorResult.targets
       };
     });
