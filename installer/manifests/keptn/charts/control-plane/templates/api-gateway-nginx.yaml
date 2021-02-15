@@ -117,12 +117,12 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location {{ .Values.prefixPath }}/api/shipyard-controller/swagger-ui/swagger.yaml {
+    location {{ .Values.prefixPath }}/api/controlPlane/swagger-ui/swagger.yaml {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
-      rewrite {{ .Values.prefixPath }}/api/shipyard-controller/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -132,13 +132,13 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  {{ .Values.prefixPath }}/api/shipyard-controller {
+    location  {{ .Values.prefixPath }}/api/controlPlane {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
 
-      rewrite {{ .Values.prefixPath }}/api/shipyard-controller/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;

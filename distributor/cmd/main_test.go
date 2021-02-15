@@ -602,16 +602,6 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantPath:   "event/type/sh.keptn.event.evaluation.finished",
 		},
 		{
-			name: "Get internal Datastore 2",
-			args: args{
-				endpoint: "",
-				path:     "/event-store/event",
-			},
-			wantScheme: "http",
-			wantHost:   "mongodb-datastore:8080",
-			wantPath:   "event",
-		},
-		{
 			name: "Get internal configuration service",
 			args: args{
 				endpoint: "",
@@ -621,28 +611,10 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantHost:   "configuration-service:8080",
 		},
 		{
-			name: "Get internal configuration service 2",
-			args: args{
-				endpoint: "",
-				path:     "/configuration",
-			},
-			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
-		},
-		{
-			name: "Get internal configuration service 3",
-			args: args{
-				endpoint: "",
-				path:     "/config",
-			},
-			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
-		},
-		{
 			name: "Get configuration service",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme: "http",
 			wantHost:   "configuration-service:8080",
@@ -651,7 +623,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get configuration service via public API",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
@@ -662,7 +634,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get configuration service via public API with API prefix",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",

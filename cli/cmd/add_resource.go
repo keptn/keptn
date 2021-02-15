@@ -105,7 +105,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			if addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages {
 				// Upload to all stages
 				// get stages
-				stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
+				stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 				stages, err := stagesHandler.GetAllStages(*addResourceCmdParams.Project)
 				if err != nil {

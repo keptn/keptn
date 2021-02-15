@@ -73,24 +73,14 @@ var env envConfig
 
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
-	"/datastore":             "mongodb-datastore:8080",
-	"/event-store":           "mongodb-datastore:8080",
 	"/configuration-service": "configuration-service:8080",
-	"/configuration":         "configuration-service:8080",
-	"/config":                "configuration-service:8080",
-	"/shipyard-controller":   "shipyard-controller:8080",
-	"/shipyard":              "shipyard-controller:8080",
+	"/controlPlane":          "shipyard-controller:8080",
 }
 
 var externalAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "/mongodb-datastore",
-	"/datastore":             "/mongodb-datastore",
-	"/event-store":           "/mongodb-datastore",
 	"/configuration-service": "/configuration-service",
-	"/configuration":         "/configuration-service",
-	"/config":                "/configuration-service",
-	"/shipyard-controller":   "/shipyard-controller",
-	"/shipyard":              "/shipyard-controller",
+	"/controlPlane":          "/controlPlane",
 }
 
 func main() {
@@ -417,7 +407,7 @@ func getHTTPPollingEndpoint() string {
 			return "http://shipyard-controller:8080/v1/event/triggered"
 		}
 	} else {
-		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/shipyard-controller/v1/event/triggered"
+		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
 	}
 
 	parsedURL, _ := url.Parse(endpoint)

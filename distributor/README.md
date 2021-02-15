@@ -48,17 +48,12 @@ The Keptn API services will then be reachable for the execution plane service vi
 
 - Mongodb-datastore:
     - `http://localhost:8081/mongodb-datastore`
-    - `http://localhost:8081/datastore`
-    - `http://localhost:8081/event-store`
 
 - Configuration-service:
     - `http://localhost:8081/configuration-service`
-    - `http://localhost:8081/configuration`
-    - `http://localhost:8081/config`
 
 - Shipyard-controller:
-    - `http://localhost:8081/shipyard-controller`
-    - `http://localhost:8081/shipyard`
+    - `http://localhost:8081/controlPlane`
 
 If the distributor should listen on a port other than `8081` (e.g. when that port is needed by the execution plane service), a different port can be set using the `API_PROXY_PORT` environment variable
 
