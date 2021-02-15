@@ -14,7 +14,7 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-test/deep v1.0.5
 	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b
@@ -29,6 +29,6 @@ require (
 	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.17.2
 )
