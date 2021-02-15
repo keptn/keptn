@@ -303,13 +303,6 @@ func getApprovalStrategyForStage(index int, shipyard *keptn.Shipyard) (string, s
 	return shipyard.Stages[index].ApprovalStrategy.Pass.String(), shipyard.Stages[index].ApprovalStrategy.Warning.String()
 }
 
-//func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []string {
-//	if index == 0 {
-//		return []string{}
-//	}
-//	return []string{shipyard.Stages[index-1].Name + "." + sequenceName + ".finished"}
-//}
-
 func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []keptnv2.Trigger {
 	if index == 0 {
 		return []keptnv2.Trigger{}
