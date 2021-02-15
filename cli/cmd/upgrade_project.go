@@ -203,11 +203,12 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 
 		passStrategy, warningStrategy := getApprovalStrategyForStage(index, shipyard)
 		newStage := keptnv2.Stage{
+
 			Name: stage.Name,
 			Sequences: []keptnv2.Sequence{
 				{
-					Name:     "artifact-delivery",
-					Triggers: getSequenceTriggerForStage(index, shipyard, "artifact-delivery"),
+					Name:        "artifact-delivery",
+					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "artifact-delivery"),
 					Tasks: []keptnv2.Task{
 						{
 							Name: "deployment",
@@ -236,10 +237,28 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 						},
 					},
 				},
+				{
+					Name: "rollback",
+					TriggeredOn: []keptnv2.Trigger{
+						{
+							Event: getRollbackEventForStage(stage.Name, "artifact-delivery"),
+							Selector: keptnv2.Selector{
+								Match: map[string]string{
+									"result": string(keptnv2.ResultFailed),
+								},
+							},
+						},
+					},
+					Tasks: []keptnv2.Task{
+						{
+							Name: "rollback",
+						},
+					},
+				},
 				// add a second artifact-delivery with "direct" deployment strategy
 				{
-					Name:     "artifact-delivery-direct",
-					Triggers: getSequenceTriggerForStage(index, shipyard, "artifact-delivery-direct"),
+					Name:        "artifact-delivery-direct",
+					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "artifact-delivery-direct"),
 					Tasks: []keptnv2.Task{
 						{
 							Name: "deployment",
@@ -284,11 +303,27 @@ func getApprovalStrategyForStage(index int, shipyard *keptn.Shipyard) (string, s
 	return shipyard.Stages[index].ApprovalStrategy.Pass.String(), shipyard.Stages[index].ApprovalStrategy.Warning.String()
 }
 
-func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []string {
+//func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []string {
+//	if index == 0 {
+//		return []string{}
+//	}
+//	return []string{shipyard.Stages[index-1].Name + "." + sequenceName + ".finished"}
+//}
+
+func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []keptnv2.Trigger {
 	if index == 0 {
-		return []string{}
+		return []keptnv2.Trigger{}
 	}
-	return []string{shipyard.Stages[index-1].Name + "." + sequenceName + ".finished"}
+
+	return []keptnv2.Trigger{
+		keptnv2.Trigger{
+			Event: shipyard.Stages[index-1].Name + "." + sequenceName + ".finished",
+		},
+	}
+}
+
+func getRollbackEventForStage(stageName string, sequenceName string) string {
+	return stageName + "." + sequenceName + ".finished"
 }
 
 func checkFromVersion(fromVersion *string) error {
