@@ -15,8 +15,14 @@ type RollbackHandler struct {
 	configurationChanger configurationchanger.IConfigurationChanger
 }
 
-func NewRollbackHandler() *RollbackHandler {
-	return &RollbackHandler{}
+func NewRollbackHandler(keptnHandler Handler,
+	mesh mesh.Mesh,
+	configurationChanger configurationchanger.IConfigurationChanger) *RollbackHandler {
+	return &RollbackHandler{
+		Handler:              keptnHandler,
+		mesh:                 mesh,
+		configurationChanger: configurationChanger,
+	}
 }
 
 func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
