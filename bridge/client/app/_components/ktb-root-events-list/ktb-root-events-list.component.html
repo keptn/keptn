@@ -10,13 +10,7 @@
           <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
             <p class="m-0" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()">
               <span class="bold" [textContent]="event.getLabel()"></span>
-              <span *ngIf="!event.isFinished(); else finishedText"> started</span>
-              <ng-template #finishedText>
-                <span *ngIf="!event.isFaulty(); else faultyText"> succeeded</span>
-                <ng-template #faultyText>
-                  <span> failed</span>
-                </ng-template>
-              </ng-template>
+              <span [textContent]="event.getStatusLabel()"></span>
             </p>
           </div>
         </div>

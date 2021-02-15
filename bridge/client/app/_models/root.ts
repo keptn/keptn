@@ -125,12 +125,28 @@ export class Root extends Trace {
   }
 
   getStatus() {
-    if(this.isFaulty())
+    if(this.isFinished() && this.isFaulty())
       return "failed";
     else if(this.isFinished())
       return "succeeded";
     else
       return "active";
+  }
+
+  getStatusLabel() {
+    switch(this.getStatus()) {
+      case "failed":
+        return "failed";
+        break;
+      case "succeeded":
+        return "succeeded";
+        break;
+      case "active":
+        if(this.getPendingApprovals().length > 0)
+          return "waiting for approval";
+        else
+          return "started";
+    }
   }
 
   static fromJSON(data: any) {

@@ -67,13 +67,7 @@
             <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
               <p class="m-0">
                 <span class="bold" [textContent]="currentRoot.getLabel()"></span>
-                <span *ngIf="!currentRoot.isFinished(); else finishedText"> started</span>
-                <ng-template #finishedText>
-                  <span *ngIf="!currentRoot.isFaulty(); else faultyText"> succeeded</span>
-                  <ng-template #faultyText>
-                    <span> failed</span>
-                  </ng-template>
-                </ng-template>
+                <span [textContent]="currentRoot.getStatusLabel()"></span>
               </p>
               <button *ngIf="currentRoot.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
             </div>
