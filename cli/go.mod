@@ -14,9 +14,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-test/deep v1.0.7
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/uuid v1.1.1
-	github.com/googleapis/gnostic v0.1.0 // indirect
-	github.com/gorilla/websocket v1.4.1 // indirect
+	github.com/google/uuid v1.1.2
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7
@@ -26,20 +24,20 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/spf13/cobra v1.0.0
-	github.com/spf13/viper v1.4.0
+	github.com/spf13/cobra v1.1.1
+	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0
+	github.com/ugorji/go v1.1.4 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.1.2
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/cli-runtime v0.17.2
-	k8s.io/client-go v0.17.2
-	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
-	k8s.io/kubectl v0.17.2
-	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 // indirect
+	k8s.io/api v0.20.2
+	k8s.io/apimachinery v0.20.2
+	k8s.io/cli-runtime v0.20.2
+	k8s.io/client-go v0.20.2
+	k8s.io/kubectl v0.20.2
+	sigs.k8s.io/structured-merge-diff/v3 v3.0.0-20200116222232-67a7b8c61874 // indirect
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
