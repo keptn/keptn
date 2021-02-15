@@ -1,13 +1,15 @@
 package event_handler
 
 import (
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/go-test/deep"
-	"github.com/keptn/go-utils/pkg/lib"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"testing"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/go-test/deep"
+
+	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 func TestNewEventHandler(t *testing.T) {
@@ -81,6 +83,7 @@ func TestNewEventHandler(t *testing.T) {
 			wantErr:   false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.event.SetType(tt.eventType)

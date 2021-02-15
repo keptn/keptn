@@ -16,7 +16,7 @@ func TestCreateDeleteHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockedStagesHandler := mocks.NewMockIStagesHandler(ctrl)
-	instance := NewDeleteHandler(createKeptn(), mockedStagesHandler, "")
+	instance := NewDeleteHandler(createKeptnBaseHandlerMock(), mockedStagesHandler, "")
 	assert.NotNil(t, instance)
 }
 

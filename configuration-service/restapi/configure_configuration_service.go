@@ -12,13 +12,9 @@ import (
 	"os/exec"
 	"strings"
 
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/event"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/remediation"
-	"github.com/keptn/keptn/configuration-service/restapi/operations/services"
-
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	handlers "github.com/keptn/keptn/configuration-service/handlers"
 	"github.com/keptn/keptn/configuration-service/restapi/operations"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
@@ -64,10 +60,6 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 
 	api.ServiceResourceDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler = service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(handlers.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc)
 
-	api.ProjectGetProjectHandler = project.GetProjectHandlerFunc(handlers.GetProjectHandlerFunc)
-
-	api.ProjectGetProjectProjectNameHandler = project.GetProjectProjectNameHandlerFunc(handlers.GetProjectProjectNameHandlerFunc)
-
 	api.ProjectResourceGetProjectProjectNameResourceHandler = project_resource.GetProjectProjectNameResourceHandlerFunc(handlers.GetProjectProjectNameResourceHandlerFunc)
 
 	api.ProjectResourceGetProjectProjectNameResourceResourceURIHandler = project_resource.GetProjectProjectNameResourceResourceURIHandlerFunc(handlers.GetProjectProjectNameResourceResourceURIHandlerFunc)
@@ -76,17 +68,9 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 
 	api.ServiceDefaultResourceGetProjectProjectNameServiceServiceNameResourceResourceURIHandler = service_default_resource.GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc(handlers.GetProjectProjectNameServiceServiceNameResourceResourceURIHandlerFunc)
 
-	api.StageGetProjectProjectNameStageHandler = stage.GetProjectProjectNameStageHandlerFunc(handlers.GetProjectProjectNameStageHandlerFunc)
-
-	api.StageGetProjectProjectNameStageStageNameHandler = stage.GetProjectProjectNameStageStageNameHandlerFunc(handlers.GetProjectProjectNameStageStageNameHandlerFunc)
-
 	api.StageResourceGetProjectProjectNameStageStageNameResourceHandler = stage_resource.GetProjectProjectNameStageStageNameResourceHandlerFunc(handlers.GetProjectProjectNameStageStageNameResourceHandlerFunc)
 
 	api.StageResourceGetProjectProjectNameStageStageNameResourceResourceURIHandler = stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(handlers.GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc)
-
-	api.ServiceGetProjectProjectNameStageStageNameServiceHandler = service.GetProjectProjectNameStageStageNameServiceHandlerFunc(handlers.GetProjectProjectNameStageStageNameServiceHandlerFunc)
-
-	api.ServiceGetProjectProjectNameStageStageNameServiceServiceNameHandler = service.GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc(handlers.GetProjectProjectNameStageStageNameServiceServiceNameHandlerFunc)
 
 	api.ServiceResourceGetProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
@@ -127,20 +111,6 @@ func configureAPI(api *operations.ConfigurationServiceAPI) http.Handler {
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc)
 
 	api.ServiceResourcePutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandler = service_resource.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(handlers.PutProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc)
-
-	api.EventHandleEventHandler = event.HandleEventHandlerFunc(handlers.HandleEventHandlerFunc)
-
-	api.ServicesGetServicesHandler = services.GetServicesHandlerFunc(handlers.GetServices)
-
-	api.ServicesGetServiceHandler = services.GetServiceHandlerFunc(handlers.GetService)
-
-	api.RemediationCreateRemediationHandler = remediation.CreateRemediationHandlerFunc(handlers.CreateRemediation)
-
-	api.RemediationGetRemediationsHandler = remediation.GetRemediationsHandlerFunc(handlers.GetRemediations)
-
-	api.RemediationGetRemediationsForContextHandler = remediation.GetRemediationsForContextHandlerFunc(handlers.GetRemediationsForContext)
-
-	api.RemediationCloseRemediationsHandler = remediation.CloseRemediationsHandlerFunc(handlers.CloseRemediations)
 
 	api.ServerShutdown = func() {}
 

@@ -1,0 +1,52 @@
+<dt-info-group>
+  <dt-info-group-title>
+    <p><span [textContent]="project.stages.length"></span> Stages</p>
+  </dt-info-group-title>
+  <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
+    <ktb-selectable-tile *ngFor="let stage of project.stages; trackBy:trackStage"
+                         fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%"
+                         (click)="selectStage($event, stage);" [selected]="selectedStage == stage">
+      <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
+      <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+             *ngIf="project.getLatestProblemEvents(stage) as problemEvents"
+             (click)="problemEvents.length > 0 && selectStage($event, stage, 'problem')">
+          <dt-icon class="stage-state-icon event-icon" name="criticalevent" [class.error]="problemEvents.length > 0"></dt-icon>
+          <span [textContent]="problemEvents.length"></span>
+        </div>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+             *ngIf="project.getLatestFailedRootEvents(stage) as failedRootEvents"
+             (click)="failedRootEvents.length > 0 && selectStage($event, stage, 'evaluation')">
+          <dt-icon class="stage-state-icon event-icon" name="traffic-light" [class.error]="failedRootEvents.length > 0"></dt-icon>
+          <span [textContent]="failedRootEvents.length"></span>
+        </div>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+             *ngIf="openApprovals$ | async as openApprovals"
+             (click)="countOpenApprovals(project, stage) > 0 && selectStage($event, stage, 'approval')">
+          <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="countOpenApprovals(project, stage) > 0"></dt-icon>
+          <span [textContent]="countOpenApprovals(project, stage)"></span>
+        </div>
+      </div>
+      <ng-container *ngIf="stage.services && stage.services.length > 0; else noService">
+        <ng-container *ngIf="openApprovals$ | async as openApprovals">
+          <dt-tag-list aria-label="services">
+            <dt-tag *ngFor="let service of stage.services" [class.highlight]="countOpenApprovals(project, stage, service) > 0" [class.error]="findProblemEvent(project.getLatestProblemEvents(stage), service)">
+              <span *ngIf="service.deployedImage; else noDeploymentOfServiceTag" [textContent]="service.getShortImageName()"></span>
+              <ng-template #noDeploymentOfServiceTag>
+                <span class="no-deployment" [textContent]="service.serviceName"></span>
+              </ng-template>
+            </dt-tag>
+          </dt-tag-list>
+        </ng-container>
+      </ng-container>
+    </ktb-selectable-tile>
+  </div>
+</dt-info-group>
+
+<ng-template #noService>
+  <div fxLayout="row" fxLayoutAlign="start center">
+    <dt-icon class="icon" name="information"></dt-icon>
+    <p class="m-0">No service onboarded yet.</p>
+  </div>
+  <p class="m-0">Follow the intructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+</ng-template>

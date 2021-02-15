@@ -7,7 +7,6 @@ package mocks
 import (
 	reflect "reflect"
 
-	event "github.com/cloudevents/sdk-go/v2/event"
 	gomock "github.com/golang/mock/gomock"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	v0_2_0 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -37,18 +36,6 @@ func (m *MockOnboarder) EXPECT() *MockOnboarderMockRecorder {
 	return m.recorder
 }
 
-// HandleEvent mocks base method.
-func (m *MockOnboarder) HandleEvent(arg0 event.Event) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "HandleEvent", arg0)
-}
-
-// HandleEvent indicates an expected call of HandleEvent.
-func (mr *MockOnboarderMockRecorder) HandleEvent(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleEvent", reflect.TypeOf((*MockOnboarder)(nil).HandleEvent), arg0)
-}
-
 // OnboardGeneratedChart mocks base method.
 func (m *MockOnboarder) OnboardGeneratedChart(arg0 string, arg1 v0_2_0.EventData, arg2 keptn.DeploymentStrategy) (*chart.Chart, error) {
 	m.ctrl.T.Helper()
@@ -62,4 +49,18 @@ func (m *MockOnboarder) OnboardGeneratedChart(arg0 string, arg1 v0_2_0.EventData
 func (mr *MockOnboarderMockRecorder) OnboardGeneratedChart(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnboardGeneratedChart", reflect.TypeOf((*MockOnboarder)(nil).OnboardGeneratedChart), arg0, arg1, arg2)
+}
+
+// OnboardService mocks base method.
+func (m *MockOnboarder) OnboardService(arg0 string, arg1 *v0_2_0.ServiceCreateFinishedEventData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OnboardService", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OnboardService indicates an expected call of OnboardService.
+func (mr *MockOnboarderMockRecorder) OnboardService(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnboardService", reflect.TypeOf((*MockOnboarder)(nil).OnboardService), arg0, arg1)
 }

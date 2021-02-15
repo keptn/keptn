@@ -3,18 +3,120 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
+	"sort"
 )
 
 type IProjectHandler interface {
+	GetAllProjects(context *gin.Context)
+	GetProjectByName(context *gin.Context)
 	CreateProject(context *gin.Context)
 	UpdateProject(context *gin.Context)
 	DeleteProject(context *gin.Context)
 }
 
 type ProjectHandler struct {
+	ProjectManager IProjectManager
+	EventSender    keptn.EventSender
+	Logger         keptn.LoggerInterface
+}
+
+func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSender, logger keptn.LoggerInterface) *ProjectHandler {
+	if logger == nil {
+		logger = keptn.NewLogger("", "", "shipyard-controller")
+	}
+	return &ProjectHandler{
+		ProjectManager: projectManager,
+		EventSender:    eventSender,
+		Logger:         logger,
+	}
+}
+
+// GetTriggeredEvents godoc
+// @Summary Get all projects
+// @Description Get the list of all projects
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept	json
+// @Produce  json
+// @Param	pageSize			query		int			false	"The number of items to return"
+// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
+// @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
+// @Success 200 {object} models.ExpandedProjects	"ok"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /project [get]
+func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
+
+	params := &operations.GetProjectParams{}
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
+	}
+
+	allProjects, err := ph.ProjectManager.Get()
+	if err != nil {
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	sort.Slice(allProjects, func(i, j int) bool {
+		return allProjects[i].ProjectName < allProjects[j].ProjectName
+	})
+
+	var payload = &models.ExpandedProjects{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Projects:    []*models.ExpandedProject{},
+	}
+
+	paginationInfo := common.Paginate(len(allProjects), params.PageSize, params.NextPageKey)
+	totalCount := len(allProjects)
+	if paginationInfo.NextPageKey < int64(totalCount) {
+		for _, project := range allProjects[paginationInfo.NextPageKey:paginationInfo.EndIndex] {
+			payload.Projects = append(payload.Projects, project)
+		}
+	}
+
+	payload.TotalCount = float64(totalCount)
+	payload.NextPageKey = paginationInfo.NewNextPageKey
+	c.JSON(http.StatusOK, payload)
+}
+
+// GetTriggeredEvents godoc
+// @Summary Get a project by name
+// @Description Get a project by its name
+// @Tags Projects
+// @Security ApiKeyAuth
+// @Accept	json
+// @Produce  json
+// @Param	projectName		path	string	true	"The name of the project"
+// @Success 200 {object} models.ExpandedProject	"ok"
+// @Failure 404 {object} models.Error "Not found"
+// @Failure 500 {object} models.Error "Internal Error)
+// @Router /project/{project} [get]
+func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
+	projectName := c.Param("project")
+
+	project, err := ph.ProjectManager.GetByName(projectName)
+	if err != nil {
+		if project == nil && err == errProjectNotFound {
+			SetNotFoundErrorResponse(nil, c, "Project not found: "+projectName)
+			return
+		}
+
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, project)
+
 }
 
 // CreateProject godoc
@@ -29,55 +131,46 @@ type ProjectHandler struct {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
-func (service *ProjectHandler) CreateProject(c *gin.Context) {
+func (ph *ProjectHandler) CreateProject(c *gin.Context) {
+	keptnContext := uuid.New().String()
 
-	// validate the input
 	createProjectParams := &operations.CreateProjectParams{}
 	if err := c.ShouldBindJSON(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := validateCreateProjectParams(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp(err.Error()),
-		})
+	if err := common.ValidateCreateProjectParams(createProjectParams); err != nil {
+		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}
 
-	pm, err := newProjectManager()
+	common.LockProject(*createProjectParams.Name)
+	defer common.UnlockProject(*createProjectParams.Name)
+
+	if err := ph.sendProjectCreateStartedEvent(keptnContext, createProjectParams); err != nil {
+		ph.Logger.Error(fmt.Sprintf("could not send project.create.started event: %s", err.Error()))
+	}
+
+	err, rollback := ph.ProjectManager.Create(createProjectParams)
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
-		return
-	}
-
-	if secretCreated, err := pm.createProject(createProjectParams); err != nil {
-		if secretCreated {
-			if err2 := pm.secretStore.DeleteSecret(getUpstreamRepoCredsSecretName(*createProjectParams.Name)); err2 != nil {
-				pm.logger.Error(fmt.Sprintf("could not delete git credentials for project %s: %s", *createProjectParams.Name, err.Error()))
-			}
+		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, createProjectParams); err != nil {
+			ph.Logger.Error(fmt.Sprintf("could not send project.create.finished event: %s", err.Error()))
 		}
-		if err == errProjectAlreadyExists {
-			c.JSON(http.StatusConflict, models.Error{
-				Code:    http.StatusConflict,
-				Message: stringp(err.Error()),
-			})
+		rollback()
+		if err == ErrProjectAlreadyExists {
+			SetConflictErrorResponse(err, c)
+			return
+		} else {
+			SetInternalServerErrorResponse(err, c)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
-		return
 	}
+	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
+		ph.Logger.Error(fmt.Sprintf("could not send project.create.finished event: %s", err.Error()))
+	}
+
 	c.Status(http.StatusCreated)
+
 }
 
 // UpdateProject godoc
@@ -87,46 +180,34 @@ func (service *ProjectHandler) CreateProject(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 200 {object} operations.CreateProjectResponse	"ok"
+// @Param   project     body    operations.UpdateProjectParams     true        "Project"
+// @Success 200 {object} operations.UpdateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [put]
-func (service *ProjectHandler) UpdateProject(c *gin.Context) {
-	// validate the input
-	createProjectParams := &operations.CreateProjectParams{}
-	if err := c.ShouldBindJSON(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Invalid request format: " + err.Error()),
-		})
+func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
+	//validate the input
+	params := &operations.UpdateProjectParams{}
+	if err := c.ShouldBindJSON(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := validateUpdateProjectParams(createProjectParams); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: stringp("Could not validate payload: " + err.Error()),
-		})
+	if err := common.ValidateUpdateProjectParams(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}
 
-	pm, err := newProjectManager()
+	common.LockProject(*params.Name)
+	defer common.UnlockProject(*params.Name)
+
+	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
+		rollback()
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
-	if err := pm.updateProject(createProjectParams); err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
-		return
-	}
+	c.Status(http.StatusCreated)
 }
 
 //// DeleteProject godoc
@@ -140,38 +221,95 @@ func (service *ProjectHandler) UpdateProject(c *gin.Context) {
 //// @Success 200 {object} operations.DeleteProjectResponse	"ok"
 //// @Failure 400 {object} models.Error "Invalid payload"
 //// @Failure 500 {object} models.Error "Internal error"
-//// @Router /project/:project [delete]
-func (service *ProjectHandler) DeleteProject(c *gin.Context) {
+//// @Router /project/{project} [delete]
+func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
+	keptnContext := uuid.New().String()
 	projectName := c.Param("project")
 
-	if projectName == "" {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    http.StatusBadRequest,
-			Message: stringp("Must provide a project name"),
-		})
-	}
-
-	pm, err := newProjectManager()
+	common.LockProject(projectName)
+	defer common.UnlockProject(projectName)
+	err, responseMessage := ph.ProjectManager.Delete(projectName)
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    500,
-			Message: stringp("Could not process request: " + err.Error()),
-		})
+		if err := ph.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
+			//LOG MESSAGE ONLY
+		}
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
-	response, err := pm.deleteProject(projectName)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Code:    http.StatusInternalServerError,
-			Message: stringp(err.Error()),
-		})
-		return
+	if err := ph.sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName); err != nil {
+		//LOG MESSAGE ONLY
 	}
-	c.JSON(http.StatusOK, response)
+
+	c.JSON(http.StatusOK, operations.DeleteProjectResponse{
+		Message: responseMessage,
+	})
 }
 
-func NewProjectHandler() IProjectHandler {
-	return &ProjectHandler{}
+func (ph *ProjectHandler) sendProjectCreateStartedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+	eventPayload := keptnv2.ProjectCreateStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: *params.Name,
+		},
+	}
+	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetStartedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
+	return ph.EventSender.SendEvent(ce)
+
+}
+
+func (ph *ProjectHandler) sendProjectCreateSuccessFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+	eventPayload := keptnv2.ProjectCreateFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: *params.Name,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+		},
+		CreatedProject: keptnv2.ProjectCreateData{
+			ProjectName:  *params.Name,
+			GitRemoteURL: params.GitRemoteURL,
+			Shipyard:     *params.Shipyard,
+		},
+	}
+
+	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
+	return ph.EventSender.SendEvent(ce)
+}
+
+func (ph *ProjectHandler) sendProjectCreateFailFinishedEvent(keptnContext string, params *operations.CreateProjectParams) error {
+	eventPayload := keptnv2.ProjectCreateFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: *params.Name,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+		},
+	}
+
+	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectCreateTaskName), eventPayload)
+	return ph.EventSender.SendEvent(ce)
+}
+
+func (ph *ProjectHandler) sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName string) error {
+	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+		},
+	}
+
+	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
+	return ph.EventSender.SendEvent(ce)
+}
+
+func (ph *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, projectName string) error {
+	eventPayload := keptnv2.ProjectDeleteFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Status:  keptnv2.StatusErrored,
+			Result:  keptnv2.ResultFailed,
+		},
+	}
+
+	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
+	return ph.EventSender.SendEvent(ce)
 }

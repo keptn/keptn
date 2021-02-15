@@ -6,7 +6,9 @@ import (
 	"github.com/go-test/deep"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"os"
@@ -21,7 +23,7 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		triggeredEventRepo db.EventRepo
 	}
 	type args struct {
-		filter db.EventFilter
+		filter common.EventFilter
 	}
 	tests := []struct {
 		name    string
@@ -33,11 +35,15 @@ func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 		{
 			name: "Get triggered events for all projects",
 			fields: fields{
-				projectRepo: &fake.ProjectRepository{GetProjectsFunc: func() ([]string, error) {
-					return []string{"sockshop", "rockshop"}, nil
+				projectRepo: &db_mock.ProjectRepoMock{GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+					return []*models.ExpandedProject{{
+						ProjectName: "sockshop",
+					}, {
+						ProjectName: "rockshop",
+					}}, nil
 				}},
-				triggeredEventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+				triggeredEventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
 					InsertEventFunc: nil,
@@ -77,7 +83,7 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 	}
 	type args struct {
 		project string
-		filter  db.EventFilter
+		filter  common.EventFilter
 	}
 	tests := []struct {
 		name    string
@@ -90,8 +96,8 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 			name: "Get triggered events for project",
 			fields: fields{
 				projectRepo: nil,
-				triggeredEventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+				triggeredEventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
 					InsertEventFunc: nil,
@@ -244,21 +250,21 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			name: "received started event with matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-						if status == db.TriggeredEvent {
+				eventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+						if status[0] == common.TriggeredEvent {
 							return []models.Event{fake.GetTestTriggeredEvent()}, nil
 						}
 						return nil, errors.New("received unexpected request")
 					},
-					InsertEventFunc: func(project string, event models.Event, status db.EventStatus) error {
+					InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
 						if len(deep.Equal(event, fake.GetTestStartedEvent())) != 0 {
 							t.Errorf("received unexpected event in insertEvent func. wanted %v but got %v", fake.GetTestStartedEvent(), event)
 							return nil
 						}
 						return nil
 					},
-					DeleteEventFunc: func(project string, eventID string, status db.EventStatus) error {
+					DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 						return nil
 					},
 				},
@@ -273,18 +279,18 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-						if status == db.TriggeredEvent {
+				eventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+						if status[0] == common.TriggeredEvent {
 							return nil, nil
 						}
 						return nil, errors.New("received unexpected request")
 					},
-					InsertEventFunc: func(project string, event models.Event, status db.EventStatus) error {
+					InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
 						t.Error("event should not be stored in this case")
 						return nil
 					},
-					DeleteEventFunc: func(project string, eventID string, status db.EventStatus) error {
+					DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 						return nil
 					},
 				},
@@ -334,19 +340,19 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 			name: "received started event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-						if status == db.TriggeredEvent {
+				eventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+						if status[0] == common.TriggeredEvent {
 							return nil, nil
-						} else if status == db.StartedEvent {
+						} else if status[0] == common.StartedEvent {
 							return nil, nil
 						}
 						return nil, errors.New("received unexpected request")
 					},
-					InsertEventFunc: func(project string, event models.Event, status db.EventStatus) error {
+					InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
 						return nil
 					},
-					DeleteEventFunc: func(project string, eventID string, status db.EventStatus) error {
+					DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
 						return nil
 					},
 				},
@@ -381,8 +387,8 @@ func Test_eventManager_getEvents(t *testing.T) {
 	}
 	type args struct {
 		project string
-		filter  db.EventFilter
-		status  db.EventStatus
+		filter  common.EventFilter
+		status  common.EventStatus
 	}
 	tests := []struct {
 		name    string
@@ -395,8 +401,8 @@ func Test_eventManager_getEvents(t *testing.T) {
 			name: "get event",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+				eventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
 				},
@@ -404,8 +410,8 @@ func Test_eventManager_getEvents(t *testing.T) {
 			},
 			args: args{
 				project: "test-project",
-				filter:  db.EventFilter{},
-				status:  db.TriggeredEvent,
+				filter:  common.EventFilter{},
+				status:  common.TriggeredEvent,
 			},
 			want:    []models.Event{fake.GetTestTriggeredEvent()},
 			wantErr: false,
@@ -414,8 +420,8 @@ func Test_eventManager_getEvents(t *testing.T) {
 			name: "get event after retry",
 			fields: fields{
 				projectRepo: nil,
-				eventRepo: &fake.EventRepository{
-					GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
+				eventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						if eventAvailable {
 							return []models.Event{fake.GetTestTriggeredEvent()}, nil
 						}
@@ -427,8 +433,8 @@ func Test_eventManager_getEvents(t *testing.T) {
 			},
 			args: args{
 				project: "test-project",
-				filter:  db.EventFilter{},
-				status:  db.TriggeredEvent,
+				filter:  common.EventFilter{},
+				status:  common.TriggeredEvent,
 			},
 			want:    []models.Event{fake.GetTestTriggeredEvent()},
 			wantErr: false,
@@ -469,18 +475,18 @@ func getArtifactDeliveryTriggeredEvent() models.Event {
 					"image": "carts",
 				},
 			},
-			Deployment: keptnv2.DeploymentWithStrategy{
+			Deployment: keptnv2.DeploymentTriggeredData{
 				DeploymentStrategy: "direct",
 			},
 		},
 		Extensions:     nil,
 		ID:             "artifact-delivery-triggered-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "",
-		Type:           stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
+		Type:           common.Stringp("sh.keptn.event.dev.artifact-delivery.triggered"),
 	}
 }
 
@@ -491,11 +497,11 @@ func getStartedEvent(stage string, triggeredID string, eventType string, source 
 		Extensions:     nil,
 		ID:             eventType + "-started-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp(source),
+		Source:         common.Stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp(keptnv2.GetStartedEventType(eventType)),
+		Type:           common.Stringp(keptnv2.GetStartedEventType(eventType)),
 	}
 }
 
@@ -510,7 +516,7 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string)
 				Status:  keptnv2.StatusSucceeded,
 				Result:  keptnv2.ResultPass,
 			},
-			Deployment: keptnv2.DeploymentData{
+			Deployment: keptnv2.DeploymentFinishedData{
 				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
 				DeploymentURIsPublic: []string{"public-uri-1", "public-uri-2"},
 				DeploymentNames:      []string{"deployment-1"},
@@ -520,11 +526,11 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string)
 		Extensions:     nil,
 		ID:             "deployment-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp(source),
+		Source:         common.Stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.deployment.finished"),
+		Type:           common.Stringp("sh.keptn.event.deployment.finished"),
 	}
 }
 
@@ -539,7 +545,7 @@ func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source 
 				Status:  keptnv2.StatusErrored,
 				Result:  keptnv2.ResultFailed,
 			},
-			Deployment: keptnv2.DeploymentData{
+			Deployment: keptnv2.DeploymentFinishedData{
 				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
 				DeploymentURIsPublic: []string{"public-uri-1", "public-uri-2"},
 				DeploymentNames:      []string{"deployment-1"},
@@ -549,11 +555,11 @@ func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source 
 		Extensions:     nil,
 		ID:             "deployment-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp(source),
+		Source:         common.Stringp(source),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.deployment.finished"),
+		Type:           common.Stringp("sh.keptn.event.deployment.finished"),
 	}
 }
 
@@ -581,11 +587,11 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.test.finished"),
+		Type:           common.Stringp("sh.keptn.event.test.finished"),
 	}
 }
 
@@ -607,11 +613,11 @@ func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result kep
 		Extensions:     nil,
 		ID:             "evaluation-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.evaluation.finished"),
+		Type:           common.Stringp("sh.keptn.event.evaluation.finished"),
 	}
 }
 
@@ -630,11 +636,11 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 		Extensions:     nil,
 		ID:             "release-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    triggeredID,
-		Type:           stringp("sh.keptn.event.release.finished"),
+		Type:           common.Stringp("sh.keptn.event.release.finished"),
 	}
 }
 
@@ -702,12 +708,12 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		return
 	}
 	// check triggeredEvent Collection -> should contain deployment.triggered event
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
 		return
@@ -878,9 +884,9 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		return
 	}
 
-	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
-		Stage: stringp("dev"),
-	}, db.FinishedEvent)
+	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
+		Stage: common.Stringp("dev"),
+	}, common.FinishedEvent)
 
 	fake.ShouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), "dev")
 	fake.ShouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.TestTaskName), "dev")
@@ -957,12 +963,12 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 		return
 	}
 	// check triggeredEvent Collection -> should contain deployment.triggered event
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
 		return
@@ -1053,12 +1059,12 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 		return
 	}
 	// check triggeredEvent Collection -> should contain deployment.triggered event
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
 		return
@@ -1149,12 +1155,12 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 		return
 	}
 	// check triggeredEvent Collection -> should contain deployment.triggered event
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		Stage:   stringp("dev"),
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 	if done {
 		return
@@ -1332,24 +1338,24 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		nextStage = scope.Stage
 	}
 	// check triggeredEvent collection -> should not contain <eventType>.triggered event anymore
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done := fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
 	if done {
 		return "", true
 	}
 
 	// check triggeredEvent collection -> should contain <nextEventType>.triggered event
-	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(nextEventType),
 		Stage:   &nextStage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 
 	triggeredID := triggeredEvents[0].ID
 	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
@@ -1358,12 +1364,12 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	}
 
 	// check startedEvent collection -> should not contain <eventType>.started event anymore
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
-		Service:     stringp("carts"),
-		TriggeredID: stringp(finishedEvent.Triggeredid),
-	}, db.StartedEvent)
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
+	}, common.StartedEvent)
 	done = fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 	if done {
 		return "", true
@@ -1389,24 +1395,24 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 		nextStage = scope.Stage
 	}
 	// check triggeredEvent collection -> should not contain <eventType>.triggered event anymore
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done := fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
 	if done {
 		return true
 	}
 
 	// check startedEvent collection -> should not contain <eventType>.started event anymore
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
-		Service:     stringp("carts"),
-		TriggeredID: stringp(finishedEvent.Triggeredid),
-	}, db.StartedEvent)
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
+	}, common.StartedEvent)
 	done = fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 	if done {
 		return true
@@ -1432,24 +1438,24 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		nextStage = scope.Stage
 	}
 	// check triggeredEvent collection -> should still contain <eventType>.triggered event
-	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage, nil)
 	if done {
 		return true
 	}
 
 	// check triggeredEvent collection -> should not contain <nextEventType>.triggered event
-	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(nextEventType),
 		Stage:   &nextStage,
-		Service: stringp("carts"),
-		Source:  stringp("shipyard-controller"),
-	}, db.TriggeredEvent)
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
 
 	done = fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
 	if done {
@@ -1457,12 +1463,12 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 	}
 
 	// check startedEvent collection -> should still contain one <eventType>.started event
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(eventType),
 		Stage:       &scope.Stage,
-		Service:     stringp("carts"),
-		TriggeredID: stringp(finishedEvent.Triggeredid),
-	}, db.StartedEvent)
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
+	}, common.StartedEvent)
 	if len(startedEvents) != 1 {
 		t.Errorf("List of started events does not hold proper number of events. Expected 1 but got %d", len(startedEvents))
 		return true
@@ -1487,12 +1493,12 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 		return true
 	}
 	// check startedEvent collection -> should contain <taskName>.started event
-	startedEvents, _ := sc.eventRepo.GetEvents("test-project", db.EventFilter{
+	startedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:        keptnv2.GetStartedEventType(taskName),
-		Stage:       stringp(stage),
-		Service:     stringp("carts"),
-		TriggeredID: stringp(triggeredID),
-	}, db.StartedEvent)
+		Stage:       common.Stringp(stage),
+		Service:     common.Stringp("carts"),
+		TriggeredID: common.Stringp(triggeredID),
+	}, common.StartedEvent)
 	return fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
 }
 
@@ -1605,19 +1611,19 @@ func getTestShipyardController() *shipyardController {
 
 	em := &shipyardController{
 		projectRepo: nil,
-		eventRepo: &fake.EventRepository{
-			GetEventsFunc: func(project string, filter db.EventFilter, status db.EventStatus) ([]models.Event, error) {
-				if status == db.TriggeredEvent {
+		eventRepo: &db_mock.EventRepoMock{
+			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+				if status[0] == common.TriggeredEvent {
 					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
 					return filterEvents(triggeredEventsCollection, filter)
-				} else if status == db.StartedEvent {
+				} else if status[0] == common.StartedEvent {
 					if startedEventsCollection == nil || len(startedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
 					return filterEvents(startedEventsCollection, filter)
-				} else if status == db.FinishedEvent {
+				} else if status[0] == common.FinishedEvent {
 					if finishedEventsCollection == nil || len(finishedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
@@ -1625,32 +1631,32 @@ func getTestShipyardController() *shipyardController {
 				}
 				return nil, nil
 			},
-			InsertEventFunc: func(project string, event models.Event, status db.EventStatus) error {
-				if status == db.TriggeredEvent {
+			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
+				if status == common.TriggeredEvent {
 					triggeredEventsCollection = append(triggeredEventsCollection, event)
-				} else if status == db.StartedEvent {
+				} else if status == common.StartedEvent {
 					startedEventsCollection = append(startedEventsCollection, event)
-				} else if status == db.FinishedEvent {
+				} else if status == common.FinishedEvent {
 					finishedEventsCollection = append(finishedEventsCollection, event)
 				}
 				return nil
 			},
-			DeleteEventFunc: func(project string, eventID string, status db.EventStatus) error {
-				if status == db.TriggeredEvent {
+			DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
+				if status == common.TriggeredEvent {
 					for index, event := range triggeredEventsCollection {
 						if event.ID == eventID {
 							triggeredEventsCollection = append(triggeredEventsCollection[:index], triggeredEventsCollection[index+1:]...)
 							return nil
 						}
 					}
-				} else if status == db.StartedEvent {
+				} else if status == common.StartedEvent {
 					for index, event := range startedEventsCollection {
 						if event.ID == eventID {
 							startedEventsCollection = append(startedEventsCollection[:index], startedEventsCollection[index+1:]...)
 							return nil
 						}
 					}
-				} else if status == db.FinishedEvent {
+				} else if status == common.FinishedEvent {
 					for index, event := range finishedEventsCollection {
 						if event.ID == eventID {
 							finishedEventsCollection = append(finishedEventsCollection[:index], finishedEventsCollection[index+1:]...)
@@ -1661,8 +1667,8 @@ func getTestShipyardController() *shipyardController {
 				return nil
 			},
 		},
-		taskSequenceRepo: &fake.TaskSequenceRepository{
-			GetTaskSequenceFund: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
+		taskSequenceRepo: &db_mock.TaskSequenceRepoMock{
+			GetTaskSequenceFunc: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
 				for _, ts := range taskSequenceCollection {
 					if ts.TriggeredEventID == triggeredID {
 						return &ts, nil
@@ -1687,12 +1693,16 @@ func getTestShipyardController() *shipyardController {
 				return nil
 			},
 		},
-		logger: keptncommon.NewLogger("", "", ""),
+		eventsDbOperations: &db_mock.EventsDbOperationsMock{
+			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+				return nil
+			},
+		},
 	}
 	return em
 }
 
-func filterEvents(eventsCollection []models.Event, filter db.EventFilter) ([]models.Event, error) {
+func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([]models.Event, error) {
 	result := []models.Event{}
 
 	for _, event := range eventsCollection {

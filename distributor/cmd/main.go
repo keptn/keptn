@@ -22,24 +22,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/url"
-
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/keptn/keptn/distributor/pkg/lib"
-
-	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats.go"
+
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/distributor/pkg/lib"
 )
 
 type envConfig struct {
@@ -75,24 +73,14 @@ var env envConfig
 
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
-	"/datastore":             "mongodb-datastore:8080",
-	"/event-store":           "mongodb-datastore:8080",
 	"/configuration-service": "configuration-service:8080",
-	"/configuration":         "configuration-service:8080",
-	"/config":                "configuration-service:8080",
-	"/shipyard-controller":   "shipyard-controller:8080",
-	"/shipyard":              "shipyard-controller:8080",
+	"/controlPlane":          "shipyard-controller:8080",
 }
 
 var externalAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "/mongodb-datastore",
-	"/datastore":             "/mongodb-datastore",
-	"/event-store":           "/mongodb-datastore",
 	"/configuration-service": "/configuration-service",
-	"/configuration":         "/configuration-service",
-	"/config":                "/configuration-service",
-	"/shipyard-controller":   "/shipyard-controller",
-	"/shipyard":              "/shipyard-controller",
+	"/controlPlane":          "/controlPlane",
 }
 
 func main() {
@@ -208,6 +196,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	forwardReq.URL = parsedProxyURL
+	forwardReq.URL.RawQuery = req.URL.RawQuery
 
 	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
 
@@ -224,6 +213,13 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	for name, headers := range resp.Header {
+		for _, h := range headers {
+			rw.Header().Set(name, h)
+		}
+	}
+
 	rw.WriteHeader(resp.StatusCode)
 
 	defer resp.Body.Close()
@@ -234,7 +230,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(fmt.Sprintf("Received response from API: Status=%d, Payload=%s", resp.StatusCode, string(respBytes)))
+	fmt.Println(fmt.Sprintf("Received response from API: Status=%d", resp.StatusCode))
 	if _, err := rw.Write(respBytes); err != nil {
 		fmt.Println("could not send response from API: " + err.Error())
 	}
@@ -411,7 +407,7 @@ func getHTTPPollingEndpoint() string {
 			return "http://shipyard-controller:8080/v1/event/triggered"
 		}
 	} else {
-		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/shipyard-controller/v1/event/triggered"
+		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
 	}
 
 	parsedURL, _ := url.Parse(endpoint)

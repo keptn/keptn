@@ -24,7 +24,7 @@ type ReleaseHandler struct {
 }
 
 // NewReleaseHandler creates a ReleaseHandler
-func NewReleaseHandler(keptnHandler *keptnv2.Keptn,
+func NewReleaseHandler(keptnHandler Handler,
 	mesh mesh.Mesh,
 	configurationChanger configurationchanger.IConfigurationChanger,
 	chartGenerator helm.ChartGenerator,
@@ -33,7 +33,7 @@ func NewReleaseHandler(keptnHandler *keptnv2.Keptn,
 	configServiceURL string) *ReleaseHandler {
 	//generatedChartHandler := helm.NewGeneratedChartGenerator(mesh, keptnHandler.Logger)
 	return &ReleaseHandler{
-		Handler:               NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:               keptnHandler,
 		mesh:                  mesh,
 		generatedChartHandler: chartGenerator,
 		configurationChanger:  configurationChanger,

@@ -5,6 +5,10 @@
   height: auto;
 }
 
+.error {
+  color: $error-color;
+}
+
 .dt-icon {
   width: 16px;
   height: 16px;
@@ -12,4 +16,11 @@
   &.info {
     fill: $primary-color;
   }
+  &.error{
+    fill: $error-color;
+  }
+}
+
+.bottom {
+  vertical-align: bottom;
 }

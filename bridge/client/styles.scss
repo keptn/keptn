@@ -71,6 +71,11 @@ span.success {
   color: $cta-color-active;
 }
 
+p.highlight,
+span.highlight {
+  color: $blue-400;
+}
+
 p.error-line,
 span.error-line {
   text-decoration: line-through;

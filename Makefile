@@ -14,14 +14,17 @@ CREATEBIN := $(shell [ ! -d ./bin ] && mkdir bin)
 # Make is verbose in Linux. Make it silent.
 MAKEFLAGS += --silent
 
+# output filename for cli binary
+OUTPUT_EXECUTEABLE_NAME := $(PROJECTNAME)
+
 .PHONY: default
 default: help
 
 ## Build the cli binary
 build-cli:
-	@printf "🔨 Building binary $(GOBIN)/$(PROJECTNAME)\n" 
+	@printf "🔨 Building binary '$(OUTPUT_EXECUTEABLE_NAME)'\n"
 	@./make-scripts/build/build-cli.sh
-	@cp ./cli/keptn $(GOBIN)/
+	@cp cli/$(OUTPUT_EXECUTEABLE_NAME) $(GOBIN)/
 	@printf "👍 Done\n"
 
 ## Build all docker images

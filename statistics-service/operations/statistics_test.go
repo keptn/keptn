@@ -1,9 +1,10 @@
 package operations
 
 import (
-	"github.com/go-test/deep"
 	"testing"
 	"time"
+
+	"github.com/go-test/deep"
 )
 
 func TestStatistics_ensureProjectAndServiceExist(t *testing.T) {

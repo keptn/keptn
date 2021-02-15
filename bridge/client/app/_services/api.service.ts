@@ -11,6 +11,7 @@ import {EventResult} from "../_models/event-result";
 import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
+import {Metadata} from '../_models/metadata';
 
 @Injectable({
   providedIn: 'root'
@@ -74,11 +75,15 @@ export class ApiService {
   }
 
   public getProjects(pageSize?: number): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
+    let url = `${this._baseUrl}/controlPlane/v1/project?disableUpstreamSync=true`;
     if(pageSize)
       url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
+  }
+
+  public getMetadata(): Observable<Metadata> {
+    return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
@@ -88,13 +93,13 @@ export class ApiService {
   }
 
   public getStages(projectName): Observable<Stage[]> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage`;
+    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.http
       .get<Stage[]>(url);
   }
 
   public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
+    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url);
   }
@@ -127,15 +132,15 @@ export class ApiService {
       .get<EventResult>(url);
   }
 
-  public sendApprovalEvent(approval: Trace, approve: boolean) {
+  public sendApprovalEvent(approval: Trace, approve: boolean, eventType: EventTypes, source: string ) {
     let url = `${this._baseUrl}/v1/event`;
 
     return this.http
       .post<any>(url, {
         "shkeptncontext": approval.shkeptncontext,
-        "type": EventTypes.APPROVAL_FINISHED,
+        "type": eventType,
         "triggeredid": approval.id,
-        "source": "https://github.com/keptn/keptn/bridge#approval.finished",
+        "source": `https://github.com/keptn/keptn/bridge#${source}`,
         "data": Object.assign(approval.data, {
           "approval": {
             "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,

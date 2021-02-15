@@ -3,6 +3,8 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"math"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -11,7 +13,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
 	corev1 "k8s.io/api/core/v1"
-	"math"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
@@ -24,9 +25,9 @@ type DeploymentHandler struct {
 }
 
 // NewDeploymentHandler creates a new DeploymentHandler
-func NewDeploymentHandler(keptnHandler *keptnv2.Keptn, mesh mesh.Mesh, onboarder Onboarder, chartGenerator helm.ChartGenerator, configServiceURL string) *DeploymentHandler {
+func NewDeploymentHandler(keptnHandler Handler, mesh mesh.Mesh, onboarder Onboarder, chartGenerator helm.ChartGenerator) *DeploymentHandler {
 	return &DeploymentHandler{
-		Handler:               NewHandlerBase(keptnHandler, configServiceURL),
+		Handler:               keptnHandler,
 		mesh:                  mesh,
 		onboarder:             onboarder,
 		generatedChartHandler: chartGenerator,
@@ -48,16 +49,6 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Starting deployment for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
 	if err := h.sendEvent(ce.ID(), keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName), h.getStartedEventData(e.EventData)); err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
-		return
-	}
-
-	if e.Result == keptnv2.ResultFailed {
-		h.getKeptnHandler().Logger.Info(fmt.Sprintf("No deployment done for service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
-		data := h.getFinishedEventDataForNoDeployment(e.EventData)
-		if err := h.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), data); err != nil {
-			h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
-			return
-		}
 		return
 	}
 
@@ -102,7 +93,7 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 	}
 
 	// Send finished event
-	data, err := h.getFinishedEventDataForSuccess(e.EventData, gitVersion,
+	data, err := h.getFinishedEventDataForSuccess(e, gitVersion,
 		getDeploymentName(deploymentStrategy, false), deploymentStrategy)
 	if err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
@@ -212,20 +203,31 @@ func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) k
 	return keptnv2.DeploymentStartedEventData{EventData: inEventData}
 }
 
-func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.EventData, gitCommit string,
+func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.DeploymentTriggeredEventData, gitCommit string,
 	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy) (*keptnv2.DeploymentFinishedEventData, error) {
 
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = keptnv2.ResultPass
 	inEventData.Message = "Successfully deployed"
 
-	localURIs, publicURIs, err := h.getDeploymentURIs(inEventData)
-	if err != nil {
-		return nil, fmt.Errorf("could not determine deployment URIs: %s", err.Error())
+	var localURIs, publicURIs []string
+	if deploymentStrategy == keptnevents.Direct || deploymentStrategy == keptnevents.Duplicate {
+		h.getKeptnHandler().Logger.Info("Inferring deployment URIs")
+		var err error
+		localURIs, publicURIs, err = h.getDeploymentURIs(inEventData.EventData)
+		if err != nil {
+			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
+		}
+	} else if len(inEventData.Deployment.DeploymentURIsLocal) > 0 || len(inEventData.Deployment.DeploymentURIsPublic) > 0 {
+		h.getKeptnHandler().Logger.Info("Using deployment URIs from deployment.triggered event")
+		localURIs = inEventData.Deployment.DeploymentURIsLocal
+		publicURIs = inEventData.Deployment.DeploymentURIsPublic
+	} else {
+		h.getKeptnHandler().Logger.Info("No deployment URIs defined in deployment.finished event")
 	}
 	return &keptnv2.DeploymentFinishedEventData{
-		EventData: inEventData,
-		Deployment: keptnv2.DeploymentData{
+		EventData: inEventData.EventData,
+		Deployment: keptnv2.DeploymentFinishedData{
 			DeploymentStrategy:   deploymentStrategy.String(),
 			DeploymentURIsPublic: publicURIs,
 			DeploymentURIsLocal:  localURIs,
@@ -233,6 +235,7 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.E
 			GitCommit:            gitCommit,
 		},
 	}, nil
+
 }
 
 func (h *DeploymentHandler) getFinishedEventDataForError(eventData keptnv2.EventData, err error) keptnv2.DeploymentFinishedEventData {

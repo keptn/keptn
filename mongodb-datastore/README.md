@@ -17,7 +17,7 @@ swagger generate server -A mongodb-datastore -f ./swagger.yaml
 
 ### View swagger docs
 
-The swagger docs are exposed on http://localhost:8080/swagger-ui 
+The swagger docs are exposed on http://localhost:8080/swagger-ui
 
 ### launch.json for VS Code
 

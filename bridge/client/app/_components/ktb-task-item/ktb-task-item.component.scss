@@ -1,0 +1,17 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.dt-button + .dt-button {
+  margin-left: $gap-normal;
+}
+
+.task-buttons {
+  margin-right: 35px;
+}
+
+.sub-task-item {
+  border-bottom: 1px solid $gray-200;
+}
+.sub-task-item:last-child {
+  border-bottom: none;
+}
