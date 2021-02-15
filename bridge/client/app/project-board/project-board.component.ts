@@ -8,7 +8,6 @@ import {Trace} from "../_models/trace";
 
 import {DataService} from "../_services/data.service";
 import {ApiService} from "../_services/api.service";
-import {DateUtil} from "../_utils/date.utils";
 
 @Component({
   selector: 'app-project-board',

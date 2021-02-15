@@ -41,6 +41,8 @@ export class KtbServiceViewComponent implements OnInit {
   public contextId: string;
   public eventId: string;
 
+  public selectedStage: string;
+
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
 
