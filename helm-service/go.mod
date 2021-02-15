@@ -9,7 +9,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.4.4
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210215150645-b1e164f2453d
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210210151638-4b5b09c2e79c
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
@@ -27,6 +27,4 @@ require (
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
-	github.com/keptn/go-utils => ../../go-utils
-
 )
