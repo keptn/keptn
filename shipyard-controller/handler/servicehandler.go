@@ -254,7 +254,6 @@ func (sh *ServiceHandler) sendServiceCreateSuccessFinishedEvent(keptnContext str
 			Status:  keptnv2.StatusSucceeded,
 			Result:  keptnv2.ResultPass,
 		},
-		Helm: keptnv2.Helm{Chart: params.HelmChart},
 	}
 	event := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), eventPayload)
 	if err := sh.EventSender.SendEvent(event); err != nil {

@@ -25,7 +25,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
-  public versionCheckReference = "https://keptn.sh/docs/0.7.x/reference/version_check";
+  public versionCheckReference = "/reference/version_check/";
 
   constructor(private router: Router, private dataService: DataService, private apiService: ApiService, private notificationsService: NotificationsService) { }
 

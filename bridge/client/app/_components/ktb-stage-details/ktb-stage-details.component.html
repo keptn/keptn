@@ -25,7 +25,7 @@
         </dt-toggle-button-group>
         <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
           <dt-icon class="icon" name="information"></dt-icon>
-          <p class="m-0">No service onboarded yet. Follow the intructions to <a href="https://keptn.sh/docs/0.7.x/manage/service/#onboard-a-service" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+          <p class="m-0">No service onboarded yet. Follow the intructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
         </div>
         <ng-container *ngFor="let service of selectedStage.services">
           <ktb-expandable-tile [expanded]="countOpenApprovals(project, selectedStage, service) > 0"
@@ -90,5 +90,5 @@
   </ng-container>
 </ng-container>
 <ng-template #noDeployment>
-  <p class="m-0">Service not deployed yet. Use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_send_event_new-artifact/" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
+  <p class="m-0">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_send_event_new-artifact/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn send event new-artifact</a> to trigger a deployment.</p>
 </ng-template>

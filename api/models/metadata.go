@@ -27,6 +27,9 @@ type Metadata struct {
 	// keptnversion
 	Keptnversion string `json:"keptnversion,omitempty"`
 
+	// shipyardversion
+	Shipyardversion string `json:"shipyardversion,omitempty"`
+
 	// namespace
 	Namespace string `json:"namespace,omitempty"`
 }

@@ -475,7 +475,7 @@ func getArtifactDeliveryTriggeredEvent() models.Event {
 					"image": "carts",
 				},
 			},
-			Deployment: keptnv2.DeploymentWithStrategy{
+			Deployment: keptnv2.DeploymentTriggeredData{
 				DeploymentStrategy: "direct",
 			},
 		},
@@ -516,7 +516,7 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string,
 				Status:  keptnv2.StatusSucceeded,
 				Result:  result,
 			},
-			Deployment: keptnv2.DeploymentData{
+			Deployment: keptnv2.DeploymentFinishedData{
 				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
 				DeploymentURIsPublic: []string{"public-uri-1", "public-uri-2"},
 				DeploymentNames:      []string{"deployment-1"},
@@ -545,7 +545,7 @@ func getErroredDeploymentFinishedEvent(stage string, triggeredID string, source 
 				Status:  keptnv2.StatusErrored,
 				Result:  keptnv2.ResultFailed,
 			},
-			Deployment: keptnv2.DeploymentData{
+			Deployment: keptnv2.DeploymentFinishedData{
 				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
 				DeploymentURIsPublic: []string{"public-uri-1", "public-uri-2"},
 				DeploymentNames:      []string{"deployment-1"},

@@ -308,7 +308,9 @@ func GetCredentials(project string) (*GitCredentials, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	if credentials.User != "" && credentials.Token != "" && credentials.RemoteURI != "" {
+		return &credentials, nil
+	}
 	return nil, nil
 }
 

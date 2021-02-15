@@ -157,7 +157,7 @@ func TestGetProjectByName(t *testing.T) {
 		projectNameParam   string
 	}{
 		{
-			name: "Get all projects DB access fails",
+			name: "Get Project By Name DB access fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
@@ -170,7 +170,7 @@ func TestGetProjectByName(t *testing.T) {
 			projectNameParam: "my-project",
 		},
 		{
-			name: "Get all projects not found",
+			name: "Get Project By Name project not found",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
@@ -183,7 +183,7 @@ func TestGetProjectByName(t *testing.T) {
 			projectNameParam: "my-project",
 		},
 		{
-			name: "Get all projects",
+			name: "Get Project By Name",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
@@ -202,7 +202,10 @@ func TestGetProjectByName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Set("projectName", tt.projectNameParam)
+
+			c.Params = gin.Params{
+				gin.Param{Key: "project", Value: "my-project"},
+			}
 
 			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, nil)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
@@ -216,6 +219,8 @@ func TestGetProjectByName(t *testing.T) {
 				assert.Equal(t, tt.expectJSONResponse, response)
 			}
 			assert.Equal(t, tt.expectHttpStatus, w.Code)
+			projectManagerMock := tt.fields.ProjectManager.(*fake.IProjectManagerMock)
+			assert.Equal(t, "my-project", projectManagerMock.GetByNameCalls()[0].ProjectName)
 
 		})
 	}

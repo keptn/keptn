@@ -61,9 +61,6 @@ var serviceCreateStatusChangesData = keptnv2.ServiceCreateStatusChangedEventData
 
 var serviceCreateFinishedEventData = keptnv2.ServiceCreateFinishedEventData{
 	EventData: commonEventData,
-	Helm: keptnv2.Helm{
-		Chart: `c3RhZ2VzOg0KICAtIG5hbWU6ICJkZXYiDQogICAgZGVwbG95bWVudF9zdHJhdGVneTogImRpcmVjdCINCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCINCiAgLSBuYW1lOiAic3RhZ2luZyINCiAgICBkZXBsb3ltZW50X3N0cmF0ZWd5OiAiYmx1ZV9ncmVlbl9zZXJ2aWNlIg0KICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSINCiAgLSBuYW1lOiAicHJvZHVjdGlvbiINCiAgICBkZXBsb3ltZW50X3N0cmF0ZWd5OiAiYmx1ZV9ncmVlbl9zZXJ2aWNlIg0KICAgIHJlbWVkaWF0aW9uX3N0cmF0ZWd5OiAiYXV0b21hdGVkIg0K"`,
-	},
 }
 
 //var approvalTriggeredEventData = keptnv2.ApprovalTriggeredEventData{
@@ -91,7 +88,7 @@ var deploymentTriggeredEventData = keptnv2.DeploymentTriggeredEventData{
 	ConfigurationChange: keptnv2.ConfigurationChange{
 		Values: map[string]interface{}{"key": "value"},
 	},
-	Deployment: keptnv2.DeploymentWithStrategy{
+	Deployment: keptnv2.DeploymentTriggeredData{
 		DeploymentStrategy: keptn.Direct.String(),
 	},
 }
@@ -106,7 +103,7 @@ var deploymentStatusChangedEventData = keptnv2.DeploymentStatusChangedEventData{
 
 var deploymentFinishedEventData = keptnv2.DeploymentFinishedEventData{
 	EventData: commonEventData,
-	Deployment: keptnv2.DeploymentData{
+	Deployment: keptnv2.DeploymentFinishedData{
 		DeploymentStrategy:   keptn.Direct.String(),
 		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
 		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
@@ -209,7 +206,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 
 var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 	EventData: commonEventData,
-	Deployment: keptnv2.DeploymentWithStrategy{
+	Deployment: keptnv2.DeploymentFinishedData{
 		DeploymentStrategy: keptn.Duplicate.String(),
 	},
 }

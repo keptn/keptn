@@ -26,6 +26,7 @@ const (
 	rootEventCollectionSuffix         = "-rootEvents"
 	invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 	unmappedEventsCollectionName      = "keptnUnmappedEvents"
+	keptn07EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
 )
 
 var (
@@ -477,30 +478,7 @@ func aggregateFromDB(collectionName string, pipeline mongo.Pipeline, logger *kep
 	}
 	// close the cursor after the function has completed to avoid memory leaks
 	defer cur.Close(ctx)
-	for cur.Next(ctx) {
-		var outputEvent interface{}
-		err := cur.Decode(&outputEvent)
-		if err != nil {
-			logger.Error(fmt.Sprintf("failed to decode event %v", err))
-			return nil, err
-		}
-		outputEvent, err = flattenRecursively(outputEvent, logger)
-		if err != nil {
-			logger.Error(fmt.Sprintf("failed to flatten %v", err))
-			return nil, err
-		}
-
-		data, _ := json.Marshal(outputEvent)
-
-		var keptnEvent models.KeptnContextExtendedCE
-		err = keptnEvent.UnmarshalJSON(data)
-		if err != nil {
-			logger.Error(fmt.Sprintf("failed to unmarshal %v", err))
-			continue
-		}
-
-		result.Events = append(result.Events, &keptnEvent)
-	}
+	result.Events = formatEventResults(ctx, cur, logger)
 
 	return result, nil
 }
@@ -547,17 +525,31 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 	}
 	// close the cursor after the function has completed to avoid memory leaks
 	defer cur.Close(ctx)
+	result.Events = formatEventResults(ctx, cur, logger)
+
+	result.PageSize = pageSize
+	result.TotalCount = totalCount
+
+	if newNextPageKey < totalCount {
+		result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+	}
+
+	return &result, nil
+}
+
+func formatEventResults(ctx context.Context, cur *mongo.Cursor, logger *keptncommon.Logger) []*models.KeptnContextExtendedCE {
+	events := []*models.KeptnContextExtendedCE{}
 	for cur.Next(ctx) {
 		var outputEvent interface{}
 		err := cur.Decode(&outputEvent)
 		if err != nil {
 			logger.Error(fmt.Sprintf("failed to decode event %v", err))
-			return nil, err
+			continue
 		}
 		outputEvent, err = flattenRecursively(outputEvent, logger)
 		if err != nil {
 			logger.Error(fmt.Sprintf("failed to flatten %v", err))
-			return nil, err
+			continue
 		}
 
 		data, _ := json.Marshal(outputEvent)
@@ -569,17 +561,39 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 			continue
 		}
 
-		result.Events = append(result.Events, &keptnEvent)
+		// backwards compatibility: transform evaluation-done events to evaluation.finished events
+		if keptnEvent.Type == keptn07EvaluationDoneEventType {
+			if err := transformEvaluationDonEvent(&keptnEvent); err != nil {
+				logger.Error(err.Error())
+				continue
+			}
+		}
+
+		events = append(events, &keptnEvent)
 	}
+	return events
+}
 
-	result.PageSize = pageSize
-	result.TotalCount = totalCount
-
-	if newNextPageKey < totalCount {
-		result.NextPageKey = strconv.FormatInt(newNextPageKey, 10)
+func transformEvaluationDonEvent(keptnEvent *models.KeptnContextExtendedCE) error {
+	eventMap := map[string]interface{}{}
+	convertedEvent := &keptnv2.EvaluationFinishedEventData{}
+	if err := keptnv2.Decode(keptnEvent.Data, &eventMap); err != nil {
+		return fmt.Errorf("failed to transform evaluation-done event to evaluation.finished event %v", err)
 	}
-
-	return &result, nil
+	if err := keptnv2.Decode(keptnEvent.Data, convertedEvent); err != nil {
+		return fmt.Errorf("failed to transform evaluation-done event to evaluation.finished event %v", err)
+	}
+	if eventMap["evaluationdetails"] != nil {
+		evaluationDetails := &keptnv2.EvaluationDetails{}
+		if err := keptnv2.Decode(eventMap["evaluationdetails"], evaluationDetails); err != nil {
+			return fmt.Errorf("failed to transform evaluationDetails of evaluation-done event: %v", err)
+		}
+		convertedEvent.Evaluation = *evaluationDetails
+	}
+	keptnEvent.Type = models.Type(keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+	keptnEvent.Data = convertedEvent
+	keptnEvent.Specversion = "1.0"
+	return nil
 }
 
 func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger) (string, error) {
@@ -626,7 +640,8 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 		searchOptions["shkeptncontext"] = *params.KeptnContext
 	}
 	if params.Type != nil {
-		searchOptions["type"] = *params.Type
+		// for backwards compatibility: if evaluation.finished events are queried, also retrieve evaluation-done events
+		searchOptions = setEventTypeMatchCriteria(*params.Type, searchOptions)
 	}
 	if params.Source != nil {
 		searchOptions["source"] = *params.Source
@@ -649,6 +664,18 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 		}
 	}
 
+	return searchOptions
+}
+
+func setEventTypeMatchCriteria(eventType string, searchOptions bson.M) bson.M {
+	if eventType == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) {
+		searchOptions["$or"] = []bson.M{
+			{"type": eventType},
+			{"type": keptn07EvaluationDoneEventType},
+		}
+	} else {
+		searchOptions["type"] = eventType
+	}
 	return searchOptions
 }
 
@@ -711,7 +738,7 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 		return nil, MinimumFilterNotProvided
 	}
 
-	matchFields["type"] = params.EventType
+	matchFields = setEventTypeMatchCriteria(params.EventType, matchFields)
 
 	if params.FromTime != nil {
 		matchFields["time"] = bson.M{
