@@ -306,6 +306,8 @@ github.com/keptn/go-utils v0.8.0-alpha.0.20210212091339-6378ba149260 h1:rmEYg8Gy
 github.com/keptn/go-utils v0.8.0-alpha.0.20210212091339-6378ba149260/go.mod h1:a0+pe/PGZ9K6zIsc21hOnV1VixMEBIFpgvuesG0GWf8=
 github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b h1:n+zCjW6gccwi6yhNYGSRd2e6N9Z1FgB+3GDSJnVn8sU=
 github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b/go.mod h1:cxNIibxzk3bddCZGeSu5USrvtZVlNyiT+cN/6+0QkPw=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210215140024-05aa809e2b21 h1:/YpsHzibYMzgf2IpDMaZpRNG7vhEeuHUkYo61MeZh/Q=
+github.com/keptn/go-utils v0.8.0-alpha.0.20210215140024-05aa809e2b21/go.mod h1:cxNIibxzk3bddCZGeSu5USrvtZVlNyiT+cN/6+0QkPw=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.9.5 h1:U+CaK85mrNNb4k8BNOfgJtJ/gr6kswUCFj6miSzVC6M=
