@@ -19,7 +19,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210212091339-6378ba149260
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210215094841-406b1f6150da
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210210151638-4b5b09c2e79c
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
