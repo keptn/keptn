@@ -261,44 +261,11 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 		finishedEventsData := []interface{}{}
 
-		continueTaskSequence := true
-		for index, finishedEvent := range allFinishedEventsForTask {
-			finishedEventScope, err := getEventScope(finishedEvent)
-			if err != nil {
-				sc.logger.Error("Could not determine scope of .finished event with ID " + finishedEvent.ID + ": " + err.Error())
-				continueTaskSequence = false
-			} else if finishedEventScope.Status == keptnv2.StatusErrored || finishedEventScope.Result == keptnv2.ResultFailed {
-				sc.logger.Info(
-					fmt.Sprintf(
-						"Finished event with ID %s reported an error (status=%s, result=%s). Will abort task sequence %s with KeptnContext %s",
-						finishedEvent.ID,
-						finishedEventScope.Status,
-						finishedEventScope.Result,
-						sequence.Name,
-						finishedEvent.Shkeptncontext,
-					),
-				)
-				continueTaskSequence = false
-			}
+		for index := range allFinishedEventsForTask {
 			marshal, _ := json.Marshal(allFinishedEventsForTask[index].Data)
 			var tmp interface{}
 			_ = json.Unmarshal(marshal, &tmp)
 			finishedEventsData = append(finishedEventsData, tmp)
-		}
-
-		if !continueTaskSequence {
-			sc.logger.Info("Aborting task sequence " + sequence.Name + " with KeptnContext " + event.Shkeptncontext)
-			return sc.completeTaskSequence(event.Shkeptncontext, &keptnv2.EventData{
-				Project: eventScope.Project,
-				Stage:   eventScope.Stage,
-				Service: eventScope.Service,
-				Labels:  eventScope.Labels,
-				Status:  keptnv2.StatusErrored,
-				Result:  keptnv2.ResultFailed,
-				Message: "",
-			}, sequence.Name)
-
-			// TODO: trigger next task sequence (https://github.com/keptn/keptn/issues/3028)
 		}
 
 		split := strings.Split(trimmedEventType, ".")
@@ -308,6 +275,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			sc.logger.Error(msg)
 			return errors.New(msg)
 		}
+
 		return sc.proceedTaskSequence(eventScope, sequence, event, shipyard, finishedEventsData, split[len(split)-2])
 	}
 	return nil
@@ -483,9 +451,9 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData, taskSequence *keptnv2.Sequence, event models.Event, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}, previousTask string) error {
-	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask)
+	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask, eventScope)
 	if err != nil && err == errNoFurtherTaskForSequence {
-		// get the input for te .triggered event that triggered the previous sequence and append it to the list of previous events to gather all required data for the next stage
+		// get the input for the .triggered event that triggered the previous sequence and append it to the list of previous events to gather all required data for the next stage
 		events, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 			Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequence.Name),
 			Stage:        &eventScope.Stage,
@@ -516,10 +484,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 			sc.logger.Error("Could not complete task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
 			return err
 		}
-		if eventScope.Result != keptnv2.ResultFailed { // TODO: remove this condition (https://github.com/keptn/keptn/issues/3028)
-			return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents, inputEvent)
-		}
-		return nil
+		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents, inputEvent)
 	} else if err != nil {
 		sc.logger.Error("Could not get next task of sequence: " + err.Error())
 		return err
@@ -592,7 +557,7 @@ func (sc *shipyardController) getTaskSequencesByTrigger(eventScope *keptnv2.Even
 		for tsIndex, taskSequence := range stage.Sequences {
 			for _, trigger := range taskSequence.Triggers {
 				if trigger == eventScope.Stage+"."+completedTaskSequence+".finished" {
-					// TODO: check for result property (https://github.com/keptn/keptn/issues/3028)
+					// TODO: check for result property (https://github.com/keptn/keptn/issues/3028) eventScope.Result
 					result = append(result, NextTaskSequence{
 						Sequence:  stage.Sequences[tsIndex],
 						StageName: stage.Name,
@@ -631,7 +596,11 @@ func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName
 	return nil, errNoStage
 }
 
-func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string) (*keptnv2.Task, error) {
+func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string, eventScope *keptnv2.EventData) (*keptnv2.Task, error) {
+	if eventScope.Result == keptnv2.ResultFailed || eventScope.Status == keptnv2.StatusErrored {
+		sc.logger.Info("Aborting task sequence " + taskSequence.Name + " because of failed task: " + previousTask)
+		return nil, errNoFurtherTaskForSequence
+	}
 	if len(taskSequence.Tasks) == 0 {
 		sc.logger.Info("Task sequence " + taskSequence.Name + " does not contain any tasks.")
 		return nil, errNoFurtherTaskForSequence
