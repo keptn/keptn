@@ -66,7 +66,7 @@
           <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
             <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
               <p class="m-0">
-                <span class="bold" [textContent]="currentRoot.getLabel()"></span>
+                <span class="bold" [textContent]="currentRoot.getLabel()"></span>&nbsp;
                 <span [textContent]="currentRoot.getStatusLabel()"></span>
               </p>
               <button *ngIf="currentRoot.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
