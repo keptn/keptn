@@ -494,7 +494,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 
 func (sc *shipyardController) triggerNextTaskSequences(event models.Event, eventScope *keptnv2.EventData, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, previousFinishedEvents []interface{}, inputEvent *models.Event) error {
 
-	nextSequences := sc.getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
+	nextSequences := getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
 
 	for _, sequence := range nextSequences {
 		newScope := &keptnv2.EventData{
@@ -551,17 +551,30 @@ var errNoFurtherTaskForSequence = errors.New("no further task for sequence")
 var errNoTaskSequence = errors.New("no task sequence found")
 var errNoStage = errors.New("no stage found")
 
-func (sc *shipyardController) getTaskSequencesByTrigger(eventScope *keptnv2.EventData, completedTaskSequence string, shipyard *keptnv2.Shipyard) []NextTaskSequence {
+func getTaskSequencesByTrigger(eventScope *keptnv2.EventData, completedTaskSequence string, shipyard *keptnv2.Shipyard) []NextTaskSequence {
 	result := []NextTaskSequence{}
 	for _, stage := range shipyard.Spec.Stages {
 		for tsIndex, taskSequence := range stage.Sequences {
-			for _, trigger := range taskSequence.Triggers {
-				if trigger == eventScope.Stage+"."+completedTaskSequence+".finished" {
-					// TODO: check for result property (https://github.com/keptn/keptn/issues/3028) eventScope.Result
-					result = append(result, NextTaskSequence{
-						Sequence:  stage.Sequences[tsIndex],
-						StageName: stage.Name,
-					})
+			for _, trigger := range taskSequence.TriggeredOn {
+				if trigger.Event == eventScope.Stage+"."+completedTaskSequence+".finished" {
+					appendSequence := false
+					// default behavior if no selector is available: 'pass', as well as 'warning' results trigger this sequence
+					if trigger.Selector.Match == nil {
+						if eventScope.Result == keptnv2.ResultPass || eventScope.Result == keptnv2.ResultWarning {
+							appendSequence = true
+						}
+					} else {
+						// if a selector is there, compare the 'result' property
+						if string(eventScope.Result) == trigger.Selector.Match["result"] {
+							appendSequence = true
+						}
+					}
+					if appendSequence {
+						result = append(result, NextTaskSequence{
+							Sequence:  stage.Sequences[tsIndex],
+							StageName: stage.Name,
+						})
+					}
 				}
 			}
 		}
@@ -581,8 +594,8 @@ func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName
 			// provide built-int task sequence for evaluation
 			if taskSequenceName == keptnv2.EvaluationTaskName {
 				return &keptnv2.Sequence{
-					Name:     "evaluation",
-					Triggers: nil,
+					Name:        "evaluation",
+					TriggeredOn: nil,
 					Tasks: []keptnv2.Task{
 						{
 							Name: keptnv2.EvaluationTaskName,

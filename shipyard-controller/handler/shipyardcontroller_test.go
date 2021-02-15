@@ -1658,7 +1658,7 @@ metadata:
   name: test-shipyard`
 
 const testShipyardResource = `{
-      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQ6CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAKICAgICAgICAgIHN0cmF0ZWd5OiBibHVlX2dyZWVuX3NlcnZpY2UKICAgICAgLSBuYW1lOiB0ZXN0CiAgICAgICAgcHJvcGVydGllczogIAogICAgICAgICAga2luZDogcGVyZm9ybWFuY2UKICAgICAgLSBuYW1lOiBldmFsdWF0aW9uCiAgICAgIC0gbmFtZTogcmVsZWFzZQogICAgLSBuYW1lOiByb2xsYmFjawogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQ6CiAgICAgICAgICBzZWxlY3RvcjoKICAgICAgICAgICAgbWF0Y2g6CiAgICAgICAgICAgICAgcmVzdWx0OiBmYWlsZWQKICAtIG5hbWU6IHByb2R1Y3Rpb24KICAgIHNlcXVlbmNlczoKICAgIC0gbmFtZTogYXJ0aWZhY3QtZGVsaXZlcnkgCiAgICAgIHRyaWdnZXJlZE9uOgogICAgICAgIGhhcmRlbmluZy5hcnRpZmFjdC1kZWxpdmVyeS5maW5pc2hlZDoKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
       "resourceURI": "shipyard.yaml"
     }`
 
@@ -1922,8 +1922,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				},
 			},
 			want: &keptnv2.Sequence{
-				Name:     "evaluation",
-				Triggers: nil,
+				Name:        "evaluation",
+				TriggeredOn: nil,
 				Tasks: []keptnv2.Task{
 					{
 						Name:       "evaluation",
@@ -1954,8 +1954,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 								Name: "dev",
 								Sequences: []keptnv2.Sequence{
 									{
-										Name:     "evaluation",
-										Triggers: nil,
+										Name:        "evaluation",
+										TriggeredOn: nil,
 										Tasks: []keptnv2.Task{
 											{
 												Name:       "evaluation",
@@ -1974,8 +1974,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				},
 			},
 			want: &keptnv2.Sequence{
-				Name:     "evaluation",
-				Triggers: nil,
+				Name:        "evaluation",
+				TriggeredOn: nil,
 				Tasks: []keptnv2.Task{
 					{
 						Name:       "evaluation",
@@ -2008,6 +2008,214 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				for _, d := range diff {
 					t.Log(d)
 				}
+			}
+		})
+	}
+}
+
+func Test_getTaskSequencesByTrigger(t *testing.T) {
+	type args struct {
+		eventScope            *keptnv2.EventData
+		completedTaskSequence string
+		shipyard              *keptnv2.Shipyard
+	}
+	tests := []struct {
+		name string
+		args args
+		want []NextTaskSequence
+	}{
+		{
+			name: "default behavior - get sequence triggered by result=pass,warning",
+			args: args{
+				eventScope: &keptnv2.EventData{
+					Result: keptnv2.ResultPass,
+					Stage:  "dev",
+				},
+				completedTaskSequence: "artifact-delivery",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: shipyardVersion,
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "artifact-delivery",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+							{
+								Name: "hardening",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name:        "artifact-delivery-2",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []NextTaskSequence{
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event:    "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "hardening",
+				},
+			},
+		},
+		{
+			name: "get sequence triggered by result=fail",
+			args: args{
+				eventScope: &keptnv2.EventData{
+					Result: keptnv2.ResultFailed,
+					Stage:  "dev",
+				},
+				completedTaskSequence: "artifact-delivery",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: shipyardVersion,
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "artifact-delivery",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+							{
+								Name: "hardening",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name: "artifact-delivery-2",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event: "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{
+													Match: map[string]string{
+														"result": string(keptnv2.ResultFailed),
+													},
+												},
+											},
+										},
+										Tasks: nil,
+									},
+								},
+							},
+							{
+								Name: "production",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name: "artifact-delivery-2",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event: "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{
+													Match: map[string]string{
+														"result": string(keptnv2.ResultFailed),
+													},
+												},
+											},
+										},
+										Tasks: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []NextTaskSequence{
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery-2",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event: "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{
+									Match: map[string]string{
+										"result": string(keptnv2.ResultFailed),
+									},
+								},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "hardening",
+				},
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery-2",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event: "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{
+									Match: map[string]string{
+										"result": string(keptnv2.ResultFailed),
+									},
+								},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "production",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getTaskSequencesByTrigger(tt.args.eventScope, tt.args.completedTaskSequence, tt.args.shipyard); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getTaskSequencesByTrigger() = %v, want %v", got, tt.want)
 			}
 		})
 	}
