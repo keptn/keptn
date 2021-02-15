@@ -1684,8 +1684,8 @@ spec:
   - name: hardening
     sequences:
     - name: artifact-delivery
-      triggers:
-      - dev.artifact-delivery.finished
+      triggeredOn:
+        dev.artifact-delivery.finished
       tasks:
       - name: deployment
         properties: 
@@ -1695,12 +1695,17 @@ spec:
           kind: performance
       - name: evaluation
       - name: release
-        
+    - name: rollback
+      triggeredOn:
+        dev.artifact-delivery.finished:
+          selector:
+            match:
+              result: failed
   - name: production
     sequences:
     - name: artifact-delivery 
-      triggers:
-      - hardening.artifact-delivery.finished
+      triggeredOn:
+        hardening.artifact-delivery.finished
       tasks:
       - name: deployment
         properties:
