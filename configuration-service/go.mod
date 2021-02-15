@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go v0.10.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
-	github.com/ghodss/yaml v1.0.0
+	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/loads v0.20.2
 	github.com/go-openapi/runtime v0.19.24
@@ -21,7 +21,6 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210212103514-6347ba9aeb2b
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210210151638-4b5b09c2e79c
 	github.com/mholt/archiver v3.1.1+incompatible
@@ -30,12 +29,12 @@ require (
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	go.mongodb.org/mongo-driver v1.4.6
+	go.mongodb.org/mongo-driver v1.4.6 // indirect
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/apimachinery v0.17.2
+	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.17.2
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8 // indirect
 )
