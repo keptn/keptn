@@ -13,13 +13,14 @@ import (
 
 // MockedHandler mocks typical tasks of a handler
 type MockedHandler struct {
-	keptnHandler            *keptnv2.Keptn
-	helmExecutor            helm.HelmExecutor
-	configServiceURL        string
-	options                 MockedHandlerOptions
-	sentCloudEvents         []cloudevents.Event
-	handledErrorEvents      []interface{}
-	upgradeChartInvocations []upgradeChartData
+	keptnHandler                        *keptnv2.Keptn
+	helmExecutor                        helm.HelmExecutor
+	configServiceURL                    string
+	options                             MockedHandlerOptions
+	sentCloudEvents                     []cloudevents.Event
+	handledErrorEvents                  []interface{}
+	upgradeChartInvocations             []upgradeChartData
+	upgradeChartWithReplicasInvocations []upgradeChartWithReplicaData
 }
 
 // MockedHandlerOption function is used to configure the mock
@@ -113,6 +114,11 @@ type upgradeChartData struct {
 	strategy keptnevents.DeploymentStrategy
 }
 
+type upgradeChartWithReplicaData struct {
+	upgradeChartData
+	replicas int
+}
+
 func (h *MockedHandler) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) error {
 	ucd := upgradeChartData{
@@ -127,6 +133,15 @@ func (h *MockedHandler) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 
 func (h *MockedHandler) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy, replicas int) error {
+	ucdr := upgradeChartWithReplicaData{
+		upgradeChartData: upgradeChartData{
+			ch:       ch,
+			event:    event,
+			strategy: strategy,
+		},
+		replicas: replicas,
+	}
+	h.upgradeChartWithReplicasInvocations = append(h.upgradeChartWithReplicasInvocations, ucdr)
 
 	return nil
 }
