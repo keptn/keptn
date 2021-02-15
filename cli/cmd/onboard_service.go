@@ -89,7 +89,7 @@ keptn onboard service SERVICENAME --project=PROJECTNAME --chart=HELM_CHART.tgz
 
 			// initialize handlers
 			resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-			stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
+			stagesHandler := apiutils.NewAuthenticatedStageHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 			chartStorer := keptnutils.NewChartStorer(resourceHandler)
 
 			// get all stages

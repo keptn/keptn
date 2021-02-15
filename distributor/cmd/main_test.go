@@ -602,16 +602,6 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantPath:   "event/type/sh.keptn.event.evaluation.finished",
 		},
 		{
-			name: "Get internal Datastore 2",
-			args: args{
-				endpoint: "",
-				path:     "/event-store/event",
-			},
-			wantScheme: "http",
-			wantHost:   "mongodb-datastore:8080",
-			wantPath:   "event",
-		},
-		{
 			name: "Get internal configuration service",
 			args: args{
 				endpoint: "",
@@ -621,28 +611,10 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantHost:   "configuration-service:8080",
 		},
 		{
-			name: "Get internal configuration service 2",
-			args: args{
-				endpoint: "",
-				path:     "/configuration",
-			},
-			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
-		},
-		{
-			name: "Get internal configuration service 3",
-			args: args{
-				endpoint: "",
-				path:     "/config",
-			},
-			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
-		},
-		{
 			name: "Get configuration service",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme: "http",
 			wantHost:   "configuration-service:8080",
@@ -651,7 +623,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get configuration service via public API",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
@@ -662,7 +634,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get configuration service via public API with API prefix",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
@@ -685,6 +657,33 @@ func Test_getProxyRequestURL(t *testing.T) {
 
 			if path != tt.wantPath {
 				t.Errorf("getProxyHost(); path = %v, want %v", path, tt.wantPath)
+			}
+		})
+	}
+}
+
+func Test_getHTTPPollingEndpoint(t *testing.T) {
+	tests := []struct {
+		name              string
+		apiEndpointEnvVar string
+		want              string
+	}{
+		{
+			name:              "get internal endpoint",
+			apiEndpointEnvVar: "",
+			want:              "http://shipyard-controller:8080/v1/event/triggered",
+		},
+		{
+			name:              "get external endpoint",
+			apiEndpointEnvVar: "https://my-keptn.com/api",
+			want:              "https://my-keptn.com/api/controlPlane/v1/event/triggered",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env.KeptnAPIEndpoint = tt.apiEndpointEnvVar
+			if got := getHTTPPollingEndpoint(); got != tt.want {
+				t.Errorf("getHTTPPollingEndpoint() = %v, want %v", got, tt.want)
 			}
 		})
 	}

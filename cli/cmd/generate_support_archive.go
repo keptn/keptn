@@ -549,7 +549,7 @@ func getProjects() *errorableProjectResult {
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
-	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
+	projectHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	return newErrorableProjectResult(projectHandler.GetAllProjects())
 }
 
