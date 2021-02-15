@@ -97,8 +97,8 @@ export class Root extends Trace {
     return this.data.service;
   }
 
-  getEvaluation(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.EVALUATION_FINISHED && t.data.stage == stage.stageName);
+  getEvaluation(stageName: String): Trace {
+    return this.traces.find(t => t.type == EventTypes.EVALUATION_TRIGGERED && t.data.stage == stageName);
   }
 
   getDeploymentDetails(stage: Stage): Trace {

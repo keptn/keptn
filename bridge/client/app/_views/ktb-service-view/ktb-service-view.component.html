@@ -78,6 +78,12 @@
       </dt-info-group>
     </div>
     <ktb-sequence-timeline *ngIf="currentRoot.getStages().length > 0" [currentSequence]="currentRoot" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
+    <ktb-event-item *ngIf="currentRoot.getEvaluation(selectedStage) as evaluationEvent" [event]="evaluationEvent">
+      <ktb-event-item-detail>
+        <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()">
+        </ktb-evaluation-details>
+      </ktb-event-item-detail>
+    </ktb-event-item>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
       <button class="ml-2" dt-button (click)="loadTraces(currentRoot)" *ngIf="showReloadButton(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button>
