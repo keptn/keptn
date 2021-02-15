@@ -661,3 +661,30 @@ func Test_getProxyRequestURL(t *testing.T) {
 		})
 	}
 }
+
+func Test_getHTTPPollingEndpoint(t *testing.T) {
+	tests := []struct {
+		name              string
+		apiEndpointEnvVar string
+		want              string
+	}{
+		{
+			name:              "get internal endpoint",
+			apiEndpointEnvVar: "",
+			want:              "http://shipyard-controller:8080/v1/event/triggered",
+		},
+		{
+			name:              "get external endpoint",
+			apiEndpointEnvVar: "https://my-keptn.com/api",
+			want:              "https://my-keptn.com/api/controlPlane/v1/event/triggered",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env.KeptnAPIEndpoint = tt.apiEndpointEnvVar
+			if got := getHTTPPollingEndpoint(); got != tt.want {
+				t.Errorf("getHTTPPollingEndpoint() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
