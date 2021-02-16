@@ -1297,10 +1297,10 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 // Scenario 4: Received .finished event with result "fail" - stop task sequence and trigger next sequence based on result filter
 func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
-	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile) // TODO: use shipyard with new "on" trigger
+	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
-	mockCS := fake.NewConfigurationService(testShipyardResource) // TODO: use shipyard with new "on" trigger
+	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
@@ -1359,7 +1359,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
 		t,
 		sc,
-		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultFailed),
 		keptnv2.DeploymentTaskName,
 		"dev.artifact-delivery",
 		mockEV,
@@ -1658,7 +1658,7 @@ metadata:
   name: test-shipyard`
 
 const testShipyardResource = `{
-      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQ6CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAKICAgICAgICAgIHN0cmF0ZWd5OiBibHVlX2dyZWVuX3NlcnZpY2UKICAgICAgLSBuYW1lOiB0ZXN0CiAgICAgICAgcHJvcGVydGllczogIAogICAgICAgICAga2luZDogcGVyZm9ybWFuY2UKICAgICAgLSBuYW1lOiBldmFsdWF0aW9uCiAgICAgIC0gbmFtZTogcmVsZWFzZQogICAgLSBuYW1lOiByb2xsYmFjawogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQ6CiAgICAgICAgICBzZWxlY3RvcjoKICAgICAgICAgICAgbWF0Y2g6CiAgICAgICAgICAgICAgcmVzdWx0OiBmYWlsZWQKICAtIG5hbWU6IHByb2R1Y3Rpb24KICAgIHNlcXVlbmNlczoKICAgIC0gbmFtZTogYXJ0aWZhY3QtZGVsaXZlcnkgCiAgICAgIHRyaWdnZXJlZE9uOgogICAgICAgIGhhcmRlbmluZy5hcnRpZmFjdC1kZWxpdmVyeS5maW5pc2hlZDoKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAogICAgLSBuYW1lOiByb2xsYmFjawogICAgICB0YXNrczoKICAgICAgLSBuYW1lOiByb2xsYmFjawogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICAtIGV2ZW50OiBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgICAgIHNlbGVjdG9yOgogICAgICAgICAgICBtYXRjaDoKICAgICAgICAgICAgICByZXN1bHQ6IGZhaWwKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICAtIGV2ZW50OiBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCgogIC0gbmFtZTogcHJvZHVjdGlvbgogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeSAKICAgICAgdHJpZ2dlcmVkT246CiAgICAgICAgLSBldmVudDogaGFyZGVuaW5nLmFydGlmYWN0LWRlbGl2ZXJ5LmZpbmlzaGVkCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOgogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW4KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgIAogICAgLSBuYW1lOiByZW1lZGlhdGlvbgogICAgICB0YXNrczoKICAgICAgLSBuYW1lOiByZW1lZGlhdGlvbgogICAgICAtIG5hbWU6IGV2YWx1YXRpb24=",
       "resourceURI": "shipyard.yaml"
     }`
 
@@ -1680,12 +1680,19 @@ spec:
           kind: functional
       - name: evaluation 
       - name: release 
-
+    - name: rollback
+      tasks:
+      - name: rollback
+      triggeredOn:
+        - event: dev.artifact-delivery.finished
+          selector:
+            match:
+              result: fail
   - name: hardening
     sequences:
     - name: artifact-delivery
       triggeredOn:
-        dev.artifact-delivery.finished
+        - event: dev.artifact-delivery.finished
       tasks:
       - name: deployment
         properties: 
@@ -1695,17 +1702,12 @@ spec:
           kind: performance
       - name: evaluation
       - name: release
-    - name: rollback
-      triggeredOn:
-        dev.artifact-delivery.finished:
-          selector:
-            match:
-              result: failed
+
   - name: production
     sequences:
     - name: artifact-delivery 
       triggeredOn:
-        hardening.artifact-delivery.finished
+        - event: hardening.artifact-delivery.finished
       tasks:
       - name: deployment
         properties:
