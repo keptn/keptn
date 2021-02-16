@@ -57,6 +57,7 @@ export class KtbServiceViewComponent implements OnInit {
         this.contextId = params["contextId"];
         this.eventId = params["eventId"];
         this.currentRoot = null;
+        this.selectedStage = null;
         this.filterEventTypes = [];
 
         this.project$ = this.dataService.getProject(params['projectName']);
@@ -68,6 +69,7 @@ export class KtbServiceViewComponent implements OnInit {
           )
           .subscribe(project => {
             this.currentRoot = null;
+            this.selectedStage = null;
           });
 
         timer(0, this._rootEventsTimerInterval*1000)
@@ -162,8 +164,10 @@ export class KtbServiceViewComponent implements OnInit {
   }
 
   selectStage(stageName: string) {
-    this.selectedStage = stageName;
-    this._changeDetectorRef.markForCheck();
+    if(this.selectedStage !== stageName) {
+      this.selectedStage = stageName;
+      this._changeDetectorRef.markForCheck();
+    }
   }
 
   ngOnDestroy(): void {

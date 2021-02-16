@@ -78,14 +78,15 @@
       </dt-info-group>
     </div>
     <ktb-sequence-timeline *ngIf="currentRoot.getStages().length > 0" [currentSequence]="currentRoot" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
-    <ktb-event-item *ngIf="currentRoot.getEvaluation(selectedStage) as evaluationEvent" [event]="evaluationEvent">
-      <ktb-event-item-detail>
-        <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()">
-        </ktb-evaluation-details>
-      </ktb-event-item-detail>
-    </ktb-event-item>
-    <ng-container fxLayout="column" fxLayoutGap="15px" *ngFor="let approvalEvent of currentRoot.getPendingApprovals(selectedStage)">
-      <ktb-event-item [event]="approvalEvent"></ktb-event-item>
+    <ng-container *ngIf="currentRoot.getEvaluation(selectedStage) as evaluationEvent">
+      <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()">
+        <ktb-event-item-detail>
+          <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
+        </ktb-event-item-detail>
+      </ktb-event-item>
+    </ng-container>
+    <ng-container fxLayout="column" fxLayoutGap="15px" *ngIf="currentRoot.hasPendingApproval(selectedStage)">
+      <ktb-event-item *ngFor="let approvalEvent of currentRoot.getPendingApprovals(selectedStage)" [event]="approvalEvent"></ktb-event-item>
     </ng-container>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
