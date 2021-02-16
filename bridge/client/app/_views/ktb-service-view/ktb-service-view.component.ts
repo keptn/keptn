@@ -1,7 +1,5 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
-import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from "@dynatrace/barista-components/experimental/quick-filter";
-import {isObject} from "@dynatrace/barista-components/core";
 
 import {Observable, Subject, Subscription, timer} from "rxjs";
 import {filter, startWith, switchMap, take, takeUntil} from "rxjs/operators";
@@ -9,14 +7,12 @@ import {filter, startWith, switchMap, take, takeUntil} from "rxjs/operators";
 import * as moment from "moment";
 
 import {Root} from "../../_models/root";
-import {Stage} from "../../_models/stage";
 import {Project} from "../../_models/project";
 
 import {DataService} from "../../_services/data.service";
 import {DateUtil} from "../../_utils/date.utils";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 import {Location} from "@angular/common";
-import {EVENT_LABELS} from "../../_models/event-labels";
 
 @Component({
   selector: 'ktb-service-view',
@@ -163,6 +159,11 @@ export class KtbServiceViewComponent implements OnInit {
 
   showReloadButton(root: Root) {
     return moment().subtract(1, 'day').isAfter(root.time);
+  }
+
+  selectStage(stageName: string) {
+    this.selectedStage = stageName;
+    this._changeDetectorRef.markForCheck();
   }
 
   ngOnDestroy(): void {

@@ -58,8 +58,8 @@ export class Root extends Trace {
     return pending === undefined ? false : pending;
   }
 
-  getPendingApprovals(): Trace[] {
-    return this.traces.filter(trace => trace.isApproval() && trace.isApprovalPending());
+  getPendingApprovals(stageName?: string): Trace[] {
+    return this.traces.filter(trace => trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.getStage() == stageName));
   }
 
   getLastTrace(): Trace {
