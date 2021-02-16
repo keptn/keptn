@@ -3,10 +3,10 @@ module github.com/keptn/keptn/cli
 go 1.13
 
 require (
+	cloud.google.com/go v0.40.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/alecthomas/jsonschema v0.0.0-20201129101101-7b852d451add
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
-	github.com/cloudevents/sdk-go v0.10.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
@@ -16,9 +16,8 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.1.0 // indirect
-	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210215094841-406b1f6150da
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210216120434-2c20b163fe7d
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11

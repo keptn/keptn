@@ -118,9 +118,26 @@ func TestHandleReleaseTriggeredEvent_WithInvalidDeploymentStrategy(t *testing.T)
 		},
 	}
 
-	require.Equal(t, 1, len(mockedBaseHandler.sentCloudEvents))
+	expectedReleaseFinishedEvent := cloudevents.NewEvent()
+	expectedReleaseFinishedEvent.SetType("sh.keptn.event.release.finished")
+	expectedReleaseFinishedEvent.SetSource("helm-service")
+	expectedReleaseFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedReleaseFinishedEvent.SetExtension("triggeredid", "")
+	expectedReleaseFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedReleaseFinishedEvent.SetData(cloudevents.ApplicationJSON, ReleaseFinishedEventData{
+		EventData: EventData{
+			Labels:  nil,
+			Status:  StatusErrored,
+			Result:  ResultFailed,
+			Message: "The deployment strategy ??? is invalid",
+		},
+		Release: ReleaseData{},
+	})
+
+	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
 	require.Equal(t, 1, len(mockedBaseHandler.handledErrorEvents))
 	assert.Equal(t, expectedReleaseStartedEvent, mockedBaseHandler.sentCloudEvents[0])
+	assert.Equal(t, expectedReleaseFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
 	assert.Equal(t, expectedErrorData, mockedBaseHandler.handledErrorEvents[0])
 
 }
