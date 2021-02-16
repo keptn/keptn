@@ -186,7 +186,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((results) => {
         if(results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
-          console.log("evaluationHistory?");
           this.evaluationData.data.evaluationHistory = [...results.traces||[], ...this.evaluationData.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
           this.updateChartData(this.evaluationData.data.evaluationHistory);
           this._changeDetectorRef.markForCheck();
@@ -204,7 +203,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private evaluationDataChanged() {
     if(this._evaluationData) {
-      console.log("evaluationDataChanged?");
       this.dataService.loadEvaluationResults(this._evaluationData);
       if (this.isInvalidated)
         this.selectEvaluationData(this._evaluationData);
