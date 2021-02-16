@@ -20,7 +20,7 @@ SERVICE="carts"
 ########################################################################################################################
 
 # verify that the project does not exist yet via the Keptn API
-response=$(curl -X GET "${KEPTN_ENDPOINT}/shipyard-controller/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
+response=$(curl -X GET "${KEPTN_ENDPOINT}/controlPlane/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" == "${PROJECT}" ]]; then
   echo "Project ${PROJECT} already exists. Please delete it using:"
@@ -36,7 +36,7 @@ verify_test_step $? "keptn create project ${PROJECT} - failed"
 sleep 10
 
 # verify that the project has been created via the Keptn API
-response=$(curl -X GET "${KEPTN_ENDPOINT}/shipyard-controller/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
+response=$(curl -X GET "${KEPTN_ENDPOINT}/controlPlane/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
 if [[ "$response" != "${PROJECT}" ]]; then
   echo "Failed to check that the project exists via the API"

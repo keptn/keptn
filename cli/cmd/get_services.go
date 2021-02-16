@@ -79,8 +79,8 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 				endPointErr)
 		}
 
-		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
-		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String()+"/shipyard-controller", apiToken, "x-token", nil, endPoint.Scheme)
+		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		servicesHandler := apiutils.NewAuthenticatedServiceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
 		if !mocking {
 			projects, err := projectsHandler.GetAllProjects()
