@@ -26,8 +26,8 @@ spec:
     - name: "staging"
       sequences:
         - name: "artifact-delivery"
-          triggers:
-            - "dev.artifact-delivery.finished"
+          triggeredOn:
+            - event: "dev.artifact-delivery.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -39,8 +39,8 @@ spec:
             - name: "release"
 
         - name: "artifact-delivery-db"
-          triggers:
-            - "dev.artifact-delivery-db.finished"
+          triggeredOn:
+            - event: "dev.artifact-delivery-db.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -50,8 +50,8 @@ spec:
     - name: "production"
       sequences:
         - name: "artifact-delivery"
-          triggers:
-            - "staging.artifact-delivery.finished"
+          triggeredOn:
+            - event: "staging.artifact-delivery.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -59,8 +59,8 @@ spec:
             - name: "release"
 
         - name: "artifact-delivery-db"
-          triggers:
-            - "staging.artifact-delivery-db.finished"
+          triggeredOn:
+            - event: "staging.artifact-delivery-db.finished"
           tasks:
             - name: "deployment"
               properties:

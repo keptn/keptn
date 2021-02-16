@@ -12,14 +12,14 @@ spec:
     - name: "secondstage"
       sequences:
         - name: "echosequence"
-          triggers:
-            - firststage.echosequence.finished
+          triggeredOn:
+            - event: "firststage.echosequence.finished"
           tasks:
             - name: "echo"
     - name: "thirdstage"
       sequences:
         - name: "echosequence"
-          triggers:
-            - secondstage.echosequence.finished
+          triggeredOn:
+            - event: "secondstage.echosequence.finished"
           tasks:
             - name: "echo"
