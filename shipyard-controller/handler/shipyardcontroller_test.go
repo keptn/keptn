@@ -1408,7 +1408,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	done = fake.ShouldContainEvent(
 		t,
 		mockEV.ReceivedEvents,
-		keptnv2.GetTriggeredEventType("rollback"), // TODO: keptnv2.RollbackTaskName
+		keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName),
 		"dev",
 		func(t *testing.T, event models.Event) bool {
 			marshal, _ := json.Marshal(event.Data)
