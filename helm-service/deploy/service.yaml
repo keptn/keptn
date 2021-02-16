@@ -42,8 +42,6 @@ spec:
           value: 'http://configuration-service:8080'
         - name: SHIPYARD_CONTROLLER
           value: 'http://shipyard-controller:8080'
-        - name: EVENTBROKER
-          value: 'http://localhost:8081/event'
         - name: ENVIRONMENT
           value: 'production'
         - name: INGRESS_HOSTNAME_SUFFIX
