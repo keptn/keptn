@@ -119,6 +119,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 
 }
 
+// getEventScope decodes the .data property of the incoming event and checks if all properties that are relevant for determining the scope of a task sequence are present
 func getEventScope(event models.Event) (*keptnv2.EventData, error) {
 	marshal, err := json.Marshal(event.Data)
 	if err != nil {
@@ -148,6 +149,8 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		return nil
 	}
 
+	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
+	// if those are not present the next action can not be determined
 	eventScope, err := getEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
@@ -335,6 +338,8 @@ func (sc *shipyardController) getEvents(project string, filter common.EventFilte
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 
 	sc.logger.Info("Received .started event: " + *event.Type)
+	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
+	// if those are not present the next action can not be determined
 	eventScope, err := getEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
@@ -371,6 +376,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return nil
 	}
 
+	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
+	// if those are not present the next action can not be determined
 	eventScope, err := getEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
