@@ -85,7 +85,7 @@
         </ktb-event-item-detail>
       </ktb-event-item>
     </ng-container>
-    <ng-container fxLayout="column" fxLayoutGap="15px" *ngIf="currentRoot.hasPendingApproval(selectedStage)">
+    <ng-container *ngIf="selectedStage && currentRoot.getPendingApprovals(selectedStage).length > 0">
       <ktb-event-item *ngFor="let approvalEvent of currentRoot.getPendingApprovals(selectedStage)" [event]="approvalEvent"></ktb-event-item>
     </ng-container>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">

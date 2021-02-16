@@ -2,30 +2,32 @@
   <div *ngFor="let event of _events;trackBy: identifyEvent">
     <ktb-selectable-tile (click)="selectEvent(event)" [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())" [success]="event.isProblem() && event.isSuccessful()" [highlight]="event.getPendingApprovals().length > 0" [selected]="_selectedEvent == event" *ngIf="event">
       <ktb-selectable-tile-header>
-        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-          <dt-icon *ngIf="!event.isLoading()" class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"></dt-icon>
-          <button *ngIf="event.isLoading()" class="m-0 p-0" dt-button disabled variant="nested">
-            <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-          </button>
-          <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
-            <p class="m-0" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()">
-              <span class="bold" [textContent]="event.getLabel()"></span>&nbsp;
-              <span [textContent]="event.getStatusLabel()"></span>
-            </p>
+        <div class="container">
+          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+            <dt-icon *ngIf="!event.isLoading()" class="event-icon" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()" [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"></dt-icon>
+            <button *ngIf="event.isLoading()" class="m-0 p-0" dt-button disabled variant="nested">
+              <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+            </button>
+            <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
+              <p class="m-0" [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()">
+                <span class="bold" [textContent]="event.getLabel()"></span>&nbsp;
+                <span [textContent]="event.getStatusLabel()"></span>
+              </p>
+            </div>
           </div>
-        </div>
-        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-          <p class="m-0 small">
-            <span class="bold" *ngIf="event.getShortImageName(); else noImageName" [textContent]="event.getShortImageName()"></span>
-            <ng-template #noImageName>
-              <span class="bold" *ngIf="event.getService()" [textContent]="event.getService()"></span>
-            </ng-template>
-            <span *ngIf="event.getStages().length > 0"> in </span>
-            <span class="bold" *ngFor="let stage of event.getStages(); let isLast=last">
+          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+            <p class="m-0 small">
+              <span class="bold" *ngIf="event.getShortImageName(); else noImageName" [textContent]="event.getShortImageName()"></span>
+              <ng-template #noImageName>
+                <span class="bold" *ngIf="event.getService()" [textContent]="event.getService()"></span>
+              </ng-template>
+              <span *ngIf="event.getStages().length > 0"> in </span>
+              <span class="bold" *ngFor="let stage of event.getStages(); let isLast=last">
               <span [textContent]="stage" (click)="$event.stopPropagation();selectEvent(event, stage)" [class.success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)"></span>
               <span *ngIf="!isLast">, </span>
             </span>
-          </p>
+            </p>
+          </div>
         </div>
       </ktb-selectable-tile-header>
       <p class="m-0 small">
