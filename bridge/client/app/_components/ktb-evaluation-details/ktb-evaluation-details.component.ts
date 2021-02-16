@@ -171,6 +171,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   set evaluationData(evaluationData: any) {
     if (this._evaluationData !== evaluationData) {
       this._evaluationData = evaluationData;
+      this._chartSeries = [];
+      this._heatmapSeries = [];
+      this._selectedEvaluationData = null;
+      this.evaluationDataChanged();
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -178,17 +182,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
-    if(this._evaluationData) {
-      this.dataService.loadEvaluationResults(this._evaluationData);
-      if (this.isInvalidated)
-        this.selectEvaluationData(this._evaluationData);
-      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
-        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
-    }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((results) => {
         if(results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
+          console.log("evaluationHistory?");
           this.evaluationData.data.evaluationHistory = [...results.traces||[], ...this.evaluationData.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
           this.updateChartData(this.evaluationData.data.evaluationHistory);
           this._changeDetectorRef.markForCheck();
@@ -202,6 +200,17 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           this._changeDetectorRef.markForCheck();
         }
       });
+  }
+
+  private evaluationDataChanged() {
+    if(this._evaluationData) {
+      console.log("evaluationDataChanged?");
+      this.dataService.loadEvaluationResults(this._evaluationData);
+      if (this.isInvalidated)
+        this.selectEvaluationData(this._evaluationData);
+      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+    }
   }
 
   private parseSloFile(evaluationData) {
