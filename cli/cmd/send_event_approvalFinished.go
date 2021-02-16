@@ -356,6 +356,7 @@ func getCommitIDOfConfigurationChangeEvent(eventHandler *apiutils.EventHandler, 
 		return unknownCommitID
 	}
 
+	// TODO: use configurationChange image/tag
 	if deploymentFinishedData.Deployment.GitCommit == "" {
 		return unknownCommitID
 	}
