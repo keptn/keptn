@@ -756,6 +756,21 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
 				return true
 			}
+
+			// also check if the payload of the .triggered event that started the sequence is present
+
+			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+
+			err = json.Unmarshal(marshal, deploymentEvent)
+			if err != nil {
+				t.Errorf("Expected deployment.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
+				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
+				return true
+			}
 			return false
 		})
 	if done {

@@ -466,17 +466,13 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask, eventScope)
 	if err != nil && err == errNoFurtherTaskForSequence {
 
-
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(event.Shkeptncontext, eventScope, taskSequence.Name)
 		if err != nil {
 			sc.logger.Error("Could not complete task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
 			return err
 		}
-		if eventScope.Result == keptnv2.ResultPass {
-			return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents, inputEvent)
-		}
-		return nil
+		return sc.triggerNextTaskSequences(event, eventScope, taskSequence, shipyard, previousFinishedEvents, inputEvent)
 	} else if err != nil {
 		sc.logger.Error("Could not get next task of sequence: " + err.Error())
 		return err
