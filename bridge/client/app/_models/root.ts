@@ -137,10 +137,8 @@ export class Root extends Trace {
     switch(this.getStatus()) {
       case "failed":
         return "failed";
-        break;
       case "succeeded":
         return "succeeded";
-        break;
       case "active":
         if(this.getPendingApprovals().length > 0)
           return "waiting for approval";
