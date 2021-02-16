@@ -18,7 +18,7 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210215094841-406b1f6150da
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210216120434-2c20b163fe7d
 	github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11
