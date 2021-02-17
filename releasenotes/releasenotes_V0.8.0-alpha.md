@@ -66,8 +66,8 @@ Implemented **Keptn spec** version: [0.2.0-alpha](https://github.com/keptn/spec/
 - *eventbroker*:
   - Remove eventbroker from Keptn core [2254](https://github.com/keptn/keptn/issues/2254)
 
-- *approval-service*:
-  - approval-service becomes the approval-service for automatic approvals [2533](https://github.com/keptn/keptn/issues/2533)
+- *gatekeeper-service*:
+  - gatekeeper-service becomes the approval service for automatic approvals, thus will also be renamed to "approval-service" [2533](https://github.com/keptn/keptn/issues/2533)
 
 - *helm-service*:
   - Create a sequence diagram for helm-service [2592](https://github.com/keptn/keptn/issues/2592)
