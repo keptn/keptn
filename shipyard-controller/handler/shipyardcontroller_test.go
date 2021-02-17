@@ -515,6 +515,7 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string,
 				Service: "carts",
 				Status:  keptnv2.StatusSucceeded,
 				Result:  result,
+				Message: "i am a message",
 			},
 			Deployment: keptnv2.DeploymentFinishedData{
 				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
@@ -769,6 +770,12 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
 				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
+				return true
+			}
+
+			// check if the message property of the previous .finished event has been reset correctly
+			if deploymentEvent.Message != "" {
+				t.Errorf("expected message property to be empty, but got: '%s'", deploymentEvent.Message)
 				return true
 			}
 			return false
