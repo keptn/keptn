@@ -207,8 +207,8 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 			Name: stage.Name,
 			Sequences: []keptnv2.Sequence{
 				{
-					Name:        "artifact-delivery",
-					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "artifact-delivery"),
+					Name:        "delivery",
+					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery"),
 					Tasks: []keptnv2.Task{
 						{
 							Name: "deployment",
@@ -241,7 +241,7 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 					Name: "rollback",
 					TriggeredOn: []keptnv2.Trigger{
 						{
-							Event: getRollbackEventForStage(stage.Name, "artifact-delivery"),
+							Event: getRollbackEventForStage(stage.Name, "delivery"),
 							Selector: keptnv2.Selector{
 								Match: map[string]string{
 									"result": string(keptnv2.ResultFailed),
@@ -255,10 +255,10 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 						},
 					},
 				},
-				// add a second artifact-delivery with "direct" deployment strategy
+				// add a second delivery with "direct" deployment strategy
 				{
-					Name:        "artifact-delivery-direct",
-					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "artifact-delivery-direct"),
+					Name:        "delivery-direct",
+					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery-direct"),
 					Tasks: []keptnv2.Task{
 						{
 							Name: "deployment",
