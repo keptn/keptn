@@ -98,11 +98,11 @@ export class Root extends Trace {
   }
 
   getEvaluation(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.EVALUATION_FINISHED && t.data.stage == stage.stageName);
+    return this.traces.find(t => t.data.stage === stage.stageName && t.type == EventTypes.EVALUATION_TRIGGERED)?.traces.find(t => t.type == EventTypes.EVALUATION_FINISHED);
   }
 
   getDeploymentDetails(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED && t.data.stage == stage.stageName);
+    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage.stageName)?.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED);
   }
 
   getRemediationActions(): Root[] {

@@ -15,11 +15,12 @@ export class KtbSliBreakdownComponent implements OnInit {
     warning: 'warning',
     fail: 'failed'
   };
-
+  
   private _indicatorResults: any;
   private _indicatorResultsFail: any = [];
   private _indicatorResultsWarning: any = [];
   private _indicatorResultsPass: any = [];
+  public columnNames: any = [];
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
 
   @Input()
@@ -66,13 +67,35 @@ export class KtbSliBreakdownComponent implements OnInit {
 
   private assembleTablesEntries(indicatorResults): any {
     const totalscore  = indicatorResults.reduce((acc, result) => acc + result.score, 0);
+    const isOld = indicatorResults.some(result => !!result.targets);
+    if (isOld) {
+      this.columnNames = [
+        'name',
+        'value',
+        'targets',
+        'result',
+        'score'
+      ];
+    } else {
+      this.columnNames = [
+        'name',
+        'value',
+        'passTargets',
+        'warningTargets',
+        'result',
+        'score'
+      ];
+    }
     return indicatorResults.map(indicatorResult =>  {
       return {
         name: indicatorResult.value.metric,
         value: this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
         score: this.round(indicatorResult.score / totalscore, 2),
-        targets: indicatorResult.targets
+        passTargets: indicatorResult.passTargets,
+        warningTargets: indicatorResult.warningTargets,
+        targets: indicatorResult.targets,
+        keySli: indicatorResult.keySli
       };
     });
   }

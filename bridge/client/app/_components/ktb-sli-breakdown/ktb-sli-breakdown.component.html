@@ -2,7 +2,7 @@
 <dt-table [dataSource]="tableEntries" dtSort #sortable>
   <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="5">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
-    <dt-cell *dtCellDef="let row">{{ row.name }}</dt-cell>
+    <dt-cell *dtCellDef="let row" [class.bold]="row.keySli">{{ row.name }}</dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="value" dtColumnAlign="number" dtColumnProportion="1">
@@ -10,14 +10,24 @@
     <dt-cell *dtCellDef="let row">{{ row.value }}</dt-cell>
   </ng-container>
 
+  <ng-container dtColumnDef="passTargets" dtColumnAlign="number"dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>pass Criteria</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <ktb-sli-breakdown-criteria-item [targets]="row.passTargets"></ktb-sli-breakdown-criteria-item>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="warningTargets" dtColumnAlign="number"dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>warning Criteria</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <ktb-sli-breakdown-criteria-item [targets]="row.warningTargets"></ktb-sli-breakdown-criteria-item>
+    </dt-cell>
+  </ng-container>
 
   <ng-container dtColumnDef="targets" dtColumnAlign="number"dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <span class="ml-1" *ngFor="let target of row.targets; let isLast = last">
-        <span [class.error-line]="target.violated" [class.error]="target.violated">{{target.criteria}}</span>
-        {{ (!isLast ? ' and ' : '')}}
-      </span>
+      <ktb-sli-breakdown-criteria-item [targets]="row.targets"></ktb-sli-breakdown-criteria-item>
     </dt-cell>
   </ng-container>
 
@@ -34,18 +44,12 @@
   </ng-container>
 
   <dt-header-row
-    *dtHeaderRowDef="[
-        'name',
-        'value',
-        'targets',
-        'result',
-        'score'
-      ]"
+    *dtHeaderRowDef="columnNames"
   ></dt-header-row>
   <dt-row
     *dtRowDef="
         let row;
-        columns: ['name', 'value', 'targets', 'result', 'score']
+        columns: columnNames
       "
   ></dt-row>
 </dt-table>

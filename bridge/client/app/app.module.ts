@@ -86,6 +86,7 @@ import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbSequenceViewComponent } from "./_views/ktb-sequence-view/ktb-sequence-view.component";
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
+import {KtbSliBreakdownCriteriaItemComponent} from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -129,6 +130,7 @@ registerLocaleData(localeEn, 'en');
     KtbIntegrationViewComponent,
     KtbStageDetailsComponent,
     KeptnUrlPipe,
+    KtbSliBreakdownCriteriaItemComponent,
   ],
   imports: [
     BrowserModule,
