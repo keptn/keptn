@@ -677,7 +677,7 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
-// Primitive filtering: Only for prototype
+// Primitive filtering based on project, stage and service properties
 func matchesFilter(e cloudevents.Event) bool {
 
 	keptnBase := &v0_2_0.EventData{}
