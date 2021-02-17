@@ -78,7 +78,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
   * Manage open remediation workflows in the materialized view [#1848](https://github.com/keptn/keptn/issues/1848)
   * Allow retrieving all open approval events for a specific project, stage, and service [#1757](https://github.com/keptn/keptn/issues/1757)
 
-- *gatekeeper-service:*
+- *approval-service:*
   * React on an approval.finished event to send configuration.changed event for the current stage [#1737](https://github.com/keptn/keptn/issues/1737)
   * Read approval_strategy and send event based on configured strategy and evaluation result [#1658](https://github.com/keptn/keptn/issues/1658)
 

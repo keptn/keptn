@@ -14,7 +14,7 @@
 
 # max age that images should have before they are marked as outdated
 MAX_AGE=30
-IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller")
+IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "approval-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller")
 
 # ensure the params/variables are set
 if [ -z "$REGISTRY_USER" ]; then
