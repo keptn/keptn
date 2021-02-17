@@ -661,6 +661,7 @@ verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
 first_event_id=$(echo "${response}" | jq -r ".id")
+first_event_triggeredid=$(echo "${response}" | jq -r ".triggeredid")
 
 second_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
@@ -684,7 +685,7 @@ verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first
 
 # Send the invalidated event for the first evaluation
 
-send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_id $first_keptn_context_id
+send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_triggeredid $first_keptn_context_id
 sleep 10
 
 third_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
@@ -706,6 +707,34 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first_event_id}\"])" "false"
+
+########################################################################################################################
+# Testcase 10: backwards compatibility for 0.7.x evaluation-done events
+########################################################################################################################
+
+# feed a legacy evaluation-done event to Keptn
+legacy_event_context_id=$(send_event_json ./test/assets/07x_evaluation_done_event.json)
+sleep 5
+
+# check if the event is returned when checking for sh.keptn.event.evluation.finished
+response=$(get_event sh.keptn.event.evaluation.finished ${legacy_event_context_id} ${PROJECT})
+
+# print the response
+echo $response | jq .
+
+verify_using_jq "$response" ".source" "lighthouse-service"
+verify_using_jq "$response" ".specversion" "1.0"
+verify_using_jq "$response" ".type" "sh.keptn.event.evaluation.finished"
+verify_using_jq "$response" ".data.project" "legacy-project"
+verify_using_jq "$response" ".data.stage" "hardening"
+verify_using_jq "$response" ".data.service" "legacy-service"
+verify_using_jq "$response" ".data.result" "fail"
+verify_using_jq "$response" ".data.evaluation.result" "fail"
+
+
+send_evaluation_invalidated_event "legacy-project" "hardening" "legacy-service" "evaluation-done-id" $legacy_event_context_id
+
+# TODO: check if event is returned by mongodb-datastore API when excluding invalidated events
 
 
 echo "Quality gates standalone tests done ✓"

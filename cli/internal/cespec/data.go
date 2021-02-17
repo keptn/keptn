@@ -204,6 +204,8 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 	},
 }
 
+var evaluationInvalidatedEventData = commonEventData
+
 var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 	EventData: commonEventData,
 	Deployment: keptnv2.DeploymentFinishedData{
