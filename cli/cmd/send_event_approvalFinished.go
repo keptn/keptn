@@ -293,11 +293,11 @@ func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHa
 
 	defer w.Flush()
 
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "GIT COMMIT", "EVALUATION")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "IMAGE", "EVALUATION")
 
 	for index, approval := range approvals {
 		score := getScoreForApprovalTriggeredEvent(eventHandler, approvalFinishedOptions, approval)
-		commitID := getCommitIDOfConfigurationChangeEvent(eventHandler, approvalFinishedOptions, approval)
+		commitID := getApprovalImageEvent(approval)
 		appendOptionToWriter(w, index, commitID, score)
 	}
 	fmt.Fprintf(w, "\n")
@@ -333,33 +333,25 @@ func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, appr
 	return score
 }
 
-func getCommitIDOfConfigurationChangeEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
-	unknownCommitID := "n/a"
-	deploymentFinishedEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
-		Project:      *approvalFinishedOptions.Project,
-		Stage:        *approvalFinishedOptions.Stage,
-		Service:      *approvalFinishedOptions.Service,
-		EventType:    keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
-		KeptnContext: approval.Shkeptncontext,
-	})
-	if errorObj != nil {
-		return unknownCommitID
-	}
-	if len(deploymentFinishedEvents) == 0 {
-		return unknownCommitID
-	}
-	deploymentFinishedData := &keptnv2.DeploymentFinishedEventData{}
+func getApprovalImageEvent(approval *apimodels.KeptnContextExtendedCE) string {
+	unknownImage := "n/a"
 
-	err := common.DecodeKeptnEventData(deploymentFinishedEvents[0].Data, deploymentFinishedData)
+	// the approval.triggered event should also include the configurationChange property (see https://github.com/keptn/keptn/issues/3199)
+	// therefore, we can cast its data property to a DeploymentTriggeredEventData struct and use the property from this struct
+	deploymentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
+
+	err := common.DecodeKeptnEventData(deploymentTriggeredData, approval.Data)
 
 	if err != nil {
-		return unknownCommitID
+		return unknownImage
 	}
 
-	if deploymentFinishedData.Deployment.GitCommit == "" {
-		return unknownCommitID
+	if deploymentTriggeredData.ConfigurationChange.Values != nil {
+		if image, ok := deploymentTriggeredData.ConfigurationChange.Values["image"].(string); ok {
+			return image
+		}
 	}
-	return deploymentFinishedData.Deployment.GitCommit
+	return unknownImage
 }
 
 func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
