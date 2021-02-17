@@ -24,10 +24,11 @@ import (
 )
 
 type sendApprovalFinishedStruct struct {
-	Project *string `json:"project"`
-	Stage   *string `json:"stage"`
-	Service *string `json:"service"`
-	ID      *string `json:"id"`
+	Project *string            `json:"project"`
+	Stage   *string            `json:"stage"`
+	Service *string            `json:"service"`
+	ID      *string            `json:"id"`
+	Labels  *map[string]string `json:"labels"`
 }
 
 var sendApprovalFinishedOptions sendApprovalFinishedStruct
@@ -411,5 +412,6 @@ func init() {
 	sendApprovalFinishedOptions.ID = approvalFinishedCmd.Flags().StringP("id", "", "",
 		"The ID of the approval.triggered event to be approved")
 	// approvalFinishedCmd.MarkFlagRequired("id")
+	sendApprovalFinishedOptions.Labels = approvalFinishedCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided for the service that is to be approved")
 
 }
