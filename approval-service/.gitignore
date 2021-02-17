@@ -12,4 +12,4 @@
 *.out
 
 #binary - go build
-gatekeeper-service
+approval-service
