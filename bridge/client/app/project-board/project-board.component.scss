@@ -6,16 +6,12 @@
   height: 100%;
 }
 
-.icon {
-  width: 20px;
-  height: 20px;
-}
-
-.buttons-container {
-  margin-right: 35px;
-}
-
 ::ng-deep {
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+
   .dt-tag {
     &.justify-content-center {
       justify-content: center;
@@ -36,9 +32,7 @@
       border-color: $blue-400;
     }
   }
-}
 
-::ng-deep {
   .dt-button-nested,
   .dt-button-nested:hover:not([disabled]) {
     .dt-button-icon .dt-icon.error svg {
@@ -46,9 +40,7 @@
       fill: $error-color;
     }
   }
-}
 
-::ng-deep {
   .dt-button-nested,
   .dt-button-nested:hover:not([disabled]) {
     .dt-button-icon .dt-icon.success svg {
@@ -56,18 +48,19 @@
       fill: $cta-color-active;
     }
   }
-}
 
-::ng-deep .dt-menu-item {
-  padding: 6px 40px 6px 20px !important;
-  height: auto !important;
-  cursor: pointer;
-}
-::ng-deep .dt-menu-item.active,
-::ng-deep .dt-menu-item:hover {
-  background: $gray-700 !important;
-}
+  .dt-menu-item {
+    padding: 6px 40px 6px 20px !important;
+    height: auto !important;
+    cursor: pointer;
+  }
 
-::ng-deep .ktb-expandable-tile .dt-show-more-icon {
-  margin-right: 5px;
+  .dt-menu-item.active,
+  .dt-menu-item:hover {
+    background: $gray-700 !important;
+  }
+
+  .ktb-expandable-tile .dt-show-more-icon {
+    margin-right: 5px;
+  }
 }

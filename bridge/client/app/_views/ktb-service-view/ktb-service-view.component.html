@@ -76,6 +76,15 @@
         </dt-info-group-title>
         <p class="m-0 mb-1" *ngIf="currentRoot.data.configurationChange?.values"><span class="bold">New artifact: </span><dt-tag [textContent]="currentRoot.data.configurationChange.values.image"></dt-tag></p>
         <p class="m-0 mb-1"><span class="bold">Keptn ID: </span><dt-tag [textContent]="currentRoot.shkeptncontext"></dt-tag></p>
+        <p class="m-0 mb-1">
+          <span class="bold" *ngIf="!currentRoot.isFinished()">Recent task: </span>
+          <span class="bold" *ngIf="currentRoot.isFinished()">Last task: </span>
+          <span [textContent]="currentRoot.getLastTrace().getLabel()"></span>
+        </p>
+        <p class="m-0 mb-1" *ngIf="currentRoot.isFinished() && currentRoot.getLastTrace().data.message">
+          <span class="bold">Status: </span>
+          <span [textContent]="currentRoot.getLastTrace().data.message"></span>
+        </p>
       </dt-info-group>
     </div>
     <ktb-sequence-timeline *ngIf="currentRoot.getStages().length > 0" [currentSequence]="currentRoot" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>

@@ -1,5 +1,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
+import {Location} from "@angular/common";
+import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 
 import {Observable, Subject, Subscription, timer} from "rxjs";
 import {filter, startWith, switchMap, take, takeUntil} from "rxjs/operators";
@@ -11,8 +13,6 @@ import {Project} from "../../_models/project";
 
 import {DataService} from "../../_services/data.service";
 import {DateUtil} from "../../_utils/date.utils";
-import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
-import {Location} from "@angular/common";
 
 @Component({
   selector: 'ktb-service-view',
