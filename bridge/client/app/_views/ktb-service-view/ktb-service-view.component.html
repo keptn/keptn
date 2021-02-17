@@ -69,7 +69,8 @@
                 <span class="bold" [textContent]="currentRoot.getLabel()"></span>&nbsp;
                 <span [textContent]="currentRoot.getStatusLabel()"></span>
               </p>
-              <button *ngIf="currentRoot.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+              <button class="ml-1" *ngIf="currentRoot.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+              <button class="ml-1" dt-icon-button variant="nested" [routerLink]="['/project', currentRoot.getProject(), 'sequence', currentRoot.shkeptncontext]"><dt-icon name="hops"></dt-icon></button>
             </div>
           </div>
         </dt-info-group-title>
