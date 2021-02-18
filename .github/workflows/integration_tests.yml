@@ -335,7 +335,7 @@ jobs:
           # verify deployments for continuous delivery
           if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
             verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "approval-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
           fi

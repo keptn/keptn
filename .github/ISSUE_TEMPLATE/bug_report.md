@@ -30,7 +30,7 @@ Your issue may already be reported! Please search on the [issue tracker](https:/
 * [ ] Helm
 * [ ] Istio
 * [ ] Bridge
-* [ ] Gatekeeper
+* [ ] Approval
 * [ ] Datastore
 * [ ] REST API
 * [ ] eventbroker / distributor

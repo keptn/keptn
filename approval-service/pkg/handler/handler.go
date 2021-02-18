@@ -35,7 +35,7 @@ func sendEvents(keptnHandler *keptnv2.Keptn, events []cloudevents.Event, l keptn
 }
 
 func getCloudEvent(data interface{}, ceType string, shkeptncontext string, triggeredID string) *cloudevents.Event {
-	source, _ := url.Parse("gatekeeper-service")
+	source, _ := url.Parse("approval-service")
 
 	extensions := map[string]interface{}{"shkeptncontext": shkeptncontext}
 	if triggeredID != "" {

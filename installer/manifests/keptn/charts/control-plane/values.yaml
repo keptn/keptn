@@ -78,3 +78,6 @@ statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
 
+approvalService:
+  image:
+    repository: docker.io/keptn/approval-service

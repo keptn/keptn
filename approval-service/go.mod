@@ -1,4 +1,4 @@
-module keptn/gatekeeper-service
+module keptn/approval-service
 
 go 1.13
 

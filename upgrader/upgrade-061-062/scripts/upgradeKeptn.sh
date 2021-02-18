@@ -56,7 +56,7 @@ kubectl get namespace openshift
 DOMAIN=$(kubectl get configmap -n keptn keptn-domain -ojsonpath="{.data.app_domain}")
 
 # check if full installation is available
-kubectl -n keptn get svc gatekeeper-service
+kubectl -n keptn get svc approval-service
 
   if [[ $? == '0' ]]; then
       print_debug "Full installation detected. Upgrading CD and CO services"
