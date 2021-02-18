@@ -404,19 +404,19 @@ func Test_getAggregationPipeline(t *testing.T) {
 					{"$lookup", bson.M{
 						"from": "test-collection-invalidatedEvents",
 						"let": bson.M{
-							"event_id":   "$id",
-							"event_type": "$type",
+							"event_id":          "$id",
+							"event_triggeredid": "$triggeredid",
 						},
 						"pipeline": []bson.M{
 							{
 								"$match": bson.M{
 									"$expr": bson.M{
-										"$and": []bson.M{
+										"$or": []bson.M{
 											{
 												"$eq": []string{"$triggeredid", "$$event_id"},
 											},
 											{
-												"$eq": []string{"$type", "my-type.invalidated"},
+												"$eq": []string{"$triggeredid", "$$event_triggeredid"},
 											},
 										},
 									},

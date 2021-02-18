@@ -396,6 +396,16 @@ jobs:
           QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
         run: test/test_quality_gates_standalone.sh
 
+      - name: Test Quality Gates Backwards compatibility
+        id: test_quality_gates_backwards_compatibility
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_quality_gates_backwards_compatibility.sh
+
       - name: Test Self Healing
         id: test_self_healing
         timeout-minutes: 10

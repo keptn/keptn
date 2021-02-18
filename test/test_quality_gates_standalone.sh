@@ -661,6 +661,7 @@ verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
 first_event_id=$(echo "${response}" | jq -r ".id")
+first_event_triggeredid=$(echo "${response}" | jq -r ".triggeredid")
 
 second_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
 sleep 10
@@ -684,7 +685,7 @@ verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first
 
 # Send the invalidated event for the first evaluation
 
-send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_id $first_keptn_context_id
+send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_triggeredid $first_keptn_context_id
 sleep 10
 
 third_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
@@ -706,7 +707,6 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first_event_id}\"])" "false"
-
 
 echo "Quality gates standalone tests done ✓"
 
