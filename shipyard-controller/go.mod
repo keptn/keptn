@@ -13,10 +13,8 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-test/deep v1.0.5
-	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
-	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/keptn/go-utils v0.8.0-alpha.0.20210215163126-910e83f1bd1c
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/stretchr/testify v1.7.0
@@ -27,8 +25,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/tools v0.1.0 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v0.17.2
+	k8s.io/api v0.20.3
+	k8s.io/apimachinery v0.20.3
+	k8s.io/client-go v0.20.3
 )
