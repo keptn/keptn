@@ -231,7 +231,9 @@ jobs:
           fi
 
           # determine keptn spec version
-          KEPTN_SPEC_VERSION="0.2.0" #TODO: get current tag of specification submodule
+          git submodule update --init
+          cd specification
+          KEPTN_SPEC_VERSION=$(git describe --exact-match --tags)
 
           echo "VERSION=${VERSION}"
           echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
@@ -442,6 +444,8 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
         uses: actions/checkout@v2
+        with:
+          submodules: 'true'
 
       # cache go modules
       - uses: actions/cache@v2.1.4
