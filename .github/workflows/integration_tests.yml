@@ -144,8 +144,8 @@ jobs:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
-          CLOUDSDK_REGION: "us-central1"
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
           BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
@@ -481,14 +481,14 @@ jobs:
         run: kubectl get deployments --all-namespaces -owide
 
       - name: Cleanup GKE cluster
-        if: env.CLOUD_PROVIDER == 'GKE'
+        if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
         timeout-minutes: 5
         env:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
-          CLOUDSDK_REGION: "us-central1"
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
           CLUSTER_NAME_NIGHTLY: ${{ steps.install_gke.outputs.CLUSTER_NAME_NIGHTLY }}
         run: test/utils/gke_delete_cluster.sh
 
