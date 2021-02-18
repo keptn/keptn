@@ -37,8 +37,6 @@ spec:
           env:
           - name: CONFIGURATION_SERVICE
             value: "http://localhost:8081/configuration"
-          - name: API
-            value: 'ws://api-service:8080/websocket'
           - name: ENVIRONMENT
             value: 'production'
           - name: INGRESS_HOSTNAME_SUFFIX
@@ -94,6 +92,12 @@ spec:
               value: 'sh.keptn.event.service.create.finished,sh.keptn.event.deployment.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.event.service.delete.finished'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
+            - name: STAGE_FILTER
+              value: "{{ .Values.distributor.stageFilter }}"
+            - name: PROJECT_FILTER
+              value: "{{ .Values.distributor.projectFilter }}"
+            - name: SERVICE_FILTER
+              value: "{{ .Values.distributor.serviceFilter }}"
             {{- if .Values.remoteControlPlane.enabled }}
             - name: KEPTN_API_ENDPOINT
               value: "{{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api"
@@ -101,8 +105,6 @@ spec:
               value: "{{ .Values.remoteControlPlane.api.token }}"
             - name: HTTP_SSL_VERIFY
               value: "{{ .Values.remoteControlPlane.api.apiValidateTls | default "true" }}"
-            - name: STAGE_FILTER
-              value: "{{ .Values.remoteControlPlane.api.stageFilter}}}"
             {{- end }}
 
       {{- with .Values.nodeSelector }}

@@ -7,20 +7,21 @@ helmservice:
     enabled: true                            # Creates a Kubernetes Service for the helm-service
 
 distributor:
+  stageFilter: ""                            # Sets the stage this helm service belongs to
+  serviceFilter: ""                          # Sets the service this helm service belongs to
+  projectFilter: ""                          # Sets the project this helm service belongs to
   image:
     repository: docker.io/keptn/distributor  # Container Image Name
     pullPolicy: IfNotPresent                 # Kubernetes Image Pull Policy
     tag: ""                                  # Container Tag
 
 remoteControlPlane:
-  enabled: false                             # Enables remote execution plane mode
+  enabled: false                              # Enables remote execution plane mode
   api:
-    protocol: "http"                         # Used Protocol (http, https
+    protocol: "https"                        # Used Protocol (http, https
     hostname: ""                             # Hostname of the control plane cluster (and Port)
     apiValidateTls: true                     # Defines if the control plane certificate should be validated
-    stageFilter: ""                          # Sets the stage this helm service belongs to
     token: ""                                # keptn API Token
-
 
 imagePullSecrets: []                         # Secrets to use for container registry credentials
 
@@ -34,10 +35,10 @@ podAnnotations: {}                           # Annotations to add to the created
 podSecurityContext: {}                       # Set the pod security context (e.g. fsGroups)
   # fsGroup: 2000
 
-securityContext:                              # Set the security context (e.g. runAsUser)
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  runAsUser: 1000
+securityContext: {}                          # Set the security context (e.g. runAsUser)
+#  readOnlyRootFilesystem: true
+#  runAsNonRoot: true
+#  runAsUser: 1000
 
 resources: {}                                 # Resource limits and requests
   # We usually recommend not to specify default resources and to leave this as a conscious
