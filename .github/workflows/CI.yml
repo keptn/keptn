@@ -234,7 +234,7 @@ jobs:
           # determine keptn spec version
           git submodule update --init
           cd specification
-          KEPTN_SPEC_VERSION=$(git describe --exact-match --tags)
+          KEPTN_SPEC_VERSION=$(git describe --tags)
 
           echo "VERSION=${VERSION}"
           echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
