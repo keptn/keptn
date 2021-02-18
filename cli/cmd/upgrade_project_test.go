@@ -152,24 +152,6 @@ func Test_transformShipyard(t *testing.T) {
 									},
 								},
 								{
-									Name: "rollback",
-									TriggeredOn: []keptnv2.Trigger{
-										{
-											Event: "dev.delivery.finished",
-											Selector: keptnv2.Selector{
-												Match: map[string]string{
-													"result": string(keptnv2.ResultFailed),
-												},
-											},
-										},
-									},
-									Tasks: []keptnv2.Task{
-										{
-											Name: "rollback",
-										},
-									},
-								},
-								{
 									Name:        "delivery-direct",
 									TriggeredOn: []keptnv2.Trigger{},
 									Tasks: []keptnv2.Task{
