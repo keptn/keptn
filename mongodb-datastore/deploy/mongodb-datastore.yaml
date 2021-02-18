@@ -35,10 +35,10 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "512Mi"
+            cpu: "500m"
           limits:
-            memory: "256Mi"
+            memory: "1024Mi"
             cpu: "1000m"
         env:
         - name: DT_CUSTOM_PROP

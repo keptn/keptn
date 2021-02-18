@@ -46,6 +46,7 @@ jobs:
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
       BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
       VERSION: ${{ steps.get_version.outputs.VERSION }}
+      KEPTN_SPEC_VERSION: ${{ steps.get_version.outputs.KEPTN_SPEC_VERSION }}
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
@@ -229,9 +230,14 @@ jobs:
             fi
           fi
 
+          # determine keptn spec version
+          KEPTN_SPEC_VERSION="0.2.0" #TODO: get current tag of specification submodule
+
           echo "VERSION=${VERSION}"
+          echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
 
           echo "##[set-output name=VERSION;]$(echo ${VERSION})"
+          echo "##[set-output name=KEPTN_SPEC_VERSION;]$(echo ${KEPTN_SPEC_VERSION})"
       - name: Get current date and time
         id: get_datetime
         run: |
@@ -548,6 +554,7 @@ jobs:
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      KEPTN_SPEC_VERSION: ${{ needs.prepare_ci_run.outputs.KEPTN_SPEC_VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
@@ -565,10 +572,10 @@ jobs:
         run: |
           if [[ "$BRANCH" == "master" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}"
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
           else
             # just use VERSION for the image tag
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}"
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
           fi
 
       - name: Upload Helm Chart as an artifact
