@@ -713,6 +713,7 @@ verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first
 ########################################################################################################################
 
 # feed a legacy evaluation-done event to Keptn
+echo "Testing backwards compatibility with Kepn 0.7.x evaluation-done events"
 legacy_event_context_id=$(send_event_json ./test/assets/07x_evaluation_done_event.json)
 sleep 5
 
@@ -731,11 +732,15 @@ verify_using_jq "$response" ".data.service" "legacy-service"
 verify_using_jq "$response" ".data.result" "fail"
 verify_using_jq "$response" ".data.evaluation.result" "fail"
 
+number_of_events=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=shkeptncontext:${legacy_event_context_id}%20AND%20AND%20AND%20data.project:legacy-project&excludeInvalidated=true" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
+
+verify_value "number of services" $number_of_events 1
 
 send_evaluation_invalidated_event "legacy-project" "hardening" "legacy-service" "evaluation-done-id" $legacy_event_context_id
 
-# TODO: check if event is returned by mongodb-datastore API when excluding invalidated events
+number_of_events=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter='shkeptncontext:${legacy_event_context_id}%20AND%20AND%20AND%20data.project:legacy-project'&excludeInvalidated=true" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events | length')
 
+verify_value "number of services" $number_of_events 0
 
 echo "Quality gates standalone tests done ✓"
 
