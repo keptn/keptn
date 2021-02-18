@@ -14,6 +14,9 @@
 
 package cmd
 
+// NOTE: THIS COMMAND WILL BE REMOVED, THUS THE WHOLE FILE WILL BE REMOVED IN A FUTURE RELEASE
+// THE FUNCTIONALITY WAS COPIED TO delivery.go
+
 import (
 	"encoding/json"
 	"errors"
@@ -69,6 +72,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 `,
 	Example:      `keptn send event new-artifact --project=sockshop --service=carts --stage=dev --image=docker.io/keptnexamples/carts --tag=0.7.0 --sequence=artifact-delivery`,
 	SilenceUsage: true,
+	Deprecated:   `Use "keptn trigger delivery" instead`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return doSendEventNewArtifactPreRunCheck()
 	},
