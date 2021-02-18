@@ -1,1 +1,4 @@
 
+[submodule "specification"]
+	path = specification
+	url = https://github.com/keptn/spec
