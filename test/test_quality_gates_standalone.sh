@@ -718,7 +718,7 @@ legacy_event_context_id=$(send_event_json ./test/assets/07x_evaluation_done_even
 sleep 5
 
 # check if the event is returned when checking for sh.keptn.event.evluation.finished
-response=$(get_event sh.keptn.event.evaluation.finished ${legacy_event_context_id} ${PROJECT})
+response=$(get_event sh.keptn.event.evaluation.finished ${legacy_event_context_id} "legacy-project")
 
 # print the response
 echo $response | jq .
