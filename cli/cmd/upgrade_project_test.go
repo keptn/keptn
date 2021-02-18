@@ -121,7 +121,7 @@ func Test_transformShipyard(t *testing.T) {
 							Name: "dev",
 							Sequences: []keptnv2.Sequence{
 								{
-									Name:        "delivery",
+									Name:        "artifact-delivery",
 									TriggeredOn: []keptnv2.Trigger{},
 									Tasks: []keptnv2.Task{
 										{
@@ -155,7 +155,7 @@ func Test_transformShipyard(t *testing.T) {
 									Name: "rollback",
 									TriggeredOn: []keptnv2.Trigger{
 										{
-											Event: "dev.delivery.finished",
+											Event: "dev.artifact-delivery.finished",
 											Selector: keptnv2.Selector{
 												Match: map[string]string{
 													"result": string(keptnv2.ResultFailed),
@@ -170,7 +170,7 @@ func Test_transformShipyard(t *testing.T) {
 									},
 								},
 								{
-									Name:        "delivery-direct",
+									Name:        "artifact-delivery-direct",
 									TriggeredOn: []keptnv2.Trigger{},
 									Tasks: []keptnv2.Task{
 										{
@@ -206,8 +206,8 @@ func Test_transformShipyard(t *testing.T) {
 							Name: "staging",
 							Sequences: []keptnv2.Sequence{
 								{
-									Name:        "delivery",
-									TriggeredOn: []keptnv2.Trigger{keptnv2.Trigger{Event: "dev.delivery.finished"}},
+									Name:        "artifact-delivery",
+									TriggeredOn: []keptnv2.Trigger{keptnv2.Trigger{Event: "dev.artifact-delivery.finished"}},
 									Tasks: []keptnv2.Task{
 										{
 											Name: "deployment",
@@ -240,7 +240,7 @@ func Test_transformShipyard(t *testing.T) {
 									Name: "rollback",
 									TriggeredOn: []keptnv2.Trigger{
 										{
-											Event: "staging.delivery.finished",
+											Event: "staging.artifact-delivery.finished",
 											Selector: keptnv2.Selector{
 												Match: map[string]string{
 													"result": string(keptnv2.ResultFailed),
@@ -255,8 +255,8 @@ func Test_transformShipyard(t *testing.T) {
 									},
 								},
 								{
-									Name:        "delivery-direct",
-									TriggeredOn: []keptnv2.Trigger{keptnv2.Trigger{Event: "dev.delivery-direct.finished"}},
+									Name:        "artifact-delivery-direct",
+									TriggeredOn: []keptnv2.Trigger{keptnv2.Trigger{Event: "dev.artifact-delivery-direct.finished"}},
 									Tasks: []keptnv2.Task{
 										{
 											Name: "deployment",
