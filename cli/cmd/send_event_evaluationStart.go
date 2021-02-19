@@ -18,8 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -56,6 +54,7 @@ var evaluationStartCmd = &cobra.Command{
 flag is set to *--timeframe=5m*, the evaluation is conducted for the last 5 minutes. 
 * To specify a particular starting point, the flag *--start* flag can be used. In this case, the specified time frame is added to the starting point.
 `,
+	Deprecated: `Use "keptn trigger evaluation" instead`,
 	Example: `keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59
 
 keptn send event start-evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test
@@ -136,91 +135,6 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
 		return nil
 	},
-}
-
-func getStartEndTime(startDatePoint string, endDatePoint string, timeframe string) (*time.Time, *time.Time, error) {
-	// set default values for start and end time
-	dateLayout := "2006-01-02T15:04:05"
-	var err error
-
-	minutes := 5 // default timeframe
-
-	// input validation
-	if startDatePoint != "" && endDatePoint == "" {
-		// if a start date is set, but no end date is set, we require the timeframe to be set
-		if timeframe == "" {
-			errMsg := "Please provide a timeframe, e.g., --timeframe=5m, or an end date using --end=..."
-
-			return nil, nil, fmt.Errorf(errMsg)
-		}
-	}
-	if endDatePoint != "" && timeframe != "" {
-		// can not use end date and timeframe at the same time
-		errMsg := "You can not use --end together with --timeframe"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-	if endDatePoint != "" && startDatePoint == "" {
-		errMsg := "start date is required when using an end date"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-
-	// parse timeframe
-	if timeframe != "" {
-		errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
-
-		i := strings.Index(timeframe, "m")
-
-		if i > -1 {
-			minutesStr := timeframe[:i]
-			minutes, err = strconv.Atoi(minutesStr)
-			if err != nil {
-				return nil, nil, fmt.Errorf(errMsg)
-			}
-		} else {
-			return nil, nil, fmt.Errorf(errMsg)
-		}
-	}
-
-	// initialize default values for end and start time
-	end := time.Now().UTC()
-	start := time.Now().UTC().Add(-time.Duration(minutes) * time.Minute)
-
-	// Parse start date
-	if startDatePoint != "" {
-		start, err = time.Parse(dateLayout, startDatePoint)
-
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	// Parse end date
-	if endDatePoint != "" {
-		end, err = time.Parse(dateLayout, endDatePoint)
-
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
-	if startDatePoint != "" && endDatePoint == "" && timeframe != "" {
-		minutesOffset := time.Minute * time.Duration(minutes)
-		end = start.Add(minutesOffset)
-	}
-
-	// ensure end date is greater than start date
-	diff := end.Sub(start).Minutes()
-
-	if diff < 1 {
-		errMsg := "end date must be at least 1 minute after start date"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-
-	return &start, &end, nil
 }
 
 func init() {
