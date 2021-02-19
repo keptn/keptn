@@ -84,6 +84,7 @@ import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-i
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbSequenceViewComponent } from "./_views/ktb-sequence-view/ktb-sequence-view.component";
+import { KtbServiceViewComponent } from "./_views/ktb-service-view/ktb-service-view.component";
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 
 registerLocaleData(localeEn, 'en');
@@ -96,6 +97,7 @@ registerLocaleData(localeEn, 'en');
     ProjectBoardComponent,
     EvaluationBoardComponent,
     KtbSequenceViewComponent,
+    KtbServiceViewComponent,
     KtbHttpLoadingBarComponent,
     KtbShowHttpLoadingDirective,
     KtbHideHttpLoadingDirective,
