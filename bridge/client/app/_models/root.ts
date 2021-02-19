@@ -107,7 +107,7 @@ export class Root extends Trace {
   }
 
   getDeploymentDetails(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage.stageName)?.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED);
+    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage.stageName)?.getFinishedEvent();
   }
 
   getRemediationActions(): Root[] {
