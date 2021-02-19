@@ -6,7 +6,7 @@ spec:
   stages:
     - name: "dev"
       sequences:
-        - name: "artifact-delivery"
+        - name: "delivery"
           tasks:
             - name: "deployment"
               properties:
@@ -15,15 +15,22 @@ spec:
 
     - name: "production"
       sequences:
-        - name: "artifact-delivery"
-          triggers:
-            - "dev.artifact-delivery.finished"
+        - name: "delivery"
+          triggeredOn:
+            - event: "dev.delivery.finished"
           tasks:
             - name: "deployment"
               properties:
-                strategy: "blue_green"
+                strategy: "blue_green_service"
             - name: "release"
-
+        - name: "rollback"
+          triggeredOn:
+            - event: "production.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
         - name: "remediation"
           tasks:
             - name: "remediation"

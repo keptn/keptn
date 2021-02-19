@@ -51,7 +51,7 @@ var upgraderCmd = &cobra.Command{
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
 `,
-	Example: `keptn upgrade                                                        # upgrades Keptn
+	Example: `keptn upgrade # upgrades Keptn
 
 keptn upgrade --platform=openshift # upgrades Keptn on Openshift
 

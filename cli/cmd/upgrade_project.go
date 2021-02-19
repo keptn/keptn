@@ -93,7 +93,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		shipyardResource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
 		if err != nil {
-			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *newArtifact.Project, err.Error())
+			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", projectName, err.Error())
 		}
 
 		// first, check if the shipyard already has been upgraded
@@ -108,7 +108,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 
 		shipyard := &keptn.Shipyard{}
 		if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
-			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", *newArtifact.Project, err.Error())
+			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", projectName, err.Error())
 		}
 
 		// check if there are any stages in the old shipyard.

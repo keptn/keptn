@@ -32,22 +32,22 @@ function auth_at_keptn() {
   fi
 }
 
-function send_start_evaluation_request() {
+function trigger_evaluation_request() {
   PROJECT=$1
   STAGE=$2
   SERVICE=$3
 
-  response=$(keptn send event start-evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m 2>&1)
+  response=$(keptn trigger evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m 2>&1)
 
   echo $response
 }
 
-function send_start_evaluation_event() {
+function trigger_evaluation() {
   PROJECT=$1
   STAGE=$2
   SERVICE=$3
 
-  response=$(keptn send event start-evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m)
+  response=$(keptn trigger evaluation --project=$PROJECT --stage=$STAGE --service=$SERVICE --timeframe=5m)
   keptn_context_id=$(echo $response | awk -F'Keptn context:' '{ print $2 }' | xargs)
 
   echo "$keptn_context_id"

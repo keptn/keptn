@@ -8,13 +8,13 @@ SEQUENCE=$4
 source test/utils.sh
 
 echo "---------------------------------------------------------------------"
-echo "- Sending new artifact for ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+echo "- Trigger delivery for ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
 echo "---------------------------------------------------------------------"
 echo ""
 
-# send new artifact for carts service
-keptn send event new-artifact --project=$PROJECT --service=carts --image=${ARTIFACT_IMAGE} --tag=${ARTIFACT_IMAGE_TAG} --sequence=$SEQUENCE
-verify_test_step $? "keptn send event new-artifact --project=${PROJECT} --service=carts - failed"
+# trigger delivery for carts service
+keptn trigger delivery --project=$PROJECT --service=carts --image=${ARTIFACT_IMAGE} --tag=${ARTIFACT_IMAGE_TAG} --sequence=$SEQUENCE
+verify_test_step $? "keptn trigger delivery --project=${PROJECT} --service=carts - failed"
 
 sleep 30
 
