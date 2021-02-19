@@ -56,7 +56,7 @@
               <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.ImpactedEntity"></span></p>
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
                 <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName) as evaluation">
+                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName).getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #evaluationOverlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
@@ -68,7 +68,7 @@
             <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                 <p class="m-0">Quality gate of <span [textContent]="failedRootEvent.getShortImageName()"></span> failed with a score of:</p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluation(selectedStage.stageName) as evaluation">
+                <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluation(selectedStage.stageName).getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #overlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
