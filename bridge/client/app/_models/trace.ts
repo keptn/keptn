@@ -307,6 +307,10 @@ class Trace {
     return this.isStarted() && !this.isFinished();
   }
 
+  isInvalidated() {
+    return !!this.traces.find(e => e.isEvaluationInvalidation() && e.triggeredid == this.id);
+  }
+
   getFinishedEvent() {
     return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
   }

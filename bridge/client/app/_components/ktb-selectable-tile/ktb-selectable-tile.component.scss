@@ -3,6 +3,10 @@
 
 .ktb-selectable-tile {
 
+  .ktb-selectable-tile-header.container {
+    padding: 0px;
+  }
+
   .ktb-selectable-tile-container {
     position: relative;
     cursor: pointer;

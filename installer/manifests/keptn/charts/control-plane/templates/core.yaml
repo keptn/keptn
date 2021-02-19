@@ -294,6 +294,8 @@ spec:
                   key: password
             - name: MONGO_DB_NAME
               value: 'keptn'
+            - name: KEPTN_SPEC_VERSION
+              value: {{ .Values.keptnSpecVersion }}
           ports:
             - containerPort: 8080
           livenessProbe:

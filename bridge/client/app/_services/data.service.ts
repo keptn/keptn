@@ -297,7 +297,7 @@ export class DataService {
           if(trace.triggeredid)
             return t.id == trace.triggeredid;
           else
-            return t.getShortType() == trace.getShortType() && t.data.stage == trace.data.stage;
+            return trace.isFinished() && t.getShortType() == trace.getShortType() && t.data.stage == trace.data.stage;
         });
 
         if(trigger)
