@@ -2,13 +2,15 @@
 
 Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version. This new Shipard version has been proposed in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6) and supports now:
 
-**The key announcements of Keptn 0.8:**
+---
+
+**The key announcements:**
 
 :rocket: *Separated and explicit Shipyard-defined processes (aka. task sequences) for continuous delivery / automated remediation in a stage*: With this Keptn release it is possible to have multiple processes (called *task sequence*) within one stage. These task sequences are strictly separated from each other. 
 
-:lock: *Support individual tasks in sequences*: It is now possible to add custom tasks to a *task sequence* in order to cover certain needs of delivery/remediation use-cases that go beyond the opinionated approach Keptn is offering.
+:tada: *Support individual tasks in sequences*: It is now possible to add custom tasks to a *task sequence* in order to cover certain needs of delivery/remediation use-cases that go beyond the opinionated approach Keptn is offering.
 
-:sparkles: *Trigger of a sequence can be configured - allowing multiple paralle stages*: The new Shipyard version supports the definition of triggers that kick-off the execution of a *task sequences*. This helps to make it explicite when a sequence gets triggers. Besides, this linking mechanism allows to connect multiple sequences (of different stages) to listen to the same trigger. Consequenctly, it is possible to connect multiple stages, which are on the same level, to one preceeding stage - as shown below:
+:star: *Trigger of a sequence can be configured - allowing multiple paralle stages*: The new Shipyard version supports the definition of triggers that kick-off the execution of a *task sequences*. This helps to make it explicite when a sequence gets triggers. Besides, this linking mechanism allows to connect multiple sequences (of different stages) to listen to the same trigger. Consequenctly, it is possible to connect multiple stages, which are on the same level, to one preceeding stage - as shown below:
 
 > *Screenshot here*
 
@@ -20,27 +22,32 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :sparkles: *Multi-cluster support*: 
 
-:tada: *Sequence screen in Keptn Bridge*: The new capabilities of Keptn of dealing with task sequences received a dedicated screen in the Keptn Bridge. This screen provides filtering capabilities and a stage-divided view of the performed delivery or remediation tasks. 
+:dizzy: *Sequence screen in Keptn Bridge*: The new capabilities of Keptn of dealing with task sequences received a dedicated screen in the Keptn Bridge. This screen provides filtering capabilities and a stage-divided view of the performed delivery or remediation tasks. 
 
 > *Screenshot here*
 
-**Supporting features with Keptn 0.8:**
+---
 
-:lock: *Query usage statistics of your Keptn*: With this release, it is possible to retrieve usage statistics of a Keptn by using the `/api/statistics/v1` endpoint. This returns the number of events processed in the specified time frame. 
+**Supporting features:**
+
+:tada: *Query usage statistics of your Keptn*: With this release, it is possible to retrieve usage statistics of a Keptn by using the `/api/statistics/v1` endpoint. This returns the number of events processed in the specified time frame. 
 
 :star2: *Keptn CLI supports multiple Keptn installations*: The new Keptn CLI easies working with multiple Keptns since it recognizes switches between Kubernetes clusters and then asks for switching the context Keptn context too. Consequently, your CLI will be automatically connected to the Keptn running on another K8s cluster.   
 
 :star: *Deployment of custom Helm Charts*:
 
-**Noteworthy changes:**
+:sparkles: *SLI breakdown displayed as a table in Keptn Bridge*: For the quality gates capabilities of Keptn, the SLI breakdown is now displayed as table 
+
+---
+
+**Noteworthy changes and improvements:**
 
 - Removed WebSocket communication between CLI and API
 - Performance improvements in MongoDB
-- SLI breakdown displayed as a table in Keptn Bridge
+- Update of LICENSE file [2725](https://github.com/keptn/keptn/issues/2725)
 
 Last but not least, many thanks to the community for the rich discussions around Keptn 0.8, the submitted [Keptn Enhancement Proposals](https://github.com/keptn/enhancement-proposals), and the implementation work!
-
-*Info*: Update of LICENSE file [2725](https://github.com/keptn/keptn/issues/2725) 
+ 
 
 ## Keptn Specification
 
@@ -276,7 +283,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 </p>
 </details>
 
-<details><summary>*Fixed* CI issues</summary>
+<details><summary>Fixed CI issues</summary>
 <p>
 
 - *Fixed*: Integration tests: GKE clusters are not deleted afterwards in some cases [3243](https://github.com/keptn/keptn/issues/3243)
