@@ -7,10 +7,6 @@ ingressConfig:
   ingress_port: "80"
   istio_gateway: "public-gateway.istio-system"
 
-gatekeeperService:
-  image:
-    repository: docker.io/keptn/gatekeeper-service
-
 distributor:
   image:
     repository: docker.io/keptn/distributor

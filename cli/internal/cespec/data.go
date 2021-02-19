@@ -198,7 +198,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				Violated:    true,
 			}},
 			WarningTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
-				Criteria:    "<=800",
+				Criteria:    "<=+20%",
 				TargetValue: 800,
 				Violated:    true,
 			}},
@@ -209,6 +209,8 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 		GitCommit:      "",
 	},
 }
+
+var evaluationInvalidatedEventData = commonEventData
 
 var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 	EventData: commonEventData,

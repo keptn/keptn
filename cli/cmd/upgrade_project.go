@@ -202,94 +202,101 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 	for index, stage := range shipyard.Stages {
 
 		passStrategy, warningStrategy := getApprovalStrategyForStage(index, shipyard)
-		newStage := keptnv2.Stage{
+		deploymentStrategy := shipyard.Stages[index].DeploymentStrategy
 
-			Name: stage.Name,
-			Sequences: []keptnv2.Sequence{
+		deliverySequence := keptnv2.Sequence{
+			Name:        "delivery",
+			TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery"),
+			Tasks: []keptnv2.Task{
 				{
-					Name:        "artifact-delivery",
-					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "artifact-delivery"),
-					Tasks: []keptnv2.Task{
-						{
-							Name: "deployment",
-							Properties: map[string]string{
-								"deploymentstrategy": stage.DeploymentStrategy,
-							},
-						},
-						{
-							Name: "test",
-							Properties: map[string]string{
-								"teststrategy": stage.TestStrategy,
-							},
-						},
-						{
-							Name: "evaluation",
-						},
-						{
-							Name: "approval",
-							Properties: map[string]string{
-								"pass":    passStrategy,
-								"warning": warningStrategy,
-							},
-						},
-						{
-							Name: "release",
-						},
+					Name: "deployment",
+					Properties: map[string]string{
+						"deploymentstrategy": stage.DeploymentStrategy,
 					},
 				},
 				{
-					Name: "rollback",
-					TriggeredOn: []keptnv2.Trigger{
-						{
-							Event: getRollbackEventForStage(stage.Name, "artifact-delivery"),
-							Selector: keptnv2.Selector{
-								Match: map[string]string{
-									"result": string(keptnv2.ResultFailed),
-								},
-							},
-						},
-					},
-					Tasks: []keptnv2.Task{
-						{
-							Name: "rollback",
-						},
+					Name: "test",
+					Properties: map[string]string{
+						"teststrategy": stage.TestStrategy,
 					},
 				},
-				// add a second artifact-delivery with "direct" deployment strategy
 				{
-					Name:        "artifact-delivery-direct",
-					TriggeredOn: getSequenceTriggerForStage(index, shipyard, "artifact-delivery-direct"),
-					Tasks: []keptnv2.Task{
-						{
-							Name: "deployment",
-							Properties: map[string]string{
-								"deploymentstrategy": "direct",
-							},
-						},
-						{
-							Name: "test",
-							Properties: map[string]string{
-								"teststrategy": stage.TestStrategy,
-							},
-						},
-						{
-							Name: "evaluation",
-						},
-						{
-							Name: "approval",
-							Properties: map[string]string{
-								"pass":    passStrategy,
-								"warning": warningStrategy,
-							},
-						},
-						{
-							Name: "release",
-						},
+					Name: "evaluation",
+				},
+				{
+					Name: "approval",
+					Properties: map[string]string{
+						"pass":    passStrategy,
+						"warning": warningStrategy,
 					},
+				},
+				{
+					Name: "release",
 				},
 			},
 		}
-		upgradedShipyard.Spec.Stages = append(upgradedShipyard.Spec.Stages, newStage)
+
+		// direct delivery sequence for supporting non-canary deployments
+		directDeliverySequence := keptnv2.Sequence{
+			Name:        "delivery-direct",
+			TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery-direct"),
+			Tasks: []keptnv2.Task{
+				{
+					Name: "deployment",
+					Properties: map[string]string{
+						"deploymentstrategy": "direct",
+					},
+				},
+				{
+					Name: "test",
+					Properties: map[string]string{
+						"teststrategy": stage.TestStrategy,
+					},
+				},
+				{
+					Name: "evaluation",
+				},
+				{
+					Name: "approval",
+					Properties: map[string]string{
+						"pass":    passStrategy,
+						"warning": warningStrategy,
+					},
+				},
+				{
+					Name: "release",
+				},
+			},
+		}
+
+		var sequences []keptnv2.Sequence
+		sequences = append(sequences, deliverySequence)
+
+		// only add a rollback sequence for blue-green deployments
+		if deploymentStrategy == "blue_green_service" {
+			rollbackSequence := keptnv2.Sequence{
+				Name: "rollback",
+				TriggeredOn: []keptnv2.Trigger{
+					{
+						Event: getRollbackEventForStage(stage.Name, "delivery"),
+						Selector: keptnv2.Selector{
+							Match: map[string]string{
+								"result": string(keptnv2.ResultFailed),
+							},
+						},
+					},
+				},
+				Tasks: []keptnv2.Task{
+					{
+						Name: "rollback",
+					},
+				},
+			}
+			sequences = append(sequences, rollbackSequence)
+		}
+		sequences = append(sequences, directDeliverySequence)
+
+		upgradedShipyard.Spec.Stages = append(upgradedShipyard.Spec.Stages, keptnv2.Stage{Name: stage.Name, Sequences: sequences})
 	}
 
 	return upgradedShipyard

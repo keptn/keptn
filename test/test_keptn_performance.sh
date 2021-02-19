@@ -125,7 +125,7 @@ keptn add-resource --project=$SELF_MONITORING_PROJECT --resource=./test/assets/s
 
 # create services
 
-SERVICES=("bridge" "eventbroker-go" "configuration-service" "mongodb-datastore" "gatekeeper-service" "remediation-service" "lighthouse-service" "statistics-service" "gatekeeper-service" "dynatrace-sli-service" "jmeter-service" "dynatrace-service" "api-service" "api-gateway-nginx")
+SERVICES=("bridge" "eventbroker-go" "configuration-service" "mongodb-datastore" "approval-service" "remediation-service" "lighthouse-service" "statistics-service" "approval-service" "dynatrace-sli-service" "jmeter-service" "dynatrace-service" "api-service" "api-gateway-nginx")
 
 for SERVICE in "${SERVICES[@]}"
 do

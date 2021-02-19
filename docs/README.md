@@ -41,7 +41,7 @@ The keptn core implementation as well as the *batteries-included* services are s
 * eventbroker
 * bridge
 * configuration service
-* gatekeeper service
+* approval service
 * evaluation service
 * datastore
 

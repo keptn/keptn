@@ -67,7 +67,7 @@ kubectl -n keptn delete deployment lighthouse-service-start-evaluation-distribut
 kubectl -n keptn delete deployment lighthouse-service-tests-finished-distributor
 
 # check if full installation is available
-kubectl -n keptn get svc gatekeeper-service
+kubectl -n keptn get svc approval-service
 
   if [[ $? == '0' ]]; then
       print_debug "Full installation detected. Upgrading CD and CO services"

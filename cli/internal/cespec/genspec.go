@@ -101,6 +101,7 @@ func Generate(outputDir string) {
 	createSection(md, "Evaluation Started", keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), evaluationStartedEventData)
 	createSection(md, "Evaluation Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.EvaluationTaskName), evaluationStatusChangedEventData)
 	createSection(md, "Evaluation Finished", keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), evaluationFinishedEventData)
+	createSection(md, "Evaluation Invalidated", keptnv2.GetInvalidatedEventType(keptnv2.EvaluationTaskName), evaluationInvalidatedEventData)
 
 	createSectionTitle(md, "Release")
 	createSection(md, "Release Triggered", keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName), releaseTriggeredEventData)

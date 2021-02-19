@@ -42,7 +42,7 @@ flags:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   distributor:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
-  gatekeeper-service:
+  approval-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags
   helm-service:
     carryforward: true # see https://docs.codecov.io/docs/carryforward-flags

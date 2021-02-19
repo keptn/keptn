@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"keptn/gatekeeper-service/pkg/handler"
+	"keptn/approval-service/pkg/handler"
 	"log"
 	"os"
 
@@ -14,6 +14,8 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
+
+const ServiceName = "approval-service"
 
 type envConfig struct {
 	// Port on which to listen for cloudevents
@@ -54,13 +56,13 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 }
 
 func switchEvent(event cloudevents.Event) {
-	serviceName := "gatekeeper-service"
+	serviceName := ServiceName
 	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
 		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
 	})
 
 	if err != nil {
-		l := keptncommon.NewLogger("", event.Context.GetID(), "gatekeeper-service")
+		l := keptncommon.NewLogger("", event.Context.GetID(), serviceName)
 		l.Error("failed to initialize Keptn handler: " + err.Error())
 		return
 	}

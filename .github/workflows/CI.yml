@@ -30,7 +30,7 @@ jobs:
       BUILD_BRIDGE: ${{ steps.check_modified_files.outputs.BUILD_BRIDGE }}
       BUILD_JMETER: ${{ steps.check_modified_files.outputs.BUILD_JMETER }}
       BUILD_HELM_SVC: ${{ steps.check_modified_files.outputs.BUILD_HELM_SVC }}
-      BUILD_GATEKEEPER_SVC: ${{ steps.check_modified_files.outputs.BUILD_GATEKEEPER_SVC }}
+      BUILD_APPROVAL_SVC: ${{ steps.check_modified_files.outputs.BUILD_APPROVAL_SVC }}
       BUILD_DISTRIBUTOR: ${{ steps.check_modified_files.outputs.BUILD_DISTRIBUTOR }}
       BUILD_EVENTBROKER: ${{ steps.check_modified_files.outputs.BUILD_EVENTBROKER }}
       BUILD_SHIPYARD_CONTROLLER: ${{ steps.check_modified_files.outputs.BUILD_SHIPYARD_CONTROLLER }}
@@ -90,7 +90,7 @@ jobs:
           BUILD_BRIDGE=false
           BUILD_JMETER=false
           BUILD_HELM_SVC=false
-          BUILD_GATEKEEPER_SVC=false
+          BUILD_APPROVAL_SVC=false
           BUILD_DISTRIBUTOR=false
           BUILD_EVENTBROKER=false
           BUILD_SHIPYARD_CONTROLLER=false
@@ -136,8 +136,8 @@ jobs:
               BUILD_HELM_SVC=true
             fi
 
-            if [[ $changed_file == "${GATEKEEPER_SVC_FOLDER}"* ]]; then
-              BUILD_GATEKEEPER_SVC=true
+            if [[ $changed_file == "${APPROVAL_SVC_FOLDER}"* ]]; then
+              BUILD_APPROVAL_SVC=true
             fi
 
             if [[ $changed_file == "${DISTRIBUTOR_FOLDER}"* ]]; then
@@ -181,7 +181,7 @@ jobs:
           echo "##[set-output name=BUILD_BRIDGE;]$(echo ${BUILD_BRIDGE})"
           echo "##[set-output name=BUILD_JMETER;]$(echo ${BUILD_JMETER})"
           echo "##[set-output name=BUILD_HELM_SVC;]$(echo ${BUILD_HELM_SVC})"
-          echo "##[set-output name=BUILD_GATEKEEPER_SVC;]$(echo ${BUILD_GATEKEEPER_SVC})"
+          echo "##[set-output name=BUILD_APPROVAL_SVC;]$(echo ${BUILD_APPROVAL_SVC})"
           echo "##[set-output name=BUILD_DISTRIBUTOR;]$(echo ${BUILD_DISTRIBUTOR})"
           echo "##[set-output name=BUILD_EVENTBROKER;]$(echo ${BUILD_EVENTBROKER})"
           echo "##[set-output name=BUILD_SHIPYARD_CONTROLLER;]$(echo ${BUILD_SHIPYARD_CONTROLLER})"
@@ -324,12 +324,12 @@ jobs:
           bash <(curl -s https://codecov.io/bash) -c -F helm-service
         working-directory: ./helm-service
 
-      - name: Test gatekeeper svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
+      - name: Test approval svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
         run: |
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
-        working-directory: ./gatekeeper-service
+          bash <(curl -s https://codecov.io/bash) -c -F approval-service
+        working-directory: ./approval-service
 
       - name: Test distributor
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
@@ -661,15 +661,15 @@ jobs:
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
           DOCKER_FOLDER: ${{ env.HELM_SVC_FOLDER }}
 
-      - id: docker_build_gatekeeper_service
-        name: Docker Build gatekeeper-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
+      - id: docker_build_approval_service
+        name: Docker Build approval-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
         uses: keptn/gh-action-build-docker-image@master
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.APPROVAL_SVC_FOLDER }}
 
       - id: docker_build_os_route_service
         name: Docker Build openshift-route-service

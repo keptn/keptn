@@ -24,8 +24,8 @@ bridge/ @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT @domi
 # cli
 cli/ @agrimmer @bacherfl
 
-# gatekeeper-service
-gatekeeper-service/ @agrimmer @bacherfl
+# approval-service
+approval-service/ @agrimmer @bacherfl
 
 # helm-service
 helm-service/ @agrimmer @bacherfl
