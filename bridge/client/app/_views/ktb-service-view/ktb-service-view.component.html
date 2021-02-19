@@ -70,34 +70,36 @@
                 <span [textContent]="currentRoot.getStatusLabel()"></span>
               </p>
               <button class="ml-1" *ngIf="currentRoot.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
-              <button class="ml-1" dt-icon-button variant="nested" [routerLink]="['/project', currentRoot.getProject(), 'sequence', currentRoot.shkeptncontext]"><dt-icon name="hops"></dt-icon></button>
             </div>
           </div>
         </dt-info-group-title>
         <p class="m-0 mb-1" *ngIf="currentRoot.data.configurationChange?.values"><span class="bold">New artifact: </span><dt-tag [textContent]="currentRoot.data.configurationChange.values.image"></dt-tag></p>
-        <p class="m-0 mb-1"><span class="bold">Keptn ID: </span><dt-tag [textContent]="currentRoot.shkeptncontext"></dt-tag></p>
-        <p class="m-0 mb-1">
-          <span class="bold" *ngIf="!currentRoot.isFinished()">Recent task: </span>
-          <span class="bold" *ngIf="currentRoot.isFinished()">Last task: </span>
-          <span [textContent]="currentRoot.getLastTrace().getLabel()"></span>
-        </p>
-        <p class="m-0 mb-1" *ngIf="currentRoot.isFinished() && currentRoot.getLastTrace().data.message">
-          <span class="bold">Status: </span>
-          <span [textContent]="currentRoot.getLastTrace().data.message"></span>
-        </p>
+        <p class="m-0 mb-1"><span class="bold">Context: </span><dt-tag [textContent]="currentRoot.shkeptncontext"></dt-tag></p>
       </dt-info-group>
     </div>
     <ktb-sequence-timeline *ngIf="currentRoot.getStages().length > 0" [currentSequence]="currentRoot" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
-    <ng-container *ngIf="currentRoot.getEvaluation(selectedStage) as evaluationEvent">
+    <p class="m-0 mb-1">
+      <span class="bold" *ngIf="!currentRoot.isFinished()">Recent task: </span>
+      <span class="bold" *ngIf="currentRoot.isFinished()">Last task: </span>
+      <span [textContent]="currentRoot.getLastTraceOfStage(selectedStage)?.getLabel()"></span>
+    </p>
+    <p class="m-0 mb-1" *ngIf="currentRoot.isFinished() && currentRoot.getLastTraceOfStage(selectedStage)?.getFinishedEvent().data.message">
+      <span class="bold">Status: </span>
+      <span [textContent]="currentRoot.getLastTraceOfStage(selectedStage)?.getFinishedEvent().data.message"></span>
+    </p>
+    <div>
+      <button dt-button variant="secondary" [routerLink]="['/project', currentRoot.getProject(), 'sequence', currentRoot.shkeptncontext, 'stage', selectedStage]">View sequence</button>
+    </div>
+    <div fxLayout="column" fxLayoutGap="15px" *ngIf="currentRoot.getEvaluation(selectedStage) as evaluationEvent">
       <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()">
         <ktb-event-item-detail>
           <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
         </ktb-event-item-detail>
       </ktb-event-item>
-    </ng-container>
-    <ng-container *ngIf="selectedStage && currentRoot.getPendingApprovals(selectedStage).length > 0">
+    </div>
+    <div fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && currentRoot.getPendingApprovals(selectedStage).length > 0">
       <ktb-event-item *ngFor="let approvalEvent of currentRoot.getPendingApprovals(selectedStage)" [event]="approvalEvent"></ktb-event-item>
-    </ng-container>
+    </div>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentRoot) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
       <button class="ml-2" dt-button (click)="loadTraces(currentRoot)" *ngIf="showReloadButton(currentRoot)"><dt-icon name="refresh"></dt-icon> Reload</button>
