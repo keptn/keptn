@@ -33,6 +33,7 @@ import { DtProgressCircleModule } from '@dynatrace/barista-components/progress-c
 import { DtSelectModule } from '@dynatrace/barista-components/select';
 import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
 import { DtSwitchModule } from '@dynatrace/barista-components/switch';
+import { DtTableModule } from '@dynatrace/barista-components/table';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
 import { DtCopyToClipboardModule } from "@dynatrace/barista-components/copy-to-clipboard";
@@ -86,6 +87,7 @@ import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-st
 import { KtbSequenceViewComponent } from "./_views/ktb-sequence-view/ktb-sequence-view.component";
 import { KtbServiceViewComponent } from "./_views/ktb-service-view/ktb-service-view.component";
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
+import {KtbSliBreakdownCriteriaItemComponent} from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -130,6 +132,7 @@ registerLocaleData(localeEn, 'en');
     KtbIntegrationViewComponent,
     KtbStageDetailsComponent,
     KeptnUrlPipe,
+    KtbSliBreakdownCriteriaItemComponent,
   ],
   imports: [
     BrowserModule,
@@ -153,6 +156,7 @@ registerLocaleData(localeEn, 'en');
     DtInfoGroupModule,
     DtProgressBarModule,
     DtLoadingDistractorModule,
+    DtTableModule,
     DtTagModule,
     DtExpandableTextModule,
     DtExpandablePanelModule,
