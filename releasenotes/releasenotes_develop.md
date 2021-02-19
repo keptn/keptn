@@ -1,28 +1,28 @@
 # Release Notes 0.8.0
 
-Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version. This new Shipard version has been proposed in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6) and supports now:
+Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
 
 ---
 
 **The key announcements:**
 
-:rocket: *Separated and explicit Shipyard-defined processes (aka. task sequences) for continuous delivery / automated remediation in a stage*: With this Keptn release it is possible to have multiple processes (called *task sequence*) within one stage. These task sequences are strictly separated from each other. 
+:rocket: *Separated and explicit Shipyard-defined processes (aka. task sequences) for continuous delivery / automated remediation*: With this Keptn release, it is possible to have multiple processes (called *task sequences*) within one stage. These task sequences are separated from each other and list the tasks that are triggered sequentially.
 
-:tada: *Support individual tasks in sequences*: It is now possible to add custom tasks to a *task sequence* in order to cover certain needs of delivery/remediation use-cases that go beyond the opinionated approach Keptn is offering.
+:tada: *Support individual tasks in sequences*: It is now possible to add custom tasks to a *task sequence* to address needs of delivery/remediation use-cases that go beyond the opinionated approach Keptn is offering.
 
-:star: *Trigger of a sequence can be configured - allowing multiple paralle stages*: The new Shipyard version supports the definition of triggers that kick-off the execution of a *task sequences*. This helps to make it explicite when a sequence gets triggers. Besides, this linking mechanism allows to connect multiple sequences (of different stages) to listen to the same trigger. Consequenctly, it is possible to connect multiple stages, which are on the same level, to one preceeding stage - as shown below:
+:star: *Trigger of a sequence can be configured - allowing multiple parallel stages*: The new Shipyard supports the definition of triggers that launch the execution of a *task sequences*. This helps to make it explicit when a sequence gets triggers. Besides, this linking mechanism allows connecting multiple sequences (of different stages) to listen to the same trigger. Consequently, it is possible to connect multiple stages, which are on the same level, to one preceding stage - as shown below:
 
 > *Screenshot here*
 
-:star2: *New types of events*: In course of implement the new Shipyard version in Keptn, events were streamlined and follow now the following pattern. Basically, Keptn just sends out an event of type: `sh.keptn.event.${task.name}.triggered` other services react on: 
-  * `sh.keptn.event.${task.name}.triggered`      > *sent out by Keptn*
-  * `sh.keptn.event.${task.name}.started`        > *sent out by a Keptn-service when starting the tasks*
-  * `sh.keptn.event.${task.name}.status.changed` > *sent out by a Keptn-service to inform about a status update*
-  * `sh.keptn.event.${task.name}.finished`       > *sent out by a Keptn-service when the task is finished*
+:star2: *New types of events*: In course of implement the new Shipyard version in Keptn, the Keptn Cloud-events were streamlined and follow now the a common pattern. Basically, Keptn just sends out an event of type: `sh.keptn.event.{task.name}.triggered` and other services react on: 
+  * `sh.keptn.event.{task.name}.triggered`      > *sent out by Keptn*
+  * `sh.keptn.event.{task.name}.started`        > *sent out by a Keptn-service when starting the tasks*
+  * `sh.keptn.event.{task.name}.status.changed` > *sent out by a Keptn-service to inform about a status update*
+  * `sh.keptn.event.{task.name}.finished`       > *sent out by a Keptn-service when the task is finished*
 
-:sparkles: *Multi-cluster support*: 
+:sparkles: *Multi-cluster support*: Based on the implementation of Shipyard v0.2, Keptn - as a control-plane for delivery and remediation - is now capable of serving multiple clusters. This is known as the split between *Control plane* and *Execution plane*. For this use-case, the Keptn project offers to run the helm-service (to deploy) and jmeter-service (to test) on the *Execution plane*. This *Execution plane* can be on a cluster other than the cluster where Keptn is installed. 
 
-:dizzy: *Sequence screen in Keptn Bridge*: The new capabilities of Keptn of dealing with task sequences received a dedicated screen in the Keptn Bridge. This screen provides filtering capabilities and a stage-divided view of the performed delivery or remediation tasks. 
+:dizzy: *Sequence screen in Keptn Bridge*: The new capabilities of Keptn for dealing with task sequences received a dedicated screen in the Keptn Bridge. This screen provides filtering capabilities and a stage-divided view of the performed delivery or remediation tasks. 
 
 > *Screenshot here*
 
@@ -34,9 +34,9 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :star2: *Keptn CLI supports multiple Keptn installations*: The new Keptn CLI easies working with multiple Keptns since it recognizes switches between Kubernetes clusters and then asks for switching the context Keptn context too. Consequently, your CLI will be automatically connected to the Keptn running on another K8s cluster.   
 
-:star: *Deployment of custom Helm Charts*:
+:star: *Deployment of custom Helm Charts*: An extension of the helm-service allows to deploy custom Helm Charts meaning that the Helm Chart can contain any custom resource and is not limited to a *Kubernetes service* and *deployment*. *Note:* When using this option, the automatic rollback capability of Keptn is not supported.
 
-:sparkles: *SLI breakdown displayed as a table in Keptn Bridge*: For the quality gates capabilities of Keptn, the SLI breakdown is now displayed as table 
+:sparkles: *SLI breakdown displayed as a table in Keptn Bridge*: For the quality gates capabilities of Keptn, the SLI breakdown is now displayed as a table given a better overview of the individual results. 
 
 ---
 
