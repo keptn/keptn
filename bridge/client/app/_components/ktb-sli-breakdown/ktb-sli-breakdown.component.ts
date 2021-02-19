@@ -15,11 +15,12 @@ export class KtbSliBreakdownComponent implements OnInit {
     warning: 'warning',
     fail: 'failed'
   };
-  
+
   private _indicatorResults: any;
   private _indicatorResultsFail: any = [];
   private _indicatorResultsWarning: any = [];
   private _indicatorResultsPass: any = [];
+  private _score: number;
   public columnNames: any = [];
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
 
@@ -34,6 +35,16 @@ export class KtbSliBreakdownComponent implements OnInit {
       this._indicatorResultsWarning = indicatorResults.filter(i => i.status === 'warning');
       this._indicatorResultsPass = indicatorResults.filter(i => i.status !== 'fail' && i.status !== 'warning');
       this.updateDataSource();
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+  @Input()
+  get score(): number {
+    return this._score;
+  }
+  set score(score: number) {
+    if (score !== this._score) {
+      this._score = score;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -86,12 +97,13 @@ export class KtbSliBreakdownComponent implements OnInit {
         'score'
       ];
     }
+
     return indicatorResults.map(indicatorResult =>  {
       return {
         name: indicatorResult.value.metric,
         value: this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
-        score: this.round(indicatorResult.score / totalscore, 2),
+        score: this.round(indicatorResult.score / totalscore * this.score, 2),
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,

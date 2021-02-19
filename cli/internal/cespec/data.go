@@ -197,6 +197,11 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				TargetValue: 600,
 				Violated:    true,
 			}},
+			WarningTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
+				Criteria:    "<=800",
+				TargetValue: 800,
+				Violated:    true,
+			}},
 			Status: "failed",
 		},
 		},

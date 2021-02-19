@@ -31,7 +31,7 @@
     </dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="result" dtColumnAlign="text" dtColumnProportion="1">
+  <ng-container dtColumnDef="result" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
     <dt-cell *dtCellDef="let row">{{ evaluationState[row.result] }}</dt-cell>
   </ng-container>
