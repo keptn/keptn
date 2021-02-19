@@ -164,7 +164,7 @@ do
     for evaluation_nr in $(seq 1 ${NR_EVALUATIONS_PER_SERVICE})
     do
       nr_evaluations=$((nr_evaluations+1))
-      send_start_evaluation_request project-${project_nr} hardening service-${service_nr}
+      trigger_evaluation_request project-${project_nr} hardening service-${service_nr}
     done
 
     for invalidation_nr in $(seq 1 ${NR_INVALIDATIONS_PER_SERVICE})
