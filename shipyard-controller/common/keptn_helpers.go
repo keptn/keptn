@@ -110,23 +110,7 @@ func SendEvent(event cloudevents.Event) error {
 // SendEventWithPayload godoc
 // Deprecated will be removed, use functionality from go-utils instead
 func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) error {
-	source, _ := url.Parse("shipyard-controller")
-	event := cloudevents.NewEvent()
-	event.SetType(eventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	if keptnContext == "" {
-		event.SetExtension("shkeptncontext", uuid.New().String())
-	} else {
-		event.SetExtension("shkeptncontext", keptnContext)
-	}
-	if triggeredID != "" {
-		event.SetExtension("triggeredid", triggeredID)
-	}
-	if specVersion := GetKeptnSpecVersion(); specVersion != "" {
-		event.SetExtension("shkeptnspecversion", specVersion)
-	}
-	event.SetData(cloudevents.ApplicationJSON, payload)
+	event := CreateEventWithPayload(keptnContext, triggeredID, eventType, payload)
 
 	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
 	if err != nil {
