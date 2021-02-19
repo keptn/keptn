@@ -22,6 +22,11 @@ func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
 }
 
+type DockerImg struct {
+	Image string
+	Tag   string
+}
+
 // TestNewArtifact tests the new-artifact command.
 func TestDelivery(t *testing.T) {
 

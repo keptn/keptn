@@ -59,80 +59,84 @@ keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --
 `,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		return doTriggerEvaluation(triggerEvaluation)
+	},
+}
+
+func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	if err != nil {
+		return errors.New(authErrorMsg)
+	}
+
+	logging.PrintLog("Starting to trigger evaluation of the service "+
+		*triggerEvaluationData.Service+" in project "+*triggerEvaluationData.Project, logging.InfoLevel)
+
+	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
+			endPointErr)
+	}
+
+	startPoint := ""
+	if triggerEvaluationData.Start != nil {
+		startPoint = *triggerEvaluationData.Start
+	}
+
+	endDatePoint := ""
+	if triggerEvaluationData.End != nil {
+		endDatePoint = *triggerEvaluationData.End
+	}
+
+	start, end, err := getStartEndTime(startPoint, endDatePoint, *triggerEvaluationData.Timeframe)
+	if start == nil || end == nil || err != nil {
+		logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
+		return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
+	}
+
+	if err != nil {
+		return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+	}
+
+	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+	logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
+
+	if !mocking {
+		response, err := apiHandler.TriggerEvaluation(
+			*triggerEvaluationData.Project,
+			*triggerEvaluationData.Stage,
+			*triggerEvaluationData.Service,
+			apimodels.Evaluation{
+				Start:  start.Format("2006-01-02T15:04:05"),
+				End:    end.Format("2006-01-02T15:04:05"),
+				Labels: *triggerEvaluationData.Labels,
+			},
+		)
+
 		if err != nil {
-			return errors.New(authErrorMsg)
+			logging.PrintLog("trigger evaluation was unsuccessful", logging.QuietLevel)
+			return fmt.Errorf("trigger evaluation was unsuccessful. %s", *err.Message)
 		}
 
-		logging.PrintLog("Starting to trigger evaluation of the service "+
-			*triggerEvaluation.Service+" in project "+*triggerEvaluation.Project, logging.InfoLevel)
-
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
-		startPoint := ""
-		if triggerEvaluation.Start != nil {
-			startPoint = *triggerEvaluation.Start
-		}
-
-		endDatePoint := ""
-		if triggerEvaluation.End != nil {
-			endDatePoint = *triggerEvaluation.End
-		}
-
-		start, end, err := getStartEndTime(startPoint, endDatePoint, *triggerEvaluation.Timeframe)
-		if start == nil || end == nil || err != nil {
-			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
-			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
-		}
-
-		if err != nil {
-			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
-		}
-
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
-		if !mocking {
-			response, err := apiHandler.TriggerEvaluation(
-				*triggerEvaluation.Project,
-				*triggerEvaluation.Stage,
-				*triggerEvaluation.Service,
-				apimodels.Evaluation{
-					Start:  start.Format("2006-01-02T15:04:05"),
-					End:    end.Format("2006-01-02T15:04:05"),
-					Labels: *triggerEvaluation.Labels,
-				},
-			)
-
-			if err != nil {
-				logging.PrintLog("trigger evaluation was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("trigger evaluation was unsuccessful. %s", *err.Message)
-			}
-
-			if response == nil {
-				logging.PrintLog("No event returned", logging.QuietLevel)
-				return nil
-			}
-
-			if *triggerEvaluation.Watch {
-				eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-				filter := apiutils.EventFilter{
-					KeptnContext: *response.KeptnContext,
-					Project:      *triggerEvaluation.Project,
-				}
-				watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*triggerEvaluation.WatchTime)*time.Second)
-				PrintEventWatcher(watcher, *triggerEvaluation.Output, os.Stdout)
-			}
-
+		if response == nil {
+			logging.PrintLog("No event returned", logging.QuietLevel)
 			return nil
 		}
 
-		fmt.Println("Skipping trigger evaluation due to mocking flag set to true")
+		if *triggerEvaluationData.Watch {
+			eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+			filter := apiutils.EventFilter{
+				KeptnContext: *response.KeptnContext,
+				Project:      *triggerEvaluationData.Project,
+			}
+			watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*triggerEvaluationData.WatchTime)*time.Second)
+			PrintEventWatcher(watcher, *triggerEvaluationData.Output, os.Stdout)
+		}
+
 		return nil
-	},
+	}
+
+	fmt.Println("Skipping trigger evaluation due to mocking flag set to true")
+	return nil
 }
 
 func getStartEndTime(startDatePoint string, endDatePoint string, timeframe string) (*time.Time, *time.Time, error) {

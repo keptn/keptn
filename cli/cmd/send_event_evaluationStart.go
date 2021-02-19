@@ -14,16 +14,9 @@
 
 package cmd
 
-import (
-	"errors"
-	"fmt"
-	"os"
-	"time"
+// NOTE: THIS COMMAND WILL BE REMOVED, THUS THE WHOLE FILE WILL BE REMOVED IN A FUTURE RELEASE
 
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/logging"
+import (
 	"github.com/spf13/cobra"
 )
 
@@ -61,79 +54,19 @@ keptn send event start-evaluation --project=sockshop --stage=hardening --service
 `,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-		if err != nil {
-			return errors.New(authErrorMsg)
+		triggerEvaluation := triggerEvaluationStruct{
+			Project:   evaluationStart.Project,
+			Stage:     evaluationStart.Stage,
+			Service:   evaluationStart.Service,
+			Timeframe: evaluationStart.Timeframe,
+			Start:     evaluationStart.Start,
+			End:       evaluationStart.End,
+			Labels:    evaluationStart.Labels,
+			Watch:     evaluationStart.Watch,
+			WatchTime: evaluationStart.WatchTime,
+			Output:    evaluationStart.Output,
 		}
-
-		logging.PrintLog("Starting to send a start-evaluation event to evaluate the service "+
-			*evaluationStart.Service+" in project "+*evaluationStart.Project, logging.InfoLevel)
-
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
-		startPoint := ""
-		if evaluationStart.Start != nil {
-			startPoint = *evaluationStart.Start
-		}
-
-		endDatePoint := ""
-		if evaluationStart.End != nil {
-			endDatePoint = *evaluationStart.End
-		}
-
-		start, end, err := getStartEndTime(startPoint, endDatePoint, *evaluationStart.Timeframe)
-		if start == nil || end == nil || err != nil {
-			logging.PrintLog(fmt.Sprintf("Start and end time of evaluation time frame not set: %s", err.Error()), logging.QuietLevel)
-			return fmt.Errorf("Start and end time of evaluation time frame not set: %s", err.Error())
-		}
-
-		if err != nil {
-			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
-		}
-
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
-		if !mocking {
-			response, err := apiHandler.TriggerEvaluation(
-				*evaluationStart.Project,
-				*evaluationStart.Stage,
-				*evaluationStart.Service,
-				apimodels.Evaluation{
-					Start:  start.Format("2006-01-02T15:04:05"),
-					End:    end.Format("2006-01-02T15:04:05"),
-					Labels: *evaluationStart.Labels,
-				},
-			)
-
-			if err != nil {
-				logging.PrintLog("Send start-evaluation was unsuccessful", logging.QuietLevel)
-				return fmt.Errorf("Send start-evaluation was unsuccessful. %s", *err.Message)
-			}
-
-			if response == nil {
-				logging.PrintLog("No event returned", logging.QuietLevel)
-				return nil
-			}
-
-			if *evaluationStart.Watch {
-				eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-				filter := apiutils.EventFilter{
-					KeptnContext: *response.KeptnContext,
-					Project:      *evaluationStart.Project,
-				}
-				watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*evaluationStart.WatchTime)*time.Second)
-				PrintEventWatcher(watcher, *evaluationStart.Output, os.Stdout)
-			}
-
-			return nil
-		}
-
-		fmt.Println("Skipping send start-evaluation due to mocking flag set to true")
-		return nil
+		return doTriggerEvaluation(triggerEvaluation)
 	},
 }
 

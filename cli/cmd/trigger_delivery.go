@@ -53,14 +53,14 @@ For pulling an image from a private registry, we would like to refer to the Kube
 		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return doTriggerDeliveryPreRunCheck()
+		return doTriggerDeliveryPreRunCheck(delivery)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return doTriggerDelivery()
+		return doTriggerDelivery(delivery)
 	},
 }
 
-func doTriggerDelivery() error {
+func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	var endPoint url.URL
 	var apiToken string
 	var err error
@@ -77,7 +77,7 @@ func doTriggerDelivery() error {
 	}
 
 	logging.PrintLog("Starting to deliver the service"+
-		*delivery.Service+" in project "+*delivery.Project+" in version "+*delivery.Image+":"+*delivery.Tag, logging.InfoLevel)
+		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" in version "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
 
 	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
 		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
@@ -85,35 +85,35 @@ func doTriggerDelivery() error {
 	}
 
 	resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-	shipyardResource, err := resourceHandler.GetProjectResource(*delivery.Project, "shipyard.yaml")
+	shipyardResource, err := resourceHandler.GetProjectResource(*deliveryInputData.Project, "shipyard.yaml")
 	if err != nil {
-		return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *delivery.Project, err.Error())
+		return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *deliveryInputData.Project, err.Error())
 	}
 
 	shipyard := &keptnv2.Shipyard{}
 
 	if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
-		return fmt.Errorf("Error while decoding shipyard.yaml for project %s: %s", *delivery.Project, err.Error())
+		return fmt.Errorf("Error while decoding shipyard.yaml for project %s: %s", *deliveryInputData.Project, err.Error())
 	}
 
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
-	if delivery.Stage == nil || *delivery.Stage == "" {
+	if deliveryInputData.Stage == nil || *deliveryInputData.Stage == "" {
 		if len(shipyard.Spec.Stages) > 0 {
-			delivery.Stage = &shipyard.Spec.Stages[0].Name
+			deliveryInputData.Stage = &shipyard.Spec.Stages[0].Name
 		} else {
-			return fmt.Errorf("Could not start sequence because no stage has been found in the shipyard.yaml of project %s", *delivery.Project)
+			return fmt.Errorf("Could not start sequence because no stage has been found in the shipyard.yaml of project %s", *deliveryInputData.Project)
 		}
 	}
 
 	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
 		EventData: keptnv2.EventData{
-			Project: *delivery.Project,
-			Stage:   *delivery.Stage,
-			Service: *delivery.Service,
+			Project: *deliveryInputData.Project,
+			Stage:   *deliveryInputData.Stage,
+			Service: *deliveryInputData.Service,
 		},
 		ConfigurationChange: keptnv2.ConfigurationChange{
 			Values: map[string]interface{}{
-				"image": *delivery.Image + ":" + *delivery.Tag,
+				"image": *deliveryInputData.Image + ":" + *deliveryInputData.Tag,
 			},
 		},
 	}
@@ -122,7 +122,7 @@ func doTriggerDelivery() error {
 
 	sdkEvent := cloudevents.NewEvent()
 	sdkEvent.SetID(uuid.New().String())
-	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*delivery.Stage + "." + *delivery.Sequence))
+	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + *deliveryInputData.Sequence))
 	sdkEvent.SetSource(source.String())
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 	sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
@@ -148,26 +148,26 @@ func doTriggerDelivery() error {
 		return fmt.Errorf("trigger delivery was unsuccessful. %s", *err2.Message)
 	}
 
-	if *delivery.Watch {
+	if *deliveryInputData.Watch {
 		eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		filter := apiutils.EventFilter{
 			KeptnContext: *eventContext.KeptnContext,
-			Project:      *delivery.Project,
+			Project:      *deliveryInputData.Project,
 		}
-		watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*delivery.WatchTime)*time.Second)
-		PrintEventWatcher(watcher, *delivery.Output, os.Stdout)
+		watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
+		PrintEventWatcher(watcher, *deliveryInputData.Output, os.Stdout)
 	}
 	return nil
 }
 
-func doTriggerDeliveryPreRunCheck() error {
-	trimmedImage := strings.TrimSuffix(*delivery.Image, "/")
-	delivery.Image = &trimmedImage
+func doTriggerDeliveryPreRunCheck(deliveryInputData deliveryStruct) error {
+	trimmedImage := strings.TrimSuffix(*deliveryInputData.Image, "/")
+	deliveryInputData.Image = &trimmedImage
 
-	if delivery.Tag == nil || *delivery.Tag == "" {
-		*delivery.Image, *delivery.Tag = docker.SplitImageName(*delivery.Image)
+	if deliveryInputData.Tag == nil || *deliveryInputData.Tag == "" {
+		*deliveryInputData.Image, *deliveryInputData.Tag = docker.SplitImageName(*deliveryInputData.Image)
 	}
-	return docker.CheckImageAvailability(*delivery.Image, *delivery.Tag, nil)
+	return docker.CheckImageAvailability(*deliveryInputData.Image, *deliveryInputData.Tag, nil)
 }
 
 func init() {
