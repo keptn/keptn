@@ -7,7 +7,7 @@ echo "- Trigger delivery for mongo            -"
 echo "---------------------------------------------"
 echo ""
 
-# send new artifact for database (include tag in image parameter to test if combining image/tag works)
+# trigger delivery for database (include tag in image parameter to test if combining image/tag works)
 keptn trigger delivery --project=$PROJECT --service=carts-db --image=mongo:latest --sequence=delivery-direct
 verify_test_step $? "keptn trigger delivery --project=${PROJECT} --service=carts-db --image=mongo - failed"
 
