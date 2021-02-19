@@ -14,6 +14,8 @@ import (
 
 const defaultKeptnNamespace = "keptn"
 
+const keptnSpecVersionEnvVar = "KEPTN_SPEC_VERSION"
+
 // GetKeptnNamespace godoc
 func GetKeptnNamespace() string {
 	ns := os.Getenv("POD_NAMESPACE")
@@ -78,6 +80,11 @@ func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 	return nil
 }
 
+// GetKeptnSpecVersion returns the Keptn Spec version the shipyard controller is based on
+func GetKeptnSpecVersion() string {
+	return os.Getenv(keptnSpecVersionEnvVar)
+}
+
 // SendEvent godoc
 func SendEvent(event cloudevents.Event) error {
 	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
@@ -90,7 +97,9 @@ func SendEvent(event cloudevents.Event) error {
 	if err != nil {
 		return errors.New("Could not initialize Keptn handler: " + err.Error())
 	}
-
+	if specVersion := GetKeptnSpecVersion(); specVersion != "" {
+		event.SetExtension("shkeptnspecversion", specVersion)
+	}
 	err = k.SendCloudEvent(event)
 	if err != nil {
 		return errors.New("Could not send CloudEvent: " + err.Error())
@@ -101,20 +110,7 @@ func SendEvent(event cloudevents.Event) error {
 // SendEventWithPayload godoc
 // Deprecated will be removed, use functionality from go-utils instead
 func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) error {
-	source, _ := url.Parse("shipyard-controller")
-	event := cloudevents.NewEvent()
-	event.SetType(eventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	if keptnContext == "" {
-		event.SetExtension("shkeptncontext", uuid.New().String())
-	} else {
-		event.SetExtension("shkeptncontext", keptnContext)
-	}
-	if triggeredID != "" {
-		event.SetExtension("triggeredid", triggeredID)
-	}
-	event.SetData(cloudevents.ApplicationJSON, payload)
+	event := CreateEventWithPayload(keptnContext, triggeredID, eventType, payload)
 
 	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
 	if err != nil {
@@ -147,6 +143,9 @@ func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload
 	}
 	if triggeredID != "" {
 		event.SetExtension("triggeredid", triggeredID)
+	}
+	if specVersion := GetKeptnSpecVersion(); specVersion != "" {
+		event.SetExtension("shkeptnspecversion", specVersion)
 	}
 	event.SetData(cloudevents.ApplicationJSON, payload)
 	return event

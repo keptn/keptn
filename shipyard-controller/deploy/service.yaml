@@ -55,6 +55,8 @@ spec:
                 key: password
           - name: MONGO_DB_NAME
             value: 'keptn'
+          - name: KEPTN_SPEC_VERSION
+            value: "0.2.0"
         ports:
         - containerPort: 8080
         resources:
