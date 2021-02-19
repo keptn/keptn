@@ -7,8 +7,8 @@ echo "- Trigger delivery for mongo            -"
 echo "---------------------------------------------"
 echo ""
 
-# send new artifcat for database
-keptn trigger delivery --project=$PROJECT --service=carts-db --image=mongo --sequence=delivery-direct
+# trigger delivery for database (include tag in image parameter to test if combining image/tag works)
+keptn trigger delivery --project=$PROJECT --service=carts-db --image=mongo:latest --sequence=delivery-direct
 verify_test_step $? "keptn trigger delivery --project=${PROJECT} --service=carts-db --image=mongo - failed"
 
 # wait until mongodb has been deployed
