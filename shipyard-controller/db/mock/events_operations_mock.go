@@ -16,6 +16,9 @@ import (
 // 			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 // 				panic("mock out the UpdateEventOfService method")
 // 			},
+// 			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
+// 				panic("mock out the UpdateShipyard method")
+// 			},
 // 		}
 //
 // 		// use mockedEventsDbOperations in code that requires db.EventsDbOperations
@@ -25,6 +28,9 @@ import (
 type EventsDbOperationsMock struct {
 	// UpdateEventOfServiceFunc mocks the UpdateEventOfService method.
 	UpdateEventOfServiceFunc func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error
+
+	// UpdateShipyardFunc mocks the UpdateShipyard method.
+	UpdateShipyardFunc func(projectName string, shipyardContent string) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -41,8 +47,16 @@ type EventsDbOperationsMock struct {
 			// TriggeredID is the triggeredID argument value.
 			TriggeredID string
 		}
+		// UpdateShipyard holds details about calls to the UpdateShipyard method.
+		UpdateShipyard []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// ShipyardContent is the shipyardContent argument value.
+			ShipyardContent string
+		}
 	}
 	lockUpdateEventOfService sync.RWMutex
+	lockUpdateShipyard       sync.RWMutex
 }
 
 // UpdateEventOfService calls UpdateEventOfServiceFunc.
@@ -89,5 +103,40 @@ func (mock *EventsDbOperationsMock) UpdateEventOfServiceCalls() []struct {
 	mock.lockUpdateEventOfService.RLock()
 	calls = mock.calls.UpdateEventOfService
 	mock.lockUpdateEventOfService.RUnlock()
+	return calls
+}
+
+// UpdateShipyard calls UpdateShipyardFunc.
+func (mock *EventsDbOperationsMock) UpdateShipyard(projectName string, shipyardContent string) error {
+	if mock.UpdateShipyardFunc == nil {
+		panic("EventsDbOperationsMock.UpdateShipyardFunc: method is nil but EventsDbOperations.UpdateShipyard was just called")
+	}
+	callInfo := struct {
+		ProjectName     string
+		ShipyardContent string
+	}{
+		ProjectName:     projectName,
+		ShipyardContent: shipyardContent,
+	}
+	mock.lockUpdateShipyard.Lock()
+	mock.calls.UpdateShipyard = append(mock.calls.UpdateShipyard, callInfo)
+	mock.lockUpdateShipyard.Unlock()
+	return mock.UpdateShipyardFunc(projectName, shipyardContent)
+}
+
+// UpdateShipyardCalls gets all the calls that were made to UpdateShipyard.
+// Check the length with:
+//     len(mockedEventsDbOperations.UpdateShipyardCalls())
+func (mock *EventsDbOperationsMock) UpdateShipyardCalls() []struct {
+	ProjectName     string
+	ShipyardContent string
+} {
+	var calls []struct {
+		ProjectName     string
+		ShipyardContent string
+	}
+	mock.lockUpdateShipyard.RLock()
+	calls = mock.calls.UpdateShipyard
+	mock.lockUpdateShipyard.RUnlock()
 	return calls
 }

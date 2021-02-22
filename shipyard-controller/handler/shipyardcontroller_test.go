@@ -948,6 +948,9 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
 	// make sure that the UpdateEventOfServiceCalls has been called
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
+	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
+	assert.Equal(t, "test-project", eventsDBMock.UpdateShipyardCalls()[0].ProjectName)
+	assert.NotEqual(t, "", eventsDBMock.UpdateShipyardCalls()[0].ShipyardContent)
 }
 
 // Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
@@ -1875,6 +1878,9 @@ func getTestShipyardController() *shipyardController {
 		},
 		eventsDbOperations: &db_mock.EventsDbOperationsMock{
 			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+				return nil
+			},
+			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
 				return nil
 			},
 		},

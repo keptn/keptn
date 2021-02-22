@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -102,6 +103,22 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 				event.Triggeredid,
 			); err != nil {
 				sc.logger.Error(fmt.Sprintf("could not update event for project %s: %s", eventData.Project, err.Error()))
+				return
+			}
+
+			// also update the shipyard in the materialized view because it might have been changed in the meantime
+			shipyard, err := common.GetShipyard(eventData)
+			if err != nil {
+				sc.logger.Error(fmt.Sprintf("could not retrieve shipyard file of project %s: %s", eventData.Project, err.Error()))
+				return
+			}
+			shipyardContent, err := yaml.Marshal(shipyard)
+			if err != nil {
+				sc.logger.Error(fmt.Sprintf("could not encode shipyard file of project %s: %s", eventData.Project, err.Error()))
+				return
+			}
+			if err := sc.eventsDbOperations.UpdateShipyard(eventData.Project, string(shipyardContent)); err != nil {
+				sc.logger.Error(fmt.Sprintf("could not update shipyard content of project %s: %s", eventData.Project, err.Error()))
 			}
 		}()
 	}
