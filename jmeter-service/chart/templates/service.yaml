@@ -1,0 +1,15 @@
+{{- if .Values.jmeterservice.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jmeter-service.fullname" . }}
+  labels:
+    {{- include "jmeter-service.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    {{- include "jmeter-service.selectorLabels" . | nindent 4 }}
+  {{- end }}
