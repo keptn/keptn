@@ -64,13 +64,13 @@ var serviceCreateFinishedEventData = keptnv2.ServiceCreateFinishedEventData{
 	EventData: commonEventData,
 }
 
-//var approvalTriggeredEventData = keptnv2.ApprovalTriggeredEventData{
-//	EventData: commonEventData,
-//	Approval: keptnv2.Approval{
-//		Pass:    keptnv2.ApprovalAutomatic,
-//		Warning: keptnv2.ApprovalManual,
-//	},
-//}
+var approvalTriggeredEventData = keptnv2.ApprovalTriggeredEventData{
+	EventData: commonEventData,
+	Approval: keptnv2.Approval{
+		Pass:    keptnv2.ApprovalAutomatic,
+		Warning: keptnv2.ApprovalManual,
+	},
+}
 
 var approvalStartedEventData = keptnv2.ApprovalStartedEventData{
 	EventData: commonEventData,
@@ -90,7 +90,9 @@ var deploymentTriggeredEventData = keptnv2.DeploymentTriggeredEventData{
 		Values: map[string]interface{}{"key": "value"},
 	},
 	Deployment: keptnv2.DeploymentTriggeredData{
-		DeploymentStrategy: keptn.Direct.String(),
+		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
+		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
+		DeploymentStrategy:   keptn.Direct.String(),
 	},
 }
 
@@ -113,16 +115,16 @@ var deploymentFinishedEventData = keptnv2.DeploymentFinishedEventData{
 	},
 }
 
-//var testTriggeredEventData = keptnv2.TestTriggeredEventData{
-//	EventData: commonEventData,
-//	Test: keptnv2.TestTriggeredDetails{
-//		TestStrategy: "functional",
-//	},
-//	Deployment: keptnv2.TestTriggeredDeploymentDetails{
-//		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
-//		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
-//	},
-//}
+var testTriggeredEventData = keptnv2.TestTriggeredEventData{
+	EventData: commonEventData,
+	Test: keptnv2.TestTriggeredDetails{
+		TestStrategy: "functional",
+	},
+	Deployment: keptnv2.TestTriggeredDeploymentDetails{
+		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
+		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
+	},
+}
 
 var testStartedEventData = keptnv2.TestStartedEventData{
 	EventData: commonEventData,
@@ -134,11 +136,7 @@ var testStatusChangedEventData = keptnv2.TestStatusChangedEventData{
 
 var testTestFinishedEventData = keptnv2.TestFinishedEventData{
 	EventData: commonEventData,
-	Test: struct {
-		Start     string `json:"start"`
-		End       string `json:"end"`
-		GitCommit string `json:"gitCommit"`
-	}{
+	Test: keptnv2.TestFinishedDetails{
 		Start:     "2019-10-20T07:57:27.152330783Z",
 		End:       "2019-10-20T08:57:27.152330783Z",
 		GitCommit: "ca82a6dff817gc66f44342007202690a93763949",
@@ -147,23 +145,15 @@ var testTestFinishedEventData = keptnv2.TestFinishedEventData{
 
 var evaluationTriggeredEventData = keptnv2.EvaluationTriggeredEventData{
 	EventData: commonEventData,
-	Test: struct {
-		Start string `json:"start"`
-		End   string `json:"end"`
-	}{
+	Test: keptnv2.Test{
 		Start: "2019-10-20T06:57:27.152330783Z",
 		End:   "2019-10-20T07:57:27.152330783Z",
 	},
-	Evaluation: struct {
-		Start string `json:"start"`
-		End   string `json:"end"`
-	}{
+	Evaluation: keptnv2.Evaluation{
 		Start: "2019-10-20T07:57:27.152330783Z",
 		End:   "2019-10-20T08:57:27.152330783Z",
 	},
-	Deployment: struct {
-		DeploymentNames []string `json:"deploymentNames"`
-	}{
+	Deployment: keptnv2.Deployment{
 		DeploymentNames: []string{"deployment-1"},
 	},
 }
@@ -202,11 +192,12 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				TargetValue: 800,
 				Violated:    true,
 			}},
+			KeySLI: false,
 			Status: "failed",
 		},
 		},
 		ComparedEvents: []string{"event-id-1", "event-id-2"},
-		GitCommit:      "",
+		GitCommit:      "ca82a6dff817gc66f44342007202690a93763949",
 	},
 }
 
@@ -215,7 +206,11 @@ var evaluationInvalidatedEventData = commonEventData
 var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 	EventData: commonEventData,
 	Deployment: keptnv2.DeploymentFinishedData{
-		DeploymentStrategy: keptn.Duplicate.String(),
+		DeploymentStrategy:   keptn.Duplicate.String(),
+		DeploymentURIsLocal:  []string{"http://carts.sockshop-staging.svc.cluster.local"},
+		DeploymentURIsPublic: []string{"http://carts.sockshot.local:80"},
+		DeploymentNames:      []string{"carts-primary", "carts-generated"},
+		GitCommit:            "ca82a6dff817gc66f44342007202690a93763949",
 	},
 }
 
@@ -244,7 +239,7 @@ var remediationTriggeredEventData = keptnv2.RemediationTriggeredEventData{
 		PID:            "P23",
 		ProblemURL:     "https://.../#problems/problemdetails;pid=93a5-3fas-a09d-8ckf",
 		ImpactedEntity: "carts-primary",
-		Tags:           "tag",
+		Tags:           "a-tags",
 	},
 }
 
@@ -265,11 +260,7 @@ var remediationFinishedEventData = keptnv2.RemediationFinishedEventData{
 }
 
 var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
-	EventData: keptnv2.EventData{
-		Project: "sockshop",
-		Service: "carts",
-		Stage:   "dev",
-	},
+	EventData: commonEventData,
 	Action: keptnv2.ActionInfo{
 		Name:        "Feature toggeling",
 		Action:      "toggle-feature",
@@ -280,9 +271,11 @@ var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
 		State:          "OPEN",
 		ProblemID:      "762",
 		ProblemTitle:   "cpu_usage_sockshop_carts",
+		ProblemDetails: json.RawMessage{},
 		PID:            "93a5-3fas-a09d-8ckf",
 		ProblemURL:     "http://problem.url.com",
 		ImpactedEntity: "carts-primary",
+		Tags:           "a-tags",
 	},
 }
 
@@ -291,36 +284,28 @@ var actionStartedEventData = keptnv2.ActionStartedEventData{
 }
 
 var actionFinishedEventData = keptnv2.ActionFinishedEventData{
-	EventData: keptnv2.EventData{
-		Project: "sockshop",
-		Service: "carts",
-		Stage:   "dev",
-	},
+	EventData: commonEventData,
 	Action: keptnv2.ActionData{
 		GitCommit: "93a5-3fas-a09d-8ckf",
 	},
 }
 
-//var getSLITriggeredEventData = keptnv2.GetSLITriggeredEventData{
-//	EventData: keptnv2.EventData{
-//		Project: "sockshop",
-//		Stage:   "dev",
-//		Service: "carts",
-//	},
-//	GetSLI: keptnv2.GetSLI{
-//		SLIProvider: "dynatrace",
-//		Start:       "2019-10-28T15:44:27.152330783Z",
-//		End:         "2019-10-28T15:54:27.152330783Z",
-//		Indicators:  []string{"throughput", "error_rate", "request_latency_p95"},
-//		CustomFilters: []*keptnv2.SLIFilter{{
-//			Key:   "dynatraceEntityName",
-//			Value: "HealthCheckController",
-//		}, {
-//			Key:   "tags",
-//			Value: "test-subject:true",
-//		}},
-//	},
-//}
+var getSLITriggeredEventData = keptnv2.GetSLITriggeredEventData{
+	EventData: commonEventData,
+	GetSLI: keptnv2.GetSLI{
+		SLIProvider: "dynatrace",
+		Start:       "2019-10-28T15:44:27.152330783Z",
+		End:         "2019-10-28T15:54:27.152330783Z",
+		Indicators:  []string{"throughput", "error_rate", "request_latency_p95"},
+		CustomFilters: []*keptnv2.SLIFilter{{
+			Key:   "dynatraceEntityName",
+			Value: "HealthCheckController",
+		}, {
+			Key:   "tags",
+			Value: "test-subject:true",
+		}},
+	},
+}
 
 var getSLIStartedEventData = keptnv2.GetSLIStartedEventData{
 	EventData: commonEventData,
@@ -332,18 +317,18 @@ var getSLIFinishedEventData = &keptnv2.GetSLIFinishedEventData{
 		Service: "carts",
 		Stage:   "dev",
 	},
-	//GetSLI: keptnv2.GetSLIFinished{
-	//	Start: "2019-10-20T07:57:27.152330783Z",
-	//	End:   "2019-10-22T08:57:27.152330783Z",
-	//	IndicatorValues: []*keptnv2.SLIResult{
-	//		{
-	//			Metric:  "response_time_p50",
-	//			Value:   1011.0745528937252,
-	//			Success: true,
-	//			Message: "",
-	//		},
-	//	},
-	//},
+	GetSLI: keptnv2.GetSLIFinished{
+		Start: "2019-10-20T07:57:27.152330783Z",
+		End:   "2019-10-22T08:57:27.152330783Z",
+		IndicatorValues: []*keptnv2.SLIResult{
+			{
+				Metric:  "response_time_p50",
+				Value:   1011.0745528937252,
+				Success: true,
+				Message: "",
+			},
+		},
+	},
 }
 
 var configureMonitoringTriggeredEventData = keptnv2.ConfigureMonitoringTriggeredEventData{

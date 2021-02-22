@@ -77,8 +77,7 @@ func Generate(outputDir string) {
 	createSection(md, "Service Create Finished", keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName), serviceCreateFinishedEventData)
 
 	createSectionTitle(md, "Approval")
-	//TODO: enable
-	//createSection(md, "Approval Triggered", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName), approvalTriggeredEventData)
+	createSection(md, "Approval Triggered", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName), approvalTriggeredEventData)
 	createSection(md, "Approval Started", keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), approvalStartedEventData)
 	createSection(md, "Approval Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.ApprovalTaskName), approvalStatusChangedEventData)
 	createSection(md, "Approval Finished", keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEventData)
@@ -90,8 +89,7 @@ func Generate(outputDir string) {
 	createSection(md, "Deployment Finished", keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName), deploymentFinishedEventData)
 
 	createSectionTitle(md, "Test")
-	//TODO: enable
-	//createSection(md, "Test Triggered", keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), testTriggeredEventData)
+	createSection(md, "Test Triggered", keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), testTriggeredEventData)
 	createSection(md, "Test Started", keptnv2.GetStartedEventType(keptnv2.TestTaskName), testStartedEventData)
 	createSection(md, "Test Status Changed", keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), testStatusChangedEventData)
 	createSection(md, "Test Finished", keptnv2.GetFinishedEventType(keptnv2.TestTaskName), testTestFinishedEventData)
@@ -110,11 +108,10 @@ func Generate(outputDir string) {
 	createSection(md, "Release Finished", keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), releaseFinishedEventData)
 
 	createSectionTitle(md, "Remediation")
-	remediationTaskName := "remediation" // TODO: define task name in go-utils
-	createSection(md, "Remediation Triggered", keptnv2.GetTriggeredEventType(remediationTaskName), remediationTriggeredEventData)
-	createSection(md, "Remediation Started", keptnv2.GetStartedEventType(remediationTaskName), remediationStartedEventData)
-	createSection(md, "Remediation Status Changed", keptnv2.GetStatusChangedEventType(remediationTaskName), remediationStatusChangedEventData)
-	createSection(md, "Remediation Finished", keptnv2.GetFinishedEventType(remediationTaskName), remediationFinishedEventData)
+	createSection(md, "Remediation Triggered", keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName), remediationTriggeredEventData)
+	createSection(md, "Remediation Started", keptnv2.GetStartedEventType(keptnv2.RemediationTaskName), remediationStartedEventData)
+	createSection(md, "Remediation Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName), remediationStatusChangedEventData)
+	createSection(md, "Remediation Finished", keptnv2.GetFinishedEventType(keptnv2.RemediationTaskName), remediationFinishedEventData)
 
 	createSectionTitle(md, "Action")
 	createSection(md, "Action Triggered", keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName), actionTriggeredEventData)
@@ -122,8 +119,7 @@ func Generate(outputDir string) {
 	createSection(md, "Action Finished", keptnv2.GetFinishedEventType(keptnv2.ActionTaskName), actionFinishedEventData)
 
 	createSectionTitle(md, "Get SLI")
-	//TODO: enable
-	//createSection(md, "Get SLI Triggered", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), getSLITriggeredEventData)
+	createSection(md, "Get SLI Triggered", keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName), getSLITriggeredEventData)
 	createSection(md, "Get SLI Started", keptnv2.GetStartedEventType(keptnv2.GetSLITaskName), getSLIStartedEventData)
 	createSection(md, "Get SLI Finished", keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName), getSLIFinishedEventData)
 
