@@ -49,6 +49,33 @@ func Generate(outputDir string) {
 
 	md := NewMarkDown()
 
+	md.Title("Keptn CloudEvents", 1)
+
+	md.Writeln(`All Keptn events conform to the CloudEvents spec in [version 1.0](https://github.com/cloudevents/spec/blob/v1.0/spec.md).
+The CloudEvents specification is a vendor-neutral specification for defining the format of event data.
+
+In Keptn, events have a payload structure as follows (*Note:* The "triggeredid" is not contained in events of type "triggered" mentioned below):`)
+
+	createCEStructureCodeBLock(md)
+
+	md.Title("Type", 2)
+	md.Writeln("The event type of a Keptn CloudEventHas the format:")
+	md.WriteLineBreak()
+	md.Bullet().Writeln("`sh.keptn.event.[task].[event status]`")
+	md.WriteLineBreak()
+	md.Writeln("As indicated by the brackets, the event type is defined by a **task** and the **event status**.")
+	md.Bullet().Writeln("The task is declared in the [Shipyard](https://github.com/keptn/spec/blob/master/shipyard.md) of a project. For example, a Shipyard can contain tasks like: `deployment`, `test`, or `evaluation`. Consequently, the event type for a `deployment` task would be `sh.keptn.event.deployment.[event status]`")
+	md.Bullet().Writeln("The kinds of event states are defined with: `triggered`, `started`, `status.changed`, and `finished` (`status.changed` is optional)")
+	md.WriteLineBreak()
+
+	md.Writeln("By combining the *task* and *event status* for the `deployment` task, the event types are:")
+	md.WriteLineBreak()
+
+	md.Bullet().Writeln("`sh.keptn.event.deployment.triggered`")
+	md.Bullet().Writeln("`sh.keptn.event.deployment.started`")
+	md.Bullet().Writeln("`sh.keptn.event.deployment.status.changed`")
+	md.Bullet().Writeln("`sh.keptn.event.deployment.finished`")
+
 	md.Title("Data", 2)
 	md.Writeln("The data block of a Keptn CloudEvent carries the Keptn Payload of a specific event")
 	md.Writeln("In the following each data block is described and an example of a CloudEvent containing the data block is given.")
@@ -138,6 +165,72 @@ func Generate(outputDir string) {
 	file.WriteString(md.String())
 	file.Sync()
 
+}
+
+func createCEStructureCodeBLock(md *MarkDown) {
+	md.CodeBlock(`"sh.keptn.event": {
+  "required": [
+    "data",
+    "id",
+    "shkeptncontext",
+    "source",
+    "specversion",
+    "time",
+    "triggeredid",
+    "type"
+  ],
+  "properties": {
+    "data": {
+      "type": ["object", "string"],
+      "description": "The Keptn event payload depending on the type."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique UUID of the Keptn event"
+    },
+    "shkeptncontext": {
+      "format": "uuid",
+      "type": "string",
+      "description": "Unique UUID value that connects various events together"
+    },
+    "source": {
+      "format": "uri-reference",
+      "type": "string",
+      "minLength": 1,
+      "description": "URL to service implementation in Keptn code repo"
+    },
+    "specversion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The version of the CloudEvents specification",
+      "value": "1.0"
+    },
+    "shkeptnspecversion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The version of the Keptn specification",
+      "value": "0.2.0"
+    },
+    "time": {
+      "format": "date-time",
+      "type": "string",
+      "description": "Timestamp of when the event happened"
+    },
+    "triggeredid": {
+      "format": "uuid",
+      "type": "string",
+      "description": "The event ID that has triggered the step"
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Type of the Keptn event"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
+}`, "json")
 }
 
 func toJSONSchema(j interface{}) string {
