@@ -15,7 +15,7 @@ function print_logs {
   kubectl -n ${KEPTN_NAMESPACE} logs svc/remediation-service -c remediation-service
 }
 
-trap print_logs ERR EXIT
+trap print_logs EXIT
 
 ########################################################################################################################
 # Pre-requisites
