@@ -84,7 +84,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 	statusType := split[len(split)-1]
 
 	eventData := &keptnv2.EventData{}
-	err := keptnv2.Decode(event, eventData)
+	err := keptnv2.Decode(event.Data, eventData)
 	if err != nil {
 		sc.logger.Error("Could not parse event data: " + err.Error())
 		return err
