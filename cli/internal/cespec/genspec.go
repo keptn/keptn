@@ -51,12 +51,26 @@ func Generate(outputDir string) {
 
 	md.Title("Keptn CloudEvents", 1)
 
-	md.Writeln(`All Keptn events conform to the CloudEvents spec in [version 1.0](https://github.com/cloudevents/spec/blob/v1.0/spec.md).
-The CloudEvents specification is a vendor-neutral specification for defining the format of event data.
+	md.Bullet().Link("Project", "#project")
+	md.Bullet().Link("Service", "#service")
+	md.Bullet().Link("Approval", "#approval")
+	md.Bullet().Link("Deployment", "#deployment")
+	md.Bullet().Link("Test", "#test")
+	md.Bullet().Link("Evaluation", "#evaluation")
+	md.Bullet().Link("Release", "#release")
+	md.Bullet().Link("Remediation", "#remediation")
+	md.Bullet().Link("Action", "#action")
+	md.Bullet().Link("Get-SLI", "#get-sli")
+	md.Bullet().Link("Monitoring", "#monitoring")
+	md.Bullet().Link("Problem", "#problem")
 
-In Keptn, events have a payload structure as follows (*Note:* The "triggeredid" is not contained in events of type "triggered" mentioned below):`)
+	md.Writeln("---")
 
-	createCEStructureCodeBLock(md)
+	md.Writeln("All Keptn events conform to the CloudEvents spec in [version 1.0](https://github.com/cloudevents/spec/blob/v1.0/spec.md). The CloudEvents specification is a vendor-neutral specification for defining the format of event data.")
+	md.WriteLineBreak()
+	md.Writeln("In Keptn, events have a payload structure as follows (*Note:* The `triggeredid` is not contained in events of type `triggered` mentioned below):")
+
+	createCEStructureCodeBlock(md)
 
 	md.Title("Type", 2)
 	md.Writeln("The event type of a Keptn CloudEventHas the format:")
@@ -77,20 +91,21 @@ In Keptn, events have a payload structure as follows (*Note:* The "triggeredid" 
 	md.Bullet().Writeln("`sh.keptn.event.deployment.finished`")
 
 	md.Title("Data", 2)
-	md.Writeln("The data block of a Keptn CloudEvent carries the Keptn Payload of a specific event")
+	md.Writeln("The data block of a Keptn CloudEvent carries the Keptn Payload of a specific event and contains the properties:")
+	md.Bullet().Writeln("labels")
+	md.Bullet().Writeln("message")
+	md.Bullet().Writeln("project")
+	md.Bullet().Writeln("result")
+	md.Bullet().Writeln("service")
+	md.Bullet().Writeln("stage")
+	md.Bullet().Writeln("status")
+	md.Bullet().Writeln("*[task]*")
+
+	md.WriteLineBreak()
+	md.Writeln("Like the task property in the event type, the task property in the data block depends on the task declaration in the Shipyard. Based on the example of a `deployment` task, the data block contains a `deployment` property of type object. Hence, any payload can be added to this `deployment` property")
+	md.WriteLineBreak()
+
 	md.Writeln("In the following each data block is described and an example of a CloudEvent containing the data block is given.")
-	md.Bullet().Link("Project", "#project")
-	md.Bullet().Link("Service", "#service")
-	md.Bullet().Link("Approval", "#approval")
-	md.Bullet().Link("Deployment", "#deployment")
-	md.Bullet().Link("Test", "#test")
-	md.Bullet().Link("Evaluation", "#evaluation")
-	md.Bullet().Link("Release", "#release")
-	md.Bullet().Link("Remediation", "#remediation")
-	md.Bullet().Link("Action", "#action")
-	md.Bullet().Link("Get-SLI", "#get-sli")
-	md.Bullet().Link("Monitoring", "#monitoring")
-	md.Bullet().Link("Problem", "#problem")
 	md.MultiBr(2)
 
 	createSectionTitle(md, "Project")
@@ -167,7 +182,61 @@ In Keptn, events have a payload structure as follows (*Note:* The "triggeredid" 
 
 }
 
-func createCEStructureCodeBLock(md *MarkDown) {
+func createDataStructureCodeBlock(md *MarkDown) {
+	md.CodeBlock(`"data": {
+  "required": [
+    "labels",
+    "message",
+    "project",
+    "result",
+    "service",
+    "stage",
+    "status",
+    "[task]"
+  ],
+  "properties": {
+    "labels": {
+      "patternProperties": {
+        ".*": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "message": {
+      "type": "string",
+      "description": "A message from the last task"
+    },
+    "project": {
+      "type": "string",
+      "description": "The name of the project"
+    },
+    "result": {
+      "type": "string",
+      "description": "The result of the last task"
+    },
+    "service": {
+      "type": "string",
+      "description": "The name of the service"
+    },
+    "stage": {
+      "type": "string",
+      "description": "The name of the stage"
+    },
+    "status": {
+      "type": "string",
+      "description": "The status of the last task"
+    },
+    "[task]": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
+}`, "json")
+}
+
+func createCEStructureCodeBlock(md *MarkDown) {
 	md.CodeBlock(`"sh.keptn.event": {
   "required": [
     "data",
