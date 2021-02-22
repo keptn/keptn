@@ -202,6 +202,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				TargetValue: 800,
 				Violated:    true,
 			}},
+			KeySLI: false,
 			Status: "failed",
 		},
 		},
