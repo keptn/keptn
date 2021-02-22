@@ -11,6 +11,7 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"reflect"
 	"testing"
@@ -708,6 +709,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	if done {
 		return
 	}
+
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
@@ -942,6 +944,10 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	if done {
 		return
 	}
+
+	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	// make sure that the UpdateEventOfServiceCalls has been called
+	assert.NotEqual(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
 
 // Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
