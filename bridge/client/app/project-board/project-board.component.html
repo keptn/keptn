@@ -33,14 +33,16 @@
 <div class="project-board" fxLayout="row" *ngIf="project$ | async as project">
   <dt-menu aria-label="Default Menu Example" class="dt-default-menu-example">
     <dt-menu-group label="">
-      <a (click)="selectView('environment')" [class.active]="view == 'environment'" dtMenuItem>Environment</a>
-      <a (click)="selectView('services')" [class.active]="view == 'services'" dtMenuItem>Services</a>
-      <a (click)="selectView('sequences')" [class.active]="view == 'sequences'" dtMenuItem>Sequences</a>
-      <a (click)="selectView('integration')" [class.active]="view == 'integration'" dtMenuItem>Integration</a>
+      <a (click)="selectView('environment', project.projectName)" [class.active]="view === 'environment'" dtMenuItem>Environment</a>
+      <a (click)="redirectView('service', project.projectName)" [class.active]="view === 'service'" dtMenuItem>Services</a>
+      <a (click)="redirectView('sequence', project.projectName)" [class.active]="view === 'sequence'" dtMenuItem>Sequences</a>
+      <a (click)="redirectView('integration', project.projectName)" [class.active]="view === 'integration'" dtMenuItem>Integration</a>
     </dt-menu-group>
   </dt-menu>
-  <ktb-environment-view *ngIf="view === 'environment'" fxFlex="100" [project]="project"></ktb-environment-view>
-  <ktb-service-view *ngIf="view == 'services'" fxFlex></ktb-service-view>
-  <ktb-sequence-view *ngIf="view == 'sequences'" fxFlex="100"></ktb-sequence-view>
-  <ktb-integration-view *ngIf="view === 'integration'"></ktb-integration-view>
+  <ng-container [ngSwitch]="view">
+    <ktb-environment-view *ngSwitchCase="'environment'" fxFlex="100" [project]="project"></ktb-environment-view>
+    <ktb-service-view *ngSwitchCase="'service'" fxFlex="100"></ktb-service-view>
+    <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="100"></ktb-sequence-view>
+    <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="100"></ktb-integration-view>
+  </ng-container>
 </div>
