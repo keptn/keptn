@@ -552,7 +552,7 @@ jobs:
   helm_charts_build:
     needs: prepare_ci_run
     name: Build Helm Charts
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') # || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
