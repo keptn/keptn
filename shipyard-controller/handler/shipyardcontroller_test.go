@@ -670,7 +670,8 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	sequenceTriggeredEvent := getArtifactDeliveryTriggeredEvent()
+	err := sc.HandleIncomingEvent(sequenceTriggeredEvent)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -853,7 +854,13 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	// check if dev.artifact-delivery.finished has been sent
-	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "dev", nil)
+	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "dev", func(t *testing.T, event models.Event) bool {
+		if event.Triggeredid != sequenceTriggeredEvent.ID {
+			t.Error("expected triggeredid dev.artifact-delivery.finished to match ID of dev.artifact-delivery.triggered event")
+			return true
+		}
+		return false
+	})
 	if done {
 		return
 	}
