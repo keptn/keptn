@@ -40,7 +40,7 @@ var crServiceCmd = &cobra.Command{
 			return errors.New("required argument SERVICENAME not set")
 		}
 
-		if !keptncommon.ValididateUnixDirectoryName(args[0]) {
+		if !keptncommon.ValidateUnixDirectoryName(args[0]) {
 			return errors.New("Service name contains special character(s)." +
 				"The service name has to be a valid Unix directory name. For details see " +
 				"https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/")
