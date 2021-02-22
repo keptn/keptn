@@ -83,7 +83,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             )
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe(project => {
-              this.dataService.loadServices(project);
               this.dataService.loadRoots(project);
             });
 

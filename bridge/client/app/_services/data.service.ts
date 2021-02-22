@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {BehaviorSubject, forkJoin, from, Observable, Subject, timer, of} from "rxjs";
-import {debounce, filter, map, mergeMap, take, toArray} from "rxjs/operators";
+import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
+import {filter, map, mergeMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -21,7 +21,7 @@ export class DataService {
   private _projects = new BehaviorSubject<Project[]>(null);
   private _roots = new BehaviorSubject<Root[]>(null);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
-  private _keptnInfo = new BehaviorSubject<Object>(null);
+  private _keptnInfo = new BehaviorSubject<any>(null);
   private _rootsLastUpdated: Object = {};
   private _tracesLastUpdated: Object = {};
 
@@ -101,65 +101,26 @@ export class DataService {
   }
 
   public loadProjects() {
-    // @ts-ignore
     this.apiService.getProjects(this._keptnInfo.getValue().bridgeInfo.projectsPageSize||50)
       .pipe(
-        debounce(() => timer(10000)),
         map(result => result.projects),
-        mergeMap(projects =>
-          from(projects).pipe(
-            mergeMap((project) =>
-              from(project.stages).pipe(
-                mergeMap(
-                  // @ts-ignore
-                  stage => this.apiService.getServices(project.projectName, stage.stageName, this._keptnInfo.getValue().bridgeInfo.servicesPageSize||50)
-                    .pipe(
-                      map(result => result.services),
-                      map(services => services.map(service => Service.fromJSON(service))),
-                      map(services => ({ ...stage, services}))
-                    )
-                ),
-                toArray(),
-                map(stages => stages.map(stage => Stage.fromJSON(stage))),
-                map(stages => {
-                  project.stages = project.stages.map(s => stages.find(stage => stage.stageName == s.stageName));
-                  return project;
-                })
-              )
-            ),
-            toArray(),
-            map(val => projects)
-          )
-        ),
         map(projects => projects.map(project => Project.fromJSON(project)))
       ).subscribe((projects: Project[]) => {
-      this._projects.next([...this._projects.getValue() ? this._projects.getValue() : [], ...projects]);
+      this._projects.next(projects);
     }, (err) => {
       this._projects.next([]);
     });
   }
 
-  public loadServices(project: Project) {
-    from(project.stages).pipe(
-      mergeMap(
-        // @ts-ignore
-        stage => this.apiService.getServices(project.projectName, stage.stageName, this._keptnInfo.getValue().bridgeInfo.servicesPageSize||50)
-          .pipe(
-            map(result => result.services),
-            map(services => services.map(service => Service.fromJSON(service))),
-            map(services => ({ ...stage, services}))
-          )
-      ),
-      toArray(),
-      map(stages => stages.map(stage => Stage.fromJSON(stage)))
-    ).subscribe((stages: Stage[]) => {
-      project.stages.forEach((stage: Stage) => {
-        stage.services.forEach((service: Service) => {
-          service.deployedImage = stages.find(s => s.stageName == stage.stageName).services.find(s => s.serviceName == service.serviceName).deployedImage;
-        });
-      });
-    }, (err) => {
-      this._projects.next([]);
+  public loadProject(projectName) {
+    this.apiService.getProject(projectName)
+      .pipe(
+        map(project => Project.fromJSON(project))
+      ).subscribe((project: Project) => {
+        let projects = this._projects.getValue();
+        let index = projects.findIndex(p => p.projectName == projectName);
+        projects.splice((index < 0) ? projects.length : index, (index < 0) ? 0 : 1, project);
+        this._projects.next([...projects]);
     });
   }
 
@@ -167,45 +128,45 @@ export class DataService {
     let fromTime: Date = this._rootsLastUpdated[project.projectName];
     this._rootsLastUpdated[project.projectName] = new Date();
 
-    this.apiService.getRoots(project.projectName, null, fromTime ? fromTime.toISOString() : null)
-      .pipe(
-        debounce(() => timer(10000)),
-        map(response => {
-          this._rootsLastUpdated[project.projectName] = new Date(response.headers.get("date"));
-          return response.body;
-        }),
-        map(result => result.events||[]),
-        mergeMap((roots) =>
-          from(roots).pipe(
-            mergeMap(
-              root => {
-                return this.apiService.getTraces(root.shkeptncontext, root.data.project)
-                  .pipe(
-                    map(response => {
-                      this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
-                      return response.body;
-                    }),
-                    map(result => result.events||[]),
-                    map(this.traceMapper),
-                    map(traces => ({ ...root, traces}))
-                  )
-              }
+    from(project.services).pipe(
+      mergeMap(
+        service => this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
+          .pipe(
+            map(result => result.body.events||[]),
+            mergeMap((roots) =>
+              from(roots).pipe(
+                mergeMap(
+                  root => {
+                    return this.apiService.getTraces(root.shkeptncontext, root.data.project)
+                      .pipe(
+                        map(response => {
+                          this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+                          return response.body;
+                        }),
+                        map(result => result.events||[]),
+                        map(this.traceMapper),
+                        map(traces => ({ ...root, traces}))
+                      )
+                  }
+                ),
+                toArray()
+              )
             ),
-            toArray()
+            map(roots => roots.map(root => Root.fromJSON(root)))
           )
-        ),
-        map(roots => roots.map(root => Root.fromJSON(root)))
-      )
-      .subscribe((roots: Root[]) => {
-        project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
-        project.getServices().forEach(service => {
-          service.roots = project.sequences.filter(s => s.getService() == service.serviceName);
-        });
-        this._roots.next(project.sequences);
-        roots.forEach(root => {
-          this.updateApprovals(root);
-        })
+      ),
+      toArray(),
+      map(roots => roots.reduce((result, roots) => result.concat(roots), []))
+    ).subscribe((roots: Root[]) => {
+      project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
+      project.getServices().forEach(service => {
+        service.roots = project.sequences.filter(s => s.getService() == service.serviceName);
       });
+      this._roots.next(project.sequences);
+      roots.forEach(root => {
+        this.updateApprovals(root);
+      });
+    });
   }
 
   public loadTraces(root: Root) {
@@ -296,8 +257,6 @@ export class DataService {
         let trigger = result.find(t => {
           if(trace.triggeredid)
             return t.id == trace.triggeredid;
-          else
-            return trace.isFinished() && t.getShortType() == trace.getShortType() && t.data.stage == trace.data.stage;
         });
 
         if(trigger)
