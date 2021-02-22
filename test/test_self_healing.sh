@@ -10,13 +10,13 @@ UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}
 PROJECT="self-healing-project"
 SERVICE="frontend"
 
-function cleanup() {
+function print_logs() {
   # print logs of dynatrace-sli-service
   echo "Logs from: remediation-service"
   kubectl -n ${KEPTN_NAMESPACE} logs svc/remediation-service -c remediation-service
 }
 
-trap cleanup EXIT SIGINT
+trap print_logs ERR EXIT
 ########################################################################################################################
 # Pre-requisites
 ########################################################################################################################
