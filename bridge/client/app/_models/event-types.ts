@@ -9,7 +9,7 @@ export enum EventTypes {
   EVALUATION_TRIGGERED = 'sh.keptn.event.evaluation.triggered',
   EVALUATION_STARTED = 'sh.keptn.event.evaluation.started',
   EVALUATION_FINISHED = 'sh.keptn.event.evaluation.finished',
-  EVALUATION_INVALIDATED = 'sh.keptn.events.evaluation.invalidated',
+  EVALUATION_INVALIDATED = 'sh.keptn.event.evaluation.invalidated',
   START_SLI_RETRIEVAL = 'sh.keptn.internal.event.get-sli',
   SLI_RETRIEVAL_DONE = 'sh.keptn.internal.event.get-sli.done',
   DONE = 'sh.keptn.events.done',
