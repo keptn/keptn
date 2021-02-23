@@ -87,7 +87,7 @@ spec:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'
           - name: PUBSUB_TOPIC
-            value: 'sh.keptn.>'
+            value: 'sh.keptn.event.problem.open,sh.keptn.event.evaluation.finished,sh.keptn.event.action.finished'
           - name: PUBSUB_RECIPIENT
             value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH
