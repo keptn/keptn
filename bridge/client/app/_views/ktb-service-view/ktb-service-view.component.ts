@@ -62,7 +62,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
         this.serviceName = params.serviceName;
         this.currentRoot = null;
         this.selectedStage = null;
-        this.contextId = null;
         this.filterEventTypes = [];
 
         this.project$ = this.dataService.getProject(params.projectName);
