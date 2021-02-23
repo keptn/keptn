@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import {Observable} from "rxjs";
-import {map} from "rxjs/operators";
+import {Observable, Subject} from "rxjs";
+import {map, takeUntil} from "rxjs/operators";
 
 import {Trace} from '../../_models/trace';
 import {Project} from "../../_models/project";
@@ -9,6 +9,7 @@ import {ClipboardService} from '../../_services/clipboard.service';
 import {DataService} from "../../_services/data.service";
 
 import {DateUtil} from '../../_utils/date.utils';
+import {ActivatedRoute} from '@angular/router';
 
 @Directive({
   selector: `ktb-task-item-detail, [ktb-task-item-detail], [ktbTaskItemDetail]`,
@@ -22,10 +23,11 @@ export class KtbTaskItemDetail {
   templateUrl: './ktb-task-item.component.html',
   styleUrls: ['./ktb-task-item.component.scss'],
 })
-export class KtbTaskItemComponent {
-
+export class KtbTaskItemComponent implements OnInit, OnDestroy {
+  private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project>;
   public _task: Trace;
+  public isExpanded: boolean;
 
   @ViewChild('taskPayloadDialog')
   public taskPayloadDialog: TemplateRef<any>;
@@ -47,7 +49,8 @@ export class KtbTaskItemComponent {
               private dataService: DataService,
               private dialog: MatDialog,
               private clipboard: ClipboardService,
-              public dateUtil: DateUtil) {
+              public dateUtil: DateUtil,
+              private route: ActivatedRoute) {
     this.project$ = this.dataService.projects.pipe(
       map(projects => projects ? projects.find(project => {
         return project.projectName === this._task.getProject();
@@ -77,6 +80,20 @@ export class KtbTaskItemComponent {
       return false;
     }
     return true;
+  }
+
+  ngOnInit() {
+    this.route.params
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(params => {
+        if (this.route.snapshot.params['eventId'] === this.task.id) {
+          this.isExpanded = true;
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next();
   }
 
 }

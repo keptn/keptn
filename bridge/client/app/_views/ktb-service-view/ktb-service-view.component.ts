@@ -1,10 +1,17 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation
+} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {Location} from "@angular/common";
 import {DtCheckboxChange} from "@dynatrace/barista-components/checkbox";
 
 import {Observable, Subject, Subscription, timer} from "rxjs";
-import {filter, startWith, switchMap, take, takeUntil} from "rxjs/operators";
+import {filter, take, takeUntil} from "rxjs/operators";
 
 import * as moment from "moment";
 
@@ -25,7 +32,7 @@ import {DateUtil} from "../../_utils/date.utils";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbServiceViewComponent implements OnInit {
+export class KtbServiceViewComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project>;
@@ -35,14 +42,12 @@ export class KtbServiceViewComponent implements OnInit {
   public projectName: string;
   public serviceName: string;
   public contextId: string;
-  public eventId: string;
 
   public selectedStage: string;
 
   public eventTypes: string[] = [];
   public filterEventTypes: string[] = [];
 
-  private _rootEventsTimerInterval = 30;
   private _tracesTimerInterval = 10;
   private _tracesTimer: Subscription = Subscription.EMPTY;
 
@@ -52,15 +57,15 @@ export class KtbServiceViewComponent implements OnInit {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-        this.projectName = params["projectName"];
-        this.serviceName = params["serviceName"];
-        this.contextId = params["contextId"];
-        this.eventId = params["eventId"];
+        this.contextId = params.shkeptncontext;
+        this.projectName = params.projectName;
+        this.serviceName = params.serviceName;
         this.currentRoot = null;
         this.selectedStage = null;
+        this.contextId = null;
         this.filterEventTypes = [];
 
-        this.project$ = this.dataService.getProject(params['projectName']);
+        this.project$ = this.dataService.getProject(params.projectName);
 
         this.project$
           .pipe(
@@ -72,47 +77,34 @@ export class KtbServiceViewComponent implements OnInit {
             this.selectedStage = null;
           });
 
-        timer(0, this._rootEventsTimerInterval*1000)
-          .pipe(
-            startWith(0),
-            switchMap(() => this.project$),
-            filter(project => !!project && !!project.getServices())
-          )
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(project => {
-            this.dataService.loadServices(project);
-            this.dataService.loadRoots(project);
-          });
-
         this.dataService.roots
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe(roots => {
-            if(roots) {
-              if(!this.currentRoot)
-                this.currentRoot = roots.find(r => r.shkeptncontext == params["contextId"]);
-              this.eventTypes = this.eventTypes.concat(roots.map(root => root.getLabel())).filter((eventType, i, eventTypes) => eventTypes.indexOf(eventType) === i);
+            if (roots) {
+              if (!this.currentRoot) {
+                this.currentRoot = roots.find(r => r.shkeptncontext === params.shkeptncontext);
+              }
+              if (!this.selectedStage) {
+                this.selectedStage = params.stage;
+              }
+              this.eventTypes = this.eventTypes.concat(roots.map(root => root.getLabel()))
+                                .filter((eventType, i, eventTypes) => eventTypes.indexOf(eventType) === i);
             }
-            if(this.currentRoot && !this.eventId)
-              this.eventId = this.currentRoot.traces[this.currentRoot.traces.length-1].id;
-
             this._changeDetectorRef.markForCheck();
           });
       });
   }
 
-  selectRoot(event: any): void {
+  selectRoot(event: {root: Root, stage: string}): void {
+    this.contextId = event.root.shkeptncontext;
     this.projectName = event.root.getProject();
     this.serviceName = event.root.getService();
-    this.contextId = event.root.data.shkeptncontext;
-    this.eventId = null;
-    if(event.stage) {
-      let focusEvent = event.root.traces.find(trace => trace.data.stage == event.stage);
-      let routeUrl = this.router.createUrlTree(['/project', focusEvent.getProject(), focusEvent.getService(), focusEvent.shkeptncontext, focusEvent.id]);
-      this.eventId = focusEvent.id;
+    if (event.stage) {
+      const focusEvent = event.root.traces.find(trace => trace.data.stage === event.stage);
+      const routeUrl = this.router.createUrlTree(['/project', focusEvent.getProject(), 'service', focusEvent.getService(), 'context', focusEvent.shkeptncontext, 'stage', focusEvent.getStage()]);
       this.location.go(routeUrl.toString());
     } else {
-      let routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), event.root.getService(), event.root.shkeptncontext]);
-      this.eventId = event.root.traces[event.root.traces.length-1].id;
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'service', event.root.getService(), 'context', event.root.shkeptncontext]);
       this.location.go(routeUrl.toString());
     }
 
@@ -123,7 +115,7 @@ export class KtbServiceViewComponent implements OnInit {
   loadTraces(root: Root): void {
     this._tracesTimer.unsubscribe();
     if(moment().subtract(1, 'day').isBefore(root.time)) {
-      this._tracesTimer = timer(0, this._tracesTimerInterval*1000)
+      this._tracesTimer = timer(0, this._tracesTimerInterval * 1000)
         .subscribe(() => {
           this.dataService.loadTraces(root);
         });
@@ -163,11 +155,12 @@ export class KtbServiceViewComponent implements OnInit {
     return moment().subtract(1, 'day').isAfter(root.time);
   }
 
-  selectStage(stageName: string) {
-    if(this.selectedStage !== stageName) {
-      this.selectedStage = stageName;
-      this._changeDetectorRef.markForCheck();
-    }
+  selectStage(event: {stageName: string, triggerByEvent: boolean}) {
+    const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', this.serviceName, 'context', this.contextId, 'stage', event.stageName]);
+    this.location.go(routeUrl.toString());
+
+    this.selectedStage = event.stageName;
+    this._changeDetectorRef.markForCheck();
   }
 
   ngOnDestroy(): void {
