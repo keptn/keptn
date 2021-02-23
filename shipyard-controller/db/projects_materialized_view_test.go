@@ -790,6 +790,18 @@ func Test_updateServiceInStage(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Expect error if nil project is provided",
+			args: args{
+				project: nil,
+				stage:   "dev",
+				service: "test-service",
+				fn: func(service *models.ExpandedService) error {
+					return nil
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
