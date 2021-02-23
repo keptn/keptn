@@ -153,7 +153,7 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 func validateServiceName(projectName, stage, serviceName string) error {
 	allowedLength := serviceNameMaxLen - len(projectName) - len(stage) - len("generated")
 	if len(serviceName) > allowedLength {
-		return fmt.Errorf("Service name need to be less than %d characters", allowedLength)
+		return fmt.Errorf("service name needs to be less than %d characters", allowedLength)
 	}
 
 	return nil
