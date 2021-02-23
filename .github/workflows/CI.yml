@@ -565,10 +565,10 @@ jobs:
         run: |
           if [[ "$BRANCH" == "master" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}"
+            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}"
           else
             # just use VERSION for the image tag
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}"
+            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}"
           fi
 
       - name: Upload Helm Chart as an artifact
