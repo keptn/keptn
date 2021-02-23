@@ -12,6 +12,7 @@ import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
+import {Project} from "../_models/project";
 
 @Injectable({
   providedIn: 'root'
@@ -80,6 +81,11 @@ export class ApiService {
       url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
+  }
+
+  public getProject(projectName: string): Observable<Project> {
+    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
+    return this.http.get<Project>(url);
   }
 
   public getMetadata(): Observable<Metadata> {
