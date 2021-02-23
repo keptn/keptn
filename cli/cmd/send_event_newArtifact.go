@@ -21,12 +21,13 @@ import (
 )
 
 type newArtifactStruct struct {
-	Project   *string `json:"project"`
-	Service   *string `json:"service"`
-	Stage     *string `json:"stage"`
-	Image     *string `json:"image"`
-	Tag       *string `json:"tag"`
-	Sequence  *string `json:"sequence"`
+	Project   *string            `json:"project"`
+	Service   *string            `json:"service"`
+	Stage     *string            `json:"stage"`
+	Image     *string            `json:"image"`
+	Tag       *string            `json:"tag"`
+	Sequence  *string            `json:"sequence"`
+	Labels    *map[string]string `json:"labels"`
 	Watch     *bool
 	WatchTime *int
 	Output    *string
@@ -64,6 +65,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			Watch:     newArtifact.Watch,
 			WatchTime: newArtifact.WatchTime,
 			Output:    newArtifact.Output,
+			Labels:    newArtifact.Labels,
 		}
 		return doTriggerDeliveryPreRunCheck(delivery)
 	},
@@ -78,6 +80,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			Watch:     newArtifact.Watch,
 			WatchTime: newArtifact.WatchTime,
 			Output:    newArtifact.Output,
+			Labels:    newArtifact.Labels,
 		}
 		return doTriggerDelivery(delivery)
 	},
@@ -107,6 +110,8 @@ func init() {
 
 	newArtifact.Sequence = newArtifactCmd.Flags().StringP("sequence", "", "", "The name of the sequence to be triggered")
 	newArtifactCmd.MarkFlagRequired("sequence")
+
+	newArtifact.Labels = newArtifactCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
 
 	newArtifact.Output = AddOutputFormatFlag(newArtifactCmd)
 	newArtifact.Watch = AddWatchFlag(newArtifactCmd)
