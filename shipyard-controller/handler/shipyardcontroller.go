@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -409,6 +410,17 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 			Result:  keptnv2.ResultFailed,
 			Message: msg,
 		}, taskSequenceName)
+	}
+
+	// update the shipyard content of the project
+	shipyardContent, err := yaml.Marshal(shipyard)
+	if err != nil {
+		// log the error but continue
+		sc.logger.Error(fmt.Sprintf("could not encode shipyard file of project %s: %s", eventScope.Project, err.Error()))
+	}
+	if err := sc.eventsDbOperations.UpdateShipyard(eventScope.Project, string(shipyardContent)); err != nil {
+		// log the error but continue
+		sc.logger.Error(fmt.Sprintf("could not update shipyard content of project %s: %s", eventScope.Project, err.Error()))
 	}
 
 	// validate the shipyard version - only shipyard files following the '0.2.0' spec are supported by the shipyard controller
