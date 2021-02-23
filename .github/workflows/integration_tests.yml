@@ -743,6 +743,6 @@ jobs:
           body_path: release-notes.txt
           files: |
             dist/keptn-cli/keptn-*.tar.gz
-            dist/keptn-installer/keptn*.tgz
+            dist/keptn-installer/*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

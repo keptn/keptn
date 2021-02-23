@@ -14,25 +14,29 @@ if [ -z "$IMAGE_TAG" ]; then
   IMAGE_TAG=$VERSION
 fi
 
-BASE_PATH=installer/manifests
-
-helm repo add nats https://nats-io.github.io/k8s/helm/charts/
-helm dependency build ${BASE_PATH}/keptn/charts/control-plane
 
 # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
 find -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${IMAGE_TAG}/g" {} \;
 find -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
-
 # replace "keptnSpecVersion: latest" with "keptnSpecVersion: $KEPTN_SPEC_VERSION" in all values.yaml files
 find -name values.yaml -exec sed -i -- "s/keptnSpecVersion: latest/keptnSpecVersion: ${KEPTN_SPEC_VERSION}/g" {} \;
 
-helm package ${BASE_PATH}/keptn --app-version $VERSION --version $VERSION
+mkdir keptn-charts/
+
+# ####################
+# INSTALLER HELM CHART
+# ####################
+INSTALLER_BASE_PATH=installer/manifests
+
+helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+helm dependency build ${INSTALLER_BASE_PATH}/keptn/charts/control-plane
+
+helm package ${INSTALLER_BASE_PATH}/keptn --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then
   echo "Error packing installer, exiting..."
   exit 1
 fi
 
-mkdir keptn-charts/
 mv keptn-${VERSION}.tgz keptn-charts/keptn-installer-${VERSION}.tgz
 
 # verify the chart
@@ -42,6 +46,28 @@ if [ $? -ne 0 ]; then
   echo "::error Helm Chart has templating errors - exiting"
   exit 1
 fi
+
+# ####################
+# HELM-SVC HELM CHART
+# ####################
+HELM_SVC_BASE_PATH=helm-service
+
+helm package ${HELM_SVC_BASE_PATH}/chart --app-version $VERSION --version $VERSION
+if [ $? -ne 0 ]; then
+  echo "Error packaging installer, exiting..."
+  exit 1
+fi
+
+mv helm-service-${VERSION}.tgz keptn-charts/helm-service-${VERSION}.tgz
+
+#verify the chart
+helm template --debug keptn-charts/helm-service-${VERSION}.tgz
+
+if [ $? -ne 0 ]; then
+  echo "::error Helm Chart has templating errors -exiting"
+  exit 1
+fi
+
 
 # download index.yaml chart
 #gsutil cp gs://keptn-installer/index.yaml keptn-charts/index.yaml
@@ -60,5 +86,6 @@ fi
 
 echo "Generated files:"
 echo " - keptn-charts/keptn-installer-${VERSION}.tgz"
+echo " - keptn-charts/helm-service-${VERSION}.tgz"
 
 
