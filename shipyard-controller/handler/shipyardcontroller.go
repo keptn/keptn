@@ -409,7 +409,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 			Status:  keptnv2.StatusErrored,
 			Result:  keptnv2.ResultFailed,
 			Message: msg,
-		}, taskSequenceName)
+		}, taskSequenceName, event.ID)
 	}
 
 	// update the shipyard content of the project
@@ -436,7 +436,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 			Status:  keptnv2.StatusErrored,
 			Result:  keptnv2.ResultFailed,
 			Message: "Found shipyard.yaml with invalid version. Please upgrade the shipyard.yaml of the project using the Keptn CLI: 'keptn upgrade project " + eventScope.Project + " --shipyard'. '",
-		}, taskSequenceName)
+		}, taskSequenceName, event.ID)
 	}
 
 	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
@@ -479,7 +479,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 	if err != nil && err == errNoFurtherTaskForSequence {
 
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
-		err = sc.completeTaskSequence(event.Shkeptncontext, eventScope, taskSequence.Name)
+		err = sc.completeTaskSequence(event.Shkeptncontext, eventScope, taskSequence.Name, inputEvent.ID)
 		if err != nil {
 			sc.logger.Error("Could not complete task sequence " + eventScope.Stage + "." + taskSequence.Name + " with KeptnContext " + event.Shkeptncontext)
 			return err
@@ -547,7 +547,7 @@ func (sc *shipyardController) triggerNextTaskSequences(event models.Event, event
 	return nil
 }
 
-func (sc *shipyardController) completeTaskSequence(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
+func (sc *shipyardController) completeTaskSequence(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName, triggeredID string) error {
 	err := sc.taskSequenceRepo.DeleteTaskSequenceMapping(keptnContext, eventScope.Project, eventScope.Stage, taskSequenceName)
 	if err != nil {
 		return err
@@ -573,7 +573,7 @@ func (sc *shipyardController) completeTaskSequence(keptnContext string, eventSco
 		}
 	}
 
-	return sc.sendTaskSequenceFinishedEvent(keptnContext, eventScope, taskSequenceName)
+	return sc.sendTaskSequenceFinishedEvent(keptnContext, eventScope, taskSequenceName, triggeredID)
 }
 
 var errNoFurtherTaskForSequence = errors.New("no further task for sequence")
@@ -713,7 +713,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 	return common.SendEvent(event)
 }
 
-func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName string) error {
+func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string, eventScope *keptnv2.EventData, taskSequenceName, triggeredID string) error {
 	source, _ := url.Parse("shipyard-controller")
 	eventType := eventScope.Stage + "." + taskSequenceName
 
@@ -722,6 +722,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(keptnContext string,
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", keptnContext)
+	event.SetExtension("triggeredid", triggeredID)
 	event.SetData(cloudevents.ApplicationJSON, eventScope)
 
 	return common.SendEvent(event)
