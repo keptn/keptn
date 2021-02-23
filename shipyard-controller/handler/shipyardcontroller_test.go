@@ -1502,6 +1502,92 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 	fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "", nil)
 }
 
+// Updating shipyard content fails -> event handling should still happen
+func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc := getTestShipyardController()
+
+	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+
+	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
+		return errors.New("updating shipyard failed")
+	}
+
+	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
+	defer mockCS.Close()
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
+			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+		},
+		func(meb *fake.EventBroker) {
+
+		})
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+	if len(mockEV.ReceivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.ReceivedEvents))
+		return
+	}
+	fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "", nil)
+}
+
+// Updating event of service fails -> event handling should still happen
+func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc := getTestShipyardController()
+
+	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+
+	eventsOperations.UpdateEventOfServiceFunc = func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
+		return errors.New("updating event of service failed")
+	}
+
+	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
+	defer mockCS.Close()
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
+			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+		},
+		func(meb *fake.EventBroker) {
+
+		})
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+	if len(mockEV.ReceivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.ReceivedEvents))
+		return
+	}
+	fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "", nil)
+}
+
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
 	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
