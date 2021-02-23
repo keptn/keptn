@@ -71,7 +71,7 @@ fi
 # ####################
 # JMETER-SVC HELM CHART
 # ####################
-JMETER_SVC_BASE_PATH=helm-service
+JMETER_SVC_BASE_PATH=jmeter-service
 
 helm package ${JMETER_SVC_BASE_PATH}/chart --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then
