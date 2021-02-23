@@ -359,6 +359,9 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 	if err != nil {
 		mv.Logger.Error("Could not update service " + eventData.Service + " in stage " + eventData.Stage + " in project " + eventData.Project + ". Could not load project: " + err.Error())
 		return err
+	} else if existingProject == nil {
+		mv.Logger.Error("Could not update service " + eventData.Service + " in stage " + eventData.Stage + " in project " + eventData.Project + ": Project not found.")
+		return ErrProjectNotFound
 	}
 
 	contextInfo := &models.EventContext{
@@ -480,6 +483,9 @@ func (mv *ProjectsMaterializedView) getAllDeploymentTriggeredEvents(eventData *k
 type serviceUpdateFunc func(service *models.ExpandedService) error
 
 func updateServiceInStage(project *models.ExpandedProject, stage string, service string, fn serviceUpdateFunc) error {
+	if project == nil {
+		return errors.New("cannot update service in nil project")
+	}
 	for _, stg := range project.Stages {
 		if stg.StageName == stage {
 			serviceIndex := -1
