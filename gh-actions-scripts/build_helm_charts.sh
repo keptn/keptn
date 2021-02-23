@@ -83,9 +83,6 @@ fi
 #gsutil cp keptn-charts/keptn-${VERSION}.tgz gs://keptn-installer/keptn-${VERSION}.tgz
 
 
-
 echo "Generated files:"
 echo " - keptn-charts/keptn-installer-${VERSION}.tgz"
 echo " - keptn-charts/helm-service-${VERSION}.tgz"
-
-
