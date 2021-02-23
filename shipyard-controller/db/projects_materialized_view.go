@@ -361,6 +361,7 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 		return err
 	} else if existingProject == nil {
 		mv.Logger.Error("Could not update service " + eventData.Service + " in stage " + eventData.Stage + " in project " + eventData.Project + ": Project not found.")
+		return ErrProjectNotFound
 	}
 
 	contextInfo := &models.EventContext{
