@@ -228,19 +228,19 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.Status = "info"
 		}
 
-		if !isPassed {
-			if objective.Warning != nil && len(objective.Warning) > 0 {
-				isWarning, warningTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
-				if isWarning {
-					sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
-					sliEvaluationResult.Status = "warning"
-				}
-			} else {
-				isWarning = false
+		if objective.Warning != nil && len(objective.Warning) > 0 {
+			isWarning, warningTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
+			if !isPassed && isWarning {
+				sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
+				sliEvaluationResult.Status = "warning"
 			}
+		} else {
+			isWarning = false
 		}
 
-		sliEvaluationResult.Targets = append(warningTargets, passTargets...)
+		sliEvaluationResult.PassTargets = passTargets
+		sliEvaluationResult.WarningTargets = warningTargets
+		sliEvaluationResult.KeySLI = objective.KeySLI
 
 		if !isPassed && !isWarning {
 			if objective.KeySLI {

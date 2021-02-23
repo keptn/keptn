@@ -33,7 +33,7 @@ fi
 
 
 # list of images to be checked
-IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "gatekeeper-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller")
+IMAGES=("api" "bridge2" "configuration-service" "openshift-route-service" "distributor" "approval-service" "helm-service" "jmeter-service" "lighthouse-service" "mongodb-datastore" "remediation-service" "shipyard-controller")
 # additional old images that we want to keep
 ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader" "shipyard-service" "wait-service" "pitometer-service")
 # Older than version 0.5

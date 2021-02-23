@@ -144,8 +144,8 @@ jobs:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
-          CLOUDSDK_REGION: "us-central1"
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
           BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
@@ -335,7 +335,7 @@ jobs:
           # verify deployments for continuous delivery
           if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
             verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "approval-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
           fi
@@ -395,6 +395,16 @@ jobs:
           QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
           QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
         run: test/test_quality_gates_standalone.sh
+
+      - name: Test Quality Gates Backwards compatibility
+        id: test_quality_gates_backwards_compatibility
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_quality_gates_backwards_compatibility.sh
 
       - name: Test Self Healing
         id: test_self_healing
@@ -457,6 +467,17 @@ jobs:
       - name: Debug - Get Keptn Pods
         run: kubectl -n ${KEPTN_NAMESPACE} get pods
 
+      # for debugging etc... it makes sense to have the support archive attached as an artifact
+      - name: keptn generate support-archive
+        if: always()
+        env:
+          SUPPORT_ARCHIVE_FILENAME: keptn-support-archive-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}
+        timeout-minutes: 5
+        run: |
+          mkdir support-archive/
+          echo "y" | keptn generate support-archive -n ${KEPTN_NAMESPACE}
+          mv support-archive/keptn*.zip support-archive/${SUPPORT_ARCHIVE_FILENAME}.zip
+
       - name: Uninstall Keptn
         timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
@@ -481,14 +502,14 @@ jobs:
         run: kubectl get deployments --all-namespaces -owide
 
       - name: Cleanup GKE cluster
-        if: env.CLOUD_PROVIDER == 'GKE'
+        if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
         timeout-minutes: 5
         env:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
-          CLOUDSDK_REGION: "us-central1"
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
           CLUSTER_NAME_NIGHTLY: ${{ steps.install_gke.outputs.CLUSTER_NAME_NIGHTLY }}
         run: test/utils/gke_delete_cluster.sh
 
@@ -505,7 +526,7 @@ jobs:
           TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -515,6 +536,12 @@ jobs:
           name: test-report
           path: test-*.txt
 
+      - name: Upload support archive as an artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: support-archive
+          path: support-archive/*.zip
 
   #######################################################################
   # This job publishes a draft release based on the previous steps      #
@@ -549,8 +576,8 @@ jobs:
         run: |
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Self Healing  |  Delivery Assistant  | Continuous Delivery |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | -------------- | -------------------- | ------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Quality Gates Backwards Compat. | Self Healing  |  Delivery Assistant  | Continuous Delivery |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | ---------------------------------|-------------- | -------------------- | ------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report

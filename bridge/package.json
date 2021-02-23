@@ -61,7 +61,7 @@
     "highlight.js": "^10.4.1",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",
-    "marked": "^1.2.0",
+    "marked": "^2.0.0",
     "moment": "^2.29.0",
     "morgan": "^1.10.0",
     "ngx-moment": "^3.5.0",

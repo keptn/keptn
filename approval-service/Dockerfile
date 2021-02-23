@@ -4,7 +4,7 @@
 FROM golang:1.13.7-alpine as builder
 ARG version=develop
 
-WORKDIR /go/src/github.com/keptn/keptn/gatekeeper-service
+WORKDIR /go/src/github.com/keptn/keptn/approval-service
 
 # Force the go compiler to use modules 
 ENV GO111MODULE=on
@@ -30,7 +30,7 @@ COPY . .
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o gatekeeper-service
+RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o approval-service
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
@@ -39,7 +39,7 @@ FROM alpine:3.11
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/keptn/keptn/gatekeeper-service/gatekeeper-service /gatekeeper-service
+COPY --from=builder /go/src/github.com/keptn/keptn/approval-service/approval-service /approval-service
 
 EXPOSE 8080
 
@@ -52,4 +52,4 @@ ENV GOTRACEBACK=all
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
-CMD ["/gatekeeper-service"]
+CMD ["/approval-service"]

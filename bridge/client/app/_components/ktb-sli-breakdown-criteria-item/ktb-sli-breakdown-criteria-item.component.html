@@ -1,0 +1,4 @@
+<span class="ml-1" *ngFor="let target of targets; let isLast = last">
+  <span [class.error-line]="target.violated" [class.error]="target.violated">{{target.criteria}}</span>
+  {{ (!isLast ? ' and ' : '')}}
+</span>

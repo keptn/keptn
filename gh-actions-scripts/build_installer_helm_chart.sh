@@ -2,6 +2,7 @@
 
 VERSION=$1
 IMAGE_TAG=$2
+KEPTN_SPEC_VERSION=$3
 
 if [ -z "$VERSION" ]; then
   echo "No Version set, exiting..."
@@ -21,6 +22,9 @@ helm dependency build ${BASE_PATH}/keptn/charts/control-plane
 # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
 find -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${IMAGE_TAG}/g" {} \;
 find -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
+
+# replace "keptnSpecVersion: latest" with "keptnSpecVersion: $KEPTN_SPEC_VERSION" in all values.yaml files
+find -name values.yaml -exec sed -i -- "s/keptnSpecVersion: latest/keptnSpecVersion: ${KEPTN_SPEC_VERSION}/g" {} \;
 
 helm package ${BASE_PATH}/keptn --app-version $VERSION --version $VERSION
 if [ $? -ne 0 ]; then

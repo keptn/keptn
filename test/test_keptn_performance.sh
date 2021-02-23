@@ -125,7 +125,7 @@ keptn add-resource --project=$SELF_MONITORING_PROJECT --resource=./test/assets/s
 
 # create services
 
-SERVICES=("bridge" "eventbroker-go" "configuration-service" "mongodb-datastore" "gatekeeper-service" "remediation-service" "lighthouse-service" "statistics-service" "gatekeeper-service" "dynatrace-sli-service" "jmeter-service" "dynatrace-service" "api-service" "api-gateway-nginx")
+SERVICES=("bridge" "eventbroker-go" "configuration-service" "mongodb-datastore" "approval-service" "remediation-service" "lighthouse-service" "statistics-service" "approval-service" "dynatrace-sli-service" "jmeter-service" "dynatrace-service" "api-service" "api-gateway-nginx")
 
 for SERVICE in "${SERVICES[@]}"
 do
@@ -164,7 +164,7 @@ do
     for evaluation_nr in $(seq 1 ${NR_EVALUATIONS_PER_SERVICE})
     do
       nr_evaluations=$((nr_evaluations+1))
-      send_start_evaluation_request project-${project_nr} hardening service-${service_nr}
+      trigger_evaluation_request project-${project_nr} hardening service-${service_nr}
     done
 
     for invalidation_nr in $(seq 1 ${NR_INVALIDATIONS_PER_SERVICE})

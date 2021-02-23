@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -105,64 +104,5 @@ func TestNewArtifact(t *testing.T) {
 		break
 	case <-time.After(5 * time.Second):
 		t.Error("event was not sent")
-	}
-}
-
-type DockerImg struct {
-	Image string
-	Tag   string
-}
-
-func TestCheckImageAvailability(t *testing.T) {
-
-	validImgs := []DockerImg{{"docker.io/keptnexamples/carts", "0.7.0"},
-		{"docker.io/keptnexamples/carts:0.7.0", ""},
-		{"keptnexamples/carts", ""},
-		{"keptnexamples/carts", "0.7.0"},
-		{"keptnexamples/carts:0.7.0", ""},
-		{"127.0.0.1:10/keptnexamples/carts", "0.7.5"},
-		{"127.0.0.1:10/keptnexamples/carts:0.7.5", ""},
-		{"httpd", ""}}
-
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	for _, validImg := range validImgs {
-		*newArtifact.Project = "sockshop"
-		*newArtifact.Service = "carts"
-		*newArtifact.Image = validImg.Image
-		*newArtifact.Tag = validImg.Tag
-
-		err := newArtifactCmd.PreRunE(newArtifactCmd, []string{})
-
-		if err != nil {
-			t.Errorf(unexpectedErrMsg, err)
-		}
-	}
-}
-
-func TestCheckImageNonAvailability(t *testing.T) {
-
-	invalidImgs := []DockerImg{{"docker.io/keptnexamples/carts:0.7.5", ""}}
-
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	for _, validImg := range invalidImgs {
-		*newArtifact.Project = "sockshop"
-		*newArtifact.Service = "carts"
-		*newArtifact.Image = validImg.Image
-		*newArtifact.Tag = validImg.Tag
-
-		err := newArtifactCmd.PreRunE(newArtifactCmd, []string{})
-
-		Expected := "Provided image not found: Tag not found"
-		if err == nil || err.Error() != Expected {
-			t.Errorf("Error actual = %v, and Expected = %v.", err, Expected)
-		}
 	}
 }

@@ -87,7 +87,7 @@ echo "Testing quality gates standalone for project $PROJECT"
 
 echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./test/assets/shipyard-quality-gates.yaml
-verify_test_step $? "keptn create project {$PROJECT} - failed"
+verify_test_step $? "keptn create project ${PROJECT} failed"
 
 
 # verify that the project has been created via the Keptn API
@@ -106,7 +106,7 @@ fi
 ###########################################
 
 keptn create service $SERVICE --project=$PROJECT
-verify_test_step $? "keptn create service ${SERVICE} - failed"
+verify_test_step $? "keptn create service ${SERVICE} failed"
 
 ########################################################################################################################
 # Testcase 0.a: Send a start-evaluation event for a service that does not exist
@@ -114,7 +114,7 @@ verify_test_step $? "keptn create service ${SERVICE} - failed"
 
 echo "Sending start-evaluation event for service 'wrong-service' in stage hardening"
 
-response=$(send_start_evaluation_request $PROJECT hardening wrong-service)
+response=$(trigger_evaluation_request $PROJECT hardening wrong-service)
 
 # check if the error response tells us that the service does not exist
 if [[ "${response,,}" != *"service not found"* ]]; then
@@ -129,7 +129,7 @@ fi
 
 echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-stage'"
 
-response=$(send_start_evaluation_request $PROJECT wrong-stage wrong-service)
+response=$(trigger_evaluation_request $PROJECT wrong-stage wrong-service)
 
 # check if the error response tells us that the stage does not exist
 if [[ "${response,,}" != *"stage not found"* ]]; then
@@ -143,7 +143,7 @@ fi
 
 echo "Sending start-evaluation event for service 'wrong-service' in stage 'wrong-service' in project 'wrong-project'"
 
-response=$(send_start_evaluation_request wrong-project wrong-stage wrong-service)
+response=$(trigger_evaluation_request wrong-project wrong-stage wrong-service)
 
 # check if the error response tells us that the project does not exist
 if [[ "${response,,}" != *"project not found"* ]]; then
@@ -159,7 +159,7 @@ fi
 
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a evaluation.finished event
@@ -191,7 +191,7 @@ echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 # Create a config map containing the default sli-provider for the lighthouse service
 kubectl create configmap -n ${KEPTN_NAMESPACE} lighthouse-config --from-literal=sli-provider=dynatrace
 
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a get-sli event
@@ -227,7 +227,7 @@ verify_test_step $? "keptn add-resource sli.yaml - failed"
 
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
 
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a evaluation.finished event
@@ -273,7 +273,7 @@ verify_test_step $? "ERROR: Could not find ConfigMap lighthouse-config-$PROJECT 
 
 # send the start evaluation command again
 echo "Sending start-evaluation event for service $SERVICE in stage hardening"
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 30
 
 # wait until a evaluation.finished event is retrieved
@@ -323,7 +323,7 @@ verify_using_jq "$response" ".data.result" "fail"
 kubectl -n ${KEPTN_NAMESPACE} create secret generic dynatrace-credentials-${PROJECT} --from-literal="DT_TENANT=$QG_INTEGRATION_TEST_DT_TENANT" --from-literal="DT_API_TOKEN=$QG_INTEGRATION_TEST_DT_API_TOKEN"
 
 # send the start evaluation command again
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 30
 
 # wait until a evaluation.finished event is retrieved
@@ -400,7 +400,7 @@ fi
 sleep 30
 
 # send start-evaluation event
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 30
 
 # wait until a evaluation.finished event is retrieved
@@ -479,7 +479,7 @@ keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --res
 verify_test_step $? "keptn add-resource slo.yaml - failed"
 
 # send start-evaluation event
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 30
 
 # wait until a evaluation.finished event is retrieved
@@ -560,7 +560,7 @@ keptn add-resource --project=$PROJECT --stage=hardening --service=$SERVICE --res
 verify_test_step $? "keptn add-resource sli.yaml - failed"
 
 # send start-evaluation event
-keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 30
 
 # wait until a evaluation.finished event is retrieved
@@ -642,7 +642,7 @@ verify_test_step $? "keptn add-resource slo.yaml - failed"
 
 # Send the first evaluation event
 
-first_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+first_keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a evaluation.finished event
@@ -661,8 +661,9 @@ verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 
 first_event_id=$(echo "${response}" | jq -r ".id")
+first_event_triggeredid=$(echo "${response}" | jq -r ".triggeredid")
 
-second_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+second_keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a evaluation.finished event
@@ -684,10 +685,10 @@ verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first
 
 # Send the invalidated event for the first evaluation
 
-send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_id $first_keptn_context_id
+send_evaluation_invalidated_event $PROJECT "hardening" $SERVICE $first_event_triggeredid $first_keptn_context_id
 sleep 10
 
-third_keptn_context_id=$(send_start_evaluation_event $PROJECT hardening $SERVICE)
+third_keptn_context_id=$(trigger_evaluation $PROJECT hardening $SERVICE)
 sleep 10
 
 # try to fetch a evaluation.finished event
@@ -706,7 +707,6 @@ verify_using_jq "$response" ".data.stage" "hardening"
 verify_using_jq "$response" ".data.service" "${SERVICE}"
 verify_using_jq "$response" ".data.result" "pass"
 verify_using_jq "$response" ".data.evaluation.comparedEvents|contains([\"${first_event_id}\"])" "false"
-
 
 echo "Quality gates standalone tests done ✓"
 

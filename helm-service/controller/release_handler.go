@@ -77,14 +77,6 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 				h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
 				return
 			}
-		} else {
-			h.getKeptnHandler().Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s",
-				e.Service, e.Stage, e.Project))
-			gitVersion, err = h.rollbackDeployment(e.EventData)
-			if err != nil {
-				h.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, h.getFinishedEventDataForError(e.EventData, err))
-				return
-			}
 		}
 	} else {
 		h.getKeptnHandler().Logger.Info(fmt.Sprintf(
@@ -99,30 +91,6 @@ func (h *ReleaseHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 	h.getKeptnHandler().Logger.Info(fmt.Sprintf("Finished release for service %s in stage %s and project %s", e.Service, e.Stage, e.Project))
-}
-
-func (h *ReleaseHandler) rollbackDeployment(e keptnv2.EventData) (string, error) {
-
-	canaryWeightTo0Updater := configurationchanger.NewCanaryWeightManipulator(h.mesh, 0)
-	genChart, gitVersion, err := configurationchanger.NewConfigurationChanger(h.getConfigServiceURL()).UpdateChart(e,
-		true, canaryWeightTo0Updater)
-	if err != nil {
-		return "", err
-	}
-
-	// Upgrade generated chart
-	if err := h.upgradeChart(genChart, e, keptnevents.Duplicate); err != nil {
-		return "", err
-	}
-
-	userChart, _, err := h.getUserChart(e)
-	if err != nil {
-		return "", err
-	}
-	if err := h.upgradeChartWithReplicas(userChart, e, keptnevents.Duplicate, 0); err != nil {
-		return "", err
-	}
-	return gitVersion, nil
 }
 
 func (h *ReleaseHandler) promoteDeployment(e keptnv2.EventData) (string, error) {
