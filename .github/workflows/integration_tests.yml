@@ -713,7 +713,7 @@ jobs:
             console.log(`Trying to fetch DRAFT release by tag '${tag}'...`);
 
             try {
-              let draftRelease;
+              // get all releases (including drafts)
               let releases = await github.repos.listReleases({
                 owner: context.repo.owner,
                 repo: context.repo.repo
@@ -725,12 +725,20 @@ jobs:
                 if (release.draft) {
                   // found a draft release
                   console.log(`🥳 Found a draft release with id ${release.id}, deleting it`);
+                  console.log(`Release Tag Name: ${release.tag_name}`);
+                  console.log(`Release Draft: ${release.draft}`);
+                  console.log(`Release URL: ${release.html_url}`);
 
-                  github.repos.deleteRelease({
+                  console.log(`::error::Draft release found, please delete it manually!`);
+
+                  return 1;
+                  // ToDo: Commenetd out as there seems to be a problem with deleting releases
+
+                  /*github.repos.deleteRelease({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     release_id: release.id
-                  });
+                  });*/
 
                   console.log("Deleted! -> okay");
                 } else {
