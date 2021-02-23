@@ -10,6 +10,10 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/operations"
 )
 
+const (
+	serviceNameMaxLen = 53
+)
+
 //go:generate moq -pkg fake -skip-ensure -out ./fake/servicemanager.go . IServiceManager
 type IServiceManager interface {
 	CreateService(projectName string, params *operations.CreateServiceParams) error
@@ -93,6 +97,13 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 	}
 
 	for _, stage := range stages {
+		sm.logger.Info(fmt.Sprintf("Validating service %s", *params.ServiceName))
+		if err := validateServiceName(projectName, stage.StageName, *params.ServiceName); err != nil {
+			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.ServiceName, stage.StageName, projectName, err.Error()))
+		}
+	}
+
+	for _, stage := range stages {
 		sm.logger.Info(fmt.Sprintf("Checking if service %s already exists in project %s", *params.ServiceName, projectName))
 		// check if the service exists, do not continue if yes
 		service, _ := sm.GetService(projectName, stage.StageName, *params.ServiceName)
@@ -135,6 +146,15 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 		}
 	}
 	sm.logger.Info(fmt.Sprintf("deleted service %s from project %s", serviceName, projectName))
+
+	return nil
+}
+
+func validateServiceName(projectName, stage, serviceName string) error {
+	allowedLength := serviceNameMaxLen - len(projectName) - len(stage) - len("generated")
+	if len(serviceName) > allowedLength {
+		return fmt.Errorf("service name needs to be less than %d characters", allowedLength)
+	}
 
 	return nil
 }
