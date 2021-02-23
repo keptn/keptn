@@ -157,7 +157,7 @@ export class ApiService {
       .post<any>(url, {
         "shkeptncontext": evaluation.shkeptncontext,
         "type": EventTypes.EVALUATION_INVALIDATED,
-        "triggeredid": evaluation.id,
+        "triggeredid": evaluation.triggeredid,
         "source": "https://github.com/keptn/keptn/bridge#evaluation.invalidated",
         "data": {
           "project": evaluation.data.project,
