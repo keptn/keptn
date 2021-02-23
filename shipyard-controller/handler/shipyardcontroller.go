@@ -90,7 +90,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 		return err
 	}
 
-	if eventData.Project != "" {
+	if eventData.Project != "" && eventData.Stage != "" && eventData.Service != "" {
 		go func() {
 			common.LockProject(eventData.Project)
 			defer common.UnlockProject(eventData.Project)

@@ -1499,6 +1499,45 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 	fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "", nil)
 }
 
+// Scenario 5: Received .triggered event for project with invalid shipyard version -> send .finished event with result = fail
+func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
+	sc := getTestShipyardController()
+
+	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
+	defer mockCS.Close()
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
+			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+		},
+		func(meb *fake.EventBroker) {
+
+		})
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
+
+	event := getArtifactDeliveryTriggeredEvent()
+
+	event.Data = keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "",
+	}
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(event)
+
+	assert.NotNil(t, err)
+
+	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+
+	assert.Equal(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
+}
+
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
 	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
