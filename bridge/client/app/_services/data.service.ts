@@ -104,7 +104,15 @@ export class DataService {
     this.apiService.getProjects(this._keptnInfo.getValue().bridgeInfo.projectsPageSize||50)
       .pipe(
         map(result => result.projects),
-        map(projects => projects.map(project => Project.fromJSON(project)))
+        map(projects =>
+          projects.map(project => {
+            project.stages = project.stages.map(stage => {
+              stage.services = stage.services.map(service => Service.fromJSON(service));
+              return Stage.fromJSON(stage);
+            });
+            return Project.fromJSON(project);
+          })
+        )
       ).subscribe((projects: Project[]) => {
       this._projects.next(projects);
     }, (err) => {
