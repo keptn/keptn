@@ -1,0 +1,19 @@
+{{- if .Values.remoteControlPlane.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "jmeter-service.fullname" . }}-test-api-connection"
+  labels:
+  {{- include "jmeter-service.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      args:
+        - wget
+        - '--header=x-token: {{ .Values.remoteControlPlane.api.token }}'
+        - {{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api/v1/metadata
+  restartPolicy: Never
+  {{- end -}}

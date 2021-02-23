@@ -1,4 +1,4 @@
-apiVersion: skaffold/v1beta13
+apiVersion: skaffold/v2beta10
 kind: Config
 build:
   artifacts:
@@ -7,7 +7,11 @@ build:
         dockerfile: Dockerfile
         buildArgs:
           debugBuild: true
+
 deploy:
-  kubectl:
-    manifests:
-      - deploy/service.yaml
+  helm:
+    releases:
+      - name: keptn-helm-service
+        artifactOverrides:
+          image: keptn/helm-service
+        chartPath: chart

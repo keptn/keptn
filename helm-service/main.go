@@ -58,7 +58,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			EnableWebsocket: true,
 			ServiceName:     &serviceName,
 		},
-		EventBrokerURL:          os.Getenv("EVENTBROKER"),
 		ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 	})
 	if err != nil {
