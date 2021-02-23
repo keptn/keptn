@@ -49,7 +49,6 @@ func NewHandler(event cloudevents.Event) (Handler, error) {
 		return nil, err
 	}
 
-	keptnHandler.Logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
 	remediationHandler := &RemediationHandler{
 		Keptn:           keptnHandler,
 		RemediationRepo: &db.RemediationMongoDBRepo{},

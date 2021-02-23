@@ -26,7 +26,7 @@ const (
 	rootEventCollectionSuffix         = "-rootEvents"
 	invalidatedEventsCollectionSuffix = "-invalidatedEvents"
 	unmappedEventsCollectionName      = "keptnUnmappedEvents"
-	keptn07EvaluationDoneEventType = "sh.keptn.events.evaluation-done"
+	keptn07EvaluationDoneEventType    = "sh.keptn.events.evaluation-done"
 )
 
 var (
@@ -772,7 +772,6 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 }
 
 func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
-	invalidatedEventType := getInvalidatedEventType(params.EventType)
 
 	matchStage := bson.D{
 		{"$match", matchFields},
@@ -782,19 +781,21 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 		{"$lookup", bson.M{
 			"from": getInvalidatedCollectionName(collectionName),
 			"let": bson.M{
-				"event_id":   "$id",
-				"event_type": "$type",
+				"event_id":          "$id",
+				"event_triggeredid": "$triggeredid",
 			},
 			"pipeline": []bson.M{
 				{
 					"$match": bson.M{
 						"$expr": bson.M{
-							"$and": []bson.M{
+							"$or": []bson.M{
 								{
+									// backwards-compatibility to 0.7.x -> triggeredid of .invalidated event refers to the id of the evaluation-done event
 									"$eq": []string{"$triggeredid", "$$event_id"},
 								},
 								{
-									"$eq": []string{"$type", invalidatedEventType},
+									// logic for 0.8: triggeredid of .invalidated event refers to the triggeredid of the evaluation.finished event (both are related to the same .triggered event)
+									"$eq": []string{"$triggeredid", "$$event_triggeredid"},
 								},
 							},
 						},

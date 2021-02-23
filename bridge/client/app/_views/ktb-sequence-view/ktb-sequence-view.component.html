@@ -16,20 +16,14 @@
           <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
             <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
               <p class="m-0">
-                <span class="bold" [textContent]="currentSequence.getLabel()"></span>
-                <span *ngIf="!currentSequence.isFinished(); else finishedText"> started</span>
-                <ng-template #finishedText>
-                  <span *ngIf="!currentSequence.isFaulty(); else faultyText"> succeeded</span>
-                  <ng-template #faultyText>
-                    <span> failed</span>
-                  </ng-template>
-                </ng-template>
+                <span class="bold" [textContent]="currentSequence.getLabel()"></span>&nbsp;
+                <span [textContent]="currentSequence.getStatusLabel()"></span>
               </p>
               <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
             </div>
           </div>
         </dt-info-group-title>
-        <p class="m-0 mb-1"><span class="bold">Keptn ID: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
+        <p class="m-0 mb-1"><span class="bold">Context: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
         <p class="m-0">
           <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName(); else noImageName" [textContent]="currentSequence.getShortImageName()"></dt-tag>
           <ng-template #noImageName>
@@ -38,7 +32,7 @@
         </p>
       </dt-info-group>
     </div>
-    <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" (selectedStageChange)="selectedStage = $event;"></ktb-sequence-timeline>
+    <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
     <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>

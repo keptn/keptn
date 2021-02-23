@@ -91,7 +91,7 @@
         <p class="m-0" *ngIf="_selectedEvaluationData.data.result != _selectedEvaluationData.data.evaluation.result" [textContent]="_selectedEvaluationData.data.evaluation.result"></p>
       </dt-consumption-label>
     </dt-consumption>
-    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults" [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults"></ktb-sli-breakdown>
+    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults" [score]="_selectedEvaluationData.data.evaluation.score" [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults"></ktb-sli-breakdown>
   </div>
 </div>
 <ng-template #sloDialog let-data>

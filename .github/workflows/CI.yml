@@ -30,7 +30,7 @@ jobs:
       BUILD_BRIDGE: ${{ steps.check_modified_files.outputs.BUILD_BRIDGE }}
       BUILD_JMETER: ${{ steps.check_modified_files.outputs.BUILD_JMETER }}
       BUILD_HELM_SVC: ${{ steps.check_modified_files.outputs.BUILD_HELM_SVC }}
-      BUILD_GATEKEEPER_SVC: ${{ steps.check_modified_files.outputs.BUILD_GATEKEEPER_SVC }}
+      BUILD_APPROVAL_SVC: ${{ steps.check_modified_files.outputs.BUILD_APPROVAL_SVC }}
       BUILD_DISTRIBUTOR: ${{ steps.check_modified_files.outputs.BUILD_DISTRIBUTOR }}
       BUILD_EVENTBROKER: ${{ steps.check_modified_files.outputs.BUILD_EVENTBROKER }}
       BUILD_SHIPYARD_CONTROLLER: ${{ steps.check_modified_files.outputs.BUILD_SHIPYARD_CONTROLLER }}
@@ -46,6 +46,7 @@ jobs:
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
       BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
       VERSION: ${{ steps.get_version.outputs.VERSION }}
+      KEPTN_SPEC_VERSION: ${{ steps.get_version.outputs.KEPTN_SPEC_VERSION }}
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
@@ -55,6 +56,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
+          submodules: 'true'
 
       - name: Load CI Environemnt from .ci_env
         id: load_ci_env
@@ -90,7 +92,7 @@ jobs:
           BUILD_BRIDGE=false
           BUILD_JMETER=false
           BUILD_HELM_SVC=false
-          BUILD_GATEKEEPER_SVC=false
+          BUILD_APPROVAL_SVC=false
           BUILD_DISTRIBUTOR=false
           BUILD_EVENTBROKER=false
           BUILD_SHIPYARD_CONTROLLER=false
@@ -136,8 +138,8 @@ jobs:
               BUILD_HELM_SVC=true
             fi
 
-            if [[ $changed_file == "${GATEKEEPER_SVC_FOLDER}"* ]]; then
-              BUILD_GATEKEEPER_SVC=true
+            if [[ $changed_file == "${APPROVAL_SVC_FOLDER}"* ]]; then
+              BUILD_APPROVAL_SVC=true
             fi
 
             if [[ $changed_file == "${DISTRIBUTOR_FOLDER}"* ]]; then
@@ -181,7 +183,7 @@ jobs:
           echo "##[set-output name=BUILD_BRIDGE;]$(echo ${BUILD_BRIDGE})"
           echo "##[set-output name=BUILD_JMETER;]$(echo ${BUILD_JMETER})"
           echo "##[set-output name=BUILD_HELM_SVC;]$(echo ${BUILD_HELM_SVC})"
-          echo "##[set-output name=BUILD_GATEKEEPER_SVC;]$(echo ${BUILD_GATEKEEPER_SVC})"
+          echo "##[set-output name=BUILD_APPROVAL_SVC;]$(echo ${BUILD_APPROVAL_SVC})"
           echo "##[set-output name=BUILD_DISTRIBUTOR;]$(echo ${BUILD_DISTRIBUTOR})"
           echo "##[set-output name=BUILD_EVENTBROKER;]$(echo ${BUILD_EVENTBROKER})"
           echo "##[set-output name=BUILD_SHIPYARD_CONTROLLER;]$(echo ${BUILD_SHIPYARD_CONTROLLER})"
@@ -229,9 +231,16 @@ jobs:
             fi
           fi
 
+          # determine keptn spec version
+          git submodule update --init
+          cd specification
+          KEPTN_SPEC_VERSION=$(git describe --tags)
+
           echo "VERSION=${VERSION}"
+          echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
 
           echo "##[set-output name=VERSION;]$(echo ${VERSION})"
+          echo "##[set-output name=KEPTN_SPEC_VERSION;]$(echo ${KEPTN_SPEC_VERSION})"
       - name: Get current date and time
         id: get_datetime
         run: |
@@ -324,12 +333,12 @@ jobs:
           bash <(curl -s https://codecov.io/bash) -c -F helm-service
         working-directory: ./helm-service
 
-      - name: Test gatekeeper svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
+      - name: Test approval svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
         run: |
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
-        working-directory: ./gatekeeper-service
+          bash <(curl -s https://codecov.io/bash) -c -F approval-service
+        working-directory: ./approval-service
 
       - name: Test distributor
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
@@ -387,7 +396,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v2.1.4
+        uses: actions/setup-node@v2.1.5
         with:
           node-version: 12.x
       - name: Checkout Code
@@ -543,11 +552,12 @@ jobs:
   helm_charts_build:
     needs: prepare_ci_run
     name: Build Helm Charts
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') # || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      KEPTN_SPEC_VERSION: ${{ needs.prepare_ci_run.outputs.KEPTN_SPEC_VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
@@ -565,10 +575,10 @@ jobs:
         run: |
           if [[ "$BRANCH" == "master" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}"
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
           else
             # just use VERSION for the image tag
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}"
+            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
           fi
 
       - name: Upload Helm Chart as an artifact
@@ -661,15 +671,15 @@ jobs:
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
           DOCKER_FOLDER: ${{ env.HELM_SVC_FOLDER }}
 
-      - id: docker_build_gatekeeper_service
-        name: Docker Build gatekeeper-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
+      - id: docker_build_approval_service
+        name: Docker Build approval-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
         uses: keptn/gh-action-build-docker-image@master
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.APPROVAL_SVC_FOLDER }}
 
       - id: docker_build_os_route_service
         name: Docker Build openshift-route-service

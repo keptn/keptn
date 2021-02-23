@@ -63,7 +63,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be installed, used and uninstalled in (default keptn).")
+		"Specify the namespace where Keptn should be installed, used and uninstalled in")
 	cobra.OnInitialize(initConfig)
 }
 

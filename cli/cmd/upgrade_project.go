@@ -93,7 +93,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 		shipyardResource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
 		if err != nil {
-			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *newArtifact.Project, err.Error())
+			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", projectName, err.Error())
 		}
 
 		// first, check if the shipyard already has been upgraded
@@ -108,7 +108,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 
 		shipyard := &keptn.Shipyard{}
 		if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
-			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", *newArtifact.Project, err.Error())
+			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", projectName, err.Error())
 		}
 
 		// check if there are any stages in the old shipyard.
@@ -202,75 +202,101 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 	for index, stage := range shipyard.Stages {
 
 		passStrategy, warningStrategy := getApprovalStrategyForStage(index, shipyard)
-		newStage := keptnv2.Stage{
-			Name: stage.Name,
-			Sequences: []keptnv2.Sequence{
+		deploymentStrategy := shipyard.Stages[index].DeploymentStrategy
+
+		deliverySequence := keptnv2.Sequence{
+			Name:        "delivery",
+			TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery"),
+			Tasks: []keptnv2.Task{
 				{
-					Name:     "artifact-delivery",
-					Triggers: getSequenceTriggerForStage(index, shipyard, "artifact-delivery"),
-					Tasks: []keptnv2.Task{
-						{
-							Name: "deployment",
-							Properties: map[string]string{
-								"deploymentstrategy": stage.DeploymentStrategy,
-							},
-						},
-						{
-							Name: "test",
-							Properties: map[string]string{
-								"teststrategy": stage.TestStrategy,
-							},
-						},
-						{
-							Name: "evaluation",
-						},
-						{
-							Name: "approval",
-							Properties: map[string]string{
-								"pass":    passStrategy,
-								"warning": warningStrategy,
-							},
-						},
-						{
-							Name: "release",
-						},
+					Name: "deployment",
+					Properties: map[string]string{
+						"deploymentstrategy": stage.DeploymentStrategy,
 					},
 				},
-				// add a second artifact-delivery with "direct" deployment strategy
 				{
-					Name:     "artifact-delivery-direct",
-					Triggers: getSequenceTriggerForStage(index, shipyard, "artifact-delivery-direct"),
-					Tasks: []keptnv2.Task{
-						{
-							Name: "deployment",
-							Properties: map[string]string{
-								"deploymentstrategy": "direct",
-							},
-						},
-						{
-							Name: "test",
-							Properties: map[string]string{
-								"teststrategy": stage.TestStrategy,
-							},
-						},
-						{
-							Name: "evaluation",
-						},
-						{
-							Name: "approval",
-							Properties: map[string]string{
-								"pass":    passStrategy,
-								"warning": warningStrategy,
-							},
-						},
-						{
-							Name: "release",
-						},
+					Name: "test",
+					Properties: map[string]string{
+						"teststrategy": stage.TestStrategy,
 					},
+				},
+				{
+					Name: "evaluation",
+				},
+				{
+					Name: "approval",
+					Properties: map[string]string{
+						"pass":    passStrategy,
+						"warning": warningStrategy,
+					},
+				},
+				{
+					Name: "release",
 				},
 			},
 		}
-		upgradedShipyard.Spec.Stages = append(upgradedShipyard.Spec.Stages, newStage)
+
+		// direct delivery sequence for supporting non-canary deployments
+		directDeliverySequence := keptnv2.Sequence{
+			Name:        "delivery-direct",
+			TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery-direct"),
+			Tasks: []keptnv2.Task{
+				{
+					Name: "deployment",
+					Properties: map[string]string{
+						"deploymentstrategy": "direct",
+					},
+				},
+				{
+					Name: "test",
+					Properties: map[string]string{
+						"teststrategy": stage.TestStrategy,
+					},
+				},
+				{
+					Name: "evaluation",
+				},
+				{
+					Name: "approval",
+					Properties: map[string]string{
+						"pass":    passStrategy,
+						"warning": warningStrategy,
+					},
+				},
+				{
+					Name: "release",
+				},
+			},
+		}
+
+		var sequences []keptnv2.Sequence
+		sequences = append(sequences, deliverySequence)
+
+		// only add a rollback sequence for blue-green deployments
+		if deploymentStrategy == "blue_green_service" {
+			rollbackSequence := keptnv2.Sequence{
+				Name: "rollback",
+				TriggeredOn: []keptnv2.Trigger{
+					{
+						Event: getRollbackEventForStage(stage.Name, "delivery"),
+						Selector: keptnv2.Selector{
+							Match: map[string]string{
+								"result": string(keptnv2.ResultFailed),
+							},
+						},
+					},
+				},
+				Tasks: []keptnv2.Task{
+					{
+						Name: "rollback",
+					},
+				},
+			}
+			sequences = append(sequences, rollbackSequence)
+		}
+		sequences = append(sequences, directDeliverySequence)
+
+		upgradedShipyard.Spec.Stages = append(upgradedShipyard.Spec.Stages, keptnv2.Stage{Name: stage.Name, Sequences: sequences})
 	}
 
 	return upgradedShipyard
@@ -284,11 +310,20 @@ func getApprovalStrategyForStage(index int, shipyard *keptn.Shipyard) (string, s
 	return shipyard.Stages[index].ApprovalStrategy.Pass.String(), shipyard.Stages[index].ApprovalStrategy.Warning.String()
 }
 
-func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []string {
+func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []keptnv2.Trigger {
 	if index == 0 {
-		return []string{}
+		return []keptnv2.Trigger{}
 	}
-	return []string{shipyard.Stages[index-1].Name + "." + sequenceName + ".finished"}
+
+	return []keptnv2.Trigger{
+		keptnv2.Trigger{
+			Event: shipyard.Stages[index-1].Name + "." + sequenceName + ".finished",
+		},
+	}
+}
+
+func getRollbackEventForStage(stageName string, sequenceName string) string {
+	return stageName + "." + sequenceName + ".finished"
 }
 
 func checkFromVersion(fromVersion *string) error {

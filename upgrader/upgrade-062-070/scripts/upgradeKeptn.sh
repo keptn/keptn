@@ -49,7 +49,7 @@ API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.tem
 
 USE_CASE=""
 # check if full installation is available
-kubectl -n keptn get svc gatekeeper-service
+kubectl -n keptn get svc approval-service
 
   if [[ $? == '0' ]]; then
       print_debug "Full installation detected. Upgrading CD and CO services"

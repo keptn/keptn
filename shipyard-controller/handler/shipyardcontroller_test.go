@@ -11,6 +11,7 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"reflect"
 	"testing"
@@ -505,7 +506,7 @@ func getStartedEvent(stage string, triggeredID string, eventType string, source 
 	}
 }
 
-func getDeploymentFinishedEvent(stage string, triggeredID string, source string) models.Event {
+func getDeploymentFinishedEvent(stage string, triggeredID string, source string, result keptnv2.ResultType) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentFinishedEventData{
@@ -514,7 +515,8 @@ func getDeploymentFinishedEvent(stage string, triggeredID string, source string)
 				Stage:   stage,
 				Service: "carts",
 				Status:  keptnv2.StatusSucceeded,
-				Result:  keptnv2.ResultPass,
+				Result:  result,
+				Message: "i am a message",
 			},
 			Deployment: keptnv2.DeploymentFinishedData{
 				DeploymentURIsLocal:  []string{"uri-1", "uri-2"},
@@ -595,7 +597,7 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 	}
 }
 
-func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType) models.Event {
+func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType, status keptnv2.StatusType) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationFinishedEventData{
@@ -707,6 +709,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	if done {
 		return
 	}
+
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
@@ -732,7 +735,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	triggeredID, done = sendAndVerifyFinishedEvent(
 		t,
 		sc,
-		getDeploymentFinishedEvent("dev", triggeredID, "test-source"),
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
 		keptnv2.DeploymentTaskName,
 		keptnv2.TestTaskName,
 		mockEV,
@@ -754,6 +757,27 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 			}
 			if len(testData.Deployment.DeploymentURIsPublic) != 2 {
 				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
+				return true
+			}
+
+			// also check if the payload of the .triggered event that started the sequence is present
+
+			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+
+			err = json.Unmarshal(marshal, deploymentEvent)
+			if err != nil {
+				t.Errorf("Expected deployment.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
+				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
+				return true
+			}
+
+			// check if the message property of the previous .finished event has been reset correctly
+			if deploymentEvent.Message != "" {
+				t.Errorf("expected message property to be empty, but got: '%s'", deploymentEvent.Message)
 				return true
 			}
 			return false
@@ -810,8 +834,8 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	}
 
 	// STEP 7
-	// send evaluation.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, "pass"), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
+	// send evaluation.finished event -> result = warning should not abort the task sequence
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning, keptnv2.StatusSucceeded), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
 	if done {
 		return
 	}
@@ -909,17 +933,21 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 10.1
 	// send deployment.finished event 1 with ID 1
-	done = sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1"), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, mockEV, "")
+	done = sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, mockEV, "")
 	if done {
 		return
 	}
 
 	// STEP 10.2
 	// send deployment.finished event 1 with ID 1
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2"), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "", nil)
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "", nil)
 	if done {
 		return
 	}
+
+	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	// make sure that the UpdateEventOfServiceCalls has been called
+	assert.NotEqual(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
 
 // Scenario 2: Partial task sequence execution + triggering of next task sequence. Events are received out of order
@@ -987,7 +1015,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 	triggeredID, done = sendAndVerifyFinishedEvent(
 		t,
 		sc,
-		getDeploymentFinishedEvent("dev", triggeredID, "test-source"),
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
 		keptnv2.DeploymentTaskName,
 		keptnv2.TestTaskName,
 		mockEV,
@@ -1114,7 +1142,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	}
 }
 
-// Scenario 4: Received .finished event with result "fail" - next .triggered event should contain result "fail" as well
+// Scenario 4: Received .finished event with result "fail" - stop task sequence
 func Test_shipyardController_Scenario4(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
@@ -1179,7 +1207,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	triggeredID, done = sendAndVerifyFinishedEvent(
 		t,
 		sc,
-		getDeploymentFinishedEvent("dev", triggeredID, "test-source"),
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
 		keptnv2.DeploymentTaskName,
 		keptnv2.TestTaskName,
 		mockEV,
@@ -1258,26 +1286,166 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 7
 	// send evaluation.finished event with result=fail
-	triggeredID, done = sendAndVerifyFinishedEvent(t,
+
+	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
+		t,
 		sc,
-		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed),
+		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed, keptnv2.StatusSucceeded),
 		keptnv2.EvaluationTaskName,
-		keptnv2.ReleaseTaskName,
+		"dev.artifact-delivery",
 		mockEV,
 		"",
 		func(t *testing.T, e models.Event) bool {
 			marshal, _ := json.Marshal(e.Data)
-			testData := &keptnv2.ReleaseTriggeredEventData{}
+			eventData := &keptnv2.EventData{}
 
-			err := json.Unmarshal(marshal, testData)
+			err := json.Unmarshal(marshal, eventData)
 
 			if err != nil {
-				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
+				t.Errorf("could not convert event data: %v: %s", e.Data, err.Error())
 				return true
 			}
 
-			if testData.Result != keptnv2.ResultFailed {
-				t.Errorf("Result property was not transmitted correctly: %s", testData.Result)
+			if eventData.Status != keptnv2.StatusSucceeded {
+				t.Errorf("Expected Status %s, but got %s", keptnv2.StatusSucceeded, eventData.Status)
+				return true
+			}
+			if eventData.Result != keptnv2.ResultFailed {
+				t.Errorf("Expected Result %s, but got %s", keptnv2.ResultFailed, eventData.Result)
+				return true
+			}
+			return false
+		})
+	if done {
+		return
+	}
+
+}
+
+// Scenario 4: Received .finished event with result "fail" - stop task sequence and trigger next sequence based on result filter
+func Test_shipyardController_TriggerOnFail(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
+	sc := getTestShipyardController()
+
+	mockCS := fake.NewConfigurationService(testShipyardResource)
+	defer mockCS.Close()
+
+	done := false
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockEV := fake.NewEventBroker(t,
+		func(meb *fake.EventBroker, event *models.Event) {
+			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
+		},
+		func(meb *fake.EventBroker) {
+
+		})
+	defer mockEV.Server.Close()
+	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	if err != nil {
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	// check event broker -> should contain deployment.triggered event with properties: [deployment]
+	if len(mockEV.ReceivedEvents) != 1 {
+		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.ReceivedEvents))
+		return
+	}
+	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	if done {
+		return
+	}
+	// check triggeredEvent Collection -> should contain deployment.triggered event
+	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
+		Type:    keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Stage:   common.Stringp("dev"),
+		Service: common.Stringp("carts"),
+		Source:  common.Stringp("shipyard-controller"),
+	}, common.TriggeredEvent)
+	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	if done {
+		return
+	}
+	triggeredID := triggeredEvents[0].ID
+
+	// STEP 2
+	// send deployment.started event
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+	if done {
+		return
+	}
+
+	// STEP 3
+	// send deployment.finished event
+	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
+		t,
+		sc,
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultFailed),
+		keptnv2.DeploymentTaskName,
+		"dev.artifact-delivery",
+		mockEV,
+		"",
+		func(t *testing.T, e models.Event) bool {
+			marshal, _ := json.Marshal(e.Data)
+			eventData := &keptnv2.EventData{}
+
+			err := json.Unmarshal(marshal, eventData)
+
+			if err != nil {
+				t.Errorf("could not convert event data: %v: %s", e.Data, err.Error())
+				return true
+			}
+
+			if eventData.Status != keptnv2.StatusSucceeded {
+				t.Errorf("Expected Status %s, but got %s", keptnv2.StatusSucceeded, eventData.Status)
+				return true
+			}
+			if eventData.Result != keptnv2.ResultFailed {
+				t.Errorf("Expected Result %s, but got %s", keptnv2.ResultFailed, eventData.Result)
+				return true
+			}
+			return false
+		})
+	if done {
+		return
+	}
+
+	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType("dev.rollback"), "dev", func(t *testing.T, event models.Event) bool {
+		marshal, _ := json.Marshal(event.Data)
+		triggeredEvent := map[string]interface{}{}
+
+		err := json.Unmarshal(marshal, &triggeredEvent)
+
+		if err != nil {
+			t.Errorf("Expected dev.rollback.triggered data but could not convert: %v: %s", event.Data, err.Error())
+			return true
+		}
+		return false
+	})
+	if done {
+		return
+	}
+
+	done = fake.ShouldContainEvent(
+		t,
+		mockEV.ReceivedEvents,
+		keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName),
+		"dev",
+		func(t *testing.T, event models.Event) bool {
+			marshal, _ := json.Marshal(event.Data)
+			deploymentEvent := &keptnv2.EventData{}
+
+			err := json.Unmarshal(marshal, deploymentEvent)
+
+			if err != nil {
+				t.Errorf("Expected rollback.triggered data but could not convert: %v: %s", event.Data, err.Error())
 				return true
 			}
 			return false
@@ -1286,6 +1454,11 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	if done {
 		return
 	}
+
+	// hardening.artifact-delivery should not be triggered
+	fake.ShouldNotContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), "hardening")
+	// hardening.deployment should not be triggered
+	fake.ShouldNotContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "hardening")
 
 }
 
@@ -1513,7 +1686,7 @@ metadata:
   name: test-shipyard`
 
 const testShipyardResource = `{
-      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAogICAgLSBuYW1lOiByb2xsYmFjawogICAgICB0YXNrczoKICAgICAgLSBuYW1lOiByb2xsYmFjawogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICAtIGV2ZW50OiBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgICAgIHNlbGVjdG9yOgogICAgICAgICAgICBtYXRjaDoKICAgICAgICAgICAgICByZXN1bHQ6IGZhaWwKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyZWRPbjoKICAgICAgICAtIGV2ZW50OiBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCgogIC0gbmFtZTogcHJvZHVjdGlvbgogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeSAKICAgICAgdHJpZ2dlcmVkT246CiAgICAgICAgLSBldmVudDogaGFyZGVuaW5nLmFydGlmYWN0LWRlbGl2ZXJ5LmZpbmlzaGVkCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOgogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW4KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgIAogICAgLSBuYW1lOiByZW1lZGlhdGlvbgogICAgICB0YXNrczoKICAgICAgLSBuYW1lOiByZW1lZGlhdGlvbgogICAgICAtIG5hbWU6IGV2YWx1YXRpb24=",
       "resourceURI": "shipyard.yaml"
     }`
 
@@ -1535,12 +1708,19 @@ spec:
           kind: functional
       - name: evaluation 
       - name: release 
-
+    - name: rollback
+      tasks:
+      - name: rollback
+      triggeredOn:
+        - event: dev.artifact-delivery.finished
+          selector:
+            match:
+              result: fail
   - name: hardening
     sequences:
     - name: artifact-delivery
-      triggers:
-      - dev.artifact-delivery.finished
+      triggeredOn:
+        - event: dev.artifact-delivery.finished
       tasks:
       - name: deployment
         properties: 
@@ -1550,12 +1730,12 @@ spec:
           kind: performance
       - name: evaluation
       - name: release
-        
+
   - name: production
     sequences:
     - name: artifact-delivery 
-      triggers:
-      - hardening.artifact-delivery.finished
+      triggeredOn:
+        - event: hardening.artifact-delivery.finished
       tasks:
       - name: deployment
         properties:
@@ -1772,8 +1952,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				},
 			},
 			want: &keptnv2.Sequence{
-				Name:     "evaluation",
-				Triggers: nil,
+				Name:        "evaluation",
+				TriggeredOn: nil,
 				Tasks: []keptnv2.Task{
 					{
 						Name:       "evaluation",
@@ -1804,8 +1984,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 								Name: "dev",
 								Sequences: []keptnv2.Sequence{
 									{
-										Name:     "evaluation",
-										Triggers: nil,
+										Name:        "evaluation",
+										TriggeredOn: nil,
 										Tasks: []keptnv2.Task{
 											{
 												Name:       "evaluation",
@@ -1824,8 +2004,8 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				},
 			},
 			want: &keptnv2.Sequence{
-				Name:     "evaluation",
-				Triggers: nil,
+				Name:        "evaluation",
+				TriggeredOn: nil,
 				Tasks: []keptnv2.Task{
 					{
 						Name:       "evaluation",
@@ -1858,6 +2038,214 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				for _, d := range diff {
 					t.Log(d)
 				}
+			}
+		})
+	}
+}
+
+func Test_getTaskSequencesByTrigger(t *testing.T) {
+	type args struct {
+		eventScope            *keptnv2.EventData
+		completedTaskSequence string
+		shipyard              *keptnv2.Shipyard
+	}
+	tests := []struct {
+		name string
+		args args
+		want []NextTaskSequence
+	}{
+		{
+			name: "default behavior - get sequence triggered by result=pass,warning",
+			args: args{
+				eventScope: &keptnv2.EventData{
+					Result: keptnv2.ResultPass,
+					Stage:  "dev",
+				},
+				completedTaskSequence: "artifact-delivery",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: shipyardVersion,
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "artifact-delivery",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+							{
+								Name: "hardening",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name:        "artifact-delivery-2",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []NextTaskSequence{
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event:    "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "hardening",
+				},
+			},
+		},
+		{
+			name: "get sequence triggered by result=fail",
+			args: args{
+				eventScope: &keptnv2.EventData{
+					Result: keptnv2.ResultFailed,
+					Stage:  "dev",
+				},
+				completedTaskSequence: "artifact-delivery",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: shipyardVersion,
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "artifact-delivery",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+							{
+								Name: "hardening",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name: "artifact-delivery-2",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event: "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{
+													Match: map[string]string{
+														"result": string(keptnv2.ResultFailed),
+													},
+												},
+											},
+										},
+										Tasks: nil,
+									},
+								},
+							},
+							{
+								Name: "production",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name: "artifact-delivery-2",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event: "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{
+													Match: map[string]string{
+														"result": string(keptnv2.ResultFailed),
+													},
+												},
+											},
+										},
+										Tasks: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []NextTaskSequence{
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery-2",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event: "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{
+									Match: map[string]string{
+										"result": string(keptnv2.ResultFailed),
+									},
+								},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "hardening",
+				},
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery-2",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event: "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{
+									Match: map[string]string{
+										"result": string(keptnv2.ResultFailed),
+									},
+								},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "production",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getTaskSequencesByTrigger(tt.args.eventScope, tt.args.completedTaskSequence, tt.args.shipyard); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getTaskSequencesByTrigger() = %v, want %v", got, tt.want)
 			}
 		})
 	}

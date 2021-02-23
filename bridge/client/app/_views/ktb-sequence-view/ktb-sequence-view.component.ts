@@ -1,19 +1,27 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
-import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from "@dynatrace/barista-components/experimental/quick-filter";
-import {isObject} from "@dynatrace/barista-components/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation
+} from '@angular/core';
+import {Location} from '@angular/common';
+import {ActivatedRoute, Router} from '@angular/router';
+import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from '@dynatrace/barista-components/experimental/quick-filter';
+import {isObject} from '@dynatrace/barista-components/core';
 
-import {Observable, Subject, Subscription, timer} from "rxjs";
-import {filter, take, takeUntil} from "rxjs/operators";
+import {Observable, Subject, Subscription, timer} from 'rxjs';
+import {filter, take, takeUntil} from 'rxjs/operators';
 
-import * as moment from "moment";
+import * as moment from 'moment';
 
-import {Root} from "../../_models/root";
-import {Stage} from "../../_models/stage";
-import {Project} from "../../_models/project";
+import {Root} from '../../_models/root';
+import {Stage} from '../../_models/stage';
+import {Project} from '../../_models/project';
 
-import {DataService} from "../../_services/data.service";
-import {DateUtil} from "../../_utils/date.utils";
+import {DataService} from '../../_services/data.service';
+import {DateUtil} from '../../_utils/date.utils';
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -26,10 +34,9 @@ import {DateUtil} from "../../_utils/date.utils";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceViewComponent implements OnInit {
+export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-
   /** configuration for the quick filter **/
   private filterFieldData = {
     autocomplete: [
@@ -76,14 +83,14 @@ export class KtbSequenceViewComponent implements OnInit {
   );
   public _seqFilters = [];
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, public dateUtil: DateUtil) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, public dateUtil: DateUtil, private router: Router, private location: Location) { }
 
   ngOnInit() {
+    this.currentSequence = null;
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-        this.project$ = this.dataService.getProject(params['projectName']);
-
+        this.project$ = this.dataService.getProject(params.projectName);
         this.project$
           .pipe(
             filter(project => !!project && !!project.getServices() && !!project.stages && !!project.sequences),
@@ -93,11 +100,16 @@ export class KtbSequenceViewComponent implements OnInit {
             this.currentSequence = null;
             this.selectedStage = null;
             this.updateFilterDataSource(project);
+
+            this._changeDetectorRef.markForCheck();
           });
 
         this.dataService.roots
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe(roots => {
+            if (!this.currentSequence && roots && params.shkeptncontext) {
+              this.selectSequence({root: roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext)});
+            }
             this._changeDetectorRef.markForCheck();
           });
       });
@@ -175,6 +187,16 @@ export class KtbSequenceViewComponent implements OnInit {
 
   showReloadButton(root: Root) {
     return moment().subtract(1, 'day').isAfter(root.time);
+  }
+
+  selectStage(event: {stageName: string, triggerByEvent: boolean}) {
+    if (!event.triggerByEvent) {
+      const routeUrl = this.router.createUrlTree(['/project', this.currentSequence.getProject(), 'sequence', this.currentSequence.shkeptncontext, 'stage', event.stageName]);
+      this.location.go(routeUrl.toString());
+    }
+
+    this.selectedStage = event.stageName;
+    this._changeDetectorRef.markForCheck();
   }
 
   ngOnDestroy(): void {

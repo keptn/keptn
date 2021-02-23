@@ -171,6 +171,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   set evaluationData(evaluationData: any) {
     if (this._evaluationData !== evaluationData) {
       this._evaluationData = evaluationData;
+      this._chartSeries = [];
+      this._heatmapSeries = [];
+      this._selectedEvaluationData = null;
+      this.evaluationDataChanged();
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -178,13 +182,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
-    if(this._evaluationData) {
-      this.dataService.loadEvaluationResults(this._evaluationData);
-      if (this.isInvalidated)
-        this.selectEvaluationData(this._evaluationData);
-      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
-        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
-    }
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((results) => {
@@ -202,6 +199,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           this._changeDetectorRef.markForCheck();
         }
       });
+  }
+
+  private evaluationDataChanged() {
+    if(this._evaluationData) {
+      this.dataService.loadEvaluationResults(this._evaluationData);
+      if (this.isInvalidated)
+        this.selectEvaluationData(this._evaluationData);
+      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+        this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
+    }
   }
 
   private parseSloFile(evaluationData) {

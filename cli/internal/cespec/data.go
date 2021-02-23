@@ -2,10 +2,11 @@ package cespec
 
 import (
 	"encoding/json"
+	"strings"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"strings"
 )
 
 func ce(ceType string, data interface{}) *cloudevents.Event {
@@ -191,11 +192,17 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				Success: true,
 				Message: "a message",
 			},
-			Targets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
+			PassTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
 				Criteria:    "<=+10%",
 				TargetValue: 600,
 				Violated:    true,
 			}},
+			WarningTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
+				Criteria:    "<=+20%",
+				TargetValue: 800,
+				Violated:    true,
+			}},
+			KeySLI: false,
 			Status: "failed",
 		},
 		},
@@ -203,6 +210,8 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 		GitCommit:      "",
 	},
 }
+
+var evaluationInvalidatedEventData = commonEventData
 
 var releaseTriggeredEventData = keptnv2.ReleaseTriggeredEventData{
 	EventData: commonEventData,

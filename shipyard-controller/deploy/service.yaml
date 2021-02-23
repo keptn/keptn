@@ -55,6 +55,8 @@ spec:
                 key: password
           - name: MONGO_DB_NAME
             value: 'keptn'
+          - name: KEPTN_SPEC_VERSION
+            value: "0.2.0"
         ports:
         - containerPort: 8080
         resources:
@@ -85,7 +87,7 @@ spec:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'
           - name: PUBSUB_TOPIC
-            value: 'sh.keptn.>'
+            value: 'sh.keptn.event.problem.open,sh.keptn.event.evaluation.finished,sh.keptn.event.action.finished'
           - name: PUBSUB_RECIPIENT
             value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH

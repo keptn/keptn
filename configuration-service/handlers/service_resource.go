@@ -24,7 +24,28 @@ import (
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc get list of resources for the service
 func GetProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc(
 	params service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResourceParams) middleware.Responder {
-	return middleware.NotImplemented("operation service_resource.GetProjectProjectNameStageStageNameServiceServiceNameResource has not yet been implemented")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, *params.DisableUpstreamSync) {
+		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceNotFound().
+			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
+	}
+
+	logger.Debug("Checking out " + params.StageName + " branch")
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, *params.DisableUpstreamSync)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
+		logger.Error(err.Error())
+		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
+	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
+	result := common.GetPaginatedResources(serviceConfigPath, params.PageSize, params.NextPageKey)
+	return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceOK().WithPayload(result)
 }
 
 // GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc gets the specified resource
