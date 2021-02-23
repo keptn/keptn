@@ -87,7 +87,7 @@ echo "Testing quality gates standalone for project $PROJECT"
 
 echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=./test/assets/shipyard-quality-gates.yaml
-verify_test_step $? "keptn create project {$PROJECT} - failed"
+verify_test_step $? "keptn create project ${PROJECT} failed"
 
 
 # verify that the project has been created via the Keptn API
@@ -106,7 +106,7 @@ fi
 ###########################################
 
 keptn create service $SERVICE --project=$PROJECT
-verify_test_step $? "keptn create service ${SERVICE} - failed"
+verify_test_step $? "keptn create service ${SERVICE} failed"
 
 ########################################################################################################################
 # Testcase 0.a: Send a start-evaluation event for a service that does not exist

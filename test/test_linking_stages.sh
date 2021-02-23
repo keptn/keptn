@@ -30,18 +30,31 @@ echo "KEPTN_ENDPOINT $KEPTN_ENDPOINT"
 PROJECT="linking-stages-project"
 SERVICE="linking-stages-service"
 
+
+# verify that the project does not exist yet via the Keptn API
+response=$(curl -X GET "${KEPTN_ENDPOINT}/controlPlane/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
+
+if [[ "$response" == "${PROJECT}" ]]; then
+  echo "Project ${PROJECT} already exists. Please delete it using:"
+  echo "keptn delete project ${PROJECT}"
+  exit 2
+fi
+
 echo "Installing keptn-sandbox/echo-service"
 kubectl -n ${KEPTN_NAMESPACE} apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/release-0.1.0/deploy/service.yaml
+
 
 echo "Testing link staging..."
 
 echo "Creating a new project without Git upstream"
 keptn create project ${PROJECT} --shipyard=./test/assets/linking_stages_shipyard.yaml
-sleep 1
+verify_test_step $? "keptn create project ${PROJECT} failed."
+sleep 2
 
 echo "Creating a new service"
 keptn create service ${SERVICE} --project ${PROJECT}
-sleep 1
+verify_test_step $? "keptn create service ${SERVICE} failed"
+sleep 2
 
 
 ####################################################################################################################################
