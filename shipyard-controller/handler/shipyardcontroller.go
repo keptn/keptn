@@ -103,22 +103,6 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 				event.Triggeredid,
 			); err != nil {
 				sc.logger.Error(fmt.Sprintf("could not update event for project %s: %s", eventData.Project, err.Error()))
-				return
-			}
-
-			// also update the shipyard in the materialized view because it might have been changed in the meantime
-			shipyard, err := common.GetShipyard(eventData)
-			if err != nil {
-				sc.logger.Error(fmt.Sprintf("could not retrieve shipyard file of project %s: %s", eventData.Project, err.Error()))
-				return
-			}
-			shipyardContent, err := yaml.Marshal(shipyard)
-			if err != nil {
-				sc.logger.Error(fmt.Sprintf("could not encode shipyard file of project %s: %s", eventData.Project, err.Error()))
-				return
-			}
-			if err := sc.eventsDbOperations.UpdateShipyard(eventData.Project, string(shipyardContent)); err != nil {
-				sc.logger.Error(fmt.Sprintf("could not update shipyard content of project %s: %s", eventData.Project, err.Error()))
 			}
 		}()
 	}
@@ -426,6 +410,17 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 			Result:  keptnv2.ResultFailed,
 			Message: msg,
 		}, taskSequenceName)
+	}
+
+	// update the shipyard content of the project
+	shipyardContent, err := yaml.Marshal(shipyard)
+	if err != nil {
+		// log the error but continue
+		sc.logger.Error(fmt.Sprintf("could not encode shipyard file of project %s: %s", eventScope.Project, err.Error()))
+	}
+	if err := sc.eventsDbOperations.UpdateShipyard(eventScope.Project, string(shipyardContent)); err != nil {
+		// log the error but continue
+		sc.logger.Error(fmt.Sprintf("could not update shipyard content of project %s: %s", eventScope.Project, err.Error()))
 	}
 
 	// validate the shipyard version - only shipyard files following the '0.2.0' spec are supported by the shipyard controller
