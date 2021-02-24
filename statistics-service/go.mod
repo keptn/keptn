@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210222113312-2b994d33bb82
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210224095502-4ac660cd2530
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.6.7
 	github.com/ugorji/go v1.1.8 // indirect
