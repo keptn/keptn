@@ -255,7 +255,7 @@ verify_using_jq "$response" ".source" "unleash-service"
 verify_using_jq "$response" ".data.project" "self-healing-project"
 verify_using_jq "$response" ".data.stage" "production"
 verify_using_jq "$response" ".data.service" "$SERVICE"
-verify_using_jq "$response" ".data.action.status" "errored"
+verify_using_jq "$response" ".data.status" "errored"
 # TODO: we need a message field for that
 # verify_using_jq "$response" ".data.action.message" "Action run-snow-wf triggered but not executed after waiting for 2 minutes."
 
