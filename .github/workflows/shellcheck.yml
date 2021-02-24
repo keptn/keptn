@@ -6,7 +6,7 @@ jobs:
   lint_shellscripts:
     runs-on: [ubuntu-latest]
     container:
-      image: koalaman/shellcheck-alpine:latest
+      image: koalaman/shellcheck-alpine:v0.7.1
       options: --entrypoint /bin/sh
     steps:
       - uses: actions/checkout@v1
@@ -14,6 +14,14 @@ jobs:
             #!/usr/bin/env sh
             set -ex
             shellcheck --version
-            find . \
-                -name "*.sh" \
-                -exec shellcheck "{}" ";"
+
+            LIST=sh.list
+
+            # `find -exec` loop masks errors for some reason.
+            find . -name "*.sh" > "$LIST"
+
+            while read -r SHELL_SCRIPT; do
+                shellcheck "$SHELL_SCRIPT";
+
+            # can't do process substitution for `find` because sh
+            done < $LIST
