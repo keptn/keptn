@@ -192,7 +192,7 @@ func init() {
 
 	triggerDeliveryCmd.MarkFlagRequired("image")
 
-	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l",nil, "Additional labels to be provided to the lighthouse service")
+	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 
 	delivery.Tag = triggerDeliveryCmd.Flags().StringP("tag", "", "", `The tag of the image. If no tag is specified, the "latest" tag is used`)
 
