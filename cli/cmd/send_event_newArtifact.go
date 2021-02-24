@@ -111,7 +111,7 @@ func init() {
 	newArtifact.Sequence = newArtifactCmd.Flags().StringP("sequence", "", "", "The name of the sequence to be triggered")
 	newArtifactCmd.MarkFlagRequired("sequence")
 
-	newArtifact.Labels = newArtifactCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided to the lighthouse service")
+	newArtifact.Labels = newArtifactCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 
 	newArtifact.Output = AddOutputFormatFlag(newArtifactCmd)
 	newArtifact.Watch = AddWatchFlag(newArtifactCmd)
