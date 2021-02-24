@@ -21,12 +21,13 @@ import (
 )
 
 type deliveryStruct struct {
-	Project   *string `json:"project"`
-	Service   *string `json:"service"`
-	Stage     *string `json:"stage"`
-	Image     *string `json:"image"`
-	Tag       *string `json:"tag"`
-	Sequence  *string `json:"sequence"`
+	Project   *string            `json:"project"`
+	Service   *string            `json:"service"`
+	Stage     *string            `json:"stage"`
+	Image     *string            `json:"image"`
+	Tag       *string            `json:"tag"`
+	Sequence  *string            `json:"sequence"`
+	Labels    *map[string]string `json:"labels"`
 	Watch     *bool
 	WatchTime *int
 	Output    *string
@@ -111,6 +112,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			Project: *deliveryInputData.Project,
 			Stage:   *deliveryInputData.Stage,
 			Service: *deliveryInputData.Service,
+			Labels:  *deliveryInputData.Labels,
 		},
 		ConfigurationChange: keptnv2.ConfigurationChange{
 			Values: map[string]interface{}{
@@ -184,12 +186,13 @@ func init() {
 
 	delivery.Stage = triggerDeliveryCmd.Flags().StringP("stage", "", "",
 		"The stage containing the service for which a new artifact will be delivered")
-
 	delivery.Image = triggerDeliveryCmd.Flags().StringP("image", "", "", `The image name, e.g.
 "docker.io/<YOUR_ORG>/<YOUR_IMAGE> or quay.io/<YOUR_ORG>/<YOUR_IMAGE>
 "Optionally, you can append a tag using ":<YOUR_TAG>`)
 
 	triggerDeliveryCmd.MarkFlagRequired("image")
+
+	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l",nil, "Additional labels to be provided to the lighthouse service")
 
 	delivery.Tag = triggerDeliveryCmd.Flags().StringP("tag", "", "", `The tag of the image. If no tag is specified, the "latest" tag is used`)
 
