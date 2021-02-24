@@ -13,6 +13,7 @@ trap cleanup EXIT
 
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 

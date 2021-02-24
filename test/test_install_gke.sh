@@ -23,9 +23,10 @@ verify_test_step $? "keptn install --chart-repo=${KEPTN_INSTALLER_REPO} - failed
 
 # authenticate at Keptn API
 KEPTN_API_URL=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
-auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
+auth_at_keptn "$KEPTN_API_URL" "$KEPTN_API_TOKEN"
 
 # install public-gateway.istio-system
 kubectl apply -f - <<EOF
@@ -48,7 +49,7 @@ EOF
 
 # set ingress-hostname params
 INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${INGRESS_IP}.xip.io --from-literal=ingress_port=80 --from-literal=ingress_protocol=http --from-literal=ingress_gateway=public-gateway.istio-system -oyaml --dry-run | kubectl replace -f -
+kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix="${INGRESS_IP}.xip.io" --from-literal=ingress_port=80 --from-literal=ingress_protocol=http --from-literal=ingress_gateway=public-gateway.istio-system -oyaml --dry-run | kubectl replace -f -
 
 kubectl delete pod -n keptn -lapp.kubernetes.io/name=helm-service
 sleep 15

@@ -153,9 +153,9 @@ check_no_open_approvals $PROJECT combi4
 
 # print the response
 echo "Resulting approval.finished event by approval:"
-response=$(get_keptn_event $PROJECT $keptn_context_id_2 sh.keptn.event.combi4.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT "$keptn_context_id_2" sh.keptn.event.combi4.approval.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
 
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".data.project" "$PROJECT"

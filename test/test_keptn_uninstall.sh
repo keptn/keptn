@@ -18,7 +18,7 @@ fi
 
 # delete the namespaces for projects that we onboarded (if they exist)
 echo "Deleting namespaces $PROJECT-dev $PROJECT-staging $PROJECT-production"
-kubectl delete namespace $PROJECT-dev $PROJECT-staging $PROJECT-production || true
+kubectl delete namespace "$PROJECT-dev" "$PROJECT-staging" "$PROJECT-production" || true
 
 # wait for the actual deletion
 sleep 60
