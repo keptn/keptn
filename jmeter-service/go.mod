@@ -7,5 +7,5 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/validate v0.20.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210222113312-2b994d33bb82
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210224092736-e918320e41d6
 )
