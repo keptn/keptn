@@ -1,0 +1,19 @@
+name: shellcheck
+
+on: [push, pull_request]
+
+jobs:
+  lint_shellscripts:
+    runs-on: [ubuntu-latest]
+    container:
+      image: koalaman/shellcheck-alpine:latest
+      options: --entrypoint /bin/sh
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+            #!/usr/bin/env sh
+            set -ex
+            shellcheck --version
+            find . \
+                -name "*.sh" \
+                -exec shellcheck "{}" ";"
