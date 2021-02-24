@@ -1,5 +1,7 @@
 #!/bin/bash
+# shellcheck disable=SC2181
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 echo "y" | keptn uninstall

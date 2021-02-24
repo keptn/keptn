@@ -2,11 +2,12 @@
 
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 # install istio
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.5 sh -
-cd istio-1.6.5
+cd istio-1.6.5 || exit
 export PATH=$PWD/bin:$PATH
 istioctl install --set profile=demo
 
@@ -40,8 +41,9 @@ verify_deployment_in_namespace "mongodb-datastore" "keptn"
 API_PORT=$(kubectl get svc api-gateway-nginx -n keptn -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
 INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
 KEPTN_ENDPOINT=http://${INTERNAL_NODE_IP}:${API_PORT}/api
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
+auth_at_keptn "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN"
 #keptn auth --endpoint=$KEPTN_ENDPOINT --api-token=$KEPTN_API_TOKEN
 
 verify_test_step $? "Could not authenticate at Keptn API"

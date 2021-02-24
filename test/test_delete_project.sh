@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 echo "get services before delete services command:"

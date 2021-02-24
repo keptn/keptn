@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
@@ -39,7 +40,7 @@ echo "Prometheus service deployed successfully"
 rm -rf examples
 git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
 
-cd examples/onboarding-$SERVICE
+cd examples/onboarding-$SERVICE || exit
 
 ###########################################
 # onboard carts                           #
@@ -84,7 +85,7 @@ echo "Prometheus deployed successfully"
 ###########################################
 # generate load on the service            #
 ###########################################
-cd examples/load-generation/cartsloadgen
+cd examples/load-generation/cartsloadgen || exit
 
 kubectl apply -f deploy/cartsloadgen-faulty.yaml
 wait_for_deployment_in_namespace cartsloadgen loadgen

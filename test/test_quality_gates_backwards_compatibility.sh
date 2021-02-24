@@ -1,10 +1,12 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
  source test/utils.sh
 
 # test configuration
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 ########################################################################################################################

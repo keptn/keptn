@@ -1,15 +1,16 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
 PROJECT_NAME=${PROJECT_NAME:-sockshop}
 
 # prepare creds.json file
-cd ./test/assets
+cd ./test/assets || exit
 
 export CLN=$CLUSTER_NAME_NIGHTLY
-export CLZ=$CLOUDSDK_COMPUTE_ZONE	
+export CLZ=$CLOUDSDK_COMPUTE_ZONE
 export PROJ=$PROJECT_NAME
 
 echo "{}" > creds.json # empty credentials file

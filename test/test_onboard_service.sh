@@ -19,7 +19,7 @@ fi
 # test keptn create-project and onboard
 rm -rf examples
 git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
-cd examples/onboarding-carts
+cd examples/onboarding-carts || exit
 
 echo "Creating a new project without Git upstream"
 keptn create project $PROJECT --shipyard=../../test/assets/shipyard_onboard_service.yaml

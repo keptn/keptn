@@ -1,6 +1,8 @@
 #!/bin/bash
+# shellcheck disable=SC2181
 
- source test/utils.sh
+# shellcheck disable=SC1091
+source test/utils.sh
 
 function cleanup() {
   # print logs of dynatrace-sli-service
@@ -41,6 +43,7 @@ PROJECT=${PROJECT:-easytravel}
 SERVICE=${SERVICE:-frontend}
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 ########################################################################################################################
@@ -50,6 +53,7 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojso
 # ensure dynatrace-sli-service is not installed yet
 kubectl -n ${KEPTN_NAMESPACE} get deployment dynatrace-sli-service 2> /dev/null
 
+# shellcheck disable=SC2181
 if [[ $? -eq 0 ]]; then
   echo "Found dynatrace-sli-service. Please uninstall it using:"
   echo "kubectl -n ${KEPTN_NAMESPACE} delete deployment dynatrace-sli-service"
@@ -489,28 +493,28 @@ RETRY=0; RETRY_MAX=30;
 
 while [[ $RETRY -lt $RETRY_MAX ]]; do
   # try to fetch the evaluation.finished event
-  response=$(get_event sh.keptn.event.evaluation.finished ${keptn_context_id} ${PROJECT})
+  response=$(get_event sh.keptn.event.evaluation.finished "${keptn_context_id}" "${PROJECT}")
 
   # check if this contains an error
-  echo $response | grep "No event returned"
+  echo "$response" | grep "No event returned"
 
   if [[ $? -ne 0 ]]; then
     echo "Received an evaluation.finished event, continue ..."
     break
   else
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for evaluation.finished event"
     sleep 10
   fi
 done
 
-if [[ $RETRY == $RETRY_MAX ]]; then
+if [[ "$RETRY" == "$RETRY_MAX" ]]; then
   print_error "evaluation.finished event could not be retrieved"
   exit 1
 fi
 
 # okay, evaluation.finished event retrieved, parse it
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "lighthouse-service"

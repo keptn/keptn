@@ -2,6 +2,7 @@
 
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 echo "{
@@ -20,8 +21,9 @@ oc expose svc/api-gateway-nginx -n keptn --hostname=api.keptn.127.0.0.1.nip.io
 sleep 30
 
 KEPTN_API_URL=http://api.keptn.127.0.0.1.nip.io
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
-auth_at_keptn $KEPTN_API_URL $KEPTN_API_TOKEN
+auth_at_keptn $KEPTN_API_URL "$KEPTN_API_TOKEN"
 #keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN
 
 echo "Keptn installed in version:"

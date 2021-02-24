@@ -3,6 +3,7 @@
 KEPTN_INSTALLER_REPO=${KEPTN_INSTALLER_REPO:-https://storage.googleapis.com/keptn-installer/latest/keptn-0.1.0.tgz}
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 echo "Installing keptn on cluster"
@@ -32,6 +33,7 @@ verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
 API_PORT=$(kubectl get svc api-gateway-nginx -n ${KEPTN_NAMESPACE} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
 INTERNAL_NODE_IP=$(kubectl get nodes -o jsonpath='{ $.items[0].status.addresses[?(@.type=="InternalIP")].address }')
 KEPTN_ENDPOINT="http://${INTERNAL_NODE_IP}:${API_PORT}"/api
+# shellcheck disable=SC1083
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
 
 echo "Trying to authenticate at ${KEPTN_ENDPOINT}/api"

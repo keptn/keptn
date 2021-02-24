@@ -15,7 +15,7 @@ jobs:
             set -ex
             shellcheck --version
 
-            LIST=sh.list
+            LIST=/tmp/shellcheck.list
 
             # `find -exec` loop masks errors for some reason.
             find . -name "*.sh" > "$LIST"

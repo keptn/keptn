@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function timestamp() {
   date +"[%Y-%m-%d %H:%M:%S]"
 }
@@ -14,19 +16,20 @@ function auth_at_keptn() {
 
   echo "Authenticating at $ENDPOINT"
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    keptn auth --endpoint=$ENDPOINT --api-token=$API_TOKEN
+    keptn auth --endpoint="$ENDPOINT" --api-token="$API_TOKEN"
 
+    # shellcheck disable=SC2181
     if [[ $? -eq 0 ]]; then
       echo "Successfully authenticated at Keptn API!"
       break
     else
-      RETRY=$[$RETRY+1]
+      RETRY=$((RETRY+1))
       echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s ..."
       sleep 10
     fi
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ "$RETRY" == "$RETRY_MAX" ]]; then
     print_error "Authentication at $ENDPOINT unsuccessful"
     exit 1
   fi
@@ -76,16 +79,16 @@ function get_event_with_retry() {
     response=$(keptn get event $event_type --keptn-context="${keptn_context_id}" --project=${project})
 
     if [[ $response == "No event returned" ]]; then
-      RETRY=$[$RETRY+1]
+      RETRY=$((RETRY+1))
       echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for ${event_type} event..."
       sleep 10
     else
-      echo $response
+      echo "$response"
       break
     fi
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ "$RETRY" == "$RETRY_MAX" ]]; then
     print_error "URL ${URL} could not be reached"
     exit 1
   fi
@@ -212,6 +215,7 @@ function verify_value() {
 
 function verify_event_not_null() {
   if [[ $1 == "null" ]]; then
+    # shellcheck disable=SC2152
     return -1
   fi
 }
@@ -231,6 +235,7 @@ function wait_for_url() {
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     curl $URL -k
 
+    # shellcheck disable=SC2181
     if [[ $? -eq 0 ]]; then
       echo "Verified access to ${URL}"
       break

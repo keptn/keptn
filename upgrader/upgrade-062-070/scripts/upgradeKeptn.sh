@@ -1,14 +1,17 @@
 #!/bin/bash
+# shellcheck disable=SC1083,SC2181
+
+# shellcheck disable=SC1091
 source ./utils.sh
 
-if [ $HELM_RELEASE_UPGRADE == "true" ]; 
+if [ "$HELM_RELEASE_UPGRADE" == "true" ];
 then
   # Upgrade from Helm v2 to Helm v3
   helm init --client-only
   verify_install_step $? "Helm init failed."
   RELEASES=$(helm list -aq)
   verify_install_step $? "Helm list failed."
-  echo $RELEASES
+  echo "$RELEASES"
 
   helm3 plugin install https://github.com/helm/helm-2to3
   verify_install_step $? "Helm-2to3 plugin installation failed."
@@ -16,15 +19,15 @@ then
   verify_install_step $? "Helm-2to3 move of config failed."
 
   for release in $RELEASES; do
-    helm3 2to3 convert $release --dry-run
+    helm3 2to3 convert "$release" --dry-run
     verify_install_step $? "Helm2-to3 release convertion dry-run failed"
-    helm3 2to3 convert $release
+    helm3 2to3 convert "$release"
     verify_install_step $? "Helm2-to3 release convertion failed"
   done
 
   yes y | helm3 2to3 cleanup --tiller-cleanup
   verify_install_step $? "Helm2-to3 cleanup failed"
-  
+
 fi
 
 PREVIOUS_KEPTN_VERSION="0.6.2"
@@ -56,12 +59,12 @@ kubectl -n keptn get svc approval-service
       USE_CASE="continuous-delivery"
   fi
 
-./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:password@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL "store-projects-mv"
+./upgradecollections "$MONGODB_SOURCE_URL" "mongodb://user:password@${MONGODB_TARGET_URL}" "$CONFIGURATION_SERVICE_URL" "store-projects-mv"
 
 # copy content from previous configuration-service PVC
 mkdir config-svc-backup
 CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
-kubectl cp keptn/$CONFIG_SERVICE_POD:/data ./config-svc-backup/ -c configuration-service
+kubectl cp "keptn/$CONFIG_SERVICE_POD:/data" ./config-svc-backup/ -c configuration-service
 
 old_manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/core.yaml"

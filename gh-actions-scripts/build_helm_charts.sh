@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2181
 
 VERSION=$1
 IMAGE_TAG=$2

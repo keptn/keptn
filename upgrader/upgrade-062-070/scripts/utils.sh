@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2181
+
 ################################################################
 # This is shared library for the keptn installation            #
 ################################################################
@@ -45,12 +48,12 @@ function verify_variable() {
 # Waits for a deployment in a given namespace to be available.
 function wait_for_deployment_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;
-  RETRY=0; RETRY_MAX=24; 
+  RETRY=0; RETRY_MAX=24;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
-      RETRY=$[$RETRY+1]
+      RETRY=$((RETRY+1))
       print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     else
@@ -58,7 +61,7 @@ function wait_for_deployment_in_namespace() {
     fi
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ "$RETRY" == "$RETRY_MAX" ]]; then
     print_error "Deployment ${DEPLOYMENT} in namespace ${NAMESPACE} is not available"
     exit 1
   fi
@@ -67,24 +70,25 @@ function wait_for_deployment_in_namespace() {
 
   verify_variable "$DEPLOYMENT_LIST" "List of deployments in namespace $NAMESPACE could not be derived."
 
+  # shellcheck disable=SC2206
   array=(${DEPLOYMENT_LIST// / })
 
-  for DEPLOYED_DEPLOYMENT in "${array[@]}" 
+  for DEPLOYED_DEPLOYMENT in "${array[@]}"
   do
     while [[ $RETRY -lt $RETRY_MAX ]]; do
-      kubectl rollout status deployment $DEPLOYMENT -n $NAMESPACE
+      kubectl rollout status deployment "$DEPLOYMENT" -n "$NAMESPACE"
 
       if [[ $? == '0' ]]
       then
         print_debug "Deployment ${DEPLOYED_DEPLOYMENT} in ${NAMESPACE} namespace available."
         break
       fi
-      RETRY=$[$RETRY+1]
+      RETRY=$((RETRY+1))
       print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYED_DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     done
 
-    if [[ $RETRY == $RETRY_MAX ]]; then
+    if [[ "$RETRY" == "$RETRY_MAX" ]]; then
       print_error "Deployment ${DEPLOYED_DEPLOYMENT} in namespace ${NAMESPACE} is not available"
       exit 1
     fi
@@ -94,7 +98,7 @@ function wait_for_deployment_in_namespace() {
 # Waits for all pods in a given namespace to be up and running.
 function wait_for_all_pods_in_namespace() {
   NAMESPACE=$1;
-  RETRY=0; RETRY_MAX=24; 
+  RETRY=0; RETRY_MAX=24;
 
   CMD="kubectl get pods -n $NAMESPACE && [[ \$(kubectl get pods -n $NAMESPACE 2>&1 | grep -c -v -E '(Running|Completed|Terminating|STATUS)') -eq 0 ]]"
   #CMD="[[ \$(kubectl get pods -n $NAMESPACE 2>&1 | grep -c -v -E '(Running|Completed|Terminating|STATUS)') -eq 0 ]]"
