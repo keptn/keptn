@@ -74,6 +74,7 @@
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
                   </ng-template>
                 </dt-tag-list>
+                <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.getProject(), 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               </div>
               <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
               <hr />
