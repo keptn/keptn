@@ -93,7 +93,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.project$ = this.dataService.getProject(params.projectName);
         this.project$
           .pipe(
-            filter(project => !!project && !!project.getServices() && !!project.stages && !!project.sequences),
+            filter(project => !!project && !!project.getServices() && !!project.stages),
             take(1)
           )
           .subscribe(project => {
@@ -109,6 +109,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
               this.selectSequence({root: roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext)});
+            }
+            if (roots) {
+              this.updateFilterSequence(roots);
+              this._filterDataSource.data = this.filterFieldData;
             }
             this._changeDetectorRef.markForCheck();
           });
@@ -143,15 +147,20 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }, {});
   }
 
+  updateFilterSequence(sequences: Root[]) {
+    if (sequences) {
+      this.filterFieldData.autocomplete.find(f => f.name == 'Sequence').autocomplete = sequences.map(s => s.getShortType()).filter((v, i, a) => a.indexOf(v) === i).map(seqName => Object.assign({}, {
+        name: seqName,
+        value: seqName
+      }));
+    }
+  }
+
   updateFilterDataSource(project: Project) {
     this.filterFieldData.autocomplete.find(f => f.name == 'Service').autocomplete = project.services.map(s => Object.assign({}, { name: s.serviceName, value: s.serviceName }));
     this.filterFieldData.autocomplete.find(f => f.name == 'Stage').autocomplete = project.stages.map(s => Object.assign({}, { name: s.stageName, value: s.stageName }));
-    this.filterFieldData.autocomplete.find(f => f.name == 'Sequence').autocomplete = project.sequences.map(s => s.getShortType()).filter((v, i, a) => a.indexOf(v) === i).map(seqName => Object.assign({}, { name: seqName, value: seqName }))
-
-    this._filterDataSource = new DtQuickFilterDefaultDataSource(
-      this.filterFieldData,
-      this._config,
-    );
+    this.updateFilterSequence(project.sequences);
+    this._filterDataSource.data = this.filterFieldData;
 
     this.filtersChanged({ filters: [] });
     this._changeDetectorRef.markForCheck();
