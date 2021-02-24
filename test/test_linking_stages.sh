@@ -27,8 +27,8 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojso
 echo "KEPTN_ENDPOINT $KEPTN_ENDPOINT"
 
 #test configuration
-PROJECT="linking-stages-project"
-SERVICE="linking-stages-service"
+PROJECT="link-project"
+SERVICE="my-service"
 
 
 # verify that the project does not exist yet via the Keptn API
