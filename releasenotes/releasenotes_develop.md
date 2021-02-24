@@ -4,7 +4,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 ---
 
-**The key announcements:**
+**Key announcements:**
 
 :rocket: *Separated and explicit Shipyard-defined processes (aka. task sequences) for continuous delivery / automated remediation*: With this Keptn release, it is possible to have multiple processes (called *task sequences*) within one stage. These task sequences are separated from each other and list the tasks that are triggered sequentially.
 
@@ -14,7 +14,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 > *Screenshot here*
 
-:star2: *New types of events*: In course of implement the new Shipyard version in Keptn, the Keptn Cloud-events were streamlined and follow now the a common pattern. Basically, Keptn just sends out an event of type: `sh.keptn.event.{task.name}.triggered` and other services react on: 
+:star2: *New types of events*: In course of implement the new Shipyard version in Keptn, the Keptn Cloud-events were streamlined and follow now a common pattern. Basically, Keptn just sends out an event of type: `sh.keptn.event.{task.name}.triggered` and other services react on: 
   * `sh.keptn.event.{task.name}.triggered`      > *sent out by Keptn*
   * `sh.keptn.event.{task.name}.started`        > *sent out by a Keptn-service when starting the tasks*
   * `sh.keptn.event.{task.name}.status.changed` > *sent out by a Keptn-service to inform about a status update*
@@ -22,7 +22,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :sparkles: *Multi-cluster support*: Based on the implementation of Shipyard v0.2, Keptn - as a control-plane for delivery and remediation - is now capable of serving multiple clusters. This is known as the split between *Control plane* and *Execution plane*. For this use-case, the Keptn project offers to run the helm-service (to deploy) and jmeter-service (to test) on the *Execution plane*. This *Execution plane* can be on a cluster other than the cluster where Keptn is installed. 
 
-:dizzy: *Sequence screen in Keptn Bridge*: The new capabilities of Keptn for dealing with task sequences received a dedicated screen in the Keptn Bridge. This screen provides filtering capabilities and a stage-divided view of the performed delivery or remediation tasks. 
+:dizzy: *Sequence screen in Keptn Bridge*: The new capabilities of Keptn for dealing with task sequences received a dedicated screen in the Keptn Bridge. This screen provides filtering capabilities and a stage-divided view on the performed delivery or remediation tasks. 
 
 > *Screenshot here*
 
@@ -233,6 +233,21 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - Format the Go imports [3150](https://github.com/keptn/keptn/issues/3150)
 - Test the linking of stages based on task sequence events: `sh.keptn.event.[stage].[sequence].finished` [2534](https://github.com/keptn/keptn/issues/2534)
 
+<details><summary>Update of third-party depenendencies to their latest version, most notable are:</summary>
+<p>
+ 
+* *Go* (Microservices)
+  - google/uuid to 1.2.0
+  - go.mongodb.org/monto-driver to 1.4.6
+  - cloudevents/sdk-go (various versions needed)
+  - nats-io/nats-server/v2 to 2.1.9
+* *NodeJS* (Bridge)
+  - marked to 2.0.0
+  - higlights.js to 10.4.1
+
+</p>
+</details>
+
 ## Fixed Issues
 
 - *Fixed*: Helm chart for continuous-delivery has dependencies to control-plane [2840](https://github.com/keptn/keptn/issues/2840)
@@ -297,3 +312,17 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 </details>
 
 ## Good to know / Known Limitations
+
+This section lists bugs and limitations that are known but not fixed in this release. They will get addressed in one of the next releases.
+
+- Keptn CLI can not be used for automation due to Kube context check [3208](https://github.com/keptn/keptn/issues/3208)
+  - There is a workaround provided, please see [here](https://github.com/keptn/keptn/issues/3208#issuecomment-781982765)
+- Creating a project fails on OpenShift due to missing write permissions [2453](https://github.com/keptn/keptn/issues/2453)
+- Hovering over the score in an `approval.triggered` events in the Bridge leads to a scroll-up / jump-up in Firefox [#2369](https://github.com/keptn/keptn/issues/2369)
+- Remove the functionality to listen to service.create.finished event from helm-service [2989](https://github.com/keptn/keptn/issues/2989)
+  - The helm-service does not support listening on `sh.keptn.event.service.delete.finished` events when running on the execution plane. This leads in the limitation that deleting deployed services on the execution plan becomes a manual task. To delete a deployed service, execute: 
+    ```
+    helm ls -n <NAMESPACE>
+    helm delete <HELM_RELEASE> -n <NAMESPACE>
+    ```
+
