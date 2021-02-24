@@ -8,5 +8,5 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.0-alpha.0.20210222113312-2b994d33bb82
+	github.com/keptn/go-utils v0.8.0-alpha.0.20210224090619-1a952862b5c0
 )
