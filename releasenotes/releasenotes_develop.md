@@ -97,6 +97,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - `keptn upgrade` - avoid the version check via a flag [2689](https://github.com/keptn/keptn/issues/2689)
 - `keptn upgrade project` - upgrader for migrating from Shipyard v0.1 to Shipyard v0.2 [2500](https://github.com/keptn/keptn/issues/2500)
 - `keptn version` - re-add the version check into the root command [2571](https://github.com/keptn/keptn/issues/2571)
+- Add labels parameter to all keptn send events [2126](https://github.com/keptn/keptn/issues/2126)
 - Removed outdated xip.io resolver [3058](https://github.com/keptn/keptn/issues/3058)
 - Shell completion for Keptn CLI using Cobra [2539](https://github.com/keptn/keptn/issues/2539)
 - Support for installing Keptn CLI via Homebrew [2864](https://github.com/keptn/keptn/issues/2864)
@@ -113,6 +114,9 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 
 <details><summary>Keptn Core</summary>
 <p>
+
+- *api-gateway-nginx:*
+  - Always restart api-gateway-nginx deployment on changes [3320](https://github.com/keptn/keptn/issues/3320)
 
 - *configuration-service:*
   - Keep track of last processed artifact in materialized view [2692](https://github.com/keptn/keptn/issues/2692)
@@ -169,6 +173,10 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Support remediation use-case with updated services [2663](https://github.com/keptn/keptn/issues/2663)
 
 - *shipyard-controller*:
+  - Add `triggeredid` to finished event for a sequence [3329](https://github.com/keptn/keptn/issues/3329)
+  - API returns shipyard version 0.1.7, although 0.2.0 is used [3325](https://github.com/keptn/keptn/issues/3325)
+  - Keptn supports default sequences for "delivery", "evaluation" [3007](https://github.com/keptn/keptn/issues/3007)
+  - Add keptn/spec version to metadata of Keptn CloudEvents [2983](https://github.com/keptn/keptn/issues/2983)
   - Removed `data.message` property from previous `.finished` event before sending next `.triggered` event [3043](https://github.com/keptn/keptn/issues/3043)
   - Propagate configurationChange through all tasks of a sequence [3199](https://github.com/keptn/keptn/issues/3199)
   - Allow filtering sequence triggers based on match properties [3028](https://github.com/keptn/keptn/issues/3028)
@@ -200,6 +208,10 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Create sequence screen and load all triggers [2625](https://github.com/keptn/keptn/issues/2625)
   - Show task details in sequence details [2938](https://github.com/keptn/keptn/issues/2938)
   - Refinement of the sequence tile [2628](https://github.com/keptn/keptn/issues/2628)
+- Replace occurances of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
+- Link back to evaluation from Environment [2696](https://github.com/keptn/keptn/issues/2696)
+- Support deep links in Bridge for 0.8.x [3207](https://github.com/keptn/keptn/issues/3207)
+- Adapt invalidation of events [3290](https://github.com/keptn/keptn/issues/3290)
 - SLI breakdown in table [2478](https://github.com/keptn/keptn/issues/2478)
 - Service screen refinement [3206](https://github.com/keptn/keptn/issues/3206)
 - Update doc references for 0.8.x [3205](https://github.com/keptn/keptn/issues/3205)
@@ -218,6 +230,8 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - *Refactoring*: Create stage-details component [2944](https://github.com/keptn/keptn/issues/2944)
 - *Refactoring*: Create view-component for sequences tab [2941](https://github.com/keptn/keptn/issues/2941)
 - *Refactoring*: Create view-component for services tab [2940](https://github.com/keptn/keptn/issues/2940)
+- *Fixed*: Root events are limited to 20 [3223](https://github.com/keptn/keptn/issues/3223)
+- *Fixed*: Keptn Bridge: Deployed services is displayed as "not deployed" [3224](https://github.com/keptn/keptn/issues/3224
 - *Fixed*: Manual approval does not trigger next task in sequence [3013](https://github.com/keptn/keptn/issues/3013)
 - *Fixed*: ERROR TypeError: this.data.configurationChange.values.image is undefined [3021](https://github.com/keptn/keptn/issues/3021)
 - *Fixed*: Approval not possible in cases when having the manual deployment strategy [2901](https://github.com/keptn/keptn/issues/2901)
@@ -301,6 +315,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 <details><summary>Fixed CI issues</summary>
 <p>
 
+- *Fixed*: Integration tests are failing (Minishift, self-healing) [3325](https://github.com/keptn/keptn/issues/3325)
 - *Fixed*: Integration tests: GKE clusters are not deleted afterwards in some cases [3243](https://github.com/keptn/keptn/issues/3243)
 - *Fixed*: Flaky integration tests: Integration tests fail (in unpredictable situations) [2149](https://github.com/keptn/keptn/issues/2149)
 - *Fixed*: Integration test stalls at the Keptn auth command [2704](https://github.com/keptn/keptn/issues/2704)
