@@ -18,7 +18,9 @@ jobs:
             LIST=/tmp/shellcheck.list
 
             # `find -exec` loop masks errors for some reason.
-            find . -name "*.sh" > "$LIST"
+            find . \
+                -name "*.sh" \
+                -not -path .git > "$LIST"
 
             while read -r SHELL_SCRIPT; do
                 shellcheck "$SHELL_SCRIPT";
