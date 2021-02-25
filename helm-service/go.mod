@@ -16,7 +16,7 @@ require (
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.1.2
 	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/apimachinery v0.20.4
 	k8s.io/cli-runtime v0.17.2
 	k8s.io/client-go v0.17.2
 	k8s.io/kubectl v0.17.2
