@@ -8,12 +8,12 @@ GCLOUD_FILENAME="google-cloud-sdk-${GCLOUD_VERSION}-${OS_TYPE}-x86_64.tar.gz"
 
 if [[ ! -f ~/downloads/${GCLOUD_FILENAME} ]]; then
   echo "Downloading ${GCLOUD_FILENAME}"
-  wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_FILENAME}" -O ~/downloads/${GCLOUD_FILENAME}
+  wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${GCLOUD_FILENAME}" -O "${HOME}/downloads/${GCLOUD_FILENAME}"
 fi
 
 export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
 
-gunzip -c ~/downloads/${GCLOUD_FILENAME} | tar xopf -
+gunzip -c "${HOME}/downloads/${GCLOUD_FILENAME}" | tar xopf -
 ./google-cloud-sdk/install.sh
 # shellcheck disable=SC1091
 source ./google-cloud-sdk/completion.bash.inc

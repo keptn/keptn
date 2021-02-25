@@ -104,21 +104,21 @@ function wait_for_all_pods_in_namespace() {
   #CMD="[[ \$(kubectl get pods -n $NAMESPACE 2>&1 | grep -c -v -E '(Running|Completed|Terminating|STATUS)') -eq 0 ]]"
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    eval $CMD
+    eval "$CMD"
 
     if [[ $? == '0' ]]; then
       print_debug "All pods are running in namespace ${NAMESPACE}."
       break
     fi
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for pods to start in namespace ${NAMESPACE} ..."
     sleep 10
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ $RETRY == "$RETRY_MAX" ]]; then
     print_error "Pods in namespace ${NAMESPACE} are not running."
     # show the pods that have problems
-    kubectl get pods --field-selector=status.phase!=Running -n ${NAMESPACE}
+    kubectl get pods --field-selector=status.phase!=Running -n "${NAMESPACE}"
     exit 1
   fi
 }
@@ -129,18 +129,18 @@ function wait_for_crds() {
   RETRY=0; RETRY_MAX=24;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    kubectl get $CRDS
+    kubectl get "$CRDS"
 
     if [[ $? == '0' ]]; then
       print_debug "All custom resource definitions are available."
       break
     fi
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for custom resource definitions ..."
     sleep 10
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ $RETRY == "$RETRY_MAX" ]]; then
     print_error "Custom resource definitions are missing."
     exit 1
   fi
@@ -153,7 +153,7 @@ function wait_for_istio_ingressgateway() {
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
+    DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r ".status.loadBalancer.ingress[0].${PROPERTY}")
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
@@ -162,7 +162,7 @@ function wait_for_istio_ingressgateway() {
       print_debug "${PROPERTY} of Istio ingress gateway is available."
       break
     fi
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio ingress gateway to be available ..."
     sleep 5
   done
@@ -196,7 +196,7 @@ function wait_for_k8s_ingress() {
       break
     fi
 
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for domain name or IP address of ingress gateway to be available ..."
     sleep 5
 

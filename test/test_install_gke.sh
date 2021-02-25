@@ -23,8 +23,7 @@ verify_test_step $? "keptn install --chart-repo=${KEPTN_INSTALLER_REPO} - failed
 
 # authenticate at Keptn API
 KEPTN_API_URL=http://$(kubectl -n keptn get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-# shellcheck disable=SC1083
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 auth_at_keptn "$KEPTN_API_URL" "$KEPTN_API_TOKEN"
 

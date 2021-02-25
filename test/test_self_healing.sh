@@ -4,8 +4,7 @@
 source test/utils.sh
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
-# shellcheck disable=SC1083
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 # test configuration
 UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}

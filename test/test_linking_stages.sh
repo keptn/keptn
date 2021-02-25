@@ -6,13 +6,13 @@ source test/utils.sh
 function cleanup() {
   sleep 2
   echo "Deleting Project ${PROJECT}"
-  keptn delete project ${PROJECT}
+  keptn delete project "${PROJECT}"
 
   echo "Deleting echo-service deployment"
-  kubectl delete deployments/echo-service -n ${KEPTN_NAMESPACE}
+  kubectl delete deployments/echo-service -n "${KEPTN_NAMESPACE}"
 
   echo "Deleting echo-service service2"
-  kubectl delete services/echo-service -n ${KEPTN_NAMESPACE}
+  kubectl delete services/echo-service -n "${KEPTN_NAMESPACE}"
 
   echo "<END>"
   return 0
@@ -23,8 +23,7 @@ trap cleanup EXIT
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
 # get keptn API details
-# shellcheck disable=SC1083
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "${KEPTN_NAMESPACE}" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 echo "KEPTN_ENDPOINT $KEPTN_ENDPOINT"
 
@@ -43,7 +42,7 @@ if [[ "$response" == "${PROJECT}" ]]; then
 fi
 
 echo "Installing keptn-sandbox/echo-service"
-kubectl -n ${KEPTN_NAMESPACE} apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/release-0.1.0/deploy/service.yaml
+kubectl -n "${KEPTN_NAMESPACE}" apply -f https://raw.githubusercontent.com/keptn-sandbox/echo-service/release-0.1.0/deploy/service.yaml
 
 
 echo "Testing link staging..."

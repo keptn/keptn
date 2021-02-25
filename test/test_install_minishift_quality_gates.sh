@@ -21,8 +21,7 @@ oc expose svc/api-gateway-nginx -n keptn --hostname=api.keptn.127.0.0.1.nip.io
 sleep 30
 
 KEPTN_API_URL=http://api.keptn.127.0.0.1.nip.io
-# shellcheck disable=SC1083
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 auth_at_keptn $KEPTN_API_URL "$KEPTN_API_TOKEN"
 #keptn auth --endpoint=http://$KEPTN_API_URL/api --api-token=$KEPTN_API_TOKEN
 
