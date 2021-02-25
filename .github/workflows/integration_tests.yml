@@ -412,7 +412,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          UNLEASH_SERVICE_VERSION: "master"
+          UNLEASH_SERVICE_VERSION: "release-0.3.0"
         run: test/test_self_healing.sh
 
       - name: Test Delivery Assistant
@@ -424,7 +424,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "master"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
         run: test/test_delivery_assistant.sh
 
       - name: Test Continuous Delivery (with sockshop)
