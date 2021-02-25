@@ -299,7 +299,7 @@ class Trace {
       } else {
         const countStarted = this.traces.filter(t => t.type.includes('.started')).length;
         const countFinished = this.traces.filter(t => t.type.includes('.finished')).length;
-        this.finished = countStarted === countFinished && countFinished !== 0;
+        this.finished = countFinished >= countStarted && countFinished !== 0;
       }
     }
 
