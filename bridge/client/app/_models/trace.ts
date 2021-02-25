@@ -144,7 +144,7 @@ class Trace {
 
   isSuccessful(): string {
     let result: string = null;
-    if(this.getFinishedEvent()?.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
+    if ( this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
       result = this.data.stage;
     }
     return !this.isFaulty() && result ? result : null;
@@ -293,11 +293,14 @@ class Trace {
   }
 
   isFinished() {
-    if(!this.finished) {
-      if(!this.traces || this.traces.length == 0)
-        this.finished = this.type.includes(".finished");
-      else
-        this.finished = this.traces.some(t => t.type.includes(".finished"));
+    if (!this.finished) {
+      if (!this.traces || this.traces.length === 0) {
+        this.finished = this.type.includes('.finished');
+      } else {
+        const countStarted = this.traces.filter(t => t.type.includes('.started')).length;
+        const countFinished = this.traces.filter(t => t.type.includes('.finished')).length;
+        this.finished = countStarted === countFinished && countFinished !== 0;
+      }
     }
 
     return this.finished;
