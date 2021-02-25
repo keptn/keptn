@@ -4,6 +4,11 @@ VERSION=$1
 IMAGE_TAG=$2
 KEPTN_SPEC_VERSION=$3
 
+if [ $# -ne 3 ]; then
+  echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION"
+  exit
+fi
+
 if [ -z "$VERSION" ]; then
   echo "No Version set, exiting..."
   exit 1
@@ -37,10 +42,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-mv keptn-${VERSION}.tgz keptn-charts/keptn-installer-${VERSION}.tgz
+mv keptn-${VERSION}.tgz keptn-charts/keptn-${VERSION}.tgz
 
 # verify the chart
-helm template --debug keptn-charts/keptn-installer-${VERSION}.tgz
+helm template --debug keptn-charts/keptn-${VERSION}.tgz
 
 if [ $? -ne 0 ]; then
   echo "::error Helm Chart for installer has templating errors - exiting"
@@ -90,22 +95,7 @@ if [ $? -ne 0 ]; then
 fi
 
 
-
-# download index.yaml chart
-#gsutil cp gs://keptn-installer/index.yaml keptn-charts/index.yaml
-#
-#helm repo index keptn-charts --url https://storage.googleapis.com/keptn-installer/ --merge keptn-charts/index.yaml
-#if [ $? -ne 0 ]; then
-#  echo "Error generating index.yaml, exiting..."
-#  exit 1
-#fi
-#
-## upload to gcloud
-#gsutil cp keptn-charts/index.yaml gs://keptn-installer/index.yaml
-#gsutil cp keptn-charts/keptn-${VERSION}.tgz gs://keptn-installer/keptn-${VERSION}.tgz
-
-
 echo "Generated files:"
-echo " - keptn-charts/keptn-installer-${VERSION}.tgz"
+echo " - keptn-charts/keptn-${VERSION}.tgz"
 echo " - keptn-charts/helm-service-${VERSION}.tgz"
 echo " - keptn-charts/jmeter-service-${VERSION}.tgz"
