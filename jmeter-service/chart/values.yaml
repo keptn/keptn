@@ -18,10 +18,10 @@ distributor:
 remoteControlPlane:
   enabled: false                             # Enables remote execution plane mode
   api:
-    protocol: "https"                        # Used Protocol (http, https
+    protocol: "https"                        # Used Protocol (http, https)
     hostname: ""                             # Hostname of the control plane cluster (and Port)
     apiValidateTls: true                     # Defines if the control plane certificate should be validated
-    token: ""                                # keptn API Token
+    token: ""                                # Keptn API Token
 
 imagePullSecrets: []                         # Secrets to use for container registry credentials
 
