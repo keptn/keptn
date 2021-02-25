@@ -20,7 +20,7 @@ jobs:
             # `find -exec` loop masks errors for some reason.
             find . \
                 -name "*.sh" \
-                -not -path ./.git > "$LIST"
+                -type f > "$LIST"
 
             while read -r SHELL_SCRIPT; do
                 shellcheck "$SHELL_SCRIPT";
