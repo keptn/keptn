@@ -208,7 +208,7 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, scHandle
 
 	approvalTriggeredEvent := &keptnv2.ApprovalTriggeredEventData{}
 
-	err = mapstructure.Decode(eventToBeApproved.Data, approvalTriggeredEvent)
+	err = keptnv2.Decode(eventToBeApproved.Data, approvalTriggeredEvent)
 	if err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
 		return "", "", nil, err
@@ -298,8 +298,8 @@ func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHa
 
 	for index, approval := range approvals {
 		score := getScoreForApprovalTriggeredEvent(eventHandler, approvalFinishedOptions, approval)
-		commitID := getApprovalImageEvent(approval)
-		appendOptionToWriter(w, index, commitID, score)
+		image := getApprovalImageEvent(approval)
+		appendOptionToWriter(w, index, image, score)
 	}
 	fmt.Fprintf(w, "\n")
 }
@@ -341,7 +341,7 @@ func getApprovalImageEvent(approval *apimodels.KeptnContextExtendedCE) string {
 	// therefore, we can cast its data property to a DeploymentTriggeredEventData struct and use the property from this struct
 	deploymentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
 
-	err := common.DecodeKeptnEventData(deploymentTriggeredData, approval.Data)
+	err := common.DecodeKeptnEventData(approval.Data, deploymentTriggeredData)
 
 	if err != nil {
 		return unknownImage
