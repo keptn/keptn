@@ -11,6 +11,8 @@ on:
       - 'master'
       - 'release-*'
     type: [labeled]
+  workflow_dispatch: # run CI when triggered manually
+
 defaults:
   run:
     shell: bash
@@ -74,7 +76,7 @@ jobs:
         continue-on-error: true
 
       - name: Process all artifacts (for push on master/release branches)
-        if: (github.event_name == 'push') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
+        if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
