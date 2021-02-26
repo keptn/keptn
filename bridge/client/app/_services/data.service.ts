@@ -265,6 +265,8 @@ export class DataService {
         let trigger = result.find(t => {
           if(trace.triggeredid)
             return t.id == trace.triggeredid;
+          else if(trace.isProblem() && trace.isProblemResolvedOrClosed())
+            return t.isProblem() && !t.isProblemResolvedOrClosed();
         });
 
         if(trigger)
