@@ -267,6 +267,8 @@ export class DataService {
             return t.id == trace.triggeredid;
           else if(trace.isProblem() && trace.isProblemResolvedOrClosed())
             return t.isProblem() && !t.isProblemResolvedOrClosed();
+          else if(trace.isFinished())
+            return t.type.slice(0,-8) == trace.type.slice(0,-9);
         });
 
         if(trigger)
