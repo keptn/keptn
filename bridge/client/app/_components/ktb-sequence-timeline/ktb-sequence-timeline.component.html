@@ -4,8 +4,8 @@
     <div fxLayout="row" fxLayoutAlign="space-between">
       <div class="text-center pointer stage-transition" [class.focused]="stage === selectedStage" *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
         <div class="stage-info">
-          <dt-icon *ngIf="!currentSequence.getFirstTraceOfStage(stage).isLoading()" class="event-icon" [name]="currentSequence.getFirstTraceOfStage(stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()" [class.error]="stage === currentSequence.isFaulty()" [class.success]="currentSequence.getFirstTraceOfStage(stage).isFinished() && stage !== currentSequence.isFaulty()" [class.highlight]="currentSequence.hasPendingApproval(stage)"></dt-icon>
-          <button *ngIf="currentSequence.getFirstTraceOfStage(stage).isLoading()" class="m-0 p-0" dt-button disabled variant="nested">
+          <dt-icon *ngIf="!currentSequence.getLastTraceOfStage(stage).isLoading()" class="event-icon" [name]="currentSequence.getLastTraceOfStage(stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()" [class.error]="stage === currentSequence.isFaulty()" [class.success]="currentSequence.getLastTraceOfStage(stage).isFinished() && stage !== currentSequence.isFaulty()" [class.highlight]="currentSequence.hasPendingApproval(stage)"></dt-icon>
+          <button *ngIf="currentSequence.getLastTraceOfStage(stage).isLoading()" class="m-0 p-0" dt-button disabled variant="nested">
             <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
           </button>
           <span [textContent]="stage"></span>
