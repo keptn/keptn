@@ -1,8 +1,13 @@
 name: Clean up Images
+# Note: This task requires Credentials for DockerHub (user + password) stored on GitHub
+# However, it's not a good practice to store those credentials on GitHub.
+# Please monitor https://github.com/docker/roadmap/issues/115 for changes
 on:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '0 0 * * 0'
+  workflow_dispatch:
+#
+#  schedule:
+#    # * is a special character in YAML so you have to quote this string
+#    - cron:  '0 0 * * 0'
 jobs:
   cleanup:
     name: Clean up

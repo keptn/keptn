@@ -159,7 +159,10 @@ class Trace {
   }
 
   public isProblemResolvedOrClosed(): boolean {
-    return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
+    if (!this.traces || this.traces.length === 0)
+      return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
+    else
+      return this.traces.some(t => t.isProblem() && t.isProblemResolvedOrClosed());
   }
 
   public isSuccessfulRemediation(): boolean {
@@ -215,9 +218,7 @@ class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.isProblem() && this.isProblemResolvedOrClosed()) {
-        this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
-      } else if(this.isApprovalFinished()) {
+      if(this.isApprovalFinished()) {
         this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.getShortType();
       } else {
         this.label = EVENT_LABELS[this.type] || this.getShortType();
@@ -296,6 +297,8 @@ class Trace {
     if (!this.finished) {
       if (!this.traces || this.traces.length === 0) {
         this.finished = this.type.includes('.finished');
+      } else if (this.isProblem()) {
+        this.finished = this.isProblemResolvedOrClosed();
       } else {
         const countStarted = this.traces.filter(t => t.type.includes('.started')).length;
         const countFinished = this.traces.filter(t => t.type.includes('.finished')).length;

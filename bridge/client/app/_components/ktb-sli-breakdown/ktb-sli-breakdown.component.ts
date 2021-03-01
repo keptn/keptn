@@ -103,7 +103,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         name: indicatorResult.value.metric,
         value: this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
-        score: this.round(indicatorResult.score / totalscore * this.score, 2),
+        score: totalscore === 0 ? 0 : this.round(indicatorResult.score / totalscore * this.score, 2),
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,

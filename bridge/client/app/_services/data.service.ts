@@ -13,6 +13,8 @@ import {EventTypes} from "../_models/event-types";
 import {ApiService} from "./api.service";
 import {DateUtil} from "../_utils/date.utils";
 
+import * as moment from 'moment';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -140,7 +142,13 @@ export class DataService {
       mergeMap(
         service => this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
           .pipe(
-            map(result => result.body.events||[]),
+            map(response => {
+              let lastUpdated = moment(response.headers.get("date"));
+              let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+              this._rootsLastUpdated[project.projectName] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
+              return response.body;
+            }),
+            map(result => result.events||[]),
             mergeMap((roots) =>
               from(roots).pipe(
                 mergeMap(
@@ -148,7 +156,9 @@ export class DataService {
                     return this.apiService.getTraces(root.shkeptncontext, root.data.project)
                       .pipe(
                         map(response => {
-                          this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+                          let lastUpdated = moment(response.headers.get("date"));
+                          let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+                          this._tracesLastUpdated[root.shkeptncontext] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
                           return response.body;
                         }),
                         map(result => result.events||[]),
@@ -179,12 +189,13 @@ export class DataService {
 
   public loadTraces(root: Root) {
     let fromTime: Date = this._tracesLastUpdated[root.shkeptncontext];
-    this._tracesLastUpdated[root.shkeptncontext] = new Date();
 
     this.apiService.getTraces(root.shkeptncontext, root.getProject(), fromTime ? fromTime.toISOString() : null)
       .pipe(
         map(response => {
-          this._tracesLastUpdated[root.shkeptncontext] = new Date(response.headers.get("date"));
+          let lastUpdated = moment(response.headers.get("date"));
+          let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+          this._tracesLastUpdated[root.shkeptncontext] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
           return response.body;
         }),
         map(result => result.events||[]),
@@ -265,6 +276,10 @@ export class DataService {
         let trigger = result.find(t => {
           if(trace.triggeredid)
             return t.id == trace.triggeredid;
+          else if(trace.isProblem() && trace.isProblemResolvedOrClosed())
+            return t.isProblem() && !t.isProblemResolvedOrClosed();
+          else if(trace.isFinished())
+            return t.type.slice(0,-8) == trace.type.slice(0,-9);
         });
 
         if(trigger)

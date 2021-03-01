@@ -184,7 +184,7 @@ fi
 
 # install unleash service
 echo "Installing unleash-service version ${UNLEASH_SERVICE_VERSION}"
-kubectl apply -f "https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml" -n "$KEPTN_NAMESPACE"
+kubectl apply -f "https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml" -n "${KEPTN_NAMESPACE}"
 
 sleep 10
 
