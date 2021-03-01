@@ -17,6 +17,10 @@ export class Root extends Trace {
     return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && trace.isProblemResolvedOrClosed() ? true : result, false);
   }
 
+  isStarted(): boolean {
+    return this.traces.some(t => t.isStarted());
+  }
+
   isFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
