@@ -186,7 +186,10 @@ fi
 echo "Installing unleash-service version ${UNLEASH_SERVICE_VERSION}"
 kubectl apply -f "https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml" -n "$KEPTN_NAMESPACE"
 
+<<<<<<< HEAD
 kubectl -n "$KEPTN_NAMESPACE" set image deployment/unleash-service unleash-service=keptncontrib/unleash-service:0.0.0-master
+=======
+>>>>>>> 4c69fb27 (use release versions of contrib services for integration tests (#3377))
 
 sleep 10
 
