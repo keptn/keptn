@@ -25,7 +25,7 @@
               </ng-template>
               <span *ngIf="event.getStages().length > 0"> in </span>
               <span class="bold" *ngFor="let stage of event.getStages(); let isLast=last">
-              <span [textContent]="stage" (click)="$event.stopPropagation();selectEvent(event, stage)" [class.success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()" [class.error]="stage == event.isFaulty() && stage != event.isSuccessful()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)"></span>
+              <span [textContent]="stage" (click)="$event.stopPropagation();selectEvent(event, stage)" [class.success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()" [class.error]="stage == event.isFaulty()" [class.warning]="stage == event.isWarning()" [class.highlight]="event.hasPendingApproval(stage)"></span>
               <span *ngIf="!isLast">, </span>
             </span>
             </p>
