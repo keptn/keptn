@@ -9,14 +9,6 @@ export class Root extends Trace {
     return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
   }
 
-  isProblem(): boolean {
-    return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && !trace.isProblemResolvedOrClosed() ? true : result, false);
-  }
-
-  isProblemResolvedOrClosed(): boolean {
-    return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && trace.isProblemResolvedOrClosed() ? true : result, false);
-  }
-
   isFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
@@ -130,7 +122,11 @@ export class Root extends Trace {
   }
 
   getStatus() {
-    if(this.isFinished() && this.isFaulty())
+    if(this.isProblem() && this.isProblemResolvedOrClosed())
+      return "resolved";
+    else if(this.isProblem())
+      return "opened";
+    else if(this.isFinished() && this.isFaulty())
       return "failed";
     else if(this.isFinished())
       return "succeeded";
@@ -140,6 +136,10 @@ export class Root extends Trace {
 
   getStatusLabel() {
     switch(this.getStatus()) {
+      case "resolved":
+        return "resolved";
+      case "opened":
+        return "opened";
       case "failed":
         return "failed";
       case "succeeded":
