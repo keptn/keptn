@@ -37,6 +37,10 @@ spec:
           env:
           - name: CONFIGURATION_SERVICE
             value: "http://localhost:8081/configuration"
+          - name: SHIPYARD_CONTROLLER
+            value: 'http://localhost:8081/shipyard'
+          - name: EVENTBROKER
+            value: 'http://localhost:8081/event'
           - name: ENVIRONMENT
             value: 'production'
           - name: INGRESS_HOSTNAME_SUFFIX
@@ -62,6 +66,12 @@ spec:
               configMapKeyRef:
                 name: ingress-config
                 key: istio_gateway
+                optional: true
+          - name: HOSTNAME_TEMPLATE
+            valueFrom:
+              configMapKeyRef:
+                name: ingress-config
+                key: hostname_template
                 optional: true
           livenessProbe:
             httpGet:

@@ -84,8 +84,6 @@ spec:
               value: 'http://localhost:8081/event'
             - name: ENVIRONMENT
               value: 'production'
-            - name: CANARY
-              value: 'deployment'
             - name: INGRESS_HOSTNAME_SUFFIX
               valueFrom:
                 configMapKeyRef:

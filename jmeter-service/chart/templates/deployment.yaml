@@ -37,6 +37,8 @@ spec:
           env:
           - name: CONFIGURATION_SERVICE
             value: "http://localhost:8081/configuration"
+          - name: EVENTBROKER
+            value: 'http://localhost:8081/event'
           - name: env
             value: 'production'
           livenessProbe:
