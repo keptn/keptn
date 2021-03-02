@@ -9,6 +9,10 @@ export class Root extends Trace {
     return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
   }
 
+  isStarted(): boolean {
+    return this.traces.length === 0 ? false : this.traces[this.traces.length-1].isStarted();
+  }
+
   isFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
