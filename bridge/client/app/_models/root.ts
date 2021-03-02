@@ -10,7 +10,7 @@ export class Root extends Trace {
   }
 
   isStarted(): boolean {
-    return this.traces.some(t => t.isStarted());
+    return this.traces.length === 0 ? false : this.traces[this.traces.length-1].isStarted();
   }
 
   isFailedEvaluation(): string {
