@@ -78,9 +78,22 @@ func doUpgradePreRunCheck() error {
 		return nil
 	}
 
+	statisticsDeploymentAvailable, err := kube.CheckDeploymentAvailable("statistics-service")
+	if err != nil {
+		return err
+	}
+	if statisticsDeploymentAvailable {
+		statisticsServiceManagedByHelm, err := kube.CheckDeploymentManagedByHelm("statistics-service")
+		if err != nil {
+			return err
+		}
+		if !statisticsServiceManagedByHelm {
+			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it.")
+		}
+	}
+
 	chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
 
-	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
 		return err
 	}

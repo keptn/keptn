@@ -74,3 +74,73 @@ func TestIsKubectlAvailable(t *testing.T) {
 	require.False(t, res)
 	require.EqualError(t, err, "fake error")
 }
+
+func TestCheckDeploymentManagedByHelm(t *testing.T) {
+	defer func() {
+		executeCommandFunc = keptnutils.ExecuteCommand
+	}()
+
+	responseWithManagedByLabelValueHelm := `{"metadata":{"labels":{"app.kubernetes.io/managed-by":"Helm"}}}`
+	responseWithManagedByLabelNoValue := `{"metadata":{"labels":{"app.kubernetes.io/managed-by":""}}}`
+	responseWithoutManagedByLabel := `{"metadata":{"labels":{}}}`
+
+	var tests = []struct {
+		name           string
+		deploymentName string
+		executedCmd    func(string, []string) (string, error)
+		result         bool
+		resulterr      bool
+	}{
+		{"CheckDeploymentManagedByHelm - labelAndValueHelm", "my-deployment", func(string, []string) (string, error) { return responseWithManagedByLabelValueHelm, nil }, true, false},
+		{"CheckDeploymentManagedByHelm - labelWithoutAValue", "my-deployment", func(string, []string) (string, error) { return responseWithManagedByLabelNoValue, nil }, false, false},
+		{"CheckDeploymentManagedByHelm - noLabelPresent", "my-deployment", func(string, []string) (string, error) { return responseWithoutManagedByLabel, nil }, false, false},
+		{"CheckDeploymentManagedByHelm - errorOnKubectlCmd", "my-deployment", func(string, []string) (string, error) { return "", errors.New("Whoops...") }, false, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executeCommandFunc = tt.executedCmd
+			result, err := CheckDeploymentManagedByHelm(tt.deploymentName)
+			if tt.resulterr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.result, result)
+		})
+	}
+}
+
+func TestCheckDeploymentAvailable(t *testing.T) {
+	defer func() {
+		executeCommandFunc = keptnutils.ExecuteCommand
+	}()
+
+	responseWithDeployment := `{"items":[{"metadata":{"name":"my-deployment"}}]}`
+	responseWithNoDeployment := `{"items":[{}]}`
+
+	var tests = []struct {
+		name           string
+		deploymentName string
+		executedCmd    func(string, []string) (string, error)
+		result         bool
+		resulterr      bool
+	}{
+		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return responseWithDeployment, nil }, true, false},
+		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return responseWithNoDeployment, nil }, false, false},
+		{"CheckDeploymentAvailable - responseWithDeploymentAvailable", "my-deployment", func(string, []string) (string, error) { return "", errors.New("Whoops...") }, false, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executeCommandFunc = tt.executedCmd
+			result, err := CheckDeploymentAvailable(tt.deploymentName)
+			if tt.resulterr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.result, result)
+		})
+	}
+}
