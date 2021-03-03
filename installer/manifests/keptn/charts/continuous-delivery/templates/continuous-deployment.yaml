@@ -80,8 +80,6 @@ spec:
               value: 'http://configuration-service:8080'
             - name: SHIPYARD_CONTROLLER
               value: 'http://shipyard-controller:8080'
-            - name: EVENTBROKER
-              value: 'http://localhost:8081/event'
             - name: ENVIRONMENT
               value: 'production'
             - name: INGRESS_HOSTNAME_SUFFIX
@@ -194,8 +192,6 @@ spec:
           env:
           - name: CONFIGURATION_SERVICE
             value: 'http://configuration-service:8080'
-          - name: EVENTBROKER
-            value: 'http://localhost:8081/event'
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "continuous-delivery.livenessProbe" . | nindent 10 }}
