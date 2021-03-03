@@ -58,10 +58,10 @@ func CheckKubeServerVersion(constraints string) error {
 	return fmt.Errorf("The Kubernetes Server Version '%s' doesn't satisfy constraints '%s'", serverVersion, constraints)
 }
 
-// CheckDeploymentManagedByHelm implements a naive check if deployment was installed by helm by checking if the label
-// "app.kubernetes.io/managed-by=Helm" is present on the deployment
-func CheckDeploymentManagedByHelm(deploymentName string) (bool, error) {
-	errstr := "Failed to check if deployment %s is managed by Helm: %s"
+// CheckDeploymentManagedByHelm implements a naive check if the deployment with the given name in the given namespace
+// was installed by helm by checking if the label "app.kubernetes.io/managed-by=Helm" is present on the deployment
+func CheckDeploymentManagedByHelm(deploymentName, namespace string) (bool, error) {
+	errstr := "Failed to check if deployment %s in namespace %s is managed by Helm: %s"
 
 	type CmdResponse struct {
 		Metadata struct {
@@ -69,13 +69,13 @@ func CheckDeploymentManagedByHelm(deploymentName string) (bool, error) {
 		} `json:"metadata"`
 	}
 
-	out, err := executeCommandFunc("kubectl", []string{"get", "deployments", deploymentName, "-n", "keptn", "-o", "json"})
+	out, err := executeCommandFunc("kubectl", []string{"get", "deployments", deploymentName, "-n", namespace, "-o", "json"})
 	if err != nil {
-		return false, fmt.Errorf(errstr, deploymentName, err.Error())
+		return false, fmt.Errorf(errstr, deploymentName, namespace, err.Error())
 	}
 	var response CmdResponse
 	if err = json.Unmarshal([]byte(out), &response); err != nil {
-		return false, fmt.Errorf(errstr, deploymentName, err.Error())
+		return false, fmt.Errorf(errstr, deploymentName, namespace, err.Error())
 	}
 
 	if value, keyExists := response.Metadata.Labels["app.kubernetes.io/managed-by"]; keyExists {
@@ -87,8 +87,8 @@ func CheckDeploymentManagedByHelm(deploymentName string) (bool, error) {
 	return false, nil
 }
 
-// CheckDeploymentAvailable implements a check whether a deployment with the given name exists
-func CheckDeploymentAvailable(deploymentName string) (bool, error) {
+// CheckDeploymentAvailable implements a check whether a deployment with the given name in the given namespace exists
+func CheckDeploymentAvailable(deploymentName, namespace string) (bool, error) {
 
 	type Metadata struct {
 		Name string `json:"name"`
@@ -100,15 +100,15 @@ func CheckDeploymentAvailable(deploymentName string) (bool, error) {
 		Items []Item `json:"items"`
 	}
 
-	errstr := "Failed to check if deployment %s is available: %s"
-	out, err := executeCommandFunc("kubectl", []string{"get", "deployments", "-n", "keptn", "-o", "json"})
+	errstr := "Failed to check if deployment %s is available in namespace %s: %s"
+	out, err := executeCommandFunc("kubectl", []string{"get", "deployments", "-n", namespace, "-o", "json"})
 	if err != nil {
-		return false, fmt.Errorf(errstr, deploymentName, err.Error())
+		return false, fmt.Errorf(errstr, deploymentName, namespace, err.Error())
 	}
 
 	var response CmdResponse
 	if err = json.Unmarshal([]byte(out), &response); err != nil {
-		return false, fmt.Errorf(errstr, deploymentName, err.Error())
+		return false, fmt.Errorf(errstr, deploymentName, namespace, err.Error())
 	}
 
 	for _, item := range response.Items {

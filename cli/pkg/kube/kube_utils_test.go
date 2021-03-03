@@ -99,7 +99,7 @@ func TestCheckDeploymentManagedByHelm(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			executeCommandFunc = tt.executedCmd
-			result, err := CheckDeploymentManagedByHelm(tt.deploymentName)
+			result, err := CheckDeploymentManagedByHelm(tt.deploymentName, "ns")
 			if tt.resulterr {
 				require.Error(t, err)
 			} else {
@@ -133,7 +133,7 @@ func TestCheckDeploymentAvailable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			executeCommandFunc = tt.executedCmd
-			result, err := CheckDeploymentAvailable(tt.deploymentName)
+			result, err := CheckDeploymentAvailable(tt.deploymentName, "ns")
 			if tt.resulterr {
 				require.Error(t, err)
 			} else {
