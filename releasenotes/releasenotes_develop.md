@@ -66,18 +66,23 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 
 ### CLI
 
-- `keptn send event start-evaluation` to trigger an evaluation has been deprecated. Use `keptn trigger evaluation` instead:
+- `keptn send event start-evaluation` to trigger an evaluation has been marked as deprecated. Use `keptn trigger evaluation` instead:
 
   ```
-  keptn trigger evaluation --project=my-sockshop --service=foobar --stage=hardening)
+  keptn trigger evaluation --project=my-sockshop --service=foobar --stage=hardening
   ```
 
-- `keptn send event new-artifact` to send a configuration change that triggers a delivery of a new artifact has been deprecated. Use `kept trigger delivery` instead: 
+- `keptn send event new-artifact` to send a configuration change that triggers a delivery of a new artifact has been marked as deprecated. Use `kept trigger delivery` instead: 
 
   ```
   keptn trigger delivery --project=sockshop --service=carts-db --image=docker.io/mongo --tag=4.2.2 --sequence=delivery-direct
   ```
 
+### Bridge
+
+- The **Service** screen does not show the Keptn CloudEvents anymore since this information has moved to the new **Sequence** screen. 
+
+- The old deep links still work but are adapted to the new screens as described [here](https://keptn.sh/docs/0.8.x/reference/bridge/deep_linking/#links-to-project-and-events)
 
 ## New Features
 
