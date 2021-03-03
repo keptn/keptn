@@ -71,11 +71,11 @@ func CheckDeploymentManagedByHelm(deploymentName string) (bool, error) {
 
 	out, err := executeCommandFunc("kubectl", []string{"get", "deployments", deploymentName, "-n", "keptn", "-o", "json"})
 	if err != nil {
-		return false, errors.New(fmt.Sprintf(errstr, deploymentName, err.Error()))
+		return false, fmt.Errorf(errstr, deploymentName, err.Error())
 	}
 	var response CmdResponse
 	if err = json.Unmarshal([]byte(out), &response); err != nil {
-		return false, errors.New(fmt.Sprintf(errstr, deploymentName, err.Error()))
+		return false, fmt.Errorf(errstr, deploymentName, err.Error())
 	}
 
 	if value, keyExists := response.Metadata.Labels["app.kubernetes.io/managed-by"]; keyExists {
@@ -103,12 +103,12 @@ func CheckDeploymentAvailable(deploymentName string) (bool, error) {
 	errstr := "Failed to check if deployment %s is available: %s"
 	out, err := executeCommandFunc("kubectl", []string{"get", "deployments", "-n", "keptn", "-o", "json"})
 	if err != nil {
-		return false, errors.New(fmt.Sprintf(errstr, deploymentName, err.Error()))
+		return false, fmt.Errorf(errstr, deploymentName, err.Error())
 	}
 
 	var response CmdResponse
 	if err = json.Unmarshal([]byte(out), &response); err != nil {
-		return false, errors.New(fmt.Sprintf(errstr, deploymentName, err.Error()))
+		return false, fmt.Errorf(errstr, deploymentName, err.Error())
 	}
 
 	for _, item := range response.Items {

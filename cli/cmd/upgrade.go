@@ -88,7 +88,7 @@ func doUpgradePreRunCheck() error {
 			return err
 		}
 		if !statisticsServiceManagedByHelm {
-			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it.")
+			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it")
 		}
 	}
 
