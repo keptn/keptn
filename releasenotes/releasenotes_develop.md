@@ -10,9 +10,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :tada: *Support individual tasks in sequences*: It is now possible to add custom tasks to a *task sequence* to address needs of delivery/remediation use-cases that go beyond the opinionated approach Keptn is offering.
 
-:star: *Trigger of a sequence can be configured - allowing multiple parallel stages*: The new Shipyard supports the definition of triggers that launch the execution of a *task sequences*. This helps to make it explicit when a sequence gets triggers. Besides, this linking mechanism allows connecting multiple sequences (of different stages) to listen to the same trigger. Consequently, it is possible to connect multiple stages, which are on the same level, to one preceding stage - as shown below:
-
-> *Screenshot here*
+:star: *Trigger of a sequence can be configured - allowing multiple parallel stages*: The new Shipyard supports the definition of triggers that launch the execution of a *task sequences*. This helps to make it explicit when a sequence gets triggers. Besides, this linking mechanism allows connecting multiple sequences (of different stages) to listen to the same trigger. Consequently, it is possible to connect multiple stages, which are on the same level, to one preceding stage.
 
 :star2: *New types of events*: In course of implement the new Shipyard version in Keptn, the Keptn Cloud-events were streamlined and follow now a common pattern. Basically, Keptn just sends out an event of type: `sh.keptn.event.{task.name}.triggered` and other services react on: 
   * `sh.keptn.event.{task.name}.triggered`      > *sent out by Keptn*
@@ -159,6 +157,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - *lighthouse-service*:
   - Support quality gates use-case with updated services [2724](https://github.com/keptn/keptn/issues/2724)
   - Reacts on `evaluation.triggered` and sends `evaluation.started/finished` event [2264](https://github.com/keptn/keptn/issues/2264)
+  - *Fixed:* Needs to send previous payloads (e.g., "deployment") in `get-sli.triggered` [3411](https://github.com/keptn/keptn/issues/3411)
 
 - *mongodb-datastore*:
   - Adapt query for excluding `evaluation.invalidated` events [3270](https://github.com/keptn/keptn/issues/2949)
@@ -230,6 +229,9 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - *Refactoring*: Create stage-details component [2944](https://github.com/keptn/keptn/issues/2944)
 - *Refactoring*: Create view-component for sequences tab [2941](https://github.com/keptn/keptn/issues/2941)
 - *Refactoring*: Create view-component for services tab [2940](https://github.com/keptn/keptn/issues/2940)
+- *Fixed*: Duplicate tasks showing up in Bridge [3382](https://github.com/keptn/keptn/issues/3382)
+- *Fixed*: Sequence loading icon [3410](https://github.com/keptn/keptn/issues/3410)
+- *Fixed*: Wrong score in SLI breakdown table [3383](https://github.com/keptn/keptn/issues/3223)
 - *Fixed*: Root events are limited to 20 [3223](https://github.com/keptn/keptn/issues/3223)
 - *Fixed*: Keptn Bridge: Deployed services is displayed as "not deployed" [3224](https://github.com/keptn/keptn/issues/3224
 - *Fixed*: Manual approval does not trigger next task in sequence [3013](https://github.com/keptn/keptn/issues/3013)
@@ -264,6 +266,8 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 
 ## Fixed Issues
 
+- *Fixed*: Cannot run `helm-service` and `jmeter-service` on execution plane on a separate cluster/namespace [3418](https://github.com/keptn/keptn/issues/3418)
+- *Fixed*: Upgrade from 0.7.3 to 0.8.0-rc1 failed (because of statistics-service) [3399](https://github.com/keptn/keptn/issues/3399)
 - *Fixed*: Helm chart for continuous-delivery has dependencies to control-plane [2840](https://github.com/keptn/keptn/issues/2840)
 - *Fixed*: Required flags are not validated before PreRunE is called [2729](https://github.com/keptn/keptn/issues/2729)
 - *Fixed*: CLI does not work when using GPG pass [2638](https://github.com/keptn/keptn/issues/2638)
@@ -292,6 +296,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 <details><summary>Miscellaneous CI tasks (for build, test, quality checks)</summary>
 <p>
 
+- Added PAT to the create release branch workflow [3393](https://github.com/keptn/keptn/issues/3393)
 - Multi-architecture build support for CLI (32 bit, ARM, ...) [2997](https://github.com/keptn/keptn/issues/2997)
 - Add dependabot to keep dependencies up2date [2648](https://github.com/keptn/keptn/issues/2648)
 - Switch from CLA Bot to DCO [2690](https://github.com/keptn/keptn/issues/2690)
@@ -331,10 +336,10 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 This section lists bugs and limitations that are known but not fixed in this release. They will get addressed in one of the next releases.
 
 - Keptn CLI can not be used for automation due to Kube context check [3208](https://github.com/keptn/keptn/issues/3208)
-  - There is a workaround provided, please see [here](https://github.com/keptn/keptn/issues/3208#issuecomment-781982765)
+  - The workaround is explained [here](https://github.com/keptn/keptn/issues/3208#issuecomment-781982765)
 - Creating a project fails on OpenShift due to missing write permissions [2453](https://github.com/keptn/keptn/issues/2453)
 - Hovering over the score in an `approval.triggered` events in the Bridge leads to a scroll-up / jump-up in Firefox [#2369](https://github.com/keptn/keptn/issues/2369)
-- Remove the functionality to listen to service.create.finished event from helm-service [2989](https://github.com/keptn/keptn/issues/2989)
+- Remove the functionality to listen to `sh.keptn.event.service.delete.finished` event from helm-service [2989](https://github.com/keptn/keptn/issues/2989)
   - The helm-service does not support listening on `sh.keptn.event.service.delete.finished` events when running on the execution plane. This leads in the limitation that deleting deployed services on the execution plan becomes a manual task. To delete a deployed service, execute: 
     ```
     helm ls -n <NAMESPACE>
