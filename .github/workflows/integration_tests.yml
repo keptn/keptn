@@ -771,3 +771,20 @@ jobs:
             dist/keptn-installer/*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Helm Charts to Google Cloud
+        id: upload_helm_charts
+        env:
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+        run: |
+          if [[ "$BRANCH" == "release-"* ]]; then
+            echo "Installing gcloud CLI"
+            export OS_TYPE="linux"
+            ./test/utils/download_and_install_gcloud.sh
+            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+          fi
