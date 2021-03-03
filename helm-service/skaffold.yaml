@@ -10,8 +10,13 @@ build:
 
 deploy:
   helm:
+    flags:
+      upgrade: ["--reuse-values"]
     releases:
-      - name: keptn-helm-service
+      - name: helm-service # needs to be the same name as currently used (check via helm ls -n keptn-exec)
+        namespace: keptn-exec # needs to be the same namespace as where the helm-chart is currently deployed
+        # upgradeOnChange: true
+        # recreatePods: false # don't recreate all pods
         artifactOverrides:
           image: keptn/helm-service
         chartPath: chart

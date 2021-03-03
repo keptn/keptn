@@ -20,7 +20,6 @@ import (
 )
 
 const (
-	eventbroker          = "EVENTBROKER"
 	configurationService = "CONFIGURATION_SERVICE"
 )
 
@@ -329,35 +328,11 @@ func sendEvent(event cloudevents.Event) error {
 		return nil
 	}
 
-	endPoint, err := getServiceEndpoint(eventbroker)
-	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
-	}
-
-	if endPoint.Host == "" {
-		return errors.New("Host of eventbroker not set")
-	}
-	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		EventBrokerURL: endPoint.String(),
-	})
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {
 		return errors.New("Failed to initialize Keptn handler: " + err.Error())
 	}
 
 	return keptnHandler.SendCloudEvent(event)
-}
-
-// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
-func getServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
-	if err != nil {
-		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
-	}
-
-	if url.Scheme == "" {
-		url.Scheme = "http"
-	}
-
-	return *url, nil
 }

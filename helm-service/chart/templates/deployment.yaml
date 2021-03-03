@@ -30,13 +30,19 @@ spec:
         - name: helm-service
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- if .Values.image }}
+          image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
+          {{- else }}
           image: "{{ .Values.helmservice.image.repository }}:{{ .Values.helmservice.image.tag | default .Chart.AppVersion }}"
+          {{ end }}
           imagePullPolicy: {{ .Values.helmservice.image.pullPolicy }}
           ports:
             - containerPort: 80
           env:
           - name: CONFIGURATION_SERVICE
-            value: "http://localhost:8081/configuration"
+            value: "http://localhost:8081/configuration-service"
+          - name: SHIPYARD_CONTROLLER
+            value: 'http://localhost:8081/controlPlane'
           - name: ENVIRONMENT
             value: 'production'
           - name: INGRESS_HOSTNAME_SUFFIX
@@ -62,6 +68,12 @@ spec:
               configMapKeyRef:
                 name: ingress-config
                 key: istio_gateway
+                optional: true
+          - name: HOSTNAME_TEMPLATE
+            valueFrom:
+              configMapKeyRef:
+                name: ingress-config
+                key: hostname_template
                 optional: true
           livenessProbe:
             httpGet:
