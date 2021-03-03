@@ -210,7 +210,12 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		}
 	}
 
-	err = pm.ProjectMaterializedView.UpdateUpstreamInfo(*params.Name, params.GitRemoteURL, params.GitUser)
+	updateProject := *oldProject
+	updateProject.GitUser = params.GitUser
+	updateProject.GitRemoteURI = params.GitRemoteURL
+	updateProject.Shipyard = params.Shipyard
+
+	err = pm.ProjectMaterializedView.UpdateProject(&updateProject)
 	if err != nil {
 		return err, func() error {
 
@@ -382,6 +387,7 @@ func getShipyardNotAvailableError(project string) string {
 
 func toModelProject(project models.ExpandedProject) apimodels.Project {
 	return apimodels.Project{
+
 		CreationDate:    project.CreationDate,
 		GitRemoteURI:    project.GitRemoteURI,
 		GitUser:         project.GitUser,

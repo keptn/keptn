@@ -523,7 +523,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		return nil
 	}
 
-	projectsDBOperations.UpdateUpstreamInfoFunc = func(projectName string, uri string, user string) error {
+	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
 		return errors.New("Whoops...")
 	}
 
@@ -533,6 +533,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
+		Shipyard:     "my-shipyard",
 	}
 	err, rollback := instance.Update(params)
 	assert.NotNil(t, err)
@@ -545,13 +546,19 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		ProjectName:  *params.Name,
 	}
 
+	expectedUpdateProject := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "git-url",
+		GitUser:         "git-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-shipyard",
+		ShipyardVersion: "v1",
+	}
+
 	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
-	assert.Equal(t, "my-project", projectsDBOperations.UpdateUpstreamInfoCalls()[0].ProjectName)
-	assert.Equal(t, "git-user", projectsDBOperations.UpdateUpstreamInfoCalls()[0].User)
-	assert.Equal(t, "git-url", projectsDBOperations.UpdateUpstreamInfoCalls()[0].URI)
-
+	assert.Equal(t, expectedUpdateProject, projectsDBOperations.UpdateProjectCalls()[0].Prj)
 	assert.Equal(t, toModelProject(*oldProject), configStore.UpdateProjectCalls()[1].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
 	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
@@ -603,7 +610,7 @@ func TestUpdate(t *testing.T) {
 		return nil
 	}
 
-	projectsDBOperations.UpdateUpstreamInfoFunc = func(projectName string, uri string, user string) error {
+	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
 		return nil
 	}
 
@@ -613,6 +620,7 @@ func TestUpdate(t *testing.T) {
 		GitToken:     "git-token",
 		GitUser:      "git-user",
 		Name:         common.Stringp("my-project"),
+		Shipyard:     "my-shipyard",
 	}
 	err, rollback := instance.Update(params)
 	assert.Nil(t, err)
@@ -625,12 +633,20 @@ func TestUpdate(t *testing.T) {
 		ProjectName:  *params.Name,
 	}
 
+	expectedUpdateProject := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "git-url",
+		GitUser:         "git-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-shipyard",
+		ShipyardVersion: "v1",
+	}
+
 	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
-	assert.Equal(t, "my-project", projectsDBOperations.UpdateUpstreamInfoCalls()[0].ProjectName)
-	assert.Equal(t, "git-user", projectsDBOperations.UpdateUpstreamInfoCalls()[0].User)
-	assert.Equal(t, "git-url", projectsDBOperations.UpdateUpstreamInfoCalls()[0].URI)
+
+	assert.Equal(t, expectedUpdateProject, projectsDBOperations.UpdateProjectCalls()[0].Prj)
 
 }
 
