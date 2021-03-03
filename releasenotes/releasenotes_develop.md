@@ -51,6 +51,34 @@ Last but not least, many thanks to the community for the rich discussions around
 
 Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0.2.0)
 
+
+## Breaking changes
+
+### API
+
+- Introduction of shipyard controller API via: `/api/controlPlane/v1`
+- Adding and updating resources works on the endpoint: `/api/configuration-service/v1`
+- **Project** endpoints have been moved to: `/api/controlPlane/v1/project`
+- **Stage** endpoints have been moved to: `/api/controlPlane/v1/stage`
+- **Service** endpoints have been moved to: `/api/controlPlane/v1/service`
+- **Evaluation** endpoint for triggering an evaluaiton has been moved to: `/api/v1/project​/{project}​/stage​/{stage}​/service​/{service}​/evaluation`
+- **Events** /GET endpoint has been moved to: `/api/mongodb-datastore/event`
+
+### CLI
+
+- `keptn send event start-evaluation` to trigger an evaluation has been deprecated. Use `keptn trigger evaluation` instead:
+
+  ```
+  keptn trigger evaluation --project=my-sockshop --service=foobar --stage=hardening)
+  ```
+
+- `keptn send event new-artifact` to send a configuration change that triggers a delivery of a new artifact has been deprecated. Use `kept trigger delivery` instead: 
+
+  ```
+  keptn trigger delivery --project=sockshop --service=carts-db --image=docker.io/mongo --tag=4.2.2 --sequence=delivery-direct
+  ```
+
+
 ## New Features
 
 <details><summary>Platform Support / Installer</summary>
