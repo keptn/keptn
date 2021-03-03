@@ -78,22 +78,9 @@ func doUpgradePreRunCheck() error {
 		return nil
 	}
 
-	statisticsDeploymentAvailable, err := kube.CheckDeploymentAvailable("statistics-service")
-	if err != nil {
-		return err
-	}
-	if statisticsDeploymentAvailable {
-		statisticsServiceManagedByHelm, err := kube.CheckDeploymentManagedByHelm("statistics-service")
-		if err != nil {
-			return err
-		}
-		if !statisticsServiceManagedByHelm {
-			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it")
-		}
-	}
-
 	chartRepoURL := getChartRepoURL(upgradeParams.ChartRepoURL)
 
+	var err error
 	if keptnUpgradeChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
 		return err
 	}
@@ -159,6 +146,21 @@ func doUpgradePreRunCheck() error {
 			logging.PrintLog(err.Error(), logging.VerboseLevel)
 			logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
+		}
+	}
+
+	// Check if statistics service is already running and NOT deployed by helm (https://github.com/keptn/keptn/issues/3399)
+	statisticsDeploymentAvailable, err := kube.CheckDeploymentAvailable("statistics-service")
+	if err != nil {
+		return err
+	}
+	if statisticsDeploymentAvailable {
+		statisticsServiceManagedByHelm, err := kube.CheckDeploymentManagedByHelm("statistics-service")
+		if err != nil {
+			return err
+		}
+		if !statisticsServiceManagedByHelm {
+			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it")
 		}
 	}
 
