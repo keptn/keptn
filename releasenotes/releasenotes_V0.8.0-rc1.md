@@ -208,7 +208,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Create sequence screen and load all triggers [2625](https://github.com/keptn/keptn/issues/2625)
   - Show task details in sequence details [2938](https://github.com/keptn/keptn/issues/2938)
   - Refinement of the sequence tile [2628](https://github.com/keptn/keptn/issues/2628)
-- Replace occurances of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
+- Replace occurrences of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
 - Link back to evaluation from Environment [2696](https://github.com/keptn/keptn/issues/2696)
 - Support deep links in Bridge for 0.8.x [3207](https://github.com/keptn/keptn/issues/3207)
 - Adapt invalidation of events [3290](https://github.com/keptn/keptn/issues/3290)
