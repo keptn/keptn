@@ -35,7 +35,7 @@ type ProjectManager struct {
 	SecretStore             common.SecretStore
 	ProjectMaterializedView db.ProjectsDBOperations
 	TaskSequenceRepository  db.TaskSequenceRepo
-	EventRpository          db.EventRepo
+	EventRepository          db.EventRepo
 }
 
 var nilRollback = func() error {
@@ -53,7 +53,7 @@ func NewProjectManager(
 		SecretStore:             secretStore,
 		ProjectMaterializedView: dbProjectsOperations,
 		TaskSequenceRepository:  taskSequenceRepo,
-		EventRpository:          eventRepo,
+		EventRepository:          eventRepo,
 		Logger:                  keptncommon.NewLogger("", "", "shipyard-controller"),
 	}
 	return projectUpdater
@@ -258,7 +258,7 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
-	if err := pm.EventRpository.DeleteEventCollections(projectName); err != nil {
+	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
 		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
 	}
 
