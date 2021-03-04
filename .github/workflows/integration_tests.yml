@@ -783,6 +783,7 @@ jobs:
           if [[ "$BRANCH" == "release-"* ]]; then
             echo "Installing gcloud CLI"
             export OS_TYPE="linux"
+            mkdir ~/downloads
             ./test/utils/download_and_install_gcloud.sh
             echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
             gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
