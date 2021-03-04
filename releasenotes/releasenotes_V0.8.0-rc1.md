@@ -1,6 +1,6 @@
 # Release Notes 0.8.0-rc1
 
-Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
+Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipyard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
 
 ---
 
