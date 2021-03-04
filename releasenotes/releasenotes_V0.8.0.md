@@ -32,7 +32,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :star2: *Keptn CLI supports multiple Keptn installations*: The new Keptn CLI easies working with multiple Keptns since it recognizes switches between Kubernetes clusters and then asks for switching the context Keptn context too. Consequently, your CLI will be automatically connected to the Keptn running on another K8s cluster.   
 
-:star: *Deployment of custom Helm Charts*: An extension of the helm-service allows to deploy custom Helm Charts meaning that the Helm Chart can contain any custom resource and is not limited to a *Kubernetes service* and *deployment*. *Note:* When using this option, the automatic rollback capability of Keptn is not supported.
+:star: *Deployment of custom Helm Charts*: An extension of the helm-service allows to deploy custom Helm Charts meaning that the Helm Chart can contain any custom resource and is not limited to a *Kubernetes service* and *deployment*. *Note:* When using this option, the automatic rollback capability of Keptn is not supported and the Helm Chart is not under control by Keptn. Consequently, this feature is currently marked as experimental.
 
 :sparkles: *SLI breakdown displayed as a table in Keptn Bridge*: For the quality gates capabilities of Keptn, the SLI breakdown is now displayed as a table given a better overview of the individual results. 
 
