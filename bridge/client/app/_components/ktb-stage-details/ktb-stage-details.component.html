@@ -25,7 +25,7 @@
         </dt-toggle-button-group>
         <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
           <dt-icon class="icon" name="information"></dt-icon>
-          <p class="m-0">No service onboarded yet. Follow the intructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+          <p class="m-0">No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
         </div>
         <ng-container *ngFor="let service of selectedStage.services">
           <ktb-expandable-tile [expanded]="countOpenApprovals(project, selectedStage, service) > 0"
