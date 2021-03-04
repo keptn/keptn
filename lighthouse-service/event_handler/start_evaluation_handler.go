@@ -112,7 +112,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters, e.Labels)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
 	return nil
 }
 
@@ -149,15 +149,15 @@ func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, s
 	return "", "", errors.New("evaluation.triggered event does not contain evaluation timeframe")
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter, labels map[string]string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
 	source, _ := url.Parse("lighthouse-service")
 
-	getSLIEvent := keptnv2.GetSLITriggeredEventData{
+	getSLI := keptnv2.GetSLITriggeredEventData{
 		EventData: keptnv2.EventData{
-			Project: project,
-			Stage:   stage,
-			Service: service,
-			Labels:  labels,
+			Project: e.Project,
+			Stage:   e.Stage,
+			Service: e.Service,
+			Labels:  e.Labels,
 		},
 		GetSLI: keptnv2.GetSLI{
 			SLIProvider:   sliProvider,
@@ -168,13 +168,29 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		},
 	}
 
+	deployment := ""
+	if e.Deployment.DeploymentNames != nil && len(e.Deployment.DeploymentNames) > 0 {
+		deployment = e.Deployment.DeploymentNames[0]
+	}
+	getSLIEventData := GetSLITriggeredEventDataExtended{
+		GetSLITriggeredEventData: getSLI,
+		Deployment:               deployment,
+	}
+
 	event := cloudevents.NewEvent()
 	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetData(cloudevents.ApplicationJSON, getSLIEvent)
+	event.SetData(cloudevents.ApplicationJSON, getSLIEventData)
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)
+}
+
+// GetSLITriggeredEventDataExtended is a wrapper around the keptnv2.GetSLITriggeredEventData to also include
+// The deployment field needed by the SLI service (https://github.com/keptn/keptn/issues/3411)
+type GetSLITriggeredEventDataExtended struct {
+	keptnv2.GetSLITriggeredEventData
+	Deployment string `json:"deployment"`
 }

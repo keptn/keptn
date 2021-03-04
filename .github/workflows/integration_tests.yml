@@ -391,7 +391,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "master"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
           QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
           QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
         run: test/test_quality_gates_standalone.sh
@@ -771,3 +771,21 @@ jobs:
             dist/keptn-installer/*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Helm Charts to Google Cloud
+        id: upload_helm_charts
+        env:
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+        run: |
+          if [[ "$BRANCH" == "release-"* ]]; then
+            echo "Installing gcloud CLI"
+            export OS_TYPE="linux"
+            mkdir ~/downloads
+            ./test/utils/download_and_install_gcloud.sh
+            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+          fi

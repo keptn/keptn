@@ -29,9 +29,6 @@ spec:
         image: keptn/jmeter-service:latest
         ports:
         - containerPort: 8080
-        env:
-        - name: EVENTBROKER
-          value: 'http://localhost:8081/event'
       - name: distributor
         image: keptn/distributor:latest
         livenessProbe:

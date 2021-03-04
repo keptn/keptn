@@ -54,6 +54,16 @@ jobs:
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
 
     steps:
+      - name: Prevent PR Build on Release Branch
+        # if you create a PR from release-* to anything else, there is usually a push-build in action, allowing
+        # us to cancel the PR build
+        if: github.event_name == 'pull_request'
+        run: |
+          if [[ "$GITHUB_HEAD_REF" == "release-"* ]]; then
+            echo "::error::Failing CI Build for Pull Request on purpose, as there is a push build"
+            exit 1
+          fi
+
       - name: Check out code
         uses: actions/checkout@v2
         with:

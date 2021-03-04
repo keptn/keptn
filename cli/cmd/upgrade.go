@@ -149,6 +149,21 @@ func doUpgradePreRunCheck() error {
 		}
 	}
 
+	// Check if statistics service is already running and NOT deployed by helm (https://github.com/keptn/keptn/issues/3399)
+	statisticsDeploymentAvailable, err := kube.CheckDeploymentAvailable("statistics-service", namespace)
+	if err != nil {
+		return err
+	}
+	if statisticsDeploymentAvailable {
+		statisticsServiceManagedByHelm, err := kube.CheckDeploymentManagedByHelm("statistics-service", namespace)
+		if err != nil {
+			return err
+		}
+		if !statisticsServiceManagedByHelm {
+			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it")
+		}
+	}
+
 	return nil
 }
 
