@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2181
 
 # For official releases we want to upload a helm-chart to google cloud bucket
 # This step involves downloading index.yaml and updating it

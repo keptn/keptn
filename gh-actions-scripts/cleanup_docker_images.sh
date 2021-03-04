@@ -39,6 +39,8 @@ fi
 
 # Authenticate at Docker Hub
 # Authenticate against DockerHub API
+
+# shellcheck disable=SC2086
 DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
 if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
@@ -61,7 +63,7 @@ function get_outdated_commit_hash_tags() {
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
   response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?ordering=-last_updated&page_size=${COUNT}" | \
      jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("\\b[0-9a-f]{7}\\b"))|.name')
-  echo $response
+  echo "$response"
 }
 
 
@@ -81,7 +83,7 @@ function get_outdated_datetime_tags() {
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
   response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | \
     jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("^\\b[0-9]{8}\\b"))|.name')
-  echo $response
+  echo "$response"
 }
 
 # get all outdated images (e.g., for repo=keptn/bridge2, tag_filter=patch, max_age_days=30)
@@ -100,7 +102,7 @@ function get_outdated_images() {
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
   response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
-  echo $response
+  echo "$response"
 }
 
 # delete a tag in a repo
@@ -124,59 +126,61 @@ function delete_tag() {
 }
 
 
-for s in ${IMAGES[@]}; do
+for s in "${IMAGES[@]}"; do
   echo "deleting outdated images for service ${s}"
 
   # get all outdated commit hash tags
-  outdated_commit_hash_tags=$(get_outdated_commit_hash_tags $s $MAX_AGE)
+  outdated_commit_hash_tags=$(get_outdated_commit_hash_tags "$s" "$MAX_AGE")
 
-  outdated_datetime_tags=$(get_outdated_datetime_tags $s "2020" $MAX_AGE)
+  outdated_datetime_tags=$(get_outdated_datetime_tags "$s" "2020" "$MAX_AGE")
 
   # get all outdated tag where tag contains "dev-PR"
-  # outdated_dev_pr_tags=$(get_outdated_images $s "dev-PR" $MAX_AGE)
+  # outdated_dev_pr_tags=$(get_outdated_images "$s" "dev-PR" "$MAX_AGE")
 
   # ToDo: Also Check for "x.y.z-dev.20" tags (e.g., 0.8.0-dev.20210101)
-  # outdated_dev_tags=$(get_outdated_images $s "dev.20" $MAX_AGE)
+  # outdated_dev_tags=$(get_outdated_images "$s" "dev.20" "$MAX_AGE")
 
   # get all outdated tag where tag contains "feature"
-  outdated_feature_tags=$(get_outdated_images $s "feature" $MAX_AGE)
+  outdated_feature_tags=$(get_outdated_images "$s" "feature" "$MAX_AGE")
   # get all outdated tag where tag contains "bug"
-  outdated_bug_tags=$(get_outdated_images $s "bug" $MAX_AGE)
+  outdated_bug_tags=$(get_outdated_images "$s" "bug" "$MAX_AGE")
   # get all outdated tag where tag contains "patch"
-  outdated_patch_tags=$(get_outdated_images $s "patch" $MAX_AGE)
+  outdated_patch_tags=$(get_outdated_images "$s" "patch" "$MAX_AGE")
 
   # get all outdated tag where tag contains "dirty"
-  outdated_dirty_tags=$(get_outdated_images $s "dirty" $MAX_AGE)
+  outdated_dirty_tags=$(get_outdated_images "$s" "dirty" "$MAX_AGE")
 
   for tag in ${outdated_commit_hash_tags}; do
-    delete_tag $s $tag
+    delete_tag "$s" "$tag"
   done
 
   for tag in ${outdated_datetime_tags}; do
-    delete_tag $s $tag
+    delete_tag "$s" "$tag"
   done
 
-  for tag in ${outdated_dev_pr_tags}; do
-    echo "dummy" $s $tag
-  done
+  # variable definitions commented out above
 
-  for tag in ${outdated_dev_tags}; do
-    echo "dummy" $s $tag
-  done
+  # for tag in ${outdated_dev_pr_tags}; do
+  #   echo "dummy" "$s" "$tag"
+  # done
+
+  # for tag in ${outdated_dev_tags}; do
+  #   echo "dummy" "$s" "$tag"
+  # done
 
   for tag in ${outdated_feature_tags}; do
-    delete_tag $s $tag
+    delete_tag "$s" "$tag"
   done
 
   for tag in ${outdated_bug_tags}; do
-    delete_tag $s $tag
+    delete_tag "$s" "$tag"
   done
 
   for tag in ${outdated_patch_tags}; do
-    delete_tag $s $tag
+    delete_tag "$s" "$tag"
   done
 
   for tag in ${outdated_dirty_tags}; do
-    delete_tag $s $tag
+    delete_tag "$s" "$tag"
   done
 done

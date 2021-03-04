@@ -70,7 +70,7 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -303,7 +303,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -423,7 +423,7 @@ jobs:
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -576,7 +576,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -616,7 +616,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:

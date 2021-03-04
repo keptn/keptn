@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2181
+
 ################################################################
 # This is shared library for the keptn installation            #
 ################################################################
@@ -45,12 +48,12 @@ function verify_variable() {
 # Waits for a deployment in a given namespace to be available.
 function wait_for_deployment_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;
-  RETRY=0; RETRY_MAX=24; 
+  RETRY=0; RETRY_MAX=24;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
-      RETRY=$[$RETRY+1]
+      RETRY=$((RETRY+1))
       print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     else
@@ -58,7 +61,7 @@ function wait_for_deployment_in_namespace() {
     fi
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ "$RETRY" == "$RETRY_MAX" ]]; then
     print_error "Deployment ${DEPLOYMENT} in namespace ${NAMESPACE} is not available"
     exit 1
   fi
@@ -67,24 +70,25 @@ function wait_for_deployment_in_namespace() {
 
   verify_variable "$DEPLOYMENT_LIST" "List of deployments in namespace $NAMESPACE could not be derived."
 
+  # shellcheck disable=SC2206
   array=(${DEPLOYMENT_LIST// / })
 
-  for DEPLOYED_DEPLOYMENT in "${array[@]}" 
+  for DEPLOYED_DEPLOYMENT in "${array[@]}"
   do
     while [[ $RETRY -lt $RETRY_MAX ]]; do
-      kubectl rollout status deployment $DEPLOYMENT -n $NAMESPACE
+      kubectl rollout status deployment "$DEPLOYMENT" -n "$NAMESPACE"
 
       if [[ $? == '0' ]]
       then
         print_debug "Deployment ${DEPLOYED_DEPLOYMENT} in ${NAMESPACE} namespace available."
         break
       fi
-      RETRY=$[$RETRY+1]
+      RETRY=$((RETRY+1))
       print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for deployment ${DEPLOYED_DEPLOYMENT} in namespace ${NAMESPACE} ..."
       sleep 10
     done
 
-    if [[ $RETRY == $RETRY_MAX ]]; then
+    if [[ "$RETRY" == "$RETRY_MAX" ]]; then
       print_error "Deployment ${DEPLOYED_DEPLOYMENT} in namespace ${NAMESPACE} is not available"
       exit 1
     fi
@@ -94,27 +98,27 @@ function wait_for_deployment_in_namespace() {
 # Waits for all pods in a given namespace to be up and running.
 function wait_for_all_pods_in_namespace() {
   NAMESPACE=$1;
-  RETRY=0; RETRY_MAX=24; 
+  RETRY=0; RETRY_MAX=24;
 
   CMD="kubectl get pods -n $NAMESPACE && [[ \$(kubectl get pods -n $NAMESPACE 2>&1 | grep -c -v -E '(Running|Completed|Terminating|STATUS)') -eq 0 ]]"
   #CMD="[[ \$(kubectl get pods -n $NAMESPACE 2>&1 | grep -c -v -E '(Running|Completed|Terminating|STATUS)') -eq 0 ]]"
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    eval $CMD
+    eval "$CMD"
 
     if [[ $? == '0' ]]; then
       print_debug "All pods are running in namespace ${NAMESPACE}."
       break
     fi
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for pods to start in namespace ${NAMESPACE} ..."
     sleep 10
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ $RETRY == "$RETRY_MAX" ]]; then
     print_error "Pods in namespace ${NAMESPACE} are not running."
     # show the pods that have problems
-    kubectl get pods --field-selector=status.phase!=Running -n ${NAMESPACE}
+    kubectl get pods --field-selector=status.phase!=Running -n "${NAMESPACE}"
     exit 1
   fi
 }
@@ -125,18 +129,18 @@ function wait_for_crds() {
   RETRY=0; RETRY_MAX=24;
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    kubectl get $CRDS
+    kubectl get "$CRDS"
 
     if [[ $? == '0' ]]; then
       print_debug "All custom resource definitions are available."
       break
     fi
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for custom resource definitions ..."
     sleep 10
   done
 
-  if [[ $RETRY == $RETRY_MAX ]]; then
+  if [[ $RETRY == "$RETRY_MAX" ]]; then
     print_error "Custom resource definitions are missing."
     exit 1
   fi
@@ -149,7 +153,7 @@ function wait_for_istio_ingressgateway() {
   DOMAIN="";
 
   while [[ $RETRY -lt $RETRY_MAX ]]; do
-    DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].${PROPERTY})
+    DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r ".status.loadBalancer.ingress[0].${PROPERTY}")
     if [[ $DOMAIN = "null" ]]; then
       DOMAIN=""
     fi
@@ -158,7 +162,7 @@ function wait_for_istio_ingressgateway() {
       print_debug "${PROPERTY} of Istio ingress gateway is available."
       break
     fi
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for ${PROPERTY} of Istio ingress gateway to be available ..."
     sleep 5
   done
@@ -192,7 +196,7 @@ function wait_for_k8s_ingress() {
       break
     fi
 
-    RETRY=$[$RETRY+1]
+    RETRY=$((RETRY+1))
     print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 5s for domain name or IP address of ingress gateway to be available ..."
     sleep 5
 

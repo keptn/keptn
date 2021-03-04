@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 function cleanup() {
@@ -9,7 +10,7 @@ trap cleanup EXIT
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "${KEPTN_NAMESPACE}" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 # test configuration
 PROJECT="delivery-assistant-project"
@@ -83,16 +84,16 @@ check_number_open_approvals $PROJECT combi2 1
 combi2ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.id')
 keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi2 | awk '{if(NR>1)print}' | jq -r '.shkeptncontext')
 
-echo $combi2ApprovalId
-keptn send event approval.finished --id=${combi2ApprovalId} --project=delivery-assistant-project --stage=combi2
+echo "$combi2ApprovalId"
+keptn send event approval.finished --id="${combi2ApprovalId}" --project=delivery-assistant-project --stage=combi2
 sleep 10
 check_no_open_approvals $PROJECT combi2
 
 # print the response
 echo "Resulting approval.finished event by approval:"
 
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.combi2.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-echo $response | jq .
+response=$(get_keptn_event $PROJECT "$keptn_context_id" sh.keptn.event.combi2.approval.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".data.project" "$PROJECT"
@@ -104,16 +105,17 @@ check_number_open_approvals $PROJECT combi3 1
 
 combi3ApprovalId=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}' | jq -r '.id')
 keptn_context_id=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}' | jq -r '.shkeptncontext')
-keptn send event approval.finished --id=${combi3ApprovalId} --project=delivery-assistant-project --stage=combi3
+keptn send event approval.finished --id="${combi3ApprovalId}" --project=delivery-assistant-project --stage=combi3
 sleep 5
 check_no_open_approvals $PROJECT combi3
-combi3EventLength=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}')
+# This appears to not be used.
+# combi3EventLength=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi3 | awk '{if(NR>1)print}')
 
 # print the response
 echo "Resulting approval.finished event by approval:"
 
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.combi3.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-echo $response | jq .
+response=$(get_keptn_event $PROJECT "$keptn_context_id" sh.keptn.event.combi3.approval.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".data.project" "$PROJECT"
@@ -128,15 +130,15 @@ keptn_context_id_1=$(keptn get event approval.triggered --project=delivery-assis
 combi4ApprovalId2=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.[1].id')
 keptn_context_id_2=$(keptn get event approval.triggered --project=delivery-assistant-project --stage=combi4 | awk '{if(NR>1)print}' | jq -r '.[0].shkeptncontext')
 
-keptn send event approval.finished --id=${combi4ApprovalId1} --project=delivery-assistant-project --stage=combi4
+keptn send event approval.finished --id="${combi4ApprovalId1}" --project=delivery-assistant-project --stage=combi4
 sleep 5
 check_number_open_approvals $PROJECT combi4 1
 
 # print the response
 echo "Resulting approval.finished event by approval:"
 
-response=$(get_keptn_event $PROJECT $keptn_context_id_1 sh.keptn.event.combi4.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
-echo $response | jq .
+response=$(get_keptn_event $PROJECT "$keptn_context_id_1" sh.keptn.event.combi4.approval.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".data.project" "$PROJECT"
@@ -144,15 +146,15 @@ verify_using_jq "$response" ".data.stage" "combi4"
 verify_using_jq "$response" ".data.service" "$SERVICE"
 verify_using_jq "$response" ".data.result" "pass"
 
-keptn send event approval.finished --id=${combi4ApprovalId2} --project=delivery-assistant-project --stage=combi4
+keptn send event approval.finished --id="${combi4ApprovalId2}" --project=delivery-assistant-project --stage=combi4
 sleep 5
 check_no_open_approvals $PROJECT combi4
 
 # print the response
 echo "Resulting approval.finished event by approval:"
-response=$(get_keptn_event $PROJECT $keptn_context_id_2 sh.keptn.event.combi4.approval.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event $PROJECT "$keptn_context_id_2" sh.keptn.event.combi4.approval.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
 
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".data.project" "$PROJECT"
