@@ -536,7 +536,7 @@ jobs:
           fi
 
           # determine output file name based on version, go os, architecture
-          OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
 
           if [[ "$BRANCH" == "master" ]]; then
@@ -545,13 +545,13 @@ jobs:
           fi
 
           # build the binary using makefile
-          make build-cli OUTPUT_EXECUTEABLE_NAME="$OUTPUT_EXECUTEABLE_NAME"
+          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
           # verify output file exists
-          ls bin/${OUTPUT_EXECUTEABLE_NAME}
+          ls bin/${OUTPUT_EXECUTABLE_NAME}
 
           # create a .tar.gz archive of the binary
           mkdir dist
-          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTEABLE_NAME}
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
       - name: Upload Keptn CLI as an artifact
         uses: actions/upload-artifact@v2
         with:
