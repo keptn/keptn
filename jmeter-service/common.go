@@ -145,7 +145,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 		isPrimaryFile := strings.Contains(*resource.ResourceURI, primaryTestFileName)
 		startingIndex := strings.Index(*resource.ResourceURI, resourceURIFolderOfInterest)
 
-		// store to local directory if it doesnt already exist
+		// store to local directory if it doesn't already exist
 		// now lets strip off the any prepending directory names prior to resourceURIFolderOfInterest
 
 		targetFileName := ""
@@ -172,7 +172,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 			fileCount = fileCount + 1
 		} else {
 			skippedFileCount = skippedFileCount + 1
-			// 	logger.Debug(fmt.Sprintf("Not storing %s as it doesnt match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceURIFolderOfInterest))
+			// 	logger.Debug(fmt.Sprintf("Not storing %s as it doesn't match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceURIFolderOfInterest))
 		}
 	}
 
@@ -237,7 +237,7 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 		directory += pathItem + "/"
 	}
 
-	// now lets create that directory if it doesnt exist
+	// now lets create that directory if it doesn't exist
 	err := os.MkdirAll(directory, os.ModePerm)
 	if err != nil {
 		return err
