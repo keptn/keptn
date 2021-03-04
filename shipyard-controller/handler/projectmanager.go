@@ -134,7 +134,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		},
 	}
 	if err := pm.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
-		pm.Logger.Error(fmt.Sprintf("Error occured while uploading shipyard resource to configuraiton service: %s", err.Error()))
+		pm.Logger.Error(fmt.Sprintf("Error occured while uploading shipyard resource to configuration service: %s", err.Error()))
 		return err, func() error {
 			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
 			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
