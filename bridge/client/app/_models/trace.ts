@@ -204,7 +204,7 @@ class Trace {
   }
 
   public isEvaluation(): string {
-    return this.type === EventTypes.EVALUATION_TRIGGERED ? this.data.stage : null;
+    return this.type.endsWith('.evaluation.triggered') ? this.data.stage : null;
   }
 
   public isEvaluationInvalidation(): boolean {
