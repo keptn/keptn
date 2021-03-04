@@ -376,7 +376,7 @@ func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 
 }
 
-func TestUpdate_FailsWhenUpdateingGitRepositorySecretFails(t *testing.T) {
+func TestUpdate_FailsWhenUpdatingGitRepositorySecretFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
