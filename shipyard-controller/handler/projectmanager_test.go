@@ -195,7 +195,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 		return nil
 	}
 
-	configStore.CreateProjectShipyardFunc = func(projectName string, resoureces []*keptnapimodels.Resource) error {
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error {
 		return errors.New("whoops...")
 	}
 
@@ -243,7 +243,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error { return nil }
 	configStore.CreateStageFunc = func(projectName string, stageName string) error { return nil }
-	configStore.CreateProjectShipyardFunc = func(projectName string, resoureces []*keptnapimodels.Resource) error { return nil }
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error { return nil }
 	configStore.DeleteProjectFunc = func(projectName string) error { return nil }
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error { return nil }
 	secretStore.DeleteSecretFunc = func(name string) error { return nil }
@@ -289,7 +289,7 @@ func TestCreate(t *testing.T) {
 		return nil
 	}
 
-	configStore.CreateProjectShipyardFunc = func(projectName string, resoureces []*keptnapimodels.Resource) error {
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error {
 		return nil
 	}
 
