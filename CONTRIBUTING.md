@@ -103,7 +103,7 @@ We are running automated code style checks for pull requests using the following
   * ``gofmt -l -s .`` 
 * [codecov.io](codecov.yml) - tracks code coverage based on unit tests
 
-### Boyscout rule
+### Boy Scout Rule
 
 > Always leave the code better than you found it!
 
