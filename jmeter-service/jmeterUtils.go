@@ -125,7 +125,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  * testInfo: information about the test, e.g: project, stage, service
  * workload: jmeter.conf.yaml details
  * resultsDir: resultsDir output
- * url: the full server url. It gets parsed and then passed via JMeter properties SERVER_URL, SERVER_PORT, PROTOCOL, SERVER_PROTOCAL and CHECK_PATH
+ * url: the full server url. It gets parsed and then passed via JMeter properties SERVER_URL, SERVER_PORT, PROTOCOL, SERVER_PROTOCOL and CHECK_PATH
  * LTN: will be passed as DT_LTN
  * funcValidation: if true the function returns false if there were any errors detected during test execution
  *
