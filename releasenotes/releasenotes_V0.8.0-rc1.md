@@ -247,7 +247,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - Format the Go imports [3150](https://github.com/keptn/keptn/issues/3150)
 - Test the linking of stages based on task sequence events: `sh.keptn.event.[stage].[sequence].finished` [2534](https://github.com/keptn/keptn/issues/2534)
 
-<details><summary>Update of third-party depenendencies to their latest version, most notable are:</summary>
+<details><summary>Update of third-party dependencies to their latest version, most notable are:</summary>
 <p>
  
 * *Go* (Microservices)
