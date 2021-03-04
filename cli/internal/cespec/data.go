@@ -182,6 +182,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				Success: true,
 				Message: "a message",
 			},
+			DisplayName: "Response Time P95",
 			PassTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
 				Criteria:    "<=+10%",
 				TargetValue: 600,

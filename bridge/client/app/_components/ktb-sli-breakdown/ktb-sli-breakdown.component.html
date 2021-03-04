@@ -2,7 +2,9 @@
 <dt-table [dataSource]="tableEntries" dtSort #sortable>
   <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="5">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [class.bold]="row.keySli">{{ row.name }}</dt-cell>
+    <dt-cell *dtCellDef="let row" [class.bold]="row.keySli">
+      <span class="truncate" [title]="row.name" [textContent]="row.name"></span>
+    </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="value" dtColumnAlign="number" dtColumnProportion="1">

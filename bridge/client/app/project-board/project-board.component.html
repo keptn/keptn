@@ -31,7 +31,7 @@
   </div>
 </div>
 <div class="project-board" fxLayout="row" *ngIf="project$ | async as project">
-  <dt-menu aria-label="Default Menu Example" class="dt-default-menu-example">
+  <dt-menu aria-label="Default Menu Example" class="dt-default-menu-example" fxFlex="0 0 150px">
     <dt-menu-group label="">
       <a (click)="selectView('environment', project.projectName)" [class.active]="view === 'environment'" dtMenuItem>Environment</a>
       <a (click)="redirectView('service', project.projectName)" [class.active]="view === 'service'" dtMenuItem>Services</a>
@@ -40,9 +40,9 @@
     </dt-menu-group>
   </dt-menu>
   <ng-container [ngSwitch]="view">
-    <ktb-environment-view *ngSwitchCase="'environment'" fxFlex="100" [project]="project"></ktb-environment-view>
-    <ktb-service-view *ngSwitchCase="'service'" fxFlex="100"></ktb-service-view>
-    <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="100"></ktb-sequence-view>
-    <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="100"></ktb-integration-view>
+    <ktb-environment-view *ngSwitchCase="'environment'" fxFlex="calc(100% - 150px)" [project]="project"></ktb-environment-view>
+    <ktb-service-view *ngSwitchCase="'service'" fxFlex="calc(100% - 150px)"></ktb-service-view>
+    <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="calc(100% - 150px)"></ktb-sequence-view>
+    <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="calc(100% - 150px)"></ktb-integration-view>
   </ng-container>
 </div>
