@@ -292,7 +292,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - nats-io/nats-server/v2 to 2.1.9
 * *NodeJS* (Bridge)
   - marked to 2.0.0
-  - higlights.js to 10.4.1
+  - highlights.js to 10.4.1
 
 </p>
 </details>
