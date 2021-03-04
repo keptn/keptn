@@ -67,7 +67,7 @@ jobs:
           git checkout -b ${RELEASE_BRANCH_NAME}
 
       - name: Copy release notes develop
-        run: cp releasenotes/releasenotes_develop.md releasenotes_V${{ github.event.inputs.versionName }}.md
+        run: cp releasenotes/releasenotes_develop.md releasenotes/releasenotes_V${{ github.event.inputs.versionName }}.md
 
       - name: List changed files
         run: git status
