@@ -263,7 +263,7 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 	}
 
 	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
-		pm.Logger.Error(fmt.Sprintf("could not delete task equence collection: %s", err.Error()))
+		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
 	}
 
 	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
