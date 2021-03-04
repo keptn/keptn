@@ -135,7 +135,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 	foundPrimaryFile := false
 
 	// Download Files
-	// now lets iterate through all resources and download those that match the resourceURIFolderOfInterest and that havent already been downloaded
+	// now lets iterate through all resources and download those that match the resourceURIFolderOfInterest and that haven't already been downloaded
 	// as we download files from project, service and stage level we have different file structures, e.g:
 	// Project: /jmeter/myjmeter.jmx
 	// Stage: /jmeter/myjmeter2.jmx
