@@ -379,3 +379,6 @@ This section lists bugs and limitations that are known but not fixed in this rel
     helm delete <HELM_RELEASE> -n <NAMESPACE>
     ```
 
+## Upgrade to 0.8.0
+
+- The upgrade from Keptn 0.7.3 to 0.8.0 is supported. Please find the documentation here: [Upgrade from Keptn 0.7.3 to 0.8.0](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-7-to-0-8)
