@@ -52,7 +52,7 @@ func getConfigurationServiceURL() string {
 }
 
 /**
- * Returns additoinal JMeter Command Line Parameters including additional params passed to the JMeter script
+ * Returns additional JMeter Command Line Parameters including additional params passed to the JMeter script
  */
 func addJMeterCommandLineArguments(testInfo *TestInfo, initialList []string) []string {
 	dtTenant := fmt.Sprintf("-JDT_TENANT=%s", os.Getenv("DT_TENANT"))
