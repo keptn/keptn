@@ -210,7 +210,7 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	// this will also be used for TSN parameter
 	resultDirectory := fmt.Sprintf("%s_%s_%s_%s_%s", testInfo.Project, testInfo.Service, testInfo.Stage, workload.TestStrategy, testInfo.Context)
 
-	// lets first remove all potentially left over result files from previous runs -> we keept them between runs for troubleshooting though
+	// lets first remove all potentially left over result files from previous runs -> we keep them between runs for troubleshooting though
 	os.RemoveAll(resultDirectory)
 	os.RemoveAll(resultDirectory + "_result.tlf")
 	os.RemoveAll("output.txt")
