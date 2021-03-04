@@ -262,7 +262,7 @@ var remediationFinishedEventData = keptnv2.RemediationFinishedEventData{
 var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
 	EventData: commonEventData,
 	Action: keptnv2.ActionInfo{
-		Name:        "Feature toggeling",
+		Name:        "Feature toggling",
 		Action:      "toggle-feature",
 		Description: "Toggles a feature flag",
 		Value:       map[string]string{"EnableItemCache": "on"},
