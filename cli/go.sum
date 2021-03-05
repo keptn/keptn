@@ -370,6 +370,8 @@ github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7 h1:
 github.com/keptn/kubernetes-utils v0.8.0-alpha.0.20210209145403-cf20ffebddd7/go.mod h1:hH0u+6lk/G4Q+Yl7Bw/prBmnLiDnVUj4jVimXi8HQAA=
 github.com/keptn/kubernetes-utils v0.8.0 h1:5J/08zpmjHmiwQCXhJzS8gf281i9Npo+NHYTzjK1uOA=
 github.com/keptn/kubernetes-utils v0.8.0/go.mod h1:pMRoQsQHpxKmSEuitlRYcoCpoQaWShtMEPGqmvRoM2M=
+github.com/keptn/kubernetes-utils v0.8.1-0.20210305150029-acf3664c8f10 h1:nFwOdzKta2D4MACKfilhee1j6k1bK9vUbKChYQ7wyZo=
+github.com/keptn/kubernetes-utils v0.8.1-0.20210305150029-acf3664c8f10/go.mod h1:pMRoQsQHpxKmSEuitlRYcoCpoQaWShtMEPGqmvRoM2M=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=

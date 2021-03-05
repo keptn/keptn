@@ -20,7 +20,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/keptn/go-utils v0.8.0
-	github.com/keptn/kubernetes-utils v0.8.0
+	github.com/keptn/kubernetes-utils v0.8.1-0.20210305150029-acf3664c8f10
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect

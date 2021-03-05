@@ -18,7 +18,7 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.8.1-0.20210302104249-3e8c4544da66
-	github.com/keptn/kubernetes-utils v0.8.0
+	github.com/keptn/kubernetes-utils v0.8.1-0.20210305150029-acf3664c8f10
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0

@@ -23,7 +23,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/keptn/go-utils v0.8.0
-	github.com/keptn/kubernetes-utils v0.8.0
+	github.com/keptn/kubernetes-utils v0.8.1-0.20210305150029-acf3664c8f10
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.4.2
