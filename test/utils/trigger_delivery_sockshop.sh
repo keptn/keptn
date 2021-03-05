@@ -89,7 +89,7 @@ echo "Still waiting ..."
 sleep 30
 
 ####################################
-# Verify produciton deployment     #
+# Verify production deployment     #
 ####################################
 echo "---------------------------------------------"
 echo "Checking production deployment"

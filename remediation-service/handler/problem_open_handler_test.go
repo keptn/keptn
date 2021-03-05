@@ -43,7 +43,7 @@ spec:
   remediations: 
   - problemType: "Response time degradation"
     actionsOnOpen:
-    - name: Toogle feature flag
+    - name: Toggle feature flag
       action: togglefeature
       description: Toggle feature flag EnablePromotion from ON to OFF
       value:

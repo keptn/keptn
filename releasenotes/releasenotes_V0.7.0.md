@@ -14,7 +14,7 @@
 
 :lock: *Hardening of Keptn:* The hardened of Keptn 0.7 in terms of its permissions on a K8s cluster has been improved by defining the role-based access control (RBAC) of each service.  
 
-:star: *Removed Istio and NGINX - [KEP 18](https://github.com/keptn/enhancement-proposals/pull/18):* Keptn 0.7 does not install Istio nor an NGNIX Ingress controller during the Keptn install process. Instead, the default Kubernetes service types *NodePort* or *LoadBalancer* are used for exposing Keptn to an external IP. In case, the Kubernetes service types *ClusterIP* is chosen, it is required to manually install an Ingress or to go with port-forwarding to access the Keptn API/Bridge; documentation is provided [here](https://keptn.sh/docs/0.7.x/operate/install/).
+:star: *Removed Istio and NGINX - [KEP 18](https://github.com/keptn/enhancement-proposals/pull/18):* Keptn 0.7 does not install Istio nor an NGINX Ingress controller during the Keptn install process. Instead, the default Kubernetes service types *NodePort* or *LoadBalancer* are used for exposing Keptn to an external IP. In case, the Kubernetes service types *ClusterIP* is chosen, it is required to manually install an Ingress or to go with port-forwarding to access the Keptn API/Bridge; documentation is provided [here](https://keptn.sh/docs/0.7.x/operate/install/).
 
 Last but not least, many thanks to the community for the rich discussions around Keptn 0.7, the submitted [Keptn Enhancement Proposals](https://github.com/keptn/enhancement-proposals), and the implementation work!
 
@@ -31,7 +31,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 - Keptn on K3s support [#1896](https://github.com/keptn/keptn/issues/1896)
 - *Hardening:* Use K8s service account with a restricted set of permissions instead of cluster-admin [#1862](https://github.com/keptn/keptn/issues/1862)
 - *Hardening:* Added Kubernetes recommended labels to the Keptn installation [#1996](https://github.com/keptn/keptn/issues/1996)
-- *Installer*: Removed Istio and NGNIX from installer [#1960](https://github.com/keptn/keptn/issues/1960)
+- *Installer*: Removed Istio and NGINX from installer [#1960](https://github.com/keptn/keptn/issues/1960)
 - *OpenShift:* `keptn uninstall` command mistakenly recommended to delete several OpenShift namespaces [#1781](https://github.com/keptn/keptn/issues/1781)
 
 </p>
@@ -53,10 +53,10 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <p>
 
 - Polished the user output and checked links [#2042](https://github.com/keptn/keptn/issues/2042)
-- Removed `--scheme=http` when using Keptn CLI with HTTP instead of HTTPs [#1948](https://github.com/keptn/keptn/issues/1948)
+- Removed `--scheme=http` when using Keptn CLI with HTTP instead of HTTPS [#1948](https://github.com/keptn/keptn/issues/1948)
 - `keptn onboard service` is aborted when continuous.delivery is not installed [#2047](https://github.com/keptn/keptn/issues/2047)
 - `keptn install` removed anything related to Istio and NGINX [#1961](https://github.com/keptn/keptn/issues/1961)
-- `keptn install` only differentiates between Kubernetes and Openshift in the `--platform` flag [#1967](https://github.com/keptn/keptn/issues/1967)
+- `keptn install` only differentiates between Kubernetes and OpenShift in the `--platform` flag [#1967](https://github.com/keptn/keptn/issues/1967)
 - Keptn generate support-archive should have a separate check for ingress options [#1941](https://github.com/keptn/keptn/issues/1941)
 - Show warning when creating a project without Git upstream [#1840](https://github.com/keptn/keptn/issues/1840)
 - Allow specifying an upstream Git for existing projects [#1517](https://github.com/keptn/keptn/issues/1517)
@@ -107,7 +107,7 @@ Implemented **Keptn spec** version: [0.1.4](https://github.com/keptn/spec/tree/0
 <p>
 
 - Update UI look-and-feel [#1974](https://github.com/keptn/keptn/issues/1974)
-- Splitted UI into *Environment* and *Services* view [#1698](https://github.com/keptn/keptn/issues/1698)
+- Split UI into *Environment* and *Services* view [#1698](https://github.com/keptn/keptn/issues/1698)
 - *Environment view:* Click on stage shows stage information and currently deployed services in a panel on the right-side [#1699](https://github.com/keptn/keptn/issues/1699)
 - *Environment view:* Displays that a service is *out-of-sync* in stage overview and detail info [#1700](https://github.com/keptn/keptn/issues/1700)
 - *Environment view:* Introduced buttons to approve/decline a deployment of a service that is *out-of-sync* [#1701](https://github.com/keptn/keptn/issues/1701)

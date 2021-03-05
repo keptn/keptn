@@ -2,7 +2,7 @@
 
 # Keptn
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
-![Github Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
+![GitHub Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
 ![CI](https://github.com/keptn/keptn/workflows/CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/keptn/keptn/branch/master/graph/badge.svg)](https://codecov.io/gh/keptn/keptn)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn/keptn)](https://goreportcard.com/report/github.com/keptn/keptn)

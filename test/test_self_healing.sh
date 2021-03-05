@@ -128,7 +128,7 @@ verify_using_jq "$response" ".data.message" "Remediation disabled for service $S
 ##########################################################################################################################################
 # Testcase 3:
 # Project exists, service has been onboarded, remediation file available, but no service executor available
-# Sending a problem.open event now should result in message: Action toogle-feature triggered but not executed after waiting for 2 minutes.
+# Sending a problem.open event now should result in message: Action toggle-feature triggered but not executed after waiting for 2 minutes.
 ##########################################################################################################################################
 
 echo "Uploading remediation.yaml to $PROJECT/production/$SERVICE"
@@ -173,13 +173,13 @@ fi
 #verify_using_jq "$response" ".data.service" "$SERVICE"
 #verify_using_jq "$response" ".data.remediation.status" "errored"
 #verify_using_jq "$response" ".data.remediation.result" "failed"
-#verify_using_jq "$response" ".data.remediation.message" "Action toogle-feature triggered but not executed after waiting for 2 minutes."
+#verify_using_jq "$response" ".data.remediation.message" "Action toggle-feature triggered but not executed after waiting for 2 minutes."
 
 
 ##########################################################################################################################################
 # Testcase 3:
 # Project exists, service has been onboarded, remediation file available, first action executor is available, but not the second
-# Sending a problem.open event now should result in message: Action toogle-feature triggered but not executed after waiting for 2 minutes.
+# Sending a problem.open event now should result in message: Action toggle-feature triggered but not executed after waiting for 2 minutes.
 ##########################################################################################################################################
 
 # install unleash service

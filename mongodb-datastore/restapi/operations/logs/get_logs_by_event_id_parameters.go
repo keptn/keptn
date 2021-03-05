@@ -30,7 +30,7 @@ type GetLogsByEventIDParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*EventId of the event the logs belog to
+	/*EventId of the event the logs belong to
 	  Required: true
 	  In: path
 	*/

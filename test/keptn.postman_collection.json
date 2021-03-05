@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "Get Github Repos",
+			"name": "Get GitHub Repos",
 			"event": [
 				{
 					"listen": "test",
@@ -65,7 +65,7 @@
 			"response": []
 		},
 		{
-			"name": "Get Github Project Branches",
+			"name": "Get GitHub Project Branches",
 			"event": [
 				{
 					"listen": "test",

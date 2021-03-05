@@ -16,7 +16,7 @@ Implemented **Keptn spec** version: [0.2.0-alpha](https://github.com/keptn/spec/
 <p>
 
 - Lower K8s resource limits for distributors [2649](https://github.com/keptn/keptn/issues/2649) 
-- Upgrade NGNIX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
+- Upgrade NGINX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
 - Test Keptn control-plane for Kubernetes 1.19 using K3s [2411](https://github.com/keptn/keptn/issues/2411) 
 
 </p>
@@ -83,7 +83,7 @@ Implemented **Keptn spec** version: [0.2.0-alpha](https://github.com/keptn/spec/
   - lighthouse-service reacts on `evaluation.triggered` and sends `evaluation.started/finished` events [2264](https://github.com/keptn/keptn/issues/2264)
 
 - *mongodb-datastore*:
-  - Quering (root) events via mongodb-datastore is slow when there is many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
+  - Querying (root) events via mongodb-datastore is slow when there is many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
   - Fixed: mongodb-datastore does not contain "triggeredid" in input [2514](https://github.com/keptn/keptn/issues/2514)
 
 - *remediation-service*

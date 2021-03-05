@@ -97,7 +97,7 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 				t.Errorf("Statistics have not been replaced properly. Got length = %d", len(sb.Statistics.Projects))
 			}
 			if len(sb.uniqueSequences) > 0 {
-				t.Errorf("uniqueSequuences have not been replaced properly. Got length = %d", len(sb.uniqueSequences))
+				t.Errorf("uniqueSequences have not been replaced properly. Got length = %d", len(sb.uniqueSequences))
 			}
 		})
 	}

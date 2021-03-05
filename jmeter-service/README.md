@@ -5,7 +5,7 @@ The *jmeter-service* has been updated with the implementation from the Keptn-Con
 The *jmeter-service* listens to Keptn events of type:
 - `sh.keptn.events.deployment-finished`
 
-In case the tests succeeed, this service sends a `sh.keptn.events.test-finished` event with `pass` as `result`. In case the tests do not succeed (e.g., the error rate is too high), this service sends an `sh.keptn.events.test-finished` event with `fail` as `result`.
+In case the tests succeed, this service sends a `sh.keptn.events.test-finished` event with `pass` as `result`. In case the tests do not succeed (e.g., the error rate is too high), this service sends an `sh.keptn.events.test-finished` event with `fail` as `result`.
 
 ## Installation
 
@@ -54,7 +54,7 @@ Here is an overview:
 | ------------- | ----------- | ------------ |
 | PROTOCOL      | Protocol    | https |
 | SERVER_URL    | Value passed in deploymentURILocal or deploymentURIPublic | carts.staging.svc.local |
-| CHECK_PATH    | This is meant for the basiccheck.jmx and defines the URL that shoudl be used for the health check | /health |
+| CHECK_PATH    | This is meant for the basiccheck.jmx and defines the URL that should be used for the health check | /health |
 | SERVER_PORT   | Port to be tested against | 8080 |
 | DT_LTN        | A unique test execution name. To be used for integrations with tool such as Dynatrace | performance_123 |
 | VUCount       | Virtual User Count | 10 |
@@ -116,4 +116,4 @@ With this file, the defaults for the *performance* test strategy are overwritten
 }
 ```
 
-This now gives you a lot of flexibilty when implementing "*Performance Testing as a Self-Service*". If you want to learn more also check out the tutorial on this topic: https://github.com/keptn-sandbox/performance-testing-as-selfservice-tutorial
+This now gives you a lot of flexibility when implementing "*Performance Testing as a Self-Service*". If you want to learn more also check out the tutorial on this topic: https://github.com/keptn-sandbox/performance-testing-as-selfservice-tutorial

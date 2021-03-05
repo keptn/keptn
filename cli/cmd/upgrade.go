@@ -47,13 +47,13 @@ var keptnUpgradeChart *chart.Chart
 var upgraderCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "Upgrades Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
 `,
 	Example: `keptn upgrade # upgrades Keptn
 
-keptn upgrade --platform=openshift # upgrades Keptn on Openshift
+keptn upgrade --platform=openshift # upgrades Keptn on OpenShift
 
 keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 `,
@@ -91,11 +91,11 @@ func doUpgradePreRunCheck() error {
 			return err
 		}
 		if !res {
-			installedKeptnVerison, err := getInstalledKeptnVersion()
+			installedKeptnVersion, err := getInstalledKeptnVersion()
 			if err != nil {
 				return err
 			}
-			if installedKeptnVerison == getAppVersion(keptnUpgradeChart) {
+			if installedKeptnVersion == getAppVersion(keptnUpgradeChart) {
 				vChecker := version.NewVersionChecker()
 				cliVersionCheck, _ := vChecker.CheckCLIVersion(Version, false)
 				if cliVersionCheck {
@@ -104,7 +104,7 @@ func doUpgradePreRunCheck() error {
 				return fmt.Errorf("Unable to check for upgrades due to aforementioned error")
 			}
 			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
-				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+				installedKeptnVersion, getAppVersion(keptnUpgradeChart))
 		}
 	} else {
 		logging.PrintLog("Skipping upgrade compatibility check!", logging.InfoLevel)

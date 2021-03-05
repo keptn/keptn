@@ -155,7 +155,7 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		fmt.Printf("Failed to read body from requst: %s\n", err)
+		fmt.Printf("Failed to read body from request: %s\n", err)
 		return
 	}
 

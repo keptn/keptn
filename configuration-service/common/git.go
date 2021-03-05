@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// GitCredentials contains git ccredentials info
+// GitCredentials contains git credentials info
 type GitCredentials struct {
 	User      string `json:"user,omitempty"`
 	Token     string `json:"token,omitempty"`
@@ -208,7 +208,7 @@ func StageAndCommitAll(project string, message string, withPull bool) error {
 	}
 
 	_, err = utils.ExecuteCommandInDirectory("git", []string{"commit", "-m", message}, projectConfigPath)
-	// in this case, ignore errors since the only instance when this can occur at this stage is when there is nothin to commit (no delta)
+	// in this case, ignore errors since the only instance when this can occur at this stage is when there is nothing to commit (no delta)
 	credentials, err := GetCredentials(project)
 	if err == nil && credentials != nil {
 		repoURI := getRepoURI(credentials.RemoteURI, credentials.User, credentials.Token)

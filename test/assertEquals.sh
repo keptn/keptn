@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# usage: ./assertEquals $origin_value $comparsion_value
+# usage: ./assertEquals $origin_value $comparison_value
 
 if [[ "$1" != "$2" ]];
 then

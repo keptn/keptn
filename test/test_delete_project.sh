@@ -13,7 +13,7 @@ verify_value "number of services" "$number_of_services" 6
 
 echo "Testing the keptn delete service command"
 keptn delete service "$SERVICE" --project="$PROJECT"
-verify_test_step $? "keptn delete servce ${SERVICE} --project=${PROJECT} - failed"
+verify_test_step $? "keptn delete service ${SERVICE} --project=${PROJECT} - failed"
 
 echo "get services after delete services command:"
 services=$(keptn get services --project="$PROJECT" -ojson)

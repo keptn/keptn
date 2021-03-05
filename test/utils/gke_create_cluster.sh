@@ -21,7 +21,7 @@ ADDONS="HorizontalPodAutoscaling,HttpLoadBalancing"
 
 echo "Creating nightly cluster ${CLUSTER_NAME_NIGHTLY}"
 
-# create a new cluster (Note: disk-size reduced to 25 GB to save resources; pre-emptible nodes used for cost savings)
+# create a new cluster (Note: disk-size reduced to 25 GB to save resources; preemptible nodes used for cost savings)
 # shellcheck disable=SC2140
 gcloud beta container --project "$GCLOUD_PROJECT_NAME" clusters create "$CLUSTER_NAME_NIGHTLY" --zone "$CLOUDSDK_COMPUTE_ZONE" \
     --release-channel "None" --cluster-version "$GKE_VERSION" \

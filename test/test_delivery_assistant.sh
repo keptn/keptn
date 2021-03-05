@@ -17,7 +17,7 @@ PROJECT="delivery-assistant-project"
 SERVICE="carts"
 
 ########################################################################################################################
-# Pre-requesites
+# Pre-requisites
 ########################################################################################################################
 
 # verify that the project does not exist yet via the Keptn API

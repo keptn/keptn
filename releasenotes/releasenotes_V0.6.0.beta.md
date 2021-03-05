@@ -11,7 +11,7 @@
 - Allow filtering by project, stage, and service in keptn-datastore [#980](https://github.com/keptn/keptn/issues/980)
 - *helm-service*: Allow changing any file in Helm Chart [#995](https://github.com/keptn/keptn/issues/995)
 - *remediation-service*: Remediation action for slowing down requests[#1006](https://github.com/keptn/keptn/issues/1006)
-- *ligthouse-service*: Default behaviour if no slo.yml found -> evaluation pass [#1081](https://github.com/keptn/keptn/issues/1081)
+- *lighthouse-service*: Default behaviour if no slo.yml found -> evaluation pass [#1081](https://github.com/keptn/keptn/issues/1081)
 - *mongodb-datastore*: Allow event-retrieval filtering by source [#1061](https://github.com/keptn/keptn/issues/1061)
 - *bridge*: Improve bridge for lighthouse and SLI events [#1058](https://github.com/keptn/keptn/issues/1058)
 - *jmeter/wait-service*: Send test-finished event with start/end time rather than startedat [#1078](https://github.com/keptn/keptn/issues/1078)

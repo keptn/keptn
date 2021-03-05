@@ -55,7 +55,7 @@ func (cm *CredentialManager) SetCreds(endPoint url.URL, apiToken string, namespa
 
 // GetCreds reads the credentials and returns an endpoint, the api token, or potentially an error.
 func (cm *CredentialManager) GetCreds(namespace string) (url.URL, string, error) {
-	// mock credentials if encessary
+	// mock credentials if necessary
 	if MockAuthCreds {
 		return url.URL{}, "", nil
 	}

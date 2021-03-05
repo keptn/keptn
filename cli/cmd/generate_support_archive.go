@@ -206,7 +206,7 @@ keptn generate support-archive --dir=/some/directory`,
 
 		supportData, err := json.Marshal(s)
 		if err != nil {
-			return fmt.Errorf("Error marshalling the suppport data: %v", err)
+			return fmt.Errorf("Error marshalling the support data: %v", err)
 		}
 
 		err = ioutil.WriteFile(filepath.Join(tmpDir, "metadata.json"), supportData, 0644)

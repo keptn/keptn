@@ -1,6 +1,6 @@
 # Release Notes 0.8.0
 
-Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
+Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipyard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
 
 ---
 
@@ -61,7 +61,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - **Project** endpoints have been moved to: `/api/controlPlane/v1/project`
 - **Stage** endpoints have been moved to: `/api/controlPlane/v1/stage`
 - **Service** endpoints have been moved to: `/api/controlPlane/v1/service`
-- **Evaluation** endpoint for triggering an evaluaiton has been moved to: `/api/v1/project​/{project}​/stage​/{stage}​/service​/{service}​/evaluation`
+- **Evaluation** endpoint for triggering an evaluation has been moved to: `/api/v1/project​/{project}​/stage​/{stage}​/service​/{service}​/evaluation`
 - **Events** /GET endpoint has been moved to: `/api/mongodb-datastore/event`
 
 ### CLI
@@ -90,7 +90,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 <p>
 
 - Lower Kubernetes resource limits for distributors [2649](https://github.com/keptn/keptn/issues/2649) 
-- Upgrade of NGNIX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
+- Upgrade of NGINX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
 - Test Keptn Keptn Control-plane for Kubernetes 1.19 using K3s [2411](https://github.com/keptn/keptn/issues/2411) 
 - *Fixed*: `keptn install` hangs in case of ImagePullBackOff [2988](https://github.com/keptn/keptn/issues/2988) 
 
@@ -196,7 +196,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Adapt query for excluding `evaluation.invalidated` events [3270](https://github.com/keptn/keptn/issues/2949)
   - Support backwards compatibility for `evaluation-done` events used in Keptn < 0.8 [2949](https://github.com/keptn/keptn/issues/2949)
   - Improve MongoDB datastore performance [2925](https://github.com/keptn/keptn/issues/2925)
-  - Improved quering (root) events from mongodb-datastore when there are many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
+  - Improved querying (root) events from mongodb-datastore when there are many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
   - *Fixed*: mongodb-datastore does not contain `triggeredid` in input [2514](https://github.com/keptn/keptn/issues/2514)
 
 - *remediation-service*
@@ -240,7 +240,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Create sequence screen and load all triggers [2625](https://github.com/keptn/keptn/issues/2625)
   - Show task details in sequence details [2938](https://github.com/keptn/keptn/issues/2938)
   - Refinement of the sequence tile [2628](https://github.com/keptn/keptn/issues/2628)
-- Replace occurances of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
+- Replace occurrences of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
 - Link back to evaluation from Environment [2696](https://github.com/keptn/keptn/issues/2696)
 - Support deep links in Bridge for 0.8.x [3207](https://github.com/keptn/keptn/issues/3207)
 - Adapt invalidation of events [3290](https://github.com/keptn/keptn/issues/3290)
@@ -282,7 +282,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - Format the Go imports [3150](https://github.com/keptn/keptn/issues/3150)
 - Test the linking of stages based on task sequence events: `sh.keptn.event.[stage].[sequence].finished` [2534](https://github.com/keptn/keptn/issues/2534)
 
-<details><summary>Update of third-party depenendencies to their latest version, most notable are:</summary>
+<details><summary>Update of third-party dependencies to their latest version, most notable are:</summary>
 <p>
  
 * *Go* (Microservices)
@@ -292,7 +292,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - nats-io/nats-server/v2 to 2.1.9
 * *NodeJS* (Bridge)
   - marked to 2.0.0
-  - higlights.js to 10.4.1
+  - highlights.js to 10.4.1
 
 </p>
 </details>

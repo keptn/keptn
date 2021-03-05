@@ -35,7 +35,7 @@ type ProjectManager struct {
 	SecretStore             common.SecretStore
 	ProjectMaterializedView db.ProjectsDBOperations
 	TaskSequenceRepository  db.TaskSequenceRepo
-	EventRpository          db.EventRepo
+	EventRepository          db.EventRepo
 }
 
 var nilRollback = func() error {
@@ -53,7 +53,7 @@ func NewProjectManager(
 		SecretStore:             secretStore,
 		ProjectMaterializedView: dbProjectsOperations,
 		TaskSequenceRepository:  taskSequenceRepo,
-		EventRpository:          eventRepo,
+		EventRepository:          eventRepo,
 		Logger:                  keptncommon.NewLogger("", "", "shipyard-controller"),
 	}
 	return projectUpdater
@@ -104,7 +104,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	})
 
 	if err != nil {
-		pm.Logger.Error(fmt.Sprintf("Error occured while creating project in configuration service: %s", err.Error()))
+		pm.Logger.Error(fmt.Sprintf("Error occurred while creating project in configuration service: %s", err.Error()))
 		return err, func() error {
 			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
 			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
@@ -134,7 +134,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		},
 	}
 	if err := pm.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
-		pm.Logger.Error(fmt.Sprintf("Error occured while uploading shipyard resource to configuraiton service: %s", err.Error()))
+		pm.Logger.Error(fmt.Sprintf("Error occurred while uploading shipyard resource to configuration service: %s", err.Error()))
 		return err, func() error {
 			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
 			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
@@ -258,12 +258,12 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
-	if err := pm.EventRpository.DeleteEventCollections(projectName); err != nil {
+	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
 		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
 	}
 
 	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
-		pm.Logger.Error(fmt.Sprintf("could not delete task equence colleciton: %s", err.Error()))
+		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
 	}
 
 	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {

@@ -13,7 +13,7 @@ Your issue may already be reported! Please search on the [issue tracker](https:/
 **Environment**
 <!-- Please tell us about the environment in which this bug can be reproduced in -->
 
-* Client OS (e.g., Linux, OSX, Windows):
+* Client OS (e.g., Linux, macOS, Windows):
 * Keptn Version (`keptn version`):
 * Kubernetes Cloud Provider (e.g., GKE, AKS):
 * Kubernetes version (`kubectl version`):

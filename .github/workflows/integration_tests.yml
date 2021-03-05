@@ -201,7 +201,7 @@ jobs:
           # Required, workflow file name or ID
           workflow: CI.yml
           # Optional, the status or conclusion of a completed workflow to search for
-          # Can be one of a workflow conculsion::
+          # Can be one of a workflow conclusion::
           # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
           # Or a workflow status:
           # "completed", "in_progress", "queued"
@@ -732,7 +732,7 @@ jobs:
                   console.log(`::error::Draft release found, please delete it manually!`);
 
                   return 1;
-                  // ToDo: Commenetd out as there seems to be a problem with deleting releases
+                  // ToDo: Commented out as there seems to be a problem with deleting releases
 
                   /*github.repos.deleteRelease({
                     owner: context.repo.owner,

@@ -5,7 +5,7 @@ USSH=$HOME/.ssh
 mkdir -p "$USSH"
 ssh-keygen -t rsa -N '' -f "$USSH/ci_id_rsa"
 
-# This could be problemeatic:
+# This could be problematic:
 #
 # The ssh config could grow each time this script is ran (not breaking).
 # We should think about using a grep switch (or similar logic) here to
