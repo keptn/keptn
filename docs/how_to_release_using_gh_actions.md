@@ -1,6 +1,6 @@
 # How to create a new Keptn release using GH Actions
 
-## Pre-requesits
+## Prerequisites
 
 * Finish all tasks / issues in the milestone
 * Follow the [Release Checklist](https://github.com/keptn/keptn/wiki/Release-Checklist)
