@@ -66,7 +66,7 @@ func DeleteFile(path string) error {
 	return nil
 }
 
-// FileExists checks wether a file is available or not
+// FileExists checks whether a file is available or not
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	// create file if not exists

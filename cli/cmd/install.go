@@ -56,13 +56,13 @@ var keptnChart *chart.Chart
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
 `,
 	Example: `keptn install                                                          # install on Kubernetes
 
-keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on Openshift
+keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on OpenShift
 
 keptn install --platform=kubernetes --endpoint-service-type=NodePort   # install on Kubernetes with gateway NodePort
 
@@ -317,7 +317,7 @@ func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 		}
 		return "http://" + endpoint + ":" + port + "/api", nil
 	case "LoadBalancer":
-		// Fetching the EXTERNAL-IP of the api-gateway-ngix loadbalancer service
+		// Fetching the EXTERNAL-IP of the api-gateway-nginx loadbalancer service
 		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.status.loadBalancer.ingress[0].ip}'"})
 		if err != nil {
 			return "", err

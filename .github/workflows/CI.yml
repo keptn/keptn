@@ -54,13 +54,23 @@ jobs:
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
 
     steps:
+      - name: Prevent PR Build on Release Branch
+        # if you create a PR from release-* to anything else, there is usually a push-build in action, allowing
+        # us to cancel the PR build
+        if: github.event_name == 'pull_request'
+        run: |
+          if [[ "$GITHUB_HEAD_REF" == "release-"* ]]; then
+            echo "::error::Failing CI Build for Pull Request on purpose, as there is a push build"
+            exit 1
+          fi
+
       - name: Check out code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -293,7 +303,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -413,7 +423,7 @@ jobs:
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -481,11 +491,11 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macos does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "amd64"
-          # support for apple silicon (arm64 on macos) is pending Go 1.16 release
-#          - platform: "macOS-11.0" # cross-compiling the CLI for macos does not work - see https://github.com/keptn/keptn/issues/2738
+          # support for apple silicon (arm64 on macOS) is pending Go 1.16 release
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
 #            GOOS: "darwin"
 #            GOARCH: "arm64"
           - platform: "ubuntu-20.04"
@@ -526,7 +536,7 @@ jobs:
           fi
 
           # determine output file name based on version, go os, architecture
-          OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
 
           if [[ "$BRANCH" == "master" ]]; then
@@ -535,13 +545,13 @@ jobs:
           fi
 
           # build the binary using makefile
-          make build-cli OUTPUT_EXECUTEABLE_NAME="$OUTPUT_EXECUTEABLE_NAME"
+          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
           # verify output file exists
-          ls bin/${OUTPUT_EXECUTEABLE_NAME}
+          ls bin/${OUTPUT_EXECUTABLE_NAME}
 
           # create a .tar.gz archive of the binary
           mkdir dist
-          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTEABLE_NAME}
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
       - name: Upload Keptn CLI as an artifact
         uses: actions/upload-artifact@v2
         with:
@@ -566,7 +576,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -606,7 +616,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:

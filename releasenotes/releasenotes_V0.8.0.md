@@ -1,6 +1,6 @@
 # Release Notes 0.8.0
 
-Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
+Keptn 0.8 improves the core use cases of continuous delivery and automated operations by implementing the new Shipyard version [v0.2](https://github.com/keptn/spec/tree/0.2.0). This new Shipyard version has been proposed and refined in [KEP 06](https://github.com/keptn/enhancement-proposals/pull/6).
 
 ---
 
@@ -10,9 +10,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :tada: *Support individual tasks in sequences*: It is now possible to add custom tasks to a *task sequence* to address needs of delivery/remediation use-cases that go beyond the opinionated approach Keptn is offering.
 
-:star: *Trigger of a sequence can be configured - allowing multiple parallel stages*: The new Shipyard supports the definition of triggers that launch the execution of a *task sequences*. This helps to make it explicit when a sequence gets triggers. Besides, this linking mechanism allows connecting multiple sequences (of different stages) to listen to the same trigger. Consequently, it is possible to connect multiple stages, which are on the same level, to one preceding stage - as shown below:
-
-> *Screenshot here*
+:star: *Trigger of a sequence can be configured - allowing multiple parallel stages*: The new Shipyard supports the definition of triggers that launch the execution of a *task sequences*. This helps to make it explicit when a sequence gets triggers. Besides, this linking mechanism allows connecting multiple sequences (of different stages) to listen to the same trigger. Consequently, it is possible to connect multiple stages, which are on the same level, to one preceding stage.
 
 :star2: *New types of events*: In course of implement the new Shipyard version in Keptn, the Keptn Cloud-events were streamlined and follow now a common pattern. Basically, Keptn just sends out an event of type: `sh.keptn.event.{task.name}.triggered` and other services react on: 
   * `sh.keptn.event.{task.name}.triggered`      > *sent out by Keptn*
@@ -34,7 +32,7 @@ Keptn 0.8 improves the core use cases of continuous delivery and automated opera
 
 :star2: *Keptn CLI supports multiple Keptn installations*: The new Keptn CLI easies working with multiple Keptns since it recognizes switches between Kubernetes clusters and then asks for switching the context Keptn context too. Consequently, your CLI will be automatically connected to the Keptn running on another K8s cluster.   
 
-:star: *Deployment of custom Helm Charts*: An extension of the helm-service allows to deploy custom Helm Charts meaning that the Helm Chart can contain any custom resource and is not limited to a *Kubernetes service* and *deployment*. *Note:* When using this option, the automatic rollback capability of Keptn is not supported.
+:star: *Deployment of custom Helm Charts*: An extension of the helm-service allows to deploy custom Helm Charts meaning that the Helm Chart can contain any custom resource and is not limited to a *Kubernetes service* and *deployment*. *Note:* When using this option, the automatic rollback capability of Keptn is not supported and the Helm Chart is not under control by Keptn. Consequently, this feature is currently marked as experimental.
 
 :sparkles: *SLI breakdown displayed as a table in Keptn Bridge*: For the quality gates capabilities of Keptn, the SLI breakdown is now displayed as a table given a better overview of the individual results. 
 
@@ -53,13 +51,46 @@ Last but not least, many thanks to the community for the rich discussions around
 
 Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0.2.0)
 
+
+## Breaking changes
+
+### API
+
+- Introduction of shipyard controller API via: `/api/controlPlane/v1`
+- Adding and updating resources works on the endpoint: `/api/configuration-service/v1`
+- **Project** endpoints have been moved to: `/api/controlPlane/v1/project`
+- **Stage** endpoints have been moved to: `/api/controlPlane/v1/stage`
+- **Service** endpoints have been moved to: `/api/controlPlane/v1/service`
+- **Evaluation** endpoint for triggering an evaluation has been moved to: `/api/v1/project​/{project}​/stage​/{stage}​/service​/{service}​/evaluation`
+- **Events** /GET endpoint has been moved to: `/api/mongodb-datastore/event`
+
+### CLI
+
+- `keptn send event start-evaluation` to trigger an evaluation has been marked as deprecated. Use `keptn trigger evaluation` instead:
+
+  ```
+  keptn trigger evaluation --project=my-sockshop --service=foobar --stage=hardening
+  ```
+
+- `keptn send event new-artifact` to send a configuration change that triggers a delivery of a new artifact has been marked as deprecated. Use `kept trigger delivery` instead: 
+
+  ```
+  keptn trigger delivery --project=sockshop --service=carts-db --image=docker.io/mongo --tag=4.2.2 --sequence=delivery-direct
+  ```
+
+### Bridge
+
+- The **Service** screen does not show the Keptn CloudEvents anymore since this information has moved to the new **Sequence** screen. 
+
+- The old deep links still work but are adapted to the new screens as described [here](https://keptn.sh/docs/0.8.x/reference/bridge/deep_linking/#links-to-project-and-events)
+
 ## New Features
 
 <details><summary>Platform Support / Installer</summary>
 <p>
 
 - Lower Kubernetes resource limits for distributors [2649](https://github.com/keptn/keptn/issues/2649) 
-- Upgrade of NGNIX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
+- Upgrade of NGINX unprivileged to latest version [2653](https://github.com/keptn/keptn/issues/2653) 
 - Test Keptn Keptn Control-plane for Kubernetes 1.19 using K3s [2411](https://github.com/keptn/keptn/issues/2411) 
 - *Fixed*: `keptn install` hangs in case of ImagePullBackOff [2988](https://github.com/keptn/keptn/issues/2988) 
 
@@ -159,12 +190,13 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - *lighthouse-service*:
   - Support quality gates use-case with updated services [2724](https://github.com/keptn/keptn/issues/2724)
   - Reacts on `evaluation.triggered` and sends `evaluation.started/finished` event [2264](https://github.com/keptn/keptn/issues/2264)
+  - *Fixed:* Needs to send previous payloads (e.g., "deployment") in `get-sli.triggered` [3411](https://github.com/keptn/keptn/issues/3411)
 
 - *mongodb-datastore*:
   - Adapt query for excluding `evaluation.invalidated` events [3270](https://github.com/keptn/keptn/issues/2949)
   - Support backwards compatibility for `evaluation-done` events used in Keptn < 0.8 [2949](https://github.com/keptn/keptn/issues/2949)
   - Improve MongoDB datastore performance [2925](https://github.com/keptn/keptn/issues/2925)
-  - Improved quering (root) events from mongodb-datastore when there are many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
+  - Improved querying (root) events from mongodb-datastore when there are many events in the DB [2759](https://github.com/keptn/keptn/issues/2759)
   - *Fixed*: mongodb-datastore does not contain `triggeredid` in input [2514](https://github.com/keptn/keptn/issues/2514)
 
 - *remediation-service*
@@ -208,7 +240,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - Create sequence screen and load all triggers [2625](https://github.com/keptn/keptn/issues/2625)
   - Show task details in sequence details [2938](https://github.com/keptn/keptn/issues/2938)
   - Refinement of the sequence tile [2628](https://github.com/keptn/keptn/issues/2628)
-- Replace occurances of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
+- Replace occurrences of old "send event" with the new "trigger" functionality [3332](https://github.com/keptn/keptn/issues/3332)
 - Link back to evaluation from Environment [2696](https://github.com/keptn/keptn/issues/2696)
 - Support deep links in Bridge for 0.8.x [3207](https://github.com/keptn/keptn/issues/3207)
 - Adapt invalidation of events [3290](https://github.com/keptn/keptn/issues/3290)
@@ -230,6 +262,9 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - *Refactoring*: Create stage-details component [2944](https://github.com/keptn/keptn/issues/2944)
 - *Refactoring*: Create view-component for sequences tab [2941](https://github.com/keptn/keptn/issues/2941)
 - *Refactoring*: Create view-component for services tab [2940](https://github.com/keptn/keptn/issues/2940)
+- *Fixed*: Duplicate tasks showing up in Bridge [3382](https://github.com/keptn/keptn/issues/3382)
+- *Fixed*: Sequence loading icon [3410](https://github.com/keptn/keptn/issues/3410)
+- *Fixed*: Wrong score in SLI breakdown table [3383](https://github.com/keptn/keptn/issues/3223)
 - *Fixed*: Root events are limited to 20 [3223](https://github.com/keptn/keptn/issues/3223)
 - *Fixed*: Keptn Bridge: Deployed services is displayed as "not deployed" [3224](https://github.com/keptn/keptn/issues/3224
 - *Fixed*: Manual approval does not trigger next task in sequence [3013](https://github.com/keptn/keptn/issues/3013)
@@ -247,7 +282,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 - Format the Go imports [3150](https://github.com/keptn/keptn/issues/3150)
 - Test the linking of stages based on task sequence events: `sh.keptn.event.[stage].[sequence].finished` [2534](https://github.com/keptn/keptn/issues/2534)
 
-<details><summary>Update of third-party depenendencies to their latest version, most notable are:</summary>
+<details><summary>Update of third-party dependencies to their latest version, most notable are:</summary>
 <p>
  
 * *Go* (Microservices)
@@ -257,13 +292,15 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
   - nats-io/nats-server/v2 to 2.1.9
 * *NodeJS* (Bridge)
   - marked to 2.0.0
-  - higlights.js to 10.4.1
+  - highlights.js to 10.4.1
 
 </p>
 </details>
 
 ## Fixed Issues
 
+- *Fixed*: Cannot run `helm-service` and `jmeter-service` on execution plane on a separate cluster/namespace [3418](https://github.com/keptn/keptn/issues/3418)
+- *Fixed*: Upgrade from 0.7.3 to 0.8.0-rc1 failed (because of statistics-service) [3399](https://github.com/keptn/keptn/issues/3399)
 - *Fixed*: Helm chart for continuous-delivery has dependencies to control-plane [2840](https://github.com/keptn/keptn/issues/2840)
 - *Fixed*: Required flags are not validated before PreRunE is called [2729](https://github.com/keptn/keptn/issues/2729)
 - *Fixed*: CLI does not work when using GPG pass [2638](https://github.com/keptn/keptn/issues/2638)
@@ -292,6 +329,7 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 <details><summary>Miscellaneous CI tasks (for build, test, quality checks)</summary>
 <p>
 
+- Added PAT to the create release branch workflow [3393](https://github.com/keptn/keptn/issues/3393)
 - Multi-architecture build support for CLI (32 bit, ARM, ...) [2997](https://github.com/keptn/keptn/issues/2997)
 - Add dependabot to keep dependencies up2date [2648](https://github.com/keptn/keptn/issues/2648)
 - Switch from CLA Bot to DCO [2690](https://github.com/keptn/keptn/issues/2690)
@@ -331,13 +369,16 @@ Implemented **Keptn spec** version: [0.2.0](https://github.com/keptn/spec/tree/0
 This section lists bugs and limitations that are known but not fixed in this release. They will get addressed in one of the next releases.
 
 - Keptn CLI can not be used for automation due to Kube context check [3208](https://github.com/keptn/keptn/issues/3208)
-  - There is a workaround provided, please see [here](https://github.com/keptn/keptn/issues/3208#issuecomment-781982765)
+  - The workaround is explained [here](https://github.com/keptn/keptn/issues/3208#issuecomment-781982765)
 - Creating a project fails on OpenShift due to missing write permissions [2453](https://github.com/keptn/keptn/issues/2453)
 - Hovering over the score in an `approval.triggered` events in the Bridge leads to a scroll-up / jump-up in Firefox [#2369](https://github.com/keptn/keptn/issues/2369)
-- Remove the functionality to listen to service.create.finished event from helm-service [2989](https://github.com/keptn/keptn/issues/2989)
+- Remove the functionality to listen to `sh.keptn.event.service.delete.finished` event from helm-service [2989](https://github.com/keptn/keptn/issues/2989)
   - The helm-service does not support listening on `sh.keptn.event.service.delete.finished` events when running on the execution plane. This leads in the limitation that deleting deployed services on the execution plan becomes a manual task. To delete a deployed service, execute: 
     ```
     helm ls -n <NAMESPACE>
     helm delete <HELM_RELEASE> -n <NAMESPACE>
     ```
 
+## Upgrade to 0.8.0
+
+- The upgrade from Keptn 0.7.3 to 0.8.0 is supported. Please find the documentation here: [Upgrade from Keptn 0.7.3 to 0.8.0](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-7-to-0-8)

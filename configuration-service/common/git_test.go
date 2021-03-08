@@ -19,7 +19,7 @@ func Test_obfuscateErrorMessage(t *testing.T) {
 		wantErrorMessage string
 	}{
 		{
-			name: "remnove credentials",
+			name: "remove credentials",
 			args: args{
 				err: errors.New("error message containing token: token"),
 				credentials: &GitCredentials{
@@ -32,7 +32,7 @@ func Test_obfuscateErrorMessage(t *testing.T) {
 			wantErrorMessage: "error message containing ********: ********",
 		},
 		{
-			name: "remnove credentials: empty token",
+			name: "remove credentials: empty token",
 			args: args{
 				err: errors.New("error message containing no token"),
 				credentials: &GitCredentials{

@@ -63,7 +63,7 @@ func (*IstioMesh) UpdateWeights(virtualService []byte, canaryWeight int32) ([]by
 		for _, dst := range httpRoute.Route {
 
 			if !strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name) {
-				return nil, fmt.Errorf("Cannot update VirutalService because host has unexpected name %s", dst.Destination.Host)
+				return nil, fmt.Errorf("Cannot update VirtualService because host has unexpected name %s", dst.Destination.Host)
 			}
 			if strings.HasPrefix(dst.Destination.Host, vs.ObjectMeta.Name+"-canary") {
 				dst.Weight = canaryWeight

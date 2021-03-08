@@ -1,4 +1,4 @@
-apiVersion: skaffold/v1beta13
+apiVersion: skaffold/v2beta10
 kind: Config
 build:
   artifacts:
@@ -7,7 +7,16 @@ build:
         dockerfile: Dockerfile
         buildArgs:
           debugBuild: true
+
 deploy:
-  kubectl:
-    manifests:
-      - deploy/service.yaml
+  helm:
+    flags:
+      upgrade: ["--reuse-values"]
+    releases:
+      - name: jmeter-service # needs to be the same name as currently used (check via helm ls -n keptn-exec)
+        namespace: keptn-exec # needs to be the same namespace as where the helm-chart is currently deployed
+        # upgradeOnChange: true
+        # recreatePods: false # don't recreate all pods
+        artifactOverrides:
+          image: keptn/jmeter-service
+        chartPath: chart

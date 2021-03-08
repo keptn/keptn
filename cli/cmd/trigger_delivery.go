@@ -40,7 +40,7 @@ var triggerDeliveryCmd = &cobra.Command{
 	Aliases: []string{"delivery"},
 	Short:   "Triggers the delivery of a new artifact for a service in a project",
 	Long: `Triggers the delivery of a new artifact for a service in a project.
-An "artifact" is the name of a Docker image which can be located at any Docker registry (e.g., Dockerhob or Quay).
+An "artifact" is the name of a Docker image which can be located at any Docker registry (e.g., DockerHub or Quay).
 The new artifact is pushed in the first stage specified in the Shipyard of the project. Afterwards, Keptn takes care
 of deploying the artifact to the other stages as well.
 

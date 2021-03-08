@@ -413,7 +413,7 @@ type HTTPRoute struct {
 // be specified for a specific route destination or for all destinations.
 // The following VirtualService adds a `test` header with the value `true`
 // to requests that are routed to any `reviews` service destination.
-// It also romoves the `foo` response header, but only from responses
+// It also removes the `foo` response header, but only from responses
 // coming from the `v1` subset (version) of the `reviews` service.
 //
 // ```yaml
@@ -783,7 +783,7 @@ type TLSMatchAttributes struct {
 	// REQUIRED. SNI (server name indicator) to match on. Wildcard prefixes
 	// can be used in the SNI value, e.g., *.com will match foo.example.com
 	// as well as example.com. An SNI value must be a subset (i.e., fall
-	// within the domain) of the corresponding virtual serivce's hosts.
+	// within the domain) of the corresponding virtual service's hosts.
 	SniHosts []string `protobuf:"bytes,1,rep,name=sni_hosts,json=sniHosts,proto3" json:"sni_hosts,omitempty"`
 	// IPv4 or IPv6 ip addresses of destination with optional subnet.  E.g.,
 	// a.b.c.d/xx form or just a.b.c.d.

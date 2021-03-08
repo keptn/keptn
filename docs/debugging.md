@@ -1,6 +1,6 @@
 # GOLANG Debugging Guide for Keptn
 
-## Pre-Requesits
+## Pre-Requisites
 
 * GoLand IDE (VSCode might work too, this guide was written for GoLand however)
 * [Cloud Code](https://plugins.jetbrains.com/plugin/8079-cloud-code/) Plugin for GoLand
@@ -81,7 +81,7 @@ To verify that the installation has worked you should see the **Kubernetes Explo
   ![GoLand Run Configurations](assets/goland_run_configurations.png "GoLand Run Configurations")
 1. Click on the plus and select Cloud Code: Kubernetes / Kubernetes Continuous Deploy
   ![GoLand Cloud Code Configuration](assets/goland_cloud_code_select.png "GoLand Cloud Code Configurations")
-1. Give this configuration a self-explainatory name and select your **skaffold.yaml** configuration file.
+1. Give this configuration a self-explanatory name and select your **skaffold.yaml** configuration file.
 1. Save your configuration and close the dialog.
 
 ### Debug now!

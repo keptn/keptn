@@ -25,7 +25,7 @@ func TestSetAndGetCreds(t *testing.T) {
 		t.Fatal(err)
 	}
 	if testEndPoint != endPoint || testAPIToken != apiToken {
-		logging.Info.Printf("Expected endoint is %v but was %v", testEndPoint, endPoint)
+		logging.Info.Printf("Expected endpoint is %v but was %v", testEndPoint, endPoint)
 		logging.Info.Printf("Expected secret is %v but was %v", testAPIToken, apiToken)
 		t.Fatal("Readed creds do not match")
 	}

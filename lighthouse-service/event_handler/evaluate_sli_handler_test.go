@@ -2896,7 +2896,7 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name: "get eveluation-done events",
+			name: "get evaluation-done events",
 			fields: fields{
 				Logger:     nil,
 				Event:      cloudevents.Event{},

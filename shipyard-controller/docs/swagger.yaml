@@ -93,7 +93,6 @@ definitions:
       lastEventContext:
         $ref: '#/definitions/models.EventContext'
         description: last event context
-        type: object
       projectName:
         description: Project name
         type: string
@@ -170,7 +169,6 @@ definitions:
       lastEventContext:
         $ref: '#/definitions/models.EventContext'
         description: last event context
-        type: object
       services:
         description: services
         items:
@@ -263,9 +261,6 @@ definitions:
     type: object
   operations.CreateServiceParams:
     properties:
-      helmChart:
-        description: shipyard
-        type: string
       serviceName:
         description: name
         type: string
@@ -393,7 +388,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get the list of stages of a project
+      description: Get the list of all projects
       parameters:
       - description: The number of items to return
         in: query
@@ -413,20 +408,16 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.Stages'
-        "404":
-          description: Not found
-          schema:
-            $ref: '#/definitions/models.Error'
+            $ref: '#/definitions/models.ExpandedProjects'
         "500":
           description: Internal error
           schema:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
-      summary: Get all stages of a project
+      summary: Get all projects
       tags:
-      - Stage
+      - Projects
     post:
       consumes:
       - application/json
@@ -489,7 +480,7 @@ paths:
       summary: Updates a project
       tags:
       - Projects
-  /project/:project:
+  /project/{project}:
     delete:
       consumes:
       - application/json
@@ -518,6 +509,36 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete a project
+      tags:
+      - Projects
+    get:
+      consumes:
+      - application/json
+      description: Get a project by its name
+      parameters:
+      - description: The name of the project
+        in: path
+        name: projectName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedProject'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a project by name
       tags:
       - Projects
   /project/{project}/service:
@@ -636,6 +657,44 @@ paths:
       summary: Gets all services of a stage in a project
       tags:
       - Services
+  /project/{project}/stage:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of stages of a project
+      parameters:
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      - description: Disable sync of upstream repo before reading content
+        in: query
+        name: disableUpstreamSync
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.Stages'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all stages of a project
+      tags:
+      - Stage
   /project/{project}/stage/{stage}/service/{service}/evaluation:
     post:
       consumes:
@@ -683,37 +742,6 @@ paths:
       summary: Trigger a new evaluation
       tags:
       - Evaluation
-  /project/{projectName}:
-    get:
-      consumes:
-      - application/json
-      description: Get a project by its name
-      parameters:
-      - description: The name of the project
-        in: path
-        name: projectName
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-          schema:
-            $ref: '#/definitions/models.ExpandedProject'
-        "404":
-          description: Not found
-          schema:
-            $ref: '#/definitions/models.Error'
-        "500":
-          description: Internal Error)
-          schema:
-            $ref: '#/definitions/models.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a project by name
-      tags:
-      - Projects
   /project/{projectName}/stage/{stageName}:
     get:
       consumes:

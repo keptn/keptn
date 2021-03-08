@@ -1,4 +1,4 @@
-apiVersion: skaffold/v1beta13
+apiVersion: skaffold/v2beta10
 kind: Config
 build:
   artifacts:
@@ -9,5 +9,6 @@ build:
           debugBuild: 'true'
 deploy:
   kubectl:
+    defaultNamespace: keptn
     manifests:
       - deploy/service.yaml

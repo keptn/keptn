@@ -1,14 +1,17 @@
 #!/bin/bash
+# shellcheck disable=SC2181
+
+# shellcheck disable=SC1091
 source ./utils.sh
 
-if [ $HELM_RELEASE_UPGRADE == "true" ]; 
+if [ "$HELM_RELEASE_UPGRADE" == "true" ];
 then
   # Upgrade from Helm v2 to Helm v3
   helm init --client-only
   verify_install_step $? "Helm init failed."
   RELEASES=$(helm list -aq)
   verify_install_step $? "Helm list failed."
-  echo $RELEASES
+  echo "$RELEASES"
 
   helm3 plugin install https://github.com/helm/helm-2to3
   verify_install_step $? "Helm-2to3 plugin installation failed."
@@ -16,15 +19,15 @@ then
   verify_install_step $? "Helm-2to3 move of config failed."
 
   for release in $RELEASES; do
-    helm3 2to3 convert $release --dry-run
-    verify_install_step $? "Helm2-to3 release convertion dry-run failed"
-    helm3 2to3 convert $release
-    verify_install_step $? "Helm2-to3 release convertion failed"
+    helm3 2to3 convert "$release" --dry-run
+    verify_install_step $? "Helm2-to3 release conversion dry-run failed"
+    helm3 2to3 convert "$release"
+    verify_install_step $? "Helm2-to3 release conversion failed"
   done
 
   yes y | helm3 2to3 cleanup --tiller-cleanup
   verify_install_step $? "Helm2-to3 cleanup failed"
-  
+
 fi
 
 PREVIOUS_KEPTN_VERSION="0.6.2"
@@ -35,9 +38,9 @@ MONGODB_TARGET_URL=${MONGODB_TARGET_URL:-"mongodb.keptn:27017/keptn"}
 
 print_debug "Upgrading from Keptn 0.6.2 to $KEPTN_VERSION"
 
-KEPTN_API_URL=https://$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})/api
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
-KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+KEPTN_API_URL=https://$(kubectl get cm keptn-domain -n keptn -o jsonpath='{.data.app_domain}')/api
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o jsonpath='{.data.keptn-api-token}' | base64 -d)
+KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -o jsonpath='{.data.app_domain}')
 
 print_debug "Check if Keptn 0.6.2 is currently installed"
 API_IMAGE=$(kubectl get deployment -n keptn api-service -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
@@ -56,12 +59,12 @@ kubectl -n keptn get svc approval-service
       USE_CASE="continuous-delivery"
   fi
 
-./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:password@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL "store-projects-mv"
+./upgradecollections "$MONGODB_SOURCE_URL" "mongodb://user:password@${MONGODB_TARGET_URL}" "$CONFIGURATION_SERVICE_URL" "store-projects-mv"
 
 # copy content from previous configuration-service PVC
 mkdir config-svc-backup
 CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lrun=configuration-service -ojsonpath='{.items[0].metadata.name}')
-kubectl cp keptn/$CONFIG_SERVICE_POD:/data ./config-svc-backup/ -c configuration-service
+kubectl cp "keptn/$CONFIG_SERVICE_POD:/data" ./config-svc-backup/ -c configuration-service
 
 old_manifests=(
   "https://raw.githubusercontent.com/keptn/keptn/release-$PREVIOUS_KEPTN_VERSION/installer/manifests/keptn/core.yaml"
@@ -81,9 +84,9 @@ old_manifests=(
 for manifest in "${old_manifests[@]}"
 do
    :
-   if curl --head --silent -k --fail $manifest > /dev/null;
+   if curl --head --silent -k --fail "$manifest" > /dev/null;
      then
-      kubectl delete -f $manifest
+      kubectl delete -f "$manifest"
       continue
      else
       print_error "Required manifest $manifest not available. Aborting upgrade."
@@ -99,14 +102,14 @@ BRIDGE_USERNAME=""
 kubectl get secret -n keptn bridge-credentials
   if [[ $? == '0' ]]; then
     print_debug "Bridge credentials detected. Fetching credentials"
-    BRIDGE_USERNAME=$(kubectl get secret bridge-credentials -n keptn -ojsonpath={.data.BASIC_AUTH_USERNAME} | base64 -d)
-    BRIDGE_PASSWORD=$(kubectl get secret bridge-credentials -n keptn -ojsonpath={.data.BASIC_AUTH_PASSWORD} | base64 -d)
+    BRIDGE_USERNAME=$(kubectl get secret bridge-credentials -n keptn -o jsonpath='{.data.BASIC_AUTH_USERNAME}' | base64 -d)
+    BRIDGE_PASSWORD=$(kubectl get secret bridge-credentials -n keptn -o jsonpath='{.data.BASIC_AUTH_PASSWORD}' | base64 -d)
     kubectl -n keptn delete secret bridge-credentials
   fi
 
 
 # install helm chart
-helm3 repo add keptn $HELM_CHART_URL
+helm3 repo add keptn "$HELM_CHART_URL"
 
 if [[ $USE_CASE == "continuous-delivery" ]]; then
   kubectl get namespace openshift
@@ -132,21 +135,21 @@ else
 fi
 
 CONFIG_SERVICE_POD=$(kubectl get pods -n keptn -lapp.kubernetes.io/name=configuration-service -ojsonpath='{.items[0].metadata.name}')
-kubectl cp ./config-svc-backup/* keptn/$CONFIG_SERVICE_POD:/data -c configuration-service
+kubectl cp ./config-svc-backup/* "keptn/$CONFIG_SERVICE_POD:/data" -c configuration-service
 
-kubectl cp ./reset-git-repos.sh keptn/$CONFIG_SERVICE_POD:/ -c configuration-service
-kubectl exec -n keptn $CONFIG_SERVICE_POD -c configuration-service -- chmod +x -R ./reset-git-repos.sh
-kubectl exec -n keptn $CONFIG_SERVICE_POD -c configuration-service -- ./reset-git-repos.sh
+kubectl cp ./reset-git-repos.sh "keptn/$CONFIG_SERVICE_POD:/" -c configuration-service
+kubectl exec -n keptn "$CONFIG_SERVICE_POD" -c configuration-service -- chmod +x -R ./reset-git-repos.sh
+kubectl exec -n keptn "$CONFIG_SERVICE_POD" -c configuration-service -- ./reset-git-repos.sh
 
+# shellcheck disable=SC2034
+MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -o jsonpath='{.data.user}' | base64 -d)
+MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -o jsonpath='{.data.password}' | base64 -d)
 
-MONGO_TARGET_USER=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.user} | base64 -d)
-MONGO_TARGET_PASSWORD=$(kubectl get secret mongodb-credentials -n keptn -ojsonpath={.data.password} | base64 -d)
-
-./upgradecollections $MONGODB_SOURCE_URL "mongodb://user:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" $CONFIGURATION_SERVICE_URL
+./upgradecollections "$MONGODB_SOURCE_URL" "mongodb://user:${MONGO_TARGET_PASSWORD}@${MONGODB_TARGET_URL}" "$CONFIGURATION_SERVICE_URL"
 
 if [[ $USE_CASE == "continuous-delivery" ]]; then
   # set values for the ingress-config to reflect the previous installation
-  kubectl create configmap -n keptn ingress-config --from-literal=ingress_hostname_suffix=${KEPTN_DOMAIN} --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=istio_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
+  kubectl create configmap -n keptn ingress-config --from-literal="ingress_hostname_suffix=${KEPTN_DOMAIN}" --from-literal=ingress_port="" --from-literal=ingress_protocol="" --from-literal=istio_gateway="public-gateway.istio-system" -oyaml --dry-run | kubectl replace -f -
 fi
 
 # check for keptn-contrib services
@@ -154,8 +157,8 @@ kubectl -n keptn get svc dynatrace-service
 
   if [[ $? == '0' ]]; then
       print_debug "Dynatrace-service detected. Upgrading to 0.8.0"
-      DT_TENANT=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_TENANT} | base64 -d)
-      DT_API_TOKEN=$(kubectl get secret dynatrace -n keptn -ojsonpath={.data.DT_API_TOKEN} | base64 -d)
+      DT_TENANT=$(kubectl get secret dynatrace -n keptn -o jsonpath='{.data.DT_TENANT}' | base64 -d)
+      DT_API_TOKEN=$(kubectl get secret dynatrace -n keptn -o jsonpath='{.data.DT_API_TOKEN}' | base64 -d)
 
       kubectl -n keptn create secret generic dynatrace --from-literal="KEPTN_API_URL=${KEPTN_API_URL}" --from-literal="KEPTN_API_TOKEN=${KEPTN_API_TOKEN}" --from-literal="DT_API_TOKEN=${DT_API_TOKEN}" --from-literal="DT_TENANT=${DT_TENANT}" -oyaml --dry-run | kubectl replace -f -
       kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/0.8.0/deploy/service.yaml

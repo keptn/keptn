@@ -30,13 +30,17 @@ spec:
         - name: jmeter-service
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- if .Values.image }}
+          image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
+          {{- else }}
           image: "{{ .Values.jmeterservice.image.repository }}:{{ .Values.jmeterservice.image.tag | default .Chart.AppVersion }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.jmeterservice.image.pullPolicy }}
           ports:
             - containerPort: 80
           env:
           - name: CONFIGURATION_SERVICE
-            value: "http://localhost:8081/configuration"
+            value: "http://localhost:8081/configuration-service"
           - name: env
             value: 'production'
           livenessProbe:

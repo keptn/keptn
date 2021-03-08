@@ -70,7 +70,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   public _evaluationData: Trace;
   public _selectedEvaluationData: Trace;
-  public _comparisonView: string = "heatmap";
+  public _comparisonView: string = 'heatmap';
+  private _metrics: string[];
 
   public _chartOptions: Highcharts.Options = {
     chart: {
@@ -138,10 +139,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }],
 
     yAxis: [{
-      categories: ["Score"],
+      categories: [],
       title: null,
       labels: {
-        format: '{value}'
+        format: '{value}',
+        style: {
+          textOverflow: 'ellipsis',
+          width: 200,
+        }
       },
     }],
 
@@ -173,6 +178,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._evaluationData = evaluationData;
       this._chartSeries = [];
       this._heatmapSeries = [];
+      this._metrics = ['Score'];
+      this._heatmapOptions.yAxis[0].categories = ['Score'];
       this._selectedEvaluationData = null;
       this.evaluationDataChanged();
       this._changeDetectorRef.markForCheck();
@@ -245,6 +252,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         let indicatorScoreSeriesLine = chartSeries.find(series => series.name == 'Score' && series.type == 'line');
         if(!indicatorScoreSeriesColumn) {
           indicatorScoreSeriesColumn = {
+            displayName: 'Score',
             name: 'Score',
             type: 'column',
             data: [],
@@ -256,6 +264,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         if(!indicatorScoreSeriesLine) {
           indicatorScoreSeriesLine = {
             name: 'Score',
+            displayName: 'Score',
             type: 'line',
             data: [],
             cursor: 'pointer',
@@ -279,6 +288,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
             let indicatorChartSeries = chartSeries.find(series => series.name == indicatorResult.value.metric);
             if(!indicatorChartSeries) {
               indicatorChartSeries = {
+                displayName: this.getLastDisplayName(evaluationHistory, indicatorResult.value.metric),
                 name: indicatorResult.value.metric,
                 type: 'line',
                 yAxis: 1,
@@ -292,7 +302,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           });
         }
       });
-      chartSeries.sort((seriesA, seriesB) => seriesA.name.localeCompare(seriesB.name));
+      chartSeries.sort((seriesA, seriesB) => seriesA.displayName.localeCompare(seriesB.displayName));
       this._chartSeries = [...chartSeries];
 
       this.updateHeatmapOptions(chartSeries);
@@ -303,7 +313,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           rowsize: 0.85,
           turboThreshold: 0,
           data: chartSeries.find(series => series.name == 'Score').data.map((s) => {
-            let index = this._heatmapOptions.yAxis[0].categories.indexOf("Score");
+            let index = this._metrics.indexOf('Score');
             let x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
             return {
               x: x,
@@ -319,7 +329,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           type: 'heatmap',
           turboThreshold: 0,
           data: chartSeries.reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
-            let index = this._heatmapOptions.yAxis[0].categories.indexOf(s.indicatorResult.value.metric);
+            let index = this._metrics.indexOf(s.indicatorResult.value.metric);
             let x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
             return {
               x: x,
@@ -335,10 +345,26 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
+  private getLastDisplayName(evaluationHistory, metric): string {
+    let displayName = metric;
+    if (metric !== 'Score') {
+      for(let i = evaluationHistory.length - 1; i >= 0; i--) {
+        const result = evaluationHistory[i].data.evaluation.indicatorResults?.find(indicatorResult => indicatorResult.value.metric === metric);
+        if (result) {
+          displayName = result.displayName ?? result.value.metric;
+          break;
+        }
+      }
+    }
+    return displayName;
+  }
+
   updateHeatmapOptions(chartSeries) {
     chartSeries.forEach((series) => {
-      if(this._heatmapOptions.yAxis[0].categories.indexOf(series.name) === -1)
-        this._heatmapOptions.yAxis[0].categories.unshift(series.name);
+      if (!this._metrics.includes(series.name)) {
+        this._heatmapOptions.yAxis[0].categories.unshift(series.displayName);
+        this._metrics.unshift(series.name);
+      }
       if(series.name == "Score") {
         let categories = series.data
           .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())

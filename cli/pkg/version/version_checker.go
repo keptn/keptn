@@ -65,7 +65,7 @@ func browseVersions(usedVersion *version.Version, versions []string) (newestVers
 
 	usedVersionSeg := usedVersion.Segments()
 	if len(usedVersionSeg) != 3 {
-		return newestVersions{}, errors.New("Unexpected number of segements")
+		return newestVersions{}, errors.New("Unexpected number of segments")
 	}
 
 	for _, vString := range versions {
@@ -76,7 +76,7 @@ func browseVersions(usedVersion *version.Version, versions []string) (newestVers
 
 		vSeg := v.Segments()
 		if len(vSeg) != 3 {
-			return newestVersions{}, errors.New("Unexpected number of segements")
+			return newestVersions{}, errors.New("Unexpected number of segments")
 		}
 
 		if usedVersionSeg[0] == vSeg[0] && usedVersionSeg[1] == vSeg[1] {

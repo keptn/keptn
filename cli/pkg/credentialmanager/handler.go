@@ -28,7 +28,7 @@ const installCredsKey = "https://keptn-install.sh"
 var MockAuthCreds bool
 var MockKubeConfigCheck bool
 
-// GlobalCheckForContextChange ...Since credential manager is called at multiple times, we dont want to check for context switch for one command at multiple places,
+// GlobalCheckForContextChange ...Since credential manager is called at multiple times, we don't want to check for context switch for one command at multiple places,
 // it should be called only for the first time.
 var GlobalCheckForContextChange bool
 

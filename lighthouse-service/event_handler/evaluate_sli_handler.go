@@ -241,6 +241,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		sliEvaluationResult.PassTargets = passTargets
 		sliEvaluationResult.WarningTargets = warningTargets
 		sliEvaluationResult.KeySLI = objective.KeySLI
+		sliEvaluationResult.DisplayName = objective.DisplayName
 
 		if !isPassed && !isWarning {
 			if objective.KeySLI {

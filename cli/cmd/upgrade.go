@@ -47,13 +47,13 @@ var keptnUpgradeChart *chart.Chart
 var upgraderCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "Upgrades Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
 `,
 	Example: `keptn upgrade # upgrades Keptn
 
-keptn upgrade --platform=openshift # upgrades Keptn on Openshift
+keptn upgrade --platform=openshift # upgrades Keptn on OpenShift
 
 keptn upgrade --platform=kubernetes # upgrades Keptn on the Kubernetes cluster
 `,
@@ -91,11 +91,11 @@ func doUpgradePreRunCheck() error {
 			return err
 		}
 		if !res {
-			installedKeptnVerison, err := getInstalledKeptnVersion()
+			installedKeptnVersion, err := getInstalledKeptnVersion()
 			if err != nil {
 				return err
 			}
-			if installedKeptnVerison == getAppVersion(keptnUpgradeChart) {
+			if installedKeptnVersion == getAppVersion(keptnUpgradeChart) {
 				vChecker := version.NewVersionChecker()
 				cliVersionCheck, _ := vChecker.CheckCLIVersion(Version, false)
 				if cliVersionCheck {
@@ -104,7 +104,7 @@ func doUpgradePreRunCheck() error {
 				return fmt.Errorf("Unable to check for upgrades due to aforementioned error")
 			}
 			return fmt.Errorf("No upgrade path exists from Keptn version %s to %s",
-				installedKeptnVerison, getAppVersion(keptnUpgradeChart))
+				installedKeptnVersion, getAppVersion(keptnUpgradeChart))
 		}
 	} else {
 		logging.PrintLog("Skipping upgrade compatibility check!", logging.InfoLevel)
@@ -146,6 +146,21 @@ func doUpgradePreRunCheck() error {
 			logging.PrintLog(err.Error(), logging.VerboseLevel)
 			logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
 			return fmt.Errorf("Failed to check kubernetes server version: %w", err)
+		}
+	}
+
+	// Check if statistics service is already running and NOT deployed by helm (https://github.com/keptn/keptn/issues/3399)
+	statisticsDeploymentAvailable, err := kube.CheckDeploymentAvailable("statistics-service", namespace)
+	if err != nil {
+		return err
+	}
+	if statisticsDeploymentAvailable {
+		statisticsServiceManagedByHelm, err := kube.CheckDeploymentManagedByHelm("statistics-service", namespace)
+		if err != nil {
+			return err
+		}
+		if !statisticsServiceManagedByHelm {
+			return errors.New("deployment for statistics-service is already running and not managed by Helm. Please uninstall it")
 		}
 	}
 

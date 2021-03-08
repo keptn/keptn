@@ -1,9 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 # test configuration
 UNLEASH_SERVICE_VERSION=${UNLEASH_SERVICE_VERSION:-master}
@@ -12,7 +13,7 @@ SERVICE="frontend"
 
 function print_logs {
   echo "Logs from: remediation-service"
-  kubectl -n ${KEPTN_NAMESPACE} logs svc/remediation-service -c remediation-service
+  kubectl -n "$KEPTN_NAMESPACE" logs svc/remediation-service -c remediation-service
 }
 
 trap print_logs EXIT
@@ -22,9 +23,7 @@ trap print_logs EXIT
 ########################################################################################################################
 
 # ensure unleash-service is not installed yet
-kubectl -n ${KEPTN_NAMESPACE} get deployment unleash-service 2> /dev/null
-
-if [[ $? -eq 0 ]]; then
+if kubectl -n "$KEPTN_NAMESPACE" get deployment unleash-service 2> /dev/null; then
   echo "Found unleash-service. Please uninstall it using:"
   echo "kubectl -n ${KEPTN_NAMESPACE} delete deployment unleash-service"
   exit 1
@@ -69,10 +68,10 @@ keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event
 sleep 15
 
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.remediation.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event "$PROJECT" "$keptn_context_id" sh.keptn.event.remediation.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "remediation-service"
@@ -90,7 +89,7 @@ verify_using_jq "$response" ".data.result" "fail"
 ####################################################################################################################################
 
 ###########################################
-# create service frontend                
+# create service frontend
 ###########################################
 keptn create service $SERVICE --project=$PROJECT
 verify_test_step $? "keptn create service ${SERVICE} --project=${PROJECT} - failed"
@@ -112,9 +111,9 @@ keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event
 sleep 10
 
 #response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
-response=$(get_keptn_event $PROJECT $keptn_context_id sh.keptn.event.remediation.finished $KEPTN_ENDPOINT $KEPTN_API_TOKEN)
+response=$(get_keptn_event "$PROJECT" "$keptn_context_id" sh.keptn.event.remediation.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "remediation-service"
@@ -129,7 +128,7 @@ verify_using_jq "$response" ".data.message" "Remediation disabled for service $S
 ##########################################################################################################################################
 # Testcase 3:
 # Project exists, service has been onboarded, remediation file available, but no service executor available
-# Sending a problem.open event now should result in message: Action toogle-feature triggered but not executed after waiting for 2 minutes.
+# Sending a problem.open event now should result in message: Action toggle-feature triggered but not executed after waiting for 2 minutes.
 ##########################################################################################################################################
 
 echo "Uploading remediation.yaml to $PROJECT/production/$SERVICE"
@@ -174,25 +173,24 @@ fi
 #verify_using_jq "$response" ".data.service" "$SERVICE"
 #verify_using_jq "$response" ".data.remediation.status" "errored"
 #verify_using_jq "$response" ".data.remediation.result" "failed"
-#verify_using_jq "$response" ".data.remediation.message" "Action toogle-feature triggered but not executed after waiting for 2 minutes."
+#verify_using_jq "$response" ".data.remediation.message" "Action toggle-feature triggered but not executed after waiting for 2 minutes."
 
 
 ##########################################################################################################################################
 # Testcase 3:
 # Project exists, service has been onboarded, remediation file available, first action executor is available, but not the second
-# Sending a problem.open event now should result in message: Action toogle-feature triggered but not executed after waiting for 2 minutes.
+# Sending a problem.open event now should result in message: Action toggle-feature triggered but not executed after waiting for 2 minutes.
 ##########################################################################################################################################
 
 # install unleash service
 echo "Installing unleash-service version ${UNLEASH_SERVICE_VERSION}"
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml -n ${KEPTN_NAMESPACE}
-
+kubectl apply -f "https://raw.githubusercontent.com/keptn-contrib/unleash-service/${UNLEASH_SERVICE_VERSION}/deploy/service.yaml" -n "${KEPTN_NAMESPACE}"
 
 sleep 10
 
 wait_for_deployment_in_namespace "unleash-service" "${KEPTN_NAMESPACE}"
 
-kubectl get deployment -n ${KEPTN_NAMESPACE} unleash-service -oyaml
+kubectl get deployment -n "$KEPTN_NAMESPACE" unleash-service -oyaml
 
 echo "Sending problem.open event"
 keptn_context_id=$(send_event_json ./test/assets/self_healing_problem_open_event.json)
@@ -239,16 +237,16 @@ fi
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 echo "Remediation Service logs:"
-kubectl logs -n ${KEPTN_NAMESPACE} svc/remediation-service -c remediation-service
+kubectl logs -n "$KEPTN_NAMESPACE" svc/remediation-service -c remediation-service
 
 echo "Unleash service logs:"
-kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c unleash-service
+kubectl logs -n "$KEPTN_NAMESPACE" svc/unleash-service -c unleash-service
 
 echo "Unleash service distributor logs:"
-kubectl logs -n ${KEPTN_NAMESPACE} svc/unleash-service -c distributor
+kubectl logs -n "$KEPTN_NAMESPACE" svc/unleash-service -c distributor
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "unleash-service"

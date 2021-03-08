@@ -7,6 +7,7 @@ export enum EventTypes {
   TESTS_FINISHED = 'sh.keptn.events.tests-finished',
   START_EVALUATION = 'sh.keptn.event.start-evaluation',
   EVALUATION_TRIGGERED = 'sh.keptn.event.evaluation.triggered',
+  EVALUATION_TRIGGERED_SUFFIX = '.evaluation.triggered',
   EVALUATION_STARTED = 'sh.keptn.event.evaluation.started',
   EVALUATION_FINISHED = 'sh.keptn.event.evaluation.finished',
   EVALUATION_INVALIDATED = 'sh.keptn.event.evaluation.invalidated',

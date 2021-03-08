@@ -18,7 +18,7 @@ This release improves the usability and stability of keptn. More precisely, it s
 ## Fixed Issues
 
 - Fix no healthy upstream-problem during blue green deployment #332
-- Bugfix in roll-back step of *evalution_done* and *run_tests* pipelines #292
+- Bugfix in roll-back step of *evaluation_done* and *run_tests* pipelines #292
 - Set visibility of service to cluster-local #396
 - Correct typo in eventbroker and control service #268
 - Log reason for failed service onboarding #274

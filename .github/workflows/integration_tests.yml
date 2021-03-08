@@ -201,7 +201,7 @@ jobs:
           # Required, workflow file name or ID
           workflow: CI.yml
           # Optional, the status or conclusion of a completed workflow to search for
-          # Can be one of a workflow conculsion::
+          # Can be one of a workflow conclusion::
           # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
           # Or a workflow status:
           # "completed", "in_progress", "queued"
@@ -391,7 +391,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "master"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
           QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
           QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
         run: test/test_quality_gates_standalone.sh
@@ -732,7 +732,7 @@ jobs:
                   console.log(`::error::Draft release found, please delete it manually!`);
 
                   return 1;
-                  // ToDo: Commenetd out as there seems to be a problem with deleting releases
+                  // ToDo: Commented out as there seems to be a problem with deleting releases
 
                   /*github.repos.deleteRelease({
                     owner: context.repo.owner,
@@ -783,6 +783,7 @@ jobs:
           if [[ "$BRANCH" == "release-"* ]]; then
             echo "Installing gcloud CLI"
             export OS_TYPE="linux"
+            mkdir ~/downloads
             ./test/utils/download_and_install_gcloud.sh
             echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
             gcloud auth activate-service-account --key-file ~/gcloud-service-key.json

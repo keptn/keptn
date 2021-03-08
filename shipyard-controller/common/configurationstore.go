@@ -10,7 +10,7 @@ import (
 type ConfigurationStore interface {
 	CreateProject(project keptnapimodels.Project) error
 	UpdateProject(project keptnapimodels.Project) error
-	CreateProjectShipyard(projectName string, resoureces []*keptnapimodels.Resource) error
+	CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error
 	DeleteProject(projectName string) error
 	CreateStage(projectName string, stage string) error
 	CreateService(projectName string, stageName string, serviceName string) error

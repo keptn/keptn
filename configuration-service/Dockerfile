@@ -1,4 +1,4 @@
-# Use the offical Golang image to create a build artifact.
+# Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.13.7-alpine as builder
 ARG version=develop

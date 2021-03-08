@@ -12,7 +12,7 @@ import (
 type fakeWatcher struct {
 }
 
-type HelpersTestStuct struct {
+type HelpersTestStruct struct {
 	Value string `json:"value"`
 }
 
@@ -25,7 +25,7 @@ func (fw fakeWatcher) Watch(ctx context.Context) (<-chan []*models.KeptnContextE
 
 func TestPrintEvents(t *testing.T) {
 
-	aStruct := HelpersTestStuct{Value: "value"}
+	aStruct := HelpersTestStruct{Value: "value"}
 	var tests = []struct {
 		buff    bytes.Buffer
 		format  string
@@ -52,7 +52,7 @@ func TestPrintEvents(t *testing.T) {
 		}, {
 			bytes.Buffer{},
 			"",
-			HelpersTestStuct{Value: "<=+75%"},
+			HelpersTestStruct{Value: "<=+75%"},
 			`{"value":"\u003c=+75%"}`,
 		},
 	}

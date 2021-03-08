@@ -606,7 +606,7 @@ func getCollectionNameForQuery(searchOptions bson.M, logger *keptncommon.Logger)
 		collectionName, err = getProjectForContext(searchOptions["shkeptncontext"].(string))
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
-				logger.Info("no project found for shkeptkontext")
+				logger.Info("no project found for shkeptncontext")
 				return unmappedEventsCollectionName, nil
 			}
 			logger.Error(fmt.Sprintf("error loading project for shkeptncontext: %v", err))

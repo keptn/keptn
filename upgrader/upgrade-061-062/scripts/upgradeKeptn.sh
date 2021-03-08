@@ -1,4 +1,7 @@
 #!/bin/bash
+# shellcheck disable=SC2181
+
+# shellcheck disable=SC1091
 source ./utils.sh
 
 KEPTN_VERSION="0.6.2"
@@ -20,7 +23,7 @@ manifests=(
 for manifest in "${manifests[@]}"
 do
    :
-   if curl --head --silent -k --fail $manifest 2> /dev/null;
+   if curl --head --silent -k --fail "$manifest" 2> /dev/null;
      then
       continue
      else
@@ -91,7 +94,7 @@ kubectl -n keptn get svc approval-service
         IFS=':'
 
         #Read the split words into an array based on ':' delimiter
-        read -a strarr <<< "$DOMAIN"
+        read -ar strarr <<< "$DOMAIN"
         echo "Setting domain of ingress to ${strarr[0]}"
         IFS=$OIFS
         curl -k https://raw.githubusercontent.com/keptn/keptn/release-$KEPTN_VERSION/installer/manifests/keptn/keptn-ingress.yaml | \

@@ -22,7 +22,7 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 // 			CreateProjectFunc: func(project keptnapimodels.Project) error {
 // 				panic("mock out the CreateProject method")
 // 			},
-// 			CreateProjectShipyardFunc: func(projectName string, resoureces []*keptnapimodels.Resource) error {
+// 			CreateProjectShipyardFunc: func(projectName string, resources []*keptnapimodels.Resource) error {
 // 				panic("mock out the CreateProjectShipyard method")
 // 			},
 // 			CreateServiceFunc: func(projectName string, stageName string, serviceName string) error {
@@ -54,7 +54,7 @@ type ConfigurationStoreMock struct {
 	CreateProjectFunc func(project keptnapimodels.Project) error
 
 	// CreateProjectShipyardFunc mocks the CreateProjectShipyard method.
-	CreateProjectShipyardFunc func(projectName string, resoureces []*keptnapimodels.Resource) error
+	CreateProjectShipyardFunc func(projectName string, resources []*keptnapimodels.Resource) error
 
 	// CreateServiceFunc mocks the CreateService method.
 	CreateServiceFunc func(projectName string, stageName string, serviceName string) error
@@ -85,8 +85,8 @@ type ConfigurationStoreMock struct {
 		CreateProjectShipyard []struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
-			// Resoureces is the resoureces argument value.
-			Resoureces []*keptnapimodels.Resource
+			// Resources is the resources argument value.
+			Resources []*keptnapimodels.Resource
 		}
 		// CreateService holds details about calls to the CreateService method.
 		CreateService []struct {
@@ -173,21 +173,21 @@ func (mock *ConfigurationStoreMock) CreateProjectCalls() []struct {
 }
 
 // CreateProjectShipyard calls CreateProjectShipyardFunc.
-func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, resoureces []*keptnapimodels.Resource) error {
+func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error {
 	if mock.CreateProjectShipyardFunc == nil {
 		panic("ConfigurationStoreMock.CreateProjectShipyardFunc: method is nil but ConfigurationStore.CreateProjectShipyard was just called")
 	}
 	callInfo := struct {
 		ProjectName string
-		Resoureces  []*keptnapimodels.Resource
+		Resources   []*keptnapimodels.Resource
 	}{
 		ProjectName: projectName,
-		Resoureces:  resoureces,
+		Resources:   resources,
 	}
 	mock.lockCreateProjectShipyard.Lock()
 	mock.calls.CreateProjectShipyard = append(mock.calls.CreateProjectShipyard, callInfo)
 	mock.lockCreateProjectShipyard.Unlock()
-	return mock.CreateProjectShipyardFunc(projectName, resoureces)
+	return mock.CreateProjectShipyardFunc(projectName, resources)
 }
 
 // CreateProjectShipyardCalls gets all the calls that were made to CreateProjectShipyard.
@@ -195,11 +195,11 @@ func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, re
 //     len(mockedConfigurationStore.CreateProjectShipyardCalls())
 func (mock *ConfigurationStoreMock) CreateProjectShipyardCalls() []struct {
 	ProjectName string
-	Resoureces  []*keptnapimodels.Resource
+	Resources   []*keptnapimodels.Resource
 } {
 	var calls []struct {
 		ProjectName string
-		Resoureces  []*keptnapimodels.Resource
+		Resources   []*keptnapimodels.Resource
 	}
 	mock.lockCreateProjectShipyard.RLock()
 	calls = mock.calls.CreateProjectShipyard

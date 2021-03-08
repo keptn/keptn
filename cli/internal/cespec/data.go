@@ -182,6 +182,7 @@ var evaluationFinishedEventData = keptnv2.EvaluationFinishedEventData{
 				Success: true,
 				Message: "a message",
 			},
+			DisplayName: "Response Time P95",
 			PassTargets: []*keptnv2.SLITarget{&keptnv2.SLITarget{
 				Criteria:    "<=+10%",
 				TargetValue: 600,
@@ -262,7 +263,7 @@ var remediationFinishedEventData = keptnv2.RemediationFinishedEventData{
 var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
 	EventData: commonEventData,
 	Action: keptnv2.ActionInfo{
-		Name:        "Feature toggeling",
+		Name:        "Feature toggling",
 		Action:      "toggle-feature",
 		Description: "Toggles a feature flag",
 		Value:       map[string]string{"EnableItemCache": "on"},

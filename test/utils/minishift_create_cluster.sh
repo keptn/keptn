@@ -2,9 +2,18 @@
 
 # setup ssh certificate
 USSH=$HOME/.ssh
-mkdir -p $USSH
-ssh-keygen -t rsa -N '' -f $USSH/ci_id_rsa
-cat >> $USSH/config <<EOF
+mkdir -p "$USSH"
+ssh-keygen -t rsa -N '' -f "$USSH/ci_id_rsa"
+
+# This could be problematic:
+#
+# The ssh config could grow each time this script is ran (not breaking).
+# We should think about using a grep switch (or similar logic) here to
+# do a regex pattern search to determine if this setting is in the config.
+#
+# like:
+#     grep <multi-line pattern> <file> || cat >> <file> << blah
+cat >> "$USSH/config" <<EOF
 Host localhost
   StrictHostKeyChecking no
 EOF
@@ -26,7 +35,7 @@ minishift config set cpus 2
 minishift addons enable admin-user
 # Allow the containers to be run with uid 0
 minishift addons enable anyuid
-minishift start --vm-driver=generic --remote-ipaddress 127.0.0.1 --remote-ssh-user root --remote-ssh-key $HOME/.ssh/ci_id_rsa
+minishift start --vm-driver=generic --remote-ipaddress 127.0.0.1 --remote-ssh-user root --remote-ssh-key "$HOME/.ssh/ci_id_rsa"
 
 # Enable admission controller webhooks
 # The configuration stanzas below look weird and are just to workaround for:

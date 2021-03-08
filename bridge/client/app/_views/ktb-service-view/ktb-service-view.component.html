@@ -9,7 +9,7 @@
     </div>
     <div fxLayout="row" fxLayoutAlign="start center" *ngIf="project.getServices().length == 0">
       <dt-icon class="icon" name="information"></dt-icon>
-      <p>No service onboarded yet. Follow the intructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+      <p>No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
     </div>
     <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName">
       <ktb-expandable-tile-header>

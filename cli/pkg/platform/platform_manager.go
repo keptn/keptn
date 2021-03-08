@@ -12,7 +12,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/file"
 )
 
-// OpenShiftIdentifier is used as identifier for Openshift
+// OpenShiftIdentifier is used as identifier for OpenShift
 const OpenShiftIdentifier = "openshift"
 
 // KubernetesIdentifier is used as identifier for Kubernetes

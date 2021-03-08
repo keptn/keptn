@@ -45,6 +45,7 @@ IMAGES=("${IMAGES[@]}" "${ADDITIONAL_VERY_OLD_IMAGES[@]}")
 
 
 # Authenticate against DockerHub API
+# shellcheck disable=SC2086
 DOCKER_API_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${REGISTRY_USER}'", "password": "'${REGISTRY_PASSWORD}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
 if [[ "$DOCKER_API_TOKEN" == "null" ]]; then
@@ -56,7 +57,7 @@ fi
 # get all github release tags
 function get_releases() {
   REPO=$1
-  curl --silent https://api.github.com/repos/$1/releases | jq -r '.[].tag_name'
+  curl --silent "https://api.github.com/repos/$1/releases" | jq -r '.[].tag_name'
 }
 
 # check if a repo + tag is stale
@@ -68,7 +69,7 @@ function check_if_stale() {
   TARGET_DATE=$(date -d "-${MAX_AGE_DAYS} days" +%s)
 
   # for each tag, check if the tag is stale
-  for TAG in ${TAGS[@]}; do
+  for TAG in "${TAGS[@]}"; do
     HTTP_RESPONSE=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" --write-out "HTTPSTATUS:%{http_code}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/")
 
     # extract body and status
@@ -77,7 +78,7 @@ function check_if_stale() {
 
     if [ "$HTTP_STATUS" == "200" ]; then
       # extract TAG_LAST_PULLED
-      TAG_LAST_PULLED=$(echo $HTTP_BODY | jq -r '.tag_last_pulled')
+      TAG_LAST_PULLED=$(echo "$HTTP_BODY" | jq -r '.tag_last_pulled')
       # and check if it is null (e.g., not tracked yet)
       if [ "$TAG_LAST_PULLED" == "null" ]; then
         echo "$TAG"
@@ -99,7 +100,7 @@ for IMAGE in "${IMAGES[@]}"; do
 
   # pull each stale tag
   if [[ -n "$STALE_TAGS" ]]; then
-    for TAG in ${STALE_TAGS[@]}; do
+    for TAG in "${STALE_TAGS[@]}"; do
       echo "Pulling ${DOCKER_ORG}/${IMAGE}:${TAG} to ensure images are not stale..."
       docker pull "${DOCKER_ORG}/${IMAGE}:${TAG}"
     done
