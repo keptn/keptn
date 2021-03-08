@@ -3,10 +3,8 @@ kind: Config
 build:
   artifacts:
     - image: keptn/shipyard-controller
-      docker:    # 	beta describes an artifact built from a Dockerfile.
+      docker:
         dockerfile: Dockerfile
-        buildArgs:
-          debugBuild: 'true'
 deploy:
   kubectl:
     defaultNamespace: keptn

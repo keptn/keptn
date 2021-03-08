@@ -45,10 +45,12 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "500m"
+            memory: "32Mi"
+            cpu: "50m"
           limits:
-            memory: "1024Mi"
+            # limits is high on purpose to enable Debugging using skaffold
+            # you can monitor memory usage using "kubectl -n keptn top pods"
+            memory: "512Mi"
             cpu: "500m"
         volumeMounts:
         - mountPath: /data/config

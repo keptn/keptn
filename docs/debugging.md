@@ -5,8 +5,8 @@
 * GoLand IDE (VSCode might work too, this guide was written for GoLand however)
 * [Cloud Code](https://plugins.jetbrains.com/plugin/8079-cloud-code/) Plugin for GoLand
 * skaffold (see https://skaffold.dev/docs/install/ for details)
-* Kubernetes cluster with keptn installed and running
-* Container registry (e.g., dockerhub)
+* Kubernetes cluster with keptn installed and running (e.g., K3s)
+* Authenticated against a container registry (e.g., dockerhub)
 
 ## Repo-Setup
 
@@ -19,7 +19,7 @@ Most of our services should already have a working setup. But just in case the s
 1. Do not use ENTRYPOINT scripts in Dockerfile
 1. Make sure CMD in Dockerfile refers to the go-binary that you want to debug. Here is an example Dockerfile:
     ```dockerfile
-    FROM golang:1.12 as builder
+    FROM golang:1.13 as builder
     
     WORKDIR /go/src/github.com/keptn-contrib/some-go-service
     
@@ -83,6 +83,14 @@ To verify that the installation has worked you should see the **Kubernetes Explo
   ![GoLand Cloud Code Configuration](assets/goland_cloud_code_select.png "GoLand Cloud Code Configurations")
 1. Give this configuration a self-explanatory name and select your **skaffold.yaml** configuration file.
 1. Save your configuration and close the dialog.
+
+### Configure Container Registry
+
+It's recommended to configure a container registry other than the default one (`docker.io/keptn`). For instance, you
+can set it to `docker.io/username` where `username` is your username on DockerHub:
+```console
+skaffold config set default-repo docker.io/username
+```
 
 ### Debug now!
 

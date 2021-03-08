@@ -19,21 +19,19 @@ COPY go.mod go.sum ./
 # Download dependencies
 RUN go mod download
 
-ARG debugBuild
-
-# set buildflags for debug build
-RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
-
 # Copy local code to the container image.
 COPY . .
 
 ENV REPLACE="version: ${version}"
 RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/configuration-service/swagger.yaml
 
+# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
+ARG SKAFFOLD_GO_GCFLAGS
+
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/configuration-service-server/main.go
+RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/configuration-service-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.11
@@ -67,5 +65,4 @@ ENV GOTRACEBACK=all
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 # Run the web service on container startup.
-
 CMD ["/configuration-service", "--host=0.0.0.0", "--port=8080"]
