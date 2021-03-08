@@ -99,7 +99,7 @@ var versionCmd = &cobra.Command{
 func SetVersion(vers string) {
 	Version = vers
 	v, err := versionCheck.NewSemver(vers)
-	keptnReleaseDocsURL = "0.8.x" //fallback version if provided doc verison is invalid
+	keptnReleaseDocsURL = "0.8.x" //fallback version if provided doc version is invalid
 	if err == nil {
 		segments := v.Segments()
 		if len(segments) == 3 {
