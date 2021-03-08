@@ -4,6 +4,8 @@
 source test/utils.sh
 
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
+KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 echo "Testing onboarding for project $PROJECT"
 
@@ -11,8 +13,8 @@ echo "Using remote execution plane services: ${REMOTE_EXECUTION_PLANE}"
 
 # check if REMOTE_EXECUTION_PLANE is set to true. If yes, scale down the helm-service and jmeter in the keptn namespace and install the services via their helm charts
 if [[ "${REMOTE_EXECUTION_PLANE}" == "true" ]]; then
-  kubectl scale deployment/helm-service -n keptn --replicas=0
-  kubectl scale deployment/jmeter-service -n keptn --replicas=0
+  kubectl scale deployment/helm-service -n ${KEPTN_NAMESPACE} --replicas=0
+  kubectl scale deployment/jmeter-service -n ${KEPTN_NAMESPACE} --replicas=0
 
   KEPTN_API_HOSTNAME=$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   helm install helm-service ./helm-service/chart -f ./helm-service/chart/values.yaml -n keptn-helm-service --set distributor.image.tag=${VERSION} --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname=${KEPTN_API_HOSTNAME} --set remoteControlPlane.api.token=${KEPTN_API_TOKEN} --create-namespace
