@@ -186,7 +186,7 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		RemoteURI: params.GitRemoteURL,
 	})
 
-	// no roll back needed since updateing the git repository secret was the first operation
+	// no roll back needed since updating the git repository secret was the first operation
 	if err != nil {
 		return err, nilRollback
 	}

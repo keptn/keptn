@@ -41,22 +41,6 @@ const upgradeShipyardResourceMockResponse = `{
 
 const existingProject = `{"creationDate":"date","gitRemoteURI":"remote-uri","gitToken":"token","gitUser":"user","projectName":"projectname","shipyardVersion":"2","stages":[{"services":null,"stageName":"stage1"}]}`
 
-func Test_Smosthing(t *testing.T) {
-	p := apimodels.Project{
-		CreationDate:    "date",
-		GitRemoteURI:    "remote-uri",
-		GitToken:        "token",
-		GitUser:         "user",
-		ProjectName:     "projectname",
-		ShipyardVersion: "2",
-		Stages: []*apimodels.Stage{&apimodels.Stage{
-			StageName: "stage1",
-		}},
-	}
-	m, _ := json.Marshal(p)
-	fmt.Println(string(m))
-}
-
 func Test_UpgradeProjectShipyard(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
