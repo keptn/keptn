@@ -17,8 +17,10 @@ if [[ "${REMOTE_EXECUTION_PLANE}" == "true" ]]; then
   kubectl scale deployment/jmeter-service -n ${KEPTN_NAMESPACE} --replicas=0
 
   KEPTN_API_HOSTNAME=$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  helm install helm-service ./helm-service/chart -f ./helm-service/chart/values.yaml -n keptn-helm-service --set distributor.image.tag=${VERSION} --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname=${KEPTN_API_HOSTNAME} --set remoteControlPlane.api.token=${KEPTN_API_TOKEN} --create-namespace
-  helm install jmeter-service ./jmeter-service/chart -f ./jmeter-service/chart/values.yaml -n keptn-jmeter-service --set distributor.image.tag=${VERSION} --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname=${KEPTN_API_HOSTNAME} --set remoteControlPlane.api.token=${KEPTN_API_TOKEN} --create-namespace
+  KEPTN_VERSION_TAG=$(kubectl get deployment -n ${KEPTN_NAMESPACE} helm-service -ogo-template='{{index .metadata.labels "app.kubernetes.io/version"}}')
+
+  helm install helm-service ./helm-service/chart -f ./helm-service/chart/values.yaml -n keptn-helm-service --set helmservice.image.tag=${KEPTN_VERSION_TAG} --set distributor.image.tag=${KEPTN_VERSION_TAG} --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname=${KEPTN_API_HOSTNAME} --set remoteControlPlane.api.token=${KEPTN_API_TOKEN} --create-namespace
+  helm install jmeter-service ./jmeter-service/chart -f ./jmeter-service/chart/values.yaml -n keptn-jmeter-service --set jmeterservice.image.tag=${KEPTN_VERSION_TAG} --set distributor.image.tag=${KEPTN_VERSION_TAG} --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname=${KEPTN_API_HOSTNAME} --set remoteControlPlane.api.token=${KEPTN_API_TOKEN} --create-namespace
 fi
 
 # verify that the project does not exist yet via the Keptn API
