@@ -54,6 +54,8 @@ github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d/go.mod h1:H
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/alecthomas/jsonschema v0.0.0-20201129101101-7b852d451add h1:UWj2AVW7oygpatGgJRy6rvNBcl+J7u8vl6qTV+XNWzA=
 github.com/alecthomas/jsonschema v0.0.0-20201129101101-7b852d451add/go.mod h1:/n6+1/DWPltRLWL/VKyUxg6tzsl5kHUCcraimt4vr60=
+github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d h1:4zHTN4tzKMBHnehOUUdrBoGP0ARAm8EC8+5U4/kX2Rc=
+github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d/go.mod h1:/n6+1/DWPltRLWL/VKyUxg6tzsl5kHUCcraimt4vr60=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=

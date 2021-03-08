@@ -91,6 +91,9 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		}
 
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+
 		shipyardResource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
 		if err != nil {
 			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", projectName, err.Error())
@@ -119,11 +122,11 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 			return nil
 		}
 
-		upgradedShipyard := transformShipyard(shipyard)
-		marshalledUpgradedShipyard, err := yaml.Marshal(upgradedShipyard)
+		upgradedShipyard, err := yaml.Marshal(transformShipyard(shipyard))
 		if err != nil {
 			return fmt.Errorf("could not marshal upgraded shipyard into string: %s", err.Error())
 		}
+		upgradedShipyardStr := string(upgradedShipyard)
 
 		logging.PrintLog("Shipyard of project "+projectName+":", logging.InfoLevel)
 		logging.PrintLog("-----------------------", logging.InfoLevel)
@@ -131,7 +134,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 
 		logging.PrintLog("Shipyard converted into version 0.2:", logging.InfoLevel)
 		logging.PrintLog("-----------------------", logging.InfoLevel)
-		logging.PrintLog(string(marshalledUpgradedShipyard), logging.InfoLevel)
+		logging.PrintLog(upgradedShipyardStr, logging.InfoLevel)
 
 		if upgradeProjectParams.DryRun {
 			return nil
@@ -141,14 +144,24 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 			return err
 		}
 
-		shipyardName := "shipyard.yaml"
-		upgradedShipyardResource := &apimodels.Resource{
-			ResourceContent: string(marshalledUpgradedShipyard),
-			ResourceURI:     &shipyardName,
+		existingProject, getPrjErr := projectsHandler.GetProject(apimodels.Project{ProjectName: projectName})
+		if getPrjErr != nil {
+			return errors.New(*getPrjErr.Message)
 		}
-		if _, err := resourceHandler.UpdateProjectResource(projectName, upgradedShipyardResource); err != nil {
-			return fmt.Errorf("could not update shipyard resource: %s", err.Error())
+
+		UpdateProject := apimodels.CreateProject{
+			GitRemoteURL: existingProject.GitRemoteURI,
+			GitToken:     existingProject.GitToken,
+			GitUser:      existingProject.GitUser,
+			Name:         &existingProject.ProjectName,
+			Shipyard:     &upgradedShipyardStr,
 		}
+
+		_, updatePrjErr := apiHandler.UpdateProject(UpdateProject)
+		if updatePrjErr != nil {
+			return errors.New(*updatePrjErr.Message)
+		}
+
 		logging.PrintLog("Shipyard of project "+projectName+" has been upgraded successfully!", logging.InfoLevel)
 		logging.PrintLog("PLEASE NOTE: Due to a known limitation, the displayed version number of your "+
 			"upgraded shipyard file will not be up to date when viewing your project in the bridge, but triggering sequences "+

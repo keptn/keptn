@@ -210,10 +210,13 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		}
 	}
 
+	// copy by value
 	updateProject := *oldProject
 	updateProject.GitUser = params.GitUser
 	updateProject.GitRemoteURI = params.GitRemoteURL
-	updateProject.Shipyard = params.Shipyard
+	if params.Shipyard != "" {
+		updateProject.Shipyard = params.Shipyard
+	}
 
 	err = pm.ProjectMaterializedView.UpdateProject(&updateProject)
 	if err != nil {
