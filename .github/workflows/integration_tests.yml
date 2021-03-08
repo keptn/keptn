@@ -438,7 +438,7 @@ jobs:
 
       - name: Test Continuous Delivery (with sockshop)
         id: test_continuous_delivery
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && env.REMOTE_EXECUTION_PLANE != 'true'
         timeout-minutes: 45
         continue-on-error: true
         env:
