@@ -229,7 +229,13 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
+          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
+          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
+
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
+          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+
 
       - name: Host helm chart via python http server
         run: cd dist/keptn-installer/ && python3 -m http.server &
@@ -437,6 +443,22 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "sockshop"
+          SERVICE: "carts"
+        run: |
+          test/test_onboard_service.sh
+          test/test_new_artifact.sh
+          test/test_delete_project.sh
+
+      - name: Test Continuous Delivery on Remote Exec Plane (with sockshop)
+        id: test_continuous_delivery_remote_exec
+        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && env.REMOTE_EXECUTION_PLANE == 'true'
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
           PROJECT: "sockshop"
           SERVICE: "carts"
         run: |
