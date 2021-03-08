@@ -617,6 +617,47 @@ paths:
     get:
       consumes:
       - application/json
+      description: Gets a service by its name
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Stage
+        in: path
+        name: stage
+        required: true
+        type: string
+      - description: Service
+        in: path
+        name: service
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedService'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Gets a service by its name
+      tags:
+      - Services
+  /project/{project}/service/{stage}:
+    get:
+      consumes:
+      - application/json
       description: Gets all services of a stage in a project
       parameters:
       - description: Project

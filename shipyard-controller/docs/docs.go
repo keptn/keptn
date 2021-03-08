@@ -521,7 +521,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Gets all services of a stage in a project",
+                "description": "Gets a service by its name",
                 "consumes": [
                     "application/json"
                 ],
@@ -531,7 +531,7 @@ var doc = `{
                 "tags": [
                     "Services"
                 ],
-                "summary": "Gets all services of a stage in a project",
+                "summary": "Gets a service by its name",
                 "parameters": [
                     {
                         "type": "string",
@@ -548,23 +548,18 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "The number of items to return",
-                        "name": "pageSize",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
-                        "description": "Pointer to the next set of items",
-                        "name": "nextPageKey",
-                        "in": "query"
+                        "description": "Service",
+                        "name": "service",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedServices"
+                            "$ref": "#/definitions/models.ExpandedService"
                         }
                     },
                     "400": {
@@ -619,6 +614,74 @@ var doc = `{
                         "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/operations.DeleteServiceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{project}/service/{stage}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Gets all services of a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Gets all services of a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage",
+                        "name": "stage",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedServices"
                         }
                     },
                     "400": {
