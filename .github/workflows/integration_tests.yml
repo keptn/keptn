@@ -74,6 +74,7 @@ jobs:
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
@@ -485,6 +486,13 @@ jobs:
       - name: Uninstall Keptn
         timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
+
+      - name: Uninstall remote execution plane
+        timeout-minutes: 5
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        run: |
+          kubectl delete namespace keptn-helm-service
+          kubectl delete namespace keptn-jmeter-service
 
       - name: Uninstall Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
