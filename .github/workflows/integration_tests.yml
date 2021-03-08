@@ -436,9 +436,7 @@ jobs:
         timeout-minutes: 45
         continue-on-error: true
         env:
-          VERSION: ${{ env.VERSION }}
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
           PROJECT: "sockshop"
           SERVICE: "carts"
         run: |
