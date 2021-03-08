@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
@@ -42,7 +42,7 @@ func TestGetProjectsErr(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	projectsDBOperations.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
-		return nil, errors.New("Oh Oh...")
+		return nil, fmt.Errorf("Oh Oh...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -77,7 +77,7 @@ func TestGetByNameErr(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Oh Oh...")
+		return nil, fmt.Errorf("Oh Oh...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -95,7 +95,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Whoops...")
+		return nil, fmt.Errorf("Whoops...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -152,7 +152,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	}
 
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
-		return errors.New("whoops...")
+		return fmt.Errorf("whoops...")
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
@@ -196,7 +196,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	}
 
 	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error {
-		return errors.New("whoops...")
+		return fmt.Errorf("whoops...")
 	}
 
 	configStore.DeleteProjectFunc = func(projectName string) error {
@@ -248,7 +248,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error { return nil }
 	secretStore.DeleteSecretFunc = func(name string) error { return nil }
 	projectsDBOperations.CreateProjectFunc = func(prj *models.ExpandedProject) error {
-		return errors.New("whoops...")
+		return fmt.Errorf("whoops...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -323,7 +323,7 @@ func TestCreate(t *testing.T) {
 	//TODO//assert.Equal(t, encodedShipyard, projectsDBOperations.CreateProjectCalls()[0].PrjShipyard)
 }
 
-func TestUpdate_FailsWhenGettingOldSecretFails(t *testing.T) {
+func TestUpdate_GettingOldSecretFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
@@ -332,7 +332,7 @@ func TestUpdate_FailsWhenGettingOldSecretFails(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
-		return nil, errors.New("Whoops...")
+		return nil, fmt.Errorf("Whoops...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -348,7 +348,7 @@ func TestUpdate_FailsWhenGettingOldSecretFails(t *testing.T) {
 
 }
 
-func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
+func TestUpdate_GettingOldProjectFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
@@ -360,7 +360,7 @@ func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 		return nil, nil
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Whoops...")
+		return nil, fmt.Errorf("Whoops...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -376,7 +376,7 @@ func TestUpdate_FailsWhenGettingOldProjectFails(t *testing.T) {
 
 }
 
-func TestUpdate_FailsWhenUpdatingGitRepositorySecretFails(t *testing.T) {
+func TestUpdate_UpdateGitRepositrySecretFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
@@ -389,7 +389,7 @@ func TestUpdate_FailsWhenUpdatingGitRepositorySecretFails(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
-		return errors.New("Whoops...")
+		return fmt.Errorf("Whoops...")
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
@@ -408,7 +408,7 @@ func TestUpdate_FailsWhenUpdatingGitRepositorySecretFails(t *testing.T) {
 
 }
 
-func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetRestored(t *testing.T) {
+func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
@@ -416,7 +416,7 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 
-	oldSecretsEncoded, _ := json.Marshal(gitCredentials{
+	rollbackSecretsData, _ := json.Marshal(gitCredentials{
 		User:      "my-old-user",
 		Token:     "my-old-token",
 		RemoteURI: "http://my-old-remote.uri",
@@ -428,7 +428,7 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 		RemoteURI: "git-url",
 	})
 
-	oldProject := &models.ExpandedProject{
+	rollbackProjectData := &models.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
@@ -439,18 +439,18 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 
-		return map[string][]byte{"git-credentials": oldSecretsEncoded}, nil
+		return map[string][]byte{"git-credentials": rollbackSecretsData}, nil
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return oldProject, nil
+		return rollbackProjectData, nil
 	}
 
 	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
-		return errors.New("Whoops...")
+		return fmt.Errorf("Whoops...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -474,11 +474,12 @@ func TestUpdate_WhenUpdateProjectInConfigurationStoreFails_ThenOldSecretGetResto
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 
+	// rollbacks
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
-	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, rollbackSecretsData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
 }
 
-func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecretGetRestored(t *testing.T) {
+func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
@@ -486,7 +487,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 
-	oldSecretsEncoded, _ := json.Marshal(gitCredentials{
+	rollbackSecretData, _ := json.Marshal(gitCredentials{
 		User:      "my-old-user",
 		Token:     "my-old-token",
 		RemoteURI: "http://my-old-remote.uri",
@@ -509,7 +510,7 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 
-		return map[string][]byte{"git-credentials": oldSecretsEncoded}, nil
+		return map[string][]byte{"git-credentials": rollbackSecretData}, nil
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
@@ -523,8 +524,8 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		return nil
 	}
 
-	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
-		return errors.New("Whoops...")
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+		return fmt.Errorf("Whoops...")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -546,26 +547,26 @@ func TestUpdate_WhenUpdateProjectUpstreamInRepository_ThenOldProjectAndOldSecret
 		ProjectName:  *params.Name,
 	}
 
-	expectedUpdateProject := &models.ExpandedProject{
-		CreationDate:    "old-creationdate",
-		GitRemoteURI:    "git-url",
-		GitUser:         "git-user",
-		ProjectName:     "my-project",
-		Shipyard:        "my-shipyard",
-		ShipyardVersion: "v1",
+	rollbackProjectData := keptnapimodels.Project{
+		CreationDate:    oldProject.CreationDate,
+		GitRemoteURI:    oldProject.GitRemoteURI,
+		GitUser:         oldProject.GitUser,
+		ProjectName:     oldProject.ProjectName,
+		ShipyardVersion: oldProject.ShipyardVersion,
 	}
 
 	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
-	assert.Equal(t, expectedUpdateProject, projectsDBOperations.UpdateProjectCalls()[0].Prj)
-	assert.Equal(t, toModelProject(*oldProject), configStore.UpdateProjectCalls()[1].Project)
+
+	// rollbacks
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
-	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, rollbackSecretData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, rollbackProjectData, configStore.UpdateProjectCalls()[1].Project)
 
 }
 
-func TestUpdate(t *testing.T) {
+func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
@@ -590,7 +591,7 @@ func TestUpdate(t *testing.T) {
 		GitRemoteURI:    "http://my-old-remote.uri",
 		GitUser:         "my-old-user",
 		ProjectName:     "my-project",
-		Shipyard:        "",
+		Shipyard:        "my-old-shipyard",
 		ShipyardVersion: "v1",
 	}
 
@@ -610,6 +611,113 @@ func TestUpdate(t *testing.T) {
 		return nil
 	}
 
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+		return nil
+	}
+
+	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+		return fmt.Errorf("Whoops...")
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
+	params := &operations.UpdateProjectParams{
+		GitRemoteURL: "git-url",
+		GitToken:     "git-token",
+		GitUser:      "git-user",
+		Name:         common.Stringp("my-project"),
+		Shipyard:     "my-shipyard",
+	}
+	err, rollback := instance.Update(params)
+	assert.NotNil(t, err)
+	rollback()
+
+	projectUpdateData := keptnapimodels.Project{
+		GitRemoteURI: params.GitRemoteURL,
+		GitToken:     params.GitToken,
+		GitUser:      params.GitUser,
+		ProjectName:  *params.Name,
+	}
+
+	projectDBUpdateData := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "git-url",
+		GitUser:         "git-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-shipyard",
+		ShipyardVersion: "v1",
+	}
+
+	updateShipyardResourceData := &keptnapimodels.Resource{
+		ResourceContent: params.Shipyard,
+		ResourceURI:     common.Stringp("shipyard.yaml")}
+
+	rollbackShipyardResourceData := &keptnapimodels.Resource{
+		ResourceContent: oldProject.Shipyard,
+		ResourceURI:     common.Stringp("shipyard.yaml")}
+
+	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
+	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, updateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
+	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
+	assert.Equal(t, projectDBUpdateData, projectsDBOperations.UpdateProjectCalls()[0].Prj)
+
+	// rollbacks
+	assert.Equal(t, toModelProject(*oldProject), configStore.UpdateProjectCalls()[1].Project)
+	assert.Equal(t, rollbackShipyardResourceData, configStore.UpdateProjectResourceCalls()[1].Resource)
+	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
+	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+
+}
+
+func TestUpdate(t *testing.T) {
+
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
+	updateSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "git-user",
+		Token:     "git-token",
+		RemoteURI: "git-url",
+	})
+
+	oldProjectData := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "http://my-old-remote.uri",
+		GitUser:         "my-old-user",
+		ProjectName:     "my-project",
+		Shipyard:        "",
+		ShipyardVersion: "v1",
+	}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return oldProjectData, nil
+	}
+
+	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+		return nil
+	}
+
 	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
 		return nil
 	}
@@ -626,14 +734,14 @@ func TestUpdate(t *testing.T) {
 	assert.Nil(t, err)
 	rollback()
 
-	expectedProjectUpdateInConfigSvc := keptnapimodels.Project{
+	projectUpdateData := keptnapimodels.Project{
 		GitRemoteURI: params.GitRemoteURL,
 		GitToken:     params.GitToken,
 		GitUser:      params.GitUser,
 		ProjectName:  *params.Name,
 	}
 
-	expectedUpdateProject := &models.ExpandedProject{
+	projectDBUpdateData := &models.ExpandedProject{
 		CreationDate:    "old-creationdate",
 		GitRemoteURI:    "git-url",
 		GitUser:         "git-user",
@@ -642,12 +750,78 @@ func TestUpdate(t *testing.T) {
 		ShipyardVersion: "v1",
 	}
 
-	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
+	expectedUpdateShipyardResourceData := &keptnapimodels.Resource{
+		ResourceContent: params.Shipyard,
+		ResourceURI:     common.Stringp("shipyard.yaml")}
+
+	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
 	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
-	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
+	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
+	assert.Equal(t, projectDBUpdateData, projectsDBOperations.UpdateProjectCalls()[0].Prj)
+	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
+}
 
-	assert.Equal(t, expectedUpdateProject, projectsDBOperations.UpdateProjectCalls()[0].Prj)
+func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
+	oldProjectData := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "http://my-old-remote.uri",
+		GitUser:         "my-old-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-old-shipyard",
+		ShipyardVersion: "v1",
+	}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return oldProjectData, nil
+	}
+
+	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+		return nil
+	}
+
+	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
+	params := &operations.UpdateProjectParams{
+		GitRemoteURL: "git-url",
+		GitToken:     "git-token",
+		GitUser:      "git-user",
+		Name:         common.Stringp("my-project"),
+		Shipyard:     "",
+	}
+	err, rollback := instance.Update(params)
+	assert.Nil(t, err)
+	rollback()
+
+	assert.Equal(t, 0, len(configStore.UpdateProjectResourceCalls()))
+	assert.Equal(t, oldProjectData.Shipyard, projectsDBOperations.UpdateProjectCalls()[0].Prj.Shipyard)
 }
 
 func TestDelete(t *testing.T) {

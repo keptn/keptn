@@ -11,6 +11,7 @@ type ConfigurationStore interface {
 	CreateProject(project keptnapimodels.Project) error
 	UpdateProject(project keptnapimodels.Project) error
 	CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error
+	UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error
 	DeleteProject(projectName string) error
 	CreateStage(projectName string, stage string) error
 	CreateService(projectName string, stageName string, serviceName string) error
@@ -64,6 +65,13 @@ func (g GitConfigurationStore) DeleteProject(projectName string) error {
 
 func (g GitConfigurationStore) CreateProjectShipyard(projectName string, resources []*keptnapimodels.Resource) error {
 	if _, err := g.resourceAPI.CreateProjectResources(projectName, resources); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g GitConfigurationStore) UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error {
+	if _, err := g.resourceAPI.UpdateProjectResource(projectName, resource); err != nil {
 		return err
 	}
 	return nil
