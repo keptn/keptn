@@ -17,7 +17,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.1-0.20210302104249-3e8c4544da66
+	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
 	github.com/keptn/kubernetes-utils v0.8.0
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/go-shellwords v1.0.11
