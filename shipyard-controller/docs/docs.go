@@ -159,7 +159,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get the list of stages of a project",
+                "description": "Get the list of all projects",
                 "consumes": [
                     "application/json"
                 ],
@@ -167,9 +167,9 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Stage"
+                    "Projects"
                 ],
-                "summary": "Get all stages of a project",
+                "summary": "Get all projects",
                 "parameters": [
                     {
                         "type": "integer",
@@ -194,13 +194,7 @@ var doc = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.Stages"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
+                            "$ref": "#/definitions/models.ExpandedProjects"
                         }
                     },
                     "500": {
@@ -310,104 +304,6 @@ var doc = `{
                 }
             }
         },
-        "/project/:project": {
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Delete a project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Delete a project",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project name",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/operations.DeleteProjectResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/project/{projectName}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get a project by its name",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Get a project by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The name of the project",
-                        "name": "projectName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/models.ExpandedProject"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error)",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/project/{projectName}/stage/{stageName}": {
             "get": {
                 "security": [
@@ -457,6 +353,102 @@ var doc = `{
                     },
                     "500": {
                         "description": "Internal Error)",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a project by its name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get a project by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "projectName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedProject"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Error)",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Delete a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project name",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/operations.DeleteProjectResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -631,6 +623,66 @@ var doc = `{
                     },
                     "400": {
                         "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{project}/stage": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get the list of stages of a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stage"
+                ],
+                "summary": "Get all stages of a project",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Disable sync of upstream repo before reading content",
+                        "name": "disableUpstreamSync",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.Stages"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -834,7 +886,6 @@ var doc = `{
                 },
                 "lastEventContext": {
                     "description": "last event context",
-                    "type": "object",
                     "$ref": "#/definitions/models.EventContext"
                 },
                 "projectName": {
@@ -942,7 +993,6 @@ var doc = `{
             "properties": {
                 "lastEventContext": {
                     "description": "last event context",
-                    "type": "object",
                     "$ref": "#/definitions/models.EventContext"
                 },
                 "services": {
@@ -1074,10 +1124,6 @@ var doc = `{
         "operations.CreateServiceParams": {
             "type": "object",
             "properties": {
-                "helmChart": {
-                    "description": "shipyard",
-                    "type": "string"
-                },
                 "serviceName": {
                     "description": "name",
                     "type": "string"

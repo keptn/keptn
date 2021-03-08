@@ -139,6 +139,7 @@ configurator
 configuremonitoring
 configutils
 consumercatalog
+containerregistry
 contenttype
 coreinfrastructure
 cors
