@@ -16,7 +16,7 @@ func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 	instance := NewStageManager(stagesDbOperations, logger)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Whoops...")
+		return nil, errors.New("whoops")
 	}
 
 	p, err := instance.GetAllStages("my-project")
@@ -71,7 +71,7 @@ func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
 	instance := NewStageManager(stagesDbOperations, logger)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Whoops...")
+		return nil, errors.New("whoops")
 	}
 
 	stage, err := instance.GetStage("my-project", "the-stage")

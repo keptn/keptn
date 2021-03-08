@@ -24,7 +24,7 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 	}
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Whoops...")
+		return nil, errors.New("whoops")
 	}
 
 	err := instance.CreateService("my-project", params)
@@ -94,7 +94,7 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 	}
 
 	configurationStore.CreateServiceFunc = func(projectName string, stageName string, serviceName string) error {
-		return errors.New("Whoops...")
+		return errors.New("whoops")
 	}
 
 	err := instance.CreateService("my-project", params)
@@ -136,7 +136,7 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 	}
 
 	servicesDBOperations.CreateServiceFunc = func(project string, stage string, service string) error {
-		return errors.New("Whoops...")
+		return errors.New("whoops")
 	}
 
 	err := instance.CreateService("my-project", params)
@@ -209,7 +209,7 @@ func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, errors.New("Whoops...")
+		return nil, errors.New("whoops")
 	}
 
 	err := instance.DeleteService("my-project", "my-service")
@@ -244,7 +244,7 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 	}
 
 	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
-		return errors.New("Whoops...")
+		return errors.New("whoops")
 	}
 
 	err := instance.DeleteService("my-project", "my-service")

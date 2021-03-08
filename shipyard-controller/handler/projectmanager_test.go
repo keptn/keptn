@@ -42,7 +42,7 @@ func TestGetProjectsErr(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	projectsDBOperations.GetProjectsFunc = func() ([]*models.ExpandedProject, error) {
-		return nil, fmt.Errorf("whoops...")
+		return nil, fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -77,7 +77,7 @@ func TestGetByNameErr(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, fmt.Errorf("whoops...")
+		return nil, fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -95,7 +95,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, fmt.Errorf("whoops...")
+		return nil, fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -152,7 +152,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	}
 
 	configStore.CreateProjectFunc = func(keptnapimodels.Project) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
@@ -196,7 +196,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	}
 
 	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*keptnapimodels.Resource) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 
 	configStore.DeleteProjectFunc = func(projectName string) error {
@@ -248,7 +248,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error { return nil }
 	secretStore.DeleteSecretFunc = func(name string) error { return nil }
 	projectsDBOperations.CreateProjectFunc = func(prj *models.ExpandedProject) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -332,7 +332,7 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 	configStore := &common_mock.ConfigurationStoreMock{}
 
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
-		return nil, fmt.Errorf("whoops...")
+		return nil, fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -360,7 +360,7 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 		return nil, nil
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, fmt.Errorf("whoops...")
+		return nil, fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -389,7 +389,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
@@ -450,7 +450,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	}
 
 	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -525,7 +525,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	}
 
 	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
@@ -616,7 +616,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	}
 
 	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
-		return fmt.Errorf("whoops...")
+		return fmt.Errorf("whoops")
 	}
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
