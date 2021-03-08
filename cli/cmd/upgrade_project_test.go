@@ -39,6 +39,24 @@ const upgradeShipyardResourceMockResponse = `{
       "resourceURI": "shipyard.yaml"
 }`
 
+const existingProject = `{"creationDate":"date","gitRemoteURI":"remote-uri","gitToken":"token","gitUser":"user","projectName":"projectname","shipyardVersion":"2","stages":[{"services":null,"stageName":"stage1"}]}`
+
+func Test_Smosthing(t *testing.T) {
+	p := apimodels.Project{
+		CreationDate:    "date",
+		GitRemoteURI:    "remote-uri",
+		GitToken:        "token",
+		GitUser:         "user",
+		ProjectName:     "projectname",
+		ShipyardVersion: "2",
+		Stages: []*apimodels.Stage{&apimodels.Stage{
+			StageName: "stage1",
+		}},
+	}
+	m, _ := json.Marshal(p)
+	fmt.Println(string(m))
+}
+
 func Test_UpgradeProjectShipyard(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
@@ -49,25 +67,26 @@ func Test_UpgradeProjectShipyard(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
+			fmt.Println(r.RequestURI)
+
+			if r.Method == http.MethodGet && r.RequestURI == "/controlPlane/v1/project/sockshop" {
+				w.Write([]byte(existingProject))
+				return
+			}
+
 			if r.Method == http.MethodGet && strings.Contains(r.RequestURI, "shipyard.yaml") {
 				w.Write([]byte(upgradeShipyardResourceMockResponse))
 				return
-			} else if r.Method == http.MethodPut && strings.Contains(r.RequestURI, "resource") {
+			} else if r.Method == http.MethodPut && r.RequestURI == "/controlPlane/v1/project" {
 				defer r.Body.Close()
+				payload := apimodels.CreateProject{}
 				bytes, err := ioutil.ReadAll(r.Body)
 				if err != nil {
 					t.Errorf("could not read received event payload: %s", err.Error())
 				}
-				resource := &apimodels.Resource{}
-				if err := json.Unmarshal(bytes, resource); err != nil {
-					t.Errorf("could not decode received resource: %s", err.Error())
+				if err := json.Unmarshal(bytes, &payload); err != nil {
+					t.Errorf("could not decode received payload: %s", err.Error())
 				}
-				if *resource.ResourceURI != "shipyard.yaml" {
-					t.Errorf("did not receive upgraded shipyard: %s", err.Error())
-				}
-				v := &apimodels.Version{}
-				marshal, _ := json.Marshal(v)
-				w.Write(marshal)
 				go func() {
 					receivedUpgradedShipyard <- true
 				}()

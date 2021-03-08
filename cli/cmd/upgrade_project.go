@@ -163,10 +163,6 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		}
 
 		logging.PrintLog("Shipyard of project "+projectName+" has been upgraded successfully!", logging.InfoLevel)
-		logging.PrintLog("PLEASE NOTE: Due to a known limitation, the displayed version number of your "+
-			"upgraded shipyard file will not be up to date when viewing your project in the bridge, but triggering sequences "+
-			"for this project is already supported. Once you have triggered the first sequence for this project, "+
-			"the shipyard version number will be displayed correctly.", logging.InfoLevel)
 
 		return nil
 	},
