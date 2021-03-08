@@ -611,6 +611,7 @@ passthrough
 pb
 pem
 perc
+perfromance
 perfservice
 perfspec
 php
