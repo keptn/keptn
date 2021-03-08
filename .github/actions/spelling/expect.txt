@@ -162,6 +162,7 @@ cyberciti
 daemonset
 danielkhan
 dasharray
+dataservice
 datastore
 datastoremodels
 datetime
