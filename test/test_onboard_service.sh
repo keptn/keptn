@@ -9,22 +9,6 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o js
 
 echo "Testing onboarding for project $PROJECT"
 
-echo "Using remote execution plane services: ${REMOTE_EXECUTION_PLANE}"
-
-# check if REMOTE_EXECUTION_PLANE is set to true. If yes, scale down the helm-service and jmeter in the keptn namespace and install the services via their helm charts
-if [[ "${REMOTE_EXECUTION_PLANE}" == "true" ]]; then
-  kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
-  kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-
-  KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-
-  helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-  helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-
-  helm test jmeter-service -n keptn-jmeter-service
-  helm test helm-service -n keptn-helm-service
-fi
-
 # verify that the project does not exist yet via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/controlPlane/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')
 
