@@ -388,6 +388,7 @@ jobs:
         if: env.REMOTE_EXECUTION_PLANE == 'true'
         timeout-minutes: 5
         run: |
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
           kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
           kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
 
