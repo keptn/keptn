@@ -179,16 +179,18 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 		return err, nilRollback
 	}
 
-	// try to update git repository secret
-	err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
-		User:      params.GitUser,
-		Token:     params.GitToken,
-		RemoteURI: params.GitRemoteURL,
-	})
+	if params.GitUser != "" && params.GitToken != "" && params.GitRemoteURL != "" {
+		// try to update git repository secret
+		err = pm.updateGITRepositorySecret(*params.Name, &gitCredentials{
+			User:      params.GitUser,
+			Token:     params.GitToken,
+			RemoteURI: params.GitRemoteURL,
+		})
 
-	// no roll back needed since updating the git repository secret was the first operation
-	if err != nil {
-		return err, nilRollback
+		// no roll back needed since updating the git repository secret was the first operation
+		if err != nil {
+			return err, nilRollback
+		}
 	}
 
 	// new project content in configuration service

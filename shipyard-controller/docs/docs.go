@@ -1165,7 +1165,11 @@ var doc = `{
                     "type": "string"
                 },
                 "name": {
-                    "description": "name\nRequired: true",
+                    "description": "name",
+                    "type": "string"
+                },
+                "shipyard": {
+                    "description": "shipyard",
                     "type": "string"
                 }
             }

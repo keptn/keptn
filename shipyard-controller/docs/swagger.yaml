@@ -289,9 +289,10 @@ definitions:
         description: git user
         type: string
       name:
-        description: |-
-          name
-          Required: true
+        description: name
+        type: string
+      shipyard:
+        description: shipyard
         type: string
     type: object
   operations.UpdateProjectResponse:

@@ -824,6 +824,68 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	assert.Equal(t, oldProjectData.Shipyard, projectsDBOperations.UpdateProjectCalls()[0].Prj.Shipyard)
 }
 
+func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
+
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+
+	oldSecretsData, _ := json.Marshal(gitCredentials{
+		User:      "my-old-user",
+		Token:     "my-old-token",
+		RemoteURI: "http://my-old-remote.uri",
+	})
+
+	oldProjectData := &models.ExpandedProject{
+		CreationDate:    "old-creationdate",
+		GitRemoteURI:    "http://my-old-remote.uri",
+		GitUser:         "my-old-user",
+		ProjectName:     "my-project",
+		Shipyard:        "my-old-shipyard",
+		ShipyardVersion: "v1",
+	}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
+		return oldProjectData, nil
+	}
+
+	configStore.UpdateProjectFunc = func(project keptnapimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *keptnapimodels.Resource) error {
+		return nil
+	}
+
+	projectsDBOperations.UpdateProjectFunc = func(prj *models.ExpandedProject) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
+	params := &operations.UpdateProjectParams{
+		GitRemoteURL: "",
+		GitToken:     "",
+		GitUser:      "",
+		Name:         common.Stringp("my-project"),
+		Shipyard:     "",
+	}
+	err, rollback := instance.Update(params)
+	assert.Nil(t, err)
+	rollback()
+
+	assert.Equal(t, 0, len(secretStore.UpdateSecretCalls()))
+}
+
 func TestDelete(t *testing.T) {
 
 	secretStore := &common_mock.SecretStoreMock{}
