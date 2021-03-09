@@ -66,9 +66,6 @@ import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-eve
 import { KtbTaskItemComponent, KtbTaskItemDetail } from "./_components/ktb-task-item/ktb-task-item.component";
 import { KtbSequenceTasksListComponent } from "./_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
 
-import { AtobPipe } from './_pipes/atob.pipe';
-import { FilterByFunctionPipe } from "./_pipes/filterByFunction.pipe";
-
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
 import { HttpDefaultInterceptor } from "./_interceptors/http-default-interceptor";
@@ -86,7 +83,7 @@ import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
 import { KtbSequenceViewComponent } from "./_views/ktb-sequence-view/ktb-sequence-view.component";
 import { KtbServiceViewComponent } from "./_views/ktb-service-view/ktb-service-view.component";
-import { KeptnUrlPipe } from './_pipes/keptnUrl.pipe';
+import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import {KtbSliBreakdownCriteriaItemComponent} from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
 
 registerLocaleData(localeEn, 'en');
@@ -113,8 +110,6 @@ registerLocaleData(localeEn, 'en');
     KtbProjectTileComponent,
     KtbProjectListComponent,
     KtbEventsListComponent,
-    AtobPipe,
-    FilterByFunctionPipe,
     KtbEventItemComponent,
     KtbEventItemDetail,
     KtbSequenceTasksListComponent,
