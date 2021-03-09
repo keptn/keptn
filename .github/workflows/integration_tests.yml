@@ -387,6 +387,9 @@ jobs:
         id: install_remote_execution_plane
         if: env.REMOTE_EXECUTION_PLANE == 'true'
         timeout-minutes: 5
+        env:
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
         run: |
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
           kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
@@ -474,8 +477,6 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
           PROJECT: "sockshop"
           SERVICE: "carts"
         run: |
