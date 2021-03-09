@@ -293,35 +293,6 @@ func printObject(obj interface{}) string {
 	return string(indent)
 }
 
-func merge(in1, in2 interface{}) interface{} {
-	switch in1 := in1.(type) {
-	case []interface{}:
-		in2, ok := in2.([]interface{})
-		if !ok {
-			return in1
-		}
-		return append(in1, in2...)
-	case map[string]interface{}:
-		in2, ok := in2.(map[string]interface{})
-		if !ok {
-			return in1
-		}
-		for k, v2 := range in2 {
-			if v1, ok := in1[k]; ok {
-				in1[k] = merge(v1, v2)
-			} else {
-				in1[k] = v2
-			}
-		}
-	case nil:
-		in2, ok := in2.(map[string]interface{})
-		if ok {
-			return in2
-		}
-	}
-	return in1
-}
-
 func (sc *shipyardController) getEvents(project string, filter common.EventFilter, status common.EventStatus, nrRetries int) ([]models.Event, error) {
 	sc.logger.Info(string("Trying to get " + status + " events"))
 	for i := 0; i <= nrRetries; i++ {
@@ -670,7 +641,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(keptnContext string
 		if err := json.Unmarshal(marshal, &tmp); err != nil {
 			return fmt.Errorf("could not convert input event: %s ", err.Error())
 		}
-		mergedPayload = merge(eventPayload, tmp)
+		mergedPayload = common.Merge(eventPayload, tmp)
 	}
 
 	source, _ := url.Parse("shipyard-controller")
@@ -730,9 +701,9 @@ func (sc *shipyardController) sendTaskTriggeredEvent(keptnContext string, eventS
 	if eventHistory != nil {
 		for index := range eventHistory {
 			if mergedPayload == nil {
-				mergedPayload = merge(eventPayload, eventHistory[index])
+				mergedPayload = common.Merge(eventPayload, eventHistory[index])
 			} else {
-				mergedPayload = merge(mergedPayload, eventHistory[index])
+				mergedPayload = common.Merge(mergedPayload, eventHistory[index])
 			}
 		}
 	}
