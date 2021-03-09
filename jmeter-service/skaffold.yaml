@@ -3,20 +3,23 @@ kind: Config
 build:
   artifacts:
     - image: keptn/jmeter-service
-      docker:    # 	beta describes an artifact built from a Dockerfile.
+      docker:
         dockerfile: Dockerfile
-        buildArgs:
-          debugBuild: true
-
+# Before executing this, install jmeter-service manually:
+# helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.0/jmeter-service-0.8.0.tgz -n keptn
 deploy:
   helm:
     flags:
       upgrade: ["--reuse-values"]
     releases:
-      - name: jmeter-service # needs to be the same name as currently used (check via helm ls -n keptn-exec)
-        namespace: keptn-exec # needs to be the same namespace as where the helm-chart is currently deployed
+      - name: jmeter-service # needs to be the same name as currently used (check via helm ls -n keptn)
+        namespace: keptn # needs to be the same namespace as where the helm-chart is currently deployed
         # upgradeOnChange: true
         # recreatePods: false # don't recreate all pods
         artifactOverrides:
           image: keptn/jmeter-service
+        overrides:
+          distributor:
+            image:
+              tag: 0.8.0
         chartPath: chart
