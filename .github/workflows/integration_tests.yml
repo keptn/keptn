@@ -647,7 +647,7 @@ jobs:
         run: |
           echo "**Resource Limits**" > final-resource-limits.txt
           ls -la test-resource-limits*.txt
-          cat test-resource-limits*.txt >> final-resource-limits.txt
+          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
           # Todo: some calculations should be done...
 
       - name: Download all artifacts from last successful build of specified branch
@@ -681,6 +681,42 @@ jobs:
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
+
+      - name: Formulate bug issue on errors
+        id: formulate_bug_issue
+        run: |
+          REPORT=$(cat final-test-report.txt)
+
+          if [[ "$REPORT" == *"failure"* ]]; then
+            # create a markdown file that contains details about the error
+            echo "---" > integration-tests-failed.md
+            echo "title: Integration tests failed" >> integration-tests-failed.md
+            echo "labels: type:critical" >> integration-tests-failed.md
+            echo "---" >> integration-tests-failed.md
+            echo "" >> integration-tests-failed.md
+            echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> integration-tests-failed.md
+            echo "* Branch: $BRANCH" >> integration-tests-failed.md
+            echo "* Version: $VERSION" >> integration-tests-failed.md
+            echo "* Datetime: $DATETIME" >> integration-tests-failed.md
+            echo "* Commit: $GIT_SHA" >> integration-tests-failed.md
+            echo "" >> integration-tests-failed.md
+
+            # print report but make failures bold
+            echo "${REPORT//failure/:x: **failure**}"     >> integration-tests-failed.md
+
+            echo "" >> integration-tests-failed.md
+            echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> integration-tests-failed.md
+
+            echo "##[set-output name=INTEGRATION_TESTS_FAILED;]true"
+          fi
+
+      - name: Create issue if tests failed
+        if: always() && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: integration-tests-failed.md
 
       # Part of this job is to check if a releasenotes file exists and to use it as the release message
       - name: Try getting release notes
