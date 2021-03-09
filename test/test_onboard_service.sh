@@ -18,8 +18,8 @@ if [[ "${REMOTE_EXECUTION_PLANE}" == "true" ]]; then
 
   KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
 
-  helm install helm-service http://0.0.0.0:8000/${HELM_SERVICE_HELM_CHART_NAME} -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-  helm install jmeter-service http://0.0.0.0:8000/${JMETER_SERVICE_HELM_CHART_NAME} -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+  helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+  helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
 
   helm test jmeter-service -n keptn-jmeter-service
   helm test helm-service -n keptn-helm-service
