@@ -26,6 +26,9 @@ import (
 // 			GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
 // 				panic("mock out the GetProjects method")
 // 			},
+// 			UpdateProjectFunc: func(prj *models.ExpandedProject) error {
+// 				panic("mock out the UpdateProject method")
+// 			},
 // 			UpdateUpstreamInfoFunc: func(projectName string, uri string, user string) error {
 // 				panic("mock out the UpdateUpstreamInfo method")
 // 			},
@@ -47,6 +50,9 @@ type ProjectsDBOperationsMock struct {
 
 	// GetProjectsFunc mocks the GetProjects method.
 	GetProjectsFunc func() ([]*models.ExpandedProject, error)
+
+	// UpdateProjectFunc mocks the UpdateProject method.
+	UpdateProjectFunc func(prj *models.ExpandedProject) error
 
 	// UpdateUpstreamInfoFunc mocks the UpdateUpstreamInfo method.
 	UpdateUpstreamInfoFunc func(projectName string, uri string, user string) error
@@ -71,6 +77,11 @@ type ProjectsDBOperationsMock struct {
 		// GetProjects holds details about calls to the GetProjects method.
 		GetProjects []struct {
 		}
+		// UpdateProject holds details about calls to the UpdateProject method.
+		UpdateProject []struct {
+			// Prj is the prj argument value.
+			Prj *models.ExpandedProject
+		}
 		// UpdateUpstreamInfo holds details about calls to the UpdateUpstreamInfo method.
 		UpdateUpstreamInfo []struct {
 			// ProjectName is the projectName argument value.
@@ -85,6 +96,7 @@ type ProjectsDBOperationsMock struct {
 	lockDeleteProject      sync.RWMutex
 	lockGetProject         sync.RWMutex
 	lockGetProjects        sync.RWMutex
+	lockUpdateProject      sync.RWMutex
 	lockUpdateUpstreamInfo sync.RWMutex
 }
 
@@ -204,6 +216,37 @@ func (mock *ProjectsDBOperationsMock) GetProjectsCalls() []struct {
 	mock.lockGetProjects.RLock()
 	calls = mock.calls.GetProjects
 	mock.lockGetProjects.RUnlock()
+	return calls
+}
+
+// UpdateProject calls UpdateProjectFunc.
+func (mock *ProjectsDBOperationsMock) UpdateProject(prj *models.ExpandedProject) error {
+	if mock.UpdateProjectFunc == nil {
+		panic("ProjectsDBOperationsMock.UpdateProjectFunc: method is nil but ProjectsDBOperations.UpdateProject was just called")
+	}
+	callInfo := struct {
+		Prj *models.ExpandedProject
+	}{
+		Prj: prj,
+	}
+	mock.lockUpdateProject.Lock()
+	mock.calls.UpdateProject = append(mock.calls.UpdateProject, callInfo)
+	mock.lockUpdateProject.Unlock()
+	return mock.UpdateProjectFunc(prj)
+}
+
+// UpdateProjectCalls gets all the calls that were made to UpdateProject.
+// Check the length with:
+//     len(mockedProjectsDBOperations.UpdateProjectCalls())
+func (mock *ProjectsDBOperationsMock) UpdateProjectCalls() []struct {
+	Prj *models.ExpandedProject
+} {
+	var calls []struct {
+		Prj *models.ExpandedProject
+	}
+	mock.lockUpdateProject.RLock()
+	calls = mock.calls.UpdateProject
+	mock.lockUpdateProject.RUnlock()
 	return calls
 }
 

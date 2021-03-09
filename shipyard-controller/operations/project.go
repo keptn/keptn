@@ -13,8 +13,10 @@ type UpdateProjectParams struct {
 	GitUser string `json:"gitUser,omitempty"`
 
 	// name
-	// Required: true
 	Name *string `json:"name"`
+
+	// shipyard
+	Shipyard string `json:"shipyard"`
 }
 
 type CreateProjectParams struct {

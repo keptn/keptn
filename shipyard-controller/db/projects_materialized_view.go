@@ -78,7 +78,12 @@ func (mv *ProjectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 		mv.Logger.Error(fmt.Sprintf("could not update shipyard version fo project %s: %s"+projectName, err.Error()))
 	}
 
-	return mv.updateProject(existingProject)
+	return mv.ProjectRepo.UpdateProject(existingProject)
+}
+
+// UpdateProject updates a project
+func (mv *ProjectsMaterializedView) UpdateProject(prj *models.ExpandedProject) error {
+	return mv.ProjectRepo.UpdateProject(prj)
 }
 
 func setShipyardVersion(existingProject *models.ExpandedProject) error {
@@ -112,12 +117,33 @@ func (mv *ProjectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
-		if err := mv.updateProject(existingProject); err != nil {
+		if err := mv.ProjectRepo.UpdateProject(existingProject); err != nil {
 			mv.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
 			return err
 		}
 	}
 	return nil
+}
+
+func (mv *ProjectsMaterializedView) UpdatedShipyard(projectName string, shipyard string) error {
+	existingProject, err := mv.GetProject(projectName)
+	if err != nil {
+		return err
+	}
+	if existingProject == nil {
+		return nil
+	}
+
+	if existingProject.Shipyard != shipyard {
+		existingProject.Shipyard = shipyard
+		mv.ProjectRepo.UpdateProject(existingProject)
+		if err != nil {
+			mv.Logger.Error(fmt.Sprintf("could not update shipyard of project %s: %s", projectName, err.Error()))
+			return nil
+		}
+	}
+	return nil
+
 }
 
 // DeleteUpstreamInfo deletes the Upstream Repository URL and git user of a project
@@ -131,7 +157,7 @@ func (mv *ProjectsMaterializedView) DeleteUpstreamInfo(projectName string) error
 	}
 	existingProject.GitUser = ""
 	existingProject.GitRemoteURI = ""
-	if err := mv.updateProject(existingProject); err != nil {
+	if err := mv.ProjectRepo.UpdateProject(existingProject); err != nil {
 		mv.Logger.Error(fmt.Sprintf("could not delete upstream credentials of project %s: %s", projectName, err.Error()))
 		return err
 	}
@@ -201,7 +227,7 @@ func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) er
 		StageName: stage,
 	})
 
-	err = mv.updateProject(prj)
+	err = mv.ProjectRepo.UpdateProject(prj)
 	if err != nil {
 		return err
 	}
@@ -218,10 +244,6 @@ func (mv *ProjectsMaterializedView) createProject(project *models.ExpandedProjec
 		return err
 	}
 	return nil
-}
-
-func (mv *ProjectsMaterializedView) updateProject(prj *models.ExpandedProject) error {
-	return mv.ProjectRepo.UpdateProject(prj)
 }
 
 // DeleteStage deletes a stage
@@ -250,7 +272,7 @@ func (mv *ProjectsMaterializedView) DeleteStage(project string, stage string) er
 	prj.Stages[len(prj.Stages)-1] = nil
 	prj.Stages = prj.Stages[:len(prj.Stages)-1]
 
-	err = mv.updateProject(prj)
+	err = mv.ProjectRepo.UpdateProject(prj)
 	return nil
 }
 
@@ -276,7 +298,7 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 				ServiceName:   service,
 			})
 			mv.Logger.Info("Adding " + service + " to stage " + stage + " in project " + project + " in database")
-			err := mv.updateProject(existingProject)
+			err := mv.ProjectRepo.UpdateProject(existingProject)
 			if err != nil {
 				mv.Logger.Error("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not update project: " + err.Error())
 				return err
@@ -337,7 +359,7 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 			break
 		}
 	}
-	err = mv.updateProject(existingProject)
+	err = mv.ProjectRepo.UpdateProject(existingProject)
 	if err != nil {
 		mv.Logger.Error("Could not delete service " + service + " from stage " + stage + " in project " + project + ": " + err.Error())
 		return err
@@ -404,7 +426,7 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 		mv.Logger.Error("Could not update image of service " + eventData.Service + ": " + err.Error())
 		return err
 	}
-	err = mv.updateProject(existingProject)
+	err = mv.ProjectRepo.UpdateProject(existingProject)
 	if err != nil {
 		mv.Logger.Error("Could not update " + eventData.Project + ": " + err.Error())
 		return err
@@ -427,7 +449,7 @@ func (mv *ProjectsMaterializedView) CreateRemediation(project, stage, service st
 		service.OpenRemediations = append(service.OpenRemediations, remediation)
 		return nil
 	})
-	return mv.updateProject(existingProject)
+	return mv.ProjectRepo.UpdateProject(existingProject)
 }
 
 // CloseOpenRemediations closes a open remediation actions for a given keptnContext
@@ -464,7 +486,7 @@ func (mv *ProjectsMaterializedView) CloseOpenRemediations(project, stage, servic
 		return err
 	}
 
-	return mv.updateProject(existingProject)
+	return mv.ProjectRepo.UpdateProject(existingProject)
 }
 
 func (mv *ProjectsMaterializedView) getAllDeploymentTriggeredEvents(eventData *keptnv2.EventData, triggeredID string, keptnContext string) ([]models.Event, error) {

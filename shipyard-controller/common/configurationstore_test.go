@@ -156,6 +156,35 @@ func TestConfigurationStore(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 
+	t.Run("TestUpdateProjectResource_Success", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			io.WriteString(w, "{}")
+		}))
+		defer ts.Close()
+
+		instance := NewGitConfigurationStore(ts.URL)
+		resourceUri := "uri"
+		err := instance.UpdateProjectResource("my-project", &keptnapimodels.Resource{
+			ResourceContent: "",
+			ResourceURI:     &resourceUri,
+		})
+		assert.Nil(t, err)
+	})
+
+	t.Run("TestUpdateProjectResource_APIReturnsInternalServerError", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}))
+		defer ts.Close()
+		instance := NewGitConfigurationStore(ts.URL)
+		resourceUri := "uri"
+		err := instance.UpdateProjectResource("my-project", &keptnapimodels.Resource{
+			ResourceContent: "",
+			ResourceURI:     &resourceUri,
+		})
+		assert.NotNil(t, err)
+	})
+
 	t.Run("TestGetProjectResource_Success", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			j, _ := json.Marshal(keptnapimodels.Resource{})

@@ -942,10 +942,6 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 	}
 }
 
-func stringp(s string) *string {
-	return &s
-}
-
 func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 	type fields struct {
 		ProjectRepo ProjectRepo

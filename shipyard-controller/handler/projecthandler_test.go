@@ -52,7 +52,7 @@ func TestGetAllProjects(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetFunc: func() ([]*models.ExpandedProject, error) {
-						return nil, errors.New("Whoops...")
+						return nil, errors.New("whoops")
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -161,7 +161,7 @@ func TestGetProjectByName(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					GetByNameFunc: func(projectName string) (*models.ExpandedProject, error) {
-						return nil, errors.New("Whoops...")
+						return nil, errors.New("whoops")
 					},
 				},
 				EventSender: &fake.IEventSenderMock{},
@@ -289,7 +289,7 @@ func TestCreateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
-						return errors.New("Whoops..."), func() error {
+						return errors.New("whoops"), func() error {
 							rollbackCalled = true
 							return nil
 						}
@@ -364,7 +364,7 @@ func TestUpdateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
-						return errors.New("Whoops..."), func() error { return nil }
+						return errors.New("whoops"), func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -446,7 +446,7 @@ func TestDeleteProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					DeleteFunc: func(projectName string) (error, string) {
-						return errors.New("Whoops..."), ""
+						return errors.New("whoops"), ""
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -463,7 +463,7 @@ func TestDeleteProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					DeleteFunc: func(projectName string) (error, string) {
-						return errors.New("Whoops..."), ""
+						return errors.New("whoops"), ""
 					},
 				},
 				EventSender: &fake.IEventSenderMock{

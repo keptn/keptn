@@ -43,6 +43,9 @@ var _ common.ConfigurationStore = &ConfigurationStoreMock{}
 // 			UpdateProjectFunc: func(project keptnapimodels.Project) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
+// 			UpdateProjectResourceFunc: func(projectName string, resource *keptnapimodels.Resource) error {
+// 				panic("mock out the UpdateProjectResource method")
+// 			},
 // 		}
 //
 // 		// use mockedConfigurationStore in code that requires common.ConfigurationStore
@@ -73,6 +76,9 @@ type ConfigurationStoreMock struct {
 
 	// UpdateProjectFunc mocks the UpdateProject method.
 	UpdateProjectFunc func(project keptnapimodels.Project) error
+
+	// UpdateProjectResourceFunc mocks the UpdateProjectResource method.
+	UpdateProjectResourceFunc func(projectName string, resource *keptnapimodels.Resource) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -130,6 +136,13 @@ type ConfigurationStoreMock struct {
 			// Project is the project argument value.
 			Project keptnapimodels.Project
 		}
+		// UpdateProjectResource holds details about calls to the UpdateProjectResource method.
+		UpdateProjectResource []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// Resource is the resource argument value.
+			Resource *keptnapimodels.Resource
+		}
 	}
 	lockCreateProject         sync.RWMutex
 	lockCreateProjectShipyard sync.RWMutex
@@ -139,6 +152,7 @@ type ConfigurationStoreMock struct {
 	lockDeleteService         sync.RWMutex
 	lockGetProjectResource    sync.RWMutex
 	lockUpdateProject         sync.RWMutex
+	lockUpdateProjectResource sync.RWMutex
 }
 
 // CreateProject calls CreateProjectFunc.
@@ -179,10 +193,10 @@ func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, re
 	}
 	callInfo := struct {
 		ProjectName string
-		Resources  []*keptnapimodels.Resource
+		Resources   []*keptnapimodels.Resource
 	}{
 		ProjectName: projectName,
-		Resources:  resources,
+		Resources:   resources,
 	}
 	mock.lockCreateProjectShipyard.Lock()
 	mock.calls.CreateProjectShipyard = append(mock.calls.CreateProjectShipyard, callInfo)
@@ -195,11 +209,11 @@ func (mock *ConfigurationStoreMock) CreateProjectShipyard(projectName string, re
 //     len(mockedConfigurationStore.CreateProjectShipyardCalls())
 func (mock *ConfigurationStoreMock) CreateProjectShipyardCalls() []struct {
 	ProjectName string
-	Resources  []*keptnapimodels.Resource
+	Resources   []*keptnapimodels.Resource
 } {
 	var calls []struct {
 		ProjectName string
-		Resources  []*keptnapimodels.Resource
+		Resources   []*keptnapimodels.Resource
 	}
 	mock.lockCreateProjectShipyard.RLock()
 	calls = mock.calls.CreateProjectShipyard
@@ -414,5 +428,40 @@ func (mock *ConfigurationStoreMock) UpdateProjectCalls() []struct {
 	mock.lockUpdateProject.RLock()
 	calls = mock.calls.UpdateProject
 	mock.lockUpdateProject.RUnlock()
+	return calls
+}
+
+// UpdateProjectResource calls UpdateProjectResourceFunc.
+func (mock *ConfigurationStoreMock) UpdateProjectResource(projectName string, resource *keptnapimodels.Resource) error {
+	if mock.UpdateProjectResourceFunc == nil {
+		panic("ConfigurationStoreMock.UpdateProjectResourceFunc: method is nil but ConfigurationStore.UpdateProjectResource was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+		Resource    *keptnapimodels.Resource
+	}{
+		ProjectName: projectName,
+		Resource:    resource,
+	}
+	mock.lockUpdateProjectResource.Lock()
+	mock.calls.UpdateProjectResource = append(mock.calls.UpdateProjectResource, callInfo)
+	mock.lockUpdateProjectResource.Unlock()
+	return mock.UpdateProjectResourceFunc(projectName, resource)
+}
+
+// UpdateProjectResourceCalls gets all the calls that were made to UpdateProjectResource.
+// Check the length with:
+//     len(mockedConfigurationStore.UpdateProjectResourceCalls())
+func (mock *ConfigurationStoreMock) UpdateProjectResourceCalls() []struct {
+	ProjectName string
+	Resource    *keptnapimodels.Resource
+} {
+	var calls []struct {
+		ProjectName string
+		Resource    *keptnapimodels.Resource
+	}
+	mock.lockUpdateProjectResource.RLock()
+	calls = mock.calls.UpdateProjectResource
+	mock.lockUpdateProjectResource.RUnlock()
 	return calls
 }

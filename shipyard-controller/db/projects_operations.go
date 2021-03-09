@@ -11,4 +11,5 @@ type ProjectsDBOperations interface {
 	UpdateUpstreamInfo(projectName string, uri string, user string) error
 	DeleteProject(projectName string) error
 	CreateProject(prj *models.ExpandedProject) error
+	UpdateProject(prj *models.ExpandedProject) error
 }

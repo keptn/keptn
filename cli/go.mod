@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.40.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
-	github.com/alecthomas/jsonschema v0.0.0-20201129101101-7b852d451add
+	github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/danieljoos/wincred v1.1.0 // indirect
