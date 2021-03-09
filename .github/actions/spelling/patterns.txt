@@ -76,4 +76,7 @@ GitCommit:\s*"[^"]*"
 \b(?:)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+
 
 # https://github.com/keptn/keptn/pull/3234#discussion_r588338146
-"test": "performance-health"
+"test": "perfromance-health"
+
+# gh workflows/actions "uses: abcd/abcd@v1"
+uses:\s*.*
