@@ -4,9 +4,10 @@
 source test/utils.sh
 
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
+KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 echo "Testing onboarding for project $PROJECT"
-
 
 # verify that the project does not exist yet via the Keptn API
 response=$(curl -X GET "${KEPTN_ENDPOINT}/controlPlane/v1/project/${PROJECT}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.projectName')

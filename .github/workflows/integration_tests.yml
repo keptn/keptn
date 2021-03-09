@@ -55,6 +55,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
             VERSION: "1.17"
@@ -63,6 +64,7 @@ jobs:
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
@@ -72,6 +74,7 @@ jobs:
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
@@ -226,7 +229,13 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
+          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
+          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
+
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
+          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+
 
       - name: Host helm chart via python http server
         run: cd dist/keptn-installer/ && python3 -m http.server &
@@ -374,6 +383,27 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
+      - name: Install Remote Execution Plane
+        id: install_remote_execution_plane
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
+          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+
+          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+
+          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+
+          helm test jmeter-service -n keptn-jmeter-service
+          helm test helm-service -n keptn-helm-service
+
       - name: Test Linking Stages
         id: test_linking_stages
         timeout-minutes: 5
@@ -429,7 +459,21 @@ jobs:
 
       - name: Test Continuous Delivery (with sockshop)
         id: test_continuous_delivery
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "sockshop"
+          SERVICE: "carts"
+        run: |
+          test/test_onboard_service.sh
+          test/test_new_artifact.sh
+          test/test_delete_project.sh
+
+      - name: Test Continuous Delivery on Remote Exec Plane (with sockshop)
+        id: test_continuous_delivery_remote_exec
+        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
         timeout-minutes: 45
         continue-on-error: true
         env:
@@ -482,6 +526,13 @@ jobs:
         timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
 
+      - name: Uninstall remote execution plane
+        timeout-minutes: 5
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        run: |
+          kubectl delete namespace keptn-helm-service
+          kubectl delete namespace keptn-jmeter-service
+
       - name: Uninstall Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
         timeout-minutes: 5
@@ -526,7 +577,7 @@ jobs:
           TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -576,8 +627,8 @@ jobs:
         run: |
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Quality Gates Backwards Compat. | Self Healing  |  Delivery Assistant  | Continuous Delivery |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | ---------------------------------|-------------- | -------------------- | ------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Quality Gates Backwards Compat. | Self Healing  |  Delivery Assistant  | Continuous Delivery | Continuous Delivery (Remote Exec) |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | ---------------------------------|-------------- | -------------------- | ------------------- | ------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
