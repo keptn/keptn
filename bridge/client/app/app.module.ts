@@ -66,9 +66,6 @@ import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-eve
 import { KtbTaskItemComponent, KtbTaskItemDetail } from "./_components/ktb-task-item/ktb-task-item.component";
 import { KtbSequenceTasksListComponent } from "./_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
 
-import { AtobPipe } from './_pipes/atob.pipe';
-import { FilterByFunctionPipe } from "./_pipes/filterByFunction.pipe";
-
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
 import { HttpDefaultInterceptor } from "./_interceptors/http-default-interceptor";
@@ -113,8 +110,6 @@ registerLocaleData(localeEn, 'en');
     KtbProjectTileComponent,
     KtbProjectListComponent,
     KtbEventsListComponent,
-    AtobPipe,
-    FilterByFunctionPipe,
     KtbEventItemComponent,
     KtbEventItemDetail,
     KtbSequenceTasksListComponent,
