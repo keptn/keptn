@@ -9,6 +9,7 @@ cd ./cli/ || return
 
 echo "Building Keptn CLI"
 env go mod download
+export CGO_ENABLED=0
 env go build -v -x -ldflags="-X 'main.Version=$VERSION' -X 'main.KubeServerVersionConstraints=$KUBE_CONSTRAINTS'" -o "${OUTPUT_EXECUTABLE_NAME}"
 
 # shellcheck disable=SC2181
