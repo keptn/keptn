@@ -1,5 +1,6 @@
 export const EVENT_ICONS = {
   "artifact-delivery": "duplicate",
+  "delivery": "duplicate",
   "deployment": "deploy",
   "test": "perfromance-health",
   "evaluation": "traffic-light",
