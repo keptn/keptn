@@ -109,7 +109,10 @@ export class DataService {
         map(projects =>
           projects.map(project => {
             project.stages = project.stages.map(stage => {
-              stage.services = stage.services.map(service => Service.fromJSON(service));
+              stage.services = stage.services.map(service => {
+                service.stage = stage.stageName;
+                return Service.fromJSON(service);
+              });
               return Stage.fromJSON(stage);
             });
             return Project.fromJSON(project);
@@ -177,13 +180,13 @@ export class DataService {
       map(roots => roots.reduce((result, roots) => result.concat(roots), []))
     ).subscribe((roots: Root[]) => {
       project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
-      project.getServices().forEach(service => {
-        service.roots = project.sequences.filter(s => s.getService() == service.serviceName);
+      project.stages.forEach(stage => {
+        stage.services.forEach(service => {
+          service.roots = project.sequences.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
+          service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
+        });
       });
       this._roots.next(project.sequences);
-      roots.forEach(root => {
-        this.updateApprovals(root);
-      });
     });
   }
 
@@ -203,8 +206,15 @@ export class DataService {
       )
       .subscribe((traces: Trace[]) => {
         root.traces = this.traceMapper([...traces||[], ...root.traces||[]]);
+        this.getProject(root.getProject()).pipe(take(1))
+          .subscribe(project => {
+            project.stages.filter(s => root.getStages().includes(s.stageName)).forEach(stage => {
+              stage.services.filter(s => root.getService() == s.serviceName).forEach(service => {
+                service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
+              });
+            });
+          });
         this._roots.next([...this._roots.getValue()]);
-        this.updateApprovals(root);
       });
   }
 
@@ -236,19 +246,6 @@ export class DataService {
         let root = this._projects.getValue().find(p => p.projectName == approval.data.project).services.find(s => s.serviceName == approval.data.service).roots.find(r => r.shkeptncontext == approval.shkeptncontext);
         this.loadTraces(root);
       });
-  }
-
-  private updateApprovals(root: Root) {
-    if(root.traces.length > 0) {
-      this._openApprovals.next(this._openApprovals.getValue().filter(approval => root.traces.indexOf(approval) < 0));
-      const approvals = root.getPendingApprovals();
-      if (approvals.length !== 0)
-        this._openApprovals.next([...this._openApprovals.getValue(), ...approvals].sort(DateUtil.compareTraceTimesAsc));
-    }
-  }
-
-  public getOpenApprovals(project: Project, stage: Stage, service?: Service): Trace[]{
-    return this._openApprovals.getValue().filter(approval => approval.data.project === project.projectName && approval.data.stage === stage.stageName && (!service || approval.data.service === service.serviceName));
   }
 
   public invalidateEvaluation(evaluation: Trace, reason: string) {

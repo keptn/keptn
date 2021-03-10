@@ -2,7 +2,6 @@ import semver from 'semver';
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
-import {EventTypes} from "./event-types";
 import {Root} from "./root";
 
 export class Project {
@@ -84,7 +83,7 @@ export class Project {
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots?.find(root => root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root && root?.isProblem() && !root?.isProblemResolvedOrClosed());
+    return stage.getOpenProblems();
   }
 
   getRootEvent(service: Service, event: Trace): Root {

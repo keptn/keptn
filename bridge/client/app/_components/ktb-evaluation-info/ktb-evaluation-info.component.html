@@ -1,0 +1,9 @@
+<dt-tag-list aria-label="evaluation-info" *ngIf="evaluation">
+  <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.getFinishedEvent().data.evaluation.score | number:'1.0-0'"></dt-tag>
+  <ng-template #overlay>
+    <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
+  </ng-template>
+</dt-tag-list>
+<dt-tag-list *ngIf="!evaluation">
+  <dt-tag class="justify-content-center">-</dt-tag>
+</dt-tag-list>

@@ -2,10 +2,6 @@ import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from 
 import {Project} from '../../_models/project';
 import {Stage} from '../../_models/stage';
 import {DataService} from '../../_services/data.service';
-import {Observable} from 'rxjs';
-import {Trace} from '../../_models/trace';
-import {Service} from '../../_models/service';
-import {Root} from '../../_models/root';
 
 @Component({
   selector: 'ktb-stage-overview',
@@ -15,7 +11,6 @@ import {Root} from '../../_models/root';
 export class KtbStageOverviewComponent implements OnInit {
   public _project: Project;
   public selectedStage: Stage = null;
-  public openApprovals$: Observable<Trace[]>;
 
   @Output() selectedStageChange: EventEmitter<any> = new EventEmitter();
 
@@ -35,7 +30,6 @@ export class KtbStageOverviewComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.openApprovals$ = this.dataService.openApprovals;
   }
 
   trackStage(index: number, stage: Stage): string {
@@ -46,14 +40,6 @@ export class KtbStageOverviewComponent implements OnInit {
     this.selectedStage = stage;
     $event.stopPropagation();
     this.selectedStageChange.emit({stage, filterType});
-  }
-
-  countOpenApprovals(project: Project, stage: Stage, service?: Service): number {
-    return this.dataService.getOpenApprovals(project, stage, service).length;
-  }
-
-  findProblemEvent(problemEvents: Root[], service: Service): Root {
-    return problemEvents.find(root => root?.data.service === service.serviceName);
   }
 
 }
