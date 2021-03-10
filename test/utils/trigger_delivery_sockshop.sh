@@ -31,7 +31,7 @@ echo "Verifying that services have been deployed to all stages ..."
 # Verify dev deployment            #
 ####################################
 
-verify_deployment "${PROJECT}" "dev" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "false"
+verify_sockshop_deployment "${PROJECT}" "dev" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "false"
 
 echo "It might take a while for the service to be available on staging - waiting a bit"
 sleep 30
@@ -41,7 +41,7 @@ sleep 30
 ####################################
 # Verify staging deployment        #
 ####################################
-verify_deployment "${PROJECT}" "staging" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "true"
+verify_sockshop_deployment "${PROJECT}" "staging" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "true"
 
 echo "It might take a while for the service to be available on production - waiting a bit"
 sleep 30
@@ -51,12 +51,12 @@ sleep 30
 ####################################
 # Verify prod-a deployment         #
 ####################################
-verify_deployment "${PROJECT}" "prod-a" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "true"
+verify_sockshop_deployment "${PROJECT}" "prod-a" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "true"
 
 ####################################
 # Verify prod-b deployment         #
 ####################################
-verify_deployment "${PROJECT}" "prod-b" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "true"
+verify_sockshop_deployment "${PROJECT}" "prod-b" "${ARTIFACT_IMAGE}" "${ARTIFACT_IMAGE_TAG}" "${KEPTN_NAMESPACE}" "true"
 
 echo ""
 echo "-----------------------------------------"

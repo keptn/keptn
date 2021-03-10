@@ -45,6 +45,7 @@ spec:
                   result: "fail"
           tasks:
             - name: "rollback"
+
         - name: "delivery-direct"
           triggeredOn:
             - event: "dev.delivery-direct.finished"
@@ -66,7 +67,7 @@ spec:
             - name: "release"
         - name: "rollback"
           triggeredOn:
-            - event: "production.delivery.finished"
+            - event: "prod-a.delivery.finished"
               selector:
                 match:
                   result: "fail"
@@ -93,7 +94,7 @@ spec:
             - name: "release"
         - name: "rollback"
           triggeredOn:
-            - event: "production.delivery.finished"
+            - event: "prod-b.delivery.finished"
               selector:
                 match:
                   result: "fail"

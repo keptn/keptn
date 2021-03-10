@@ -488,7 +488,7 @@ function replace_value_in_yaml_file() {
   sed -i'.bak' -e "s#$OLDVAL#$NEWVAL#g" "$FILE"
 }
 
-function verify_deployment() {
+function verify_sockshop_deployment() {
   PROJECT=$1
   STAGE=$2
   ARTIFACT_IMAGE=$3
