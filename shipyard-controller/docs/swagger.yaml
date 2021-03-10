@@ -519,7 +519,7 @@ paths:
       parameters:
       - description: The name of the project
         in: path
-        name: project
+        name: projectName
         required: true
         type: string
       produces:
@@ -615,6 +615,46 @@ paths:
       summary: Delete a service
       tags:
       - Services
+    get:
+      consumes:
+      - application/json
+      description: Gets a service by its name
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Stage
+        in: path
+        name: stage
+        required: true
+        type: string
+      - description: Service
+        in: path
+        name: service
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedService'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Gets a service by its name
+      tags:
+      - Services
   /project/{project}/service/{stage}:
     get:
       consumes:
@@ -697,83 +737,6 @@ paths:
       summary: Get all stages of a project
       tags:
       - Stage
-  /project/{project}/stage/{stage}:
-    get:
-      consumes:
-      - application/json
-      description: Get a stage of a project
-      parameters:
-      - description: The name of the project
-        in: path
-        name: project
-        required: true
-        type: string
-      - description: The name of the stage
-        in: path
-        name: stage
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-          schema:
-            $ref: '#/definitions/models.ExpandedStage'
-        "404":
-          description: Not found
-          schema:
-            $ref: '#/definitions/models.Error'
-        "500":
-          description: Internal Error)
-          schema:
-            $ref: '#/definitions/models.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a stage
-      tags:
-      - Projects
-  /project/{project}/stage/{stage}/service/{service}:
-    get:
-      consumes:
-      - application/json
-      description: Gets a service by its name
-      parameters:
-      - description: Project
-        in: path
-        name: project
-        required: true
-        type: string
-      - description: Stage
-        in: path
-        name: stage
-        required: true
-        type: string
-      - description: Service
-        in: path
-        name: service
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-          schema:
-            $ref: '#/definitions/models.ExpandedService'
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
-        "500":
-          description: Internal error
-          schema:
-            $ref: '#/definitions/models.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Gets a service by its name
-      tags:
-      - Services
   /project/{project}/stage/{stage}/service/{service}/evaluation:
     post:
       consumes:
@@ -821,6 +784,42 @@ paths:
       summary: Trigger a new evaluation
       tags:
       - Evaluation
+  /project/{projectName}/stage/{stageName}:
+    get:
+      consumes:
+      - application/json
+      description: Get a stage of a project
+      parameters:
+      - description: The name of the project
+        in: path
+        name: projectName
+        required: true
+        type: string
+      - description: The name of the stage
+        in: path
+        name: stageName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedStage'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a stage
+      tags:
+      - Projects
 securityDefinitions:
   ApiKeyAuth:
     in: header
