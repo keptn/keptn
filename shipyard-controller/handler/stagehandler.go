@@ -92,15 +92,15 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
-// @Param	project		path	string	true	"The name of the project"
-// @Param	stage		path	string	true	"The name of the stage"
+// @Param	projectName		path	string	true	"The name of the project"
+// @Param	stageName		path	string	true	"The name of the stage"
 // @Success 200 {object} models.ExpandedStage	"ok"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal Error)
-// @Router /project/{project}/stage/{stage} [get]
+// @Router /project/{projectName}/stage/{stageName} [get]
 func (sh *StageHandler) GetStage(c *gin.Context) {
-	projectName := c.Param("project")
-	stageName := c.Param("stage")
+	projectName := c.Param("projectName")
+	stageName := c.Param("stageName")
 
 	stage, err := sh.StageManager.GetStage(projectName, stageName)
 	if err != nil {
