@@ -4,7 +4,6 @@ PROJECT=$1
 ARTIFACT_IMAGE=$2
 ARTIFACT_IMAGE_TAG=$3
 SEQUENCE=$4
-PARALLEL_EXECUTION=$5
 
 # shellcheck disable=SC1091
 source test/utils.sh
@@ -23,7 +22,8 @@ sleep 30
 # the following stages / namespaces should have some pods in it
 kubectl get pods -n "$PROJECT-dev"
 kubectl get pods -n "$PROJECT-staging"
-kubectl get pods -n "$PROJECT-production"
+kubectl get pods -n "$PROJECT-prod-a"
+kubectl get pods -n "$PROJECT-prod-b"
 
 echo "Verifying that services have been deployed to all stages ..."
 
