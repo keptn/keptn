@@ -457,7 +457,7 @@ jobs:
           DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
         run: test/test_delivery_assistant.sh
 
-      - name: Test Continuous Delivery (with sockshop)
+      - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
         if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
         timeout-minutes: 45
@@ -471,7 +471,7 @@ jobs:
           test/test_new_artifact.sh
           test/test_delete_project.sh
 
-      - name: Test Continuous Delivery on Remote Exec Plane (with sockshop)
+      - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
         id: test_continuous_delivery_remote_exec
         if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
         timeout-minutes: 45

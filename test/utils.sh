@@ -487,3 +487,41 @@ function replace_value_in_yaml_file() {
   OLDVAL=$1; NEWVAL=$2; FILE=$3
   sed -i'.bak' -e "s#$OLDVAL#$NEWVAL#g" "$FILE"
 }
+
+function verify_sockshop_deployment() {
+  PROJECT=$1
+  STAGE=$2
+  ARTIFACT_IMAGE=$3
+  ARTIFACT_IMAGE_TAG=$4
+  KEPTN_NAMESPACE=$5
+  BLUE_GREEN_DEPLOYMENT=$6
+
+  echo "---------------------------------------------"
+  echo "Checking ${STAGE} deployment"
+  echo ""
+
+  wait_for_deployment_in_namespace "carts-db" "${PROJECT}-${STAGE}"
+  verify_test_step $? "Deployment carts-db not up in ${PROJECT}-${STAGE}, exiting ..."
+  wait_for_deployment_with_image_in_namespace "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+  verify_pod_in_namespace "carts" "${PROJECT}-${STAGE}"
+  verify_test_step $? "Pod carts not found, exiting ..."
+
+  if [[ "${BLUE_GREEN_DEPLOYMENT}" == "true" ]]; then
+    wait_for_deployment_with_image_in_namespace "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+    verify_pod_in_namespace "carts-primary" "${PROJECT}-${STAGE}"
+    verify_test_step $? "Pod carts-primary not found, exiting ..."
+  fi
+
+  verify_pod_in_namespace "carts-db" "${PROJECT}-${STAGE}"
+  verify_test_step $? "Pod carts-db not found in $${PROJECT}-${STAGE}, exiting ..."
+
+  # get URL for that deployment
+  URL="http://carts.${PROJECT}-${STAGE}.$(kubectl get cm ingress-config -n "${KEPTN_NAMESPACE}" -o=jsonpath='{.data.ingress_hostname_suffix}')"
+  # try to access that URL
+  wait_for_url "$URL/health"
+  verify_test_step $? "Trying to access $URL/health failed"
+
+  # verify image name of carts deployment
+  verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
+  verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE}"
+}
