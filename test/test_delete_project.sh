@@ -9,7 +9,7 @@ echo "$services" | jq .
 
 number_of_services=$(keptn get services --project="$PROJECT" -ojson | jq -r -s '. | length')
 
-verify_value "number of services" "$number_of_services" 6
+verify_value "number of services" "$number_of_services" 8
 
 echo "Testing the keptn delete service command"
 keptn delete service "$SERVICE" --project="$PROJECT"
