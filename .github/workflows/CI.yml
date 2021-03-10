@@ -544,6 +544,11 @@ jobs:
             VERSION=${VERSION}.${DATETIME}
           fi
 
+          if [[ "$GOOS" == "linux" ]]; then
+            # enable static build for linux
+            export CGO_ENABLED=0
+          fi
+
           # build the binary using makefile
           make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
           # verify output file exists
