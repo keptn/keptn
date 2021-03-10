@@ -76,12 +76,17 @@ kubectl delete -f deploy/bridge.yaml
 ## Local development
 
 1. Run `npm install`.
-1. Set `API_URL` and `API_TOKEN` environment variables, e.g.:
+1. Set `API_URL` and `API_TOKEN` environment variables, depending on your Keptn installation and operating system:
+   **Linux/MacOS**
    ```console
-   API_URL=https://api.keptn.127.0.0.1.nip.io
-   API_TOKEN=1234-exam-ple
+   export API_URL=http://keptn.127.0.0.1.nip.io/api
+   export API_TOKEN=1234-exam-ple
    ```
-   **Note**: On Windows, use `set API_...=...`. On Linux, use `export API_...=...`
+   **Windows**
+   ```console
+   set API_URL=http://keptn.127.0.0.1.nip.io/api
+   set API_TOKEN=1234-exam-ple
+   ```
 1. Run `npm run start:dev` to start the express server and the Angular app.
 1. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
