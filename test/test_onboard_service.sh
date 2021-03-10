@@ -24,7 +24,10 @@ git clone --branch "${KEPTN_EXAMPLES_BRANCH}" https://github.com/keptn/examples 
 cd examples/onboarding-carts || exit
 
 echo "Creating a new project without Git upstream"
+
+echo "Setting up project for sequential delivery"
 keptn create project "$PROJECT" --shipyard=../../test/assets/shipyard_onboard_service.yaml
+
 verify_test_step $? "keptn create project ${PROJECT} failed."
 sleep 10
 

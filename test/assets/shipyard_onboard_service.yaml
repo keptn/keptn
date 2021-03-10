@@ -54,7 +54,34 @@ spec:
                 deploymentstrategy: "direct"
             - name: "release"
 
-    - name: "production"
+    - name: "prod-a"
+      sequences:
+        - name: "delivery"
+          triggeredOn:
+            - event: "staging.delivery.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "blue_green_service"
+            - name: "release"
+        - name: "rollback"
+          triggeredOn:
+            - event: "production.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
+        - name: "delivery-direct"
+          triggeredOn:
+            - event: "staging.delivery-direct.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "release"
+
+    - name: "prod-b"
       sequences:
         - name: "delivery"
           triggeredOn:
