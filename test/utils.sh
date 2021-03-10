@@ -507,6 +507,7 @@ function verify_deployment() {
   verify_test_step $? "Pod carts not found, exiting ..."
 
   if [[ "${BLUE_GREEN_DEPLOYMENT}" == "true" ]]; then
+    wait_for_deployment_with_image_in_namespace "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
     verify_pod_in_namespace "carts-primary" "${PROJECT}-${STAGE}"
     verify_test_step $? "Pod carts-primary not found, exiting ..."
   fi
