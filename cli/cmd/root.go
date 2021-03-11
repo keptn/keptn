@@ -106,7 +106,6 @@ func (s *options) appendIfNotEmpty(newOption string) {
 }
 
 func runVersionCheck() {
-	fmt.Println("!!!!!!!!!RUN VERSION CHECK")
 	var cliMsgPrinted, cliChecked, keptnMsgPrinted, keptnChecked bool
 
 	vChecker := version.NewVersionChecker()
