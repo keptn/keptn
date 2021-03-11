@@ -48,8 +48,8 @@ type Watcher interface {
 
 // PrintEventWatcher uses the given watcher type and prints its result to the given writer in the given format
 // Note that this function is blocking until the watcher is canceled
-func PrintEventWatcher(watcher Watcher, format string, writer io.Writer) {
-	eventChan, _ := watcher.Watch(context.Background())
+func PrintEventWatcher(context context.Context, watcher Watcher, format string, writer io.Writer) {
+	eventChan, _ := watcher.Watch(context)
 	for events := range eventChan {
 		for _, e := range events {
 			PrintEvents(writer, format, *e)

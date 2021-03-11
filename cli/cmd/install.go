@@ -284,12 +284,13 @@ func checkIstioInstallation() error {
 	if err != nil {
 		return err
 	}
-	_, err = clientset.CoreV1().Namespaces().Get("istio-system", metav1.GetOptions{})
+
+	_, err = clientset.CoreV1().Namespaces().Get(rootCmd.Context(), "istio-system", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	_, err = clientset.CoreV1().Services("istio-system").Get("istio-ingressgateway", metav1.GetOptions{})
+	_, err = clientset.CoreV1().Services("istio-system").Get(rootCmd.Context(),"istio-ingressgateway", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

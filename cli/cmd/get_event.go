@@ -108,7 +108,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		}
 	} else {
 		watcher := NewDefaultWatcher(eventHandler, *filter, time.Duration(*getEventParams.WatchTime)*time.Second)
-		PrintEventWatcher(watcher, *getEventParams.Output, os.Stdout)
+		PrintEventWatcher(rootCmd.Context(), watcher, *getEventParams.Output, os.Stdout)
 	}
 	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -14,6 +13,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/docker"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 	"net/url"
 	"os"
 	"strings"
@@ -158,7 +158,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			Project:      *deliveryInputData.Project,
 		}
 		watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
-		PrintEventWatcher(watcher, *deliveryInputData.Output, os.Stdout)
+		PrintEventWatcher(rootCmd.Context(), watcher, *deliveryInputData.Output, os.Stdout)
 	}
 	return nil
 }
