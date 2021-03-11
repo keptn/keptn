@@ -10,7 +10,7 @@ export class Service {
   openApprovals: Trace[] = [];
 
   getShortImageName(): string {
-    return this.deployedImage.split("/").pop();
+    return this.deployedImage?.split("/").pop();
   }
 
   getOpenApprovals(): Trace[] {

@@ -3,7 +3,10 @@
     <dt-table [dataSource]="dataSource">
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0" [textContent]="row.getShortImageName()"></p>
+          <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0">
+            <span *ngIf="row.getShortImageName()" [textContent]="row.getShortImageName()"></span>
+            <span *ngIf="!row.getShortImageName()" class="italic" [textContent]="row.serviceName"></span>
+          </p>
         </dt-cell>
       </ng-container>
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
@@ -28,6 +31,8 @@
       </ng-container>
       <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
     </dt-table>
+    <a *ngIf="services.length > pageSize" (click)="pageSize = services.length">Show all <span [textContent]="services.length"></span> services</a>
+    <a *ngIf="pageSize > DEFAULT_PAGE_SIZE" (click)="pageSize = DEFAULT_PAGE_SIZE">Show only <span [textContent]="DEFAULT_PAGE_SIZE"></span> services</a>
   </ng-container>
 </div>
 <ng-template #noService>
