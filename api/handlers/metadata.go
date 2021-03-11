@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -73,7 +74,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 
 	if h.k8sClient != nil {
 		deploymentsClient := h.k8sClient.AppsV1().Deployments(namespace)
-		bridgeDeployment, err := deploymentsClient.Get("bridge", metav1.GetOptions{})
+		bridgeDeployment, err := deploymentsClient.Get(context.TODO(), "bridge", metav1.GetOptions{})
 		if err != nil {
 			// log the error, but continue
 			h.logger.Error(fmt.Sprintf("Error getting deployment info: %s", err.Error()))
