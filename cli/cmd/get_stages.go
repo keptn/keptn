@@ -48,7 +48,7 @@ staging        2020-04-06T14:37:45.210Z
 `,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -57,7 +57,7 @@ staging        2020-04-06T14:37:45.210Z
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

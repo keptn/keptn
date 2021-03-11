@@ -369,13 +369,13 @@ func newErrorableMetadataResult(result *models.Metadata, err error) *errorableMe
 
 func getKeptnAPIUrl() *errorableStringResult {
 	fmt.Println("Retrieving Keptn API")
-	endPoint, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	endPoint, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	return newErrorableStringResult(endPoint.String(), err)
 }
 
 func getKeptnAPIReachable() *errorableBoolResult {
 	fmt.Println("Checking availability of Keptn API")
-	endPoint, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	endPoint, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -545,7 +545,7 @@ func writePodLogs(namespace, dir string) {
 
 func getProjects() *errorableProjectResult {
 	fmt.Println("Retrieving list of Keptn projects")
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return newErrorableProjectResult(nil, err)
 	}
@@ -567,7 +567,7 @@ func writeKeptnInstallerLog(logFileName string, dir string) {
 
 func getKeptnMetadata() *errorableMetadataResult {
 	fmt.Println("Retrieving Keptn Metadata from API Service")
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return newErrorableMetadataResult(nil, err)
 	}

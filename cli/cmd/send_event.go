@@ -47,7 +47,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		if err := doSendEventPreRunChecks(); err != nil {
 			return err
 		}
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

@@ -49,7 +49,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 	Example:      `keptn upgrade project PROJECTNAME --shipyard --fromVersion=0.1.0 --toVersion=0.2.0`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -79,7 +79,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		var apiToken string
 		var err error
 		if !mocking {
-			endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+			endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		} else {
 			endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 			endPoint = *endPointPtr

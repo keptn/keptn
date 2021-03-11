@@ -64,7 +64,7 @@ keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --
 }
 
 func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return errors.New(authErrorMsg)
 	}

@@ -44,7 +44,7 @@ var getEvaluationFinishedCmd = &cobra.Command{
 		fmt.Println(`Use "keptn get event evaluation.finished" instead`)
 		fmt.Println()
 
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

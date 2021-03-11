@@ -17,7 +17,7 @@ var statusCmd = &cobra.Command{
 	Example:      `keptn status`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil || endPoint.String() == "" || apiToken == "" {
 			fmt.Println("CLI is not authenticated against any Keptn cluster.  For authenticating your CLI use \"keptn auth\"")
 			return nil

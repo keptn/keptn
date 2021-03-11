@@ -17,6 +17,7 @@ func init() {
 }
 
 func setup() {
+	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 
