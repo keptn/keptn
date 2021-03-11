@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -288,21 +289,25 @@ func ServiceExists(project string, stage string, service string, disableUpstream
 	return true
 }
 
-// GetCredentials returns the credentials for a given project, if available
+// GetCredentials returns the git upstream credentials for a given project (stored as a secret), if available
 func GetCredentials(project string) (*GitCredentials, error) {
 	clientSet, err := getK8sClient()
 	if err != nil {
 		return nil, err
 	}
 
-	secret, err := clientSet.CoreV1().Secrets(namespace).Get("git-credentials-"+project, metav1.GetOptions{})
+	secretName := fmt.Sprintf("git-credentials-%s", project)
+
+	secret, err := clientSet.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
+		// if no secret was found, we just assume the user doesn't want a git upstream repo for this project
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
 
+	// secret found -> unmarshal it
 	var credentials GitCredentials
 	err = json.Unmarshal(secret.Data["git-credentials"], &credentials)
 	if err != nil {
