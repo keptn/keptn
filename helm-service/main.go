@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
@@ -187,6 +188,7 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
+// hasAdminRights checks if the current pod is assigned the Admin Role
 func hasAdminRights() (bool, error) {
 	clientset, err := keptnutils.GetClientset(true)
 	if err != nil {
@@ -197,7 +199,7 @@ func hasAdminRights() (bool, error) {
 			ResourceAttributes: &authorizationv1.ResourceAttributes{},
 		},
 	}
-	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(sar)
+	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(context.TODO(), sar, v1.CreateOptions{})
 	if err != nil {
 		return false, err
 	}
