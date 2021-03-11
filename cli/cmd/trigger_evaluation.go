@@ -129,7 +129,7 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 				Project:      *triggerEvaluationData.Project,
 			}
 			watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*triggerEvaluationData.WatchTime)*time.Second)
-			PrintEventWatcher(watcher, *triggerEvaluationData.Output, os.Stdout)
+			PrintEventWatcher(rootCmd.Context(), watcher, *triggerEvaluationData.Output, os.Stdout)
 		}
 
 		return nil

@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"bufio"
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -285,12 +284,13 @@ func checkIstioInstallation() error {
 	if err != nil {
 		return err
 	}
-	_, err = clientset.CoreV1().Namespaces().Get(context.TODO(), "istio-system", metav1.GetOptions{})
+
+	_, err = clientset.CoreV1().Namespaces().Get(rootCmd.Context(), "istio-system", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	_, err = clientset.CoreV1().Services("istio-system").Get(context.TODO(),"istio-ingressgateway", metav1.GetOptions{})
+	_, err = clientset.CoreV1().Services("istio-system").Get(rootCmd.Context(),"istio-ingressgateway", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

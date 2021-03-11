@@ -78,7 +78,7 @@ func TestPrintEventWatcher(t *testing.T) {
 
 	fakeWatcher := fakeWatcher{}
 	var buff bytes.Buffer
-	PrintEventWatcher(fakeWatcher, "json", &buff)
+	PrintEventWatcher(context.TODO(), fakeWatcher, "json", &buff)
 	assert.Equal(t, fullTrim(exp), fullTrim(buff.String()))
 }
 

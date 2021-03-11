@@ -158,7 +158,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			Project:      *deliveryInputData.Project,
 		}
 		watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*deliveryInputData.WatchTime)*time.Second)
-		PrintEventWatcher(watcher, *deliveryInputData.Output, os.Stdout)
+		PrintEventWatcher(rootCmd.Context(), watcher, *deliveryInputData.Output, os.Stdout)
 	}
 	return nil
 }
