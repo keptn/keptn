@@ -96,7 +96,7 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
-// @Param	projectName		path	string	true	"The name of the project"
+// @Param	project		path	string	true	"The name of the project"
 // @Success 200 {object} models.ExpandedProject	"ok"
 // @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal Error)
