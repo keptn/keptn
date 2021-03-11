@@ -625,8 +625,7 @@ jobs:
       - id: docker_login
         name: Docker Login
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        # TODO: remove workflow_dispatch check and push in separate PR
-        if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (github.event.pull_request.head.repo.full_name == github.repository)
+        if: (github.event_name == 'push') || (github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         env:
