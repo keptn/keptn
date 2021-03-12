@@ -615,56 +615,17 @@ paths:
       summary: Delete a service
       tags:
       - Services
-  /project/{project}/service/{stage}:
-    get:
-      consumes:
-      - application/json
-      description: Gets all services of a stage in a project
-      parameters:
-      - description: Project
-        in: path
-        name: project
-        required: true
-        type: string
-      - description: Stage
-        in: path
-        name: stage
-        required: true
-        type: string
-      - description: The number of items to return
-        in: query
-        name: pageSize
-        type: integer
-      - description: Pointer to the next set of items
-        in: query
-        name: nextPageKey
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-          schema:
-            $ref: '#/definitions/models.ExpandedServices'
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.Error'
-        "500":
-          description: Internal error
-          schema:
-            $ref: '#/definitions/models.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Gets all services of a stage in a project
-      tags:
-      - Services
   /project/{project}/stage:
     get:
       consumes:
       - application/json
       description: Get the list of stages of a project
       parameters:
+      - description: The name of the project
+        in: path
+        name: project
+        required: true
+        type: string
       - description: The number of items to return
         in: query
         name: pageSize
@@ -817,7 +778,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Error'
       security:
-      - ApiKeyAutth: []
+      - ApiKeyAuth: []
       summary: Trigger a new evaluation
       tags:
       - Evaluation

@@ -513,74 +513,6 @@ var doc = `{
                 }
             }
         },
-        "/project/{project}/service/{stage}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Gets all services of a stage in a project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Gets all services of a stage in a project",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Stage",
-                        "name": "stage",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "The number of items to return",
-                        "name": "pageSize",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Pointer to the next set of items",
-                        "name": "nextPageKey",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/models.ExpandedServices"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/project/{project}/stage": {
             "get": {
                 "security": [
@@ -600,6 +532,13 @@ var doc = `{
                 ],
                 "summary": "Get all stages of a project",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "The number of items to return",
@@ -764,7 +703,7 @@ var doc = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAutth": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Trigger a new evaluation for a service within a project",
