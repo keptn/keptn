@@ -3,7 +3,7 @@ module github.com/keptn/keptn/shipyard-controller
 go 1.13
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3
@@ -31,6 +31,6 @@ require (
 	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/apimachinery v0.20.4
 	k8s.io/client-go v0.17.2
 )
