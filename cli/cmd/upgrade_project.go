@@ -85,7 +85,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 			endPoint = *endPointPtr
 			apiToken = ""
 		}
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

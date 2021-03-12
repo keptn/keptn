@@ -62,7 +62,7 @@ staging        2020-04-06T14:37:45.210Z
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

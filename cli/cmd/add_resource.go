@@ -79,7 +79,7 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Resource %s could not be uploaded: %s"+endPointErrorReasons,
 				*addResourceCmdParams.Resource, endPointErr)
 		}
