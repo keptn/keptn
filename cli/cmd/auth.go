@@ -67,13 +67,22 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		authenticator := Authenticator{
-			CedentialManager: credentialmanager.NewCredentialManager(authParams.acceptContext),
+		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
+		authenticator := NewAuthenticator(namespace, credentialManager)
+
+		if *authParams.exportConfig {
+			endpoint, apiToken, err := authenticator.GetCredentials()
+			if err != nil {
+				return err
+			}
+			fmt.Println("Endpoint: ", endpoint.String())
+			fmt.Println("API Token: ", apiToken)
+			return nil
 		}
+
 		return authenticator.Auth(AuthenticatorOptions{
-			PrintEndpointInfo: *authParams.exportConfig,
-			Endpoint:          *authParams.endPoint,
-			ApiToken:          *authParams.apiToken,
+			Endpoint: *authParams.endPoint,
+			ApiToken: *authParams.apiToken,
 		})
 	},
 }

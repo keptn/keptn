@@ -15,10 +15,8 @@ var statusCmd = &cobra.Command{
 	Example:      `keptn status`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		authenticator := Authenticator{
-			Namespace:        namespace,
-			CedentialManager: credentialmanager.NewCredentialManager(assumeYes),
-		}
+		credentialManager := credentialmanager.NewCredentialManager(assumeYes)
+		authenticator := NewAuthenticator(namespace, credentialManager)
 		return authenticator.Auth(AuthenticatorOptions{})
 	},
 }

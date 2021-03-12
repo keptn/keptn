@@ -3,38 +3,56 @@ package cmd
 import (
 	"fmt"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"net"
 	"net/url"
 	"time"
 )
 
+type MockedCredentialGetSetter struct {
+	SetCredsFunc func(endPoint url.URL, apiToken string, namespace string) error
+	GetCredsFunc func(namespace string) (url.URL, string, error)
+}
+
+func (m *MockedCredentialGetSetter) SetCreds(endPoint url.URL, apiToken string, namespace string) error {
+	return m.SetCredsFunc(endPoint, apiToken, namespace)
+}
+func (m *MockedCredentialGetSetter) GetCreds(namespace string) (url.URL, string, error) {
+	return m.GetCredsFunc(namespace)
+}
+
+type CredentialGetSetter interface {
+	SetCreds(endPoint url.URL, apiToken string, namespace string) error
+	GetCreds(namespace string) (url.URL, string, error)
+}
+
 type Authenticator struct {
-	Namespace        string
-	CedentialManager *credentialmanager.CredentialManager
+	Namespace         string
+	CredentialManager CredentialGetSetter
 }
 
 type AuthenticatorOptions struct {
-	PrintEndpointInfo bool
-	Endpoint          string
-	ApiToken          string
+	Endpoint string
+	ApiToken string
 }
 
-func (a *Authenticator) parseURL(rawURL string) (url.URL, error) {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		return url.URL{}, err
+func NewAuthenticator(namespace string, credentialManager CredentialGetSetter) *Authenticator {
+	return &Authenticator{
+		Namespace:         namespace,
+		CredentialManager: credentialManager,
 	}
-	return *parsedURL, nil
-
 }
+
+func (a *Authenticator) GetCredentials() (url.URL, string, error) {
+	return a.CredentialManager.GetCreds(a.Namespace)
+}
+
 func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	var endpoint url.URL
 	var apiToken string
 	var err error
-	if authenticatorOptions.Endpoint == "" || authenticatorOptions.ApiToken == "" {
-		endpoint, apiToken, err = a.CedentialManager.GetCreds(a.Namespace)
+	if authenticatorOptions.Endpoint == "" {
+		endpoint, apiToken, err = a.CredentialManager.GetCreds(a.Namespace)
 		if err != nil {
 			return err
 		}
@@ -44,13 +62,6 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 			return err
 		}
 		apiToken = authenticatorOptions.ApiToken
-	}
-
-	// User wants to print current auth credentials
-	if authenticatorOptions.PrintEndpointInfo {
-		fmt.Println("Endpoint: ", endpoint.String())
-		fmt.Println("API Token: ", apiToken)
-		return nil
 	}
 
 	logging.PrintLog("Starting to authenticate", logging.InfoLevel)
@@ -90,7 +101,13 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 	}
 
 	logging.PrintLog("Successfully authenticated against the Keptn cluster "+endpoint.String(), logging.InfoLevel)
-	return a.CedentialManager.SetCreds(endpoint, apiToken, namespace)
+	return a.CredentialManager.SetCreds(endpoint, apiToken, namespace)
+}
 
-	return nil
+func (a *Authenticator) parseURL(rawURL string) (url.URL, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+	return *parsedURL, nil
 }
