@@ -16,11 +16,11 @@
             </dt-toggle-button-item-icon>
             <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed</p>
           </button>
-          <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="selectedStage.getOpenApprovals().length > 0" [disabled]="selectedStage.getOpenApprovals().length == 0" [selected]="filterEventType == 'approval'">
+          <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="selectedstage.servicesWithOpenApprovals().length > 0" [disabled]="selectedstage.servicesWithOpenApprovals().length == 0" [selected]="filterEventType == 'approval'">
             <dt-toggle-button-item-icon>
               <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
             </dt-toggle-button-item-icon>
-            <p class="m-0"><span [textContent]="selectedStage.getOpenApprovals().length"></span> Service<span *ngIf="selectedStage.getOpenApprovals().length != 1">s</span> out-of-sync</p>
+            <p class="m-0"><span [textContent]="selectedstage.servicesWithOpenApprovals().length"></span> Service<span *ngIf="selectedstage.servicesWithOpenApprovals().length != 1">s</span> out-of-sync</p>
           </button>
         </dt-toggle-button-group>
         <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">

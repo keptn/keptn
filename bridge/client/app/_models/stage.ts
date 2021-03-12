@@ -8,6 +8,10 @@ export class Stage {
     return this.services.reduce((openApprovals, service) => [...openApprovals, ...service.getOpenApprovals()], []);
   }
 
+  public servicesWithOpenApprovals() {
+    return this.services.filter(s => s.getOpenApprovals().length > 0);
+  }
+
   public getOpenProblems() {
     return this.services.reduce((openProblems, service) => [...openProblems, ...service.getOpenProblems()], []);
   }
