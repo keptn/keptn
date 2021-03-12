@@ -86,6 +86,14 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     this.dataSource = new DtTableDataSource(data.slice(0, this.pageSize));
   }
 
+  toggleAllServices() {
+    if(this.services.length > this.pageSize) {
+      this.pageSize = this.services.length;
+    } else if(this.pageSize > DEFAULT_PAGE_SIZE) {
+      this.pageSize = DEFAULT_PAGE_SIZE;
+    }
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
   }

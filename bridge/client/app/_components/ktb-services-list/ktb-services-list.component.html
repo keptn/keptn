@@ -31,8 +31,7 @@
       </ng-container>
       <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
     </dt-table>
-    <a *ngIf="services.length > pageSize" (click)="pageSize = services.length">Show all <span [textContent]="services.length"></span> services</a>
-    <a *ngIf="pageSize > DEFAULT_PAGE_SIZE" (click)="pageSize = DEFAULT_PAGE_SIZE">Show only <span [textContent]="DEFAULT_PAGE_SIZE"></span> services</a>
+    <button *ngIf="services.length > DEFAULT_PAGE_SIZE" dt-show-more [showLess]="pageSize > DEFAULT_PAGE_SIZE" (click)="toggleAllServices()">Show all <span [textContent]="services.length"></span> services</button>
   </ng-container>
 </div>
 <ng-template #noService>
