@@ -58,6 +58,10 @@ func TestDelivery(t *testing.T) {
 				go func() {
 					receivedEvent <- true
 				}()
+			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
+				defer r.Body.Close()
+				w.Write([]byte(metadataMockResponse))
+				return
 			}
 			return
 		}),

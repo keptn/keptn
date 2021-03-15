@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -14,8 +13,6 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
@@ -70,68 +67,23 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		var err error
-		// User wants to print current auth credentials
+		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
+		authenticator := NewAuthenticator(namespace, credentialManager)
+
 		if *authParams.exportConfig {
-			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager(authParams.acceptContext).GetCreds(namespace)
+			endpoint, apiToken, err := authenticator.GetCredentials()
 			if err != nil {
 				return err
 			}
-			fmt.Println("Endpoint: ", exportEndPoint.String())
-			fmt.Println("API Token: ", exportAPIToken)
+			fmt.Println("Endpoint: ", endpoint.String())
+			fmt.Println("API Token: ", apiToken)
 			return nil
 		}
 
-		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
-
-		url, err := url.Parse(*authParams.endPoint)
-		if err != nil {
-			logging.PrintLog("Error parsing Keptn API URL", logging.InfoLevel)
-			return err
-		}
-
-		if url.Path == "" || url.Path == "/" {
-			url.Path = "/api"
-		}
-
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *authParams.apiToken, "x-token", nil, url.Scheme)
-
-		if !mocking {
-			authenticated := false
-
-			if !lookupHostname(url.Hostname(), net.LookupHost, time.Sleep) {
-				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
-			}
-
-			if endPointErr := checkEndPointStatus(*authParams.endPoint); endPointErr != nil {
-				return fmt.Errorf("Authentication was unsuccessful: %s"+endPointErrorReasons,
-					endPointErr)
-			}
-
-			// try to authenticate (and retry it)
-			for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
-				_, err := authHandler.Authenticate()
-				if err != nil {
-					errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
-					logging.PrintLog(errMsg, logging.QuietLevel)
-					logging.PrintLog("Retrying...", logging.InfoLevel)
-					retries++
-				} else {
-					authenticated = true
-					break
-				}
-			}
-
-			if !authenticated {
-				return fmt.Errorf("Authentication was unsuccessful - could not authenticate against the server.")
-			}
-
-			logging.PrintLog("Successfully authenticated against the Keptn cluster "+*authParams.endPoint, logging.InfoLevel)
-			return credentialmanager.NewCredentialManager(authParams.acceptContext).SetCreds(*url, *authParams.apiToken, namespace)
-		}
-
-		fmt.Println("skipping auth due to mocking flag set to true")
-		return nil
+		return authenticator.Auth(AuthenticatorOptions{
+			Endpoint: *authParams.endPoint,
+			APIToken: *authParams.apiToken,
+		})
 	},
 }
 
@@ -204,27 +156,6 @@ func smartFetchKeptnAuthParameters() error {
 	}
 
 	return nil
-}
-
-func lookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bool {
-	if strings.HasSuffix(hostname, "xip.io") {
-		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
-		return true
-	} else {
-		// first, try to resolve the domain (and retry it)
-		for retries := 0; retries < 3; sleepFn(5 * time.Second) {
-			_, err := lookupFn(hostname)
-			if err != nil {
-				logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
-				logging.PrintLog("Retrying...", logging.InfoLevel)
-				retries++
-			} else {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 // try to authenticate towards the given endpoint with the provided apiToken

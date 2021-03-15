@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -27,6 +28,7 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	skipMsg := "Skipping upgrade compatibility check!"
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
+	os.Setenv("MOCK_SERVER", "http://some-valid-url.com")
 	mocking = true
 	cmd := fmt.Sprintf("upgrade --mock")
 

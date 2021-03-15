@@ -63,7 +63,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 	}
 
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
@@ -74,7 +74,7 @@ func getEvent(eventStruct GetEventStruct, args []string) error {
 		return errors.New(authErrorMsg)
 	}
 
-	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
 	}

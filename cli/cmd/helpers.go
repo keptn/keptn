@@ -6,10 +6,13 @@ import (
 	"fmt"
 	models "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io"
 	"math"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -78,4 +81,45 @@ func PrintAsYAML(writer io.Writer, events interface{}) {
 func PrintAsJSON(writer io.Writer, events interface{}) {
 	eventsJSON, _ := json.MarshalIndent(events, "", "    ")
 	fmt.Fprintf(writer, "%s\n", string(eventsJSON))
+}
+
+func LookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bool {
+	if strings.HasSuffix(hostname, "xip.io") {
+		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
+		return true
+	}
+	// first, try to resolve the domain (and retry it)
+	for retries := 0; retries < 3; sleepFn(5 * time.Second) {
+		_, err := lookupFn(hostname)
+		if err != nil {
+			logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
+			logging.PrintLog("Retrying...", logging.InfoLevel)
+			retries++
+		} else {
+			return true
+		}
+	}
+
+	return false
+}
+
+func CheckEndpointStatus(endPoint string) error {
+	if checkEndPointStatusMock {
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), maxHTTPTimeout)
+	defer cancel()
+
+	req, err := http.NewRequest("HEAD", endPoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	return nil
 }

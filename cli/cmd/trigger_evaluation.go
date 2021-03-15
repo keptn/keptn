@@ -64,7 +64,7 @@ keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --
 }
 
 func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
-	endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return errors.New(authErrorMsg)
 	}
@@ -72,7 +72,7 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 	logging.PrintLog("Starting to trigger evaluation of the service "+
 		*triggerEvaluationData.Service+" in project "+*triggerEvaluationData.Project, logging.InfoLevel)
 
-	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
 	}
