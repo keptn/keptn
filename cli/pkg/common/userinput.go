@@ -11,10 +11,7 @@ import (
 
 type UserInput struct {
 	Writer io.Writer
-
-	Reader io.Reader
-
-	reader *bufio.Reader
+	Reader *bufio.Reader
 }
 
 type UserInputOptions struct {
@@ -24,8 +21,7 @@ type UserInputOptions struct {
 func NewUserInput() *UserInput {
 	return &UserInput{
 		Writer: os.Stdout,
-		Reader: os.Stdin,
-		reader: bufio.NewReader(os.Stdin),
+		Reader: bufio.NewReader(os.Stdin),
 	}
 }
 
@@ -50,7 +46,7 @@ func (ui *UserInput) AskBool(question string, opts *UserInputOptions) bool {
 }
 
 func (ui *UserInput) read() (string, error) {
-	line, err := ui.reader.ReadString('\n')
+	line, err := ui.Reader.ReadString('\n')
 	if err != nil && err != io.EOF {
 		return "", err
 	}
