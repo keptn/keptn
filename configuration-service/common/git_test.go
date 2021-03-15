@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/bmizerany/assert"
 	common_mock "github.com/keptn/keptn/configuration-service/common/fake"
 	"github.com/keptn/keptn/configuration-service/common_models"
 	"github.com/keptn/keptn/configuration-service/models"
@@ -270,5 +271,101 @@ func getDummyCredentialReader() *common_mock.CredentialReaderMock {
 				RemoteURI: "https://my-repo.git",
 			}, nil
 		},
+	}
+}
+
+func TestGit_setUpstreamsAndPush(t *testing.T) {
+	type fields struct {
+		Executor         *common_mock.CommandExecutorMock
+		CredentialReader CredentialReader
+	}
+	type args struct {
+		project     string
+		credentials *common_models.GitCredentials
+		repoURI     string
+	}
+	tests := []struct {
+		name             string
+		fields           fields
+		args             args
+		wantErr          bool
+		expectedCommands []struct {
+			Command   string
+			Args      []string
+			Directory string
+		}
+	}{
+		{
+			name: "push to upstream",
+			fields: fields{
+				Executor: &common_mock.CommandExecutorMock{ExecuteCommandFunc: func(command string, args []string, directory string) (string, error) {
+					if args[0] == "for-each-ref" {
+						return "master", nil
+					} else if args[0] == "remote" {
+						return `* remote origin
+						  Fetch URL: https://my-repo.git
+						  Push  URL: https://my-repo.git
+						  HEAD branch: master
+						  Remote branch:
+							release-0.8.0 tracked
+						  Local branch configured for 'git pull':
+							release-0.8.0 merges with remote release-0.8.0
+						  Local ref configured for 'git push':
+							release-0.8.0 pushes to release-0.8.0 (up to date)`, nil
+					} else if args[0] == "checkout" {
+						return "", nil
+					} else if args[0] == "push" {
+						return "", nil
+					}
+					return "", errors.New("unexpected command")
+				}},
+				CredentialReader: getDummyCredentialReader(),
+			},
+			args: args{
+				project: "my-project",
+				repoURI: "https://my-repo.git",
+			},
+			wantErr: false,
+			expectedCommands: []struct {
+				Command   string
+				Args      []string
+				Directory string
+			}{
+				{
+					Command:   "git",
+					Args:      []string{"for-each-ref", "--format=%(refname:short)", "refs/heads/*"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"remote", "show", "origin"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"checkout", "master"},
+					Directory: "./debug/config/my-project",
+				},
+				{
+					Command:   "git",
+					Args:      []string{"push", "--set-upstream", "https://my-repo.git", "master"},
+					Directory: "./debug/config/my-project",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Git{
+				Executor:         tt.fields.Executor,
+				CredentialReader: tt.fields.CredentialReader,
+			}
+			if err := g.setUpstreamsAndPush(tt.args.project, tt.args.credentials, tt.args.repoURI); (err != nil) != tt.wantErr {
+				t.Errorf("setUpstreamsAndPush() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			executedCommands := tt.fields.Executor.ExecuteCommandCalls()
+
+			assert.Equal(t, tt.expectedCommands, executedCommands)
+		})
 	}
 }
