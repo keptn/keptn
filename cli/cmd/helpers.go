@@ -87,17 +87,16 @@ func LookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bo
 	if strings.HasSuffix(hostname, "xip.io") {
 		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
 		return true
-	} else {
-		// first, try to resolve the domain (and retry it)
-		for retries := 0; retries < 3; sleepFn(5 * time.Second) {
-			_, err := lookupFn(hostname)
-			if err != nil {
-				logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
-				logging.PrintLog("Retrying...", logging.InfoLevel)
-				retries++
-			} else {
-				return true
-			}
+	}
+	// first, try to resolve the domain (and retry it)
+	for retries := 0; retries < 3; sleepFn(5 * time.Second) {
+		_, err := lookupFn(hostname)
+		if err != nil {
+			logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
+			logging.PrintLog("Retrying...", logging.InfoLevel)
+			retries++
+		} else {
+			return true
 		}
 	}
 
