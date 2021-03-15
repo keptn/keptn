@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
+	github.com/keptn/go-utils v0.8.1-0.20210315141543-bb59c2e00624
 	github.com/keptn/kubernetes-utils v0.8.1-0.20210308145316-785b480a4e52
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0

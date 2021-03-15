@@ -152,7 +152,7 @@ func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, s
 func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
 	source, _ := url.Parse("lighthouse-service")
 
-	getSLI := keptnv2.GetSLITriggeredEventData{
+	getSLITriggeredEventData := keptnv2.GetSLITriggeredEventData{
 		EventData: keptnv2.EventData{
 			Project: e.Project,
 			Stage:   e.Stage,
@@ -168,13 +168,8 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		},
 	}
 
-	deployment := ""
 	if e.Deployment.DeploymentNames != nil && len(e.Deployment.DeploymentNames) > 0 {
-		deployment = e.Deployment.DeploymentNames[0]
-	}
-	getSLIEventData := GetSLITriggeredEventDataExtended{
-		GetSLITriggeredEventData: getSLI,
-		Deployment:               deployment,
+		getSLITriggeredEventData.Deployment = e.Deployment.DeploymentNames[0]
 	}
 
 	event := cloudevents.NewEvent()
@@ -182,15 +177,8 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetData(cloudevents.ApplicationJSON, getSLIEventData)
+	event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)
-}
-
-// GetSLITriggeredEventDataExtended is a wrapper around the keptnv2.GetSLITriggeredEventData to also include
-// The deployment field needed by the SLI service (https://github.com/keptn/keptn/issues/3411)
-type GetSLITriggeredEventDataExtended struct {
-	keptnv2.GetSLITriggeredEventData
-	Deployment string `json:"deployment"`
 }
