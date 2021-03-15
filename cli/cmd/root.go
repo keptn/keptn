@@ -54,7 +54,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
 		"Specify the namespace where Keptn should be installed, used and uninstalled in")
-	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all prompts")
+	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all user prompts")
 	rootCmd.PersistentFlags().BoolVarP(&help, "help", "h", false, "help")
 	cobra.OnInitialize(initConfig)
 }
