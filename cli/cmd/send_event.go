@@ -47,7 +47,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		if err := doSendEventPreRunChecks(); err != nil {
 			return err
 		}
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -62,7 +62,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
 		}
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

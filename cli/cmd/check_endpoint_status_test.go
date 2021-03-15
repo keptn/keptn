@@ -28,7 +28,7 @@ func Test_checkEndPointStatus(t *testing.T) {
 			//override maxHTTPTimeout to simulate http timeout
 			maxHTTPTimeout = tt.args.timeout
 
-			if err := checkEndPointStatus(tt.args.endPoint); (err != nil) != tt.wantErr && err != context.DeadlineExceeded {
+			if err := CheckEndpointStatus(tt.args.endPoint); (err != nil) != tt.wantErr && err != context.DeadlineExceeded {
 				t.Errorf("checkEndPointStatus() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

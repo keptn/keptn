@@ -17,35 +17,12 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
-const shipyardMockResponseContent = `apiVersion: "spec.keptn.sh/0.2.0"
-kind: "Shipyard"
-metadata:
-  name: "shipyard-sockshop"
-spec:
-  stages:
-    - name: "dev"
-      sequences:
-        - name: "artifact-delivery"
-          tasks:
-            - name: "deployment"
-              properties:
-                deploymentstrategy: "direct"
-            - name: "test"
-              properties:
-                teststrategy: "functional"
-            - name: "evaluation"
-            - name: "release"
-        - name: "artifact-delivery-db"
-          tasks:
-            - name: "deployment"
-              properties:
-                deploymentstrategy: "direct"
-            - name: "release"`
-
 const shipyardResourceMockResponse = `{
       "resourceContent": "YXBpVmVyc2lvbjogInNwZWMua2VwdG4uc2gvMC4yLjAiCmtpbmQ6ICJTaGlweWFyZCIKbWV0YWRhdGE6CiAgbmFtZTogInNoaXB5YXJkLXNvY2tzaG9wIgpzcGVjOgogIHN0YWdlczoKICAgIC0gbmFtZTogImRldiIKICAgICAgc2VxdWVuY2VzOgogICAgICAgIC0gbmFtZTogImFydGlmYWN0LWRlbGl2ZXJ5IgogICAgICAgICAgdGFza3M6CiAgICAgICAgICAgIC0gbmFtZTogImRlcGxveW1lbnQiCiAgICAgICAgICAgICAgcHJvcGVydGllczoKICAgICAgICAgICAgICAgIGRlcGxveW1lbnRzdHJhdGVneTogImRpcmVjdCIKICAgICAgICAgICAgLSBuYW1lOiAidGVzdCIKICAgICAgICAgICAgICBwcm9wZXJ0aWVzOgogICAgICAgICAgICAgICAgdGVzdHN0cmF0ZWd5OiAiZnVuY3Rpb25hbCIKICAgICAgICAgICAgLSBuYW1lOiAiZXZhbHVhdGlvbiIKICAgICAgICAgICAgLSBuYW1lOiAicmVsZWFzZSIKICAgICAgICAtIG5hbWU6ICJhcnRpZmFjdC1kZWxpdmVyeS1kYiIKICAgICAgICAgIHRhc2tzOgogICAgICAgICAgICAtIG5hbWU6ICJkZXBsb3ltZW50IgogICAgICAgICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICAgICAgICBkZXBsb3ltZW50c3RyYXRlZ3k6ICJkaXJlY3QiCiAgICAgICAgICAgIC0gbmFtZTogInJlbGVhc2Ui",
       "resourceURI": "shipyard.yaml"
 }`
+
+const metadataMockResponse = `{"bridgeversion":"v1","keptnlabel":"keptn","keptnversion":"0.8.0","namespace":"keptn"}`
 
 func init() {
 	logging.InitLoggers(os.Stdout, os.Stdout, os.Stderr)
@@ -53,7 +30,6 @@ func init() {
 
 // TestNewArtifact tests the new-artifact command.
 func TestNewArtifact(t *testing.T) {
-
 	credentialmanager.MockAuthCreds = true
 	checkEndPointStatusMock = true
 
@@ -82,6 +58,10 @@ func TestNewArtifact(t *testing.T) {
 				go func() {
 					receivedEvent <- true
 				}()
+			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
+				defer r.Body.Close()
+				w.Write([]byte(metadataMockResponse))
+				return
 			}
 			return
 		}),

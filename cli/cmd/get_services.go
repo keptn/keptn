@@ -54,12 +54,7 @@ keptn get services --project=sockshop                # List all services in the 
 keptn get services carts --project=sockshop -o=json  # Get details of the carts service in the sockshop project as json output
 `,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-		if err != nil {
-			return errors.New(authErrorMsg)
-		}
-
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if *getService.outputFormat != "" {
 			if *getService.outputFormat != "yaml" && *getService.outputFormat != "json" {
 				return errors.New("Invalid output format, only yaml or json allowed")
@@ -69,12 +64,12 @@ keptn get services carts --project=sockshop -o=json  # Get details of the carts 
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

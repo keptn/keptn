@@ -66,7 +66,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
@@ -81,7 +81,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	logging.PrintLog("Starting to deliver the service "+
 		*deliveryInputData.Service+" in project "+*deliveryInputData.Project+" in version "+*deliveryInputData.Image+":"+*deliveryInputData.Tag, logging.InfoLevel)
 
-	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
 	}

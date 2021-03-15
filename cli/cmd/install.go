@@ -17,10 +17,8 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/common"
@@ -121,7 +119,7 @@ keptn install --hide-sensitive-data                                    # install
 				return err
 			}
 		} else {
-			err = installPlatformManager.ReadCreds()
+			err = installPlatformManager.ReadCreds(assumeYes)
 			if err != nil {
 				return err
 			}
@@ -192,23 +190,16 @@ func doInstallation() error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
-	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
+	namespaceExists, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
 	}
 
-	if res {
-		fmt.Printf("Existing Keptn installation found in namespace %s\n", keptnNamespace)
-		fmt.Println()
-		fmt.Println("Do you want to overwrite this installation? (y/n)")
+	if namespaceExists {
+		fmt.Printf("Existing Keptn installation found in namespace %s\n\n", keptnNamespace)
+		userConfirmation := common.NewUserInput().AskBool("Do you want to overwrite this installation?", &common.UserInputOptions{assumeYes})
 
-		reader := bufio.NewReader(os.Stdin)
-		in, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		in = strings.ToLower(strings.TrimSpace(in))
-		if !(in == "y" || in == "yes") {
+		if !userConfirmation {
 			return fmt.Errorf("Stopping installation.")
 		}
 	} else {
@@ -290,7 +281,7 @@ func checkIstioInstallation() error {
 		return err
 	}
 
-	_, err = clientset.CoreV1().Services("istio-system").Get(rootCmd.Context(),"istio-ingressgateway", metav1.GetOptions{})
+	_, err = clientset.CoreV1().Services("istio-system").Get(rootCmd.Context(), "istio-ingressgateway", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

@@ -37,7 +37,7 @@ For more information about updating projects or upstream repositories, please go
 	Example:      `keptn update project PROJECTNAME --git-user=GIT_USER --git-token=GIT_TOKEN --git-remote-url=GIT_REMOTE_URL`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -57,13 +57,13 @@ For more information about updating projects or upstream repositories, please go
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 		logging.PrintLog("Starting to update project", logging.InfoLevel)
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

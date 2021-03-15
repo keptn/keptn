@@ -44,14 +44,14 @@ var getEvaluationFinishedCmd = &cobra.Command{
 		fmt.Println(`Use "keptn get event evaluation.finished" instead`)
 		fmt.Println()
 
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
 
 		logging.PrintLog("Starting to get evaluation.finished event", logging.InfoLevel)
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

@@ -162,7 +162,7 @@ func getKeptnServerVersion() (string, error) {
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
@@ -172,7 +172,7 @@ func getKeptnServerVersion() (string, error) {
 	if err != nil {
 		return "", errors.New(authErrorMsg)
 	}
-	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
