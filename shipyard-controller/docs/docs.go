@@ -587,7 +587,7 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get a stage of a project",
+                "description": "Gets all services of a stage in a project",
                 "consumes": [
                     "application/json"
                 ],
@@ -595,40 +595,52 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Services"
                 ],
-                "summary": "Get a stage",
+                "summary": "Gets all services of a stage in a project",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "The name of the project",
+                        "description": "Project",
                         "name": "project",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "The name of the stage",
+                        "description": "Stage",
                         "name": "stage",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.ExpandedStage"
+                            "$ref": "#/definitions/models.ExpandedServices"
                         }
                     },
-                    "404": {
-                        "description": "Not found",
+                    "400": {
+                        "description": "Invalid payload",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
                     },
                     "500": {
-                        "description": "Internal Error)",
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }

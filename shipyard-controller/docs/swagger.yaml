@@ -662,17 +662,25 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a stage of a project
+      description: Gets all services of a stage in a project
       parameters:
-      - description: The name of the project
+      - description: Project
         in: path
         name: project
         required: true
         type: string
-      - description: The name of the stage
+      - description: Stage
         in: path
         name: stage
         required: true
+        type: string
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
         type: string
       produces:
       - application/json
@@ -680,20 +688,20 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.ExpandedStage'
-        "404":
-          description: Not found
+            $ref: '#/definitions/models.ExpandedServices'
+        "400":
+          description: Invalid payload
           schema:
             $ref: '#/definitions/models.Error'
         "500":
-          description: Internal Error)
+          description: Internal error
           schema:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
-      summary: Get a stage
+      summary: Gets all services of a stage in a project
       tags:
-      - Projects
+      - Services
   /project/{project}/stage/{stage}/service/{service}:
     get:
       consumes:
