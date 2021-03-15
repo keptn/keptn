@@ -21,6 +21,9 @@ import (
 
 var namespace = os.Getenv("POD_NAMESPACE")
 
+const masterBranch = "master"
+const mainBranch = "main"
+
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/command_executor_mock.go . CommandExecutor
 type CommandExecutor interface {
 	ExecuteCommand(command string, args []string, directory string) (string, error)
@@ -283,13 +286,13 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 			for _, line := range lines {
 				if strings.Contains(line, "HEAD branch") {
 					// if we get an ambiguous HEAD, we need to fall back to master/main
-					if strings.Contains(line, "(remote HEAD is ambiguous, may be one of the following)") {
+					if strings.Contains(line, "remote HEAD is ambiguous") {
 						branches, err := g.GetBranches(project)
 						if err != nil {
 							return "", obfuscateErrorMessage(err, credentials)
 						}
 						for _, branch := range branches {
-							if branch == "master" || branch == "main" {
+							if branch == masterBranch || branch == mainBranch {
 								return branch, nil
 							}
 						}
@@ -306,7 +309,7 @@ func (g *Git) GetDefaultBranch(project string) (string, error) {
 			<-time.After(3 * time.Second)
 		}
 	}
-	return "master", nil
+	return masterBranch, nil
 }
 
 // ==============================
