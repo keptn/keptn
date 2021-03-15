@@ -48,7 +48,7 @@ func getRepoURI(uri string, user string, token string) string {
 		// see https://stackoverflow.com/a/29356143
 		user = url.QueryEscape(user)
 	}
-
+	token = url.QueryEscape(token)
 	if strings.Contains(uri, user+"@") {
 		uri = strings.Replace(uri, "://"+user+"@", "://"+user+":"+token+"@", 1)
 	}
@@ -368,7 +368,7 @@ func GetDefaultBranch(project string) (string, error) {
 		return "", errors.New("could not determine default branch: " + err.Error())
 	}
 	if credentials != nil {
-		retries := 5
+		retries := 2
 
 		for i := 0; i < retries; i = i + 1 {
 			out, err := utils.ExecuteCommandInDirectory("git", []string{"remote", "show", "origin"}, projectConfigPath)
@@ -379,10 +379,22 @@ func GetDefaultBranch(project string) (string, error) {
 
 			for _, line := range lines {
 				if strings.Contains(line, "HEAD branch") {
+					// if we get an ambiguous HEAD, we need to fall back to master/main
+					if strings.Contains(line, "(remote HEAD is ambiguous, may be one of the following)") {
+						branches, err := GetBranches(project)
+						if err != nil {
+							return "", obfuscateErrorMessage(err, credentials)
+						}
+						for _, branch := range branches {
+							if branch == "master" || branch == "main" {
+								return branch, nil
+							}
+						}
+					}
 					split := strings.Split(line, ":")
 					if len(split) > 1 {
 						defaultBranch := strings.TrimSpace(split[1])
-						if defaultBranch != "(unknown)" {
+						if defaultBranch != "(unknown)" && defaultBranch != "" {
 							return defaultBranch, nil
 						}
 					}
