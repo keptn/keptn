@@ -1,19 +1,17 @@
 package credentialmanager
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"net/url"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/docker/docker-credential-helpers/credentials"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/file"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"gopkg.in/yaml.v2"
+	"log"
+	"net/url"
+	"os"
+	"path/filepath"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
@@ -195,17 +193,10 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 	// Setting keptnContext from ~/.keptn/config file
 	keptnContext = cliConfig.CurrentContext
 	if kubeConfigFile.CurrentContext != "" && keptnContext != kubeConfigFile.CurrentContext {
-		fmt.Printf("Kube context has been changed to %s", kubeConfigFile.CurrentContext)
-		fmt.Println()
-		if !autoApplyNewContext && keptnContext != "" {
-			fmt.Println("Do you want to switch to the new Kube context with the Keptn running there? (y/n)")
-			reader := bufio.NewReader(os.Stdin)
-			in, err := reader.ReadString('\n')
-			if err != nil {
-				return err
-			}
-			in = strings.ToLower(strings.TrimSpace(in))
-			if !(in == "y" || in == "yes") {
+		fmt.Printf("Kube context has been changed to %s\n", kubeConfigFile.CurrentContext)
+		if keptnContext != "" {
+			userConfirmation := common.NewUserInput().AskBool("Do you want to switch to the new Kube context with the Keptn running there?", &common.UserInputOptions{AssumeYes: autoApplyNewContext})
+			if !userConfirmation {
 				return nil
 			}
 		}

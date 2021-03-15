@@ -134,7 +134,7 @@ func doUpgradePreRunCheck() error {
 			return err
 		}
 	} else {
-		err = platformManager.ReadCreds()
+		err = platformManager.ReadCreds(assumeYes)
 		if err != nil {
 			return err
 		}

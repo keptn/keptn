@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -185,16 +185,9 @@ func confirmShipyardUpgrade() error {
 	if upgradeProjectParams.AutoConfirm {
 		return nil
 	}
-	logging.PrintLog("Do you want to continue with this? (y/n)", logging.InfoLevel)
-	reader := bufio.NewReader(os.Stdin)
-	in, err := reader.ReadString('\n')
-	if err != nil {
-		return err
-	}
-	in = strings.ToLower(strings.TrimSpace(in))
-	if !(in == "y" || in == "yes") {
-		err := errors.New("stopping installation")
-		log.Fatal(err)
+	userConfirmation := common.NewUserInput().AskBool("Do you want to continue with this?", &common.UserInputOptions{AssumeYes: assumeYes})
+	if !userConfirmation {
+		log.Fatal("stopping installation")
 	}
 	return nil
 }

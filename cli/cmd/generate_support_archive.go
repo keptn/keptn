@@ -5,11 +5,11 @@ package cmd
 
 import (
 	"archive/zip"
-	"bufio"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -126,15 +126,8 @@ keptn generate support-archive --dir=/some/directory`,
 					fmt.Println("Please confirm that this is the cluster Keptn is running on: ")
 					fmt.Printf("Cluster: %v\n", strings.TrimSpace(ctx))
 
-					fmt.Println("Is this all correct? (y/n)")
-
-					reader := bufio.NewReader(os.Stdin)
-					in, err := reader.ReadString('\n')
-					if err != nil {
-						return err
-					}
-					in = strings.ToLower(strings.TrimSpace(in))
-					if in != "y" && in != "yes" {
+					userConfirmation := common.NewUserInput().AskBool("Is this all correct?", &common.UserInputOptions{AssumeYes: false})
+					if !userConfirmation {
 						return nil
 					}
 
