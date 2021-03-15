@@ -62,6 +62,7 @@ import { KtbApprovalItemComponent } from "./_components/ktb-approval-item/ktb-ap
 import { KtbCopyToClipboardComponent } from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
 import { KtbMarkdownComponent } from "./_components/ktb-markdown/ktb-markdown.component";
 import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
+import { KtbEvaluationInfoComponent } from "./_components/ktb-evaluation-info/ktb-evaluation-info.component";
 import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetail } from "./_components/ktb-task-item/ktb-task-item.component";
 import { KtbSequenceTasksListComponent } from "./_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
@@ -84,7 +85,8 @@ import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-st
 import { KtbSequenceViewComponent } from "./_views/ktb-sequence-view/ktb-sequence-view.component";
 import { KtbServiceViewComponent } from "./_views/ktb-service-view/ktb-service-view.component";
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
-import {KtbSliBreakdownCriteriaItemComponent} from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
+import { KtbSliBreakdownCriteriaItemComponent } from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
+import { KtbServicesListComponent } from "./_components/ktb-services-list/ktb-services-list.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -116,6 +118,7 @@ registerLocaleData(localeEn, 'en');
     KtbTaskItemComponent,
     KtbTaskItemDetail,
     KtbEvaluationDetailsComponent,
+    KtbEvaluationInfoComponent,
     KtbSliBreakdownComponent,
     KtbNotificationBarComponent,
     KtbApprovalItemComponent,
@@ -128,6 +131,7 @@ registerLocaleData(localeEn, 'en');
     KtbStageDetailsComponent,
     KeptnUrlPipe,
     KtbSliBreakdownCriteriaItemComponent,
+    KtbServicesListComponent,
   ],
   imports: [
     BrowserModule,

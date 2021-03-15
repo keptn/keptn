@@ -1,13 +1,13 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {Project} from '../../_models/project';
-import {Stage} from '../../_models/stage';
-import {Observable} from 'rxjs';
-import {Trace} from '../../_models/trace';
-import {DataService} from '../../_services/data.service';
+import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
 import {DtToggleButtonItem} from '@dynatrace/barista-components/toggle-button-group';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
+
+import {Project} from '../../_models/project';
+import {Stage} from '../../_models/stage';
 import {Service} from '../../_models/service';
 import {Root} from '../../_models/root';
+
+import {DataService} from '../../_services/data.service';
 
 @Component({
   selector: 'ktb-stage-details',
@@ -17,7 +17,6 @@ import {Root} from '../../_models/root';
 export class KtbStageDetailsComponent implements OnInit {
   public _project: Project;
   public selectedStage: Stage = null;
-  public openApprovals$: Observable<Trace[]>;
   public filterEventType: string = null;
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
@@ -43,7 +42,6 @@ export class KtbStageDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.openApprovals$ = this.dataService.openApprovals;
   }
 
   selectStage($event) {
@@ -58,14 +56,6 @@ export class KtbStageDetailsComponent implements OnInit {
     if ($event.isUserInput) {
       this.filterEventType = $event.source.selected ? $event.value : null;
     }
-  }
-
-  countOpenApprovals(project: Project, stage: Stage, service?: Service): number {
-    return this.getOpenApprovals(project, stage, service).length;
-  }
-
-  getOpenApprovals(project: Project, stage: Stage, service?: Service): Trace[] {
-    return this.dataService.getOpenApprovals(project, stage, service);
   }
 
   findProblemEvent(problemEvents: Root[], service: Service): Root {
