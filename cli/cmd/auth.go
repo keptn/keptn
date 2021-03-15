@@ -82,7 +82,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 
 		return authenticator.Auth(AuthenticatorOptions{
 			Endpoint: *authParams.endPoint,
-			ApiToken: *authParams.apiToken,
+			APIToken: *authParams.apiToken,
 		})
 	},
 }

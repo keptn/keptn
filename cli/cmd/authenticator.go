@@ -33,7 +33,7 @@ type Authenticator struct {
 
 type AuthenticatorOptions struct {
 	Endpoint string
-	ApiToken string
+	APIToken string
 }
 
 func NewAuthenticator(namespace string, credentialManager CredentialGetSetter) *Authenticator {
@@ -61,7 +61,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		if err != nil {
 			return err
 		}
-		apiToken = authenticatorOptions.ApiToken
+		apiToken = authenticatorOptions.APIToken
 	}
 
 	logging.PrintLog("Starting to authenticate", logging.InfoLevel)
