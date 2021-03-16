@@ -260,25 +260,28 @@ export class DataService {
   }
 
   private traceMapper(traces: Trace[]) {
-    return traces
+    traces = traces
       .map(trace => Trace.fromJSON(trace))
-      .sort(DateUtil.compareTraceTimesDesc)
-      .reduce((result: Trace[], trace: Trace) => {
-        let trigger = result.find(t => {
-          if(trace.triggeredid)
-            return t.id == trace.triggeredid;
-          else if(trace.isProblem() && trace.isProblemResolvedOrClosed())
+      .sort(DateUtil.compareTraceTimesDesc);
+
+    return traces.reduce((result: Trace[], trace: Trace) => {
+      const trigger = traces.find(t => {
+          if (trace.triggeredid) {
+            return t.id === trace.triggeredid;
+          } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
             return t.isProblem() && !t.isProblemResolvedOrClosed();
-          else if(trace.isFinished())
-            return t.type.slice(0,-8) == trace.type.slice(0,-9);
-        });
+          } else if (trace.isFinished()) {
+            return t.type.slice(0, -8) === trace.type.slice(0, -9);
+          }
+      });
 
-        if(trigger)
-          trigger.traces.push(trace);
-        else
-          result.push(trace);
+      if (trigger) {
+        trigger.traces.push(trace);
+      } else {
+        result.push(trace);
+      }
 
-        return result;
-      }, []);
+      return result;
+    }, []);
   }
 }
