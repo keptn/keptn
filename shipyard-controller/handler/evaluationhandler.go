@@ -24,7 +24,7 @@ func NewEvaluationHandler(evaluationManager IEvaluationManager) *EvaluationHandl
 // @Summary Trigger a new evaluation
 // @Description Trigger a new evaluation for a service within a project
 // @Tags Evaluation
-// @Security ApiKeyAutth
+// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param project path string true "Project"

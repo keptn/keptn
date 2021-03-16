@@ -498,7 +498,74 @@
                 }
             }
         },
-        "/project/{project}/service/{stage}": {
+        "/project/{project}/stage": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get the list of stages of a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stage"
+                ],
+                "summary": "Get all stages of a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Disable sync of upstream repo before reading content",
+                        "name": "disableUpstreamSync",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.Stages"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{project}/stage/{stage}": {
             "get": {
                 "security": [
                     {
@@ -559,122 +626,6 @@
                     },
                     "500": {
                         "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/project/{project}/stage": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get the list of stages of a project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Stage"
-                ],
-                "summary": "Get all stages of a project",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "The number of items to return",
-                        "name": "pageSize",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Pointer to the next set of items",
-                        "name": "nextPageKey",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Disable sync of upstream repo before reading content",
-                        "name": "disableUpstreamSync",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/models.Stages"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/project/{project}/stage/{stage}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get a stage of a project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Get a stage",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The name of the project",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "The name of the stage",
-                        "name": "stage",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/models.ExpandedStage"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/models.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error)",
                         "schema": {
                             "$ref": "#/definitions/models.Error"
                         }
@@ -749,7 +700,7 @@
             "post": {
                 "security": [
                     {
-                        "ApiKeyAutth": []
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Trigger a new evaluation for a service within a project",

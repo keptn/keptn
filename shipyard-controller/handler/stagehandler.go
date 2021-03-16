@@ -31,6 +31,7 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 // @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
+// @Param	project				path	string	true	"The name of the project"
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
