@@ -87,6 +87,7 @@ import { KtbServiceViewComponent } from "./_views/ktb-service-view/ktb-service-v
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { KtbSliBreakdownCriteriaItemComponent } from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
 import { KtbServicesListComponent } from "./_components/ktb-services-list/ktb-services-list.component";
+import { KtbStageBadgeComponent } from "./_components/ktb-stage-badge/ktb-stage-badge.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -119,6 +120,7 @@ registerLocaleData(localeEn, 'en');
     KtbTaskItemDetail,
     KtbEvaluationDetailsComponent,
     KtbEvaluationInfoComponent,
+    KtbStageBadgeComponent,
     KtbSliBreakdownComponent,
     KtbNotificationBarComponent,
     KtbApprovalItemComponent,
