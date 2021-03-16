@@ -17,7 +17,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
+	github.com/keptn/go-utils v0.8.1-0.20210316090931-89f60f945a1d
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/stretchr/testify v1.7.0
