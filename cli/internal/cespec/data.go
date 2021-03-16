@@ -306,6 +306,7 @@ var getSLITriggeredEventData = keptnv2.GetSLITriggeredEventData{
 			Value: "test-subject:true",
 		}},
 	},
+	Deployment: "direct",
 }
 
 var getSLIStartedEventData = keptnv2.GetSLIStartedEventData{
