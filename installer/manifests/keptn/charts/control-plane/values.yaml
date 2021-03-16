@@ -45,17 +45,9 @@ bridge:
     enabled: true
   installationType: null
 
-eventbroker:
-  image:
-    repository: docker.io/keptn/eventbroker-go
-
 distributor:
   image:
     repository: docker.io/keptn/distributor
-
-shipyardService:
-  image:
-    repository: docker.io/keptn/shipyard-service
 
 shipyardController:
   image:
