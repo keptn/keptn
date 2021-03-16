@@ -139,19 +139,17 @@ export class ApiService {
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean, eventType: EventTypes, source: string ) {
-    let url = `${this._baseUrl}/v1/event`;
+    const url = `${this._baseUrl}/v1/event`;
 
     return this.http
       .post<any>(url, {
-        "shkeptncontext": approval.shkeptncontext,
-        "type": eventType,
-        "triggeredid": approval.id,
-        "source": `https://github.com/keptn/keptn/bridge#${source}`,
-        "data": Object.assign(approval.data, {
-          "approval": {
-            "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
-            "status": "succeeded"
-          }
+        shkeptncontext: approval.shkeptncontext,
+        type: eventType,
+        triggeredid: approval.id,
+        source: `https://github.com/keptn/keptn/bridge#${source}`,
+        data: Object.assign(approval.data, {
+          result: approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
+          status: 'succeeded'
         })
       });
   }
