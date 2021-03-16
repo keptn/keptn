@@ -168,7 +168,6 @@ datastore
 datastoremodels
 datetime
 Davila
-dawidd
 dbg
 DDTHH
 Debian
@@ -195,7 +194,6 @@ doctype
 Docu
 dominikmessner
 dompurify
-dotenv
 downlevel
 dpl
 dracula
@@ -333,7 +331,6 @@ halem
 hammerjs
 hardenings
 hashicorp
-Haximus
 healthcheck
 heatmap
 Helch
@@ -397,7 +394,6 @@ jeremywohl
 jessevdk
 jetbrains
 jetzlstorfer
-jitterbit
 JKEPTN
 JLoop
 JM
@@ -481,13 +477,10 @@ Lshortfile
 LSN
 Ltime
 LTN
-ludeeus
-magiconair
 MAKEFLAGS
 mapfile
 mapstructure
 marcredhat
-marocchino
 matryer
 mattn
 mcs
@@ -570,6 +563,7 @@ nodemon
 nodeport
 nokubectl
 noname
+Nooooooo
 noopener
 Nop
 noreferrer
@@ -614,7 +608,6 @@ passthrough
 pb
 pem
 perc
-perfromance
 perfservice
 perfspec
 php
@@ -642,7 +635,7 @@ productpage
 PROJ
 projectes
 projectmanager
-PROJECTNAME
+projectname
 projectrepo
 PROJECTROOT
 protobuf
@@ -656,7 +649,6 @@ pvc
 PVs
 pwd
 px
-py
 QG
 qhk
 quickstart
@@ -734,7 +726,7 @@ servicename
 servicenow
 servicetype
 serviceutils
-setenv
+Setenv
 shellcheck
 shellscripts
 shellwords
@@ -756,7 +748,6 @@ Smode
 sni
 sockshop
 sockshot
-softprops
 sourceip
 specversion
 spf
@@ -924,7 +915,6 @@ wpcatalog
 Writeln
 www
 wxyz
-Wyri
 xargs
 xhr
 xip
