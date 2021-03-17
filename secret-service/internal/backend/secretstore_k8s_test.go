@@ -2,6 +2,7 @@ package backend
 
 import (
 	"errors"
+	"github.com/keptn/keptn/secret-service/internal/common"
 	"github.com/keptn/keptn/secret-service/internal/model"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
@@ -12,7 +13,7 @@ import (
 	"testing"
 )
 
-func FakeNamespaceProvider() KeptnNamespaceProvider {
+func FakeNamespaceProvider() common.StringSupplier {
 	return func() string {
 		return "keptn_namespace"
 	}

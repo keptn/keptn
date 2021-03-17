@@ -1,36 +1,24 @@
 package backend
 
 import (
+	"github.com/keptn/keptn/secret-service/internal/common"
 	"github.com/keptn/keptn/secret-service/internal/model"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"os"
 )
 
 const DefaultNamespace = "keptn"
 
-type KeptnNamespaceProvider func() string
-
-func EnvBasedKeptnNamespaceProvider(envVarName string) KeptnNamespaceProvider {
-	return func() string {
-		ns := os.Getenv(envVarName)
-		if ns != "" {
-			return ns
-		}
-		return DefaultNamespace
-	}
-}
-
 type K8sSecretStore struct {
 	KubeAPI                kubernetes.Interface
-	KeptnNamespaceProvider KeptnNamespaceProvider
+	KeptnNamespaceProvider common.StringSupplier
 }
 
 func NewK8sSecretStore(kubeAPI kubernetes.Interface) *K8sSecretStore {
 	return &K8sSecretStore{
 		KubeAPI:                kubeAPI,
-		KeptnNamespaceProvider: EnvBasedKeptnNamespaceProvider("POD_NAMESPACE"),
+		KeptnNamespaceProvider: common.EnvBasedStringSupplier("POD_NAMESPACE", DefaultNamespace),
 	}
 }
 
