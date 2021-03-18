@@ -2,6 +2,7 @@ dynatrace
 ignore$
 /swagger-ui/
 (?:^|/)(?i)LICENSE
+^ADOPTERS\.md$
 ^CODE_OF_CONDUCT\.md$
 ^\.github/actions/
 \.ci_env$
