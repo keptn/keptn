@@ -169,7 +169,7 @@ func _main(args []string, env envConfig) int {
 		log.Fatal(fmt.Sprintf("failed to check whether helm-service has admin right: %v", err))
 	}
 	if !adminRights {
-		log.Fatal("helm-service has insufficient RBAC rights.")
+		log.Println("Warning: helm-service is running without admin RBAC rights. See #3511 for details.")
 	}
 
 	ctx := context.Background()
