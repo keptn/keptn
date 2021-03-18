@@ -15,7 +15,7 @@ require (
 	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.6.7
-	github.com/ugorji/go/codec v1.1.8 // indirect
+	github.com/ugorji/go v1.1.8 // indirect
 	go.mongodb.org/mongo-driver v1.4.6
 	golang.org/x/tools v0.0.0-20200915201639-f4cefd1cb5ba // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
