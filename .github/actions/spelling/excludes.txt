@@ -16,3 +16,4 @@ ignore$
 \.sav$
 \.sum$
 \.xlf$
+_test\.go$
