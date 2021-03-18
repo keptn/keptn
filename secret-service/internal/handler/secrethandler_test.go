@@ -15,8 +15,8 @@ import (
 )
 
 func Test_CreateNewHandler(t *testing.T) {
-	secretStore := fake.SecretStoreMock{}
-	handler := handler.NewSecretHandler(&secretStore)
+	backend := fake.SecretBackendMock{}
+	handler := handler.NewSecretHandler(&backend)
 	assert.NotNil(t, handler)
 }
 
@@ -28,14 +28,14 @@ func Test_CreateSecret(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/secrets", bytes.NewBuffer([]byte(jsonPayload)))
 
-	secretStore := fake.SecretStoreMock{}
+	backend := fake.SecretBackendMock{}
 
-	secretStore.CreateSecretFunc = func(secret model.Secret) error {
+	backend.CreateSecretFunc = func(secret model.Secret) error {
 		return nil
 	}
 
 	secretHandler := handler.SecretHandler{
-		SecretBackend: &secretStore,
+		SecretBackend: &backend,
 	}
 	secretHandler.CreateSecret(c)
 
@@ -45,7 +45,7 @@ func Test_CreateSecret(t *testing.T) {
 func TestHandler_CreateSecret(t *testing.T) {
 
 	type fields struct {
-		Backend backend.SecretStore
+		Backend backend.SecretBackend
 	}
 
 	tests := []struct {
@@ -57,7 +57,7 @@ func TestHandler_CreateSecret(t *testing.T) {
 		{
 			name: "POST Create Secret - SUCCESS",
 			fields: fields{
-				Backend: &fake.SecretStoreMock{
+				Backend: &fake.SecretBackendMock{
 					CreateSecretFunc: func(secret model.Secret) error { return nil },
 				},
 			},
@@ -67,7 +67,7 @@ func TestHandler_CreateSecret(t *testing.T) {
 		{
 			name: "POST Create Secret - Backend FAILED",
 			fields: fields{
-				Backend: &fake.SecretStoreMock{
+				Backend: &fake.SecretBackendMock{
 					CreateSecretFunc: func(secret model.Secret) error { return fmt.Errorf("Failed to store secret in backend") },
 				},
 			},
@@ -77,7 +77,7 @@ func TestHandler_CreateSecret(t *testing.T) {
 		{
 			name: "POST Create Secret - Input INVALID",
 			fields: fields{
-				Backend: &fake.SecretStoreMock{
+				Backend: &fake.SecretBackendMock{
 					CreateSecretFunc: func(secret model.Secret) error { return nil },
 				},
 			},

@@ -13,14 +13,14 @@ type ISecretHandler interface {
 	DeleteSecret(c *gin.Context)
 }
 
-func NewSecretHandler(store backend.SecretStore) *SecretHandler {
+func NewSecretHandler(backend backend.SecretBackend) *SecretHandler {
 	return &SecretHandler{
-		SecretBackend: store,
+		SecretBackend: backend,
 	}
 }
 
 type SecretHandler struct {
-	SecretBackend backend.SecretStore
+	SecretBackend backend.SecretBackend
 }
 
 func (s SecretHandler) CreateSecret(c *gin.Context) {

@@ -9,16 +9,16 @@ import (
 	"sync"
 )
 
-// Ensure, that SecretStoreMock does implement backend.SecretStore.
+// Ensure, that SecretBackendMock does implement backend.SecretBackend.
 // If this is not the case, regenerate this file with moq.
-var _ backend.SecretStore = &SecretStoreMock{}
+var _ backend.SecretBackend = &SecretBackendMock{}
 
-// SecretStoreMock is a mock implementation of backend.SecretStore.
+// SecretBackendMock is a mock implementation of backend.SecretBackend.
 //
-// 	func TestSomethingThatUsesSecretStore(t *testing.T) {
+// 	func TestSomethingThatUsesSecretBackend(t *testing.T) {
 //
-// 		// make and configure a mocked backend.SecretStore
-// 		mockedSecretStore := &SecretStoreMock{
+// 		// make and configure a mocked backend.SecretBackend
+// 		mockedSecretBackend := &SecretBackendMock{
 // 			CreateSecretFunc: func(secret model.Secret) error {
 // 				panic("mock out the CreateSecret method")
 // 			},
@@ -30,11 +30,11 @@ var _ backend.SecretStore = &SecretStoreMock{}
 // 			},
 // 		}
 //
-// 		// use mockedSecretStore in code that requires backend.SecretStore
+// 		// use mockedSecretBackend in code that requires backend.SecretBackend
 // 		// and then make assertions.
 //
 // 	}
-type SecretStoreMock struct {
+type SecretBackendMock struct {
 	// CreateSecretFunc mocks the CreateSecret method.
 	CreateSecretFunc func(secret model.Secret) error
 
@@ -68,9 +68,9 @@ type SecretStoreMock struct {
 }
 
 // CreateSecret calls CreateSecretFunc.
-func (mock *SecretStoreMock) CreateSecret(secret model.Secret) error {
+func (mock *SecretBackendMock) CreateSecret(secret model.Secret) error {
 	if mock.CreateSecretFunc == nil {
-		panic("SecretStoreMock.CreateSecretFunc: method is nil but SecretStore.CreateSecret was just called")
+		panic("SecretBackendMock.CreateSecretFunc: method is nil but SecretBackend.CreateSecret was just called")
 	}
 	callInfo := struct {
 		Secret model.Secret
@@ -85,8 +85,8 @@ func (mock *SecretStoreMock) CreateSecret(secret model.Secret) error {
 
 // CreateSecretCalls gets all the calls that were made to CreateSecret.
 // Check the length with:
-//     len(mockedSecretStore.CreateSecretCalls())
-func (mock *SecretStoreMock) CreateSecretCalls() []struct {
+//     len(mockedSecretBackend.CreateSecretCalls())
+func (mock *SecretBackendMock) CreateSecretCalls() []struct {
 	Secret model.Secret
 } {
 	var calls []struct {
@@ -99,9 +99,9 @@ func (mock *SecretStoreMock) CreateSecretCalls() []struct {
 }
 
 // DeleteSecret calls DeleteSecretFunc.
-func (mock *SecretStoreMock) DeleteSecret(secret model.Secret) error {
+func (mock *SecretBackendMock) DeleteSecret(secret model.Secret) error {
 	if mock.DeleteSecretFunc == nil {
-		panic("SecretStoreMock.DeleteSecretFunc: method is nil but SecretStore.DeleteSecret was just called")
+		panic("SecretBackendMock.DeleteSecretFunc: method is nil but SecretBackend.DeleteSecret was just called")
 	}
 	callInfo := struct {
 		Secret model.Secret
@@ -116,8 +116,8 @@ func (mock *SecretStoreMock) DeleteSecret(secret model.Secret) error {
 
 // DeleteSecretCalls gets all the calls that were made to DeleteSecret.
 // Check the length with:
-//     len(mockedSecretStore.DeleteSecretCalls())
-func (mock *SecretStoreMock) DeleteSecretCalls() []struct {
+//     len(mockedSecretBackend.DeleteSecretCalls())
+func (mock *SecretBackendMock) DeleteSecretCalls() []struct {
 	Secret model.Secret
 } {
 	var calls []struct {
@@ -130,9 +130,9 @@ func (mock *SecretStoreMock) DeleteSecretCalls() []struct {
 }
 
 // UpdateSecret calls UpdateSecretFunc.
-func (mock *SecretStoreMock) UpdateSecret(secret model.Secret) error {
+func (mock *SecretBackendMock) UpdateSecret(secret model.Secret) error {
 	if mock.UpdateSecretFunc == nil {
-		panic("SecretStoreMock.UpdateSecretFunc: method is nil but SecretStore.UpdateSecret was just called")
+		panic("SecretBackendMock.UpdateSecretFunc: method is nil but SecretBackend.UpdateSecret was just called")
 	}
 	callInfo := struct {
 		Secret model.Secret
@@ -147,8 +147,8 @@ func (mock *SecretStoreMock) UpdateSecret(secret model.Secret) error {
 
 // UpdateSecretCalls gets all the calls that were made to UpdateSecret.
 // Check the length with:
-//     len(mockedSecretStore.UpdateSecretCalls())
-func (mock *SecretStoreMock) UpdateSecretCalls() []struct {
+//     len(mockedSecretBackend.UpdateSecretCalls())
+func (mock *SecretBackendMock) UpdateSecretCalls() []struct {
 	Secret model.Secret
 } {
 	var calls []struct {

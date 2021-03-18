@@ -19,15 +19,15 @@ func FakeNamespaceProvider() common.StringSupplier {
 	}
 }
 
-func TestCreateK8sSecretStore(t *testing.T) {
-	store := NewK8sSecretStore(fake.NewSimpleClientset())
-	assert.NotNil(t, store)
+func TestCreateK8sSecretBackend(t *testing.T) {
+	backend := NewK8sSecretBackend(fake.NewSimpleClientset())
+	assert.NotNil(t, backend)
 }
 
 func TestCreateSecret(t *testing.T) {
 
 	kubernetes := fake.NewSimpleClientset()
-	secretStore := K8sSecretStore{
+	backend := K8sSecretBackend{
 		KubeAPI:                kubernetes,
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
 	}
@@ -38,7 +38,7 @@ func TestCreateSecret(t *testing.T) {
 		Data:  map[string]string{"password": "keptn"},
 	}
 
-	err := secretStore.CreateSecret(secret)
+	err := backend.CreateSecret(secret)
 	assert.Nil(t, err)
 	kubernetesSecret, err := kubernetes.CoreV1().Secrets(FakeNamespaceProvider()()).Get("my-secret", metav1.GetOptions{})
 	assert.Nil(t, err)
@@ -50,7 +50,7 @@ func TestCreateSecret(t *testing.T) {
 
 func TestCreateSecret_KubernetesSecretCreationFails(t *testing.T) {
 	kubernetes := fake.NewSimpleClientset()
-	secretStore := K8sSecretStore{
+	backend := K8sSecretBackend{
 		KubeAPI:                kubernetes,
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
 	}
@@ -65,7 +65,7 @@ func TestCreateSecret_KubernetesSecretCreationFails(t *testing.T) {
 		return true, &v1.Secret{}, errors.New("Error creating kubernetes secret")
 	})
 
-	err := secretStore.CreateSecret(secret)
+	err := backend.CreateSecret(secret)
 	assert.NotNil(t, err)
 
 }

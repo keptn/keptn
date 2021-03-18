@@ -6,23 +6,24 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
-const DefaultNamespace = "keptn"
+const BackendTypeK8s = "kubernetes"
 
-type K8sSecretStore struct {
+type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
 	KeptnNamespaceProvider common.StringSupplier
 }
 
-func NewK8sSecretStore(kubeAPI kubernetes.Interface) *K8sSecretStore {
-	return &K8sSecretStore{
+func NewK8sSecretBackend(kubeAPI kubernetes.Interface) *K8sSecretBackend {
+	return &K8sSecretBackend{
 		KubeAPI:                kubeAPI,
 		KeptnNamespaceProvider: common.EnvBasedStringSupplier("POD_NAMESPACE", DefaultNamespace),
 	}
 }
 
-func (k K8sSecretStore) CreateSecret(secret model.Secret) error {
+func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 
 	namespace := k.KeptnNamespaceProvider()
 	kubeSecret := k.createKubernetesSecret(secret, namespace)
@@ -33,15 +34,15 @@ func (k K8sSecretStore) CreateSecret(secret model.Secret) error {
 	return nil
 }
 
-func (k K8sSecretStore) UpdateSecret(secret model.Secret) error {
+func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 	panic("implement me")
 }
 
-func (k K8sSecretStore) DeleteSecret(secret model.Secret) error {
+func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	panic("implement me")
 }
 
-func (k K8sSecretStore) createKubernetesSecret(secret model.Secret, namespace string) *v1.Secret {
+func (k K8sSecretBackend) createKubernetesSecret(secret model.Secret, namespace string) *v1.Secret {
 	return &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
@@ -54,4 +55,26 @@ func (k K8sSecretStore) createKubernetesSecret(secret model.Secret, namespace st
 		StringData: secret.Data,
 		Type:       "Opaque",
 	}
+}
+
+func init() {
+	Register(BackendTypeK8s, func() SecretBackend {
+		kubeAPI, _ := createKubeAPI()
+		return NewK8sSecretBackend(kubeAPI)
+	})
+}
+
+func createKubeAPI() (*kubernetes.Clientset, error) {
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kubeAPI, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return kubeAPI, nil
 }
