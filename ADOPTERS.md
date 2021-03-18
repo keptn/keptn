@@ -21,4 +21,5 @@ If you are not sure how to do this and if your organization should be listed her
 | Realdolmen / Inetum   | https://marketplace.visualstudio.com/items?itemName=RealdolmenDevOps.keptn-integration | YES |
 | MayaData   | Uses Keptn for continuous delivery & quality gate evaluation in the manner described [here](https://youtu.be/aa5SzQmv4EQ?t=1452) | YES |
 | Intuit   | Uses Keptn for load testing and Quality gates on Kubernetes [here](https://www.youtube.com/watch?t=401&v=Omprl5OFtEw&feature=youtu.be)| YES|
-| Dynatrace | https://www.dynatrace.com/news/blog/a-guide-to-event-driven-sre-inspired-devops/ | YES | 
+| Dynatrace | https://www.dynatrace.com/news/blog/a-guide-to-event-driven-sre-inspired-devops/ | YES |
+| Kitopi | https://www.youtube.com/watch?v=Rx--sm1-D9A | YES |
