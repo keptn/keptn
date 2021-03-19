@@ -896,6 +896,20 @@ func Test_matchesFilter(t *testing.T) {
 			serviceFilter: "my-service",
 			want:          false,
 		},
+		{
+			name: "combined filter (comma-separated list) - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-project,project-1",
+			stageFilter:   "my-stage",
+			serviceFilter: "my-service",
+			want:          false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
