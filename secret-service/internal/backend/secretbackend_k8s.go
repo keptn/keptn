@@ -1,8 +1,8 @@
 package backend
 
 import (
-	"github.com/keptn/keptn/secret-service/internal/common"
-	"github.com/keptn/keptn/secret-service/internal/model"
+	"github.com/keptn/keptn/secret-service/pkg/common"
+	"github.com/keptn/keptn/secret-service/pkg/model"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,8 +35,8 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	}
 
 	roles := k.createK8sRoleObj(secret, namespace)
-	for _, role := range roles {
-		if _, err = k.KubeAPI.RbacV1().Roles(namespace).Create(&role); err != nil {
+	for i := range roles {
+		if _, err = k.KubeAPI.RbacV1().Roles(namespace).Create(&roles[i]); err != nil {
 			return err
 		}
 	}
@@ -57,20 +57,20 @@ func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, namespace string
 	var k8sRolesToCreate []rbacv1.Role
 
 	if scope, ok := k.Scopes.Scopes[secret.Scope]; ok {
-		for capName, cap := range scope.Capabilities {
-			capPermissions := cap.Permissions
+		for capabilityName, capability := range scope.Capabilities {
+			capabilityPermissions := capability.Permissions
 			role := rbacv1.Role{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Role",
 					APIVersion: "v1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      capName,
+					Name:      capabilityName,
 					Namespace: namespace,
 				},
 				Rules: []rbacv1.PolicyRule{
 					{
-						Verbs:         capPermissions,
+						Verbs:         capabilityPermissions,
 						Resources:     []string{"secrets"},
 						ResourceNames: []string{secret.Name},
 					},

@@ -5,7 +5,7 @@ package fake
 
 import (
 	"github.com/keptn/keptn/secret-service/internal/backend"
-	"github.com/keptn/keptn/secret-service/internal/model"
+	"github.com/keptn/keptn/secret-service/pkg/model"
 	"sync"
 )
 

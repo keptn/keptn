@@ -1,0 +1,71 @@
+basePath: /v1
+definitions:
+  model.Data:
+    additionalProperties:
+      type: string
+    type: object
+  model.Error:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  model.Secret:
+    properties:
+      data:
+        $ref: '#/definitions/model.Data'
+      name:
+        type: string
+      scope:
+        type: string
+    type: object
+info:
+  contact:
+    name: Keptn Team
+    url: http://www.keptn.sh
+  description: This is the API documentation of the Secret Service.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Secretf Service API
+  version: "1.0"
+paths:
+  /secrets:
+    post:
+      consumes:
+      - application/json
+      description: Create a new Secret
+      parameters:
+      - description: The new secret to be created
+        in: body
+        name: secret
+        required: true
+        schema:
+          $ref: '#/definitions/model.Secret'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Secret'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a Secret
+      tags:
+      - Secrets
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: x-token
+    type: apiKey
+swagger: "2.0"

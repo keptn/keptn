@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/secret-service/internal/handler"
+	"github.com/keptn/keptn/secret-service/pkg/handler"
 )
 
 type SecretController struct {

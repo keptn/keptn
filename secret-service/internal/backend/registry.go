@@ -7,8 +7,8 @@ func Register(name string, factory func() SecretBackend) {
 }
 
 func GetRegisteredBackends() []string {
-	var r []string
-	for i, _ := range backendRegistry {
+	r := make([]string, len(backendRegistry))
+	for i := range backendRegistry {
 		r = append(r, i)
 	}
 	return r

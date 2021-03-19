@@ -9,5 +9,5 @@ type Scope struct {
 }
 
 type Capability struct {
-	Permissions []string `yaml:"permissions""`
+	Permissions []string `yaml:"permissions"`
 }

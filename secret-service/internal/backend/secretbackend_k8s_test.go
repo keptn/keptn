@@ -2,8 +2,8 @@ package backend
 
 import (
 	"errors"
-	"github.com/keptn/keptn/secret-service/internal/common"
-	"github.com/keptn/keptn/secret-service/internal/model"
+	"github.com/keptn/keptn/secret-service/pkg/common"
+	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

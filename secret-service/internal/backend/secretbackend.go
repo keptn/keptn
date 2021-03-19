@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"github.com/keptn/keptn/secret-service/internal/model"
+	"github.com/keptn/keptn/secret-service/pkg/model"
 )
 
 const DefaultNamespace = "keptn"
