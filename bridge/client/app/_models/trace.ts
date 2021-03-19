@@ -321,6 +321,10 @@ class Trace {
     return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
   }
 
+  getDeploymentUrl() {
+    return this.data.deployment.deploymentURIsPublic[0];
+  }
+
   static fromJSON(data: any) {
     if(data instanceof Trace)
       return data;
