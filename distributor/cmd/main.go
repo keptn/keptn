@@ -677,19 +677,29 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
-// Primitive filtering based on project, stage and service properties
+// Primitive filtering based on project, stage, and service properties
 func matchesFilter(e cloudevents.Event) bool {
 
 	keptnBase := &v0_2_0.EventData{}
 	if err := e.DataAs(keptnBase); err != nil {
 		return true
 	}
-	if env.ProjectFilter != "" && keptnBase.Project != env.ProjectFilter ||
-		env.StageFilter != "" && keptnBase.Stage != env.StageFilter ||
-		env.ServiceFilter != "" && keptnBase.Service != env.ServiceFilter {
+	if env.ProjectFilter != "" && !contains(strings.Split(env.ProjectFilter, ","), keptnBase.Project) ||
+		env.StageFilter != "" && !contains(strings.Split(env.StageFilter, ","), keptnBase.Stage) ||
+		env.ServiceFilter != "" && !contains(strings.Split(env.ServiceFilter, ","), keptnBase.Service) {
 		return false
 	}
 	return true
+}
+
+// contains checks if a string is present in a slice
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
 
 func sendEvent(event cloudevents.Event) error {
