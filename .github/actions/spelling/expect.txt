@@ -392,6 +392,7 @@ jsonassert
 jsonpath
 jsonschema
 JSONTo
+jsoref
 JThink
 JVU
 JWT

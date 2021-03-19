@@ -64,7 +64,7 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
   - Allow helm-service to work without admin permissions [3511](https://github.com/keptn/keptn/issues/3511)
 
 - *shipyard-controller*:
-  - *Fixed*: Upgrade Shipyard: shipyardVersion in GET /project reponse not updated immediately [3384](https://github.com/keptn/keptn/issues/3384)
+  - *Fixed*: Upgrade Shipyard: shipyardVersion in GET /project response not updated immediately [3384](https://github.com/keptn/keptn/issues/3384)
   - *Fixed*: `deploymentURI` shows up twice in shipyard controller test.triggered event [3449](https://github.com/keptn/keptn/issues/3449)
   - *Fixed*: Fixed errors in swagger definition of shipyard-controller [3530](https://github.com/keptn/keptn/pull/3530)
 
