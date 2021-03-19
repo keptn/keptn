@@ -45,7 +45,7 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 <p>
 
 - CLI & Bridge: Automatically determine doc version [2863](https://github.com/keptn/keptn/issues/2863)
-- Keptn 0.8.0 CLI in alpine docker image not working [3475](https://github.com/keptn/keptn/issues/3475)
+- *Fixed*: CLI in alpine docker image not working [3475](https://github.com/keptn/keptn/issues/3475)
 
 </p>
 </details>
@@ -66,7 +66,7 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 - *shipyard-controller*:
   - *Fixed*: Upgrade Shipyard: shipyardVersion in GET /project reponse not updated immediately [3384](https://github.com/keptn/keptn/issues/3384)
   - *Fixed*: `deploymentURI` shows up twice in shipyard controller test.triggered event [3449](https://github.com/keptn/keptn/issues/3449)
-  - *Fixed*: Fixed errors in swagger definition of shipyard controller [3530](https://github.com/keptn/keptn/pull/3530)
+  - *Fixed*: Fixed errors in swagger definition of shipyard-controller [3530](https://github.com/keptn/keptn/pull/3530)
 
 </p>
 </details>
@@ -90,7 +90,7 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 ## Miscellaneous
 
 - Disable SpellCheck for *_test.go files [3543](https://github.com/keptn/keptn/issues/3543)
-- Added spell checker - big thanks to @jsoref! :tada: [3234](https://github.com/keptn/keptn/issues/3234)
+- Added spell checker - big thanks to @jsoref :tada: [3234](https://github.com/keptn/keptn/issues/3234)
 
 ## Development Process / Testing
 
