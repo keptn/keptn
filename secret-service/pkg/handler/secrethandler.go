@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/secret-service/internal/backend"
+	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"net/http"
 )

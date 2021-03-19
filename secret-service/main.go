@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/secret-service/internal/backend"
+	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/controller"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 	"github.com/keptn/keptn/secret-service/swagger-ui/docs"

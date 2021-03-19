@@ -1,8 +1,8 @@
 package backend_test
 
 import (
-	"github.com/keptn/keptn/secret-service/internal/backend"
-	"github.com/keptn/keptn/secret-service/internal/backend/fake"
+	"github.com/keptn/keptn/secret-service/pkg/backend"
+	"github.com/keptn/keptn/secret-service/pkg/backend/fake"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

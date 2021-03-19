@@ -100,6 +100,7 @@ github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/u
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/keptn/keptn v0.0.0-20210318134230-3de3fd25fc13 h1:U2rNl+UpNyMH++KuEwFjoqr2NytOCJYKWtaybMScEvo=
 github.com/keptn/keptn v0.0.0-20210319083005-035de7bb6b2a h1:NaboM6h1TM9vH9d1PPceJi97eMdI7K4zNlJmIOSnXf0=
+github.com/keptn/keptn v0.0.0-20210319085324-2b861478b677 h1:aCCXec5fJk2cr/8xMzaYrjrulmLbAxZkznDn5LBLT7k=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
