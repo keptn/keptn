@@ -4,6 +4,7 @@ acceptederrorrate
 acceptederrors
 addgroup
 addons
+addrowonbottom
 adduser
 agrabner
 agrimmer

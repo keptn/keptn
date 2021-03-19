@@ -140,7 +140,7 @@ const services: KeptnService[] = [
         stages: ['development', 'staging'],
         services: ['cards', 'cards-db'],
         parameters: [
-          {key: 'dynatraceSecret', value: 'xyz12345'}
+          {key: 'dynatraceSecret', value: 'my_secret'}
         ]
       } as Subscription,
       {
@@ -149,7 +149,7 @@ const services: KeptnService[] = [
         stages: ['development'],
         services: ['cards', 'cards-db'],
         parameters: [
-          {key: 'dynatraceSecret', value: 'abcde12345'}
+          {key: 'dynatraceSecret', value: 'my_secret_2'}
         ]
       } as Subscription
     ]
