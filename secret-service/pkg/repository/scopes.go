@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 )
 
-const ScopesConfigurationFile = "/scopes.yaml"
+const ScopesConfigurationFile = "scopes.yaml"
 
 //go:generate moq -pkg fake -out ./fake/scopesrepository_mock.go . ScopesRepository
 type ScopesRepository interface {

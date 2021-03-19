@@ -54,6 +54,7 @@ func TestCreateSecret(t *testing.T) {
 	assert.Equal(t, k8sRole1.Rules[0].Resources[0], "secrets")
 	assert.Equal(t, k8sRole1.Rules[0].ResourceNames[0], "my-secret")
 	assert.Equal(t, k8sRole1.Rules[0].Verbs, []string{"read"})
+	assert.Equal(t, k8sRole1.Rules[0].APIGroups, []string{""}) // at least on api group must be present
 
 	k8sRole2, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get("my-scope-manage-secrets", metav1.GetOptions{})
 	assert.Nil(t, err)
@@ -61,6 +62,7 @@ func TestCreateSecret(t *testing.T) {
 	assert.Equal(t, k8sRole2.Rules[0].Resources[0], "secrets")
 	assert.Equal(t, k8sRole2.Rules[0].ResourceNames[0], "my-secret")
 	assert.Equal(t, k8sRole2.Rules[0].Verbs, []string{"create", "read", "update"})
+	assert.Equal(t, k8sRole1.Rules[0].APIGroups, []string{""}) // at least on api group must be present
 }
 
 func TestCreateSecret_FetchingScopesFails(t *testing.T) {

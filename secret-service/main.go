@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/controller"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
+	"github.com/keptn/keptn/secret-service/pkg/repository"
 	"github.com/keptn/keptn/secret-service/swagger-ui/docs"
 	"log"
 	"os"
@@ -50,5 +51,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to start service: %s", err.Error())
 	}
+}
 
+func init() {
+	if _, err := os.Stat(repository.ScopesConfigurationFile); os.IsNotExist(err) {
+		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)
+	}
 }
