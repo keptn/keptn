@@ -3,6 +3,7 @@ package backend
 import (
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
+	"github.com/keptn/keptn/secret-service/pkg/repository"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,31 +11,37 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const BackendTypeK8s = "kubernetes"
+const SecretBackendTypeK8s = "kubernetes"
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
 	KeptnNamespaceProvider common.StringSupplier
-	Scopes                 model.Scopes
+	ScopesRepository       repository.ScopesRepository
 }
 
-func NewK8sSecretBackend(kubeAPI kubernetes.Interface) *K8sSecretBackend {
+func NewK8sSecretBackend(kubeAPI kubernetes.Interface, scopesRepository repository.ScopesRepository) *K8sSecretBackend {
 	return &K8sSecretBackend{
 		KubeAPI:                kubeAPI,
 		KeptnNamespaceProvider: common.EnvBasedStringSupplier("POD_NAMESPACE", DefaultNamespace),
+		ScopesRepository:       scopesRepository,
 	}
 }
 
 func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 
-	namespace := k.KeptnNamespaceProvider()
-	kubeSecret := k.createK8sSecretObj(secret, namespace)
-	_, err := k.KubeAPI.CoreV1().Secrets(namespace).Create(kubeSecret)
+	scopes, err := k.ScopesRepository.Read()
 	if err != nil {
 		return err
 	}
 
-	roles := k.createK8sRoleObj(secret, namespace)
+	namespace := k.KeptnNamespaceProvider()
+	kubeSecret := k.createK8sSecretObj(secret, namespace)
+	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Create(kubeSecret)
+	if err != nil {
+		return err
+	}
+
+	roles := k.createK8sRoleObj(secret, scopes, namespace)
 	for i := range roles {
 		if _, err = k.KubeAPI.RbacV1().Roles(namespace).Create(&roles[i]); err != nil {
 			return err
@@ -52,11 +59,11 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	panic("implement me")
 }
 
-func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, namespace string) []rbacv1.Role {
+func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Scopes, namespace string) []rbacv1.Role {
 
 	var k8sRolesToCreate []rbacv1.Role
 
-	if scope, ok := k.Scopes.Scopes[secret.Scope]; ok {
+	if scope, ok := scopes.Scopes[secret.Scope]; ok {
 		for capabilityName, capability := range scope.Capabilities {
 			capabilityPermissions := capability.Permissions
 			role := rbacv1.Role{
@@ -113,8 +120,9 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 }
 
 func init() {
-	Register(BackendTypeK8s, func() SecretBackend {
+	Register(SecretBackendTypeK8s, func() SecretBackend {
 		kubeAPI, _ := createKubeAPI()
-		return NewK8sSecretBackend(kubeAPI)
+		scopesRepository := repository.NewFileBasedScopesRepository()
+		return NewK8sSecretBackend(kubeAPI, scopesRepository)
 	})
 }

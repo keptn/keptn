@@ -18,6 +18,6 @@ func Test_Register(t *testing.T) {
 	})
 
 	backends := backend.GetRegisteredBackends()
-	assert.Contains(t, backends, backend.BackendTypeK8s)
+	assert.Contains(t, backends, backend.SecretBackendTypeK8s)
 
 }

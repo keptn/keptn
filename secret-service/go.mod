@@ -3,6 +3,7 @@ module github.com/keptn/keptn/secret-service
 go 1.13
 
 require (
+	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/swag v1.7.0

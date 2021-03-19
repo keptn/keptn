@@ -2,12 +2,14 @@ package backend
 
 import (
 	"errors"
+	"fmt"
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
+	"github.com/keptn/keptn/secret-service/pkg/repository/fake"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/fake"
+	k8sfake "k8s.io/client-go/kubernetes/fake"
 	kubetesting "k8s.io/client-go/testing"
 	"testing"
 )
@@ -19,20 +21,23 @@ func FakeNamespaceProvider() common.StringSupplier {
 }
 
 func TestCreateK8sSecretBackend(t *testing.T) {
-	backend := NewK8sSecretBackend(fake.NewSimpleClientset())
+	backend := NewK8sSecretBackend(k8sfake.NewSimpleClientset(), &fake.ScopesRepositoryMock{})
 	assert.NotNil(t, backend)
 }
 
 func TestCreateSecret(t *testing.T) {
 
-	kubernetes := fake.NewSimpleClientset()
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
 	backend := K8sSecretBackend{
 		KubeAPI:                kubernetes,
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
-		Scopes:                 createTestScopes(),
+		ScopesRepository:       scopesRepository,
 	}
-	secret := createTestSecret("my-secret", "my-scope")
 
+	secret := createTestSecret("my-secret", "my-scope")
 	err := backend.CreateSecret(secret)
 	assert.Nil(t, err)
 
@@ -58,12 +63,31 @@ func TestCreateSecret(t *testing.T) {
 	assert.Equal(t, k8sRole2.Rules[0].Verbs, []string{"create", "read", "update"})
 }
 
-func TestCreateSecret_K8sSecretCreationFails(t *testing.T) {
-	kubernetes := fake.NewSimpleClientset()
+func TestCreateSecret_FetchingScopesFails(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return model.Scopes{}, fmt.Errorf("error fetching scopes") }
+
 	backend := K8sSecretBackend{
 		KubeAPI:                kubernetes,
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
-		Scopes:                 createTestScopes(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	secret := createTestSecret("my-secret", "my-scope")
+	err := backend.CreateSecret(secret)
+	assert.NotNil(t, err)
+}
+
+func TestCreateSecret_K8sSecretCreationFails(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
 	}
 
 	secret := createTestSecret("my-secret", "my-scope")
@@ -77,11 +101,14 @@ func TestCreateSecret_K8sSecretCreationFails(t *testing.T) {
 }
 
 func TestCreateSecret_K8sRolesCreationFails(t *testing.T) {
-	kubernetes := fake.NewSimpleClientset()
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
 	backend := K8sSecretBackend{
 		KubeAPI:                kubernetes,
 		KeptnNamespaceProvider: FakeNamespaceProvider(),
-		Scopes:                 createTestScopes(),
+		ScopesRepository:       scopesRepository,
 	}
 
 	secret := createTestSecret("my-secret", "my-scope")
