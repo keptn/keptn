@@ -35,11 +35,11 @@
       </dt-tag-list>
     </div>
   </div>
-  <div *ngIf="_event.hasLabels()">
+  <div *ngIf="_event.getFinishedEvent()?.hasLabels()">
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">
-        <dt-tag *ngFor="let label of _event.data.labels | keyvalue">
+        <dt-tag *ngFor="let label of _event.getFinishedEvent()?.data.labels | keyvalue">
           <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
           <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
         </dt-tag>
