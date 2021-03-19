@@ -100,7 +100,7 @@ export class KtbSliBreakdownComponent implements OnInit {
 
     return indicatorResults.map(indicatorResult =>  {
       return {
-        name: indicatorResult.displayName ?? indicatorResult.value.metric,
+        name: indicatorResult.displayName ? indicatorResult.displayName : indicatorResult.value.metric,
         value: this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
         score: totalscore === 0 ? 0 : this.round(indicatorResult.score / totalscore * this.score, 2),
