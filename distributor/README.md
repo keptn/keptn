@@ -15,9 +15,9 @@ Thus, each service has its own distributor that is configured by the two environ
 - `PUBSUB_RECIPIENT` - Hostname of the execution plane service the distributor should forward incoming CloudEvents to. default = `http://127.0.0.1`
 - `PUBSUB_RECIPIENT_PORT` - Port of the execution plane service the distributor should forward incoming CloudEvents to. default = `8080`
 - `PUBSUB_RECIPIENT_PATH` - Path of the execution plane service the distributor should forward incoming CloudEvents to. default = `/`
-- `PROJECT_FILTER` - Filter events for a specific project. default = `""`
-- `STAGE_FILTER` - Filter events for a specific stage. default = `""`
-- `SERVICE_FILTER` - Filter events for a specific service. default = `""`
+- `PROJECT_FILTER` - Filter events for a specific project. default = `""`, supports a comma-seperated list of projects.
+- `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-seperated list of stages.
+- `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-seperated list of services.
 
 All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 

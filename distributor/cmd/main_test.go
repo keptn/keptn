@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
@@ -742,6 +743,20 @@ func Test_matchesFilter(t *testing.T) {
 			want:          true,
 		},
 		{
+			name: "project filter (comma-separated list) - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-project,my-project-2,my-project-3",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
 			name: "project filter - should not match",
 			args: args{
 				getCloudEventWithEventData(keptnv2.EventData{
@@ -751,6 +766,20 @@ func Test_matchesFilter(t *testing.T) {
 				}),
 			},
 			projectFilter: "my-other-project",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          false,
+		},
+		{
+			name: "project filter (comma-separated list) - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-other-project,my-second-project",
 			stageFilter:   "",
 			serviceFilter: "",
 			want:          false,
@@ -766,6 +795,20 @@ func Test_matchesFilter(t *testing.T) {
 			},
 			projectFilter: "",
 			stageFilter:   "my-stage",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
+			name: "stage filter (comma-separated list) - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "my-first-stage,my-stage",
 			serviceFilter: "",
 			want:          true,
 		},
@@ -795,6 +838,20 @@ func Test_matchesFilter(t *testing.T) {
 			projectFilter: "",
 			stageFilter:   "",
 			serviceFilter: "my-service",
+			want:          true,
+		},
+		{
+			name: "service filter (comma-separated list) - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "",
+			serviceFilter: "my-other-service,my-service",
 			want:          true,
 		},
 		{

@@ -684,9 +684,9 @@ func matchesFilter(e cloudevents.Event) bool {
 	if err := e.DataAs(keptnBase); err != nil {
 		return true
 	}
-	if env.ProjectFilter != "" && keptnBase.Project != env.ProjectFilter ||
-		env.StageFilter != "" && keptnBase.Stage != env.StageFilter ||
-		env.ServiceFilter != "" && keptnBase.Service != env.ServiceFilter {
+	if env.ProjectFilter != "" && !strings.Contains(env.ProjectFilter, keptnBase.Project) ||
+		env.StageFilter != "" && !strings.Contains(env.StageFilter, keptnBase.Stage) ||
+		env.ServiceFilter != "" && !strings.Contains(env.ServiceFilter, keptnBase.Service) {
 		return false
 	}
 	return true
