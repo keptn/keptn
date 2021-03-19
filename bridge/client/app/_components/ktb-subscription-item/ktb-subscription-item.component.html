@@ -1,0 +1,22 @@
+<ng-container *ngIf="isReadOnly; then readView; else editableView"></ng-container>
+<ng-template #readView>
+  <span class="mr-2" dtInput [textContent]="subscription.name"></span>
+  <span class="bold">subscribes to: </span> <span class="mr-2" [textContent]="subscription.event"></span>
+  <span class="bold">in Stages: </span> <span class="mr-2" [textContent]="subscription.stages.join(', ')"></span>
+  <span class="bold">for Services: </span><span class="mr-2" [textContent]="subscription.services.join(', ')"></span>
+</ng-template>
+<ng-template #editableView>
+  <input fxFlex="200px" class="mr-2" placeholder="Subscription name" dtInput [(ngModel)]="subscription.name" required>
+  <span fxFlex="100px" class="bold mr-1">subscribes to:</span>
+  <dt-select [(ngModel)]="subscription.event" class="mr-2" placeholder="Choose your task" aria-label="Choose your task" required>
+    <dt-option *ngFor="let task of tasks" [value]="task" [textContent]="task"></dt-option>
+  </dt-select>
+  <dt-filter-field
+    [dataSource]="_dataSource"
+    [filters]="subscription.getFilter(_dataSource.data)"
+    (filterChanges)="filterChanged(subscription, $event)"
+    label="Filter by stage and service"
+    aria-label="Filter by stage and service"
+    clearAllLabel="Clear all"
+  ></dt-filter-field>
+</ng-template>

@@ -1,0 +1,16 @@
+@import '../../../variables';
+
+.container {
+  border: 1px solid $primary-color;
+  padding: 0px;
+  border-radius: 12px;
+}
+
+.container-item {
+  border-bottom: 1px solid $primary-color;
+
+}
+
+.dt-icon {
+  width: 20px;
+}

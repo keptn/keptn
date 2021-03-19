@@ -3,13 +3,14 @@ import {Routes, RouterModule} from '@angular/router';
 import {DashboardComponent} from "./dashboard/dashboard.component";
 import {ProjectBoardComponent} from "./project-board/project-board.component";
 import {EvaluationBoardComponent} from "./evaluation-board/evaluation-board.component";
-import {ForwarderGuard} from './_forwarder/forwarderGuard';
+import {ForwarderGuard} from './_forwarder/forwarder_guard';
 
 
 const routes: Routes = [
   {path: '', pathMatch: 'full', redirectTo: 'dashboard'},
   {path: 'dashboard', component: DashboardComponent},
   {path: 'project/:projectName', component: ProjectBoardComponent},
+  {path: 'project/:projectName/subscription', component: ProjectBoardComponent},
   {path: 'project/:projectName/integration', component: ProjectBoardComponent},
   {path: 'project/:projectName/service', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName', component: ProjectBoardComponent},

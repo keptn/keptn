@@ -14,6 +14,7 @@ import {ApiService} from "./api.service";
 import {DateUtil} from "../_utils/date.utils";
 
 import * as moment from 'moment';
+import {KeptnService} from '../_models/keptn-service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,7 @@ import * as moment from 'moment';
 export class DataService {
 
   private _projects = new BehaviorSubject<Project[]>(null);
+  private _taskNames = new BehaviorSubject<string[]>([]);
   private _roots = new BehaviorSubject<Root[]>(null);
   private _openApprovals = new BehaviorSubject<Trace[]>([]);
   private _keptnInfo = new BehaviorSubject<any>(null);
@@ -41,6 +43,10 @@ export class DataService {
 
   get projects(): Observable<Project[]> {
     return this._projects.asObservable();
+  }
+
+  get taskNames(): Observable<string[]> {
+    return  this._taskNames.asObservable();
   }
 
   get roots(): Observable<Root[]> {
@@ -64,6 +70,13 @@ export class DataService {
       map(projects => projects ? projects.find(project => {
         return project.projectName === projectName;
       }) : null)
+    );
+  }
+
+  public getKeptnServices(projectName: string): Observable<KeptnService[]> {
+    return this.apiService.getKeptnServices(projectName).pipe(
+      map(services => services.map(service => KeptnService.fromJSON(service))),
+      map(services => services.sort((serviceA, serviceB) => serviceA.name.localeCompare(serviceB.name)))
     );
   }
 
@@ -257,6 +270,16 @@ export class DataService {
           triggerEvent: evaluation
         });
       });
+  }
+
+  public loadTaskNames(projectName: string) {
+    this.apiService.getTaskNames(projectName)
+      .pipe(
+        map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB)))
+      )
+      .subscribe(taskNames => {
+      this._taskNames.next(taskNames);
+    });
   }
 
   private traceMapper(traces: Trace[]) {

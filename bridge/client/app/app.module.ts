@@ -88,6 +88,11 @@ import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { KtbSliBreakdownCriteriaItemComponent } from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
 import { KtbServicesListComponent } from "./_components/ktb-services-list/ktb-services-list.component";
 import { KtbStageBadgeComponent } from "./_components/ktb-stage-badge/ktb-stage-badge.component";
+import { KtbSubscriptionViewComponent } from './_views/ktb-subscription-view/ktb-subscription-view.component';
+import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
+import { KtbSubscriptionComponent } from './_components/ktb-subscription/ktb-subscription.component';
+import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
+import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -134,6 +139,10 @@ registerLocaleData(localeEn, 'en');
     KeptnUrlPipe,
     KtbSliBreakdownCriteriaItemComponent,
     KtbServicesListComponent,
+    KtbSubscriptionViewComponent,
+    KtbKeptnServicesListComponent,
+    KtbSubscriptionComponent,
+    KtbSubscriptionItemComponent,
   ],
   imports: [
     BrowserModule,
@@ -182,6 +191,7 @@ registerLocaleData(localeEn, 'en');
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     BrowserAnimationsModule,
+    DtFilterFieldModule,
   ],
   providers: [
     {
