@@ -17,7 +17,6 @@ import {KeptnService} from '../../_models/keptn-service';
 export class KtbSubscriptionComponent implements OnInit, OnDestroy {
   public _keptnService: KeptnService;
   private readonly unsubscribe$ = new Subject<void>();
-  private projectName: string;
   public newSubscription: Subscription = new Subscription();
   private defaultTask: string;
 
@@ -38,7 +37,6 @@ export class KtbSubscriptionComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-        this.projectName = params.projectName;
         this.dataService.taskNames
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe(tasks => {

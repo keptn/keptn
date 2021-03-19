@@ -6,6 +6,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Project} from '../../_models/project';
 import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filter-field';
 import {Subject} from 'rxjs';
+import {ProjectMock} from '../../_models/project-mock';
 
 @Component({
   selector: 'ktb-subscription-item',
@@ -66,6 +67,7 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   }
 
   public updateDataSource(project: Project) {
+    project = ProjectMock;
     this._data = {
       autocomplete: [
         {
