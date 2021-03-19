@@ -351,7 +351,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       for(let i = evaluationHistory.length - 1; i >= 0; i--) {
         const result = evaluationHistory[i].data.evaluation.indicatorResults?.find(indicatorResult => indicatorResult.value.metric === metric);
         if (result) {
-          displayName = result.displayName ? result.displayName : result.value.metric;
+          displayName = result.displayName || result.value.metric;
           break;
         }
       }
