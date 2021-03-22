@@ -24,6 +24,14 @@ func SetInternalServerErrorResponse(err error, c *gin.Context, message ...string
 	})
 }
 
+func SetConflictErrorResponse(err error, c *gin.Context, message ...string) {
+	msg := errMsg(err, message)
+	c.JSON(http.StatusConflict, model.Error{
+		Code:    http.StatusConflict,
+		Message: &msg,
+	})
+}
+
 func errMsg(err error, message []string) string {
 	var sb strings.Builder
 

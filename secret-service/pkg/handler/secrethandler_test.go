@@ -43,6 +43,16 @@ func TestHandler_CreateSecret(t *testing.T) {
 			expectedHTTPStatus: http.StatusCreated,
 		},
 		{
+			name: "POST Create Secret - Secret already exists",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					CreateSecretFunc: func(secret model.Secret) error { return backend.ErrSecretAlreadyExists },
+				},
+			},
+			payload:            `{"name":"my-secret","scope":"my-scope","data":{"username":"keptn"}}`,
+			expectedHTTPStatus: http.StatusConflict,
+		},
+		{
 			name: "POST Create Secret - Backend FAILED",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{

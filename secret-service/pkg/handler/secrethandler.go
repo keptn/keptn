@@ -45,6 +45,10 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 
 	err := s.SecretBackend.CreateSecret(secret)
 	if err != nil {
+		if err == backend.ErrSecretAlreadyExists {
+			SetConflictErrorResponse(err, c, "Unable to create secret")
+			return
+		}
 		SetInternalServerErrorResponse(err, c, "Unable to create secret")
 		return
 	}

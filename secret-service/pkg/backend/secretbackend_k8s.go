@@ -1,12 +1,14 @@
 package backend
 
 import (
+	"errors"
 	"flag"
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" //TODO: delete
@@ -17,6 +19,8 @@ import (
 )
 
 const SecretBackendTypeK8s = "kubernetes"
+
+var ErrSecretAlreadyExists = errors.New("Secret already exists")
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
@@ -43,6 +47,9 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	kubeSecret := k.createK8sSecretObj(secret, namespace)
 	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Create(kubeSecret)
 	if err != nil {
+		if statusError, isStatus := err.(*kubeerrors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+			return ErrSecretAlreadyExists
+		}
 		return err
 	}
 
