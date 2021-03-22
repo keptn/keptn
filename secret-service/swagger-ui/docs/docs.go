@@ -31,6 +31,55 @@ var doc = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/secrets": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update an existing Secret",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Secrets"
+                ],
+                "summary": "Update a Secret",
+                "parameters": [
+                    {
+                        "description": "The updated Secret",
+                        "name": "secret",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Secret"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Secret"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -94,15 +143,15 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "The scope of the secret",
-                        "name": "scope",
+                        "description": "The name of the secret",
+                        "name": "name",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "The name of the secret",
-                        "name": "name",
+                        "description": "The scope of the secret",
+                        "name": "scope",
                         "in": "query",
                         "required": true
                     }
@@ -184,7 +233,7 @@ var SwaggerInfo = swaggerInfo{
 	Host:        "",
 	BasePath:    "/v1",
 	Schemes:     []string{},
-	Title:       "Secretf Service API",
+	Title:       "Secret Service API",
 	Description: "This is the API documentation of the Secret Service.",
 }
 

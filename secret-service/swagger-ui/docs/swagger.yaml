@@ -28,21 +28,21 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Secretf Service API
+  title: Secret Service API
   version: "1.0"
 paths:
   /secrets:
     delete:
       description: Delete an existing Secret
       parameters:
-      - description: The scope of the secret
-        in: query
-        name: scope
-        required: true
-        type: string
       - description: The name of the secret
         in: query
         name: name
+        required: true
+        type: string
+      - description: The scope of the secret
+        in: query
+        name: scope
         required: true
         type: string
       responses:
@@ -90,6 +90,37 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a Secret
+      tags:
+      - Secrets
+    put:
+      consumes:
+      - application/json
+      description: Update an existing Secret
+      parameters:
+      - description: The updated Secret
+        in: body
+        name: secret
+        required: true
+        schema:
+          $ref: '#/definitions/model.Secret'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Secret'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a Secret
       tags:
       - Secrets
 securityDefinitions:

@@ -16,4 +16,5 @@ func NewSecretController(secretHandler handler.ISecretHandler) *SecretController
 func (controller SecretController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.POST("/secrets", controller.SecretHandler.CreateSecret)
 	apiGroup.DELETE("/secrets", controller.SecretHandler.DeleteSecret)
+	apiGroup.PUT("/secrets", controller.SecretHandler.UpdateSecret)
 }

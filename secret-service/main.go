@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-// @title Secretf Service API
+// @title Secret Service API
 // @version 1.0
 // @description This is the API documentation of the Secret Service.
 

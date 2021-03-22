@@ -56,8 +56,36 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 	c.JSON(http.StatusCreated, secret)
 }
 
+// CreateSecret godoc
+// @Summary Update a Secret
+// @Description Update an existing Secret
+// @Tags Secrets
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param secret body model.Secret true "The updated Secret"
+// @Success 200 {object} model.Secret
+// @Failure 400 {object} model.Error
+// @Failure 500 {object} model.Error
+// @Router /secrets [put]
 func (s SecretHandler) UpdateSecret(c *gin.Context) {
-	panic("implement me")
+	secret := model.Secret{}
+	if err := c.ShouldBindJSON(&secret); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
+	}
+
+	err := s.SecretBackend.UpdateSecret(secret)
+	if err != nil {
+		if err == backend.ErrSecretNotFound {
+			SetNotFoundErrorResponse(err, c, "Unable to update secret")
+			return
+		}
+		SetInternalServerErrorResponse(err, c, "Unable to update secret")
+		return
+	}
+	c.JSON(http.StatusOK, secret)
+
 }
 
 // CreateSecret godoc
