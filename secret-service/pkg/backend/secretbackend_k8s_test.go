@@ -168,6 +168,10 @@ func TestDeleteK8sSecret(t *testing.T) {
 		ScopesRepository:       scopesRepository,
 	}
 
+	kubernetes.Fake.PrependReactor("patch", "roles", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, nil
+	})
+
 	kubernetes.Fake.PrependReactor("delete", "secrets", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, nil
 	})
@@ -177,9 +181,14 @@ func TestDeleteK8sSecret(t *testing.T) {
 		Scope: "my-scope",
 	})
 
+	actions := kubernetes.Fake.Actions()
+	_ = actions
+
 	assert.Nil(t, err)
 	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
 	assert.Equal(t, schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}, kubernetes.Fake.Actions()[0].GetResource())
+	assert.Equal(t, `[{"op":"remove","path":"/rules/0/resourceNames","value":"my-secret"}]`, string(kubernetes.Fake.Actions()[1].(kubetesting.PatchAction).GetPatch()))
+	assert.Equal(t, `[{"op":"remove","path":"/rules/0/resourceNames","value":"my-secret"}]`, string(kubernetes.Fake.Actions()[2].(kubetesting.PatchAction).GetPatch()))
 
 }
 

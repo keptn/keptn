@@ -111,6 +111,26 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 		}
 		return err
 	}
+
+	scopes, err := k.ScopesRepository.Read()
+	if err != nil {
+		return err
+	}
+
+	roles := k.createK8sRoleObj(secret, scopes, namespace)
+	for i := range roles {
+		payload := []patchResourceNames{{
+			Op:    "remove",
+			Path:  "/rules/0/resourceNames",
+			Value: secret.Name,
+		}}
+
+		patchBytes, _ := json.Marshal(payload)
+		if _, err := k.KubeAPI.RbacV1().Roles(namespace).Patch(roles[i].Name, types.JSONPatchType, patchBytes); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
