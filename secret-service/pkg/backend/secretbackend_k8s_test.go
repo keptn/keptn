@@ -10,7 +10,6 @@ import (
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 	"testing"
@@ -180,7 +179,7 @@ func TestDeleteK8sSecret(t *testing.T) {
 		}, nil
 	})
 
-	kubernetes.Fake.PrependReactor("patch", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+	kubernetes.Fake.PrependReactor("update", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, nil
 	})
 
@@ -198,13 +197,10 @@ func TestDeleteK8sSecret(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
-	assert.Equal(t, schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}, kubernetes.Fake.Actions()[0].GetResource())
 	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
-	assert.Equal(t, schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "roles"}, kubernetes.Fake.Actions()[1].GetResource())
-	assert.Equal(t, `[{"op":"replace","path":"/rules/0/resourceNames","value":["my-other-secret"]}]`, string(kubernetes.Fake.Actions()[2].(k8stesting.PatchAction).GetPatch()))
+	assert.True(t, kubernetes.Fake.Actions()[2].Matches("update", "roles"))
 	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
-	assert.Equal(t, schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "roles"}, kubernetes.Fake.Actions()[3].GetResource())
-	assert.Equal(t, `[{"op":"replace","path":"/rules/0/resourceNames","value":["my-other-secret"]}]`, string(kubernetes.Fake.Actions()[4].(k8stesting.PatchAction).GetPatch()))
+	assert.True(t, kubernetes.Fake.Actions()[4].Matches("update", "roles"))
 
 }
 
