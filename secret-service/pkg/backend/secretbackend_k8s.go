@@ -3,6 +3,7 @@ package backend
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
@@ -41,6 +42,9 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	scopes, err := k.ScopesRepository.Read()
 	if err != nil {
 		return err
+	}
+	if _, ok := scopes.Scopes[secret.Scope]; !ok {
+		return fmt.Errorf("Scope %s not available for creation of Secret %s", secret.Scope, secret.Name)
 	}
 
 	namespace := k.KeptnNamespaceProvider()

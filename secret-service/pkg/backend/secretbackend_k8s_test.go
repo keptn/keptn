@@ -123,6 +123,23 @@ func TestCreateSecret_K8sRolesCreationFails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestCreateSecret_NoMatchingScopeConfigured(t *testing.T) {
+
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	secret := createTestSecret("my-secret", "my-other-scope")
+	err := backend.CreateSecret(secret)
+	assert.NotNil(t, err)
+}
+
 func createTestSecret(name, scope string) model.Secret {
 	secret := model.Secret{
 		Name:  name,
