@@ -33,7 +33,8 @@
               <ktb-stage-badge [stage]="stage" [evaluation]="event.getEvaluation(stage)"
                                [success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()"
                                [error]="stage == event.isFaulty()" [class.warning]="stage == event.isWarning()"
-                               [highlight]="event.hasPendingApproval(stage)"></ktb-stage-badge>
+                               [highlight]="event.hasPendingApproval(stage)"
+                               (click)="$event.stopPropagation();selectEvent(event, stage)"></ktb-stage-badge>
             </ng-container>
           </div>
         </div>
