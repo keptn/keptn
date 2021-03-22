@@ -7,11 +7,12 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository/fake"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
-	kubetesting "k8s.io/client-go/testing"
+	k8stesting "k8s.io/client-go/testing"
 	"testing"
 )
 
@@ -108,7 +109,7 @@ func TestCreateSecret_K8sSecretCreationFails(t *testing.T) {
 
 	secret := createTestSecret("my-secret", "my-scope")
 
-	kubernetes.Fake.PrependReactor("create", "secrets", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+	kubernetes.Fake.PrependReactor("create", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, errors.New("Error creating kubernetes secret")
 	})
 
@@ -129,7 +130,7 @@ func TestCreateSecret_K8sRolesCreationFails(t *testing.T) {
 
 	secret := createTestSecret("my-secret", "my-scope")
 
-	kubernetes.Fake.PrependReactor("create", "roles", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+	kubernetes.Fake.PrependReactor("create", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, errors.New("Error creating kubernetes roles")
 	})
 
@@ -168,11 +169,22 @@ func TestDeleteK8sSecret(t *testing.T) {
 		ScopesRepository:       scopesRepository,
 	}
 
-	kubernetes.Fake.PrependReactor("patch", "roles", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+	kubernetes.Fake.PrependReactor("get", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, &v1.Role{
+			Rules: []v1.PolicyRule{
+				{
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{"my-other-secret", "my-secret"},
+				},
+			},
+		}, nil
+	})
+
+	kubernetes.Fake.PrependReactor("patch", "roles", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, nil
 	})
 
-	kubernetes.Fake.PrependReactor("delete", "secrets", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+	kubernetes.Fake.PrependReactor("delete", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, nil
 	})
 
@@ -187,8 +199,12 @@ func TestDeleteK8sSecret(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
 	assert.Equal(t, schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}, kubernetes.Fake.Actions()[0].GetResource())
-	assert.Equal(t, `[{"op":"remove","path":"/rules/0/resourceNames","value":"my-secret"}]`, string(kubernetes.Fake.Actions()[1].(kubetesting.PatchAction).GetPatch()))
-	assert.Equal(t, `[{"op":"remove","path":"/rules/0/resourceNames","value":"my-secret"}]`, string(kubernetes.Fake.Actions()[2].(kubetesting.PatchAction).GetPatch()))
+	assert.True(t, kubernetes.Fake.Actions()[1].Matches("get", "roles"))
+	assert.Equal(t, schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "roles"}, kubernetes.Fake.Actions()[1].GetResource())
+	assert.Equal(t, `[{"op":"replace","path":"/rules/0/resourceNames","value":["my-other-secret"]}]`, string(kubernetes.Fake.Actions()[2].(k8stesting.PatchAction).GetPatch()))
+	assert.True(t, kubernetes.Fake.Actions()[3].Matches("get", "roles"))
+	assert.Equal(t, schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "roles"}, kubernetes.Fake.Actions()[3].GetResource())
+	assert.Equal(t, `[{"op":"replace","path":"/rules/0/resourceNames","value":["my-other-secret"]}]`, string(kubernetes.Fake.Actions()[4].(k8stesting.PatchAction).GetPatch()))
 
 }
 
@@ -227,7 +243,7 @@ func TestUpdateSecret(t *testing.T) {
 		ScopesRepository:       scopesRepository,
 	}
 
-	kubernetes.Fake.PrependReactor("update", "secrets", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+	kubernetes.Fake.PrependReactor("update", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, nil, nil
 	})
 

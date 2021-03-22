@@ -119,10 +119,17 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 
 	roles := k.createK8sRoleObj(secret, scopes, namespace)
 	for i := range roles {
-		payload := []patchResourceNames{{
-			Op:    "remove",
+
+		role, err := k.KubeAPI.RbacV1().Roles(namespace).Get(roles[i].Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		resourceNames := remove(role.Rules[0].ResourceNames, secret.Name)
+
+		payload := []patchAllResourceNames{{
+			Op:    "replace",
 			Path:  "/rules/0/resourceNames",
-			Value: secret.Name,
+			Value: resourceNames,
 		}}
 
 		patchBytes, _ := json.Marshal(payload)
@@ -228,4 +235,19 @@ type patchResourceNames struct {
 	Op    string `json:"op"`
 	Path  string `json:"path"`
 	Value string `json:"value"`
+}
+
+type patchAllResourceNames struct {
+	Op    string   `json:"op"`
+	Path  string   `json:"path"`
+	Value []string `json:"value"`
+}
+
+func remove(s []string, r string) []string {
+	for i, v := range s {
+		if v == r {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
 }
