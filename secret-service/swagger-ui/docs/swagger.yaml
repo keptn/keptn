@@ -32,6 +32,35 @@ info:
   version: "1.0"
 paths:
   /secrets:
+    delete:
+      description: Delete an existing Secret
+      parameters:
+      - description: The scope of the secret
+        in: query
+        name: scope
+        required: true
+        type: string
+      - description: The name of the secret
+        in: query
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a Secret
+      tags:
+      - Secrets
     post:
       consumes:
       - application/json

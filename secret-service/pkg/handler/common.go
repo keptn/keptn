@@ -32,6 +32,14 @@ func SetConflictErrorResponse(err error, c *gin.Context, message ...string) {
 	})
 }
 
+func SetNotFoundErrorResponse(err error, c *gin.Context, message ...string) {
+	msg := errMsg(err, message)
+	c.JSON(http.StatusNotFound, model.Error{
+		Code:    http.StatusNotFound,
+		Message: &msg,
+	})
+}
+
 func errMsg(err error, message []string) string {
 	var sb strings.Builder
 

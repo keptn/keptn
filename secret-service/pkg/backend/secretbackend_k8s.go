@@ -22,6 +22,7 @@ import (
 const SecretBackendTypeK8s = "kubernetes"
 
 var ErrSecretAlreadyExists = errors.New("Secret already exists")
+var ErrSecretNotFound = errors.New("Secret not found")
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
@@ -72,7 +73,17 @@ func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 }
 
 func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
-	panic("implement me")
+	namespace := k.KeptnNamespaceProvider()
+	secretName := secret.Name
+
+	err := k.KubeAPI.CoreV1().Secrets(namespace).Delete(secretName, &metav1.DeleteOptions{})
+	if err != nil {
+		if statusError, isStatus := err.(*kubeerrors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
+			return ErrSecretNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 func (k K8sSecretBackend) createK8sRoleObj(secret model.Secret, scopes model.Scopes, namespace string) []rbacv1.Role {

@@ -29,6 +29,10 @@ import (
 // @BasePath /v1
 func main() {
 
+	if _, err := os.Stat(repository.ScopesConfigurationFile); os.IsNotExist(err) {
+		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)
+	}
+
 	if os.Getenv("GIN_MODE") == "release" {
 		docs.SwaggerInfo.Version = os.Getenv("version")
 		docs.SwaggerInfo.BasePath = "/api/secrets/v1"
@@ -50,11 +54,5 @@ func main() {
 	err := engine.Run()
 	if err != nil {
 		log.Fatalf("Unable to start service: %s", err.Error())
-	}
-}
-
-func init() {
-	if _, err := os.Stat(repository.ScopesConfigurationFile); os.IsNotExist(err) {
-		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)
 	}
 }

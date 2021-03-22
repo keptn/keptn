@@ -60,6 +60,44 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 	panic("implement me")
 }
 
+// CreateSecret godoc
+// @Summary Delete a Secret
+// @Description Delete an existing Secret
+// @Tags Secrets
+// @Security ApiKeyAuth
+// @Param name query string true "The name of the secret"
+// @Param scope query string true "The scope of the secret"
+// @Success 200
+// @Failure 404 {object} model.Error
+// @Failure 500 {object} model.Error
+// @Router /secrets [delete]
 func (s SecretHandler) DeleteSecret(c *gin.Context) {
-	panic("implement me")
+	params := &DeleteSecretQueryParams{}
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
+	}
+
+	secret := model.Secret{
+		Name:  params.Name,
+		Scope: params.Scope,
+		Data:  nil,
+	}
+	err := s.SecretBackend.DeleteSecret(secret)
+	if err != nil {
+		if err == backend.ErrSecretNotFound {
+			SetNotFoundErrorResponse(err, c, "Unable to delete secret")
+			return
+		}
+		SetInternalServerErrorResponse(err, c, "Unable to delete secret")
+		return
+	}
+
+	c.Status(http.StatusOK)
+
+}
+
+type DeleteSecretQueryParams struct {
+	Name  string `form:"name"`
+	Scope string `form:"scope"`
 }

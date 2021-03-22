@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	kubetesting "k8s.io/client-go/testing"
 	"testing"
@@ -25,6 +26,9 @@ func TestCreateK8sSecretBackend(t *testing.T) {
 	assert.NotNil(t, backend)
 }
 
+/**
+CREATE SECREAT TESTS
+*/
 func TestCreateSecret(t *testing.T) {
 
 	kubernetes := k8sfake.NewSimpleClientset()
@@ -138,6 +142,55 @@ func TestCreateSecret_NoMatchingScopeConfigured(t *testing.T) {
 	secret := createTestSecret("my-secret", "my-other-scope")
 	err := backend.CreateSecret(secret)
 	assert.NotNil(t, err)
+}
+
+/**
+DELETE SECRET TESTS
+*/
+func TestDeleteK8sSecret(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	kubernetes.Fake.PrependReactor("delete", "secrets", func(action kubetesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, nil
+	})
+
+	err := backend.DeleteSecret(model.Secret{
+		Name:  "my-secret",
+		Scope: "my-scope",
+	})
+
+	assert.Nil(t, err)
+	assert.True(t, kubernetes.Fake.Actions()[0].Matches("delete", "secrets"))
+	assert.Equal(t, schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}, kubernetes.Fake.Actions()[0].GetResource())
+
+}
+
+func TestDeleteK8sSecret_SecretNotFound(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	err := backend.DeleteSecret(model.Secret{
+		Name:  "my-secret",
+		Scope: "my-scope",
+	})
+
+	assert.NotNil(t, err)
+	assert.Equal(t, ErrSecretNotFound, err)
 }
 
 func createTestSecret(name, scope string) model.Secret {
