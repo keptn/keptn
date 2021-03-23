@@ -58,4 +58,7 @@ ENV GOTRACEBACK=all
 
 # Run the web service on container startup.
 ENV GIN_MODE=release
+
+ADD scopes.yaml /data/scopes.yaml
+
 CMD ["/secret-service"]

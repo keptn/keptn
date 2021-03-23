@@ -1,9 +1,6 @@
 Scopes:
-  bernd-scope:
+  keptn-default:
     Capabilities:
-      manage:
+      keptn-default-read:
         Permissions:
           - read
-          - delete
-          - create
-          - update

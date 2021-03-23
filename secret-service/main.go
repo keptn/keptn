@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/controller"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
@@ -49,6 +50,8 @@ func main() {
 	secretsBackend := backend.CreateBackend("kubernetes")
 	secretController := controller.NewSecretController(handler.NewSecretHandler(secretsBackend))
 	secretController.Inject(apiV1)
+
+	go keptnapi.RunHealthEndpoint("10999")
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	err := engine.Run()
