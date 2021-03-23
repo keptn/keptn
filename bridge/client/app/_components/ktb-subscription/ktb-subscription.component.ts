@@ -1,11 +1,9 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from '../../_models/subscription';
-import {map, takeUntil} from 'rxjs/operators';
-import {forkJoin, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute} from '@angular/router';
-import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filter-field';
-import {Project} from '../../_models/project';
 import {KeptnService} from '../../_models/keptn-service';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
 

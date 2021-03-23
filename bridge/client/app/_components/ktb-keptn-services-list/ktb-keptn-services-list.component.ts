@@ -1,6 +1,4 @@
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -36,8 +34,6 @@ export class KtbKeptnServicesListComponent implements OnInit {
       this.tableEntries.data = this._keptnServices;
     }
   }
-
-  constructor() { }
 
   ngOnInit(): void {
     this.sortable.sort('location', 'desc');
