@@ -355,6 +355,26 @@ spec:
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
 # secret-service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secret-service-config
+  labels:
+    app.kubernetes.io/name: secret-service-config-cm
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+data:
+  scopes.yaml: |
+    Scopes:
+      keptn-default:
+        Capabilities:
+          keptn-default-read:
+            Permissions:
+              - read
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -408,6 +428,11 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          volumeMounts:
+            - mountPath: /data
+              name: secret-service-configmap-volume
+      volumes:
+        - name: secret-service-config
 ---
 apiVersion: v1
 kind: Service
