@@ -22,15 +22,20 @@ func parseSecretData(in []string) (map[string]string, error) {
 	return result, nil
 }
 
-const defaultSecretScope = "keptn"
+const defaultSecretScope = "keptn-default"
 
 type SecretCmdHandler struct {
 	credentialManager credentialmanager.CredentialManagerInterface
 	secretAPI         api.SecretHandlerInterface
 }
 
-func (h SecretCmdHandler) CreateSecret(secretName string, data []string) error {
-	scope := defaultSecretScope
+func (h SecretCmdHandler) CreateSecret(secretName string, data []string, scope *string) error {
+	var secretScope string
+	if scope == nil || *scope == "" {
+		secretScope = defaultSecretScope
+	} else {
+		secretScope = *scope
+	}
 	secretData, err := parseSecretData(data)
 	if err != nil {
 		return err
@@ -38,15 +43,20 @@ func (h SecretCmdHandler) CreateSecret(secretName string, data []string) error {
 	if _, err := h.secretAPI.CreateSecret(models.Secret{
 		Data:  secretData,
 		Name:  &secretName,
-		Scope: &scope,
+		Scope: &secretScope,
 	}); err != nil {
 		return errors.New(*err.Message)
 	}
 	return nil
 }
 
-func (h SecretCmdHandler) UpdateSecret(secretName string, data []string) error {
-	scope := defaultSecretScope
+func (h SecretCmdHandler) UpdateSecret(secretName string, data []string, scope *string) error {
+	var secretScope string
+	if scope == nil || *scope == "" {
+		secretScope = defaultSecretScope
+	} else {
+		secretScope = *scope
+	}
 	secretData, err := parseSecretData(data)
 	if err != nil {
 		return err
@@ -54,15 +64,21 @@ func (h SecretCmdHandler) UpdateSecret(secretName string, data []string) error {
 	if _, err := h.secretAPI.UpdateSecret(models.Secret{
 		Data:  secretData,
 		Name:  &secretName,
-		Scope: &scope,
+		Scope: &secretScope,
 	}); err != nil {
 		return errors.New(*err.Message)
 	}
 	return nil
 }
 
-func (h SecretCmdHandler) DeleteSecret(name, scope string) error {
-	if _, err := h.secretAPI.DeleteSecret(name, defaultSecretScope); err != nil {
+func (h SecretCmdHandler) DeleteSecret(name string, scope *string) error {
+	var secretScope string
+	if scope == nil || *scope == "" {
+		secretScope = defaultSecretScope
+	} else {
+		secretScope = *scope
+	}
+	if _, err := h.secretAPI.DeleteSecret(name, secretScope); err != nil {
 		return errors.New(*err.Message)
 	}
 	return nil
@@ -82,7 +98,7 @@ func parseLiteralKeyValuePair(in string) (string, string, error) {
 	return split[0], split[1], nil
 }
 
-func NewCreateSecretCmdHandler(cm credentialmanager.CredentialManagerInterface) (*SecretCmdHandler, error) {
+func NewSecretCmdHandler(cm credentialmanager.CredentialManagerInterface) (*SecretCmdHandler, error) {
 	sh := &SecretCmdHandler{credentialManager: cm}
 	endPoint, apiToken, err := cm.GetCreds(namespace)
 	if err != nil {

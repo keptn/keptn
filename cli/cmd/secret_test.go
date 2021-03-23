@@ -20,6 +20,7 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 	type args struct {
 		secretName string
 		data       []string
+		scope      *string
 	}
 	tests := []struct {
 		name          string
@@ -49,6 +50,31 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 				},
 				Name:  stringp("my-secret"),
 				Scope: stringp(defaultSecretScope),
+			},
+			wantErr: false,
+		},
+		{
+			name: "create secret with custom scope",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					CreateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
+						return "", nil
+					},
+				},
+			},
+			args: args{
+				secretName: "my-secret",
+				data:       []string{"foo=bar", "bar=foo"},
+				scope:      stringp("my-scope"),
+			},
+			wantSecretObj: &apimodels.Secret{
+				Data: map[string]string{
+					"foo": "bar",
+					"bar": "foo",
+				},
+				Name:  stringp("my-secret"),
+				Scope: stringp("my-scope"),
 			},
 			wantErr: false,
 		},
@@ -99,7 +125,7 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 				credentialManager: tt.fields.credentialManager,
 				secretAPI:         tt.fields.secretAPI,
 			}
-			if err := h.CreateSecret(tt.args.secretName, tt.args.data); (err != nil) != tt.wantErr {
+			if err := h.CreateSecret(tt.args.secretName, tt.args.data, tt.args.scope); (err != nil) != tt.wantErr {
 				t.Errorf("CreateSecret() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -123,6 +149,7 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 	type args struct {
 		secretName string
 		data       []string
+		scope      *string
 	}
 	tests := []struct {
 		name          string
@@ -152,6 +179,31 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 				},
 				Name:  stringp("my-secret"),
 				Scope: stringp(defaultSecretScope),
+			},
+			wantErr: false,
+		},
+		{
+			name: "update secret with custom scope",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					UpdateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
+						return "", nil
+					},
+				},
+			},
+			args: args{
+				secretName: "my-secret",
+				data:       []string{"foo=bar", "bar=foo"},
+				scope:      stringp("my-scope"),
+			},
+			wantSecretObj: &apimodels.Secret{
+				Data: map[string]string{
+					"foo": "bar",
+					"bar": "foo",
+				},
+				Name:  stringp("my-secret"),
+				Scope: stringp("my-scope"),
 			},
 			wantErr: false,
 		},
@@ -202,7 +254,7 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 				credentialManager: tt.fields.credentialManager,
 				secretAPI:         tt.fields.secretAPI,
 			}
-			if err := h.UpdateSecret(tt.args.secretName, tt.args.data); (err != nil) != tt.wantErr {
+			if err := h.UpdateSecret(tt.args.secretName, tt.args.data, tt.args.scope); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateSecret() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -224,7 +276,7 @@ func TestSecretCmdHandler_DeleteSecret(t *testing.T) {
 	}
 	type args struct {
 		name  string
-		scope string
+		scope *string
 	}
 	tests := []struct {
 		name    string
@@ -244,7 +296,7 @@ func TestSecretCmdHandler_DeleteSecret(t *testing.T) {
 			},
 			args: args{
 				name:  "my-secret",
-				scope: defaultSecretScope,
+				scope: stringp("my-scope"),
 			},
 			wantErr: false,
 		},
@@ -263,7 +315,7 @@ func TestSecretCmdHandler_DeleteSecret(t *testing.T) {
 			},
 			args: args{
 				name:  "my-secret",
-				scope: defaultSecretScope,
+				scope: stringp(defaultSecretScope),
 			},
 			wantErr: true,
 		},
