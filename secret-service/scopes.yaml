@@ -1,0 +1,9 @@
+Scopes:
+  bernd-scope:
+    Capabilities:
+      manage:
+        Permissions:
+          - read
+          - delete
+          - create
+          - update

@@ -2,7 +2,6 @@ package backend
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"github.com/keptn/keptn/secret-service/pkg/common"
 	"github.com/keptn/keptn/secret-service/pkg/model"
@@ -14,9 +13,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" //TODO: delete
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
-	"path/filepath"
 )
 
 const SecretBackendTypeK8s = "kubernetes"
@@ -208,28 +204,7 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 
 func init() {
 	Register(SecretBackendTypeK8s, func() SecretBackend {
-
-		// TODO: DELETE TILL *END*
-		var kubeconfig *string
-		if home := homedir.HomeDir(); home != "" {
-			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-		} else {
-			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-		}
-		flag.Parse()
-
-		// use the current context in kubeconfig
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		// create the clientset
-		kubeAPI, err := kubernetes.NewForConfig(config)
-		// *END*
-
-		//TODO: enable next line
-		//kubeAPI, _ := createKubeAPI()
+		kubeAPI, _ := createKubeAPI()
 		scopesRepository := repository.NewFileBasedScopesRepository()
 		return NewK8sSecretBackend(kubeAPI, scopesRepository)
 	})
