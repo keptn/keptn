@@ -179,7 +179,7 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 // @Success 200 {object} models.ExpandedServices	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /project/{project}/service/{stage} [get]
+// @Router /project/{project}/stage/{stage}/service [get]
 func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	projectName := c.Param("project")
 	stageName := c.Param("stage")
