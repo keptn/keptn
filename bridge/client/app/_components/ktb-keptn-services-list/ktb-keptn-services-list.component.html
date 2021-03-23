@@ -42,9 +42,8 @@
           let row;
           columns: ['name', 'version', 'host', 'namespace' ,'location', 'status', 'subscription']
         "
-    [class.pointer]="row.location === 'Control plane'"
-    [class.disabled]="row.location !== 'Control plane'"
+    class="pointer"
     [class.active]="selectedService === row"
-    (click)="row.location === 'Control plane' ? setSelectedService(row) : null"
+    (click)="setSelectedService(row)"
   ></dt-row>
 </dt-table>

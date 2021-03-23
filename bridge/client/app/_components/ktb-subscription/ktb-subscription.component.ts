@@ -7,6 +7,7 @@ import {ActivatedRoute} from '@angular/router';
 import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filter-field';
 import {Project} from '../../_models/project';
 import {KeptnService} from '../../_models/keptn-service';
+import {DtTableDataSource} from '@dynatrace/barista-components/table';
 
 @Component({
   selector: 'ktb-subscription',
@@ -17,8 +18,8 @@ import {KeptnService} from '../../_models/keptn-service';
 export class KtbSubscriptionComponent implements OnInit, OnDestroy {
   public _keptnService: KeptnService;
   private readonly unsubscribe$ = new Subject<void>();
-  public newSubscription: Subscription = new Subscription();
   private defaultTask: string;
+  public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
 
   @Input()
   get keptnService(): KeptnService {
@@ -27,6 +28,7 @@ export class KtbSubscriptionComponent implements OnInit, OnDestroy {
   set keptnService(keptnService: KeptnService) {
     if (this._keptnService !== keptnService) {
       this._keptnService = keptnService;
+      this.tableEntries.data = keptnService.subscriptions;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -42,7 +44,6 @@ export class KtbSubscriptionComponent implements OnInit, OnDestroy {
           .subscribe(tasks => {
             if (tasks.length !== 0) {
               this.defaultTask = tasks[0] + '.triggered';
-              this.newSubscription.event = this.defaultTask;
               this._changeDetectorRef.markForCheck();
             }
         });
@@ -50,9 +51,20 @@ export class KtbSubscriptionComponent implements OnInit, OnDestroy {
   }
 
   public addSubscription() {
-    this.keptnService.addSubscription(this.newSubscription);
-    this.newSubscription = new Subscription();
-    this.newSubscription.event = this.defaultTask;
+    const newSubscription = new Subscription();
+    newSubscription.event = this.defaultTask;
+    newSubscription.expanded = true;
+    this.keptnService.addSubscription(newSubscription);
+    this.updateDataSource();
+  }
+
+  public deleteSubscription(rowIndex: number) {
+    this.keptnService.deleteSubscription(rowIndex);
+    this.updateDataSource();
+  }
+
+  private updateDataSource() {
+    this.tableEntries.data = this.keptnService.subscriptions;
     this._changeDetectorRef.markForCheck();
   }
 

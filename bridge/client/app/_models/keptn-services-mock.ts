@@ -18,6 +18,72 @@ const services: KeptnService[] = [
     namespace: 'keptn-uniform',
     location: 'Execution plane-A',
     status: 'healthy',
+    subscriptions: [
+      {
+        name: 'Deployments',
+        event: 'deployment.triggered',
+        stages: [],
+        services: [],
+        parameters: [
+          {key: 'helmSecret', value: 'secret_name2'},
+        ]
+      } as Subscription
+    ]
+  } as KeptnService,
+  {
+    name: 'jmeter-service',
+    version: '0.3.0',
+    host: 'gke_research_us-central1-c_keptn-exec',
+    namespace: 'keptn-uniform',
+    location: 'Execution plane-A',
+    status: 'healthy',
+    subscriptions: [
+      {
+        name: 'Tests',
+        event: 'test.triggered',
+        stages: ['development', 'staging'],
+        services: ['cards', 'cards-db'],
+        parameters: [
+          {key: 'secret', value: 'secret_name'}
+        ]
+      } as Subscription
+    ]
+  } as KeptnService,
+  {
+    name: 'lighthouse-service',
+    version: '0.8.0',
+    host: 'gke_research_us-central1-c_keptn-exec',
+    namespace: 'keptn-uniform',
+    location: 'Execution plane-A',
+    status: 'healthy',
+    subscriptions: [
+      {
+        name: 'Evaluation',
+        event: 'evaluation.triggered',
+        stages: [],
+        services: [],
+        parameters: [
+          {key: 'lighthouseSecret', value: 'xyz12345'}
+        ]
+      } as Subscription
+    ]
+  } as KeptnService,
+  {
+    name: 'approval-service',
+    version: '0.8.0',
+    host: 'gke_research_us-central1-c_keptn-exec',
+    namespace: 'keptn-uniform',
+    location: 'Execution plane-A',
+    status: 'healthy',
+    subscriptions: []
+  } as KeptnService,
+  {
+    name: 'remediation-service',
+    version: '0.8.0',
+    host: 'gke_research_us-central1-c_keptn-exec',
+    namespace: 'keptn-uniform',
+    location: 'Execution plane-A',
+    status: 'healthy',
     subscriptions: []
   } as KeptnService,
   {
@@ -109,8 +175,8 @@ const services: KeptnService[] = [
       {
         name: 'All releases',
         event: 'release.triggered',
-        stages: ['development', 'staging', 'production'],
-        services: ['cards', 'cards-db'],
+        stages: [],
+        services: [],
         parameters: [
           {key: 'dynatraceSecret', value: 'xyz12345'}
         ]
@@ -118,8 +184,8 @@ const services: KeptnService[] = [
       {
         name: 'All rollbacks',
         event: 'rollback.triggered',
-        stages: ['development', 'staging', 'production'],
-        services: ['cards', 'cards-db'],
+        stages: [],
+        services: [],
         parameters: [
           {key: 'dynatraceSecret', value: 'xyz12345'}
         ]

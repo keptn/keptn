@@ -17,9 +17,7 @@ import {ProjectMock} from '../../_models/project-mock';
 export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   private _subscription: Subscription;
   public tasks: string[] = [];
-  private _isReadOnly: boolean;
   public _dataSource = new DtFilterFieldDefaultDataSource();
-  private _data: any;
   private readonly unsubscribe$ = new Subject<void>();
 
   @Input()
@@ -29,18 +27,6 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   set subscription(subscription: Subscription) {
     if (this._subscription !== subscription) {
       this._subscription = subscription;
-      this.changeDetectorRef.markForCheck();
-    }
-  }
-
-  @Input()
-  get isReadOnly(): boolean {
-    return this._isReadOnly;
-  }
-  set isReadOnly(isReadOnly: boolean) {
-    if (this._isReadOnly !== isReadOnly) {
-      this._isReadOnly = isReadOnly;
-      this._dataSource = new DtFilterFieldDefaultDataSource(this._data);
       this.changeDetectorRef.markForCheck();
     }
   }
@@ -68,7 +54,7 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
 
   public updateDataSource(project: Project) {
     project = ProjectMock;
-    this._data = {
+    this._dataSource.data = {
       autocomplete: [
         {
           name: 'Stages',
@@ -88,7 +74,6 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
         }
       ]
     };
-    this._dataSource = new DtFilterFieldDefaultDataSource(this._data);
   }
 
   filterChanged(subscription: Subscription, event) {

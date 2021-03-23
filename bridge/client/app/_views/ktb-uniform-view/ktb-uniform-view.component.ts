@@ -6,11 +6,11 @@ import {Subject} from 'rxjs';
 import {KeptnService} from '../../_models/keptn-service';
 
 @Component({
-  selector: 'ktb-subscription-view',
-  templateUrl: './ktb-subscription-view.component.html',
-  styleUrls: ['./ktb-subscription-view.component.scss']
+  selector: 'ktb-uniform-view',
+  templateUrl: './ktb-uniform-view.component.html',
+  styleUrls: ['./ktb-uniform-view.component.scss']
 })
-export class KtbSubscriptionViewComponent implements OnInit, OnDestroy {
+export class KtbUniformViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   public keptnServices: KeptnService[];

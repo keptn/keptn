@@ -37,7 +37,7 @@
       <a (click)="redirectView('service', project.projectName)" [class.active]="view === 'service'" dtMenuItem>Services</a>
       <a (click)="redirectView('sequence', project.projectName)" [class.active]="view === 'sequence'" dtMenuItem>Sequences</a>
       <a (click)="redirectView('integration', project.projectName)" [class.active]="view === 'integration'" dtMenuItem>Integration</a>
-      <a (click)="redirectView('subscription', project.projectName)" [class.active]="view === 'subscription'" *ngIf="view === 'subscription'" dtMenuItem>Subscriptions</a>
+      <a (click)="redirectView('ff-uniform', project.projectName)" [class.active]="view === 'ff-uniform'" *ngIf="view === 'ff-uniform'" dtMenuItem>Uniform</a>
     </dt-menu-group>
   </dt-menu>
   <ng-container [ngSwitch]="view">
@@ -45,6 +45,6 @@
     <ktb-service-view *ngSwitchCase="'service'" fxFlex="calc(100% - 150px)"></ktb-service-view>
     <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="calc(100% - 150px)"></ktb-sequence-view>
     <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="calc(100% - 150px)"></ktb-integration-view>
-    <ktb-subscription-view *ngSwitchCase="'subscription'" fxFlex="calc(100% - 150px)"></ktb-subscription-view>
+    <ktb-uniform-view *ngSwitchCase="'ff-uniform'" fxFlex="calc(100% - 150px)"></ktb-uniform-view>
   </ng-container>
 </div>

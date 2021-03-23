@@ -1,24 +1,24 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbSubscriptionViewComponent } from './ktb-subscription-view.component';
+import { KtbUniformViewComponent } from './ktb-uniform-view.component';
 import {AppModule} from '../../app.module';
 import {HttpClient} from '@angular/common/http';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 
-describe('KtbSubscriptionViewComponent', () => {
-  let component: KtbSubscriptionViewComponent;
-  let fixture: ComponentFixture<KtbSubscriptionViewComponent>;
+describe('KtbUniformViewComponent', () => {
+  let component: KtbUniformViewComponent;
+  let fixture: ComponentFixture<KtbUniformViewComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbSubscriptionViewComponent ],
+      declarations: [ KtbUniformViewComponent ],
       imports: [AppModule, HttpClientTestingModule]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSubscriptionViewComponent);
+    fixture = TestBed.createComponent(KtbUniformViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

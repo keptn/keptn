@@ -4,6 +4,7 @@ export class Subscription {
   public services: string[] = [];
   public parameters: {key: string, value: string, visible: boolean}[] = [];
   public name: string;
+  public expanded = false;
   private filter = [];
 
   static fromJSON(data: any) {

@@ -10,7 +10,7 @@ const routes: Routes = [
   {path: '', pathMatch: 'full', redirectTo: 'dashboard'},
   {path: 'dashboard', component: DashboardComponent},
   {path: 'project/:projectName', component: ProjectBoardComponent},
-  {path: 'project/:projectName/subscription', component: ProjectBoardComponent},
+  {path: 'project/:projectName/ff-uniform', component: ProjectBoardComponent},
   {path: 'project/:projectName/integration', component: ProjectBoardComponent},
   {path: 'project/:projectName/service', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName', component: ProjectBoardComponent},

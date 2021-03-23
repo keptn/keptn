@@ -1,0 +1,7 @@
+<div class="container" fxLayout="column" fxFlex>
+  <ktb-keptn-services-list class="overflow-y-auto" fxFlex="0 0 calc(40%-15px)" [keptnServices]="keptnServices" (selectedServiceChanged)="selectService($event)"></ktb-keptn-services-list>
+  <ng-container *ngIf="selectedService">
+    <h3 fxFlex="15px"><span class="mr-1 bold" [textContent]="selectedService.name"></span><span [textContent]="selectedService.version"></span></h3>
+    <ktb-subscription [keptnService]="selectedService"></ktb-subscription>
+  </ng-container>
+</div>
