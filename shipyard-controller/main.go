@@ -15,7 +15,7 @@ import (
 	"os"
 )
 
-// @title Shipyard Controller API
+// @title Control Plane API
 // @version 1.0
 // @description This is the API documentation of the Shipyard Controller.
 
