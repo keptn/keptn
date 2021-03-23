@@ -14,14 +14,14 @@ type createSecretCmdParams struct {
 var createSecretParams *createSecretCmdParams
 
 var createSecretCommand = &cobra.Command{
-	Use:          `secret SECRETNAME --from-literal="key1=value1"" --from-literal="key2=value2" --scope=my-scope`,
+	Use:          `secret SECRET_NAME --from-literal="key1=value1"" --from-literal="key2=value2" --scope=my-scope`,
 	Short:        "Creates a new secret",
-	Example:      `keptn create secret SECRETNAME --from-literal="key1=value1"" --from-literal="key2=value2" --scope=my-scope`,
+	Example:      `keptn create secret SECRET_NAME --from-literal="key1=value1"" --from-literal="key2=value2" --scope=my-scope`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("required argument SECRETNAME not set")
+			return errors.New("required argument SECRET_NAME not set")
 		}
 		return nil
 	},
@@ -37,6 +37,6 @@ var createSecretCommand = &cobra.Command{
 func init() {
 	createCmd.AddCommand(createSecretCommand)
 	createSecretParams = &createSecretCmdParams{}
-	createSecretCommand.Flags().StringArrayVar(&createSecretParams.Data, "from-literal", createSecretParams.Data, "Specify a key and literal value to insert in secret (i.e. mykey=somevalue)")
+	createSecretCommand.Flags().StringArrayVar(&createSecretParams.Data, "from-literal", createSecretParams.Data, "Specify a key and literal value to insert in secret (i.e. my-key=some-value)")
 	createSecretParams.Scope = createSecretCommand.Flags().StringP("scope", "s", defaultSecretScope, "The scope of the secret")
 }

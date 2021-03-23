@@ -13,9 +13,9 @@ type deleteSecretCmdParams struct {
 var deleteSecretParams *deleteSecretCmdParams
 
 var deleteSecretCommand = &cobra.Command{
-	Use:          `secret SECRETNAME --scope=my-scope"`,
+	Use:          `secret SECRET_NAME --scope=my-scope"`,
 	Short:        "Deletes a secret from the given scope",
-	Example:      `keptn delete secret SECRETNAME --scope=my-scope"`,
+	Example:      `keptn delete secret SECRET_NAME --scope=my-scope"`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
