@@ -1,0 +1,40 @@
+package cmd
+
+import (
+	"errors"
+	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/spf13/cobra"
+)
+
+type createSecretCmdParams struct {
+	Data []string
+}
+
+var createSecretParams *createSecretCmdParams
+
+var createSecretCommand = &cobra.Command{
+	Use:          `secret SECRETNAME --from-literal="key1=value1"" --from-literal="key2=value2"`,
+	Short:        "Creates a new secret",
+	Example:      `keptn create secret SECRETNAME --from-literal="key1=value1"" --from-literal="key2=value2"`,
+	SilenceUsage: true,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			cmd.SilenceUsage = false
+			return errors.New("required argument SECRETNAME not set")
+		}
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		handler, err := NewCreateSecretCmdHandler(credentialmanager.NewCredentialManager(assumeYes))
+		if err != nil {
+			return nil
+		}
+		return handler.CreateSecret(args[0], createSecretParams.Data)
+	},
+}
+
+func init() {
+	createCmd.AddCommand(createSecretCommand)
+	createSecretParams = &createSecretCmdParams{}
+	createSecretCommand.Flags().StringArrayVar(&createSecretParams.Data, "from-literal", createSecretParams.Data, "Specify a key and literal value to insert in secret (i.e. mykey=somevalue)")
+}
