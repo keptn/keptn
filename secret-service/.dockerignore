@@ -1,9 +1,3 @@
-# Build, Debug files
-
-MANIFEST
-
-# Idea
-.idea
-
-#binary - go build
-secret-service
+deploy/
+skaffold.yaml
+README.md

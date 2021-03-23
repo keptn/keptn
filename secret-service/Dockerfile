@@ -44,7 +44,7 @@ RUN apk add --no-cache ca-certificates libc6-compat
 COPY --from=builder /go/src/github.com/keptn/keptn/secret-service/main /secret-service
 COPY --from=builder /go/src/github.com/keptn/keptn/secret-service/swagger-ui /swagger-ui
 
-RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" /swagger-ui/docs/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/secrets/v1 |g" /swagger-ui/docs/swagger.yaml
 
 EXPOSE 8080
 
@@ -58,4 +58,4 @@ ENV GOTRACEBACK=all
 
 # Run the web service on container startup.
 ENV GIN_MODE=release
-CMD ["/shipyard-controller"]
+CMD ["/secret-service"]
