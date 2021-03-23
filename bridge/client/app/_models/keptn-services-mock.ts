@@ -5,41 +5,51 @@ const services: KeptnService[] = [
   {
     name: 'ansible-service',
     version: '0.2.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
-    namespace: 'keptn-uniform',
-    location: 'Execution plane-B',
-    status: 'healthy',
-    subscriptions: []
-  } as KeptnService,
-  {
-    name: 'helm-service',
-    version: '0.8.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
+    host: 'gke_research_us-central1-c_prod-customer-A',
     namespace: 'keptn-uniform',
     location: 'Execution plane-A',
     status: 'healthy',
     subscriptions: [
       {
-        name: 'Deployments',
+        name: 'Remediation action',
+        event: 'action.triggered',
+        stages: [],
+        services: [],
+        parameters: [
+          {key: 'ansibleTowerSecret', value: 'ansibleSecret'},
+        ]
+      } as Subscription
+    ]
+  } as KeptnService,
+  {
+    name: 'helm-service',
+    version: '0.8.1',
+    host: 'gke_research_us-central1-c_prod-customer-A',
+    namespace: 'keptn-uniform',
+    location: 'Execution plane-A',
+    status: 'healthy',
+    subscriptions: [
+      {
+        name: 'Deployments in Production - Customer A',
         event: 'deployment.triggered',
         stages: [],
         services: [],
         parameters: [
-          {key: 'helmSecret', value: 'secret_name2'},
+          {key: 'helmSecret', value: 'helmSecret'},
         ]
       } as Subscription
     ]
   } as KeptnService,
   {
     name: 'jmeter-service',
-    version: '0.3.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
+    version: '0.8.1',
+    host: 'gke_research_us-central1-c_prod-customer-A',
     namespace: 'keptn-uniform',
     location: 'Execution plane-A',
     status: 'healthy',
     subscriptions: [
       {
-        name: 'Tests',
+        name: 'Tests in Production - Customer A',
         event: 'test.triggered',
         stages: ['development', 'staging'],
         services: ['cards', 'cards-db'],
@@ -52,9 +62,9 @@ const services: KeptnService[] = [
   {
     name: 'lighthouse-service',
     version: '0.8.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
-    namespace: 'keptn-uniform',
-    location: 'Execution plane-A',
+    host: 'gke_research_us-central1-c_keptn-control',
+    namespace: 'keptn',
+    location: 'Control plane',
     status: 'healthy',
     subscriptions: [
       {
@@ -71,29 +81,48 @@ const services: KeptnService[] = [
   {
     name: 'approval-service',
     version: '0.8.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
-    namespace: 'keptn-uniform',
-    location: 'Execution plane-A',
+    host: 'gke_research_us-central1-c_keptn-control',
+    namespace: 'keptn',
+    location: 'Control plane',
     status: 'healthy',
-    subscriptions: []
+    subscriptions: [
+      {
+        name: 'Approval events',
+        event: 'approval.triggered',
+        stages: [ ],
+        services: [ ],
+        parameters: [ ]
+      } as Subscription
+    ]
   } as KeptnService,
   {
     name: 'remediation-service',
     version: '0.8.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
-    namespace: 'keptn-uniform',
-    location: 'Execution plane-A',
+    host: 'gke_research_us-central1-c_keptn-control',
+    namespace: 'keptn',
+    location: 'Control plane',
     status: 'healthy',
     subscriptions: []
   } as KeptnService,
   {
     name: 'jenkins-service',
     version: '0.8.0',
-    host: 'gke_research_us-central1-c_keptn-exec',
+    host: 'aws_us-central1-c_prod-customer-B',
     namespace: 'keptn-uniform',
-    location: 'Execution plane-A',
+    location: 'Execution plane-B',
     status: 'healthy',
-    subscriptions: []
+    subscriptions: [
+      {
+        name: 'Deployments of cards, cards-db on Production',
+        event: 'deployment.triggered',
+        stages: ['production'],
+        services: ['cards', 'cards-db'],
+        parameters: [
+          {key: 'jenkinsPWD', value: 'pwd'},
+          {key: 'pipeline', value: 'pipeline'}
+        ]
+      } as Subscription
+    ]
   } as KeptnService,
   {
     name: 'dynatrace-sli-service',
@@ -104,23 +133,12 @@ const services: KeptnService[] = [
     status: 'healthy',
     subscriptions: [
       {
-        name: 'Fetch SLI',
+        name: 'Get SLI',
         event: 'get-sli.triggered',
         stages: ['development', 'staging'],
         services: ['cards', 'cards-db'],
         parameters: [
-          {key: 'secret', value: 'secret_name'},
-          {key: 'pipeline', value: 'deploy_service_pipeline'},
-        ]
-      } as Subscription,
-      {
-        name: 'Deployment in production',
-        event: 'deployment.triggered',
-        stages: ['production'],
-        services: ['cards', 'cards-db'],
-        parameters: [
-          {key: 'secret2', value: 'secret_name2'},
-          {key: 'pipeline2', value: 'deploy_service_pipeline2'},
+          {key: 'dynatraceToken', value: 'token'}
         ]
       } as Subscription
     ]
@@ -134,88 +152,31 @@ const services: KeptnService[] = [
     status: 'healthy',
     subscriptions: [
       {
-        name: 'Deployment in staging',
-        event: 'deployment.triggered',
+        name: 'Listen to all Events',
+        event: '*all',
         stages: ['staging'],
         services: ['cards', 'cards-db'],
         parameters: [
           {key: 'secret', value: 'secret_name'},
-          {key: 'pipeline', value: 'deploy_service_pipeline'}
         ]
-      } as Subscription,
-      {
-        name: 'Deployment in production',
-        event: 'deployment.triggered',
-        stages: ['production'],
-        services: ['cards', 'cards-db'],
-        parameters: [
-          {key: 'secret', value: 'secret_name'},
-          {key: 'pipeline', value: 'deploy_service_pipeline'}
-        ]
-      } as Subscription,
-      {
-        name: 'Test in staging',
-        event: 'test.triggered',
-        stages: ['staging'],
-        services: ['cards', 'cards-db'],
-        parameters: [
-          {key: 'secret', value: 'secret_name'},
-          {key: 'pipeline', value: 'deploy_service_pipeline'}
-        ]
-      } as Subscription,
-      {
-        name: 'Evaluation',
-        event: 'evaluation.triggered',
-        stages: ['development', 'staging'],
-        services: ['cards', 'cards-db'],
-        parameters: [
-          {key: 'dynatraceSecret', value: 'xyz12345'}
-        ]
-      } as Subscription,
-      {
-        name: 'All releases',
-        event: 'release.triggered',
-        stages: [],
-        services: [],
-        parameters: [
-          {key: 'dynatraceSecret', value: 'xyz12345'}
-        ]
-      } as Subscription,
-      {
-        name: 'All rollbacks',
-        event: 'rollback.triggered',
-        stages: [],
-        services: [],
-        parameters: [
-          {key: 'dynatraceSecret', value: 'xyz12345'}
-        ]
-      } as Subscription,
+      } as Subscription
     ]
   } as KeptnService,
   {
     name: 'servicenow-service',
     version: '0.2.0',
-    host: 'gke_research_us-central1-c_keptn-control',
-    namespace: 'keptn',
-    location: 'Control plane',
+    host: 'gke_research_us-central1-c_prod-customer-A',
+    namespace: 'keptn-uniform',
+    location: 'Execution plane-A',
     status: 'healthy',
     subscriptions: [
       {
-        name: 'Fetch SLI',
-        event: 'get-sli.triggered',
-        stages: ['development', 'staging'],
-        services: ['cards', 'cards-db'],
+        name: 'Remediation action',
+        event: 'action.triggered',
+        stages: [],
+        services: [],
         parameters: [
-          {key: 'dynatraceSecret', value: 'my_secret'}
-        ]
-      } as Subscription,
-      {
-        name: 'Deployment in development',
-        event: 'deployment.triggered',
-        stages: ['development'],
-        services: ['cards', 'cards-db'],
-        parameters: [
-          {key: 'dynatraceSecret', value: 'my_secret_2'}
+          {key: 'snowSecret', value: 'secret'},
         ]
       } as Subscription
     ]
