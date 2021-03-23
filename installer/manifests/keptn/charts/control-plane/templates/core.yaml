@@ -432,7 +432,9 @@ spec:
             - mountPath: /data
               name: secret-service-configmap-volume
       volumes:
-        - name: secret-service-config
+        - name: secret-service-configmap-volume
+          configMap:
+            name: secret-service-config
 ---
 apiVersion: v1
 kind: Service
