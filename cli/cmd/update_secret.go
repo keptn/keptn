@@ -23,7 +23,7 @@ var updateSecretCommand = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmd.SilenceUsage = false
-			return errors.New("required argument SECRETNAME not set")
+			return errors.New("required argument SECRET_NAME not set")
 		}
 		return nil
 	},
