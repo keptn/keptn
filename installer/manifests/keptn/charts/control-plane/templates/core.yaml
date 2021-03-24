@@ -371,9 +371,9 @@ data:
     Scopes:
       keptn-default:
         Capabilities:
-          keptn-default-read:
+          keptn-secrets-default-read:
             Permissions:
-              - read
+              - get
 ---
 apiVersion: apps/v1
 kind: Deployment

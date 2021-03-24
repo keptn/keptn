@@ -1,6 +1,6 @@
 Scopes:
   keptn-default:
     Capabilities:
-      keptn-default-read:
+      keptn-secrets-default-read:
         Permissions:
-          - read
+          - get
