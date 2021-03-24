@@ -931,3 +931,7 @@ YAMLTo
 yml
 YOURURL
 zsh
+ISecret
+scopesrepository
+secretbackend
+serr
