@@ -53,6 +53,10 @@ shipyardController:
   image:
     repository: docker.io/keptn/shipyard-controller
 
+secretService:
+  image:
+    repository: docker.io/keptn/secret-service
+
 configurationService:
   image:
     repository: docker.io/keptn/configuration-service

@@ -34,7 +34,18 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     helm.sh/chart: {{ include "control-plane.chart" . }}
-
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keptn-secret-service
+  labels:
+    app.kubernetes.io/name: keptn-secret-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -70,7 +81,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
       - ""
@@ -82,6 +93,28 @@ rules:
       - delete
       - update
 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-manage-roles
+  labels:
+    app.kubernetes.io/name: keptn-manage-roles
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - roles
+    verbs:
+      - create
+      - get
+      - delete
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -261,5 +294,41 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-shipyard-controller
-
-
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-secret-service-manage-secrets
+  labels:
+    app.kubernetes.io/name: keptn-secret-service-manage-secrets
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-manage-secrets
+subjects:
+  - kind: ServiceAccount
+    name: keptn-secret-service
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-secret-service-manage-roles
+  labels:
+    app.kubernetes.io/name: keptn-secret-service-manage-roles
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-manage-roles
+subjects:
+  - kind: ServiceAccount
+    name: keptn-secret-service

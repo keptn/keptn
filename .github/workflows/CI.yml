@@ -36,6 +36,7 @@ jobs:
       BUILD_DISTRIBUTOR: ${{ steps.check_modified_files.outputs.BUILD_DISTRIBUTOR }}
       BUILD_EVENTBROKER: ${{ steps.check_modified_files.outputs.BUILD_EVENTBROKER }}
       BUILD_SHIPYARD_CONTROLLER: ${{ steps.check_modified_files.outputs.BUILD_SHIPYARD_CONTROLLER }}
+      BUILD_SECRET_SVC: ${{ steps.check_modified_files.outputs.BUILD_SECRET_SVC }}
       BUILD_CONFIGURATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_CONFIGURATION_SVC }}
       BUILD_REMEDIATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_REMEDIATION_SVC }}
       BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
@@ -108,6 +109,7 @@ jobs:
           BUILD_DISTRIBUTOR=false
           BUILD_EVENTBROKER=false
           BUILD_SHIPYARD_CONTROLLER=false
+          BUILD_SECRET_SVC=false
           BUILD_CONFIGURATION_SVC=false
           BUILD_REMEDIATION_SVC=false
           BUILD_LIGHTHOUSE_SVC=false
@@ -166,6 +168,10 @@ jobs:
               BUILD_SHIPYARD_CONTROLLER=true
             fi
 
+            if [[ $changed_file == "${SECRET_SVC_FOLDER}"* ]]; then
+              BUILD_SECRET_SVC=true
+            fi
+
             if [[ $changed_file == "${CONFIGURATION_SVC_FOLDER}"* ]]; then
               BUILD_CONFIGURATION_SVC=true
             fi
@@ -199,6 +205,7 @@ jobs:
           echo "##[set-output name=BUILD_DISTRIBUTOR;]$(echo ${BUILD_DISTRIBUTOR})"
           echo "##[set-output name=BUILD_EVENTBROKER;]$(echo ${BUILD_EVENTBROKER})"
           echo "##[set-output name=BUILD_SHIPYARD_CONTROLLER;]$(echo ${BUILD_SHIPYARD_CONTROLLER})"
+          echo "##[set-output name=BUILD_SECRET_SVC;]$(echo ${BUILD_SECRET_SVC})"
           echo "##[set-output name=BUILD_CONFIGURATION_SVC;]$(echo ${BUILD_CONFIGURATION_SVC})"
           echo "##[set-output name=BUILD_REMEDIATION_SVC;]$(echo ${BUILD_REMEDIATION_SVC})"
           echo "##[set-output name=BUILD_LIGHTHOUSE_SVC;]$(echo ${BUILD_LIGHTHOUSE_SVC})"
@@ -365,6 +372,13 @@ jobs:
           go test -v -coverprofile=coverage.txt -covermode=atomic ./...
           bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
         working-directory: ./shipyard-controller
+
+      - name: Test secret svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F secret-service
+        working-directory: ./secret-service
 
       - name: Test configuration svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
@@ -717,6 +731,16 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
           DOCKER_FOLDER: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
+
+      - id: docker_build_secret_service
+        name: Docker Build secret-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SECRET_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.SECRET_SVC_FOLDER }}
 
       - id: docker_build_configuration_service
         name: Docker Build configuration-service
