@@ -89,7 +89,7 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 - *shipyard-controller*:
   - *Fixed*: Upgrade Shipyard: shipyardVersion in GET /project response not updated immediately [3384](https://github.com/keptn/keptn/issues/3384)
   - *Fixed*: `deploymentURI` shows up twice in shipyard-controller `test.triggered` event [3449](https://github.com/keptn/keptn/issues/3449)
-  - *Fixed*: Fixed errors in swagger definition of shipyard-controller [3530](https://github.com/keptn/keptn/pull/3530)
+  - *Fixed*: Fixed errors in Swagger definition of shipyard-controller [3530](https://github.com/keptn/keptn/pull/3530)
 
 </p>
 </details>
@@ -97,14 +97,14 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
-- Mockup to show installed Keptn-services (aka. Uniform) and latest version available [1280](https://github.com/keptn/keptn/issues/1280)
+- Mockup to show installed Keptn-services (aka. Uniform) and the latest version available [1280](https://github.com/keptn/keptn/issues/1280)
 - Show SLI with display name or "smart SLI name" [3345](https://github.com/keptn/keptn/issues/3345)
 - Stage tile supports many services [2289](https://github.com/keptn/keptn/issues/2289)
 - Show evaluation result on Service tile (next to stage) [3425](https://github.com/keptn/keptn/issues/3425)
 - *Fixed*: Navigation with smart linking [3578](https://github.com/keptn/keptn/issues/3578)
 - *Fixed*: Approval events sent by bridge should only include approval-related properties [3557](https://github.com/keptn/keptn/issues/3557)
-- *Fixed*: Bridge no longer shows link to deployment urls in environment screen [3535](https://github.com/keptn/keptn/issues/3535)
-- *Fixed*: Evaluation component in *Service screen* does not show all labels as compared to full screen view [3537](https://github.com/keptn/keptn/issues/3537)
+- *Fixed*: Bridge no longer shows a link to deployment URLs in environment screen [3535](https://github.com/keptn/keptn/issues/3535)
+- *Fixed*: Evaluation component in *Service screen* does not show all labels as compared to full-screen view [3537](https://github.com/keptn/keptn/issues/3537)
 - *Fixed*: Bridge shows empty test events due to wrong order of events (test.started timestamp < test.triggered timestamp) [3435](https://github.com/keptn/keptn/issues/3435) 
 - *Fixed*: Bridge does not list failed quality gate evaluations in *Environment screen* [3438](https://github.com/keptn/keptn/issues/3438)
 - *Fixed*: Version check failed [3446](https://github.com/keptn/keptn/issues/3446)
@@ -132,11 +132,11 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 <details><summary>Open issues that will be fixed in upcoming releases</summary>
 <p>
 
-  - Lighthouse-service needs to properly set result, status and message [3412](https://github.com/keptn/keptn/issues/3412)
-  - Helm-service is not working parallel when deployed in execution-plane [3427](https://github.com/keptn/keptn/issues/3427)
+  - Lighthouse-service needs to properly set result, status, and message [3412](https://github.com/keptn/keptn/issues/3412)
+  - Helm-service is not working parallel when deployed in the execution-plane [3427](https://github.com/keptn/keptn/issues/3427)
   - Shipyard-controller: Only last `.finished` event for a task determines further sequence execution [3493](https://github.com/keptn/keptn/issues/3493)
   - Auto-remediation does not work with remote execution plane [3498](https://github.com/keptn/keptn/issues/3498)
-  - Quality gate icon in environment screen does not turn red [3592](https://github.com/keptn/keptn/issues/3592)
+  - Quality gate icon in the environment screen does not turn red [3592](https://github.com/keptn/keptn/issues/3592)
 
 </p>
 </details>
