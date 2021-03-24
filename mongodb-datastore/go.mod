@@ -13,7 +13,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/jeremywohl/flatten v0.0.0-20190921043622-d936035e55cf
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
+	github.com/keptn/go-utils v0.8.1-0.20210324152200-f46658732a4d
 	github.com/stretchr/testify v1.7.0
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.4.6
