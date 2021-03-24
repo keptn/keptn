@@ -147,10 +147,15 @@ export class ApiService {
         type: eventType,
         triggeredid: approval.id,
         source: `https://github.com/keptn/keptn/bridge#${source}`,
-        data: Object.assign(approval.data, {
+        data: {
+          project: approval.data.project,
+          stage: approval.data.stage,
+          service: approval.data.service,
+          labels: approval.data.labels,
+          message: approval.data.message,
           result: approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
           status: 'succeeded'
-        })
+        }
       });
   }
 
