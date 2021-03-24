@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +32,11 @@ var createSecretCommand = &cobra.Command{
 		if err != nil {
 			return nil
 		}
-		return handler.CreateSecret(args[0], createSecretParams.Data, createSecretParams.Scope)
+		if err := handler.CreateSecret(args[0], createSecretParams.Data, createSecretParams.Scope); err != nil {
+			return err
+		}
+		logging.PrintLog(fmt.Sprintf("Secret %s created successfully", args[0]), logging.InfoLevel)
+		return nil
 	},
 }
 

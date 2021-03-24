@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +32,11 @@ var updateSecretCommand = &cobra.Command{
 		if err != nil {
 			return nil
 		}
-		return handler.UpdateSecret(args[0], createSecretParams.Data, updateSecretParams.Scope)
+		if err := handler.UpdateSecret(args[0], createSecretParams.Data, updateSecretParams.Scope); err != nil {
+			return err
+		}
+		logging.PrintLog(fmt.Sprintf("Secret %s updated successfully", args[0]), logging.InfoLevel)
+		return nil
 	},
 }
 

@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +31,11 @@ var deleteSecretCommand = &cobra.Command{
 		if err != nil {
 			return nil
 		}
-		return handler.DeleteSecret(args[0], deleteSecretParams.Scope)
+		if err := handler.DeleteSecret(args[0], deleteSecretParams.Scope); err != nil {
+			return err
+		}
+		logging.PrintLog(fmt.Sprintf("Secret %s has been deleted", args[0]), logging.InfoLevel)
+		return nil
 	},
 }
 
