@@ -8,7 +8,7 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/repository"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" //TODO: delete
@@ -17,8 +17,8 @@ import (
 
 const SecretBackendTypeK8s = "kubernetes"
 
-var ErrSecretAlreadyExists = errors.New("Secret already exists")
-var ErrSecretNotFound = errors.New("Secret not found")
+var ErrSecretAlreadyExists = errors.New("secret already exists")
+var ErrSecretNotFound = errors.New("secret not found")
 
 type K8sSecretBackend struct {
 	KubeAPI                kubernetes.Interface
@@ -40,7 +40,7 @@ func (k K8sSecretBackend) checkScopeDefined(secret model.Secret) (model.Scopes, 
 		return model.Scopes{}, err
 	}
 	if _, ok := scopes.Scopes[secret.Scope]; !ok {
-		return model.Scopes{}, fmt.Errorf("Scope %s not available for creation of Secret %s", secret.Scope, secret.Name)
+		return model.Scopes{}, fmt.Errorf("scope %s not available for creation of Secret %s", secret.Scope, secret.Name)
 	}
 	return scopes, nil
 }
@@ -54,7 +54,7 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	namespace := k.KeptnNamespaceProvider()
 	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Create(k.createK8sSecretObj(secret, namespace))
 	if err != nil {
-		if statusError, isStatus := err.(*kubeerrors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
 			return ErrSecretAlreadyExists
 		}
 		return err
@@ -64,7 +64,7 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	for i := range roles {
 		_, err := k.KubeAPI.RbacV1().Roles(namespace).Create(&roles[i])
 		if err != nil {
-			if statusError, isStatus := err.(*kubeerrors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+			if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
 
 				role, err := k.KubeAPI.RbacV1().Roles(namespace).Get(roles[i].Name, metav1.GetOptions{})
 				if err != nil {
@@ -94,7 +94,7 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 
 	err = k.KubeAPI.CoreV1().Secrets(namespace).Delete(secretName, &metav1.DeleteOptions{})
 	if err != nil {
-		if statusError, isStatus := err.(*kubeerrors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 			return ErrSecretNotFound
 		}
 		return err
@@ -123,7 +123,7 @@ func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 
 	_, err := k.KubeAPI.CoreV1().Secrets(namespace).Update(kubeSecret)
 	if err != nil {
-		if statusError, isStatus := err.(*kubeerrors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 			return ErrSecretNotFound
 		}
 		return err
