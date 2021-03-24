@@ -13,12 +13,6 @@ trap cleanup EXIT
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 
-# get keptn API details
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "${KEPTN_NAMESPACE}" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-
-echo "KEPTN_ENDPOINT $KEPTN_ENDPOINT"
-
-
 echo "########################################"
 echo "TEST-1: Creating and deleting secrets"
 echo "########################################"
@@ -33,10 +27,10 @@ keptn create secret $SECRET_2 --from-literal="mykey2=myvalue2"
 verify_test_step $? "Failed to create secret $SECRET_2"
 
 
-kubectl get secrets $SECRET_1 -n $KEPTN_NAMESPACE
+kubectl get secrets $SECRET_1 -n "$KEPTN_NAMESPACE"
 verify_test_step $? "Secret $SECRET_1 was not created"
 
-kubectl get secrets $SECRET_2 -n $KEPTN_NAMESPACE
+kubectl get secrets $SECRET_2 -n "$KEPTN_NAMESPACE"
 verify_test_step $? "Secret $SECRET_2 was not created"
 
 roles_response=$(kubectl get roles keptn-secrets-default-read -n keptn -ojson)
@@ -62,15 +56,15 @@ SECRET_1="my-new-secret"
 keptn create secret $SECRET_1 --from-literal="mykey1=myvalue1"
 verify_test_step $? "Failed to create secret $SECRET_1"
 
-get_secret_response=$(kubectl get secret $SECRET_1 -n $KEPTN_NAMESPACE -ojson)
+get_secret_response=$(kubectl get secret $SECRET_1 -n "$KEPTN_NAMESPACE" -ojson)
 old_secret_val=$(echo "$get_secret_response" | jq '.data.mykey1')
 
 keptn update secret $SECRET_1 --from-literal="mykey1=changed-value"
 verify_test_step $? "Failed to update secret $SECRET_1"
 
-get_secret_response=$(kubectl get secret $SECRET_1 -n $KEPTN_NAMESPACE -ojson)
+get_secret_response=$(kubectl get secret $SECRET_1 -n "$KEPTN_NAMESPACE" -ojson)
 updated_secret_val=$(echo "$get_secret_response" | jq '.data.mykey1')
-verify_not_equal $old_secret_val $updated_secret_val
+verify_not_equal "$old_secret_val" "$updated_secret_val"
 
 keptn delete secret $SECRET_1
 verify_test_step $? "Failed to delete secret $SECRET_1"
