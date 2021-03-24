@@ -7,5 +7,5 @@ require (
 	github.com/go-openapi/validate v0.20.2 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
+	github.com/keptn/go-utils v0.8.1-0.20210324101115-21d3e25da004
 )

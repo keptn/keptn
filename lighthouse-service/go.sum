@@ -173,6 +173,8 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.8.1-0.20210315141543-bb59c2e00624 h1:cixaF298mqdWi2x9DGpqVtmWjtZ/jrkbbiTotORtn1c=
 github.com/keptn/go-utils v0.8.1-0.20210315141543-bb59c2e00624/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
+github.com/keptn/go-utils v0.8.1-0.20210324101115-21d3e25da004 h1:U1KLiqgnc3glML1jXEzhZymB1E+3iyuoV7Muviqpk1k=
+github.com/keptn/go-utils v0.8.1-0.20210324101115-21d3e25da004/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
