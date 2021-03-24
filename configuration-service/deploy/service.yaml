@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-configuration-service
       containers:
       - name: configuration-service
-        image: keptn/configuration-service:latest
+        image: keptn/configuration-service:0.8.0
         env:
           - name: PREFIX_PATH
             value: ""
