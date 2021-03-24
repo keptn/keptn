@@ -305,7 +305,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Shipyard Controller API
+  title: Control Plane API
   version: "1.0"
 paths:
   /event:
@@ -659,6 +659,42 @@ paths:
       tags:
       - Stage
   /project/{project}/stage/{stage}:
+    get:
+      consumes:
+      - application/json
+      description: Get a stage of a project
+      parameters:
+      - description: The name of the project
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: The name of the stage
+        in: path
+        name: stage
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.ExpandedStage'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal Error)
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a stage
+      tags:
+      - Projects
+  /project/{project}/stage/{stage}/service:
     get:
       consumes:
       - application/json

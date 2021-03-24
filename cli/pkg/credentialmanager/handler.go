@@ -23,6 +23,14 @@ const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
 const installCredsKey = "https://keptn-install.sh"
 
+//go:generate moq -pkg credentialmanager_mock -skip-ensure -out ./fake/credential_manager_mock.go . CredentialManagerInterface
+type CredentialManagerInterface interface {
+	SetCreds(endPoint url.URL, apiToken string, namespace string) error
+	GetCreds(namespace string) (url.URL, string, error)
+	SetInstallCreds(creds string) error
+	GetInstallCreds() (string, error)
+}
+
 var MockAuthCreds bool
 var MockKubeConfigCheck bool
 

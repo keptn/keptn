@@ -587,6 +587,62 @@ var doc = `{
                         "ApiKeyAuth": []
                     }
                 ],
+                "description": "Get a stage of a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get a stage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the project",
+                        "name": "project",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The name of the stage",
+                        "name": "stage",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExpandedStage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Error)",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{project}/stage/{stage}/service": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Gets all services of a stage in a project",
                 "consumes": [
                     "application/json"
@@ -1217,7 +1273,7 @@ var SwaggerInfo = swaggerInfo{
 	Host:        "",
 	BasePath:    "/v1",
 	Schemes:     []string{},
-	Title:       "Shipyard Controller API",
+	Title:       "Control Plane API",
 	Description: "This is the API documentation of the Shipyard Controller.",
 }
 
