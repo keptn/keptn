@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
@@ -9,7 +8,7 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
 	"github.com/keptn/keptn/secret-service/swagger-ui/docs"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -40,8 +39,7 @@ func main() {
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
-	fmt.Print("Registered Backends: ")
-	fmt.Println(backend.GetRegisteredBackends())
+	log.Infof("Registered Backends: %v", backend.GetRegisteredBackends())
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
