@@ -61,11 +61,12 @@ func (h SecretCmdHandler) UpdateSecret(secretName string, data []string, scope *
 	if err != nil {
 		return err
 	}
-	if _, err := h.secretAPI.UpdateSecret(models.Secret{
+	secret := models.Secret{
 		Data:  secretData,
 		Name:  &secretName,
 		Scope: &secretScope,
-	}); err != nil {
+	}
+	if _, err := h.secretAPI.UpdateSecret(secret); err != nil {
 		return errors.New(*err.Message)
 	}
 	return nil

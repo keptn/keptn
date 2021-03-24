@@ -32,7 +32,7 @@ var updateSecretCommand = &cobra.Command{
 		if err != nil {
 			return nil
 		}
-		if err := handler.UpdateSecret(args[0], createSecretParams.Data, updateSecretParams.Scope); err != nil {
+		if err := handler.UpdateSecret(args[0], updateSecretParams.Data, updateSecretParams.Scope); err != nil {
 			return err
 		}
 		logging.PrintLog(fmt.Sprintf("Secret %s updated successfully", args[0]), logging.InfoLevel)
