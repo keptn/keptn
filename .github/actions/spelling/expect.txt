@@ -896,3 +896,6 @@ ISecret
 scopesrepository
 secretbackend
 serr
+hardcoded
+logrus
+sirupsen
