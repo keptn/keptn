@@ -11,7 +11,7 @@ require (
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.1-0.20210308154435-bdd99f3d0e5f
-	github.com/keptn/kubernetes-utils v0.8.1-0.20210308145316-785b480a4e52
+	github.com/keptn/kubernetes-utils v0.8.1-0.20210324152339-334fb680480c
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
