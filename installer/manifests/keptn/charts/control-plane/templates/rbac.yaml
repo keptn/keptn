@@ -107,7 +107,7 @@ metadata:
     helm.sh/chart: {{ include "control-plane.chart" . }}
 rules:
   - apiGroups:
-      - ""
+      - rbac.authorization.k8s.io
     resources:
       - roles
     verbs:
