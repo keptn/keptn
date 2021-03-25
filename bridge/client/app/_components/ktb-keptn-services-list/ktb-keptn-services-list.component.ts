@@ -36,7 +36,7 @@ export class KtbKeptnServicesListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.sortable.sort('location', 'desc');
+    this.sortable.sort('name', 'asc');
     this.tableEntries.sort = this.sortable;
   }
 

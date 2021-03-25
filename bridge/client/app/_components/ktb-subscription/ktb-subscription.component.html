@@ -1,7 +1,7 @@
 <div class="container">
   <dt-info-group>
     <dt-info-group-title>
-      <p class="mb-0"><span [textContent]="keptnService.subscriptions.length"></span> Subscriptions</p>
+      <p class="mb-0"><span [textContent]="keptnService.subscriptions.length"></span> Subscription{{keptnService.subscriptions.length === 1 ? '' : 's'}}</p>
     </dt-info-group-title>
   </dt-info-group>
   <div class="p-3">

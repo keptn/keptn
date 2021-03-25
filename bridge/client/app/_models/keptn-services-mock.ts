@@ -153,7 +153,7 @@ const services: KeptnService[] = [
     subscriptions: [
       {
         name: 'Listen to all Events',
-        event: '*all',
+        event: 'all',
         stages: ['staging'],
         services: ['cards', 'cards-db'],
         parameters: [

@@ -37,11 +37,10 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-        this.dataService.taskNames.pipe(
+        this.dataService.taskNamesTriggered.pipe(
           takeUntil(this.unsubscribe$),
-          map(tasks => tasks.map(task => task + '.triggered'))
         ).subscribe( tasks => {
-            this.tasks = tasks;
+            this.tasks = ['all', ...tasks];
           }
         );
         this.dataService.getProject(params.projectName)

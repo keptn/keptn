@@ -1,7 +1,20 @@
-.container {
-  height: 100%;
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+:host {
+  padding: 2px;
 }
 
 .overflow-y-auto {
   overflow-y: auto;
+}
+
+.notification {
+  background-color: $blue-500;
+  padding: 6px;
+  color: $white;
+
+  a {
+    color: $white;
+  }
 }

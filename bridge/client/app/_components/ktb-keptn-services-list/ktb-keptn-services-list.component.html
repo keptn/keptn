@@ -10,12 +10,12 @@
   </ng-container>
 
   <ng-container dtColumnDef="host" dtColumnAlign="text"dtColumnProportion="3">
-    <dt-header-cell *dtHeaderCellDef>Cluster / Host</dt-header-cell>
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
     <dt-cell *dtCellDef="let row" [textContent]="row.host"></dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="namespace" dtColumnAlign="text"dtColumnProportion="2">
-    <dt-header-cell *dtHeaderCellDef>Namespace</dt-header-cell>
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Namespace</dt-header-cell>
     <dt-cell *dtCellDef="let row" [textContent]="row.namespace"></dt-cell>
   </ng-container>
 

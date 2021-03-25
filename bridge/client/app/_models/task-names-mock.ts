@@ -1,4 +1,5 @@
 export const TaskNames = [
+  'action',
   'deployment',
   'get-sli',
   'test',

@@ -1,9 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import {Subscription} from '../../_models/subscription';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute} from '@angular/router';
 import {KeptnService} from '../../_models/keptn-service';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
 
@@ -13,10 +9,9 @@ import {DtTableDataSource} from '@dynatrace/barista-components/table';
   styleUrls: ['./ktb-subscription.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KtbSubscriptionComponent implements OnInit, OnDestroy {
+export class KtbSubscriptionComponent {
   public _keptnService: KeptnService;
-  private readonly unsubscribe$ = new Subject<void>();
-  private defaultTask: string;
+  private defaultTask = 'all';
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
 
   @Input()
@@ -31,22 +26,7 @@ export class KtbSubscriptionComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
-
-  ngOnInit(): void {
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.dataService.taskNames
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(tasks => {
-            if (tasks.length !== 0) {
-              this.defaultTask = tasks[0] + '.triggered';
-              this._changeDetectorRef.markForCheck();
-            }
-        });
-      });
-  }
+  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
 
   public addSubscription() {
     const newSubscription = new Subscription();
@@ -68,9 +48,5 @@ export class KtbSubscriptionComponent implements OnInit, OnDestroy {
 
   public updateSubscriptions() {
     // generate YAML file
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
   }
 }

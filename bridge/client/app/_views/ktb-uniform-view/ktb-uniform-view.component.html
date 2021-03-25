@@ -1,7 +1,12 @@
-<div class="container" fxLayout="column" fxFlex>
-  <ktb-keptn-services-list class="overflow-y-auto" fxFlex="0 0 calc(40%-15px)" [keptnServices]="keptnServices" (selectedServiceChanged)="selectService($event)"></ktb-keptn-services-list>
-  <ng-container *ngIf="selectedService">
-    <h3 fxFlex="15px"><span class="mr-1 bold" [textContent]="selectedService.name"></span><span [textContent]="selectedService.version"></span></h3>
-    <ktb-subscription [keptnService]="selectedService"></ktb-subscription>
-  </ng-container>
+<div fxLayout="column" fxFlex="100%">
+  <div fxFlex="35px" class="notification">
+    Note: If you have feedback on this mockup, please tell us in the Keptn Slack: <a href="http://slack.keptn.sh/" target="_blank">slack.keptn.sh</a> in the <a href="https://keptn.slack.com/archives/CGS63H8G6" target="_blank">#core-development</a> channel.
+  </div>
+  <div class="container" fxLayout="column" fxFlex="0 0 calc(100%-35px)">
+    <ktb-keptn-services-list class="overflow-y-auto" fxFlex="0 0 calc(40%-15px)" [keptnServices]="keptnServices" (selectedServiceChanged)="selectService($event)"></ktb-keptn-services-list>
+    <ng-container *ngIf="selectedService">
+      <h3 fxFlex="15px"><span class="mr-1 bold" [textContent]="selectedService.name"></span><span [textContent]="selectedService.version"></span></h3>
+      <ktb-subscription [keptnService]="selectedService"></ktb-subscription>
+    </ng-container>
+  </div>
 </div>

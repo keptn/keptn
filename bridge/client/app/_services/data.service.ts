@@ -49,6 +49,12 @@ export class DataService {
     return  this._taskNames.asObservable();
   }
 
+  get taskNamesTriggered(): Observable<string[]> {
+    return this._taskNames.pipe(
+      map(tasks => tasks.map(task => task + '.triggered'))
+    );
+  }
+
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
   }
