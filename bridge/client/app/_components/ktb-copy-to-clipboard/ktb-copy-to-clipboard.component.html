@@ -1,6 +1,6 @@
 <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center">
   <div>
-    <input class="copy-to-clipboard-label" dtInput [value]="label" [disabled]="true" />
+    <input class="copy-to-clipboard-label" dtInput [value]="label" [disabled]="true"  [class.safari-input]="platform.SAFARI" />
   </div>
   <div>
     <dt-copy-to-clipboard>
