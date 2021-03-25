@@ -5,6 +5,8 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 )
 
+const SecretAPIBasePath = "/secret"
+
 type SecretController struct {
 	SecretHandler handler.ISecretHandler
 }
@@ -14,7 +16,7 @@ func NewSecretController(secretHandler handler.ISecretHandler) *SecretController
 }
 
 func (controller SecretController) Inject(apiGroup *gin.RouterGroup) {
-	apiGroup.POST("/secrets", controller.SecretHandler.CreateSecret)
-	apiGroup.DELETE("/secrets", controller.SecretHandler.DeleteSecret)
-	apiGroup.PUT("/secrets", controller.SecretHandler.UpdateSecret)
+	apiGroup.POST(SecretAPIBasePath, controller.SecretHandler.CreateSecret)
+	apiGroup.DELETE(SecretAPIBasePath, controller.SecretHandler.DeleteSecret)
+	apiGroup.PUT(SecretAPIBasePath, controller.SecretHandler.UpdateSecret)
 }

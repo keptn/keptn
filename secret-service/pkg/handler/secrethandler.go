@@ -34,7 +34,7 @@ type SecretHandler struct {
 // @Success 200 {object} model.Secret
 // @Failure 400 {object} model.Error
 // @Failure 500 {object} model.Error
-// @Router /secrets [post]
+// @Router /secret [post]
 func (s SecretHandler) CreateSecret(c *gin.Context) {
 
 	secret := model.Secret{}
@@ -67,7 +67,7 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 // @Success 200 {object} model.Secret
 // @Failure 400 {object} model.Error
 // @Failure 500 {object} model.Error
-// @Router /secrets [put]
+// @Router /secret [put]
 func (s SecretHandler) UpdateSecret(c *gin.Context) {
 	secret := model.Secret{}
 	if err := c.ShouldBindJSON(&secret); err != nil {
@@ -98,7 +98,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Success 200
 // @Failure 404 {object} model.Error
 // @Failure 500 {object} model.Error
-// @Router /secrets [delete]
+// @Router /secret [delete]
 func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	params := &DeleteSecretQueryParams{}
 	if err := c.ShouldBindQuery(params); err != nil {

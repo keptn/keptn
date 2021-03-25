@@ -31,7 +31,7 @@ info:
   title: Secret Service API
   version: "1.0"
 paths:
-  /secrets:
+  /secret:
     delete:
       description: Delete an existing Secret
       parameters:
