@@ -485,6 +485,14 @@ jobs:
           test/test_new_artifact.sh
           test/test_delete_project.sh
 
+      - name: Test Manage Secrets
+        id: test_manage_secrets
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_manage_secrets.sh
+
 #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
 #        id: test_continuous_delivery
 #        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
@@ -577,7 +585,7 @@ jobs:
           TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact

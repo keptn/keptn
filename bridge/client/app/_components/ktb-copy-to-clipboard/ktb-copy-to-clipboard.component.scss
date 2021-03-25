@@ -25,3 +25,8 @@
     fill: $white;
   }
 }
+
+.safari-input {
+  color: $gray-300 !important;
+  -webkit-text-fill-color: $gray-300 !important;
+}

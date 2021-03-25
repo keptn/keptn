@@ -413,6 +413,11 @@ spec:
           image: {{ .Values.secretService.image.repository }}:{{ .Values.secretService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           ports:
             - containerPort: 8080
           livenessProbe:
