@@ -12,11 +12,10 @@ AKS
 alecthomas
 alertmanager
 alertname
-amasol
 amd
 andi
 andreas
-Ansible
+ansible
 anyuid
 aot
 api
@@ -44,8 +43,7 @@ autorepair
 Autoscaling
 autoupgrade
 avgrtvalidation
-avodaq
-AWS
+aws
 axios
 bacherfl
 backend
@@ -99,7 +97,6 @@ chmod
 chown
 ci
 ciphersuite
-Citrix
 ckf
 CLA
 classlist
@@ -172,7 +169,6 @@ DEPS
 dest
 destinationrule
 devkit
-devops
 devstorage
 devtools
 dirname
@@ -313,6 +309,7 @@ gw
 gz
 halem
 hammerjs
+hardcoded
 hardenings
 hashicorp
 healthcheck
@@ -345,7 +342,6 @@ IEvent
 img
 IMPL
 INamespace
-Inetum
 inferrable
 Infof
 ingressgateway
@@ -358,6 +354,7 @@ ipaddress
 IProject
 iptables
 IRemediation
+ISecret
 IService
 IShipyard
 issuecomment
@@ -452,6 +449,7 @@ loadgen
 localhost
 lodash
 Logf
+logrus
 loopcount
 lrun
 Lshortfile
@@ -508,12 +506,14 @@ mydbserver
 mygateway
 mygroup
 myjmeter
+mykey
 myprojec
 myproject
 myredissrv
 myremediationlink
 myservice
 myuser
+myvalue
 namespace
 namespacemanager
 Nano
@@ -522,7 +522,6 @@ natsbox
 nbsp
 nc
 nch
-neotys
 netutil
 Neue
 newartifact
@@ -633,7 +632,6 @@ RCV
 RDWR
 README
 readonly
-Realdolmen
 redhat
 redis
 Redoc
@@ -678,10 +676,12 @@ rxjs
 samuelfahrngruber
 sandroschmid
 scc
+scopesrepository
 screenshot
 scss
 sdk
 secondstage
+secretbackend
 secretstore
 secuirtycontextconstraints
 securitycontextconstraints
@@ -690,6 +690,7 @@ selfmon
 selfmonitoring
 selfservice
 semver
+serr
 serrors
 serviceaccount
 servicecontrol
@@ -711,6 +712,7 @@ SIGTERM
 simplenode
 simplenodeservice
 simpleproject
+sirupsen
 skaffold
 slackbot
 sli
@@ -724,7 +726,6 @@ specversion
 spf
 Sprintf
 src
-sre
 ssh
 ssl
 Sta'lone
@@ -856,12 +857,10 @@ versioning
 virtualbox
 virtualisation
 virtualservice
-visualstudio
 vm
 vuser
 Vwd
 webhook
-webinar
 webkit
 webpack
 website
@@ -894,10 +893,3 @@ YAMLTo
 yml
 YOURURL
 zsh
-ISecret
-scopesrepository
-secretbackend
-serr
-hardcoded
-logrus
-sirupsen
