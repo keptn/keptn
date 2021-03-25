@@ -108,7 +108,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
-              this.selectSequence({root: roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext)});
+              this.selectSequence({root: roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext), stage: params.stage});
             }
             if (roots) {
               this.updateFilterSequence(roots);
@@ -119,8 +119,17 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  selectSequence(event: any): void {
+  selectSequence(event: {root: Root, stage: string}): void {
+    if (event.stage) {
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', event.stage]);
+      this.location.go(routeUrl.toString());
+    } else {
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext]);
+      this.location.go(routeUrl.toString());
+    }
+
     this.currentSequence = event.root;
+    this.selectedStage = event.stage || event.root.getStages().pop();
     this.loadTraces(this.currentSequence);
   }
 

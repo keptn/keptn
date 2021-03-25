@@ -10,9 +10,19 @@ import {Subject} from 'rxjs';
 })
 export class KtbSequenceTimelineComponent{
   private _currentSequence: Root;
-  public selectedStage: String;
+  public _selectedStage: String;
 
   @Output() selectedStageChange: EventEmitter<{ stageName: String, triggerByEvent: boolean }> = new EventEmitter();
+
+  @Input()
+  get selectedStage(): String {
+    return this._selectedStage;
+  }
+  set selectedStage(stage: String) {
+    if(this._selectedStage !== stage) {
+      this._selectedStage = stage;
+    }
+  }
 
   @Input()
   get currentSequence(): Root {
@@ -20,31 +30,7 @@ export class KtbSequenceTimelineComponent{
   }
   set currentSequence(root: Root) {
     if (this._currentSequence !== root) {
-      if (!this._currentSequence) {
-        let stage = this.route.snapshot.params.stage;
-        let triggerByEvent = false;
-        if (this.route.snapshot.params.eventId) {
-          triggerByEvent = true;
-          const trace = root.traces.find(t => t.id === this.route.snapshot.params.eventId);
-          if (trace) {
-            stage = trace.getStage();
-          }
-        }
-        this.setSequence(root, stage, triggerByEvent);
-      } else {
-        this.setSequence(root);
-      }
-    }
-  }
-
-  setSequence(root: Root, stage?: string, triggerByEvent = false) {
-    this._currentSequence = root;
-    const stages = this._currentSequence.getStages();
-    if (stage && stages.includes(stage)) {
-      this.stageChanged(stage, triggerByEvent);
-    }
-    else {
-      this.stageChanged(stages[stages.length - 1]);
+      this._currentSequence = root;
     }
   }
 
@@ -60,6 +46,6 @@ export class KtbSequenceTimelineComponent{
     this.selectedStageChange.emit({stageName, triggerByEvent});
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private route: ActivatedRoute) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {
   }
 }

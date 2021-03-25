@@ -77,7 +77,7 @@
         <p class="m-0 mb-1"><span class="bold">Context: </span><dt-tag [textContent]="currentRoot.shkeptncontext"></dt-tag></p>
       </dt-info-group>
     </div>
-    <ktb-sequence-timeline *ngIf="currentRoot.getStages().length > 0" [currentSequence]="currentRoot" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
+    <ktb-sequence-timeline *ngIf="currentRoot.getStages().length > 0" [currentSequence]="currentRoot" [selectedStage]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
     <p class="m-0 mb-1">
       <span class="bold" *ngIf="!currentRoot.isFinished()">Recent task: </span>
       <span class="bold" *ngIf="currentRoot.isFinished()">Last task: </span>
