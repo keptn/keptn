@@ -126,6 +126,6 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 }
 
 type DeleteSecretQueryParams struct {
-	Name  string `form:"name"`
-	Scope string `form:"scope"`
+	Name  string `form:"name" binding:"required"`
+	Scope string `form:"scope" binding:"required"`
 }
