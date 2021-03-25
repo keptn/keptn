@@ -45,11 +45,13 @@ export class KtbStageDetailsComponent implements OnInit {
   }
 
   selectStage($event) {
-    this.problemFilterEventButton?.deselect();
-    this.evaluationFilterEventButton?.deselect();
-    this.approvalFilterEventButton?.deselect();
     this.selectedStage = $event.stage;
-    this.filterEventType = $event.filterType;
+    if (this.filterEventType !== $event.filterType) {
+      this.problemFilterEventButton?.deselect();
+      this.evaluationFilterEventButton?.deselect();
+      this.approvalFilterEventButton?.deselect();
+      this.filterEventType = $event.filterType;
+    }
   }
 
   selectFilterEvent($event) {
