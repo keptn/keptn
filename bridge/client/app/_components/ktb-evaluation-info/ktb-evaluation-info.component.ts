@@ -11,6 +11,7 @@ import {Trace} from "../../_models/trace";
 export class KtbEvaluationInfoComponent implements OnInit, OnDestroy {
 
   @Input() public evaluation: Trace;
+  @Input() public overlayDisabled: boolean;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
