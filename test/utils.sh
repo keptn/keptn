@@ -227,6 +227,17 @@ function verify_value() {
   return 0
 }
 
+function verify_not_equal() {
+  first=$1
+  second=$2
+
+  if [[ "${first}" != "${second}" ]]; then
+    echo "Checking ${first} not equal ${second} ✓"
+  else
+    print_error "ERROR: Checking ${first} not equal ${second} ❌"
+  fi
+}
+
 function verify_event_not_null() {
   if [[ $1 == "null" ]]; then
     # shellcheck disable=SC2152
