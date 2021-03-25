@@ -25,3 +25,9 @@
     fill: $white;
   }
 }
+
+/*Safari*/
+_::-webkit-full-page-media, _:future, :root input[disabled] {
+  color: $gray-300 !important;
+  -webkit-text-fill-color: $gray-300 !important;
+}
