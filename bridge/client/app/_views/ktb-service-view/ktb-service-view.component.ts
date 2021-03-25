@@ -60,8 +60,8 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
         this.contextId = params.shkeptncontext;
         this.projectName = params.projectName;
         this.serviceName = params.serviceName;
+        this.selectedStage = params.stage;
         this.currentRoot = null;
-        this.selectedStage = null;
         this.filterEventTypes = [];
 
         this.project$ = this.dataService.getProject(params.projectName);
@@ -82,9 +82,8 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
             if (roots) {
               if (!this.currentRoot) {
                 this.currentRoot = roots.find(r => r.shkeptncontext === params.shkeptncontext);
-              }
-              if (!this.selectedStage) {
-                this.selectedStage = params.stage;
+                if(params.eventId)
+                  this.selectedStage = this.currentRoot.traces.find(t => t.id === this.route.snapshot.params.eventId)?.getStage();
               }
               this.eventTypes = this.eventTypes.concat(roots.map(root => root.getLabel()))
                                 .filter((eventType, i, eventTypes) => eventTypes.indexOf(eventType) === i);
@@ -99,8 +98,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     this.projectName = event.root.getProject();
     this.serviceName = event.root.getService();
     if (event.stage) {
-      const focusEvent = event.root.traces.find(trace => trace.data.stage === event.stage);
-      const routeUrl = this.router.createUrlTree(['/project', focusEvent.getProject(), 'service', focusEvent.getService(), 'context', focusEvent.shkeptncontext, 'stage', focusEvent.getStage()]);
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'service', event.root.getService(), 'context', event.root.shkeptncontext, 'stage', event.stage]);
       this.location.go(routeUrl.toString());
     } else {
       const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'service', event.root.getService(), 'context', event.root.shkeptncontext]);
@@ -108,6 +106,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     }
 
     this.currentRoot = event.root;
+    this.selectedStage = event.stage || event.root.getStages().pop();
     this.loadTraces(this.currentRoot);
   }
 

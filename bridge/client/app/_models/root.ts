@@ -75,8 +75,8 @@ export class Root extends Trace {
     return traces ? traces[traces.length-1] : null;
   }
 
-  getStages(): String[] {
-    let result: String[] = [];
+  getStages(): string[] {
+    let result: string[] = [];
     if(this.traces) {
       this.traces.forEach((trace) => {
         if(trace.data.stage && result.indexOf(trace.data.stage) == -1)
