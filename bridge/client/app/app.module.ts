@@ -2,7 +2,7 @@ import { registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
 import { NgModule } from '@angular/core';
-import { FormsModule } from "@angular/forms";
+import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserModule } from '@angular/platform-browser';
@@ -19,7 +19,7 @@ import { DtDrawerModule } from '@dynatrace/barista-components/drawer';
 import { DtEmptyStateModule } from '@dynatrace/barista-components/empty-state';
 import { DtExpandablePanelModule } from '@dynatrace/barista-components/expandable-panel';
 import { DtExpandableTextModule } from '@dynatrace/barista-components/expandable-text';
-import { DtExpandableSectionModule } from "@dynatrace/barista-components/expandable-section";
+import { DtExpandableSectionModule } from '@dynatrace/barista-components/expandable-section';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
 import { DtIndicatorModule } from '@dynatrace/barista-components/indicator';
 import { DtInfoGroupModule } from '@dynatrace/barista-components/info-group';
@@ -35,10 +35,10 @@ import { DtShowMoreModule } from '@dynatrace/barista-components/show-more';
 import { DtSwitchModule } from '@dynatrace/barista-components/switch';
 import { DtTableModule } from '@dynatrace/barista-components/table';
 import { DtTagModule } from '@dynatrace/barista-components/tag';
-import { DtTopBarNavigationModule } from "@dynatrace/barista-components/top-bar-navigation";
-import { DtCopyToClipboardModule } from "@dynatrace/barista-components/copy-to-clipboard";
-import { DtToggleButtonGroupModule } from "@dynatrace/barista-components/toggle-button-group";
-import { DtQuickFilterModule } from "@dynatrace/barista-components/experimental/quick-filter";
+import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-navigation';
+import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-clipboard';
+import { DtToggleButtonGroupModule } from '@dynatrace/barista-components/toggle-button-group';
+import { DtQuickFilterModule } from '@dynatrace/barista-components/experimental/quick-filter';
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
@@ -58,36 +58,41 @@ import { KtbSelectableTileComponent, KtbSelectableTileHeader } from './_componen
 import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
-import { KtbApprovalItemComponent } from "./_components/ktb-approval-item/ktb-approval-item.component";
-import { KtbCopyToClipboardComponent } from "./_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component";
-import { KtbMarkdownComponent } from "./_components/ktb-markdown/ktb-markdown.component";
+import { KtbApprovalItemComponent } from './_components/ktb-approval-item/ktb-approval-item.component';
+import { KtbCopyToClipboardComponent } from './_components/ktb-copy-to-clipboard/ktb-copy-to-clipboard.component';
+import { KtbMarkdownComponent } from './_components/ktb-markdown/ktb-markdown.component';
 import { KtbEvaluationDetailsComponent } from './_components/ktb-evaluation-details/ktb-evaluation-details.component';
-import { KtbEvaluationInfoComponent } from "./_components/ktb-evaluation-info/ktb-evaluation-info.component";
+import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/ktb-evaluation-info.component';
 import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
-import { KtbTaskItemComponent, KtbTaskItemDetail } from "./_components/ktb-task-item/ktb-task-item.component";
-import { KtbSequenceTasksListComponent } from "./_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
+import { KtbTaskItemComponent, KtbTaskItemDetail } from './_components/ktb-task-item/ktb-task-item.component';
+import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
 
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
-import { HttpDefaultInterceptor } from "./_interceptors/http-default-interceptor";
+import { HttpDefaultInterceptor } from './_interceptors/http-default-interceptor';
 
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 import { AppHeaderComponent } from './app-header/app-header.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProjectBoardComponent } from './project-board/project-board.component';
-import { EvaluationBoardComponent } from "./evaluation-board/evaluation-board.component";
+import { EvaluationBoardComponent } from './evaluation-board/evaluation-board.component';
 import { KtbSequenceTimelineComponent } from './_components/ktb-sequence-timeline/ktb-sequence-timeline.component';
 import { KtbEnvironmentViewComponent } from './_views/ktb-environment-view/ktb-environment-view.component';
 import { KtbIntegrationViewComponent } from './_views/ktb-integration-view/ktb-integration-view.component';
 import { KtbStageOverviewComponent } from './_components/ktb-stage-overview/ktb-stage-overview.component';
 import { KtbStageDetailsComponent } from './_components/ktb-stage-details/ktb-stage-details.component';
-import { KtbSequenceViewComponent } from "./_views/ktb-sequence-view/ktb-sequence-view.component";
-import { KtbServiceViewComponent } from "./_views/ktb-service-view/ktb-service-view.component";
+import { KtbSequenceViewComponent } from './_views/ktb-sequence-view/ktb-sequence-view.component';
+import { KtbServiceViewComponent } from './_views/ktb-service-view/ktb-service-view.component';
 import { KeptnUrlPipe } from './_pipes/keptn-url.pipe';
 import { KtbSliBreakdownCriteriaItemComponent } from './_components/ktb-sli-breakdown-criteria-item/ktb-sli-breakdown-criteria-item.component';
-import { KtbServicesListComponent } from "./_components/ktb-services-list/ktb-services-list.component";
-import { KtbStageBadgeComponent } from "./_components/ktb-stage-badge/ktb-stage-badge.component";
+import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-services-list.component';
+import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-badge.component';
+import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
+import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
+import { KtbSubscriptionComponent } from './_components/ktb-subscription/ktb-subscription.component';
+import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
+import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -134,6 +139,10 @@ registerLocaleData(localeEn, 'en');
     KeptnUrlPipe,
     KtbSliBreakdownCriteriaItemComponent,
     KtbServicesListComponent,
+    KtbUniformViewComponent,
+    KtbKeptnServicesListComponent,
+    KtbSubscriptionComponent,
+    KtbSubscriptionItemComponent,
   ],
   imports: [
     BrowserModule,
@@ -182,6 +191,7 @@ registerLocaleData(localeEn, 'en');
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
     BrowserAnimationsModule,
+    DtFilterFieldModule,
   ],
   providers: [
     {

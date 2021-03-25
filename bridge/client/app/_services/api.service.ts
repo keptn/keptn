@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
-import {Observable, throwError, of} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import {Observable, of} from "rxjs";
+import {map} from "rxjs/operators";
 
 import {Resource} from "../_models/resource";
 import {Stage} from "../_models/stage";
@@ -13,6 +13,9 @@ import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
 import {Project} from "../_models/project";
+import {KeptnService} from '../_models/keptn-service';
+import {KeptnServicesMock} from '../_models/keptn-services-mock';
+import {TaskNames} from '../_models/task-names-mock';
 
 @Injectable({
   providedIn: 'root'
@@ -88,6 +91,10 @@ export class ApiService {
     return this.http.get<Project>(url);
   }
 
+  public getKeptnServices(projectName: string): Observable<KeptnService[]> {
+    return of(KeptnServicesMock);
+  }
+
   public getMetadata(): Observable<Metadata> {
     return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
@@ -96,6 +103,10 @@ export class ApiService {
     let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
     return this.http
       .get<Resource[]>(url);
+  }
+
+  public getTaskNames(projectName: string): Observable<string[]>{
+    return of(TaskNames);
   }
 
   public getStages(projectName): Observable<Stage[]> {

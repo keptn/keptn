@@ -1,0 +1,18 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.pointer {
+  cursor: pointer;
+}
+
+.error {
+  color: $error-color;
+}
+
+.success {
+  color: $cta-color-active;
+}
+
+.active {
+  background-color: $yellow-100 !important;
+}
