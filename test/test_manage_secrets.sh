@@ -33,7 +33,7 @@ verify_test_step $? "Secret $SECRET_1 was not created"
 kubectl get secrets $SECRET_2 -n "$KEPTN_NAMESPACE"
 verify_test_step $? "Secret $SECRET_2 was not created"
 
-roles_response=$(kubectl get roles keptn-secrets-default-read -n keptn -ojson)
+roles_response=$(kubectl get roles keptn-secrets-default-read -n "$KEPTN_NAMESPACE" -ojson)
 verify_using_jq "$roles_response" ".rules[0].resourceNames | length" 2
 verify_using_jq "$roles_response" ".rules[0].resourceNames[0]" $SECRET_1
 verify_using_jq "$roles_response" ".rules[0].resourceNames[1]" $SECRET_2
@@ -45,7 +45,7 @@ verify_test_step $? "Failed to delete secret $SECRET_1"
 keptn delete secret $SECRET_2
 verify_test_step $? "Failed to delete secret $SECRET_2"
 
-roles_response=$(kubectl get roles keptn-secrets-default-read -n keptn -ojson)
+roles_response=$(kubectl get roles keptn-secrets-default-read -n "$KEPTN_NAMESPACE" -ojson)
 verify_using_jq "$roles_response" ".rules[0].resourceNames | length" 0
 
 echo "########################################"
