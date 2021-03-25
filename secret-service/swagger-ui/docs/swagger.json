@@ -15,7 +15,7 @@
     },
     "basePath": "/v1",
     "paths": {
-        "/secrets": {
+        "/secret": {
             "put": {
                 "security": [
                     {

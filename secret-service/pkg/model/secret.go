@@ -1,8 +1,8 @@
 package model
 
 type Secret struct {
-	Name  string `json:"name"`
-	Scope string `json:"scope,omitempty"`
+	Name  string `json:"name" binding:"required"`
+	Scope string `json:"scope" binding:"required"`
 	Data  Data   `json:"data"`
 }
 
