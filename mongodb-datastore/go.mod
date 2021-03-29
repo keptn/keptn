@@ -16,6 +16,6 @@ require (
 	github.com/keptn/go-utils v0.8.2
 	github.com/stretchr/testify v1.7.0
 	github.com/xdg/stringprep v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.4.6
+	go.mongodb.org/mongo-driver v1.5.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 )
