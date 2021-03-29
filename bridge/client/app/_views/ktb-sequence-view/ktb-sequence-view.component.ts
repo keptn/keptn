@@ -108,7 +108,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
-              this.selectSequence({root: roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext), stage: params.stage});
+              let root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
+              let stage = params.eventId ? root.traces.find(t => t.id === params.eventId).getStage() : params.stage;
+              let eventId = params.eventId;
+              this.selectSequence({ root, stage, eventId });
             }
             if (roots) {
               this.updateFilterSequence(roots);
@@ -119,12 +122,13 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  selectSequence(event: {root: Root, stage: string}): void {
-    if (event.stage) {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', event.stage]);
+  selectSequence(event: {root: Root, stage: string, eventId: string}): void {
+    if(event.eventId) {
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'event', event.eventId]);
       this.location.go(routeUrl.toString());
     } else {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext]);
+      let stage = event.stage || event.root.getStages().pop();
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', stage]);
       this.location.go(routeUrl.toString());
     }
 
