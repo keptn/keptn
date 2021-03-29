@@ -433,7 +433,8 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *keptnv2.EventData,
 	if err != nil {
 		return err
 	}
-	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask, eventScope)
+
+	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask, eventScope, eventHistory)
 	if err != nil && err == errNoFurtherTaskForSequence {
 
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
@@ -596,11 +597,21 @@ func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName
 	return nil, errNoStage
 }
 
-func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string, eventScope *keptnv2.EventData) (*keptnv2.Task, error) {
-	if eventScope.Result == keptnv2.ResultFailed || eventScope.Status == keptnv2.StatusErrored {
-		sc.logger.Info("Aborting task sequence " + taskSequence.Name + " because of failed task: " + previousTask)
-		return nil, errNoFurtherTaskForSequence
+func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string, eventScope *keptnv2.EventData, eventHistory []interface{}) (*keptnv2.Task, error) {
+
+	if previousTask != "" {
+		for _, e := range eventHistory {
+			eventData := keptnv2.EventData{}
+			_ = keptnv2.Decode(e, &eventData)
+
+			if eventData.Status == keptnv2.StatusErrored || eventData.Result == keptnv2.ResultFailed {
+				eventScope.Status = eventData.Status
+				eventScope.Result = eventData.Result
+				return nil, errNoFurtherTaskForSequence
+			}
+		}
 	}
+
 	if len(taskSequence.Tasks) == 0 {
 		sc.logger.Info("Task sequence " + taskSequence.Name + " does not contain any tasks.")
 		return nil, errNoFurtherTaskForSequence
