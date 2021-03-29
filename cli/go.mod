@@ -12,7 +12,7 @@ require (
 	github.com/go-openapi/validate v0.19.5 // indirect
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
-	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/go-version v1.2.1
 	github.com/keptn/go-utils v0.8.2
 	github.com/keptn/kubernetes-utils v0.8.1
 	github.com/mattn/go-shellwords v1.0.11
