@@ -30,7 +30,7 @@ require (
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/apimachinery v0.20.4
+	k8s.io/apimachinery v0.20.5
 	k8s.io/client-go v0.20.4
 	sigs.k8s.io/structured-merge-diff v1.0.1-0.20191108220359-b1b620dd3f06 // indirect
 	vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc // indirect
