@@ -46,3 +46,5 @@ keptn-charts/
 vendor/
 
 bin/
+helm-service/_forAndi.sh
+.gitignore

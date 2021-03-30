@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -75,6 +76,9 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		}
 	}
 
+	// get custom deploymentURIs from chart
+	customDeploymentURIPublic, customDeploymentURILocal := h.getCustomDeploymentURLs(userChart)
+
 	deploymentStrategy, err := keptnevents.GetDeploymentStrategy(e.Deployment.DeploymentStrategy)
 	if err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
@@ -92,9 +96,15 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	// Send finished event
+	// TODO - when we just applied a helm chart we should wait until the deployed service is ready
+	// right now - lets just add a 5 seconds wait but we need to find a better way for this, e.g: query if the deploymentURIs are accessible
+	waitDuration, err := time.ParseDuration("5s")
+	<-time.After(waitDuration)
+
+	// Send finished event - and pass in deploymentURI in case we have a custom defined deploymentURIPublic & Private
 	data, err := h.getFinishedEventDataForSuccess(e, gitVersion,
-		getDeploymentName(deploymentStrategy, false), deploymentStrategy)
+		getDeploymentName(deploymentStrategy, false), deploymentStrategy,
+		customDeploymentURIPublic, customDeploymentURILocal)
 	if err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -204,14 +214,18 @@ func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) k
 }
 
 func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.DeploymentTriggeredEventData, gitCommit string,
-	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy) (*keptnv2.DeploymentFinishedEventData, error) {
+	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy, customDeploymentURIPublic string, customDeploymentURILocal string) (*keptnv2.DeploymentFinishedEventData, error) {
 
 	inEventData.Status = keptnv2.StatusSucceeded
 	inEventData.Result = keptnv2.ResultPass
 	inEventData.Message = "Successfully deployed"
 
 	var localURIs, publicURIs []string
-	if deploymentStrategy == keptnevents.Direct || deploymentStrategy == keptnevents.Duplicate {
+	if customDeploymentURIPublic != "" || customDeploymentURILocal != "" {
+		h.getKeptnHandler().Logger.Info(fmt.Sprintf("Using custom deployment URIs: %s, %s", customDeploymentURIPublic, customDeploymentURILocal))
+		localURIs = []string{customDeploymentURILocal}
+		publicURIs = []string{customDeploymentURIPublic}
+	} else if deploymentStrategy == keptnevents.Direct || deploymentStrategy == keptnevents.Duplicate {
 		h.getKeptnHandler().Logger.Info("Inferring deployment URIs")
 		var err error
 		localURIs, publicURIs, err = h.getDeploymentURIs(inEventData.EventData)

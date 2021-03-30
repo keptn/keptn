@@ -12,6 +12,9 @@ import (
 	"helm.sh/helm/v3/pkg/chart"
 )
 
+const CustomDeploymentURIPublicValuesProperty = "deploymentURIPublic"
+const CustomDeploymentURILocalValuesProperty = "deploymentURILocal"
+
 // HandlerBase provides basic functionality for all handlers
 type HandlerBase struct {
 	keptnHandler     *keptnv2.Keptn
@@ -58,6 +61,21 @@ func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
 	return helm.DoesChartExist(e, genChartName, h.getConfigServiceURL())
 }
 
+func (h *HandlerBase) getCustomDeploymentURLs(chart *chart.Chart) (string, string) {
+	customDeploymentURIPublic := ""
+	customDeploymentURIlocal := ""
+
+	if chart.Values[CustomDeploymentURIPublicValuesProperty] != nil {
+		customDeploymentURIPublic = chart.Values[CustomDeploymentURIPublicValuesProperty].(string)
+	}
+
+	if chart.Values[CustomDeploymentURILocalValuesProperty] != nil {
+		customDeploymentURIlocal = chart.Values[CustomDeploymentURILocalValuesProperty].(string)
+	}
+
+	return customDeploymentURIPublic, customDeploymentURIlocal
+}
+
 // HandleError logs the error and sends a finished-event
 func (h *HandlerBase) handleError(triggerID string, err error, taskName string, finishedEventData interface{}) {
 	h.keptnHandler.Logger.Error(err.Error())
@@ -87,7 +105,7 @@ func getDeploymentName(strategy keptnevents.DeploymentStrategy, generatedChart b
 	} else if strategy == keptnevents.Direct {
 		return "direct"
 	} else if strategy == keptnevents.UserManaged {
-		return "user-managed"
+		return "user_managed"
 	}
 	return ""
 }

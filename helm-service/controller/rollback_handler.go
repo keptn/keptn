@@ -2,12 +2,28 @@ package controller
 
 import (
 	"fmt"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 )
+
+type DeploymentDetails struct {
+	// DeploymentURILocal contains the local URL
+	DeploymentURIsLocal []string `json:"deploymentURIsLocal"`
+	// DeploymentURIPublic contains the public URL
+	DeploymentURIsPublic []string `json:"deploymentURIsPublic,omitempty"`
+	// DeploymentStrategy defines the used deployment strategy
+	DeploymentStrategy string `json:"deploymentstrategy" jsonschema:"enum=direct,enum=blue_green_service,enum=user_managed"`
+}
+
+type RollbackTriggeredExtendedEventData struct {
+	keptnv2.EventData
+
+	Deployment DeploymentDetails `json:"deployment"`
+}
 
 type RollbackHandler struct {
 	Handler
@@ -26,10 +42,17 @@ func NewRollbackHandler(keptnHandler Handler,
 }
 
 func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
-	e := keptnv2.RollbackTriggeredEventData{}
+	e := RollbackTriggeredExtendedEventData{}
 	if err := ce.DataAs(&e); err != nil {
 		err = fmt.Errorf("failed to unmarshal data: %v", err)
 		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
+	}
+
+	// Validate Deployment Strategy - we are not doing anything for e.g: user_managed
+	deploymentStrategy, err := keptnevents.GetDeploymentStrategy(e.Deployment.DeploymentStrategy)
+	if err != nil {
+		r.handleError(ce.ID(), err, keptnv2.ReleaseTaskName, r.getFinishedEventDataForError(e.EventData, err))
+		return
 	}
 
 	// Send release started event
@@ -39,19 +62,35 @@ func (r *RollbackHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
-	gitVersion, err := r.rollbackDeployment(e.EventData)
-	if err != nil {
-		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
-		return
-	}
+	// Only do a rollback for Blue/Green Deployments but not for Direct or user_managed
+	if deploymentStrategy == keptnevents.Duplicate {
+		var gitVersion string
 
-	data := r.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished rollback", gitVersion)
-	if err := r.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.RollbackTaskName), data); err != nil {
-		r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
-		return
+		r.getKeptnHandler().Logger.Info(fmt.Sprintf("Rollback service %s in stage %s of project %s", e.Service, e.Stage, e.Project))
+		gitVersion, err := r.rollbackDeployment(e.EventData)
+		if err != nil {
+			r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
+			return
+		}
+
+		data := r.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, e.Result, "Finished rollback", gitVersion)
+		if err := r.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.RollbackTaskName), data); err != nil {
+			r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
+			return
+		}
+		r.getKeptnHandler().Logger.Info(fmt.Sprintf("Finished release for service %s in stage %s and project %s", e.Service, e.Stage, e.Project))
+	} else {
+		finishedMessage := fmt.Sprintf("No rollback executed because deployment strategy is %s!", e.Deployment.DeploymentStrategy)
+		data := r.getFinishedEventData(e.EventData, keptnv2.StatusSucceeded, keptnv2.ResultPass, finishedMessage, "")
+		if err := r.sendEvent(ce.ID(), keptnv2.GetFinishedEventType(keptnv2.RollbackTaskName), data); err != nil {
+			r.handleError(ce.ID(), err, keptnv2.RollbackTaskName, r.getFinishedEventDataForError(e.EventData, err))
+			return
+		}
+
+		r.getKeptnHandler().Logger.Info(fmt.Sprintf(
+			"No rollback action required, as the service %s in stage %s of project %s has a %s deployment strategy",
+			e.Service, e.Stage, e.Project, e.Deployment.DeploymentStrategy))
 	}
-	r.getKeptnHandler().Logger.Info(fmt.Sprintf("Finished release for service %s in stage %s and project %s", e.Service, e.Stage, e.Project))
 
 }
 

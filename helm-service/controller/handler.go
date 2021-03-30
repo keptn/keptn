@@ -16,6 +16,7 @@ type Handler interface {
 	getGeneratedChart(e keptnv2.EventData) (*chart.Chart, string, error)
 	getUserChart(e keptnv2.EventData) (*chart.Chart, string, error)
 	existsGeneratedChart(e keptnv2.EventData) (bool, error)
+	getCustomDeploymentURLs(userChart *chart.Chart) (string, string)
 	handleError(triggerID string, err error, taskName string, finishedEventData interface{})
 	sendEvent(triggerID, ceType string, data interface{}) error
 	upgradeChart(ch *chart.Chart, event keptnv2.EventData,
