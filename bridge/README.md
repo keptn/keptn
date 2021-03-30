@@ -2,6 +2,9 @@
 
 Keptn bridge allows to browse the Keptn events.
 
+Note that npm dependencies are separated into two parts. Root level ```package.json``` contains dependencies for angular
+and other general requirements. Express server dependencies are located inside ```package.json``` located in server folder.
+
 ## Installation
 
 The Keptn bridge is installed as a part of [Keptn](https://keptn.sh).
@@ -75,7 +78,8 @@ kubectl delete -f deploy/bridge.yaml
 
 ## Local development
 
-1. Run `npm install`.
+1. Run `npm install` from bridge root level.
+1. Run `npm install` from server folder.
 1. Set `API_URL` and `API_TOKEN` environment variables, depending on your Keptn installation and operating system:
    **Linux/MacOS**
    ```console
@@ -87,7 +91,7 @@ kubectl delete -f deploy/bridge.yaml
    set API_URL=http://keptn.127.0.0.1.nip.io/api
    set API_TOKEN=1234-exam-ple
    ```
-1. Run `npm run start:dev` to start the express server and the Angular app.
+1. Run `npm run start:dev` from bridge root level to start the express server and the Angular app.
 1. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ## Production deployment

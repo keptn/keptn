@@ -1,0 +1,19 @@
+{
+  "name": "bridge-server",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "Express server specific dependencies.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "bugs": {
+    "url": "https://github.com/keptn/keptn/issues"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "depd": "^2.0.0",
+    "cookie-parser": "^1.4.5",
+    "morgan": "^1.10.0",
+    "axios": "^0.21.1"
+  }
+}
