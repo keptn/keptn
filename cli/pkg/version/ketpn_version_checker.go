@@ -12,13 +12,13 @@ import (
 
 // KeptnVersionChecker implements functions for checking the Keptn-cluster version
 type KeptnVersionChecker struct {
-	versionFetcherClient *VersionFetcherClient
+	VersionFetcherClient *VersionFetcherClient
 }
 
 // NewKeptnVersionChecker creates a new VersionChecker
 func NewKeptnVersionChecker() *KeptnVersionChecker {
 	versionChecker := KeptnVersionChecker{}
-	versionChecker.versionFetcherClient = newVersionFetcherClient()
+	versionChecker.VersionFetcherClient = newVersionFetcherClient()
 	return &versionChecker
 }
 
@@ -58,7 +58,7 @@ func (c KeptnVersionChecker) CheckKeptnVersion(cliVersion, clusterVersion string
 
 // getNewestStableVersion returns the newest stable version to which the current version can be upgraded
 func (c KeptnVersionChecker) getNewestStableVersion(cliVersion, keptnVersion string) (*version.Version, error) {
-	keptnVersionInfo, err := c.versionFetcherClient.getKeptnVersionInfo(cliVersion)
+	keptnVersionInfo, err := c.VersionFetcherClient.getKeptnVersionInfo(cliVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error when fetching Keptn version infos: %v", err)
 	}
@@ -87,7 +87,7 @@ func (c KeptnVersionChecker) getNewestStableVersion(cliVersion, keptnVersion str
 // GetStableVersions returns a list of all stable version to which the current version can be upgraded
 func (c KeptnVersionChecker) GetStableVersions(cliVersion, keptnVersion string) ([]string, error) {
 
-	keptnVersionInfo, err := c.versionFetcherClient.getKeptnVersionInfo(cliVersion)
+	keptnVersionInfo, err := c.VersionFetcherClient.getKeptnVersionInfo(cliVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error when fetching Keptn version infos: %v", err)
 	}

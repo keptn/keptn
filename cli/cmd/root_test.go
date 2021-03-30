@@ -6,6 +6,7 @@ import (
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/mattn/go-shellwords"
+	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -58,32 +59,35 @@ func executeActionCommandC(cmd string) (string, error) {
 	}
 	buf := new(bytes.Buffer)
 
+	ts := getMockVersionHTTPServer()
+
+	defer ts.Close()
+
+	vChecker := &version.VersionChecker{
+		VersionFetcherClient: &version.VersionFetcherClient{
+			HttpClient: http.DefaultClient,
+			VersionUrl: ts.URL,
+		},
+	}
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		runVersionCheck(vChecker)
+	}
+
+	rootCmd.SetOut(buf)
+	rootCmd.SetArgs(args)
+	err = rootCmd.Execute()
+
+	return buf.String(), err
+}
+
+func getMockVersionHTTPServer() *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
 		w.WriteHeader(200)
 		w.Write([]byte(keptnVersionResponse))
 	}))
-
-	defer ts.Close()
-
-	var vChecker *version.VersionChecker
-	vChecker = &version.VersionChecker{
-		VersionFetcherClient: &version.VersionFetcherClient{
-			HttpClient: http.DefaultClient,
-			VersionUrl: ts.URL,
-		},
-	}
-	testRootCmd := NewRootCommand(vChecker)
-	for _, cmd := range rootCmd.Commands() {
-		testRootCmd.AddCommand(cmd)
-	}
-
-	testRootCmd.SetOut(buf)
-	testRootCmd.SetArgs(args)
-
-	err = testRootCmd.Execute()
-	return buf.String(), err
+	return ts
 }
 
 type redirector struct {

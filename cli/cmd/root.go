@@ -35,14 +35,6 @@ func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 			runVersionCheck(vChecker)
 		},
 	}
-	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "Enables verbose logging to print debug messages")
-	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
-	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
-	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be installed, used and uninstalled in")
-	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all user prompts")
-	rootCmd.PersistentFlags().BoolVarP(&help, "help", "h", false, "help")
-	cobra.OnInitialize(initConfig)
 	return rootCmd
 }
 
@@ -62,6 +54,14 @@ func Execute() {
 }
 
 func init() {
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().BoolVarP(&verboseLogging, "verbose", "v", false, "Enables verbose logging to print debug messages")
+	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
+	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
+		"Specify the namespace where Keptn should be installed, used and uninstalled in")
+	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all user prompts")
+	rootCmd.PersistentFlags().BoolVarP(&help, "help", "h", false, "help")
 
 }
 
