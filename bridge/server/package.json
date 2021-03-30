@@ -14,6 +14,9 @@
     "depd": "^2.0.0",
     "cookie-parser": "^1.4.5",
     "morgan": "^1.10.0",
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "express-session": "^1.17.1",
+    "memorystore": "^1.6.6",
+    "crypto-random-string": "^3.3.1"
   }
 }

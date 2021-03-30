@@ -5,6 +5,7 @@ const logger = require('morgan');
 const {execSync} = require('child_process');
 
 const apiRouter = require('./api');
+const sessionInit = require('./user/session').initialize;
 
 const app = express();
 let apiUrl = process.env.API_URL;
@@ -37,8 +38,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// check if we need basic authentication
+let authType;
+
+// todo : This needs to be set as a complete authentication mechanism
+if (process.env.OAUTH_ENABLED === 'true') {
+  authType = "OAUTH";
+  sessionInit(app);
+
+  // todo : handle by session
+  app.use('/', (req, resp, next) => {
+    req.session.authenticated = false;
+    return next();
+  });
+}
+
 if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
+  authType = 'BASIC';
+
   console.error("Installing Basic authentication - please check environment variables!");
   app.use((req, res, next) => {
     // parse login and password from headers
@@ -58,12 +74,13 @@ if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
     return next();
   });
 } else {
+  authType = 'NONE';
   console.error("Not installing authentication middleware");
 }
 
 
 // everything starting with /api is routed to the api implementation
-app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink }));
+app.use('/api', apiRouter({ apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType }));
 
 // fallback: go to index.html
 app.use((req, res, next) => {
