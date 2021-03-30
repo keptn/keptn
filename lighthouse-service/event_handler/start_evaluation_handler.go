@@ -14,6 +14,7 @@ type StartEvaluationHandler struct {
 	Event             cloudevents.Event
 	KeptnHandler      *keptnv2.Keptn
 	SLIProviderConfig SLIProviderConfig
+	SLOFileRetriever  SLOFileRetriever `deep:"-"`
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -40,14 +41,14 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	evaluationStartTimestamp, evaluationEndTimestamp, err := getEvaluationTimestamps(e)
 	if err != nil {
-		return eh.sendEvaluationFinishedWithErrorEvent(keptnContext, evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
+		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
 	}
 
 	// get SLO file
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 	// get SLO file
-	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
+	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err == nil && objectives != nil {
 		eh.KeptnHandler.Logger.Info("SLO file found")
 		for _, objective := range objectives.Objectives {
@@ -75,7 +76,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			message = "error retrieving SLO file: project " + e.Project + " not found"
 			eh.KeptnHandler.Logger.Error(message)
 		}
-		return eh.sendEvaluationFinishedWithErrorEvent(keptnContext, evaluationStartTimestamp, evaluationEndTimestamp, e, message)
+		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message)
 	} else if err != nil && err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
@@ -116,7 +117,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	return nil
 }
 
-func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(keptnContext, start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
+func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
 	evaluationDetails := keptnv2.EvaluationDetails{
 		IndicatorResults: nil,
 		TimeStart:        start,
@@ -137,7 +138,8 @@ func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(keptnCont
 		Evaluation: evaluationDetails,
 	}
 
-	return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+	_, err := eh.KeptnHandler.SendTaskFinishedEvent(&evaluationFinishedData, "lighthouse-service")
+	return err
 }
 
 func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, string, error) {
