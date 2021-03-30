@@ -73,6 +73,15 @@ func (h *HandlerBase) getCustomDeploymentURLs(chart *chart.Chart) (string, strin
 		customDeploymentURIlocal = chart.Values[CustomDeploymentURILocalValuesProperty].(string)
 	}
 
+	// sanity check on values
+	if customDeploymentURIPublic == "null" || customDeploymentURIPublic == "nil" {
+		customDeploymentURIPublic = ""
+	}
+
+	if customDeploymentURIlocal == "null" || customDeploymentURIlocal == "nil" {
+		customDeploymentURIlocal = ""
+	}
+
 	return customDeploymentURIPublic, customDeploymentURIlocal
 }
 
