@@ -3,6 +3,7 @@ import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
 import {Root} from "./root";
+import { Deployment } from './Deployment';
 
 export class Project {
   projectName: string;
@@ -94,6 +95,29 @@ export class Project {
     let service = this.getServices().find(s => s.serviceName == trace.data.service);
     let root = this.getRootEvent(service, trace);
     return root?.traces.slice().reverse().find(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
+  }
+
+  getDeploymentsOfService(serviceName: string): Deployment[] {
+    const deployments: Deployment[] = [];
+    this.stages.forEach(stage => {
+      const service = stage.services.find(service => service.serviceName === serviceName);
+      if (service) {
+        const image = service.getImageVersion();
+        const deployment = deployments.find(deployment => deployment.version === image);
+        if (deployment) {
+          deployment.stages.push(stage.stageName);
+        } else {
+          const deployment = Object.assign(new Deployment(), {
+            version: image,
+            service: service.serviceName,
+            stages: [stage.stageName]
+          });
+
+          deployments.push(deployment);
+        }
+      }
+    });
+    return deployments.sort((a,b) => a.version && b.version && semver.gt(a.version, b.version) ? -1 : 1);
   }
 
   static fromJSON(data: any) {

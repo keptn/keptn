@@ -16,6 +16,7 @@ import {Project} from "../_models/project";
 import {KeptnService} from '../_models/keptn-service';
 import {KeptnServicesMock} from '../_models/keptn-services-mock';
 import {TaskNames} from '../_models/task-names-mock';
+import {Deployment} from '../_models/Deployment';
 
 @Injectable({
   providedIn: 'root'
@@ -139,6 +140,10 @@ export class ApiService {
       url += `&fromTime=${fromTime}`;
     return this.http
       .get<EventResult>(url, { observe: 'response' });
+  }
+
+  public getDeploymentsOfService(projectName: string, serviceName: string): Observable<Deployment[]> {
+    return of([]);
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {

@@ -15,6 +15,7 @@ import {DateUtil} from "../_utils/date.utils";
 
 import * as moment from 'moment';
 import {KeptnService} from '../_models/keptn-service';
+import {Deployment} from '../_models/Deployment';
 
 @Injectable({
   providedIn: 'root'
@@ -235,6 +236,12 @@ export class DataService {
           });
         this._roots.next([...this._roots.getValue()]);
       });
+  }
+
+  public getDeploymentsOfService(projectName: string, serviceName: string): Observable<Deployment[]> {
+    return this.apiService.getDeploymentsOfService(projectName, serviceName).pipe(
+      map(deployments => deployments.map(deployment => Deployment.fromJSON(deployment)))
+    );
   }
 
   public loadEvaluationResults(event: Trace) {

@@ -14,8 +14,6 @@ const routes: Routes = [
   {path: 'project/:projectName/integration', component: ProjectBoardComponent},
   {path: 'project/:projectName/service', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName', component: ProjectBoardComponent},
-  {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext', component: ProjectBoardComponent},
-  {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', component: ProjectBoardComponent},
   {path: 'project/:projectName/sequence', component: ProjectBoardComponent},
   {path: 'project/:projectName/sequence/:shkeptncontext', component: ProjectBoardComponent},
   {path: 'project/:projectName/sequence/:shkeptncontext/event/:eventId', component: ProjectBoardComponent},
@@ -24,6 +22,8 @@ const routes: Routes = [
   {path: 'trace/:shkeptncontext/:eventselector', component: ProjectBoardComponent},
   {path: 'evaluation/:shkeptncontext', component: EvaluationBoardComponent},
   {path: 'evaluation/:shkeptncontext/:eventselector', component: EvaluationBoardComponent},
+  {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext', component: ProjectBoardComponent}, // deprecated
+  {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', component: ProjectBoardComponent}, // deprecated
   {path: 'project/:projectName/:serviceName', component: ProjectBoardComponent, canActivate: [ForwarderGuard]}, // deprecated
   {path: 'project/:projectName/:serviceName/:contextId', component: ProjectBoardComponent, canActivate: [ForwarderGuard]}, // deprecated
   {path: 'project/:projectName/:serviceName/:contextId/:eventId', component: ProjectBoardComponent, canActivate: [ForwarderGuard]}, // deprecated

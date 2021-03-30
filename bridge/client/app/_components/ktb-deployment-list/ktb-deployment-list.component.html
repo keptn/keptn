@@ -1,0 +1,26 @@
+<dt-table [dataSource]="dataSource">
+  <ng-container dtColumnDef="version" dtColumnProportion="2">
+    <dt-cell *dtCellDef="let row" [textContent]="row.version || row.service">
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="commit" dtColumnProportion="2">
+    <dt-cell *dtCellDef="let row">
+      <a [href]="gitRemoteURI + '/commit/' + row.gitCommit" target="_blank" [textContent]="row.gitCommit | slice:0:10"></a>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="stages" dtColumnProportion="4" dtColumnAlign="number">
+    <dt-cell *dtCellDef="let row">
+      <dt-tag-list aria-label="fetch-info" *ngFor="let stage of row.stages">
+        <dt-tag [textContent]="stage"></dt-tag>
+      </dt-tag-list>
+    </dt-cell>
+  </ng-container>
+
+  <dt-row *dtRowDef="let row; columns: ['version', 'commit', 'stages']"></dt-row>
+</dt-table>
+<div fxLayout="row" fxLayoutAlign="center center">
+  <dt-loading-distractor *ngIf="loading">Loading …</dt-loading-distractor>
+  <button dt-show-more *ngIf="!(pageSize === service.deployments.length && service.allDeploymentsLoaded && pageSize === minPageSize) && !loading" [showLess]="pageSize > minPageSize" (click)="loadVersions(service.serviceName)">Show all versions</button>
+</div>
