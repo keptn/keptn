@@ -459,7 +459,6 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 
 		logger.Infof("CloudEvent with ID %s has not been sent yet", event.ID)
 
-		//TODO: cleanup here!
 		marshal, _ := json.Marshal(event)
 		e, _ := decodeCloudEvent(marshal)
 
