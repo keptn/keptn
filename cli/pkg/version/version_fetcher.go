@@ -29,39 +29,39 @@ type versionWithUpgradePath struct {
 	UpgradableVersions []string `json:"upgradableVersions"`
 }
 
-type versionFetcherClient struct {
-	httpClient *http.Client
-	versionUrl string
+type VersionFetcherClient struct {
+	HttpClient *http.Client
+	VersionUrl string
 }
 
-func newVersionFetcherClient() *versionFetcherClient {
-	client := versionFetcherClient{
-		httpClient: &http.Client{
+func newVersionFetcherClient() *VersionFetcherClient {
+	client := VersionFetcherClient{
+		HttpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		versionUrl: versionURL,
+		VersionUrl: versionURL,
 	}
 	return &client
 }
 
-func (client *versionFetcherClient) getCLIVersionInfo(cliVersion string) (cliVersionInfo, error) {
+func (client *VersionFetcherClient) getCLIVersionInfo(cliVersion string) (cliVersionInfo, error) {
 	v, err := client.getVersionInfo(cliVersion)
 	return v.CLIVersionInfo, err
 }
 
-func (client *versionFetcherClient) getKeptnVersionInfo(cliVersion string) (keptnVersionInfo, error) {
+func (client *VersionFetcherClient) getKeptnVersionInfo(cliVersion string) (keptnVersionInfo, error) {
 	v, err := client.getVersionInfo(cliVersion)
 	return v.KeptnVersionInfo, err
 }
 
-func (client *versionFetcherClient) getVersionInfo(cliVersion string) (versionInfo, error) {
+func (client *VersionFetcherClient) getVersionInfo(cliVersion string) (versionInfo, error) {
 	versionInfo := versionInfo{}
-	req, err := http.NewRequest("GET", client.versionUrl, nil)
+	req, err := http.NewRequest("GET", client.VersionUrl, nil)
 	if err != nil {
 		return versionInfo, err
 	}
 	req.Header.Set("user-agent", "keptn/cli:"+cliVersion)
-	resp, err := client.httpClient.Do(req)
+	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return versionInfo, err
 	}

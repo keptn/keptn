@@ -12,7 +12,7 @@ import (
 
 // KeptnVersionChecker implements functions for checking the Keptn-cluster version
 type KeptnVersionChecker struct {
-	versionFetcherClient *versionFetcherClient
+	versionFetcherClient *VersionFetcherClient
 }
 
 // NewKeptnVersionChecker creates a new VersionChecker

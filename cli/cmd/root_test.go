@@ -4,17 +4,52 @@ import (
 	"bytes"
 	"encoding/json"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cli/pkg/version"
+	"github.com/mattn/go-shellwords"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
-
-	"github.com/mattn/go-shellwords"
 )
 
 const unexpectedErrMsg = "unexpected error, got '%v'"
+
+const keptnVersionResponse = `{
+    "cli": {
+        "stable": [ "0.7.0", "0.7.1", "0.7.2", "0.7.3", "0.8.0", "0.8.1"],
+        "prerelease": [ ]
+    }, 
+    "bridge": {
+        "stable": [ "0.7.0", "0.7.1", "0.7.2", "0.7.3", "0.8.0", "0.8.1"],
+        "prerelease": [ ]
+    },
+    "keptn": {
+        "stable": [
+            {
+              "version": "0.8.1",
+              "upgradableVersions": [ "0.8.0" ]
+            },
+            {
+              "version": "0.8.0",
+              "upgradableVersions": [ "0.7.1", "0.7.2", "0.7.3" ]
+            },
+            {
+              "version": "0.7.3",
+              "upgradableVersions": [ "0.7.0", "0.7.1", "0.7.2" ]
+            },
+            {
+              "version": "0.7.2",
+              "upgradableVersions": [ "0.7.0", "0.7.1" ]
+            },
+            {
+              "version": "0.7.1",
+              "upgradableVersions": [ "0.7.0" ]
+            }
+        ]
+    }
+}`
 
 func executeActionCommandC(cmd string) (string, error) {
 	args, err := shellwords.Parse(cmd)
@@ -23,9 +58,31 @@ func executeActionCommandC(cmd string) (string, error) {
 	}
 	buf := new(bytes.Buffer)
 
-	rootCmd.SetOut(buf)
-	rootCmd.SetArgs(args)
-	err = rootCmd.Execute()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+
+		w.WriteHeader(200)
+		w.Write([]byte(keptnVersionResponse))
+	}))
+
+	defer ts.Close()
+
+	var vChecker *version.VersionChecker
+	vChecker = &version.VersionChecker{
+		VersionFetcherClient: &version.VersionFetcherClient{
+			HttpClient: http.DefaultClient,
+			VersionUrl: ts.URL,
+		},
+	}
+	testRootCmd := NewRootCommand(vChecker)
+	for _, cmd := range rootCmd.Commands() {
+		testRootCmd.AddCommand(cmd)
+	}
+
+	testRootCmd.SetOut(buf)
+	testRootCmd.SetArgs(args)
+
+	err = testRootCmd.Execute()
 	return buf.String(), err
 }
 
@@ -144,7 +201,7 @@ func Test_runVersionCheck(t *testing.T) {
 			returnedMetadataStatus = tt.metadataStatus
 			Version = tt.cliVersion
 
-			runVersionCheck()
+			runVersionCheck(nil)
 
 			// reset version
 			Version = ""
