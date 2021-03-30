@@ -150,7 +150,7 @@ func Test_runVersionCheck(t *testing.T) {
 			Version = ""
 
 			out := r.revertStdErr()
-			if out != tt.wantOutput {
+			if !strings.HasPrefix(out, tt.wantOutput) {
 				t.Errorf("unexpected output: '%s', expected '%s'", out, tt.wantOutput)
 			}
 		})

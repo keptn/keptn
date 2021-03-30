@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	api "github.com/keptn/go-utils/pkg/api/utils"
+	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -101,8 +103,9 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 
 	////////// TEST DEFINITION ///////////
 	type fields struct {
-		Logger *keptncommon.Logger
-		Event  cloudevents.Event
+		Logger           *keptncommon.Logger
+		Event            cloudevents.Event
+		SLOFileRetriever SLOFileRetriever
 	}
 	tests := []struct {
 		name                string
@@ -125,6 +128,11 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Logger: keptncommon.NewLogger("", "", ""),
 				Event:  getStartEvaluationEvent(),
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*keptnapi.Resource, error) {
+						return nil, nil
+					}},
+				},
 			},
 			sloAvailable:  false,
 			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName)},
@@ -146,6 +154,10 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Logger: keptncommon.NewLogger("", "", ""),
 				Event:  getStartEvaluationEvent(),
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+				},
 			},
 			sloAvailable:        false,
 			serviceNotAvailable: true,
@@ -168,6 +180,10 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 			fields: fields{
 				Logger: keptncommon.NewLogger("", "", ""),
 				Event:  getStartEvaluationEvent(),
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: api.NewResourceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+					ServiceHandler:  api.NewServiceHandler(os.Getenv("CONFIGURATION_SERVICE")),
+				},
 			},
 			sloAvailable:  false,
 			wantEventType: []string{keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName)},
@@ -205,6 +221,7 @@ func TestStartEvaluationHandler_HandleEvent(t *testing.T) {
 					ProjectSLIProvider: tt.ProjectSLIProvider,
 					DefaultSLIProvider: tt.DefaultSLIProvider,
 				},
+				SLOFileRetriever: tt.fields.SLOFileRetriever,
 			}
 			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
@@ -268,7 +285,9 @@ func getStartEvaluationEvent() cloudevents.Event {
 			ID:              "",
 			Time:            nil,
 			DataContentType: stringp("application/json"),
-			Extensions:      nil,
+			Extensions: map[string]interface{}{
+				"shkeptncontext": "my-context",
+			},
 		},
 		DataEncoded: []byte(`{
     "project": "sockshop",
@@ -276,8 +295,10 @@ func getStartEvaluationEvent() cloudevents.Event {
     "service": "carts",
     "testStrategy": "",
     "deploymentStrategy": "direct",
-    "start": "2019-09-01 12:00:00",
-    "end": "2019-09-01 12:05:00",
+	"evaluation": {
+		"start": "2019-09-01 12:00:00",
+    	"end": "2019-09-01 12:05:00"
+    },
     "labels": {
       "testid": "12345",
       "buildnr": "build17",

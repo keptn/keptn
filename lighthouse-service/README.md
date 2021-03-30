@@ -1,12 +1,12 @@
 # lighthouse-service
 
 This service is responsible for evaluating test results.
-Whenever an event of the type `sh.keptn.event.start-evaluation` (for the quality gates standalone use case) or `sh.keptn.events.tests-finished` is received,
+Whenever an event of the type `sh.keptn.event.evaluation.triggered` is received,
 it will take first determine the SLI (Service Level Indicator) data source (e.g., Prometheus or Dynatrace),
-as well as the required SLIs for the project. Afterwards, it will send out an event of the type `sh.keptn.internal.event.get-sli`, to inform
+as well as the required SLIs for the project. Afterwards, it will send out an event of the type `sh.keptn.event.get-sli.triggered`, to inform
 the respective data source services to retrieve the values for the SLIs defined in the `slo.yaml` file.
 
-When a data source service is finished with the retrieval of the SLI values, and has sent them as an event of the type `sh.keptn.internal.event.get-sli.done`,
+When a data source service is finished with the retrieval of the SLI values, and has sent them as an event of the type `sh.keptn.event.get-sli.finished`,
 the lighthouse-service will evaluate the SLI values based on the evaluation strategy that has been defined in the  `slo.yaml` file.
 
 # Configuring a data source
