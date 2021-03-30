@@ -205,7 +205,16 @@ func Test_runVersionCheck(t *testing.T) {
 			returnedMetadataStatus = tt.metadataStatus
 			Version = tt.cliVersion
 
-			runVersionCheck(nil)
+			ts := getMockVersionHTTPServer()
+			defer ts.Close()
+
+			vChecker := &version.VersionChecker{
+				VersionFetcherClient: &version.VersionFetcherClient{
+					HTTPClient: http.DefaultClient,
+					VersionURL: ts.URL,
+				},
+			}
+			runVersionCheck(vChecker)
 
 			// reset version
 			Version = ""
