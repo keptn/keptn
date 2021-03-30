@@ -84,6 +84,9 @@ var externalAPIProxyMappings = map[string]string{
 	"/controlPlane":          "/controlPlane",
 }
 
+const connectionTypeNATS = "nats"
+const connectionTypeHTTP = "http"
+
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
@@ -92,9 +95,6 @@ func main() {
 	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(env))
 }
-
-const connectionTypeNATS = "nats"
-const connectionTypeHTTP = "http"
 
 func _main(env envConfig) int {
 
