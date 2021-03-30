@@ -459,19 +459,19 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 
 		fmt.Println("CloudEvent with ID " + event.ID + " has not been sent yet.")
 
-		marshal, err := json.Marshal(event)
+		//TODO: cleanup here!
+		marshal, _ := json.Marshal(event)
 
-		e, err := decodeCloudEvent(marshal)
+		e, _ := decodeCloudEvent(marshal)
 
 		if e != nil {
 			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + env.PubSubRecipient)
-			err = sendEvent(*e)
-			if err != nil {
-				fmt.Println("Could not send CloudEvent: " + err.Error())
-			}
-			fmt.Println("Event has been sent successfully. Adding it to the list of sent events.")
-			ceCache.Add(*event.Type, event.ID)
-			fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(ceCache.Length(topic)), 10))
+			go func() {
+				if err := sendEvent(*e); err == nil {
+					ceCache.Add(*event.Type, event.ID)
+				}
+				fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(ceCache.Length(topic)), 10))
+			}()
 		}
 	}
 
