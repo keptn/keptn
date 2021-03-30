@@ -65,8 +65,8 @@ func executeActionCommandC(cmd string) (string, error) {
 
 	vChecker := &version.VersionChecker{
 		VersionFetcherClient: &version.VersionFetcherClient{
-			HttpClient: http.DefaultClient,
-			VersionUrl: ts.URL,
+			HTTPClient: http.DefaultClient,
+			VersionURL: ts.URL,
 		},
 	}
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {

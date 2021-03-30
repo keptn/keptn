@@ -30,16 +30,16 @@ type versionWithUpgradePath struct {
 }
 
 type VersionFetcherClient struct {
-	HttpClient *http.Client
-	VersionUrl string
+	HTTPClient *http.Client
+	VersionURL string
 }
 
 func newVersionFetcherClient() *VersionFetcherClient {
 	client := VersionFetcherClient{
-		HttpClient: &http.Client{
+		HTTPClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		VersionUrl: versionURL,
+		VersionURL: versionURL,
 	}
 	return &client
 }
@@ -56,12 +56,12 @@ func (client *VersionFetcherClient) getKeptnVersionInfo(cliVersion string) (kept
 
 func (client *VersionFetcherClient) getVersionInfo(cliVersion string) (versionInfo, error) {
 	versionInfo := versionInfo{}
-	req, err := http.NewRequest("GET", client.VersionUrl, nil)
+	req, err := http.NewRequest("GET", client.VersionURL, nil)
 	if err != nil {
 		return versionInfo, err
 	}
 	req.Header.Set("user-agent", "keptn/cli:"+cliVersion)
-	resp, err := client.HttpClient.Do(req)
+	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return versionInfo, err
 	}

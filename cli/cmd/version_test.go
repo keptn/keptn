@@ -38,8 +38,8 @@ func TestVersionCmd(t *testing.T) {
 	ts := getMockVersionHTTPServer()
 	vChecker := &version.VersionChecker{
 		VersionFetcherClient: &version.VersionFetcherClient{
-			HttpClient: http.DefaultClient,
-			VersionUrl: ts.URL,
+			HTTPClient: http.DefaultClient,
+			VersionURL: ts.URL,
 		},
 	}
 

@@ -37,8 +37,8 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	ts := getMockVersionHTTPServer()
 	vChecker := &version.KeptnVersionChecker{
 		VersionFetcherClient: &version.VersionFetcherClient{
-			HttpClient: http.DefaultClient,
-			VersionUrl: ts.URL,
+			HTTPClient: http.DefaultClient,
+			VersionURL: ts.URL,
 		},
 	}
 

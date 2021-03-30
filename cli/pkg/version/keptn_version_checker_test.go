@@ -20,8 +20,8 @@ func TestGetNewStableVersions(t *testing.T) {
 	defer teardown()
 
 	versionChecker := NewKeptnVersionChecker()
-	versionChecker.VersionFetcherClient.HttpClient = httpClient
-	versionChecker.VersionFetcherClient.VersionUrl = url
+	versionChecker.VersionFetcherClient.HTTPClient = httpClient
+	versionChecker.VersionFetcherClient.VersionURL = url
 
 	res, err := versionChecker.GetStableVersions("0.7.0", "0.7.0")
 
@@ -52,8 +52,8 @@ func TestIsUpgradable(t *testing.T) {
 	defer teardown()
 
 	versionChecker := NewKeptnVersionChecker()
-	versionChecker.VersionFetcherClient.HttpClient = httpClient
-	versionChecker.VersionFetcherClient.VersionUrl = url
+	versionChecker.VersionFetcherClient.HTTPClient = httpClient
+	versionChecker.VersionFetcherClient.VersionURL = url
 
 	for _, tt := range isUpgradableTests {
 		t.Run(tt.currentKeptnVersion, func(t *testing.T) {
@@ -88,8 +88,8 @@ func TestCheckKeptnVersion(t *testing.T) {
 	defer teardown()
 
 	versionChecker := NewKeptnVersionChecker()
-	versionChecker.VersionFetcherClient.HttpClient = httpClient
-	versionChecker.VersionFetcherClient.VersionUrl = url
+	versionChecker.VersionFetcherClient.HTTPClient = httpClient
+	versionChecker.VersionFetcherClient.VersionURL = url
 
 	for _, tt := range checkKeptnVersionTests {
 		t.Run(tt.currentKeptnVersion, func(t *testing.T) {
