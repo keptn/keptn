@@ -26,6 +26,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strconv"
@@ -85,7 +86,7 @@ var externalAPIProxyMappings = map[string]string{
 
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
-		fmt.Println("Failed to process env var: " + err.Error())
+		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
 	go keptnapi.RunHealthEndpoint("10999")
@@ -133,7 +134,7 @@ func getPubSubConnectionType() string {
 
 func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 	pubSubConnections = map[string]*cenats.Sender{}
-	fmt.Println("Creating event forwarding endpoint")
+	logger.Info("Creating event forwarding endpoint")
 
 	http.HandleFunc(env.EventForwardingPath, EventForwardHandler)
 	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
@@ -148,20 +149,20 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		fmt.Printf("Failed to read body from request: %s\n", err)
+		logger.Errorf("Failed to read body from request: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	event, err := decodeCloudEvent(body)
 	if err != nil {
-		fmt.Printf("Failed to decode CloudEvent: %s", err)
+		logger.Errorf("Failed to decode CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	err = gotEvent(*event)
 	if err != nil {
-		fmt.Printf("Failed to forward CloudEvent: %s", err)
+		logger.Errorf("Failed to forward CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -175,19 +176,19 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		path = req.URL.Path
 	}
 
-	fmt.Printf("Incoming request: host=%s, path=%s, URL=%s\n", req.URL.Host, path, req.URL.String())
+	logger.Infof("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
 
 	proxyScheme, proxyHost, proxyPath := getProxyHost(path)
 
 	if proxyScheme == "" || proxyHost == "" {
-		fmt.Println("Could not get proxy Host URL - got empty values")
+		logger.Error("Could not get proxy Host URL - got empty values")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
 	if err != nil {
-		fmt.Println("Unable to create request to be forwareded: " + err.Error())
+		logger.Errorf("Unable to create request to be forwarded: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -196,7 +197,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	parsedProxyURL, err := url.Parse(proxyScheme + "://" + strings.TrimSuffix(proxyHost, "/") + "/" + strings.TrimPrefix(proxyPath, "/"))
 	if err != nil {
-		fmt.Printf("Could not decode url with scheme: %s, host: %s, path: %s - %s\n", proxyScheme, proxyHost, proxyPath, err.Error())
+		logger.Errorf("Could not decode url with scheme: %s, host: %s, path: %s - %v", proxyScheme, proxyHost, proxyPath, err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -204,17 +205,17 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	forwardReq.URL = parsedProxyURL
 	forwardReq.URL.RawQuery = req.URL.RawQuery
 
-	fmt.Printf("Forwarding request to host=%s, path=%s, URL=%s\n", proxyHost, proxyPath, forwardReq.URL.String())
+	logger.Infof("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String())
 
 	if env.KeptnAPIToken != "" {
-		fmt.Println("Adding x-token header to HTTP request")
+		logger.Debug("Adding x-token header to HTTP request")
 		forwardReq.Header.Add("x-token", env.KeptnAPIToken)
 	}
 
 	client := getHTTPClient()
 	resp, err := client.Do(forwardReq)
 	if err != nil {
-		fmt.Println("Could not send request to API endpoint: " + err.Error())
+		logger.Errorf("Could not send request to API endpoint: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -230,14 +231,14 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Could not read response payload: " + err.Error())
+		logger.Errorf("Could not read response payload: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Printf("Received response from API: Status=%d\n", resp.StatusCode)
+	logger.Infof("Received response from API: Status=%d", resp.StatusCode)
 	if _, err := rw.Write(respBytes); err != nil {
-		fmt.Println("could not send response from API: " + err.Error())
+		logger.Errorf("could not send response from API: %v", err)
 	}
 }
 
@@ -288,9 +289,9 @@ func getProxyHost(path string) (string, string, string) {
 const defaultPollingInterval = 10
 
 func gotEvent(event cloudevents.Event) error {
-	fmt.Println("Received CloudEvent with ID " + event.ID() + ". Forwarding to Keptn API.")
+	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
 	if env.KeptnAPIEndpoint == "" {
-		fmt.Println("No external API endpoint defined. Forwarding directly to NATS server ")
+		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
 		return forwardEventToNATSServer(event)
 	}
 	return forwardEventToAPI(event)
@@ -304,16 +305,16 @@ func forwardEventToNATSServer(event cloudevents.Event) error {
 
 	c, err := cloudevents.NewClient(pubSubConnection)
 	if err != nil {
-		fmt.Printf("Failed to create client, %s", err.Error())
+		logger.Errorf("Failed to create client, %v\n", err)
 		return err
 	}
 
 	cloudevents.WithEncodingStructured(context.Background())
 
 	if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
-		fmt.Printf("failed to send: %v", err)
+		logger.Errorf("Failed to send: %v\n", err)
 	} else {
-		fmt.Printf("sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
+		logger.Infof("Sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
 	}
 
 	return nil
@@ -327,7 +328,7 @@ func createPubSubConnection(topic string) (*cenats.Sender, error) {
 	if pubSubConnections[topic] == nil {
 		p, err := cenats.NewSender(env.PubSubURL, topic, cenats.NatsOptions())
 		if err != nil {
-			fmt.Printf("Failed to create nats protocol, %s", err.Error())
+			logger.Errorf("Failed to create nats protocol, %v", err)
 		}
 		pubSubConnections[topic] = p
 	}
@@ -336,7 +337,7 @@ func createPubSubConnection(topic string) (*cenats.Sender, error) {
 }
 
 func forwardEventToAPI(event cloudevents.Event) error {
-	fmt.Println("Keptn API endpoint: " + env.KeptnAPIEndpoint)
+	logger.Infof("Keptn API endpoint: %s", env.KeptnAPIEndpoint)
 
 	payload, err := event.MarshalJSON()
 	if err != nil {
@@ -350,30 +351,29 @@ func forwardEventToAPI(event cloudevents.Event) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	if env.KeptnAPIToken != "" {
-		fmt.Println("Adding x-token header to HTTP request")
+		logger.Debug("Adding x-token header to HTTP request")
 		req.Header.Add("x-token", env.KeptnAPIToken)
 	}
 
 	client := getHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Could not send event to API endpoint: " + err.Error())
+		logger.Errorf("Could not send event to API endpoint: %v", err)
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
-		fmt.Println("Event forwarded successfully")
+		logger.Info("Event forwarded successfully")
 		return nil
 	}
-	fmt.Println("Received HTTP status from Keptn API: " + resp.Status)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Could not decode response: " + err.Error())
+		logger.Errorf("Could not decode response: %v", err)
 		return err
 	}
 
-	fmt.Println("Response from Keptn API: " + string(body))
+	logger.Debugf("Response from Keptn API: %v", string(body))
 	return errors.New(string(body))
 }
 
@@ -387,7 +387,7 @@ func getHTTPClient() *http.Client {
 
 func createHTTPConnection() {
 	if env.PubSubRecipient == "" {
-		fmt.Printf("No pubsub recipient defined")
+		logger.Error("No pubsub recipient defined")
 		return
 	}
 
@@ -432,54 +432,51 @@ func getHTTPPollingEndpoint() string {
 }
 
 func pollHTTPEventSource(endpoint string, token string, topics []string) {
-	fmt.Println("Polling events from " + endpoint)
+	logger.Infof("Polling events from: %s", endpoint)
 	for _, topic := range topics {
 		pollEventsForTopic(endpoint, token, topic)
 	}
 }
 
 func pollEventsForTopic(endpoint string, token string, topic string) {
-	fmt.Println("Retrieving events of type " + topic)
+	logger.Infof("Retrieving events of type %s", topic)
 	events, err := getEventsFromEndpoint(endpoint, token, topic)
 	if err != nil {
-		fmt.Println("Could not retrieve events of type " + topic + " from " + endpoint + ": " + err.Error())
+		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", topic, endpoint, err)
 	}
-
-	fmt.Println("Received " + strconv.FormatInt(int64(len(events)), 10) + " new .triggered events")
+	logger.Infof("Received %d new .triggered events", len(events))
 	for _, event := range events {
-		fmt.Println("Check if event " + event.ID + " has already been sent...")
+		logger.Infof("Check if event %s has already been sent", event.ID)
 		if ceCache == nil {
-			fmt.Println("Map containing already sent cloudEvents is nil. Creating a new one")
+			logger.Debug("Cache containing sent CloudEvents is nil. Creating a new one")
 			ceCache = lib.NewCloudEventsCache()
 		}
-		alreadySent := ceCache.Contains(topic, event.ID)
 
-		if alreadySent {
-			fmt.Println("CloudEvent with ID " + event.ID + " has already been sent.")
+		if ceCache.Contains(topic, event.ID) {
+			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
 			continue
 		}
 
-		fmt.Println("CloudEvent with ID " + event.ID + " has not been sent yet.")
+		logger.Infof("CloudEvent with ID %s has not been sent yet", event.ID)
 
 		//TODO: cleanup here!
 		marshal, _ := json.Marshal(event)
-
 		e, _ := decodeCloudEvent(marshal)
 
 		if e != nil {
-			fmt.Println("Sending CloudEvent with ID " + event.ID + " to " + env.PubSubRecipient)
+			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, env.PubSubRecipient)
 			go func() {
 				if err := sendEvent(*e); err == nil {
 					ceCache.Add(*event.Type, event.ID)
 				}
-				fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(ceCache.Length(topic)), 10))
+				logger.Infof("Number of sent events for topic %s: %d", topic, ceCache.Length(topic))
 			}()
 		}
 	}
 
 	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
 	// is not an open .triggered event anymore, it can be removed from the list
-	fmt.Println("Cleaning up list of sent events for topic " + topic)
+	logger.Infof("Cleaning up list of sent events for topic %s", topic)
 	ceCache.Keep(topic, events)
 }
 
@@ -559,31 +556,6 @@ func hasEventBeenSent(sentEvents []string, eventID string) bool {
 		}
 	}
 	return alreadySent
-}
-
-func cleanSentEventList(sentEvents []string, events []*keptnmodels.KeptnContextExtendedCE) []string {
-	updatedList := make([]string, 0)
-	for _, sentEvent := range sentEvents {
-		fmt.Println("Determine whether event " + sentEvent + " can be removed from list")
-		found := false
-		for _, ev := range events {
-			if ev.ID == sentEvent {
-				found = true
-				break
-			}
-		}
-		if found {
-			fmt.Println("Event " + sentEvent + " is still open. Keeping it in the list")
-			updatedList = append(updatedList, sentEvent)
-		} else {
-			fmt.Println("Event " + sentEvent + " is not open anymore. Removing it from the list")
-		}
-	}
-	return updatedList
-}
-
-func stringp(s string) *string {
-	return &s
 }
 
 func createNATSClientConnection() {

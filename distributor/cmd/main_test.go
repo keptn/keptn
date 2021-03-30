@@ -190,56 +190,6 @@ func getExpectedCloudEvent() *cloudevents.Event {
 	return &event
 }
 
-func Test_cleanSentEventList(t *testing.T) {
-	type args struct {
-		sentEvents []string
-		events     []*keptnmodels.KeptnContextExtendedCE
-	}
-	tests := []struct {
-		name string
-		args args
-		want []string
-	}{
-		{
-			name: "remove no element from list",
-			args: args{
-				sentEvents: []string{"id-1"},
-				events: []*keptnmodels.KeptnContextExtendedCE{
-					{
-						ID: "id-1",
-					},
-					{
-						ID: "id-2",
-					},
-				},
-			},
-			want: []string{"id-1"},
-		},
-		{
-			name: "remove element from list",
-			args: args{
-				sentEvents: []string{"id-3"},
-				events: []*keptnmodels.KeptnContextExtendedCE{
-					{
-						ID: "id-1",
-					},
-					{
-						ID: "id-2",
-					},
-				},
-			},
-			want: []string{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := cleanSentEventList(tt.args.sentEvents, tt.args.events); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("cleanSentEventList() = %v, want1 %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_hasEventBeenSent(t *testing.T) {
 	type args struct {
 		sentEvents []string
@@ -920,4 +870,8 @@ func Test_matchesFilter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func stringp(s string) *string {
+	return &s
 }
