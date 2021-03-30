@@ -71,7 +71,7 @@ var ctx context.Context
 
 var close = make(chan bool)
 
-var sentCloudEvents map[string][]string
+var ceCache *lib.CloudEventsCache
 
 var pubSubConnections map[string]*cenats.Sender
 
@@ -387,7 +387,8 @@ func createHTTPConnection() {
 		fmt.Printf("No pubsub recipient defined")
 		return
 	}
-	sentCloudEvents = map[string][]string{}
+
+	ceCache = lib.NewCloudEventsCache()
 	httpClient = createRecipientConnection()
 
 	eventEndpoint := getHTTPPollingEndpoint()
@@ -445,15 +446,11 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 	fmt.Println("Received " + strconv.FormatInt(int64(len(events)), 10) + " new .triggered events")
 	for _, event := range events {
 		fmt.Println("Check if event " + event.ID + " has already been sent...")
-		if sentCloudEvents == nil {
+		if ceCache == nil {
 			fmt.Println("Map containing already sent cloudEvents is nil. Creating a new one")
-			sentCloudEvents = map[string][]string{}
+			ceCache = lib.NewCloudEventsCache()
 		}
-		if sentCloudEvents[topic] == nil {
-			fmt.Println("List of sent events for topic " + topic + " is nil. Creating a new one.")
-			sentCloudEvents[topic] = []string{}
-		}
-		alreadySent := hasEventBeenSent(sentCloudEvents[topic], event.ID)
+		alreadySent := ceCache.Contains(topic, event.ID)
 
 		if alreadySent {
 			fmt.Println("CloudEvent with ID " + event.ID + " has already been sent.")
@@ -473,15 +470,15 @@ func pollEventsForTopic(endpoint string, token string, topic string, client clou
 				fmt.Println("Could not send CloudEvent: " + err.Error())
 			}
 			fmt.Println("Event has been sent successfully. Adding it to the list of sent events.")
-			sentCloudEvents[topic] = append(sentCloudEvents[*event.Type], event.ID)
-			fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(len(sentCloudEvents[topic])), 10))
+			ceCache.Add(*event.Type, event.ID)
+			fmt.Println("Number of sent events for topic " + topic + ": " + strconv.FormatInt(int64(ceCache.Length(topic)), 10))
 		}
 	}
 
 	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
 	// is not an open .triggered event anymore, it can be removed from the list
 	fmt.Println("Cleaning up list of sent events for topic " + topic)
-	sentCloudEvents[topic] = cleanSentEventList(sentCloudEvents[topic], events)
+	ceCache.Keep(topic, events)
 }
 
 func getEventsFromEndpoint(endpoint string, token string, topic string) ([]*keptnmodels.KeptnContextExtendedCE, error) {
