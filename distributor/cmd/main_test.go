@@ -465,8 +465,7 @@ func Test_pollEventsForTopic(t *testing.T) {
 	for _, tt := range tests {
 		eventSourceReturnedPayload = tt.eventSourceReturnedPayload
 		t.Run(tt.name, func(t *testing.T) {
-			client := createRecipientConnection()
-			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic, client)
+			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic)
 		})
 	}
 }
@@ -511,7 +510,7 @@ func Test__main(t *testing.T) {
 		t.Errorf("Failed to process env var: %s", err)
 	}
 	env.APIProxyPort = TEST_PORT + 1
-	go _main(nil, env)
+	go _main(env)
 
 	<-time.After(2 * time.Second)
 
@@ -577,7 +576,7 @@ func Test__main(t *testing.T) {
 		t.Errorf("Could not handle API request")
 	}
 
-	close <- true
+	closeChan <- true
 }
 
 func Test_getProxyRequestURL(t *testing.T) {
