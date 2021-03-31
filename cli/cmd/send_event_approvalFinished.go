@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/cli/pkg/common"
 	"net/url"
 	"os"
 	"strconv"
@@ -341,7 +340,7 @@ func getApprovalImageEvent(approval *apimodels.KeptnContextExtendedCE) string {
 	// therefore, we can cast its data property to a DeploymentTriggeredEventData struct and use the property from this struct
 	deploymentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
 
-	err := common.DecodeKeptnEventData(approval.Data, deploymentTriggeredData)
+	err := keptnv2.Decode(approval.Data, deploymentTriggeredData)
 
 	if err != nil {
 		return unknownImage
@@ -376,7 +375,7 @@ func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalF
 
 	approvalTriggeredEvent := &keptnv2.ApprovalTriggeredEventData{}
 
-	if err := common.DecodeKeptnEventData(events[0].Data, approvalTriggeredEvent); err != nil {
+	if err := keptnv2.Decode(events[0].Data, approvalTriggeredEvent); err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
 		return "", "", nil, err
 	}

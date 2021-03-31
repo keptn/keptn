@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d
-	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/danieljoos/wincred v1.1.0 // indirect
@@ -31,3 +30,5 @@ require (
 	k8s.io/kubectl v0.20.4
 	rsc.io/letsencrypt v0.0.3 // indirect
 )
+
+replace github.com/keptn/go-utils => ../../go-utils

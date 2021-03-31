@@ -3,9 +3,9 @@ package credentialmanager
 import (
 	"fmt"
 	"github.com/docker/docker-credential-helpers/credentials"
+	"github.com/keptn/go-utils/pkg/commonutils"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
-	"github.com/keptn/keptn/cli/pkg/file"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"gopkg.in/yaml.v2"
 	"log"
@@ -119,14 +119,14 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 }
 
 func handleCustomCreds(configLocation string, namespace string) (url.URL, string, error) {
-	fileContent, err := file.ReadFile(configLocation)
+	fileContent, err := commonutils.ReadFile(configLocation)
 	if err != nil {
 		return url.URL{}, "", err
 	}
 
 	var keptnConfig keptnConfigFile
 
-	yaml.Unmarshal([]byte(fileContent), &keptnConfig)
+	yaml.Unmarshal(fileContent, &keptnConfig)
 	for _, context := range keptnConfig.Contexts {
 
 		// Keeping default namespace to keptn
@@ -174,13 +174,13 @@ func getCurrentContextFromKubeConfig() error {
 		)
 	}
 
-	fileContent, err := file.ReadFile(kubeconfig)
+	fileContent, err := commonutils.ReadFile(kubeconfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not open KUBECONFIG file: "+err.Error()+"\n")
 		return nil
 	}
 
-	err = yaml.Unmarshal([]byte(fileContent), &kubeConfigFile)
+	err = yaml.Unmarshal(fileContent, &kubeConfigFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error()+"\n")
 		return nil

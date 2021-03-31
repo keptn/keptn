@@ -4,21 +4,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/commonutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"time"
-
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
-
-	"github.com/asaskevich/govalidator"
-	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -133,51 +125,23 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func getAndParseYaml(arg string, out interface{}) error {
-	var content string
+func getAndParseYaml(location string, out interface{}) error {
+	var content []byte
 	var err error
-	if govalidator.IsURL(arg) {
-		content, err = getYamlFromURL(arg)
+	if commonutils.IsValidURL(location) {
+		content, err = commonutils.DownloadFromURL(location)
 	} else {
-		content, err = getYamlFromFile(arg)
+		content, err = commonutils.ReadFile(location)
 	}
 	if err != nil {
 		return err
 	}
-	err = yaml.Unmarshal([]byte(content), out)
+
+	err = yaml.Unmarshal(content, out)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func getYamlFromURL(arg string) (string, error) {
-	c := http.Client{
-		Timeout: 5 * time.Second,
-	}
-	resp, err := c.Get(arg)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	createProjectParams.ShipyardContent = string(body)
-	return string(body), nil
-}
-
-func getYamlFromFile(arg string) (string, error) {
-	if _, err := os.Stat(keptnutils.ExpandTilde(arg)); os.IsNotExist(err) {
-		return "", fmt.Errorf("Cannot find file %s", arg)
-	}
-	fileContent, err := file.ReadFile(arg)
-	if err != nil {
-		return "", err
-	}
-	createProjectParams.ShipyardContent = fileContent
-	return fileContent, nil
 }
 
 func init() {

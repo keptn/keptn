@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/commonutils"
 	"os"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/file"
 )
 
 // OpenShiftIdentifier is used as identifier for OpenShift
@@ -57,11 +57,11 @@ func (mng PlatformManager) CheckCreds() error {
 
 // ParseConfig reads and parses the provided config file
 func (mng PlatformManager) ParseConfig(configFile string) error {
-	data, err := file.ReadFile(configFile)
+	data, err := commonutils.ReadFile(configFile)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal([]byte(data), mng.platform.getCreds())
+	return json.Unmarshal(data, mng.platform.getCreds())
 }
 
 // ReadCreds reads the credentials for the platform

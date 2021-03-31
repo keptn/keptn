@@ -13,7 +13,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/docker"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 	"net/url"
 	"os"
 	"strings"
@@ -21,12 +20,13 @@ import (
 )
 
 type deliveryStruct struct {
-	Project   *string            `json:"project"`
-	Service   *string            `json:"service"`
-	Stage     *string            `json:"stage"`
-	Image     *string            `json:"image"`
-	Tag       *string            `json:"tag"`
-	Sequence  *string            `json:"sequence"`
+	Project  *string `json:"project"`
+	Service  *string `json:"service"`
+	Stage    *string `json:"stage"`
+	Image    *string `json:"image"`
+	Tag      *string `json:"tag"`
+	Sequence *string `json:"sequence"`
+	//Values    *[]string          `json:"values"`
 	Labels    *map[string]string `json:"labels"`
 	Watch     *bool
 	WatchTime *int
@@ -92,9 +92,8 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *deliveryInputData.Project, err.Error())
 	}
 
-	shipyard := &keptnv2.Shipyard{}
-
-	if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
+	shipyard, err := keptnv2.DecodeShipyardYAML([]byte(shipyardResource.ResourceContent))
+	if err != nil {
 		return fmt.Errorf("Error while decoding shipyard.yaml for project %s: %s", *deliveryInputData.Project, err.Error())
 	}
 
@@ -193,11 +192,9 @@ func init() {
 	triggerDeliveryCmd.MarkFlagRequired("image")
 
 	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
-
 	delivery.Tag = triggerDeliveryCmd.Flags().StringP("tag", "", "", `The tag of the image. If no tag is specified, the "latest" tag is used`)
-
 	delivery.Sequence = triggerDeliveryCmd.Flags().StringP("sequence", "", "delivery", "The name of the sequence to be triggered")
-
+	//delivery.Values = triggerDeliveryCmd.Flags().StringSliceP("values", "", []string{}, "Values to use for the new artifact to be delivered")
 	delivery.Output = AddOutputFormatFlag(triggerDeliveryCmd)
 	delivery.Watch = AddWatchFlag(triggerDeliveryCmd)
 	delivery.WatchTime = AddWatchTimeFlag(triggerDeliveryCmd)

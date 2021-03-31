@@ -3,11 +3,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/commonutils"
 	"io/ioutil"
 	"log"
 	"time"
-
-	"github.com/keptn/keptn/cli/pkg/file"
 
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 )
@@ -40,15 +39,15 @@ func NewCLIConfigManager() *CLIConfigManager {
 func (c *CLIConfigManager) LoadCLIConfig() (CLIConfig, error) {
 
 	cliConfig := CLIConfig{AutomaticVersionCheck: true}
-	if !file.FileExists(c.CLIConfigPath) {
+	if !commonutils.FileExists(c.CLIConfigPath) {
 		return cliConfig, nil
 	}
 
-	data, err := file.ReadFile(c.CLIConfigPath)
+	data, err := commonutils.ReadFile(c.CLIConfigPath)
 	if err != nil {
 		return cliConfig, fmt.Errorf("error when reading config file: %v", err)
 	}
-	if err := json.Unmarshal([]byte(data), &cliConfig); err != nil {
+	if err := json.Unmarshal(data, &cliConfig); err != nil {
 		return cliConfig, fmt.Errorf("error when unmarshalling config file: %v", err)
 	}
 
