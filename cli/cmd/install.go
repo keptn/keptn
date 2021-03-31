@@ -257,7 +257,7 @@ func doInstallation() error {
 
 	if installParams.UseCase == ContinuousDelivery {
 		for _, serviceChart := range continuousDeliveryServiceCharts {
-			if err := helmHelper.UpgradeChart(serviceChart, keptnReleaseName+serviceChart.Name(), keptnNamespace, values); err != nil {
+			if err := helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
 				msg := fmt.Sprintf("Could not complete Keptn installation: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 				return errors.New(msg)
 			}
@@ -290,11 +290,11 @@ func fetchContinuousDeliveryCharts(helmHelper helm.Helper, chartRepoURL *string)
 	charts := []*chart.Chart{}
 	for _, service := range continuousDeliveryServices {
 		chartURL := getExecutionPlaneServiceChartRepoURL(chartRepoURL, service)
-		chart, err := helmHelper.DownloadChart(chartURL)
+		serviceChart, err := helmHelper.DownloadChart(chartURL)
 		if err != nil {
 			return nil, err
 		}
-		charts = append(charts, chart)
+		charts = append(charts, serviceChart)
 	}
 	return charts, nil
 }
