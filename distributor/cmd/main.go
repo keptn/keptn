@@ -133,6 +133,7 @@ func getPubSubConnectionType() string {
 }
 
 func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
+	defer wg.Done()
 	pubSubConnections = map[string]*cenats.Sender{}
 	logger.Info("Creating event forwarding endpoint")
 
@@ -140,8 +141,11 @@ func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
 	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
 	serverURL := fmt.Sprintf("localhost:%d", env.APIProxyPort)
 
-	wg.Done()
-	log.Fatal(http.ListenAndServe(serverURL, nil))
+	err := http.ListenAndServe(serverURL, nil)
+	if err != nil {
+		logger.Errorf("Unable to start API Proxy: %v", err)
+	}
+
 }
 
 // EventForwardHandler forwards events received by the execution plane services to the Keptn API or the Nats server
