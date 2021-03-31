@@ -40,10 +40,8 @@ spec:
         env:
         - name: CONFIGURATION_SERVICE
           value: 'http://configuration-service:8080'
-        - name: EVENTBROKER
-          value: 'http://localhost:8081/event'
-        - name: API
-          value: 'ws://api-service:8080/websocket'
+        - name: SHIPYARD_CONTROLLER
+          value: 'http://shipyard-controller:8080'
         - name: ENVIRONMENT
           value: 'production'
         - name: INGRESS_HOSTNAME_SUFFIX
@@ -92,7 +90,7 @@ spec:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'
           - name: PUBSUB_TOPIC
-            value: 'sh.keptn.event.service.create.finished,sh.keptn.event.deployment.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.event.service.delete.finished'
+            value: 'sh.keptn.event.deployment.triggered,sh.keptn.event.release.triggered,sh.keptn.event.action.triggered,sh.keptn.event.service.delete.finished,sh.keptn.event.rollback.triggered'
           - name: PUBSUB_RECIPIENT
             value: '127.0.0.1'
 ---

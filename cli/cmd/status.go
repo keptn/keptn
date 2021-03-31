@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
 	"github.com/spf13/cobra"
@@ -17,19 +15,9 @@ var statusCmd = &cobra.Command{
 	Example:      `keptn status`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-		if err != nil || endPoint.String() == "" || apiToken == "" {
-			fmt.Println("CLI is not authenticated against any Keptn cluster.  For authenticating your CLI use \"keptn auth\"")
-			return nil
-		}
-
-		err = authenticate(endPoint.String(), apiToken)
-		if err != nil {
-			fmt.Printf("CLI cannot be authenticated against Keptn cluster %s\n", endPoint.String())
-			return err
-		}
-		fmt.Printf("CLI is authenticated against the Keptn cluster %s\n", endPoint.String())
-		return nil
+		credentialManager := credentialmanager.NewCredentialManager(assumeYes)
+		authenticator := NewAuthenticator(namespace, credentialManager)
+		return authenticator.Auth(AuthenticatorOptions{})
 	},
 }
 

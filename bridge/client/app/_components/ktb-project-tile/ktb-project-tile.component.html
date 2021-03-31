@@ -1,11 +1,16 @@
 <dt-tile [id]="project.projectName" [routerLink]="['/project', project.projectName]" *ngIf="project">
-  <dt-tile-title [textContent]="project.projectName"></dt-tile-title>
+  <dt-tile-title [textContent]="project.projectName" [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)"></dt-tile-title>
   <dt-tile-subtitle>
     <p class="mt-0 mb-2" *ngIf="project.stages"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</p>
+    <p class="mt-0 mb-2" *ngIf="project.getShipyardVersion() as sv">Shipyard version: <span [textContent]="sv"></span> <dt-icon name="abort" class="error bottom" *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)"></dt-icon> </p>
+    <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)">
+      <dt-icon name="information" class="info mr-1"></dt-icon>
+      <p class="small m-0">Shipyard version not supported. <br/>Please use <a [href]="'/operate/upgrade/' | keptnUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn upgrade project</a> to upgrade to the latest shipyard version.</p>
+    </div>
     <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI"><a [href]="project.gitRemoteURI" [textContent]="project.gitRemoteURI" target="_blank" (click)="$event.stopPropagation()"></a></p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!project.gitRemoteURI">
       <dt-icon class="info mr-1" [name]="'information'"></dt-icon>
-      <p class="small m-0">No Git upstream configured. <br/>Please use <a href="https://keptn.sh/docs/0.7.x/reference/cli/commands/keptn_update_project/" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn update project</a> to set a Git upstream.</p>
+      <p class="small m-0">No Git upstream configured. <br/>Please use <a [href]="'/reference/cli/commands/keptn_update_project/' | keptnUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn update project</a> to set a Git upstream.</p>
     </div>
   </dt-tile-subtitle>
   <dt-tag-list aria-label="stages">

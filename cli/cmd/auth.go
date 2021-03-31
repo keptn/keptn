@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -14,8 +13,6 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 )
@@ -70,68 +67,23 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		var err error
-		// User wants to print current auth credentials
+		credentialManager := credentialmanager.NewCredentialManager(authParams.acceptContext)
+		authenticator := NewAuthenticator(namespace, credentialManager)
+
 		if *authParams.exportConfig {
-			exportEndPoint, exportAPIToken, err = credentialmanager.NewCredentialManager(authParams.acceptContext).GetCreds(namespace)
+			endpoint, apiToken, err := authenticator.GetCredentials()
 			if err != nil {
 				return err
 			}
-			fmt.Println("Endpoint: ", exportEndPoint.String())
-			fmt.Println("API Token: ", exportAPIToken)
+			fmt.Println("Endpoint: ", endpoint.String())
+			fmt.Println("API Token: ", apiToken)
 			return nil
 		}
 
-		logging.PrintLog("Starting to authenticate", logging.InfoLevel)
-
-		url, err := url.Parse(*authParams.endPoint)
-		if err != nil {
-			logging.PrintLog("Error parsing Keptn API URL", logging.InfoLevel)
-			return err
-		}
-
-		if url.Path == "" || url.Path == "/" {
-			url.Path = "/api"
-		}
-
-		authHandler := apiutils.NewAuthenticatedAuthHandler(url.String(), *authParams.apiToken, "x-token", nil, url.Scheme)
-
-		if !mocking {
-			authenticated := false
-
-			if !lookupHostname(url.Hostname(), net.LookupHost, time.Sleep) {
-				return fmt.Errorf("Authentication was unsuccessful - could not resolve hostname.")
-			}
-
-			if endPointErr := checkEndPointStatus(*authParams.endPoint); endPointErr != nil {
-				return fmt.Errorf("Authentication was unsuccessful: %s"+endPointErrorReasons,
-					endPointErr)
-			}
-
-			// try to authenticate (and retry it)
-			for retries := 0; retries < 3; time.Sleep(5 * time.Second) {
-				_, err := authHandler.Authenticate()
-				if err != nil {
-					errMsg := fmt.Sprintf("Authentication was unsuccessful. %s", *err.Message)
-					logging.PrintLog(errMsg, logging.QuietLevel)
-					logging.PrintLog("Retrying...", logging.InfoLevel)
-					retries++
-				} else {
-					authenticated = true
-					break
-				}
-			}
-
-			if !authenticated {
-				return fmt.Errorf("Authentication was unsuccessful - could not authenticate against the server.")
-			}
-
-			logging.PrintLog("Successfully authenticated against the Keptn cluster "+*authParams.endPoint, logging.InfoLevel)
-			return credentialmanager.NewCredentialManager(authParams.acceptContext).SetCreds(*url, *authParams.apiToken, namespace)
-		}
-
-		fmt.Println("skipping auth due to mocking flag set to true")
-		return nil
+		return authenticator.Auth(AuthenticatorOptions{
+			Endpoint: *authParams.endPoint,
+			APIToken: *authParams.apiToken,
+		})
 	},
 }
 
@@ -148,6 +100,13 @@ func init() {
 }
 
 func verifyAuthParams(authParams *authCmdParams) error {
+
+	const parametersRequiredMessage = "keptn auth requires api-token and endpoint \n\n" +
+		"For more information on how to obtain token and endpoint to go https://keptn.sh/docs/%s/reference/cli/#authenticate-keptn-cli \n\n" +
+		"Alternatively, to quickly access Keptn, you can use a port-forward and then authenticate your Keptn CLI: \n" +
+		"- kubectl -n %s port-forward service/api-gateway-nginx 8080:80 \n" +
+		"- keptn auth --endpoint=http://localhost:8080/api --api-token=$(kubectl get secret keptn-api-token -n %s -ojsonpath={.data.keptn-api-token} | base64 --decode)"
+
 	var err error
 	if *authParams.exportConfig {
 		return nil
@@ -160,25 +119,10 @@ func verifyAuthParams(authParams *authCmdParams) error {
 				return err
 			}
 		}
-		if authParams.endPoint == nil || *authParams.endPoint == "" {
-			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
-			if err != nil {
-				*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
-				if err != nil {
-					return fmt.Errorf("Error in fetching the endpoint\n" + err.Error() + "\nCLI is not authenticated")
-				}
-			}
-			if *authParams.secure {
-				smartKeptnAuth.insecurePrefix = "https://"
-			}
-			*authParams.endPoint = smartKeptnAuth.insecurePrefix + *authParams.endPoint + "/api"
-		}
 
-		if authParams.apiToken == nil || *authParams.apiToken == "" {
-			*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
-			if err != nil {
-				return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
-			}
+		err = smartFetchKeptnAuthParameters()
+		if err != nil {
+			return fmt.Errorf(err.Error()+parametersRequiredMessage, keptnReleaseDocsURL, namespace, namespace)
 		}
 	}
 	return nil
@@ -187,25 +131,31 @@ func verifyAuthParams(authParams *authCmdParams) error {
 type resolveFunc func(string) ([]string, error)
 type sleepFunc func(time.Duration)
 
-func lookupHostname(hostname string, lookupFn resolveFunc, sleepFn sleepFunc) bool {
-	if strings.HasSuffix(hostname, "xip.io") {
-		logging.PrintLog("Skipping lookup of xip.io domain", logging.InfoLevel)
-		return true
-	} else {
-		// first, try to resolve the domain (and retry it)
-		for retries := 0; retries < 3; sleepFn(5 * time.Second) {
-			_, err := lookupFn(hostname)
+func smartFetchKeptnAuthParameters() error {
+	var err error
+
+	if authParams.endPoint == nil || *authParams.endPoint == "" {
+		*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromIngress(false, namespace, smartKeptnAuth.ingressName)
+		if err != nil {
+			*authParams.endPoint, err = keptnutils.GetKeptnEndpointFromService(false, namespace, smartKeptnAuth.serviceName)
 			if err != nil {
-				logging.PrintLog("Failed to resolve hostname "+hostname, logging.InfoLevel)
-				logging.PrintLog("Retrying...", logging.InfoLevel)
-				retries++
-			} else {
-				return true
+				return fmt.Errorf("Cannot automatically fetch the endpoint\n" + err.Error() + "\n\n")
 			}
+		}
+		if *authParams.secure {
+			smartKeptnAuth.insecurePrefix = "https://"
+		}
+		*authParams.endPoint = smartKeptnAuth.insecurePrefix + *authParams.endPoint + "/api"
+	}
+
+	if authParams.apiToken == nil || *authParams.apiToken == "" {
+		*authParams.apiToken, err = keptnutils.GetKeptnAPITokenFromSecret(false, namespace, smartKeptnAuth.secretName)
+		if err != nil {
+			return fmt.Errorf("Error in fetching the api-token\n" + err.Error() + "\nCLI is not authenticated")
 		}
 	}
 
-	return false
+	return nil
 }
 
 // try to authenticate towards the given endpoint with the provided apiToken
@@ -229,7 +179,7 @@ func smartKeptnCLIAuth() (string, error) {
 	}
 
 	if len(keptnInstallations) > 1 {
-		fmt.Println("We have found multiple Keptn Installation, Please select the one from the list below to continue")
+		fmt.Println("There are multiple Keptn installations on your Kubernetes cluster, please select the correct one from the list below to continue")
 		for index, keptnInstallation := range keptnInstallations {
 			fmt.Printf("\t%d - %s\n", index, keptnInstallation)
 		}

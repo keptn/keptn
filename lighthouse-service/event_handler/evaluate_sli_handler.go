@@ -41,9 +41,11 @@ type criteriaObject struct {
 }
 
 type EvaluateSLIHandler struct {
-	Event        cloudevents.Event
-	HTTPClient   *http.Client
-	KeptnHandler *keptnv2.Keptn
+	Event            cloudevents.Event
+	HTTPClient       *http.Client
+	KeptnHandler     *keptnv2.Keptn
+	SLOFileRetriever SLOFileRetriever `deep:"-"`
+	EventStore       EventStore
 }
 
 func (eh *EvaluateSLIHandler) HandleEvent() error {
@@ -53,7 +55,13 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 	err := eh.Event.DataAs(&e)
 
-	triggeredEvents, err2 := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
+	if err != nil {
+		msg := "Could not parse event payload: " + err.Error()
+		eh.KeptnHandler.Logger.Error(msg)
+		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
+	}
+
+	triggeredEvents, err2 := eh.EventStore.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
 		Stage:        e.Stage,
 		Service:      e.Service,
@@ -72,28 +80,24 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 	}
 	triggeredID := triggeredEvents[0].ID
 
-	if err != nil {
-		msg := "Could not parse event payload: " + err.Error()
-		eh.KeptnHandler.Logger.Error(msg)
-		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
-	}
-
 	eh.KeptnHandler.Logger.Debug("Start to evaluate SLIs")
 	// compare the results based on the evaluation strategy
-	sloConfig, err := getSLOs(e.Project, e.Stage, e.Service)
+	sloConfig, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err != nil {
 		if err == ErrSLOFileNotFound {
 			evaluationDetails := keptnv2.EvaluationDetails{
 				IndicatorResults: nil,
 				TimeStart:        e.GetSLI.Start,
 				TimeEnd:          e.GetSLI.End,
-				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
+				Result:           string(keptnv2.ResultPass),
 			}
 
 			evaluationResult := keptnv2.EvaluationFinishedEventData{
 				Evaluation: evaluationDetails,
 				EventData: keptnv2.EventData{
-					Result:  "pass",
+					Result:  keptnv2.ResultPass,
+					Status:  keptnv2.StatusSucceeded,
+					Message: fmt.Sprintf("no evaluation performed by lighthouse because no SLO file configured for project %s", e.Project),
 					Project: e.Project,
 					Service: e.Service,
 					Stage:   e.Stage,
@@ -107,14 +111,11 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, err.Error(), "", eh.KeptnHandler, e)
 	}
 
-	var sloFileContent []byte
 	// get the slo.yaml as a plain file to avoid confusion due to defaulted values (see https://github.com/keptn/keptn/issues/1495)
-	sloFileContentTmp, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
+	sloFileContent, err := eh.KeptnHandler.GetKeptnResource("slo.yaml")
 	if err != nil {
 		eh.KeptnHandler.Logger.Debug("Could not fetch slo.yaml from service repository: " + err.Error() + ". Will append internally used SLO object to evaluation.finished event.")
 		sloFileContent, _ = yaml.Marshal(sloConfig)
-	} else {
-		sloFileContent = []byte(sloFileContentTmp)
 	}
 
 	// get results of previous evaluations from data store (mongodb-datastore)
@@ -157,7 +158,7 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
 			evaluationResult.Result = keptnv2.ResultFailed
 			evaluationResult.Status = keptnv2.StatusErrored
-			evaluationResult.Evaluation.Result = "Setting evaluation result to 'fail' because of failed preceding test execution"
+			evaluationResult.Message = "Setting evaluation result to 'fail' because of failed preceding test execution"
 		}
 	}
 
@@ -228,19 +229,20 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.Status = "info"
 		}
 
-		if !isPassed {
-			if objective.Warning != nil && len(objective.Warning) > 0 {
-				isWarning, warningTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
-				if isWarning {
-					sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
-					sliEvaluationResult.Status = "warning"
-				}
-			} else {
-				isWarning = false
+		if objective.Warning != nil && len(objective.Warning) > 0 {
+			isWarning, warningTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Warning, previousSLIResults, sloConfig.Comparison)
+			if !isPassed && isWarning {
+				sliEvaluationResult.Score = 0.5 * float64(objective.Weight)
+				sliEvaluationResult.Status = "warning"
 			}
+		} else {
+			isWarning = false
 		}
 
-		sliEvaluationResult.Targets = append(warningTargets, passTargets...)
+		sliEvaluationResult.PassTargets = passTargets
+		sliEvaluationResult.WarningTargets = warningTargets
+		sliEvaluationResult.KeySLI = objective.KeySLI
+		sliEvaluationResult.DisplayName = objective.DisplayName
 
 		if !isPassed && !isWarning {
 			if objective.KeySLI {

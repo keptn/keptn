@@ -14,36 +14,20 @@
 
 package cmd
 
+// NOTE: THIS COMMAND WILL BE REMOVED, THUS THE WHOLE FILE WILL BE REMOVED IN A FUTURE RELEASE
+
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"github.com/ghodss/yaml"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"net/url"
-	"os"
-	"strings"
-	"time"
-
-	"github.com/keptn/keptn/cli/pkg/docker"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
-
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
 type newArtifactStruct struct {
-	Project   *string `json:"project"`
-	Service   *string `json:"service"`
-	Stage     *string `json:"stage"`
-	Image     *string `json:"image"`
-	Tag       *string `json:"tag"`
-	Sequence  *string `json:"sequence"`
+	Project   *string            `json:"project"`
+	Service   *string            `json:"service"`
+	Stage     *string            `json:"stage"`
+	Image     *string            `json:"image"`
+	Tag       *string            `json:"tag"`
+	Sequence  *string            `json:"sequence"`
+	Labels    *map[string]string `json:"labels"`
 	Watch     *bool
 	WatchTime *int
 	Output    *string
@@ -69,121 +53,37 @@ For pulling an image from a private registry, we would like to refer to the Kube
 `,
 	Example:      `keptn send event new-artifact --project=sockshop --service=carts --stage=dev --image=docker.io/keptnexamples/carts --tag=0.7.0 --sequence=artifact-delivery`,
 	SilenceUsage: true,
+	Deprecated:   `Use "keptn trigger delivery" instead`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return doSendEventNewArtifactPreRunCheck()
+		delivery := deliveryStruct{
+			Project:   newArtifact.Project,
+			Service:   newArtifact.Service,
+			Stage:     newArtifact.Stage,
+			Image:     newArtifact.Image,
+			Tag:       newArtifact.Tag,
+			Sequence:  newArtifact.Sequence,
+			Watch:     newArtifact.Watch,
+			WatchTime: newArtifact.WatchTime,
+			Output:    newArtifact.Output,
+			Labels:    newArtifact.Labels,
+		}
+		return doTriggerDeliveryPreRunCheck(delivery)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := doSendEventNewArtifactPreRunCheck(); err != nil {
-			return err
+		delivery := deliveryStruct{
+			Project:   newArtifact.Project,
+			Service:   newArtifact.Service,
+			Stage:     newArtifact.Stage,
+			Image:     newArtifact.Image,
+			Tag:       newArtifact.Tag,
+			Sequence:  newArtifact.Sequence,
+			Watch:     newArtifact.Watch,
+			WatchTime: newArtifact.WatchTime,
+			Output:    newArtifact.Output,
+			Labels:    newArtifact.Labels,
 		}
-		var endPoint url.URL
-		var apiToken string
-		var err error
-		if !mocking {
-			endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
-		} else {
-			endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
-			endPoint = *endPointPtr
-			apiToken = ""
-		}
-
-		if err != nil {
-			return errors.New(authErrorMsg)
-		}
-
-		logging.PrintLog("Starting to send a new-artifact-event to deploy the service "+
-			*newArtifact.Service+" in project "+*newArtifact.Project+" in version "+*newArtifact.Image+":"+*newArtifact.Tag, logging.InfoLevel)
-
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
-			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
-				endPointErr)
-		}
-
-		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-		shipyardResource, err := resourceHandler.GetProjectResource(*newArtifact.Project, "shipyard.yaml")
-		if err != nil {
-			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *newArtifact.Project, err.Error())
-		}
-
-		shipyard := &keptnv2.Shipyard{}
-
-		if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
-			return fmt.Errorf("Error while decoding shipyard.yaml for project %s: %s", *newArtifact.Project, err.Error())
-		}
-
-		// if no stage has been provided to the new-artifact command, use the first stage in the shipyard.yaml
-		if newArtifact.Stage == nil || *newArtifact.Stage == "" {
-			if len(shipyard.Spec.Stages) > 0 {
-				newArtifact.Stage = &shipyard.Spec.Stages[0].Name
-			} else {
-				return fmt.Errorf("Could not start sequence because no stage has been found in the shipyard.yaml of project %s", *newArtifact.Project)
-			}
-		}
-
-		deploymentEvent := keptnv2.DeploymentTriggeredEventData{
-			EventData: keptnv2.EventData{
-				Project: *newArtifact.Project,
-				Stage:   *newArtifact.Stage,
-				Service: *newArtifact.Service,
-			},
-			ConfigurationChange: keptnv2.ConfigurationChange{
-				Values: map[string]interface{}{
-					"image": *newArtifact.Image + ":" + *newArtifact.Tag,
-				},
-			},
-		}
-
-		source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
-
-		sdkEvent := cloudevents.NewEvent()
-		sdkEvent.SetID(uuid.New().String())
-		sdkEvent.SetType(keptnv2.GetTriggeredEventType(*newArtifact.Stage + "." + *newArtifact.Sequence))
-		sdkEvent.SetSource(source.String())
-		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
-		sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
-
-		eventByte, err := sdkEvent.MarshalJSON()
-		if err != nil {
-			return fmt.Errorf("Failed to marshal cloud event. %s", err.Error())
-		}
-
-		apiEvent := apimodels.KeptnContextExtendedCE{}
-		err = json.Unmarshal(eventByte, &apiEvent)
-		if err != nil {
-			return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
-		}
-
-		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-
-		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
-
-		eventContext, err2 := apiHandler.SendEvent(apiEvent)
-		if err2 != nil {
-			logging.PrintLog("Send new-artifact was unsuccessful", logging.QuietLevel)
-			return fmt.Errorf("Send new-artifact was unsuccessful. %s", *err2.Message)
-		}
-
-		if *newArtifact.Watch {
-			eventHandler := apiutils.NewAuthenticatedEventHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
-			filter := apiutils.EventFilter{
-				KeptnContext: *eventContext.KeptnContext,
-				Project:      *newArtifact.Project,
-			}
-			watcher := NewDefaultWatcher(eventHandler, filter, time.Duration(*newArtifact.WatchTime)*time.Second)
-			PrintEventWatcher(watcher, *newArtifact.Output, os.Stdout)
-		}
-		return nil
+		return doTriggerDelivery(delivery)
 	},
-}
-
-func doSendEventNewArtifactPreRunCheck() error {
-	trimmedImage := strings.TrimSuffix(*newArtifact.Image, "/")
-	newArtifact.Image = &trimmedImage
-
-	if newArtifact.Tag == nil || *newArtifact.Tag == "" {
-		*newArtifact.Image, *newArtifact.Tag = docker.SplitImageName(*newArtifact.Image)
-	}
-	return docker.CheckImageAvailability(*newArtifact.Image, *newArtifact.Tag, nil)
 }
 
 func init() {
@@ -210,6 +110,8 @@ func init() {
 
 	newArtifact.Sequence = newArtifactCmd.Flags().StringP("sequence", "", "", "The name of the sequence to be triggered")
 	newArtifactCmd.MarkFlagRequired("sequence")
+
+	newArtifact.Labels = newArtifactCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 
 	newArtifact.Output = AddOutputFormatFlag(newArtifactCmd)
 	newArtifact.Watch = AddWatchFlag(newArtifactCmd)

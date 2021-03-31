@@ -33,7 +33,7 @@ func NewGetConfigBridge(ctx *middleware.Context, handler GetConfigBridgeHandler)
 
 /*GetConfigBridge swagger:route GET /config/bridge configuration getConfigBridge
 
-get bridge credentials
+Get bridge credentials
 
 */
 type GetConfigBridge struct {

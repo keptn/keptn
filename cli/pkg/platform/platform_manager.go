@@ -12,7 +12,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/file"
 )
 
-// OpenShiftIdentifier is used as identifier for Openshift
+// OpenShiftIdentifier is used as identifier for OpenShift
 const OpenShiftIdentifier = "openshift"
 
 // KubernetesIdentifier is used as identifier for Kubernetes
@@ -65,9 +65,9 @@ func (mng PlatformManager) ParseConfig(configFile string) error {
 }
 
 // ReadCreds reads the credentials for the platform
-func (mng PlatformManager) ReadCreds() error {
+func (mng PlatformManager) ReadCreds(assumeYes bool) error {
 
-	cm := credentialmanager.NewCredentialManager(false)
+	cm := credentialmanager.NewCredentialManager(assumeYes)
 	credsStr, err := cm.GetInstallCreds()
 	if err != nil {
 		credsStr = ""
@@ -82,6 +82,9 @@ func (mng PlatformManager) ReadCreds() error {
 		fmt.Println("Please confirm that the provided cluster information is correct: ")
 
 		mng.platform.printCreds()
+		if assumeYes {
+			break
+		}
 		fmt.Println("Is this all correct? (y/n)")
 
 		reader := bufio.NewReader(os.Stdin)

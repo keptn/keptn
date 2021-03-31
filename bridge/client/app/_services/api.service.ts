@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
-import {Observable, throwError, of} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import {Observable, of} from "rxjs";
+import {map} from "rxjs/operators";
 
 import {Resource} from "../_models/resource";
 import {Stage} from "../_models/stage";
@@ -11,6 +11,11 @@ import {EventResult} from "../_models/event-result";
 import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
+import {Metadata} from '../_models/metadata';
+import {Project} from "../_models/project";
+import {KeptnService} from '../_models/keptn-service';
+import {KeptnServicesMock} from '../_models/keptn-services-mock';
+import {TaskNames} from '../_models/task-names-mock';
 
 @Injectable({
   providedIn: 'root'
@@ -74,11 +79,24 @@ export class ApiService {
   }
 
   public getProjects(pageSize?: number): Observable<ProjectResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project?disableUpstreamSync=true`;
+    let url = `${this._baseUrl}/controlPlane/v1/project?disableUpstreamSync=true`;
     if(pageSize)
       url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
+  }
+
+  public getProject(projectName: string): Observable<Project> {
+    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
+    return this.http.get<Project>(url);
+  }
+
+  public getKeptnServices(projectName: string): Observable<KeptnService[]> {
+    return of(KeptnServicesMock);
+  }
+
+  public getMetadata(): Observable<Metadata> {
+    return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
@@ -87,14 +105,18 @@ export class ApiService {
       .get<Resource[]>(url);
   }
 
+  public getTaskNames(projectName: string): Observable<string[]>{
+    return of(TaskNames);
+  }
+
   public getStages(projectName): Observable<Stage[]> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage`;
+    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.http
       .get<Stage[]>(url);
   }
 
   public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
+    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url);
   }
@@ -128,20 +150,23 @@ export class ApiService {
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean, eventType: EventTypes, source: string ) {
-    let url = `${this._baseUrl}/v1/event`;
+    const url = `${this._baseUrl}/v1/event`;
 
     return this.http
       .post<any>(url, {
-        "shkeptncontext": approval.shkeptncontext,
-        "type": eventType,
-        "triggeredid": approval.id,
-        "source": `https://github.com/keptn/keptn/bridge#${source}`,
-        "data": Object.assign(approval.data, {
-          "approval": {
-            "result": approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
-            "status": "succeeded"
-          }
-        })
+        shkeptncontext: approval.shkeptncontext,
+        type: eventType,
+        triggeredid: approval.id,
+        source: `https://github.com/keptn/keptn/bridge#${source}`,
+        data: {
+          project: approval.data.project,
+          stage: approval.data.stage,
+          service: approval.data.service,
+          labels: approval.data.labels,
+          message: approval.data.message,
+          result: approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
+          status: 'succeeded'
+        }
       });
   }
 
@@ -152,7 +177,7 @@ export class ApiService {
       .post<any>(url, {
         "shkeptncontext": evaluation.shkeptncontext,
         "type": EventTypes.EVALUATION_INVALIDATED,
-        "triggeredid": evaluation.id,
+        "triggeredid": evaluation.triggeredid,
         "source": "https://github.com/keptn/keptn/bridge#evaluation.invalidated",
         "data": {
           "project": evaluation.data.project,

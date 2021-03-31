@@ -1,7 +1,7 @@
+import semver from 'semver';
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
-import {EventTypes} from "./event-types";
 import {Root} from "./root";
 
 export class Project {
@@ -9,6 +9,7 @@ export class Project {
   gitUser: string;
   gitRemoteURI: string;
   gitToken: string;
+  shipyardVersion: string;
 
   stages: Stage[];
   services: Service[];
@@ -22,6 +23,15 @@ export class Project {
       });
     }
     return this.services;
+  }
+
+  getShipyardVersion(): string {
+    return this.shipyardVersion?.split('/').pop();
+  }
+
+  isShipyardNotSupported(supportedVersion: string): boolean {
+    const version = this.getShipyardVersion();
+    return !version || !supportedVersion || semver.lt(version, supportedVersion);
   }
 
   getService(serviceName: string): Service {
@@ -73,7 +83,7 @@ export class Project {
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots?.find(root => root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root && root?.isProblem() && !root?.isProblemResolvedOrClosed());
+    return stage.getOpenProblems();
   }
 
   getRootEvent(service: Service, event: Trace): Root {
@@ -83,7 +93,7 @@ export class Project {
   getDeploymentEvaluation(trace: Trace): Trace {
     let service = this.getServices().find(s => s.serviceName == trace.data.service);
     let root = this.getRootEvent(service, trace);
-    return root?.traces.slice().reverse().find(t => t.type == EventTypes.EVALUATION_FINISHED);
+    return root?.traces.slice().reverse().find(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
   }
 
   static fromJSON(data: any) {

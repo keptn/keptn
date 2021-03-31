@@ -41,7 +41,7 @@ type GetLogsParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*EventId of the event the logs belog to
+	/*EventId of the event the logs belong to
 	  In: query
 	*/
 	EventID *string

@@ -27,12 +27,12 @@ var delProjectCmd = &cobra.Command{
 * If a Git upstream is configured for this project, the referenced upstream repository (e.g., on GitHub) will not be deleted. 
 * Services that have been deployed to the Kubernetes cluster are not deleted.
 * Namespaces that have been created on the Kubernetes cluster are not deleted.
-* Helm-releases created for deployments are not deleted. To clean-up deployed Helm releases, pelease see [Clean-up after deleting a project](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/continuous_delivery/deployment_helm/#clean-up-after-deleting-a-project)
+* Helm-releases created for deployments are not deleted. To clean-up deployed Helm releases, please see [Clean-up after deleting a project](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/continuous_delivery/deployment_helm/#clean-up-after-deleting-a-project)
 `,
 	Example:      `keptn delete project sockshop`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -48,7 +48,7 @@ var delProjectCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endPoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -58,7 +58,7 @@ var delProjectCmd = &cobra.Command{
 			ProjectName: args[0],
 		}
 
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}

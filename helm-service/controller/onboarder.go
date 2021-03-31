@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/base64"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
@@ -21,12 +20,9 @@ type Onboarder interface {
 	// OnboardGeneratedChart generates the generated chart using the Helm manifests of the user chart
 	// as well as the specified deployment strategy
 	OnboardGeneratedChart(helmManifest string, event keptnv2.EventData, strategy keptnevents.DeploymentStrategy) (*chart.Chart, error)
-
-	// OnboardService
-	OnboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error
 }
 
-// onboarder is an implemntation of Onboarder
+// onboarder is an implementation of Onboarder
 type onboarder struct {
 	Handler
 	namespaceManager namespacemanager.INamespaceManager
@@ -50,32 +46,6 @@ func NewOnboarder(
 		chartGenerator:   chartGenerator,
 		chartPackager:    chartPackager,
 	}
-}
-
-// OnboardService commits the helm chart to the configuration service
-func (o *onboarder) OnboardService(stageName string, event *keptnv2.ServiceCreateFinishedEventData) error {
-
-	helmChartData, err := base64.StdEncoding.DecodeString(event.Helm.Chart)
-	if err != nil {
-		o.getKeptnHandler().Logger.Error("Error when decoding the Helm Chart")
-		return err
-	}
-
-	o.getKeptnHandler().Logger.Debug("Storing the Helm Chart provided by the user in stage " + stageName)
-
-	storeOpts := keptnutils.StoreChartOptions{
-		Project:   event.Project,
-		Service:   event.Service,
-		Stage:     stageName,
-		ChartName: helm.GetChartName(event.Service, false),
-		HelmChart: helmChartData,
-	}
-
-	if _, err := o.chartStorer.Store(storeOpts); err != nil {
-		o.getKeptnHandler().Logger.Error("Error when storing the Helm Chart: " + err.Error())
-		return err
-	}
-	return nil
 }
 
 // OnboardGeneratedChart generates the generated chart using the Helm manifests of the user chart
@@ -109,7 +79,7 @@ func (o *onboarder) OnboardGeneratedChart(helmManifest string, event keptnv2.Eve
 		}
 	} else {
 		// No need to generate further charts for other strategies, e.g., user-managed
-		o.getKeptnHandler().Logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s no futher charts are genereated",
+		o.getKeptnHandler().Logger.Debug(fmt.Sprintf("For service %s in stage %s with deployment strategy %s no further charts are generated",
 			event.Service, event.Stage, strategy.String()))
 		return &chart.Chart{}, nil
 	}

@@ -148,7 +148,7 @@ describe('Trace', () => {
           "stage": "dev"
         },
         "id": "1d95ba9c-924c-405a-b013-2e07ce0ccd81",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T12:48:24.799Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -166,7 +166,7 @@ describe('Trace', () => {
           }
         },
         "id": "662c4b5b-9726-4932-9093-d8d0bbfae257",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T12:48:24.917Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -245,7 +245,7 @@ describe('Trace', () => {
           "stage": "staging"
         },
         "id": "d0905c49-a1dd-456c-aa04-efe3065709a2",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T12:52:15.829Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -263,7 +263,7 @@ describe('Trace', () => {
           }
         },
         "id": "391dc227-99a0-4dc8-9176-282f618aa3bd",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T12:52:15.969Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -342,7 +342,7 @@ describe('Trace', () => {
           "stage": "production"
         },
         "id": "e560fddd-793b-4328-b442-fb01d3d4cdf8",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T12:54:41.995Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -460,7 +460,7 @@ describe('Trace', () => {
           "stage": "dev"
         },
         "id": "3e807c9b-3b1d-45ed-9b0e-655a8686842b",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T13:49:58.800Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -478,7 +478,7 @@ describe('Trace', () => {
           }
         },
         "id": "d9073b98-98f5-47de-966f-8d57902f2cf3",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T13:49:58.880Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -657,7 +657,7 @@ describe('Trace', () => {
           "stage": "dev"
         },
         "id": "a15b3223-9d3b-4294-97b1-1cb68f72121b",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T15:09:08.891Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -675,7 +675,7 @@ describe('Trace', () => {
           }
         },
         "id": "9bcbce99-9e00-493f-8143-83f1a2dfaf82",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T15:09:08.982Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -854,7 +854,7 @@ describe('Trace', () => {
           "stage": "dev"
         },
         "id": "1cc077e9-2f6c-4329-ac0f-15f956f22f94",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T15:54:58.106Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -872,7 +872,7 @@ describe('Trace', () => {
           }
         },
         "id": "ef7b141e-23a3-4542-86c1-ca3dcb8341cc",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T15:54:58.218Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1038,7 +1038,7 @@ describe('Trace', () => {
           "stage": "staging"
         },
         "id": "aa063da1-67e9-44e5-9275-08d87a7e0af1",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T16:13:56.300Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1156,7 +1156,7 @@ describe('Trace', () => {
           "stage": "dev"
         },
         "id": "791596f6-cf13-4b50-8baa-a2558972bb6c",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-05-28T07:50:52.030Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1174,7 +1174,7 @@ describe('Trace', () => {
           }
         },
         "id": "e36f86f7-b2d2-41cc-a9a1-10df93197623",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-05-28T07:50:52.181Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1342,7 +1342,7 @@ describe('Trace', () => {
           "stage": "staging"
         },
         "id": "ab1ea10a-90e7-43c2-9824-222acf798b9e",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-05-28T07:56:15.852Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1644,7 +1644,7 @@ describe('Trace', () => {
           "stage": "dev"
         },
         "id": "44dbf3cf-d3e2-4115-b5f2-b12a774f2c8d",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T16:15:43.595Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1662,7 +1662,7 @@ describe('Trace', () => {
           }
         },
         "id": "0c2f02b6-4116-4bda-b774-4af2930f89d9",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T16:15:43.685Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -1820,7 +1820,7 @@ describe('Trace', () => {
           "stage": "staging"
         },
         "id": "04ef469d-2ef0-403e-9a3c-81584fc23b30",
-        "source": "gatekeeper-service",
+        "source": "approval-service",
         "specversion": "0.2",
         "time": "2020-03-16T16:20:50.280Z",
         "type": "sh.keptn.event.dev.artifact-delivery.triggered",
@@ -2121,9 +2121,9 @@ describe('Trace', () => {
     expect(rootTraces[0] instanceof Trace).toBe(true, 'instance of Trace');
 
     expect(rootTraces[0].type).toBe('sh.keptn.event.service.create.started');
-    expect(rootTraces[0].getLabel()).toBe('service.create', 'Label for trace "sh.keptn.event.service.create.started" should be "service.create"');
+    expect(rootTraces[0].getLabel()).toBe('create', 'Label for trace "sh.keptn.event.service.create.started" should be "create"');
     expect(rootTraces[0].getShortImageName()).toBe(undefined);
-    expect(rootTraces[0].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.service.create.started" should be "idle"');
+    expect(rootTraces[0].getIcon()).toBe('information', 'Icon for trace "sh.keptn.event.service.create.started" should be "information"');
     expect(rootTraces[0].isFaulty()).toBe(null);
     expect(rootTraces[0].isWarning()).toBe(null);
     expect(rootTraces[0].isSuccessful()).toBe(null);
@@ -2131,9 +2131,9 @@ describe('Trace', () => {
     expect(rootTraces[0].getService()).toBe('carts');
 
     expect(rootTraces[1].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[1].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[1].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[1].getShortImageName()).toBe('carts:0.10.1', 'ShortImageName for first trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "carts:0.10.1"');
-    expect(rootTraces[1].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[1].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[1].isFaulty()).toBe(null);
     expect(rootTraces[1].isWarning()).toBe(null);
     expect(rootTraces[1].isSuccessful()).toBe(null);
@@ -2141,9 +2141,9 @@ describe('Trace', () => {
     expect(rootTraces[1].getService()).toBe('carts');
 
     expect(rootTraces[2].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[2].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[2].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[2].getShortImageName()).toBe('carts:0.10.2', 'ShortImageName for second trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "carts:0.10.2"');
-    expect(rootTraces[2].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[2].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[2].isFaulty()).toBe(null);
     expect(rootTraces[2].isWarning()).toBe(null);
     expect(rootTraces[2].isSuccessful()).toBe(null);
@@ -2151,9 +2151,9 @@ describe('Trace', () => {
     expect(rootTraces[2].getService()).toBe('carts');
 
     expect(rootTraces[8].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
-    expect(rootTraces[8].getLabel()).toBe('dev.artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "dev.artifact-delivery"');
+    expect(rootTraces[8].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[8].getShortImageName()).toBe(undefined, 'ShortImageName for third trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "undefined"');
-    expect(rootTraces[8].getIcon()).toBe('idle', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "idle"');
+    expect(rootTraces[8].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
     expect(rootTraces[8].isFaulty()).toBe(null);
     expect(rootTraces[8].isWarning()).toBe(null);
     expect(rootTraces[8].isSuccessful()).toBe(null);

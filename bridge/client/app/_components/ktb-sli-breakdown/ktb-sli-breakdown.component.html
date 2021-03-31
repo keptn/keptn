@@ -1,109 +1,57 @@
 <p class="mb-0">SLI breakdown</p>
-<dt-key-value-list [columns]="1">
-  <ng-container *ngFor="let result of _indicatorResultsFail">
-    <dt-key-value-list-item>
-      <dt-key-value-list-key>
-        <p class="m-0 fail" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
-      </dt-key-value-list-key>
-      <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-            <span [textContent]="formatNumber(result.value.value)"></span>
-            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
-        </span>
-        <ng-template #overlay>
-          <span class="small" [textContent]="result.value.value"></span>
-        </ng-template>
-      </dt-key-value-list-value>
-      <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-          <dt-icon class="event-icon error" [name]="'criticalevent'"></dt-icon>
-        </span>
-        <ng-template #overlay>
-          <span class="small" [textContent]="result.value.message"></span>
-        </ng-template>
-      </dt-key-value-list-value>
-    </dt-key-value-list-item>
+<dt-table [dataSource]="tableEntries" dtSort #sortable>
+  <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="5">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [class.bold]="row.keySli">
+      <span class="truncate" [title]="row.name" [textContent]="row.name"></span>
+    </dt-cell>
   </ng-container>
-  <ng-container *ngFor="let result of _indicatorResultsWarning">
-    <dt-key-value-list-item>
-      <dt-key-value-list-key>
-        <p class="m-0 warning" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
-      </dt-key-value-list-key>
-      <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-            <span [textContent]="formatNumber(result.value.value)"></span>
-            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
-        </span>
-        <ng-template #overlay>
-          <span class="small" [textContent]="result.value.value"></span>
-        </ng-template>
-      </dt-key-value-list-value>
-      <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-          <dt-icon class="event-icon warning" [name]="'criticalevent'"></dt-icon>
-        </span>
-        <ng-template #overlay>
-          <span class="small" [textContent]="result.value.message"></span>
-        </ng-template>
-      </dt-key-value-list-value>
-    </dt-key-value-list-item>
+
+  <ng-container dtColumnDef="value" dtColumnAlign="number" dtColumnProportion="1">
+    <dt-header-cell *dtHeaderCellDef>Value</dt-header-cell>
+    <dt-cell *dtCellDef="let row">{{ row.value }}</dt-cell>
   </ng-container>
-  <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
-    <dt-key-value-list-item *ngIf="i < (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
-      <dt-key-value-list-key>
-        <p class="m-0" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
-      </dt-key-value-list-key>
-      <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-            <span [textContent]="formatNumber(result.value.value)"></span>
-            <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
-        </span>
-        <ng-template #overlay>
-          <span class="small" [textContent]="result.value.value"></span>
-        </ng-template>
-      </dt-key-value-list-value>
-      <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-          <dt-icon class="event-icon" [name]="'criticalevent'"></dt-icon>
-        </span>
-        <ng-template #overlay>
-          <span class="small" [textContent]="result.value.message"></span>
-        </ng-template>
-      </dt-key-value-list-value>
-    </dt-key-value-list-item>
+
+  <ng-container dtColumnDef="passTargets" dtColumnAlign="number"dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>pass Criteria</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <ktb-sli-breakdown-criteria-item [targets]="row.passTargets"></ktb-sli-breakdown-criteria-item>
+    </dt-cell>
   </ng-container>
-</dt-key-value-list>
-<dt-expandable-panel #indicatorResultsPanel>
-  <dt-key-value-list [columns]="1">
-    <ng-container *ngFor="let result of _indicatorResultsPass; index as i">
-      <dt-key-value-list-item *ngIf="i >= (3 - _indicatorResultsFail.length - _indicatorResultsWarning.length)">
-        <dt-key-value-list-key>
-          <p class="m-0" [class.bold]="result.key_sli" [textContent]="result.value.metric"></p>
-        </dt-key-value-list-key>
-        <dt-key-value-list-value *ngIf="result.value.success && !result.value.message">
-          <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-              <span [textContent]="formatNumber(result.value.value)"></span>
-              <span class="small m-0 ml-1" *ngFor="let _target of result.targets" [textContent]="_target.criteria" [class.error]="_target.violated" [class.error-line]="_target.violated"></span>
-          </span>
-          <ng-template #overlay>
-            <span class="small" [textContent]="result.value.value"></span>
-          </ng-template>
-        </dt-key-value-list-value>
-        <dt-key-value-list-value *ngIf="!(result.value.success && !result.value.message)">
-        <span [dtOverlay]="overlay" style="cursor: pointer;" [dtOverlayConfig]="overlayConfig">
-          <dt-icon class="event-icon" [name]="'criticalevent'"></dt-icon>
-        </span>
-          <ng-template #overlay>
-            <span class="small" [textContent]="result.value.message"></span>
-          </ng-template>
-        </dt-key-value-list-value>
-      </dt-key-value-list-item>
-    </ng-container>
-  </dt-key-value-list>
-</dt-expandable-panel>
-<p class="m-0 mt-1 mb-1">
-  <a class="dt-link" (click)="$event.stopPropagation();indicatorResultsPanel.toggle();" *ngIf="indicatorResults.length > 3">
-    <span *ngIf="!indicatorResultsPanel.expanded">Show all <span [textContent]="indicatorResults.length"></span> evaluation results</span>
-    <span *ngIf="indicatorResultsPanel.expanded">Collapse evaluation results</span>
-  </a>
-</p>
+
+  <ng-container dtColumnDef="warningTargets" dtColumnAlign="number"dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>warning Criteria</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <ktb-sli-breakdown-criteria-item [targets]="row.warningTargets"></ktb-sli-breakdown-criteria-item>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="targets" dtColumnAlign="number"dtColumnProportion="2">
+    <dt-header-cell *dtHeaderCellDef>Criteria</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <ktb-sli-breakdown-criteria-item [targets]="row.targets"></ktb-sli-breakdown-criteria-item>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="result" dtColumnAlign="number" dtColumnProportion="1">
+    <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
+    <dt-cell *dtCellDef="let row">{{ evaluationState[row.result] }}</dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="score" dtColumnAlign="number" dtColumnProportion="1">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Score</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <span [class.error]="row.result === 'fail'" [class.warning]="row.result === 'warning'" [textContent]="row.score"></span>
+    </dt-cell>
+  </ng-container>
+
+  <dt-header-row
+    *dtHeaderRowDef="columnNames"
+  ></dt-header-row>
+  <dt-row
+    *dtRowDef="
+        let row;
+        columns: columnNames
+      "
+  ></dt-row>
+</dt-table>

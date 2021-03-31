@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"crypto/tls"
 	"net/http"
 	"time"
@@ -20,25 +19,4 @@ var client = http.Client{
 	Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	},
-}
-
-func checkEndPointStatus(endPoint string) error {
-	if checkEndPointStatusMock {
-		return nil
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), maxHTTPTimeout)
-	defer cancel()
-
-	req, err := http.NewRequest("HEAD", endPoint, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.Do(req.WithContext(ctx))
-	if err != nil {
-		return err
-	}
-	resp.Body.Close()
-	return nil
 }

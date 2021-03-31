@@ -1,0 +1,82 @@
+# data urls
+data:[a-zA-Z=;,/0-9+-]+
+
+# YouTube
+https?://(?:(?:www\.|)youtube\.com|youtu.be)/(?:channel/|embed/|playlist\?list=|watch\?v=|)[-a-zA-Z0-9?&=_]*
+<\s*youtube\s+id=['"][-a-zA-Z0-9?_]*['"]
+\bimg\.youtube\.com/vi/[-a-zA-Z0-9?&=_]*
+# Google Analytics
+\bgoogle-analytics\.com/collect.[-0-9a-zA-Z?%=&_.~]*
+# Google APIs
+\bgoogleapis\.com/[a-z]+/v\d+/[a-z]+/[@./?=\w]+
+# Google Calendar
+\bcalendar\.google\.com/calendar/u/\d+/embed\?src=[@./?=\w]+
+\w+\@group\.calendar\.google\.com\b
+# Google DataStudio
+\bdatastudio\.google\.com/(?:(?:c/|)u/\d+/|)(?:embed/|)(?:open|reporting|datasources|s)/[-0-9a-zA-Z]+(?:/page/[-0-9a-zA-Z]+|)
+# Google Docs
+/docs\.google\.com/[a-z]+/d/(?:e/|)[0-9a-zA-Z_-]+/
+# Google Groups
+https://groups\.google\.com/d/topic/[^/]+/[a-zA-Z0-9]+/discussion
+https://groups\.google\.com/d/msg/[^/]+/[a-zA-Z0-9]+/[a-zA-Z0-9]+
+# Google themes
+themes\.googleusercontent\.com/static/fonts/[^/]+/v\d+/[^.]+.
+# Goo.gl
+/goo\.gl/[a-zA-Z0-9]+
+
+
+# GitHub SHAs
+(?:\[[0-9a-f]+\]\(https:/|)/github\.com/[^/]+/[^/]+/[^/]+/[0-9a-f]+\b
+\bgithub\.com/[^/]+/[^/]+[@#][0-9a-f]+\b
+# githubusercontent
+/[a-z-]+\.githubusercontent\.com/[-a-zA-Z0-9?&=_\/.]*
+# gist github
+/gist\.github\.com/[^/]+/[0-9a-f]+
+
+# URL escaped characters
+\%[0-9A-F]{2}
+
+# sha256
+sha256:[0-9a-f]+
+# sha-1
+"[0-9a-fA-F]{40}"
+# hex in url queries
+=[0-9a-fA-F]+&
+# hex digits including css/html color classes:
+(?:[\\0][xX]|\\u|[uU]\+|#x?|\%23)[0-9a-fA-FgGrR_]{2,}(?:[uU]?[lL]{0,2}|u\d+)\b
+
+# uuid:
+[<({"'][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}['"})>]
+# sha-1
+"[0-9a-fA-F]{40}"
+
+
+"chart":\s*".*"
+"raw":\s+.*$
+"helmChart":\s*".*"
+"resourceContent": ".*"
+"shipyard":\s*".*"
+Shipyard:\s*\`[^`]*\`
+Shipyard:\s*"[^"]*"
+encodedShipyard\s*:=\s*"[^"]*"
+"sloFileContent":\s*"[^"]*"
+SLOFileContent:\s*"[^"]*"
+"sockshop.*$
+testBase64Encoded.*
+(?:"ProblemID"|ProblemID):\s*"[-0-9a-f]*"
+GitCommit:\s*"[^"]*"
+
+# ignore long runs of a single character:
+\b([A-Za-z])\g{-1}{3,}\b
+
+# <word>v#
+[Vv]\d+(?:\b|(?=[a-zA-Z_]))
+
+# tar arguments
+\b(?:)tar(?:\s+-[a-zA-Z]+|\s[a-z]+)+
+
+# https://github.com/keptn/keptn/pull/3234#discussion_r588338146
+"test": "perfromance-health"
+
+# gh workflows/actions "uses: abcd/abcd@v1"
+uses:\s*.*

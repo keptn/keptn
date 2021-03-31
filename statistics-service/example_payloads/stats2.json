@@ -19,7 +19,7 @@
           ],
           "keptnServiceExecutions": [
             {
-              "name": "gatekeeper-service",
+              "name": "approval-service",
               "executions": [
                 {
                   "type": "sh.keptn.event.approval.finished",

@@ -36,7 +36,7 @@ Thereby it relies on three concepts:
 
 ## Version capabilities:
 
-keptn is installed by using these images from the [keptn Dockerhub registry](https://hub.docker.com/u/keptn):
+keptn is installed by using these images from the [keptn Docker Hub registry](https://hub.docker.com/u/keptn):
 
 - keptn/keptn-authenticator:0.2.0
 - keptn/keptn-control:0.2.0

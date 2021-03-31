@@ -34,7 +34,7 @@ func getWorkload(jmeterconf *JMeterConf, teststrategy string) (*Workload, error)
 		}
 	}
 
-	// if we didnt find it in the config go through the defaults
+	// if we didn't find it in the config go through the defaults
 	for _, workload := range defaultWorkloads {
 		if workload.TestStrategy == teststrategy {
 			return &workload, nil
@@ -64,7 +64,7 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 	resource, err := resourceHandler.GetServiceResource(project, stage, service, resourceUri)
 	if err != nil && err == configutils.ResourceNotFoundError {
-		// if not found on serivce level - lets try it on stage level
+		// if not found on service level - lets try it on stage level
 		resource, err = resourceHandler.GetStageResource(project, stage, resourceUri)
 
 		if err != nil && err == configutils.ResourceNotFoundError {
@@ -99,12 +99,12 @@ func GetKeptnResource(project string, stage string, service string, resourceUri 
  * Return:
  * foundPrimaryFile: true if it was downloaded
  * no of resources: total number of downloaded resources
- * error: any error that occured
+ * error: any error that occurred
  */
 func GetAllKeptnResources(project string, stage string, service string, inheritResources bool, resourceURIFolderOfInterest string, primaryTestFileName string, localDirectory string, logger *keptncommon.Logger) (bool, int, error) {
 	resourceHandler := configutils.NewResourceHandler(GetConfigurationServiceURL())
 
-	// Lets first get the servcie resources
+	// Lets first get the service resources
 	// TODO: This endpoint is not yet implemented and therefore this always fails - https://github.com/keptn/keptn/issues/1924
 	/* resourceList, err := resourceHandler.GetAllServiceResources(project, stage, service)
 	if err != nil {
@@ -135,7 +135,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 	foundPrimaryFile := false
 
 	// Download Files
-	// now lets iterate through all resources and download those that match the resourceURIFolderOfInterest and that havent already been downloaded
+	// now lets iterate through all resources and download those that match the resourceURIFolderOfInterest and that haven't already been downloaded
 	// as we download files from project, service and stage level we have different file structures, e.g:
 	// Project: /jmeter/myjmeter.jmx
 	// Stage: /jmeter/myjmeter2.jmx
@@ -145,7 +145,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 		isPrimaryFile := strings.Contains(*resource.ResourceURI, primaryTestFileName)
 		startingIndex := strings.Index(*resource.ResourceURI, resourceURIFolderOfInterest)
 
-		// store to local directory if it doesnt already exist
+		// store to local directory if it doesn't already exist
 		// now lets strip off the any prepending directory names prior to resourceURIFolderOfInterest
 
 		targetFileName := ""
@@ -160,7 +160,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 		// only store it if we really know whether and where we have to store it to!
 		if targetFileName != "" {
 			// now we have to download that resource first as so far we only have the resourceURI
-			downloadedResource, err := resourceHandler.GetStageResource(project, stage, *resource.ResourceURI)
+			downloadedResource, err := resourceHandler.GetStageResource(project, stage, strings.TrimPrefix(*resource.ResourceURI, "/"))
 			if err != nil {
 				return false, fileCount, err
 			}
@@ -172,7 +172,7 @@ func GetAllKeptnResources(project string, stage string, service string, inheritR
 			fileCount = fileCount + 1
 		} else {
 			skippedFileCount = skippedFileCount + 1
-			// 	logger.Debug(fmt.Sprintf("Not storing %s as it doesnt match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceURIFolderOfInterest))
+			// 	logger.Debug(fmt.Sprintf("Not storing %s as it doesn't match %s or %s", *resource.ResourceURI, primaryTestFileName, resourceURIFolderOfInterest))
 		}
 	}
 
@@ -216,7 +216,7 @@ func FileExists(filename string) bool {
  * Stores the content to the local file system under the targetFileName (can also contain directories)
  * Returns:
  * 1: true if file was actually written, e.g: will be false if file exists and overwriteIfExists==False
- * 2: error if an error occured
+ * 2: error if an error occurred
  */
 func storeFile(localDirectory string, targetFileName string, resourceContent string, overwriteIfExists bool) error {
 	// lets construct the final directory name
@@ -237,7 +237,7 @@ func storeFile(localDirectory string, targetFileName string, resourceContent str
 		directory += pathItem + "/"
 	}
 
-	// now lets create that directory if it doesnt exist
+	// now lets create that directory if it doesn't exist
 	err := os.MkdirAll(directory, os.ModePerm)
 	if err != nil {
 		return err

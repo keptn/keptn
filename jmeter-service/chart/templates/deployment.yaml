@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jmeter-service.fullname" . }}
+  labels:
+    {{- include "jmeter-service.labels" . | nindent 4 }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "jmeter-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jmeter-service.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jmeter-service.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: jmeter-service
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- if .Values.image }}
+          image: {{ .Values.image }} # use image from .Values.image (e.g., when starting via skaffold)
+          {{- else }}
+          image: "{{ .Values.jmeterservice.image.repository }}:{{ .Values.jmeterservice.image.tag | default .Chart.AppVersion }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.jmeterservice.image.pullPolicy }}
+          ports:
+            - containerPort: 80
+          env:
+          - name: CONFIGURATION_SERVICE
+            value: "http://localhost:8081/configuration-service"
+          - name: env
+            value: 'production'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: distributor
+          image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.test.triggered'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: STAGE_FILTER
+              value: "{{ .Values.distributor.stageFilter }}"
+            - name: PROJECT_FILTER
+              value: "{{ .Values.distributor.projectFilter }}"
+            - name: SERVICE_FILTER
+              value: "{{ .Values.distributor.serviceFilter }}"
+            {{- if .Values.remoteControlPlane.enabled }}
+            - name: KEPTN_API_ENDPOINT
+              value: "{{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api"
+            - name: KEPTN_API_TOKEN
+              value: "{{ .Values.remoteControlPlane.api.token }}"
+            - name: HTTP_SSL_VERIFY
+              value: "{{ .Values.remoteControlPlane.api.apiValidateTls | default "true" }}"
+            {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

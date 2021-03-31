@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"testing"
 )
@@ -127,10 +128,6 @@ type EventScope struct {
 	Service string `json:"service"`
 }
 
-func stringp(s string) *string {
-	return &s
-}
-
 func GetTestTriggeredEvent() models.Event {
 	return models.Event{
 		Contenttype:    "application/json",
@@ -138,11 +135,11 @@ func GetTestTriggeredEvent() models.Event {
 		Extensions:     nil,
 		ID:             "test-triggered-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "",
-		Type:           stringp("sh.keptn.event.approval.triggered"),
+		Type:           common.Stringp("sh.keptn.event.approval.triggered"),
 	}
 }
 
@@ -153,11 +150,11 @@ func GetTestStartedEvent() models.Event {
 		Extensions:     nil,
 		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "test-triggered-id",
-		Type:           stringp("sh.keptn.event.approval.started"),
+		Type:           common.Stringp("sh.keptn.event.approval.started"),
 	}
 }
 
@@ -168,11 +165,11 @@ func GetTestStartedEventWithUnmatchedTriggeredID() models.Event {
 		Extensions:     nil,
 		ID:             "test-started-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("test-source"),
+		Source:         common.Stringp("test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "unmatched-test-triggered-id",
-		Type:           stringp("sh.keptn.event.approval.started"),
+		Type:           common.Stringp("sh.keptn.event.approval.started"),
 	}
 }
 
@@ -183,10 +180,10 @@ func GetTestFinishedEventWithUnmatchedSource() models.Event {
 		Extensions:     nil,
 		ID:             "test-finished-id",
 		Shkeptncontext: "test-context",
-		Source:         stringp("unmatched-test-source"),
+		Source:         common.Stringp("unmatched-test-source"),
 		Specversion:    "0.2",
 		Time:           "",
 		Triggeredid:    "test-triggered-id",
-		Type:           stringp("sh.keptn.event.approval.finished"),
+		Type:           common.Stringp("sh.keptn.event.approval.finished"),
 	}
 }

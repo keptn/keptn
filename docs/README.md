@@ -14,7 +14,7 @@ This folder contains docs for developers. If you are looking for the usage docum
   You can find more information in [here](integration_tests.md).
 * Kubernetes CLI tool [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * Docker
-* Dockerhub Account (any other container registry works too)
+* Docker Hub Account (any other container registry works too)
 * Go (Version 1.13.x)
 * GitHub Account (required for making Pull Requests)
 * If you want to use in-cluster debugging, please take a look at our [debugging guide](debugging.md).
@@ -41,7 +41,7 @@ The keptn core implementation as well as the *batteries-included* services are s
 * eventbroker
 * bridge
 * configuration service
-* gatekeeper service
+* approval service
 * evaluation service
 * datastore
 
@@ -85,7 +85,7 @@ For instance, if a new feature or bug branch is created, the workflow is to crea
 
 We have automated builds for several services and containers using Travis-CI. This automatically creates new builds for
 
-* every [Github Release](https://github.com/keptn/keptn/releases) tagged with the version number (e.g., 0.5.0),
+* every [GitHub Release](https://github.com/keptn/keptn/releases) tagged with the version number (e.g., 0.5.0),
 * every change in the [master branch](https://github.com/keptn/keptn/tree/develop) (unstable) tagged as **latest** as 
   well as the build-datetime,
 * every pull request (unstable).

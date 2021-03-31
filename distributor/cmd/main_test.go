@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	"github.com/kelseyhightower/envconfig"
@@ -602,16 +604,6 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantPath:   "event/type/sh.keptn.event.evaluation.finished",
 		},
 		{
-			name: "Get internal Datastore 2",
-			args: args{
-				endpoint: "",
-				path:     "/event-store/event",
-			},
-			wantScheme: "http",
-			wantHost:   "mongodb-datastore:8080",
-			wantPath:   "event",
-		},
-		{
 			name: "Get internal configuration service",
 			args: args{
 				endpoint: "",
@@ -621,28 +613,10 @@ func Test_getProxyRequestURL(t *testing.T) {
 			wantHost:   "configuration-service:8080",
 		},
 		{
-			name: "Get internal configuration service 2",
-			args: args{
-				endpoint: "",
-				path:     "/configuration",
-			},
-			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
-		},
-		{
-			name: "Get internal configuration service 3",
-			args: args{
-				endpoint: "",
-				path:     "/config",
-			},
-			wantScheme: "http",
-			wantHost:   "configuration-service:8080",
-		},
-		{
 			name: "Get configuration service",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme: "http",
 			wantHost:   "configuration-service:8080",
@@ -651,7 +625,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get configuration service via public API",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
@@ -662,7 +636,7 @@ func Test_getProxyRequestURL(t *testing.T) {
 			name: "Get configuration service via public API with API prefix",
 			args: args{
 				endpoint: "",
-				path:     "/config",
+				path:     "/configuration-service",
 			},
 			wantScheme:       "http",
 			wantHost:         "external-api.com",
@@ -685,6 +659,265 @@ func Test_getProxyRequestURL(t *testing.T) {
 
 			if path != tt.wantPath {
 				t.Errorf("getProxyHost(); path = %v, want %v", path, tt.wantPath)
+			}
+		})
+	}
+}
+
+func Test_getHTTPPollingEndpoint(t *testing.T) {
+	tests := []struct {
+		name              string
+		apiEndpointEnvVar string
+		want              string
+	}{
+		{
+			name:              "get internal endpoint",
+			apiEndpointEnvVar: "",
+			want:              "http://shipyard-controller:8080/v1/event/triggered",
+		},
+		{
+			name:              "get external endpoint",
+			apiEndpointEnvVar: "https://my-keptn.com/api",
+			want:              "https://my-keptn.com/api/controlPlane/v1/event/triggered",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env.KeptnAPIEndpoint = tt.apiEndpointEnvVar
+			if got := getHTTPPollingEndpoint(); got != tt.want {
+				t.Errorf("getHTTPPollingEndpoint() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func getCloudEventWithEventData(eventData keptnv2.EventData) cloudevents.Event {
+	event := cloudevents.NewEvent()
+	event.SetSource("helm-service")
+	event.SetType("sh.keptn.events.deployment-finished")
+	event.SetID("6de83495-4f83-481c-8dbe-fcceb2e0243b")
+	event.SetExtension("shkeptncontext", "3c9ffbbb-6e1d-4789-9fee-6e63b4bcc1fb")
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetData(cloudevents.ApplicationJSON, eventData)
+	return event
+}
+
+func Test_matchesFilter(t *testing.T) {
+	type args struct {
+		e cloudevents.Event
+	}
+	tests := []struct {
+		name          string
+		args          args
+		projectFilter string
+		stageFilter   string
+		serviceFilter string
+		want          bool
+	}{
+		{
+			name: "no filter - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
+			name: "project filter - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-project",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
+			name: "project filter (comma-separated list) - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-project,my-project-2,my-project-3",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
+			name: "project filter - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-other-project",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          false,
+		},
+		{
+			name: "project filter (comma-separated list) - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-other-project,my-second-project",
+			stageFilter:   "",
+			serviceFilter: "",
+			want:          false,
+		},
+		{
+			name: "stage filter - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "my-stage",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
+			name: "stage filter (comma-separated list) - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "my-first-stage,my-stage",
+			serviceFilter: "",
+			want:          true,
+		},
+		{
+			name: "stage filter - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "my-other-stage",
+			serviceFilter: "",
+			want:          false,
+		},
+		{
+			name: "service filter - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "",
+			serviceFilter: "my-service",
+			want:          true,
+		},
+		{
+			name: "service filter (comma-separated list) - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "",
+			serviceFilter: "my-other-service,my-service",
+			want:          true,
+		},
+		{
+			name: "service filter - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "",
+			stageFilter:   "",
+			serviceFilter: "my-other-service",
+			want:          false,
+		},
+		{
+			name: "combined filter - should match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-project",
+			stageFilter:   "my-stage",
+			serviceFilter: "my-service",
+			want:          true,
+		},
+		{
+			name: "combined filter - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-other-project",
+			stageFilter:   "my-stage",
+			serviceFilter: "my-service",
+			want:          false,
+		},
+		{
+			name: "combined filter (comma-separated list) - should not match",
+			args: args{
+				getCloudEventWithEventData(keptnv2.EventData{
+					Project: "project",
+					Stage:   "my-stage",
+					Service: "my-service",
+				}),
+			},
+			projectFilter: "my-project,project-1",
+			stageFilter:   "my-stage",
+			serviceFilter: "my-service",
+			want:          false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env.ProjectFilter = tt.projectFilter
+			env.StageFilter = tt.stageFilter
+			env.ServiceFilter = tt.serviceFilter
+			if got := matchesFilter(tt.args.e); got != tt.want {
+				t.Errorf("matchesFilter() = %v, want %v", got, tt.want)
 			}
 		})
 	}

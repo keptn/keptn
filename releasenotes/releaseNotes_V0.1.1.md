@@ -11,6 +11,6 @@ Fixed bugs:
 - fixed null value bug in production pipelines
 
 Improvements:
-- added logging to `setupInfrastructure.sh` and `forkGithubRepositories.sh` 
+- added logging to `setupInfrastructure.sh` and `forkGitHubRepositories.sh` 
 - using Ansible vault for storing credentials
 - automatically create Dynatrace request attributes during setup

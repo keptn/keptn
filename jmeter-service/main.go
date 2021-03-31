@@ -20,7 +20,6 @@ import (
 )
 
 const (
-	eventbroker          = "EVENTBROKER"
 	configurationService = "CONFIGURATION_SERVICE"
 )
 
@@ -193,7 +192,7 @@ func getServiceURL(data keptnv2.TestTriggeredEventData) (*url.URL, error) {
 }
 
 //
-// executes the actual JMEter tests based on the workload configuration
+// executes the actual JMeter tests based on the workload configuration
 //
 func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, logger *keptncommon.Logger) (bool, error) {
 	// for testStrategy functional we enforce a 0% error policy!
@@ -211,7 +210,7 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	// this will also be used for TSN parameter
 	resultDirectory := fmt.Sprintf("%s_%s_%s_%s_%s", testInfo.Project, testInfo.Service, testInfo.Stage, workload.TestStrategy, testInfo.Context)
 
-	// lets first remove all potentially left over result files from previous runs -> we keept them between runs for troubleshooting though
+	// lets first remove all potentially left over result files from previous runs -> we keep them between runs for troubleshooting though
 	os.RemoveAll(resultDirectory)
 	os.RemoveAll(resultDirectory + "_result.tlf")
 	os.RemoveAll("output.txt")
@@ -329,35 +328,11 @@ func sendEvent(event cloudevents.Event) error {
 		return nil
 	}
 
-	endPoint, err := getServiceEndpoint(eventbroker)
-	if err != nil {
-		return errors.New("Failed to retrieve endpoint of eventbroker. %s" + err.Error())
-	}
-
-	if endPoint.Host == "" {
-		return errors.New("Host of eventbroker not set")
-	}
-	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		EventBrokerURL: endPoint.String(),
-	})
+	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{})
 
 	if err != nil {
 		return errors.New("Failed to initialize Keptn handler: " + err.Error())
 	}
 
 	return keptnHandler.SendCloudEvent(event)
-}
-
-// getServiceEndpoint gets an endpoint stored in an environment variable and sets http as default scheme
-func getServiceEndpoint(service string) (url.URL, error) {
-	url, err := url.Parse(os.Getenv(service))
-	if err != nil {
-		return *url, fmt.Errorf("Failed to retrieve value from ENVIRONMENT_VARIABLE: %s", service)
-	}
-
-	if url.Scheme == "" {
-		url.Scheme = "http"
-	}
-
-	return *url, nil
 }

@@ -52,7 +52,7 @@ func getConfigurationServiceURL() string {
 }
 
 /**
- * Returns additoinal JMeter Command Line Parameters including additional params passed to the JMeter script
+ * Returns additional JMeter Command Line Parameters including additional params passed to the JMeter script
  */
 func addJMeterCommandLineArguments(testInfo *TestInfo, initialList []string) []string {
 	dtTenant := fmt.Sprintf("-JDT_TENANT=%s", os.Getenv("DT_TENANT"))
@@ -73,7 +73,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
 
 	logger.Debug(jmeterCommandResult)
 
-	summary := getLastOccurence(strings.Split(jmeterCommandResult, "\n"), "summary =")
+	summary := getLastOccurrence(strings.Split(jmeterCommandResult, "\n"), "summary =")
 	if summary == "" {
 		return false, errors.New("Cannot parse jmeter-result. " + testInfo.ToString())
 	}
@@ -125,7 +125,7 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  * testInfo: information about the test, e.g: project, stage, service
  * workload: jmeter.conf.yaml details
  * resultsDir: resultsDir output
- * url: the full server url. It gets parsed and then passed via JMeter properties SERVER_URL, SERVER_PORT, PROTOCOL, SERVER_PROTOCAL and CHECK_PATH
+ * url: the full server url. It gets parsed and then passed via JMeter properties SERVER_URL, SERVER_PORT, PROTOCOL, SERVER_PROTOCOL and CHECK_PATH
  * LTN: will be passed as DT_LTN
  * funcValidation: if true the function returns false if there were any errors detected during test execution
  *
@@ -239,7 +239,7 @@ func derivePath(url *url.URL) string {
 	return "/health"
 }
 
-func getLastOccurence(vs []string, prefix string) string {
+func getLastOccurrence(vs []string, prefix string) string {
 	for i := len(vs) - 1; i >= 0; i-- {
 		if strings.HasPrefix(vs[i], prefix) {
 			return vs[i]

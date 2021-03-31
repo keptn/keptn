@@ -14,6 +14,8 @@ import (
 
 const defaultKeptnNamespace = "keptn"
 
+const keptnSpecVersionEnvVar = "KEPTN_SPEC_VERSION"
+
 // GetKeptnNamespace godoc
 func GetKeptnNamespace() string {
 	ns := os.Getenv("POD_NAMESPACE")
@@ -78,8 +80,38 @@ func ValidateShipyardStages(shipyard *keptnv2.Shipyard) error {
 	return nil
 }
 
+// GetKeptnSpecVersion returns the Keptn Spec version the shipyard controller is based on
+func GetKeptnSpecVersion() string {
+	return os.Getenv(keptnSpecVersionEnvVar)
+}
+
 // SendEvent godoc
 func SendEvent(event cloudevents.Event) error {
+	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
+	if err != nil {
+		return errors.New("Could not get eventbroker endpoint: " + err.Error())
+	}
+	k, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
+		EventBrokerURL: ebEndpoint.String(),
+	})
+	if err != nil {
+		return errors.New("Could not initialize Keptn handler: " + err.Error())
+	}
+	if specVersion := GetKeptnSpecVersion(); specVersion != "" {
+		event.SetExtension("shkeptnspecversion", specVersion)
+	}
+	err = k.SendCloudEvent(event)
+	if err != nil {
+		return errors.New("Could not send CloudEvent: " + err.Error())
+	}
+	return nil
+}
+
+// SendEventWithPayload godoc
+// Deprecated will be removed, use functionality from go-utils instead
+func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) error {
+	event := CreateEventWithPayload(keptnContext, triggeredID, eventType, payload)
+
 	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
 	if err != nil {
 		return errors.New("Could not get eventbroker endpoint: " + err.Error())
@@ -98,8 +130,7 @@ func SendEvent(event cloudevents.Event) error {
 	return nil
 }
 
-// SendEventWithPayload godoc
-func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) error {
+func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload interface{}) cloudevents.Event {
 	source, _ := url.Parse("shipyard-controller")
 	event := cloudevents.NewEvent()
 	event.SetType(eventType)
@@ -113,22 +144,9 @@ func SendEventWithPayload(keptnContext, triggeredID, eventType string, payload i
 	if triggeredID != "" {
 		event.SetExtension("triggeredid", triggeredID)
 	}
+	if specVersion := GetKeptnSpecVersion(); specVersion != "" {
+		event.SetExtension("shkeptnspecversion", specVersion)
+	}
 	event.SetData(cloudevents.ApplicationJSON, payload)
-
-	ebEndpoint, err := keptncommon.GetServiceEndpoint("EVENTBROKER")
-	if err != nil {
-		return errors.New("Could not get eventbroker endpoint: " + err.Error())
-	}
-	k, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{
-		EventBrokerURL: ebEndpoint.String(),
-	})
-	if err != nil {
-		return errors.New("Could not initialize Keptn handler: " + err.Error())
-	}
-
-	err = k.SendCloudEvent(event)
-	if err != nil {
-		return errors.New("Could not send CloudEvent: " + err.Error())
-	}
-	return nil
+	return event
 }

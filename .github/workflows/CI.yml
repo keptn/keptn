@@ -11,6 +11,8 @@ on:
       - 'master'
       - 'release-*'
     type: [labeled]
+  workflow_dispatch: # run CI when triggered manually
+
 defaults:
   run:
     shell: bash
@@ -30,10 +32,11 @@ jobs:
       BUILD_BRIDGE: ${{ steps.check_modified_files.outputs.BUILD_BRIDGE }}
       BUILD_JMETER: ${{ steps.check_modified_files.outputs.BUILD_JMETER }}
       BUILD_HELM_SVC: ${{ steps.check_modified_files.outputs.BUILD_HELM_SVC }}
-      BUILD_GATEKEEPER_SVC: ${{ steps.check_modified_files.outputs.BUILD_GATEKEEPER_SVC }}
+      BUILD_APPROVAL_SVC: ${{ steps.check_modified_files.outputs.BUILD_APPROVAL_SVC }}
       BUILD_DISTRIBUTOR: ${{ steps.check_modified_files.outputs.BUILD_DISTRIBUTOR }}
       BUILD_EVENTBROKER: ${{ steps.check_modified_files.outputs.BUILD_EVENTBROKER }}
       BUILD_SHIPYARD_CONTROLLER: ${{ steps.check_modified_files.outputs.BUILD_SHIPYARD_CONTROLLER }}
+      BUILD_SECRET_SVC: ${{ steps.check_modified_files.outputs.BUILD_SECRET_SVC }}
       BUILD_CONFIGURATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_CONFIGURATION_SVC }}
       BUILD_REMEDIATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_REMEDIATION_SVC }}
       BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
@@ -46,17 +49,29 @@ jobs:
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
       BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
       VERSION: ${{ steps.get_version.outputs.VERSION }}
+      KEPTN_SPEC_VERSION: ${{ steps.get_version.outputs.KEPTN_SPEC_VERSION }}
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
 
     steps:
+      - name: Prevent PR Build on Release Branch
+        # if you create a PR from release-* to anything else, there is usually a push-build in action, allowing
+        # us to cancel the PR build
+        if: github.event_name == 'pull_request'
+        run: |
+          if [[ "$GITHUB_HEAD_REF" == "release-"* ]]; then
+            echo "::error::Failing CI Build for Pull Request on purpose, as there is a push build"
+            exit 1
+          fi
+
       - name: Check out code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
+          submodules: 'true'
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -72,7 +87,7 @@ jobs:
         continue-on-error: true
 
       - name: Process all artifacts (for push on master/release branches)
-        if: (github.event_name == 'push') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
+        if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
@@ -90,10 +105,11 @@ jobs:
           BUILD_BRIDGE=false
           BUILD_JMETER=false
           BUILD_HELM_SVC=false
-          BUILD_GATEKEEPER_SVC=false
+          BUILD_APPROVAL_SVC=false
           BUILD_DISTRIBUTOR=false
           BUILD_EVENTBROKER=false
           BUILD_SHIPYARD_CONTROLLER=false
+          BUILD_SECRET_SVC=false
           BUILD_CONFIGURATION_SVC=false
           BUILD_REMEDIATION_SVC=false
           BUILD_LIGHTHOUSE_SVC=false
@@ -136,8 +152,8 @@ jobs:
               BUILD_HELM_SVC=true
             fi
 
-            if [[ $changed_file == "${GATEKEEPER_SVC_FOLDER}"* ]]; then
-              BUILD_GATEKEEPER_SVC=true
+            if [[ $changed_file == "${APPROVAL_SVC_FOLDER}"* ]]; then
+              BUILD_APPROVAL_SVC=true
             fi
 
             if [[ $changed_file == "${DISTRIBUTOR_FOLDER}"* ]]; then
@@ -150,6 +166,10 @@ jobs:
 
             if [[ $changed_file == "${SHIPYARD_CONTROLLER_FOLDER}"* ]]; then
               BUILD_SHIPYARD_CONTROLLER=true
+            fi
+
+            if [[ $changed_file == "${SECRET_SVC_FOLDER}"* ]]; then
+              BUILD_SECRET_SVC=true
             fi
 
             if [[ $changed_file == "${CONFIGURATION_SVC_FOLDER}"* ]]; then
@@ -181,10 +201,11 @@ jobs:
           echo "##[set-output name=BUILD_BRIDGE;]$(echo ${BUILD_BRIDGE})"
           echo "##[set-output name=BUILD_JMETER;]$(echo ${BUILD_JMETER})"
           echo "##[set-output name=BUILD_HELM_SVC;]$(echo ${BUILD_HELM_SVC})"
-          echo "##[set-output name=BUILD_GATEKEEPER_SVC;]$(echo ${BUILD_GATEKEEPER_SVC})"
+          echo "##[set-output name=BUILD_APPROVAL_SVC;]$(echo ${BUILD_APPROVAL_SVC})"
           echo "##[set-output name=BUILD_DISTRIBUTOR;]$(echo ${BUILD_DISTRIBUTOR})"
           echo "##[set-output name=BUILD_EVENTBROKER;]$(echo ${BUILD_EVENTBROKER})"
           echo "##[set-output name=BUILD_SHIPYARD_CONTROLLER;]$(echo ${BUILD_SHIPYARD_CONTROLLER})"
+          echo "##[set-output name=BUILD_SECRET_SVC;]$(echo ${BUILD_SECRET_SVC})"
           echo "##[set-output name=BUILD_CONFIGURATION_SVC;]$(echo ${BUILD_CONFIGURATION_SVC})"
           echo "##[set-output name=BUILD_REMEDIATION_SVC;]$(echo ${BUILD_REMEDIATION_SVC})"
           echo "##[set-output name=BUILD_LIGHTHOUSE_SVC;]$(echo ${BUILD_LIGHTHOUSE_SVC})"
@@ -229,9 +250,16 @@ jobs:
             fi
           fi
 
+          # determine keptn spec version
+          git submodule update --init
+          cd specification
+          KEPTN_SPEC_VERSION=$(git describe --tags)
+
           echo "VERSION=${VERSION}"
+          echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
 
           echo "##[set-output name=VERSION;]$(echo ${VERSION})"
+          echo "##[set-output name=KEPTN_SPEC_VERSION;]$(echo ${KEPTN_SPEC_VERSION})"
       - name: Get current date and time
         id: get_datetime
         run: |
@@ -282,7 +310,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -324,12 +352,12 @@ jobs:
           bash <(curl -s https://codecov.io/bash) -c -F helm-service
         working-directory: ./helm-service
 
-      - name: Test gatekeeper svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
+      - name: Test approval svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
         run: |
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F gatekeeper-service
-        working-directory: ./gatekeeper-service
+          bash <(curl -s https://codecov.io/bash) -c -F approval-service
+        working-directory: ./approval-service
 
       - name: Test distributor
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
@@ -344,6 +372,13 @@ jobs:
           go test -v -coverprofile=coverage.txt -covermode=atomic ./...
           bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
         working-directory: ./shipyard-controller
+
+      - name: Test secret svc
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
+        run: |
+          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          bash <(curl -s https://codecov.io/bash) -c -F secret-service
+        working-directory: ./secret-service
 
       - name: Test configuration svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
@@ -387,7 +422,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v2.1.4
+        uses: actions/setup-node@v2.1.5
         with:
           node-version: 12.x
       - name: Checkout Code
@@ -402,7 +437,7 @@ jobs:
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -470,11 +505,11 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macos does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "amd64"
-          # support for apple silicon (arm64 on macos) is pending Go 1.16 release
-#          - platform: "macOS-11.0" # cross-compiling the CLI for macos does not work - see https://github.com/keptn/keptn/issues/2738
+          # support for apple silicon (arm64 on macOS) is pending Go 1.16 release
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
 #            GOOS: "darwin"
 #            GOARCH: "arm64"
           - platform: "ubuntu-20.04"
@@ -515,7 +550,7 @@ jobs:
           fi
 
           # determine output file name based on version, go os, architecture
-          OUTPUT_EXECUTEABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
           OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
 
           if [[ "$BRANCH" == "master" ]]; then
@@ -523,14 +558,19 @@ jobs:
             VERSION=${VERSION}.${DATETIME}
           fi
 
+          if [[ "$GOOS" == "linux" ]]; then
+            # enable static build for linux
+            export CGO_ENABLED=0
+          fi
+
           # build the binary using makefile
-          make build-cli OUTPUT_EXECUTEABLE_NAME="$OUTPUT_EXECUTEABLE_NAME"
+          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
           # verify output file exists
-          ls bin/${OUTPUT_EXECUTEABLE_NAME}
+          ls bin/${OUTPUT_EXECUTABLE_NAME}
 
           # create a .tar.gz archive of the binary
           mkdir dist
-          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTEABLE_NAME}
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
       - name: Upload Keptn CLI as an artifact
         uses: actions/upload-artifact@v2
         with:
@@ -543,18 +583,19 @@ jobs:
   helm_charts_build:
     needs: prepare_ci_run
     name: Build Helm Charts
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') # || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      KEPTN_SPEC_VERSION: ${{ needs.prepare_ci_run.outputs.KEPTN_SPEC_VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -565,10 +606,10 @@ jobs:
         run: |
           if [[ "$BRANCH" == "master" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}.${DATETIME}"
+            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
           else
             # just use VERSION for the image tag
-            ./gh-actions-scripts/build_installer_helm_chart.sh "${VERSION}" "${VERSION}"
+            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
           fi
 
       - name: Upload Helm Chart as an artifact
@@ -576,7 +617,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: keptn-installer
-          path: keptn-charts/*.tgz # keptn-charts/keptn-installer-${VERSION}.tgz
+          path: keptn-charts/*.tgz
 
   ############################################################################
   # Build Docker Images                                                      #
@@ -594,7 +635,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Load CI Environemnt from .ci_env
+      - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
         with:
@@ -603,7 +644,7 @@ jobs:
       - id: docker_login
         name: Docker Login
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: (github.event_name == 'push') || (github.event.pull_request.head.repo.full_name == github.repository)
+        if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         env:
@@ -661,15 +702,15 @@ jobs:
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
           DOCKER_FOLDER: ${{ env.HELM_SVC_FOLDER }}
 
-      - id: docker_build_gatekeeper_service
-        name: Docker Build gatekeeper-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_GATEKEEPER_SVC == 'true')
+      - id: docker_build_approval_service
+        name: Docker Build approval-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
         uses: keptn/gh-action-build-docker-image@master
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.GATEKEEPER_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.GATEKEEPER_SVC_FOLDER }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.APPROVAL_SVC_FOLDER }}
 
       - id: docker_build_os_route_service
         name: Docker Build openshift-route-service
@@ -690,6 +731,16 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
           DOCKER_FOLDER: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
+
+      - id: docker_build_secret_service
+        name: Docker Build secret-service
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
+        uses: keptn/gh-action-build-docker-image@master
+        with:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SECRET_SVC_IMAGE }}"
+          DOCKER_FOLDER: ${{ env.SECRET_SVC_FOLDER }}
 
       - id: docker_build_configuration_service
         name: Docker Build configuration-service

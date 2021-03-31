@@ -1,0 +1,49 @@
+<dt-table [dataSource]="tableEntries" dtSort #sortable interactiveRows>
+  <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row.name"></dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="version" dtColumnAlign="text" dtColumnProportion="1">
+    <dt-header-cell *dtHeaderCellDef>Version</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row.version"></dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="host" dtColumnAlign="text"dtColumnProportion="3">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row.host"></dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="namespace" dtColumnAlign="text"dtColumnProportion="2">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Namespace</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row.namespace"></dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="location" dtColumnAlign="text"dtColumnProportion="2">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Location</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row.location"></dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="status" dtColumnAlign="text"dtColumnProportion="1">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Status</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="row.status" [class.success]="row.status === 'healthy'" [class.error]="row.status !== 'healthy'"></dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
+    <dt-header-cell *dtHeaderCellDef>(active) Subscriptions</dt-header-cell>
+    <dt-cell *dtCellDef="let row" [textContent]="formatSubscription(row.subscriptions)"></dt-cell>
+  </ng-container>
+
+  <dt-header-row
+    *dtHeaderRowDef="['name', 'version', 'host', 'namespace', 'location', 'status', 'subscription']"
+  ></dt-header-row>
+  <dt-row
+    *dtRowDef="
+          let row;
+          columns: ['name', 'version', 'host', 'namespace' ,'location', 'status', 'subscription']
+        "
+    class="pointer"
+    [class.active]="selectedService === row"
+    (click)="setSelectedService(row)"
+  ></dt-row>
+</dt-table>

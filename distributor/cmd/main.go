@@ -22,8 +22,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
+
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -53,6 +56,9 @@ type envConfig struct {
 	PubSubRecipient     string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
 	PubSubRecipientPort string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
 	PubSubRecipientPath string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
+	ProjectFilter       string `envconfig:"PROJECT_FILTER" default:""`
+	StageFilter         string `envconfig:"STAGE_FILTER" default:""`
+	ServiceFilter       string `envconfig:"SERVICE_FILTER" default:""`
 }
 
 var httpClient cloudevents.Client
@@ -73,24 +79,14 @@ var env envConfig
 
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
-	"/datastore":             "mongodb-datastore:8080",
-	"/event-store":           "mongodb-datastore:8080",
 	"/configuration-service": "configuration-service:8080",
-	"/configuration":         "configuration-service:8080",
-	"/config":                "configuration-service:8080",
-	"/shipyard-controller":   "shipyard-controller:8080",
-	"/shipyard":              "shipyard-controller:8080",
+	"/controlPlane":          "shipyard-controller:8080",
 }
 
 var externalAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "/mongodb-datastore",
-	"/datastore":             "/mongodb-datastore",
-	"/event-store":           "/mongodb-datastore",
 	"/configuration-service": "/configuration-service",
-	"/configuration":         "/configuration-service",
-	"/config":                "/configuration-service",
-	"/shipyard-controller":   "/shipyard-controller",
-	"/shipyard":              "/shipyard-controller",
+	"/controlPlane":          "/controlPlane",
 }
 
 func main() {
@@ -159,7 +155,7 @@ func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		fmt.Printf("Failed to read body from requst: %s\n", err)
+		fmt.Printf("Failed to read body from request: %s\n", err)
 		return
 	}
 
@@ -206,6 +202,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	forwardReq.URL = parsedProxyURL
+	forwardReq.URL.RawQuery = req.URL.RawQuery
 
 	fmt.Println(fmt.Sprintf("Forwarding request to host=%s, path=%s, URL=%s", proxyHost, proxyPath, forwardReq.URL.String()))
 
@@ -222,6 +219,13 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	for name, headers := range resp.Header {
+		for _, h := range headers {
+			rw.Header().Set(name, h)
+		}
+	}
+
 	rw.WriteHeader(resp.StatusCode)
 
 	defer resp.Body.Close()
@@ -409,7 +413,7 @@ func getHTTPPollingEndpoint() string {
 			return "http://shipyard-controller:8080/v1/event/triggered"
 		}
 	} else {
-		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/shipyard-controller/v1/event/triggered"
+		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
 	}
 
 	parsedURL, _ := url.Parse(endpoint)
@@ -673,8 +677,38 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	return &event, nil
 }
 
+// Primitive filtering based on project, stage, and service properties
+func matchesFilter(e cloudevents.Event) bool {
+
+	keptnBase := &v0_2_0.EventData{}
+	if err := e.DataAs(keptnBase); err != nil {
+		return true
+	}
+	if env.ProjectFilter != "" && !contains(strings.Split(env.ProjectFilter, ","), keptnBase.Project) ||
+		env.StageFilter != "" && !contains(strings.Split(env.StageFilter, ","), keptnBase.Stage) ||
+		env.ServiceFilter != "" && !contains(strings.Split(env.ServiceFilter, ","), keptnBase.Service) {
+		return false
+	}
+	return true
+}
+
+// contains checks if a string is present in a slice
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
 func sendEvent(event cloudevents.Event) error {
 	client := createRecipientConnection()
+
+	if !matchesFilter(event) {
+		// Do not send cloud event if it does not match the filter
+		return nil
+	}
 
 	ctx := cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)

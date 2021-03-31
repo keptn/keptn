@@ -158,7 +158,7 @@ In case you plan to use Minishift, the following steps are necessary to get Kept
 
 ### Run the quality-gates integration test (with dynatrace-sli-service) locally
 
-Pre-requesits:
+Pre-requisites:
 
 * A K8s cluster (see above)
   * 4 GB of free memory (less is possible but you will notice a significant slowdown)
@@ -222,7 +222,7 @@ Pre-requesits:
 
 ### Run the full installation integration test locally
 
-Pre-requesits:
+Pre-requisites:
 
 * A K8s cluster (see above)
   * 12 GB of free memory (less is possible but you will notice a significant slowdown)

@@ -4,71 +4,83 @@ updates:
     directory: "/"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
+    rebase-strategy: "disabled"
+  - package-ecosystem: gomod
+    directory: "/approval-service"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/cli"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/api"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/distributor"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/configuration-service"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/helm-service"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/jmeter-service"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/lighthouse-service"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/mongodb-datastore"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
+    rebase-strategy: "disabled"
+  - package-ecosystem: gomod
+    directory: "/platform-support/openshift-route-service"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/remediation-service"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/shipyard-controller"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
     directory: "/statistics-service"
     schedule:
       interval: daily
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     rebase-strategy: "disabled"

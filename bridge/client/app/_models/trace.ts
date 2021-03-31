@@ -16,6 +16,7 @@ class Trace {
   id: string;
   shkeptncontext: string;
   triggeredid: string;
+  started: boolean;
   finished: boolean;
   source: string;
   time: Date;
@@ -33,10 +34,19 @@ class Trace {
     image: string;
     tag: string;
 
+    deployment: {
+      deploymentNames: string[];
+      deploymentURIsLocal: string[];
+      deploymentURIsPublic: string[];
+      deploymentstrategy: string;
+      gitCommit: string;
+    };
+
     deploymentURILocal: string;
     deploymentURIPublic: string;
 
-    deploymentstrategy: string;
+    message: string;
+
     labels: Map<string, string>;
     result: string;
     teststrategy: string;
@@ -105,7 +115,9 @@ class Trace {
   isFaulty(): string {
     let result: string = null;
     if(this.data) {
-      if(this.isFailed() || (this.isProblem() && !this.isProblemResolvedOrClosed())) {
+      if(this.isFailed() ||
+        (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
+        this.traces.some(t => t.isFailed() || (t.isProblem() && !t.isProblemResolvedOrClosed()))) {
         result = this.data.stage;
       }
     }
@@ -115,7 +127,7 @@ class Trace {
   isFailedEvaluation() {
     let result: string = null;
     if(this.data) {
-      if(this.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
+      if(this.getFinishedEvent()?.type === EventTypes.EVALUATION_FINISHED && this.isFailed()) {
         result = this.data.stage;
       }
     }
@@ -124,26 +136,22 @@ class Trace {
 
   isWarning(): string {
     let result: string = null;
-    if(this.data) {
-      if(this.type === EventTypes.EVALUATION_FINISHED && this.data.result == ResultTypes.WARNING) {
-        result = this.data.stage;
-      }
+    if(this.getFinishedEvent()?.data.result == ResultTypes.WARNING) {
+      result = this.data.stage;
     }
     return result;
   }
 
   isSuccessful(): string {
     let result: string = null;
-    if(this.data) {
-      if(this.data.result == ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
-        result = this.data.stage;
-      }
+    if ( this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
+      result = this.data.stage;
     }
     return !this.isFaulty() && result ? result : null;
   }
 
   public isFailed(): boolean {
-    return this.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
+    return this.getFinishedEvent()?.data.result == ResultTypes.FAILED || this.isApprovalFinished() && this.isDeclined();
   }
 
   public isProblem(): boolean {
@@ -151,7 +159,10 @@ class Trace {
   }
 
   public isProblemResolvedOrClosed(): boolean {
-    return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
+    if (!this.traces || this.traces.length === 0)
+      return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
+    else
+      return this.traces.some(t => t.isProblem() && t.isProblemResolvedOrClosed());
   }
 
   public isSuccessfulRemediation(): boolean {
@@ -176,8 +187,8 @@ class Trace {
     return this.type === EventTypes.APPROVAL_FINISHED;
   }
 
-  isDirectDeployment(): boolean {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data.deploymentstrategy == "direct";
+  public isDirectDeployment(): boolean {
+    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data?.deployment?.deploymentstrategy == "direct";
   }
 
   private isApproved(): boolean {
@@ -193,7 +204,7 @@ class Trace {
   }
 
   public isEvaluation(): string {
-    return this.type === EventTypes.EVALUATION_TRIGGERED ? this.data.stage : null;
+    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) ? this.data.stage : null;
   }
 
   public isEvaluationInvalidation(): boolean {
@@ -207,9 +218,7 @@ class Trace {
   getLabel(): string {
     // TODO: use translation file
     if(!this.label) {
-      if(this.isProblem() && this.isProblemResolvedOrClosed()) {
-        this.label = EVENT_LABELS[EventTypes.PROBLEM_RESOLVED];
-      } else if(this.isApprovalFinished()) {
+      if(this.isApprovalFinished()) {
         this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.getShortType();
       } else {
         this.label = EVENT_LABELS[this.type] || this.getShortType();
@@ -219,24 +228,23 @@ class Trace {
     return this.label;
   }
 
+  getStage(): string {
+    return this.data?.stage;
+  }
+
   getShortType(): string {
-    return this.type.split(".").slice(3, -1).join(".");
+    let parts = this.type.split(".");
+    if(parts.length == 6)
+      return parts[4];
+    else if(parts.length == 5)
+      return parts[3];
+    else
+      return this.type;
   }
 
-  getIcon() {
-    if(!this.isFinished())
-      return "idle";
-
-    return this.getIconType();
-  }
-
-  getIconType(): string {
+  getIcon(): string {
     if(!this.icon) {
-      if(this.isApprovalFinished()) {
-        this.icon = EVENT_ICONS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || DEFAULT_ICON;
-      } else {
-        this.icon = EVENT_ICONS[this.type] || DEFAULT_ICON;
-      }
+      this.icon = EVENT_ICONS[this.getShortType()] || DEFAULT_ICON;
     }
     return this.icon;
   }
@@ -277,19 +285,44 @@ class Trace {
     this.heatmapLabel = label;
   }
 
+  isStarted() {
+    if(!this.started) {
+      this.started = this.traces.some(t => t.type.includes(".started"));
+    }
+
+    return this.started;
+  }
+
   isFinished() {
-    if(!this.finished) {
-      if(!this.traces || this.traces.length == 0)
-        this.finished = this.type.includes(".finished");
-      else
-        this.finished = this.traces.some(t => t.type.includes(".finished"));
+    if (!this.finished) {
+      if (!this.traces || this.traces.length === 0) {
+        this.finished = this.type.includes('.finished');
+      } else if (this.isProblem()) {
+        this.finished = this.isProblemResolvedOrClosed();
+      } else {
+        const countStarted = this.traces.filter(t => t.type.includes('.started')).length;
+        const countFinished = this.traces.filter(t => t.type.includes('.finished')).length;
+        this.finished = countFinished >= countStarted && countFinished !== 0;
+      }
     }
 
     return this.finished;
   }
 
+  isLoading() {
+    return this.isStarted() && !this.isFinished();
+  }
+
+  isInvalidated() {
+    return !!this.traces.find(e => e.isEvaluationInvalidation() && e.triggeredid == this.id);
+  }
+
   getFinishedEvent() {
-    return this.traces.find(t => t.type.includes(".finished"));
+    return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
+  }
+
+  getDeploymentUrl() {
+    return this.data.deployment.deploymentURIsPublic[0];
   }
 
   static fromJSON(data: any) {

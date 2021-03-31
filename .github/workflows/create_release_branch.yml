@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
 
       - name: Verify version is semantic
         env:
@@ -65,7 +67,7 @@ jobs:
           git checkout -b ${RELEASE_BRANCH_NAME}
 
       - name: Copy release notes develop
-        run: cp releasenotes/releasenotes_develop.md releasenotes_V${{ github.event.inputs.versionName }}.md
+        run: cp releasenotes/releasenotes_develop.md releasenotes/releasenotes_V${{ github.event.inputs.versionName }}.md
 
       - name: List changed files
         run: git status
@@ -85,7 +87,7 @@ jobs:
       - name: Create PR into master
         env:
           VERSION: ${{ github.event.inputs.versionName }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
           RELEASE_BRANCH_NAME: ${{ steps.export_branch_name.outputs.RELEASE_BRANCH_NAME }}
           TARGET_BRANCH: 'master'
         run: |
@@ -95,5 +97,8 @@ jobs:
                  \"draft\": true, \
                  \"body\":\":robot: **Beep boop I am a bot**\n\
                             This is an automatically created PR for version ${VERSION} to merge changes from ${RELEASE_BRANCH_NAME} to ${TARGET_BRANCH}.\n \
+                            Next steps for release process:\n \
+                            - Run CI to build Container images and CLI and Helm Charts\n \
+                            - Run Integration Tests to verify everything works and publish the release\n \
                             \"}" \
-                 https://api.github.com/repos/keptn/keptn/pulls || true
+                 https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls || true

@@ -3,9 +3,8 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/helm"
@@ -44,15 +43,9 @@ Besides, deployed services and the configuration on the Git upstream (i.e., GitH
 
 		ctx, _ := platform.GetKubeContext()
 		fmt.Println("Your Kubernetes current context is configured to cluster: " + strings.TrimSpace(ctx))
-		fmt.Println("Would you like to uninstall Keptn from this cluster? (y/n)")
 
-		reader := bufio.NewReader(os.Stdin)
-		in, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		in = strings.ToLower(strings.TrimSpace(in))
-		if in != "y" && in != "yes" {
+		userConfirmation := common.NewUserInput().AskBool("Would you like to uninstall Keptn from this cluster?", &common.UserInputOptions{AssumeYes: assumeYes})
+		if !userConfirmation {
 			return nil
 		}
 

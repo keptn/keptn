@@ -1,4 +1,4 @@
-# Use the offical Golang image to create a build artifact.
+# Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.13.7-alpine as builder
 ARG version=develop
@@ -45,11 +45,6 @@ RUN apk add --no-cache ca-certificates libc6-compat
 COPY --from=builder /go/src/github.com/keptn/keptn/api/main /api
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/api/swagger.yaml /swagger-ui/swagger.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/project_model.yaml /swagger-ui/project_model.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/response_model.yaml /swagger-ui/response_model.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/service_model.yaml /swagger-ui/service_model.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/configure_model.yaml /swagger-ui/configure_model.yaml
-COPY --from=builder /go/src/github.com/keptn/keptn/api/evaluation_model.yaml /swagger-ui/evaluation_model.yaml
 
 RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /swagger-ui/swagger.yaml
 

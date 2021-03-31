@@ -7,6 +7,8 @@ mongodb:
 
 prefixPath: ""
 
+keptnSpecVersion: latest
+
 nats:
   nameOverride: keptn-nats-cluster
   nats.cluster.replicas: 3
@@ -43,21 +45,17 @@ bridge:
     enabled: true
   installationType: null
 
-eventbroker:
-  image:
-    repository: docker.io/keptn/eventbroker-go
-
 distributor:
   image:
     repository: docker.io/keptn/distributor
 
-shipyardService:
-  image:
-    repository: docker.io/keptn/shipyard-service
-
 shipyardController:
   image:
     repository: docker.io/keptn/shipyard-controller
+
+secretService:
+  image:
+    repository: docker.io/keptn/secret-service
 
 configurationService:
   image:
@@ -78,3 +76,6 @@ statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
 
+approvalService:
+  image:
+    repository: docker.io/keptn/approval-service

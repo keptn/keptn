@@ -22,7 +22,7 @@
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
       <dt-chart-tooltip>
         <ng-template let-tooltip>
-          <p>SLO evaluation of <span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:getCalendarFormat()"></span></p>
+          <p>SLO evaluation of <span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:dateUtil.getDateTimeFormat()"></span></p>
           <dt-key-value-list style="min-width: 100px;">
             <dt-key-value-list-item>
               <dt-key-value-list-key>
@@ -52,7 +52,7 @@
       <dt-consumption-icon aria-label="Test">
         <dt-icon name="summary"></dt-icon>
       </dt-consumption-icon>
-      <dt-consumption-title>Evaluation of <span [textContent]="_selectedEvaluationData.data.teststrategy"></span> test on <span [textContent]="_selectedEvaluationData.data.stage"></span></dt-consumption-title>
+      <dt-consumption-title>Evaluation of <span [textContent]="_selectedEvaluationData.data.teststrategy"></span> test on <span [textContent]="_selectedEvaluationData.getStage()"></span></dt-consumption-title>
       <dt-consumption-count>
         <p class="m-0">
           <span class="error" *ngIf="_selectedEvaluationData.isFailed()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluation.score | number:'1.0-0'"></span></span>
@@ -72,7 +72,7 @@
         </p>
       </dt-consumption-count>
       <dt-consumption-label>
-        <p class="m-0 small"><span class="bold">Evaluation timeframe: </span><span [textContent]="_selectedEvaluationData.data.evaluation.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="_selectedEvaluationData.data.evaluation.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="getDuration(_selectedEvaluationData.data.evaluation.timeStart, _selectedEvaluationData.data.evaluation.timeEnd)"></span>)</p>
+        <p class="m-0 small"><span class="bold">Evaluation timeframe: </span><span [textContent]="_selectedEvaluationData.data.evaluation.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="_selectedEvaluationData.data.evaluation.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="dateUtil.getDurationFormatted(_selectedEvaluationData.data.evaluation.timeStart, _selectedEvaluationData.data.evaluation.timeEnd)"></span>)</p>
         <p class="m-0" *ngIf="_selectedEvaluationData.data.result == _selectedEvaluationData.data.evaluation.result && _selectedEvaluationData.data.evaluation.comparedEvents?.length > 0">
           Compared with last
           <span *ngIf="_selectedEvaluationData.data.evaluation.compare_with == 'several_results'" [textContent]="_selectedEvaluationData.data.evaluation.comparedEvents?.length + ' '"></span>
@@ -91,7 +91,7 @@
         <p class="m-0" *ngIf="_selectedEvaluationData.data.result != _selectedEvaluationData.data.evaluation.result" [textContent]="_selectedEvaluationData.data.evaluation.result"></p>
       </dt-consumption-label>
     </dt-consumption>
-    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults" [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults"></ktb-sli-breakdown>
+    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults" [score]="_selectedEvaluationData.data.evaluation.score" [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults"></ktb-sli-breakdown>
   </div>
 </div>
 <ng-template #sloDialog let-data>

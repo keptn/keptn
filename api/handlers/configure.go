@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -71,7 +72,7 @@ func GetConfigureBridgeHandlerFunc(params configuration.GetConfigBridgeParams, p
 	}
 
 	l.Info("Checking for existing secret")
-	bridgeCredentials, err := k8s.CoreV1().Secrets(namespace).Get(bridgeCredentialsSecret, metav1.GetOptions{})
+	bridgeCredentials, err := k8s.CoreV1().Secrets(namespace).Get(context.TODO(), bridgeCredentialsSecret, metav1.GetOptions{})
 
 	if err != nil {
 		l.Error(err.Error())
@@ -126,7 +127,7 @@ func restartBridgePod(l *keptnutils.Logger) error {
 		return err
 	}
 
-	return k8s.CoreV1().Pods(namespace).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
+	return k8s.CoreV1().Pods(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{
 		LabelSelector: "app.kubernetes.io/name=bridge",
 	})
 }
@@ -140,13 +141,13 @@ func createBridgeCredentials(user string, password string, l *keptnutils.Logger)
 	}
 
 	l.Info("Checking for existing secret")
-	bridgeCredentials, err := k8s.CoreV1().Secrets(namespace).Get(bridgeCredentialsSecret, metav1.GetOptions{})
+	bridgeCredentials, err := k8s.CoreV1().Secrets(namespace).Get(context.TODO(), bridgeCredentialsSecret, metav1.GetOptions{})
 	if err == nil && bridgeCredentials != nil {
 		// update existing secret
 		l.Info("Existing secret found. Updating with new values for user and password")
 		newSecret := getBridgeCredentials(user, password)
 		bridgeCredentials.Data = newSecret.Data
-		_, err = k8s.CoreV1().Secrets(namespace).Update(newSecret)
+		_, err = k8s.CoreV1().Secrets(namespace).Update(context.TODO(), newSecret, metav1.UpdateOptions{})
 		if err != nil {
 			l.Error("could not update secret: " + err.Error())
 			return err
@@ -154,7 +155,7 @@ func createBridgeCredentials(user string, password string, l *keptnutils.Logger)
 	} else {
 		l.Info("Creating a new secret")
 		newSecret := getBridgeCredentials(user, password)
-		_, err = k8s.CoreV1().Secrets(namespace).Create(newSecret)
+		_, err = k8s.CoreV1().Secrets(namespace).Create(context.TODO(), newSecret, metav1.CreateOptions{})
 		if err != nil {
 			l.Error("could not create new secret: " + err.Error())
 			return err

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC1091
 source test/utils.sh
 
 KEPTN_EXAMPLES_BRANCH=${KEPTN_EXAMPLES_BRANCH:-"master"}
@@ -12,7 +13,7 @@ trap cleanup EXIT
 
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "${KEPTN_NAMESPACE}" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
 
 # test configuration
@@ -30,16 +31,16 @@ keptn create project $PROJECT --shipyard=./test/assets/shipyard_self_healing_sca
 # Pre-requisites
 ########################################################################################################################
 
-kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml
+kubectl apply -f "https://raw.githubusercontent.com/keptn-contrib/prometheus-service/$PROMETHEUS_SERVICE_VERSION/deploy/service.yaml"
 
 wait_for_deployment_in_namespace prometheus-service keptn
 wait_for_deployment_in_namespace prometheus-service-monitoring-configure-distributor keptn
 echo "Prometheus service deployed successfully"
 
 rm -rf examples
-git clone --branch ${KEPTN_EXAMPLES_BRANCH} https://github.com/keptn/examples --single-branch
+git clone --branch "${KEPTN_EXAMPLES_BRANCH}" https://github.com/keptn/examples --single-branch
 
-cd examples/onboarding-$SERVICE
+cd examples/onboarding-$SERVICE || exit
 
 ###########################################
 # onboard carts                           #
@@ -50,7 +51,7 @@ keptn onboard service $SERVICE --project=$PROJECT --chart=./$SERVICE
 # onboard carts-db                        #
 ###########################################
 keptn onboard service $SERVICE-db --project=$PROJECT --chart=./$SERVICE-db --deployment-strategy=direct
-keptn send event new-artifact --project=$PROJECT --service=$SERVICE-db --image=mongo --sequence=artifact-delivery-db
+keptn trigger delivery --project=$PROJECT --service=$SERVICE-db --image=mongo --sequence=delivery-direct
 
 # add health check in production
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=jmeter/basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
@@ -63,7 +64,7 @@ keptn add-resource --project=$PROJECT --stage=production --service=$SERVICE --re
 keptn add-resource --project=$PROJECT --service=$SERVICE --stage=production --resource=./test/assets/self_healing_slo.yaml --resourceUri=slo.yaml
 
 # deploy the service
-keptn send event new-artifact --project=$PROJECT --service=$SERVICE --image=docker.io/keptnexamples/$SERVICE --tag=0.11.1 --sequence=artifact-delivery
+keptn trigger delivery --project=$PROJECT --service=$SERVICE --image=docker.io/keptnexamples/$SERVICE --tag=0.11.1 --sequence=delivery
 
 echo "It might take a while for the service to be available on production - waiting 50sec"
 sleep 50
@@ -84,7 +85,7 @@ echo "Prometheus deployed successfully"
 ###########################################
 # generate load on the service            #
 ###########################################
-cd examples/load-generation/cartsloadgen
+cd examples/load-generation/cartsloadgen || exit
 
 kubectl apply -f deploy/cartsloadgen-faulty.yaml
 wait_for_deployment_in_namespace cartsloadgen loadgen
@@ -98,13 +99,13 @@ sleep 120
 
 event=$(wait_for_problem_open_event ${PROJECT} ${SERVICE} ${STAGE})
 
-echo $event
+echo "$event"
 verify_using_jq "$event" ".source" "prometheus"
 verify_using_jq "$event" ".data.project" $PROJECT
 verify_using_jq "$event" ".data.stage" "$STAGE"
 verify_using_jq "$event" ".data.service" "$SERVICE"
 
-keptn_context_id=$(echo $event | jq -r '.shkeptncontext')
+keptn_context_id=$(echo "$event" | jq -r '.shkeptncontext')
 
 sleep 20
 
@@ -112,7 +113,7 @@ sleep 20
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.triggered&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "remediation-service"
@@ -127,7 +128,7 @@ verify_using_jq "$response" ".data.problem.State" "OPEN"
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.remediation.status.changed&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "remediation-service"
@@ -141,7 +142,7 @@ verify_using_jq "$response" ".data.remediation.result.actionName" "scaling"
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.triggered&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "remediation-service"
@@ -155,7 +156,7 @@ verify_using_jq "$response" ".data.action.value" "1"
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.started&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "helm-service"
@@ -170,7 +171,7 @@ sleep 160
 response=$(curl -X GET "${KEPTN_ENDPOINT}/mongodb-datastore/event?project=${PROJECT}&type=sh.keptn.event.action.finished&keptnContext=${keptn_context_id}" -H  "accept: application/json" -H  "x-token: ${KEPTN_API_TOKEN}" -k 2>/dev/null | jq -r '.events[0]')
 
 # print the response
-echo $response | jq .
+echo "$response" | jq .
 
 # validate the response
 verify_using_jq "$response" ".source" "helm-service"

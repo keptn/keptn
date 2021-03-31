@@ -14,6 +14,7 @@ type StartEvaluationHandler struct {
 	Event             cloudevents.Event
 	KeptnHandler      *keptnv2.Keptn
 	SLIProviderConfig SLIProviderConfig
+	SLOFileRetriever  SLOFileRetriever `deep:"-"`
 }
 
 func (eh *StartEvaluationHandler) HandleEvent() error {
@@ -40,14 +41,14 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 
 	evaluationStartTimestamp, evaluationEndTimestamp, err := getEvaluationTimestamps(e)
 	if err != nil {
-		return eh.sendEvaluationFinishedWithErrorEvent(keptnContext, evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
+		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
 	}
 
 	// get SLO file
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
 	// get SLO file
-	objectives, err := getSLOs(e.Project, e.Stage, e.Service)
+	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err == nil && objectives != nil {
 		eh.KeptnHandler.Logger.Info("SLO file found")
 		for _, objective := range objectives.Objectives {
@@ -75,7 +76,7 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 			message = "error retrieving SLO file: project " + e.Project + " not found"
 			eh.KeptnHandler.Logger.Error(message)
 		}
-		return eh.sendEvaluationFinishedWithErrorEvent(keptnContext, evaluationStartTimestamp, evaluationEndTimestamp, e, message)
+		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message)
 	} else if err != nil && err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
@@ -112,11 +113,11 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 	// send a new event to trigger the SLI retrieval
 	eh.KeptnHandler.Logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
-	err = eh.sendInternalGetSLIEvent(keptnContext, e.Project, e.Stage, e.Service, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters, e.Labels)
+	err = eh.sendInternalGetSLIEvent(keptnContext, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
 	return nil
 }
 
-func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(keptnContext, start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
+func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, end string, e *keptnv2.EvaluationTriggeredEventData, message string) error {
 	evaluationDetails := keptnv2.EvaluationDetails{
 		IndicatorResults: nil,
 		TimeStart:        start,
@@ -137,7 +138,8 @@ func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(keptnCont
 		Evaluation: evaluationDetails,
 	}
 
-	return sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, &evaluationFinishedData)
+	_, err := eh.KeptnHandler.SendTaskFinishedEvent(&evaluationFinishedData, "lighthouse-service")
+	return err
 }
 
 func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, string, error) {
@@ -149,15 +151,15 @@ func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, s
 	return "", "", errors.New("evaluation.triggered event does not contain evaluation timeframe")
 }
 
-func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, project string, stage string, service string, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter, labels map[string]string) error {
+func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string, e *keptnv2.EvaluationTriggeredEventData, sliProvider string, indicators []string, start string, end string, filters []*keptnv2.SLIFilter) error {
 	source, _ := url.Parse("lighthouse-service")
 
-	getSLIEvent := keptnv2.GetSLITriggeredEventData{
+	getSLITriggeredEventData := keptnv2.GetSLITriggeredEventData{
 		EventData: keptnv2.EventData{
-			Project: project,
-			Stage:   stage,
-			Service: service,
-			Labels:  labels,
+			Project: e.Project,
+			Stage:   e.Stage,
+			Service: e.Service,
+			Labels:  e.Labels,
 		},
 		GetSLI: keptnv2.GetSLI{
 			SLIProvider:   sliProvider,
@@ -168,12 +170,16 @@ func (eh *StartEvaluationHandler) sendInternalGetSLIEvent(shkeptncontext string,
 		},
 	}
 
+	if e.Deployment.DeploymentNames != nil && len(e.Deployment.DeploymentNames) > 0 {
+		getSLITriggeredEventData.Deployment = e.Deployment.DeploymentNames[0]
+	}
+
 	event := cloudevents.NewEvent()
 	event.SetType(keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", shkeptncontext)
-	event.SetData(cloudevents.ApplicationJSON, getSLIEvent)
+	event.SetData(cloudevents.ApplicationJSON, getSLITriggeredEventData)
 
 	eh.KeptnHandler.Logger.Debug("Send event: " + keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 	return eh.KeptnHandler.SendCloudEvent(event)

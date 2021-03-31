@@ -17,27 +17,12 @@ import (
 	"time"
 )
 
-const upgradeShipyardMockResponseContent = `stages:
-  - name: "dev"
-    deployment_strategy: "direct"
-    test_strategy: "functional"
-  - name: "staging"
-    approval_strategy: 
-      pass: "automatic"
-      warning: "manual"
-    deployment_strategy: "blue_green_service"
-    test_strategy: "performance"
-  - name: "production"
-    approval_strategy: 
-      pass: "automatic"
-      warning: "manual"
-    deployment_strategy: "blue_green_service"
-    remediation_strategy: "automated"`
-
 const upgradeShipyardResourceMockResponse = `{
       "resourceContent": "c3RhZ2VzOgogIC0gbmFtZTogImRldiIKICAgIGRlcGxveW1lbnRfc3RyYXRlZ3k6ICJkaXJlY3QiCiAgICB0ZXN0X3N0cmF0ZWd5OiAiZnVuY3Rpb25hbCIKICAtIG5hbWU6ICJzdGFnaW5nIgogICAgYXBwcm92YWxfc3RyYXRlZ3k6IAogICAgICBwYXNzOiAiYXV0b21hdGljIgogICAgICB3YXJuaW5nOiAibWFudWFsIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHRlc3Rfc3RyYXRlZ3k6ICJwZXJmb3JtYW5jZSIKICAtIG5hbWU6ICJwcm9kdWN0aW9uIgogICAgYXBwcm92YWxfc3RyYXRlZ3k6IAogICAgICBwYXNzOiAiYXV0b21hdGljIgogICAgICB3YXJuaW5nOiAibWFudWFsIgogICAgZGVwbG95bWVudF9zdHJhdGVneTogImJsdWVfZ3JlZW5fc2VydmljZSIKICAgIHJlbWVkaWF0aW9uX3N0cmF0ZWd5OiAiYXV0b21hdGVkIg==",
       "resourceURI": "shipyard.yaml"
 }`
+
+const existingProject = `{"creationDate":"date","gitRemoteURI":"remote-uri","gitToken":"token","gitUser":"user","projectName":"projectname","shipyardVersion":"2","stages":[{"services":null,"stageName":"stage1"}]}`
 
 func Test_UpgradeProjectShipyard(t *testing.T) {
 	credentialmanager.MockAuthCreds = true
@@ -49,28 +34,33 @@ func Test_UpgradeProjectShipyard(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(200)
+			fmt.Println(r.RequestURI)
+
+			if r.Method == http.MethodGet && r.RequestURI == "/controlPlane/v1/project/sockshop" {
+				w.Write([]byte(existingProject))
+				return
+			}
+
 			if r.Method == http.MethodGet && strings.Contains(r.RequestURI, "shipyard.yaml") {
 				w.Write([]byte(upgradeShipyardResourceMockResponse))
 				return
-			} else if r.Method == http.MethodPut && strings.Contains(r.RequestURI, "resource") {
+			} else if r.Method == http.MethodPut && r.RequestURI == "/controlPlane/v1/project" {
 				defer r.Body.Close()
+				payload := apimodels.CreateProject{}
 				bytes, err := ioutil.ReadAll(r.Body)
 				if err != nil {
 					t.Errorf("could not read received event payload: %s", err.Error())
 				}
-				resource := &apimodels.Resource{}
-				if err := json.Unmarshal(bytes, resource); err != nil {
-					t.Errorf("could not decode received resource: %s", err.Error())
+				if err := json.Unmarshal(bytes, &payload); err != nil {
+					t.Errorf("could not decode received payload: %s", err.Error())
 				}
-				if *resource.ResourceURI != "shipyard.yaml" {
-					t.Errorf("did not receive upgraded shipyard: %s", err.Error())
-				}
-				v := &apimodels.Version{}
-				marshal, _ := json.Marshal(v)
-				w.Write(marshal)
 				go func() {
 					receivedUpgradedShipyard <- true
 				}()
+			} else if strings.Contains(r.RequestURI, "/v1/metadata") {
+				defer r.Body.Close()
+				w.Write([]byte(metadataMockResponse))
+				return
 			}
 			return
 		}),
@@ -121,8 +111,8 @@ func Test_transformShipyard(t *testing.T) {
 							Name: "dev",
 							Sequences: []keptnv2.Sequence{
 								{
-									Name:     "artifact-delivery",
-									Triggers: []string{},
+									Name:        "delivery",
+									TriggeredOn: []keptnv2.Trigger{},
 									Tasks: []keptnv2.Task{
 										{
 											Name: "deployment",
@@ -152,8 +142,8 @@ func Test_transformShipyard(t *testing.T) {
 									},
 								},
 								{
-									Name:     "artifact-delivery-direct",
-									Triggers: []string{},
+									Name:        "delivery-direct",
+									TriggeredOn: []keptnv2.Trigger{},
 									Tasks: []keptnv2.Task{
 										{
 											Name: "deployment",
@@ -188,8 +178,8 @@ func Test_transformShipyard(t *testing.T) {
 							Name: "staging",
 							Sequences: []keptnv2.Sequence{
 								{
-									Name:     "artifact-delivery",
-									Triggers: []string{"dev.artifact-delivery.finished"},
+									Name:        "delivery",
+									TriggeredOn: []keptnv2.Trigger{keptnv2.Trigger{Event: "dev.delivery.finished"}},
 									Tasks: []keptnv2.Task{
 										{
 											Name: "deployment",
@@ -219,8 +209,26 @@ func Test_transformShipyard(t *testing.T) {
 									},
 								},
 								{
-									Name:     "artifact-delivery-direct",
-									Triggers: []string{"dev.artifact-delivery-direct.finished"},
+									Name: "rollback",
+									TriggeredOn: []keptnv2.Trigger{
+										{
+											Event: "staging.delivery.finished",
+											Selector: keptnv2.Selector{
+												Match: map[string]string{
+													"result": string(keptnv2.ResultFailed),
+												},
+											},
+										},
+									},
+									Tasks: []keptnv2.Task{
+										{
+											Name: "rollback",
+										},
+									},
+								},
+								{
+									Name:        "delivery-direct",
+									TriggeredOn: []keptnv2.Trigger{keptnv2.Trigger{Event: "dev.delivery-direct.finished"}},
 									Tasks: []keptnv2.Task{
 										{
 											Name: "deployment",

@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
@@ -49,7 +49,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 	Example:      `keptn upgrade project PROJECTNAME --shipyard --fromVersion=0.1.0 --toVersion=0.2.0`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
-		_, _, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		_, _, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
@@ -79,21 +79,24 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 		var apiToken string
 		var err error
 		if !mocking {
-			endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+			endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		} else {
 			endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 			endPoint = *endPointPtr
 			apiToken = ""
 		}
-		if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+		if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 			return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 				endPointErr)
 		}
 
 		resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+		projectsHandler := apiutils.NewAuthenticatedProjectHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
+
 		shipyardResource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
 		if err != nil {
-			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *newArtifact.Project, err.Error())
+			return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", projectName, err.Error())
 		}
 
 		// first, check if the shipyard already has been upgraded
@@ -108,7 +111,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 
 		shipyard := &keptn.Shipyard{}
 		if err := yaml.Unmarshal([]byte(shipyardResource.ResourceContent), shipyard); err != nil {
-			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", *newArtifact.Project, err.Error())
+			return fmt.Errorf("error while decoding shipyard.yaml for project %s: %s", projectName, err.Error())
 		}
 
 		// check if there are any stages in the old shipyard.
@@ -119,11 +122,11 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 			return nil
 		}
 
-		upgradedShipyard := transformShipyard(shipyard)
-		marshalledUpgradedShipyard, err := yaml.Marshal(upgradedShipyard)
+		upgradedShipyard, err := yaml.Marshal(transformShipyard(shipyard))
 		if err != nil {
 			return fmt.Errorf("could not marshal upgraded shipyard into string: %s", err.Error())
 		}
+		upgradedShipyardStr := string(upgradedShipyard)
 
 		logging.PrintLog("Shipyard of project "+projectName+":", logging.InfoLevel)
 		logging.PrintLog("-----------------------", logging.InfoLevel)
@@ -131,7 +134,7 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 
 		logging.PrintLog("Shipyard converted into version 0.2:", logging.InfoLevel)
 		logging.PrintLog("-----------------------", logging.InfoLevel)
-		logging.PrintLog(string(marshalledUpgradedShipyard), logging.InfoLevel)
+		logging.PrintLog(upgradedShipyardStr, logging.InfoLevel)
 
 		if upgradeProjectParams.DryRun {
 			return nil
@@ -141,14 +144,24 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 			return err
 		}
 
-		shipyardName := "shipyard.yaml"
-		upgradedShipyardResource := &apimodels.Resource{
-			ResourceContent: string(marshalledUpgradedShipyard),
-			ResourceURI:     &shipyardName,
+		existingProject, getPrjErr := projectsHandler.GetProject(apimodels.Project{ProjectName: projectName})
+		if getPrjErr != nil {
+			return errors.New(*getPrjErr.Message)
 		}
-		if _, err := resourceHandler.UpdateProjectResource(projectName, upgradedShipyardResource); err != nil {
-			return fmt.Errorf("could not update shipyard resource: %s", err.Error())
+
+		UpdateProject := apimodels.CreateProject{
+			GitRemoteURL: existingProject.GitRemoteURI,
+			GitToken:     existingProject.GitToken,
+			GitUser:      existingProject.GitUser,
+			Name:         &existingProject.ProjectName,
+			Shipyard:     &upgradedShipyardStr,
 		}
+
+		_, updatePrjErr := apiHandler.UpdateProject(UpdateProject)
+		if updatePrjErr != nil {
+			return errors.New(*updatePrjErr.Message)
+		}
+
 		logging.PrintLog("Shipyard of project "+projectName+" has been upgraded successfully!", logging.InfoLevel)
 
 		return nil
@@ -172,16 +185,9 @@ func confirmShipyardUpgrade() error {
 	if upgradeProjectParams.AutoConfirm {
 		return nil
 	}
-	logging.PrintLog("Do you want to continue with this? (y/n)", logging.InfoLevel)
-	reader := bufio.NewReader(os.Stdin)
-	in, err := reader.ReadString('\n')
-	if err != nil {
-		return err
-	}
-	in = strings.ToLower(strings.TrimSpace(in))
-	if !(in == "y" || in == "yes") {
-		err := errors.New("stopping installation")
-		log.Fatal(err)
+	userConfirmation := common.NewUserInput().AskBool("Do you want to continue with this?", &common.UserInputOptions{AssumeYes: assumeYes})
+	if !userConfirmation {
+		log.Fatal("stopping installation")
 	}
 	return nil
 }
@@ -202,75 +208,101 @@ func transformShipyard(shipyard *keptn.Shipyard) *keptnv2.Shipyard {
 	for index, stage := range shipyard.Stages {
 
 		passStrategy, warningStrategy := getApprovalStrategyForStage(index, shipyard)
-		newStage := keptnv2.Stage{
-			Name: stage.Name,
-			Sequences: []keptnv2.Sequence{
+		deploymentStrategy := shipyard.Stages[index].DeploymentStrategy
+
+		deliverySequence := keptnv2.Sequence{
+			Name:        "delivery",
+			TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery"),
+			Tasks: []keptnv2.Task{
 				{
-					Name:     "artifact-delivery",
-					Triggers: getSequenceTriggerForStage(index, shipyard, "artifact-delivery"),
-					Tasks: []keptnv2.Task{
-						{
-							Name: "deployment",
-							Properties: map[string]string{
-								"deploymentstrategy": stage.DeploymentStrategy,
-							},
-						},
-						{
-							Name: "test",
-							Properties: map[string]string{
-								"teststrategy": stage.TestStrategy,
-							},
-						},
-						{
-							Name: "evaluation",
-						},
-						{
-							Name: "approval",
-							Properties: map[string]string{
-								"pass":    passStrategy,
-								"warning": warningStrategy,
-							},
-						},
-						{
-							Name: "release",
-						},
+					Name: "deployment",
+					Properties: map[string]string{
+						"deploymentstrategy": stage.DeploymentStrategy,
 					},
 				},
-				// add a second artifact-delivery with "direct" deployment strategy
 				{
-					Name:     "artifact-delivery-direct",
-					Triggers: getSequenceTriggerForStage(index, shipyard, "artifact-delivery-direct"),
-					Tasks: []keptnv2.Task{
-						{
-							Name: "deployment",
-							Properties: map[string]string{
-								"deploymentstrategy": "direct",
-							},
-						},
-						{
-							Name: "test",
-							Properties: map[string]string{
-								"teststrategy": stage.TestStrategy,
-							},
-						},
-						{
-							Name: "evaluation",
-						},
-						{
-							Name: "approval",
-							Properties: map[string]string{
-								"pass":    passStrategy,
-								"warning": warningStrategy,
-							},
-						},
-						{
-							Name: "release",
-						},
+					Name: "test",
+					Properties: map[string]string{
+						"teststrategy": stage.TestStrategy,
 					},
+				},
+				{
+					Name: "evaluation",
+				},
+				{
+					Name: "approval",
+					Properties: map[string]string{
+						"pass":    passStrategy,
+						"warning": warningStrategy,
+					},
+				},
+				{
+					Name: "release",
 				},
 			},
 		}
-		upgradedShipyard.Spec.Stages = append(upgradedShipyard.Spec.Stages, newStage)
+
+		// direct delivery sequence for supporting non-canary deployments
+		directDeliverySequence := keptnv2.Sequence{
+			Name:        "delivery-direct",
+			TriggeredOn: getSequenceTriggerForStage(index, shipyard, "delivery-direct"),
+			Tasks: []keptnv2.Task{
+				{
+					Name: "deployment",
+					Properties: map[string]string{
+						"deploymentstrategy": "direct",
+					},
+				},
+				{
+					Name: "test",
+					Properties: map[string]string{
+						"teststrategy": stage.TestStrategy,
+					},
+				},
+				{
+					Name: "evaluation",
+				},
+				{
+					Name: "approval",
+					Properties: map[string]string{
+						"pass":    passStrategy,
+						"warning": warningStrategy,
+					},
+				},
+				{
+					Name: "release",
+				},
+			},
+		}
+
+		var sequences []keptnv2.Sequence
+		sequences = append(sequences, deliverySequence)
+
+		// only add a rollback sequence for blue-green deployments
+		if deploymentStrategy == "blue_green_service" {
+			rollbackSequence := keptnv2.Sequence{
+				Name: "rollback",
+				TriggeredOn: []keptnv2.Trigger{
+					{
+						Event: getRollbackEventForStage(stage.Name, "delivery"),
+						Selector: keptnv2.Selector{
+							Match: map[string]string{
+								"result": string(keptnv2.ResultFailed),
+							},
+						},
+					},
+				},
+				Tasks: []keptnv2.Task{
+					{
+						Name: "rollback",
+					},
+				},
+			}
+			sequences = append(sequences, rollbackSequence)
+		}
+		sequences = append(sequences, directDeliverySequence)
+
+		upgradedShipyard.Spec.Stages = append(upgradedShipyard.Spec.Stages, keptnv2.Stage{Name: stage.Name, Sequences: sequences})
 	}
 
 	return upgradedShipyard
@@ -284,11 +316,20 @@ func getApprovalStrategyForStage(index int, shipyard *keptn.Shipyard) (string, s
 	return shipyard.Stages[index].ApprovalStrategy.Pass.String(), shipyard.Stages[index].ApprovalStrategy.Warning.String()
 }
 
-func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []string {
+func getSequenceTriggerForStage(index int, shipyard *keptn.Shipyard, sequenceName string) []keptnv2.Trigger {
 	if index == 0 {
-		return []string{}
+		return []keptnv2.Trigger{}
 	}
-	return []string{shipyard.Stages[index-1].Name + "." + sequenceName + ".finished"}
+
+	return []keptnv2.Trigger{
+		keptnv2.Trigger{
+			Event: shipyard.Stages[index-1].Name + "." + sequenceName + ".finished",
+		},
+	}
+}
+
+func getRollbackEventForStage(stageName string, sequenceName string) string {
+	return stageName + "." + sequenceName + ".finished"
 }
 
 func checkFromVersion(fromVersion *string) error {

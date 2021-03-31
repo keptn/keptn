@@ -17,10 +17,8 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/common"
@@ -56,13 +54,13 @@ var keptnChart *chart.Chart
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivate to which your kube config is pointing to, and on OpenShift.
+	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
 `,
 	Example: `keptn install                                                          # install on Kubernetes
 
-keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on Openshift
+keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on OpenShift
 
 keptn install --platform=kubernetes --endpoint-service-type=NodePort   # install on Kubernetes with gateway NodePort
 
@@ -121,7 +119,7 @@ keptn install --hide-sensitive-data                                    # install
 				return err
 			}
 		} else {
-			err = installPlatformManager.ReadCreds()
+			err = installPlatformManager.ReadCreds(assumeYes)
 			if err != nil {
 				return err
 			}
@@ -192,23 +190,16 @@ func doInstallation() error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
-	res, err := keptnutils.ExistsNamespace(false, keptnNamespace)
+	namespaceExists, err := keptnutils.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
 	}
 
-	if res {
-		fmt.Printf("Existing Keptn installation found in namespace %s\n", keptnNamespace)
-		fmt.Println()
-		fmt.Println("Do you want to overwrite this installation? (y/n)")
+	if namespaceExists {
+		fmt.Printf("Existing Keptn installation found in namespace %s\n\n", keptnNamespace)
+		userConfirmation := common.NewUserInput().AskBool("Do you want to overwrite this installation?", &common.UserInputOptions{assumeYes})
 
-		reader := bufio.NewReader(os.Stdin)
-		in, err := reader.ReadString('\n')
-		if err != nil {
-			return err
-		}
-		in = strings.ToLower(strings.TrimSpace(in))
-		if !(in == "y" || in == "yes") {
+		if !userConfirmation {
 			return fmt.Errorf("Stopping installation.")
 		}
 	} else {
@@ -284,12 +275,13 @@ func checkIstioInstallation() error {
 	if err != nil {
 		return err
 	}
-	_, err = clientset.CoreV1().Namespaces().Get("istio-system", metav1.GetOptions{})
+
+	_, err = clientset.CoreV1().Namespaces().Get(rootCmd.Context(), "istio-system", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	_, err = clientset.CoreV1().Services("istio-system").Get("istio-ingressgateway", metav1.GetOptions{})
+	_, err = clientset.CoreV1().Services("istio-system").Get(rootCmd.Context(), "istio-ingressgateway", metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -317,7 +309,7 @@ func getAPIEndpoint(keptnNamespace string, serviceType string) (string, error) {
 		}
 		return "http://" + endpoint + ":" + port + "/api", nil
 	case "LoadBalancer":
-		// Fetching the EXTERNAL-IP of the api-gateway-ngix loadbalancer service
+		// Fetching the EXTERNAL-IP of the api-gateway-nginx loadbalancer service
 		external, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "api-gateway-nginx", "-n", keptnNamespace, "-o", "jsonpath='{.status.loadBalancer.ingress[0].ip}'"})
 		if err != nil {
 			return "", err

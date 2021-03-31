@@ -42,7 +42,7 @@ var bridgeCmd = &cobra.Command{
 		return verifyConfigureBridgeParams(configureBridgeParams)
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint, apiToken, err := credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endpoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}

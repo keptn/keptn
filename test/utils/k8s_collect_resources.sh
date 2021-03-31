@@ -8,8 +8,9 @@ KUBE_GET_DEPS="kubectl get deployments -n $NAMESPACE"
 echo -e ""
 echo -e "| Pod | Container | Memory (requested) | CPU (requested) | Memory (limit) | CPU (limit) | Images |"
 echo -e "|-----|-----------|--------------------|-----------------|----------------|-------------|--------|"
-$KUBE_GET_DEPS | sed '1d' | awk '{print $1}' | sort | while read DEPLOYMENT; do
-  $KUBE_GET_DEPS $DEPLOYMENT -o jsonpath='{range .spec.template.spec.containers[*]}{"| "}{"'$DEPLOYMENT'"}{" | "}{.name}{" | "}--{.resources.requests.memory}{" | "}--{.resources.requests.cpu}{" | "}--{.resources.limits.memory}{" | "}--{.resources.limits.cpu}{" | "}{.image}{" | "}{"\n"}{end}' | sed -E -e 's/--([0-9])/\1/g' -e 's/--/-/g'
+$KUBE_GET_DEPS | sed '1d' | awk '{print $1}' | sort | while read -r DEPLOYMENT; do
+  # shellcheck disable=SC2086
+  $KUBE_GET_DEPS "$DEPLOYMENT" -o jsonpath='{range .spec.template.spec.containers[*]}{"| "}{"'$DEPLOYMENT'"}{" | "}{.name}{" | "}--{.resources.requests.memory}{" | "}--{.resources.requests.cpu}{" | "}--{.resources.limits.memory}{" | "}--{.resources.limits.cpu}{" | "}{.image}{" | "}{"\n"}{end}' | sed -E -e 's/--([0-9])/\1/g' -e 's/--/-/g'
 done
 
 echo -e ""
@@ -24,8 +25,9 @@ echo -e ""
 # print PVC data
 echo -e "| Name | Size |"
 echo -e "|------|------|"
-kubectl get pvc -n $NAMESPACE | sed '1d' | awk '{print $1}' | sort | while read PVC; do
-  kubectl get pvc $PVC -n $NAMESPACE -o jsonpath='{range .spec}{"| "}{"'$PVC'"}{" | "}--{.resources.requests.storage}{" | "}{"\n"}{end}' | sed -E -e 's/--([0-9])/\1/g' -e 's/--/-/g'
+kubectl get pvc -n "$NAMESPACE" | sed '1d' | awk '{print $1}' | sort | while read -r PVC; do
+  # shellcheck disable=SC2086
+  kubectl get pvc "$PVC" -n "$NAMESPACE" -o jsonpath='{range .spec}{"| "}{"'$PVC'"}{" | "}--{.resources.requests.storage}{" | "}{"\n"}{end}' | sed -E -e 's/--([0-9])/\1/g' -e 's/--/-/g'
 done
 
 echo -e ""

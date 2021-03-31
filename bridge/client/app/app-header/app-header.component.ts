@@ -25,7 +25,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
-  public versionCheckReference = "https://keptn.sh/docs/0.7.x/reference/version_check";
+  public versionCheckReference = "/reference/version_check/";
 
   constructor(private router: Router, private dataService: DataService, private apiService: ApiService, private notificationsService: NotificationsService) { }
 
@@ -77,6 +77,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
           case 'major':
             genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a major update and it might contain incompatible changes. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
             break;
+          default:
+            genMessage = (version, type, major, minor) => `New ${type} ${version} available. It might contain incompatible changes. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
         }
 
         let major = semver.major(stableVersion);

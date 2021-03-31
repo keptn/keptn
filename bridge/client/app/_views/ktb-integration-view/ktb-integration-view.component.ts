@@ -54,7 +54,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   updateIntegrations() {
     if (this.keptnInfo && this.keptnInfo.bridgeInfo.keptnInstallationType && this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')) {
       this.currentTime = moment.utc().startOf('minute').format('YYYY-MM-DDTHH:mm:ss');
-      this.useCaseExamples.cli.find(e => e.label === 'Trigger a quality gate evaluation').code = `keptn send event start-evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
+      this.useCaseExamples.cli.find(e => e.label === 'Trigger a quality gate evaluation').code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=\${this.currentTime} --timeframe=5m`;
       this.useCaseExamples.api.find(e => e.label === 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\
@@ -77,7 +77,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   addDeploymentUseCaseToIntegrations() {
     this.useCaseExamples.cli.push({
       label: 'Trigger deployment with a new artifact',
-      code: `keptn send event new-artifact --project=\${PROJECT} --service=\${SERVICE}--image=\${IMAGE} --tag=\${TAG}`
+      code: `keptn trigger delivery --project=\${PROJECT} --service=\${SERVICE} --image=\${IMAGE} --tag=\${TAG} --sequence=\${SEQUENCE}`
     });
     this.useCaseExamples.api.push({
       label: 'Trigger deployment with a new artifact',

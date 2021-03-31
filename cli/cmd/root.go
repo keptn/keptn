@@ -17,6 +17,8 @@ var mocking bool
 var insecureSkipTLSVerify bool
 var kubectlOptions string
 var namespace string
+var assumeYes bool
+var help bool
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
 
@@ -26,9 +28,9 @@ var rootCmd = &cobra.Command{
 	Short: "The CLI for using Keptn",
 	Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) {},
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		runVersionCheck()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -38,18 +40,6 @@ func Execute() {
 	// Set LogLevel to QuietLevel
 	currentLogLevel := logging.LogLevel
 	logging.LogLevel = logging.QuietLevel
-
-	isHelp := false
-	for _, n := range os.Args {
-		if n == "-h" || n == "--help" {
-			isHelp = true
-		}
-	}
-
-	if !isHelp {
-		runVersionCheck()
-	}
-
 	// Set LogLevel back to previous state
 	logging.LogLevel = currentLogLevel
 
@@ -63,7 +53,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&quietLogging, "quiet", "q", false, "Suppresses debug and info messages")
 	rootCmd.PersistentFlags().BoolVarP(&mocking, "mock", "", false, "Disables communication to a Keptn endpoint")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "keptn",
-		"Specify the namespace where Keptn should be installed, used and uninstalled in (default keptn).")
+		"Specify the namespace where Keptn should be installed, used and uninstalled in")
+	rootCmd.PersistentFlags().BoolVarP(&assumeYes, "yes", "y", false, "Assume yes for all user prompts")
+	rootCmd.PersistentFlags().BoolVarP(&help, "help", "h", false, "help")
 	cobra.OnInitialize(initConfig)
 }
 

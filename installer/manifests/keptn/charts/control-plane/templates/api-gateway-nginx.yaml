@@ -63,7 +63,7 @@ data:
       proxy_pass_request_body off;
       proxy_pass http://api-service:8080;
       proxy_http_version 1.1;
-      proxy_pass_request_headers on; # only pass reuquest headers to this service
+      proxy_pass_request_headers on; # only pass request headers to this service
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
@@ -117,12 +117,12 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location {{ .Values.prefixPath }}/api/shipyard-controller/swagger-ui/swagger.yaml {
+    location {{ .Values.prefixPath }}/api/controlPlane/swagger-ui/swagger.yaml {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
 
-      rewrite {{ .Values.prefixPath }}/api/shipyard-controller/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
@@ -132,14 +132,45 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location  {{ .Values.prefixPath }}/api/shipyard-controller {
+    location  {{ .Values.prefixPath }}/api/controlPlane {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
 
-      rewrite {{ .Values.prefixPath }}/api/shipyard-controller/(.*) /$1  break;
+      rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location {{ .Values.prefixPath }}/api/secrets/swagger-ui/docs/swagger.yaml {
+      # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+      # the access is denied) before we store the file
+      # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.
+
+      rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
+      proxy_pass         http://secret-service:8080;
+      proxy_redirect     off;
+      proxy_set_header   Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location  {{ .Values.prefixPath }}/api/secrets/ {
+      # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
+      # the access is denied) before we store the file
+      # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+
+      rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
+      proxy_pass         http://secret-service:8080;
       proxy_redirect     off;
       proxy_set_header   Host $host;
       proxy_http_version 1.1;
@@ -254,7 +285,9 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.apiGatewayNginx.image.tag }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}   
+        helm.sh/chart: {{ include "control-plane.chart" . }}
+      annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
+        rollme: {{ randAlphaNum 5 | quote }}
     spec:
       containers:
         - name: api-gateway-nginx
@@ -286,11 +319,11 @@ spec:
               name: api-nginx-config
           resources:
             requests:
-              memory: "32Mi"
+              memory: "64Mi"
               cpu: "50m"
             limits:
               memory: "128Mi"
-              cpu: "500m"
+              cpu: "250m"
       volumes:
         - name: api-nginx-config
           configMap:

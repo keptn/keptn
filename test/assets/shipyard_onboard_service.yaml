@@ -6,7 +6,7 @@ spec:
   stages:
     - name: "dev"
       sequences:
-        - name: "artifact-delivery"
+        - name: "delivery"
           tasks:
             - name: "deployment"
               properties:
@@ -16,7 +16,7 @@ spec:
                 teststrategy: "functional"
             - name: "evaluation"
             - name: "release"
-        - name: "artifact-delivery-db"
+        - name: "delivery-direct"
           tasks:
             - name: "deployment"
               properties:
@@ -25,9 +25,9 @@ spec:
 
     - name: "staging"
       sequences:
-        - name: "artifact-delivery"
-          triggers:
-            - "dev.artifact-delivery.finished"
+        - name: "delivery"
+          triggeredOn:
+            - event: "dev.delivery.finished"
           tasks:
             - name: "deployment"
               properties:
@@ -37,30 +37,72 @@ spec:
                 teststrategy: "performance"
             - name: "evaluation"
             - name: "release"
+        - name: "rollback"
+          triggeredOn:
+            - event: "staging.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
 
-        - name: "artifact-delivery-db"
-          triggers:
-            - "dev.artifact-delivery-db.finished"
+        - name: "delivery-direct"
+          triggeredOn:
+            - event: "dev.delivery-direct.finished"
           tasks:
             - name: "deployment"
               properties:
                 deploymentstrategy: "direct"
             - name: "release"
 
-    - name: "production"
+    - name: "prod-a"
       sequences:
-        - name: "artifact-delivery"
-          triggers:
-            - "staging.artifact-delivery.finished"
+        - name: "delivery"
+          triggeredOn:
+            - event: "staging.delivery.finished"
           tasks:
             - name: "deployment"
               properties:
                 deploymentstrategy: "blue_green_service"
             - name: "release"
+        - name: "rollback"
+          triggeredOn:
+            - event: "prod-a.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
+        - name: "delivery-direct"
+          triggeredOn:
+            - event: "staging.delivery-direct.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "release"
 
-        - name: "artifact-delivery-db"
-          triggers:
-            - "staging.artifact-delivery-db.finished"
+    - name: "prod-b"
+      sequences:
+        - name: "delivery"
+          triggeredOn:
+            - event: "staging.delivery.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "blue_green_service"
+            - name: "release"
+        - name: "rollback"
+          triggeredOn:
+            - event: "prod-b.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"
+        - name: "delivery-direct"
+          triggeredOn:
+            - event: "staging.delivery-direct.finished"
           tasks:
             - name: "deployment"
               properties:

@@ -1,19 +1,17 @@
 package credentialmanager
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"net/url"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/docker/docker-credential-helpers/credentials"
+	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/file"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"gopkg.in/yaml.v2"
+	"log"
+	"net/url"
+	"os"
+	"path/filepath"
 )
 
 var testEndPoint = url.URL{Scheme: "https", Host: "my-endpoint"}
@@ -25,10 +23,18 @@ const credsLab = "keptn"
 const serverURL = "https://keptn.sh"
 const installCredsKey = "https://keptn-install.sh"
 
+//go:generate moq -pkg credentialmanager_mock -skip-ensure -out ./fake/credential_manager_mock.go . CredentialManagerInterface
+type CredentialManagerInterface interface {
+	SetCreds(endPoint url.URL, apiToken string, namespace string) error
+	GetCreds(namespace string) (url.URL, string, error)
+	SetInstallCreds(creds string) error
+	GetInstallCreds() (string, error)
+}
+
 var MockAuthCreds bool
 var MockKubeConfigCheck bool
 
-// GlobalCheckForContextChange ...Since credential manager is called at multiple times, we dont want to check for context switch for one command at multiple places,
+// GlobalCheckForContextChange ...Since credential manager is called at multiple times, we don't want to check for context switch for one command at multiple places,
 // it should be called only for the first time.
 var GlobalCheckForContextChange bool
 
@@ -195,17 +201,10 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 	// Setting keptnContext from ~/.keptn/config file
 	keptnContext = cliConfig.CurrentContext
 	if kubeConfigFile.CurrentContext != "" && keptnContext != kubeConfigFile.CurrentContext {
-		fmt.Printf("Kube context has been changed to %s", kubeConfigFile.CurrentContext)
-		fmt.Println()
-		if !autoApplyNewContext && keptnContext != "" {
-			fmt.Println("Do you want to switch to the new Kube context with the Keptn running there? (y/n)")
-			reader := bufio.NewReader(os.Stdin)
-			in, err := reader.ReadString('\n')
-			if err != nil {
-				return err
-			}
-			in = strings.ToLower(strings.TrimSpace(in))
-			if !(in == "y" || in == "yes") {
+		fmt.Printf("Kube context has been changed to %s\n", kubeConfigFile.CurrentContext)
+		if keptnContext != "" {
+			userConfirmation := common.NewUserInput().AskBool("Do you want to switch to the new Kube context with the Keptn running there?", &common.UserInputOptions{AssumeYes: autoApplyNewContext})
+			if !userConfirmation {
 				return nil
 			}
 		}

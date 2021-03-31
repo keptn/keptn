@@ -13,13 +13,14 @@ import (
 
 // MockedHandler mocks typical tasks of a handler
 type MockedHandler struct {
-	keptnHandler            *keptnv2.Keptn
-	helmExecutor            helm.HelmExecutor
-	configServiceURL        string
-	options                 MockedHandlerOptions
-	sentCloudEvents         []cloudevents.Event
-	handledErrorEvents      []interface{}
-	upgradeChartInvocations []upgradeChartData
+	keptnHandler                        *keptnv2.Keptn
+	helmExecutor                        helm.HelmExecutor
+	configServiceURL                    string
+	options                             MockedHandlerOptions
+	sentCloudEvents                     []cloudevents.Event
+	handledErrorEvents                  []interface{}
+	upgradeChartInvocations             []upgradeChartData
+	upgradeChartWithReplicasInvocations []upgradeChartWithReplicaData
 }
 
 // MockedHandlerOption function is used to configure the mock
@@ -84,6 +85,7 @@ func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) 
 func (h *MockedHandler) handleError(triggerID string, err error, taskName string, finishedEventData interface{}) {
 	fmt.Println("HandleError: " + err.Error())
 	h.handledErrorEvents = append(h.handledErrorEvents, finishedEventData)
+	h.sendEvent(triggerID, keptnv2.GetFinishedEventType(taskName), finishedEventData)
 }
 
 func (h *MockedHandler) sendEvent(triggerID, ceType string, data interface{}) error {
@@ -113,6 +115,11 @@ type upgradeChartData struct {
 	strategy keptnevents.DeploymentStrategy
 }
 
+type upgradeChartWithReplicaData struct {
+	upgradeChartData
+	replicas int
+}
+
 func (h *MockedHandler) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy) error {
 	ucd := upgradeChartData{
@@ -127,6 +134,15 @@ func (h *MockedHandler) upgradeChart(ch *chart.Chart, event keptnv2.EventData,
 
 func (h *MockedHandler) upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
 	strategy keptnevents.DeploymentStrategy, replicas int) error {
+	ucdr := upgradeChartWithReplicaData{
+		upgradeChartData: upgradeChartData{
+			ch:       ch,
+			event:    event,
+			strategy: strategy,
+		},
+		replicas: replicas,
+	}
+	h.upgradeChartWithReplicasInvocations = append(h.upgradeChartWithReplicasInvocations, ucdr)
 
 	return nil
 }

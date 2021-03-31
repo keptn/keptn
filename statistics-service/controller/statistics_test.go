@@ -1,6 +1,7 @@
 package controller
 
 import (
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"os"
 	"strconv"
 	"sync"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/go-test/deep"
 
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
 )
@@ -44,7 +44,7 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 		StatisticsRepo  db.StatisticsRepo
 		Statistics      operations.Statistics
 		uniqueSequences map[string]bool
-		logger          keptn.LoggerInterface
+		logger          keptncommon.LoggerInterface
 		lock            sync.Mutex
 		cutoffTime      time.Time
 	}
@@ -97,7 +97,7 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 				t.Errorf("Statistics have not been replaced properly. Got length = %d", len(sb.Statistics.Projects))
 			}
 			if len(sb.uniqueSequences) > 0 {
-				t.Errorf("uniqueSequuences have not been replaced properly. Got length = %d", len(sb.uniqueSequences))
+				t.Errorf("uniqueSequences have not been replaced properly. Got length = %d", len(sb.uniqueSequences))
 			}
 		})
 	}
@@ -109,7 +109,7 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
-		logger          keptn.LoggerInterface
+		logger          keptncommon.LoggerInterface
 		lock            sync.Mutex
 		cutoffTime      time.Time
 	}
@@ -136,7 +136,7 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 				},
 				bucketTimer:     nil,
 				uniqueSequences: nil,
-				logger:          keptn.NewLogger("", "", ""),
+				logger:          keptncommon.NewLogger("", "", ""),
 				lock:            sync.Mutex{},
 				cutoffTime:      time.Time{},
 			},
@@ -175,7 +175,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
-		logger          keptn.LoggerInterface
+		logger          keptncommon.LoggerInterface
 		lock            sync.Mutex
 		cutoffTime      time.Time
 	}
@@ -200,7 +200,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				},
 				bucketTimer:     nil,
 				uniqueSequences: map[string]bool{},
-				logger:          keptn.NewLogger("", "", ""),
+				logger:          keptncommon.NewLogger("", "", ""),
 				lock:            sync.Mutex{},
 				cutoffTime:      time.Time{},
 			},
@@ -277,7 +277,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				},
 				bucketTimer:     nil,
 				uniqueSequences: map[string]bool{},
-				logger:          keptn.NewLogger("", "", ""),
+				logger:          keptncommon.NewLogger("", "", ""),
 				lock:            sync.Mutex{},
 				cutoffTime:      time.Time{},
 			},
@@ -348,7 +348,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				uniqueSequences: map[string]bool{
 					"my-context": true,
 				},
-				logger:     keptn.NewLogger("", "", ""),
+				logger:     keptncommon.NewLogger("", "", ""),
 				lock:       sync.Mutex{},
 				cutoffTime: time.Time{},
 			},

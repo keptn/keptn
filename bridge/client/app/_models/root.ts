@@ -9,12 +9,8 @@ export class Root extends Trace {
     return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
   }
 
-  isProblem(): boolean {
-    return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && !trace.isProblemResolvedOrClosed() ? true : result, false);
-  }
-
-  isProblemResolvedOrClosed(): boolean {
-    return this.traces.reduce((result: boolean, trace: Trace) => trace.isProblem() && trace.isProblemResolvedOrClosed() ? true : result, false);
+  isStarted(): boolean {
+    return this.traces.length === 0 ? false : this.traces[this.traces.length-1].isStarted();
   }
 
   isFailedEvaluation(): string {
@@ -58,8 +54,8 @@ export class Root extends Trace {
     return pending === undefined ? false : pending;
   }
 
-  getPendingApprovals(): Trace[] {
-    return this.traces.filter(trace => trace.isApproval() && trace.isApprovalPending());
+  getPendingApprovals(stageName?: string): Trace[] {
+    return this.traces.filter(trace => trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.getStage() == stageName));
   }
 
   getLastTrace(): Trace {
@@ -74,8 +70,13 @@ export class Root extends Trace {
     return this.getTracesOfStage(stage)?.[0];
   }
 
-  getStages(): String[] {
-    let result: String[] = [];
+  getLastTraceOfStage(stage: string): Trace {
+    let traces = this.getTracesOfStage(stage);
+    return traces ? traces[traces.length-1] : null;
+  }
+
+  getStages(): string[] {
+    let result: string[] = [];
     if(this.traces) {
       this.traces.forEach((trace) => {
         if(trace.data.stage && result.indexOf(trace.data.stage) == -1)
@@ -97,12 +98,12 @@ export class Root extends Trace {
     return this.data.service;
   }
 
-  getEvaluation(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.EVALUATION_FINISHED && t.data.stage == stage.stageName);
+  getEvaluation(stageName: String): Trace {
+    return this.traces.find(t => t.type == EventTypes.EVALUATION_TRIGGERED && t.data.stage == stageName);
   }
 
   getDeploymentDetails(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_FINISHED && t.data.stage == stage.stageName);
+    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage.stageName)?.getFinishedEvent();
   }
 
   getRemediationActions(): Root[] {
@@ -117,7 +118,7 @@ export class Root extends Trace {
   }
 
   isFinished() {
-    return this.getLastTrace()?.isFinished();
+    return this.traces.every(t => t.isFinished());
   }
 
   getSequenceName() {
@@ -125,12 +126,34 @@ export class Root extends Trace {
   }
 
   getStatus() {
-    if(this.isFaulty())
+    if(this.isProblem() && this.isProblemResolvedOrClosed())
+      return "resolved";
+    else if(this.isProblem())
+      return "opened";
+    else if(this.isFinished() && this.isFaulty())
       return "failed";
     else if(this.isFinished())
       return "succeeded";
     else
       return "active";
+  }
+
+  getStatusLabel() {
+    switch(this.getStatus()) {
+      case "resolved":
+        return "resolved";
+      case "opened":
+        return "opened";
+      case "failed":
+        return "failed";
+      case "succeeded":
+        return "succeeded";
+      case "active":
+        if(this.getPendingApprovals().length > 0)
+          return "waiting for approval";
+        else
+          return "started";
+    }
   }
 
   static fromJSON(data: any) {

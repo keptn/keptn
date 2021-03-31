@@ -2,11 +2,11 @@ package controller
 
 import (
 	"fmt"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"strings"
 	"sync"
 	"time"
 
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/keptn/statistics-service/config"
 	"github.com/keptn/keptn/statistics-service/db"
 	"github.com/keptn/keptn/statistics-service/operations"
@@ -21,7 +21,7 @@ type StatisticsBucket struct {
 	// Statistics in-memory statistics
 	Statistics      operations.Statistics
 	uniqueSequences map[string]bool
-	logger          keptn.LoggerInterface
+	logger          keptncommon.LoggerInterface
 	lock            sync.Mutex
 	cutoffTime      time.Time
 	nextGenEvents   bool
@@ -33,7 +33,7 @@ func GetStatisticsBucketInstance() *StatisticsBucket {
 		env := config.GetConfig()
 		statisticsBucketInstance = &StatisticsBucket{
 			StatisticsRepo: &db.StatisticsMongoDBRepo{},
-			logger:         keptn.NewLogger("", "", "statistics service"),
+			logger:         keptncommon.NewLogger("", "", "statistics service"),
 			nextGenEvents:  env.NextGenEvents,
 		}
 

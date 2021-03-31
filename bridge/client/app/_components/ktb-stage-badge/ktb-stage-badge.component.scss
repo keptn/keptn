@@ -1,0 +1,49 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.ktb-stage-badge {
+  position: relative;
+
+  .dt-tag {
+    background-color: $gray-200;
+    padding-right: 45px;
+    height: 26px;
+  }
+
+  ::ng-deep ktb-evaluation-info {
+    position: absolute;
+    right: 1px;
+
+    .dt-tag {
+      border: 1px solid $gray-200;
+    }
+    .dt-tag:not(.error):not(.success):not(.warning) {
+      background-color: $gray-300;
+    }
+  }
+
+
+  &.ktb-stage-badge-error {
+    .dt-tag {
+      border-color: $error-color;
+    }
+  }
+
+  &.ktb-stage-badge-warning {
+    .dt-tag {
+      border-color: $warning-color;
+    }
+  }
+
+  &.ktb-stage-badge-success {
+    .dt-tag {
+      border-color: $cta-color;
+    }
+  }
+
+  &.ktb-stage-badge-highlight {
+    .dt-tag {
+      border-color: $blue-400;
+    }
+  }
+}

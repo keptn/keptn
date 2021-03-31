@@ -1,0 +1,11 @@
+<div class="ktb-stage-badge"
+     [class.ktb-stage-badge-error]="error"
+     [class.ktb-stage-badge-warning]="warning"
+     [class.ktb-stage-badge-success]="success"
+     [class.ktb-stage-badge-highlight]="highlight"
+     fxLayout="row" fxLayoutAlign="start center">
+  <dt-tag-list>
+    <dt-tag class="m-0 justify-content-center" [textContent]="stage"></dt-tag>
+  </dt-tag-list>
+  <ktb-evaluation-info [evaluation]="evaluation" [overlayDisabled]="true"></ktb-evaluation-info>
+</div>

@@ -24,8 +24,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	versionCheck "github.com/hashicorp/go-version"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -34,15 +34,11 @@ import (
 
 var (
 	// Version information which is passed by ldflags
-	Version string
+	Version             string
+	keptnReleaseDocsURL string
+	versionCheckInfo    string
 )
 
-const keptnReleaseDocsURL = "0.8.x" // ToDo: Can we automate this?
-
-const versionCheckInfo = `Daily version check is %s. 
-Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/` + keptnReleaseDocsURL + `/reference/version_check
----------------------------------------------------
-`
 const setVersionCheckMsg = `* To %s the daily version check, please execute:
  - keptn set config AutomaticVersionCheck %s
 
@@ -99,6 +95,24 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+// SetVersion sets version, versionCheckInfo and extracts and sets {Major} and {Minor} version for keptnReleaseDocsURL
+func SetVersion(vers string) {
+	Version = vers
+	v, err := versionCheck.NewSemver(vers)
+	keptnReleaseDocsURL = "0.8.x" //fallback version if provided doc version is invalid
+	if err == nil {
+		segments := v.Segments()
+		if len(segments) == 3 {
+			keptnReleaseDocsURL = strconv.Itoa(segments[0]) + "." + strconv.Itoa(segments[1]) + ".x"
+		}
+	}
+
+	versionCheckInfo = `Daily version check is %s. 
+Keptn will%s collect statistical data and will%s notify about new versions and security patches for Keptn. Details can be found at: https://keptn.sh/docs/` + keptnReleaseDocsURL + `/reference/version_check
+---------------------------------------------------
+`
+}
+
 func init() {
 	rootCmd.AddCommand(versionCmd)
 }
@@ -148,7 +162,7 @@ func getKeptnServerVersion() (string, error) {
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
@@ -158,7 +172,7 @@ func getKeptnServerVersion() (string, error) {
 	if err != nil {
 		return "", errors.New(authErrorMsg)
 	}
-	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return "", fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons, endPointErr)
 	}
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)

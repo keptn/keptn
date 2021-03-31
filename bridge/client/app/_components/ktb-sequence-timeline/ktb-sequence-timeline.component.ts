@@ -1,16 +1,28 @@
-import {ChangeDetectorRef, Component, Input, OnInit, Output, EventEmitter} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, Output, EventEmitter} from '@angular/core';
 import {Root} from '../../_models/root';
+import {ActivatedRoute} from '@angular/router';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'ktb-sequence-timeline',
   templateUrl: './ktb-sequence-timeline.component.html',
   styleUrls: ['./ktb-sequence-timeline.component.scss']
 })
-export class KtbSequenceTimelineComponent implements OnInit {
+export class KtbSequenceTimelineComponent{
   private _currentSequence: Root;
-  public selectedStage: String;
+  public _selectedStage: String;
 
-  @Output() selectedStageChange: EventEmitter<String> = new EventEmitter();
+  @Output() selectedStageChange: EventEmitter<{ stageName: String, triggerByEvent: boolean }> = new EventEmitter();
+
+  @Input()
+  get selectedStage(): String {
+    return this._selectedStage;
+  }
+  set selectedStage(stage: String) {
+    if(this._selectedStage !== stage) {
+      this._selectedStage = stage;
+    }
+  }
 
   @Input()
   get currentSequence(): Root {
@@ -19,8 +31,6 @@ export class KtbSequenceTimelineComponent implements OnInit {
   set currentSequence(root: Root) {
     if (this._currentSequence !== root) {
       this._currentSequence = root;
-      const stages = this._currentSequence.getStages();
-      this.stageChanged(stages[stages.length - 1]);
     }
   }
 
@@ -30,15 +40,12 @@ export class KtbSequenceTimelineComponent implements OnInit {
     }
   }
 
-  stageChanged(stage: String) {
-    this.selectedStage = stage;
+  stageChanged(stageName: String, triggerByEvent = false) {
+    this.selectedStage = stageName;
     this._changeDetectorRef.markForCheck();
-    this.selectedStageChange.emit(stage);
+    this.selectedStageChange.emit({stageName, triggerByEvent});
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
-
-  ngOnInit(): void {
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {
   }
-
 }

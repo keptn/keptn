@@ -83,7 +83,7 @@ Implemented **Keptn spec** version: [0.1.3](https://github.com/keptn/spec/tree/0
 ## Fixed Issues
 - Check K8s cluster version only for full installation [#1398](https://github.com/keptn/keptn/issues/1398)
 - Fixed memory leak in *mongodb-datastore* [#1440](https://github.com/keptn/keptn/issues/1440)
-- Use right mount path for persistant volume in *mongodb-datastore* [#1360](https://github.com/keptn/keptn/issues/1360)
+- Use right mount path for persistent volume in *mongodb-datastore* [#1360](https://github.com/keptn/keptn/issues/1360)
 
 ## Fixed Limitations
 - Distributors can not automatically reconnect to NATS cluster [#1209](https://github.com/keptn/keptn/issues/1209)

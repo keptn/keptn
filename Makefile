@@ -15,16 +15,16 @@ CREATEBIN := $(shell [ ! -d ./bin ] && mkdir bin)
 MAKEFLAGS += --silent
 
 # output filename for cli binary
-OUTPUT_EXECUTEABLE_NAME := $(PROJECTNAME)
+OUTPUT_EXECUTABLE_NAME := $(PROJECTNAME)
 
 .PHONY: default
 default: help
 
 ## Build the cli binary
 build-cli:
-	@printf "🔨 Building binary '$(OUTPUT_EXECUTEABLE_NAME)'\n"
+	@printf "🔨 Building binary '$(OUTPUT_EXECUTABLE_NAME)'\n"
 	@./make-scripts/build/build-cli.sh
-	@cp cli/$(OUTPUT_EXECUTEABLE_NAME) $(GOBIN)/
+	@cp cli/$(OUTPUT_EXECUTABLE_NAME) $(GOBIN)/
 	@printf "👍 Done\n"
 
 ## Build all docker images

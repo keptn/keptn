@@ -3,6 +3,8 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"math"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -11,7 +13,6 @@ import (
 	"github.com/keptn/keptn/helm-service/pkg/mesh"
 	"helm.sh/helm/v3/pkg/chart"
 	corev1 "k8s.io/api/core/v1"
-	"math"
 )
 
 // DeploymentHandler is a handler for doing the deployment and
@@ -210,17 +211,17 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.D
 	inEventData.Message = "Successfully deployed"
 
 	var localURIs, publicURIs []string
-	if len(inEventData.Deployment.DeploymentURIsLocal) > 0 || len(inEventData.Deployment.DeploymentURIsPublic) > 0 {
-		h.getKeptnHandler().Logger.Info("Using deployment URIs from deployment.triggered event")
-		localURIs = inEventData.Deployment.DeploymentURIsLocal
-		publicURIs = inEventData.Deployment.DeploymentURIsPublic
-	} else if deploymentStrategy == keptnevents.Direct || deploymentStrategy == keptnevents.Duplicate {
+	if deploymentStrategy == keptnevents.Direct || deploymentStrategy == keptnevents.Duplicate {
 		h.getKeptnHandler().Logger.Info("Inferring deployment URIs")
 		var err error
 		localURIs, publicURIs, err = h.getDeploymentURIs(inEventData.EventData)
 		if err != nil {
 			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
 		}
+	} else if len(inEventData.Deployment.DeploymentURIsLocal) > 0 || len(inEventData.Deployment.DeploymentURIsPublic) > 0 {
+		h.getKeptnHandler().Logger.Info("Using deployment URIs from deployment.triggered event")
+		localURIs = inEventData.Deployment.DeploymentURIsLocal
+		publicURIs = inEventData.Deployment.DeploymentURIsPublic
 	} else {
 		h.getKeptnHandler().Logger.Info("No deployment URIs defined in deployment.finished event")
 	}

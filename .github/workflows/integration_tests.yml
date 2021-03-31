@@ -41,7 +41,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
-            VERSION: "v1.19.5+k3s1" # see https://github.com/rancher/k3s/releases
+            VERSION: "v1.20.4+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
@@ -55,14 +55,16 @@ jobs:
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.17"
+            VERSION: "1.18"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
@@ -72,6 +74,7 @@ jobs:
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
@@ -144,8 +147,8 @@ jobs:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
-          CLOUDSDK_REGION: "us-central1"
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
           BRANCH: ${{ steps.determine_branch.outputs.BRANCH}}
         id: install_gke
         run: |
@@ -201,7 +204,7 @@ jobs:
           # Required, workflow file name or ID
           workflow: CI.yml
           # Optional, the status or conclusion of a completed workflow to search for
-          # Can be one of a workflow conculsion::
+          # Can be one of a workflow conclusion::
           # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
           # Or a workflow status:
           # "completed", "in_progress", "queued"
@@ -226,7 +229,13 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
+          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
+          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
+
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
+          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+
 
       - name: Host helm chart via python http server
         run: cd dist/keptn-installer/ && python3 -m http.server &
@@ -335,7 +344,7 @@ jobs:
           # verify deployments for continuous delivery
           if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
             verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
-            verify_deployment_in_namespace "gatekeeper-service" ${KEPTN_NAMESPACE}
+            verify_deployment_in_namespace "approval-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
           fi
@@ -374,6 +383,27 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
+      - name: Install Remote Execution Plane
+        id: install_remote_execution_plane
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
+          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+
+          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+
+          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+
+          helm test jmeter-service -n keptn-jmeter-service
+          helm test helm-service -n keptn-helm-service
+
       - name: Test Linking Stages
         id: test_linking_stages
         timeout-minutes: 5
@@ -391,10 +421,20 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "master"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
           QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
           QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
         run: test/test_quality_gates_standalone.sh
+
+      - name: Test Quality Gates Backwards compatibility
+        id: test_quality_gates_backwards_compatibility
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_quality_gates_backwards_compatibility.sh
 
       - name: Test Self Healing
         id: test_self_healing
@@ -402,7 +442,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          UNLEASH_SERVICE_VERSION: "master"
+          UNLEASH_SERVICE_VERSION: "release-0.3.0"
         run: test/test_self_healing.sh
 
       - name: Test Delivery Assistant
@@ -414,12 +454,12 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "master"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
         run: test/test_delivery_assistant.sh
 
-      - name: Test Continuous Delivery (with sockshop)
+      - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
         timeout-minutes: 45
         continue-on-error: true
         env:
@@ -430,6 +470,28 @@ jobs:
           test/test_onboard_service.sh
           test/test_new_artifact.sh
           test/test_delete_project.sh
+
+      - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
+        id: test_continuous_delivery_remote_exec
+        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
+        timeout-minutes: 45
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "sockshop"
+          SERVICE: "carts"
+        run: |
+          test/test_onboard_service.sh
+          test/test_new_artifact.sh
+          test/test_delete_project.sh
+
+      - name: Test Manage Secrets
+        id: test_manage_secrets
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_manage_secrets.sh
 
 #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
 #        id: test_continuous_delivery
@@ -457,9 +519,27 @@ jobs:
       - name: Debug - Get Keptn Pods
         run: kubectl -n ${KEPTN_NAMESPACE} get pods
 
+      # for debugging etc... it makes sense to have the support archive attached as an artifact
+      - name: keptn generate support-archive
+        if: always()
+        env:
+          SUPPORT_ARCHIVE_FILENAME: keptn-support-archive-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}
+        timeout-minutes: 5
+        run: |
+          mkdir support-archive/
+          echo "y" | keptn generate support-archive -n ${KEPTN_NAMESPACE}
+          mv support-archive/keptn*.zip support-archive/${SUPPORT_ARCHIVE_FILENAME}.zip
+
       - name: Uninstall Keptn
         timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
+
+      - name: Uninstall remote execution plane
+        timeout-minutes: 5
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        run: |
+          kubectl delete namespace keptn-helm-service
+          kubectl delete namespace keptn-jmeter-service
 
       - name: Uninstall Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
@@ -481,14 +561,14 @@ jobs:
         run: kubectl get deployments --all-namespaces -owide
 
       - name: Cleanup GKE cluster
-        if: env.CLOUD_PROVIDER == 'GKE'
+        if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
         timeout-minutes: 5
         env:
           GKE_VERSION: ${{ matrix.VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-central1-a"
-          CLOUDSDK_REGION: "us-central1"
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
           CLUSTER_NAME_NIGHTLY: ${{ steps.install_gke.outputs.CLUSTER_NAME_NIGHTLY }}
         run: test/utils/gke_delete_cluster.sh
 
@@ -505,7 +585,7 @@ jobs:
           TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -515,6 +595,12 @@ jobs:
           name: test-report
           path: test-*.txt
 
+      - name: Upload support archive as an artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: support-archive
+          path: support-archive/*.zip
 
   #######################################################################
   # This job publishes a draft release based on the previous steps      #
@@ -549,8 +635,8 @@ jobs:
         run: |
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Self Healing  |  Delivery Assistant  | Continuous Delivery |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | -------------- | -------------------- | ------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Quality Gates Backwards Compat. | Self Healing  |  Delivery Assistant  | Continuous Delivery | Continuous Delivery (Remote Exec) |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | ---------------------------------|-------------- | -------------------- | ------------------- | ------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
@@ -569,7 +655,7 @@ jobs:
         run: |
           echo "**Resource Limits**" > final-resource-limits.txt
           ls -la test-resource-limits*.txt
-          cat test-resource-limits*.txt >> final-resource-limits.txt
+          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
           # Todo: some calculations should be done...
 
       - name: Download all artifacts from last successful build of specified branch
@@ -603,6 +689,42 @@ jobs:
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
+
+      - name: Formulate bug issue on errors
+        id: formulate_bug_issue
+        run: |
+          REPORT=$(cat final-test-report.txt)
+
+          if [[ "$REPORT" == *"failure"* ]]; then
+            # create a markdown file that contains details about the error
+            echo "---" > integration-tests-failed.md
+            echo "title: Integration tests failed" >> integration-tests-failed.md
+            echo "labels: type:critical" >> integration-tests-failed.md
+            echo "---" >> integration-tests-failed.md
+            echo "" >> integration-tests-failed.md
+            echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> integration-tests-failed.md
+            echo "* Branch: $BRANCH" >> integration-tests-failed.md
+            echo "* Version: $VERSION" >> integration-tests-failed.md
+            echo "* Datetime: $DATETIME" >> integration-tests-failed.md
+            echo "* Commit: $GIT_SHA" >> integration-tests-failed.md
+            echo "" >> integration-tests-failed.md
+
+            # print report but make failures bold
+            echo "${REPORT//failure/:x: **failure**}"     >> integration-tests-failed.md
+
+            echo "" >> integration-tests-failed.md
+            echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> integration-tests-failed.md
+
+            echo "##[set-output name=INTEGRATION_TESTS_FAILED;]true"
+          fi
+
+      - name: Create issue if tests failed
+        if: always() && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: integration-tests-failed.md
 
       # Part of this job is to check if a releasenotes file exists and to use it as the release message
       - name: Try getting release notes
@@ -686,7 +808,7 @@ jobs:
             console.log(`Trying to fetch DRAFT release by tag '${tag}'...`);
 
             try {
-              let draftRelease;
+              // get all releases (including drafts)
               let releases = await github.repos.listReleases({
                 owner: context.repo.owner,
                 repo: context.repo.repo
@@ -698,12 +820,20 @@ jobs:
                 if (release.draft) {
                   // found a draft release
                   console.log(`🥳 Found a draft release with id ${release.id}, deleting it`);
+                  console.log(`Release Tag Name: ${release.tag_name}`);
+                  console.log(`Release Draft: ${release.draft}`);
+                  console.log(`Release URL: ${release.html_url}`);
 
-                  github.repos.deleteRelease({
+                  console.log(`::error::Draft release found, please delete it manually!`);
+
+                  return 1;
+                  // ToDo: Commented out as there seems to be a problem with deleting releases
+
+                  /*github.repos.deleteRelease({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     release_id: release.id
-                  });
+                  });*/
 
                   console.log("Deleted! -> okay");
                 } else {
@@ -733,6 +863,24 @@ jobs:
           body_path: release-notes.txt
           files: |
             dist/keptn-cli/keptn-*.tar.gz
-            dist/keptn-installer/keptn*.tgz
+            dist/keptn-installer/*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Helm Charts to Google Cloud
+        id: upload_helm_charts
+        env:
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+          CLOUDSDK_REGION: "us-east1"
+        run: |
+          if [[ "$BRANCH" == "release-"* ]]; then
+            echo "Installing gcloud CLI"
+            export OS_TYPE="linux"
+            mkdir ~/downloads
+            ./test/utils/download_and_install_gcloud.sh
+            echo ${GCLOUD_SERVICE_KEY} | base64 --decode > ~/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
+            gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
+          fi

@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 
 	"github.com/keptn/keptn/helm-service/pkg/namespacemanager"
@@ -58,7 +59,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			EnableWebsocket: true,
 			ServiceName:     &serviceName,
 		},
-		EventBrokerURL:          os.Getenv("EVENTBROKER"),
 		ConfigurationServiceURL: os.Getenv("CONFIGURATION_SERVICE"),
 	})
 	if err != nil {
@@ -66,9 +66,15 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
-	url, err := serviceutils.GetConfigServiceURL()
+	configServiceURL, err := serviceutils.GetConfigServiceURL()
 	if err != nil {
-		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting config service url: %s", err.Error()))
+		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting configServiceURL: %s", err.Error()))
+		return err
+	}
+
+	shipyardControllerURL, err := serviceutils.GetShipyardControllerURL()
+	if err != nil {
+		keptnHandler.Logger.Error(fmt.Sprintf("Error when getting shipyardControllerURL: %s", err.Error()))
 		return err
 	}
 
@@ -78,19 +84,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		deploymentHandler := createDeploymentHandler(url, keptnHandler, mesh)
+		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
 		deploymentHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
-		releaseHandler := createReleaseHandler(url, mesh, keptnHandler)
+		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
 		releaseHandler.HandleEvent(event)
-	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceCreateTaskName) {
-		onboardHandler := createOnboardHandler(url, keptnHandler, mesh)
-		onboardHandler.HandleEvent(event)
+	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName) {
+		rollbackHandler := createRollbackHandler(configServiceURL, mesh, keptnHandler)
+		rollbackHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
-		actionHandler := createActionTriggeredHandler(url, keptnHandler)
+		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
 		actionHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
-		deleteHandler := createDeleteHandler(url, keptnHandler)
+		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
 		deleteHandler.HandleEvent(event)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")
@@ -104,20 +110,19 @@ func createKeptnBaseHandler(url *url.URL, keptn *keptnv2.Keptn) controller.Handl
 	helmExecutor := helm.NewHelmV3Executor(keptn.Logger, namespaceManager)
 	keptnHandlerBase := controller.NewHandlerBase(keptn, helmExecutor, url.String())
 	return keptnHandlerBase
-
 }
 
-func createDeleteHandler(url *url.URL, keptn *keptnv2.Keptn) *controller.DeleteHandler {
-	stagesHandler := configutils.NewStageHandler(url.String())
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	deleteHandler := controller.NewDeleteHandler(keptnBaseHandler, stagesHandler, url.String())
+func createDeleteHandler(configServiceURL *url.URL, shipyardControllerURL *url.URL, keptn *keptnv2.Keptn) *controller.DeleteHandler {
+	stagesHandler := configutils.NewStageHandler(shipyardControllerURL.String())
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
+	deleteHandler := controller.NewDeleteHandler(keptnBaseHandler, stagesHandler, configServiceURL.String())
 	return deleteHandler
 }
 
-func createActionTriggeredHandler(url *url.URL, keptn *keptnv2.Keptn) *controller.ActionTriggeredHandler {
-	configChanger := configurationchanger.NewConfigurationChanger(url.String())
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	actionHandler := controller.NewActionTriggeredHandler(keptnBaseHandler, configChanger, url.String())
+func createActionTriggeredHandler(configServiceURL *url.URL, keptn *keptnv2.Keptn) *controller.ActionTriggeredHandler {
+	configChanger := configurationchanger.NewConfigurationChanger(configServiceURL.String())
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
+	actionHandler := controller.NewActionTriggeredHandler(keptnBaseHandler, configChanger, configServiceURL.String())
 	return actionHandler
 }
 
@@ -131,22 +136,21 @@ func createReleaseHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Kep
 	return releaseHandler
 }
 
-func createOnboarder(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
-	namespaceManager := namespacemanager.NewNamespaceManager(keptn.Logger)
-	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(url.String()))
-	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
-	chartPackager := keptnutils.NewChartPackager()
+func createRollbackHandler(url *url.URL, mesh *mesh.IstioMesh, keptn *keptnv2.Keptn) *controller.RollbackHandler {
+	configChanger := configurationchanger.NewConfigurationChanger(url.String())
 	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	onBoarder := controller.NewOnboarder(keptnBaseHandler, namespaceManager, chartStorer, chartGenerator, chartPackager)
-	return onBoarder
+	rollbackHandler := controller.NewRollbackHandler(keptnBaseHandler, mesh, configChanger)
+	return rollbackHandler
 }
 
-func createOnboardHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.OnboardHandler {
-	projectHandler := keptnapi.NewProjectHandler(url.String())
-	stagesHandler := configutils.NewStageHandler(url.String())
-	onBoarder := createOnboarder(url, keptn, mesh)
-	keptnBaseHandler := createKeptnBaseHandler(url, keptn)
-	return controller.NewOnboardHandler(keptnBaseHandler, projectHandler, stagesHandler, onBoarder)
+func createOnboarder(configServiceURL *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) controller.Onboarder {
+	namespaceManager := namespacemanager.NewNamespaceManager(keptn.Logger)
+	chartStorer := keptnutils.NewChartStorer(utils.NewResourceHandler(configServiceURL.String()))
+	chartGenerator := helm.NewGeneratedChartGenerator(mesh, keptn.Logger)
+	chartPackager := keptnutils.NewChartPackager()
+	keptnBaseHandler := createKeptnBaseHandler(configServiceURL, keptn)
+	onBoarder := controller.NewOnboarder(keptnBaseHandler, namespaceManager, chartStorer, chartGenerator, chartPackager)
+	return onBoarder
 }
 
 func createDeploymentHandler(url *url.URL, keptn *keptnv2.Keptn, mesh *mesh.IstioMesh) *controller.DeploymentHandler {
@@ -162,10 +166,10 @@ func _main(args []string, env envConfig) int {
 	// Check admin rights
 	adminRights, err := hasAdminRights()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to check wheter helm-service has admin right: %v", err))
+		log.Fatal(fmt.Sprintf("failed to check whether helm-service has admin right: %v", err))
 	}
 	if !adminRights {
-		log.Fatal("helm-service has insufficient RBAC rights.")
+		log.Println("Warning: helm-service is running without admin RBAC rights. See #3511 for details.")
 	}
 
 	ctx := context.Background()
@@ -184,6 +188,7 @@ func _main(args []string, env envConfig) int {
 	return 0
 }
 
+// hasAdminRights checks if the current pod is assigned the Admin Role
 func hasAdminRights() (bool, error) {
 	clientset, err := keptnutils.GetClientset(true)
 	if err != nil {
@@ -194,7 +199,7 @@ func hasAdminRights() (bool, error) {
 			ResourceAttributes: &authorizationv1.ResourceAttributes{},
 		},
 	}
-	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(sar)
+	resp, err := clientset.AuthorizationV1().SelfSubjectAccessReviews().Create(context.TODO(), sar, v1.CreateOptions{})
 	if err != nil {
 		return false, err
 	}

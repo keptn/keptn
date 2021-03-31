@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "properties": {
+    "remoteControlPlane": {
+      "type": "object",
+      "required": [
+        "enabled"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "if": {
+        "properties": {
+          "enabled": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "api": {
+            "type": "object",
+            "required": [
+              "protocol",
+              "hostname",
+              "token"
+            ],
+            "properties": {
+              "hostname": {
+                "pattern": "^([a-z0-9][a-z0-9-.]{2,63})(:[0-9]+)?$"
+              },
+              "protocol": {
+                "enum": [
+                  "http",
+                  "https"
+                ]
+              },
+              "apiValidateTls": {
+                "type": "boolean"
+              },
+              "token": {
+                "pattern": "^[A-Za-z0-9-.]{2,63}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "helmservice": {
+      "type": "object",
+      "required": [
+        "image"
+      ],
+      "properties": {
+        "image": {
+          "properties": {
+            "repository": {
+              "pattern": "^[a-z][a-z0-9-./]{2,63}$"
+            },
+            "pullPolicy": {
+              "enum": [
+                "IfNotPresent",
+                "Always"
+              ]
+            }
+          }
+        },
+        "service": {
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "distributor": {
+      "type": "object",
+      "required": [
+        "image"
+      ],
+      "properties": {
+        "image": {
+          "properties": {
+            "repository": {
+              "pattern": "[a-z][a-z0-9-./]{2,63}$"
+            },
+            "pullPolicy": {
+              "enum": [
+                "IfNotPresent",
+                "Always"
+              ]
+            }
+          }
+        },
+        "stageFilter": {
+          "pattern": "^$|[A-Za-z0-9-.]{2,63}$"
+        },
+        "serviceFilter": {
+          "pattern": "^$|[A-Za-z0-9-.]{2,63}$"
+        },
+        "projectFilter": {
+          "pattern": "^$|[A-Za-z0-9-.]{2,63}$"
+        }
+      }
+    }
+  }
+}

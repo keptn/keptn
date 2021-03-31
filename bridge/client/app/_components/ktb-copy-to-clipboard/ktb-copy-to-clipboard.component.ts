@@ -7,6 +7,7 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
+import {Platform} from '@angular/cdk/platform';
 
 @Component({
   selector: 'ktb-copy-to-clipboard',
@@ -22,12 +23,11 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbCopyToClipboardComponent {
-
   @Input() public value: string;
   @Input() public label: string;
 
   public visible: boolean = false;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public platform: Platform) {}
 
 }

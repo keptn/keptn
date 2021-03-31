@@ -24,10 +24,11 @@ import (
 )
 
 type sendApprovalFinishedStruct struct {
-	Project *string `json:"project"`
-	Stage   *string `json:"stage"`
-	Service *string `json:"service"`
-	ID      *string `json:"id"`
+	Project *string            `json:"project"`
+	Stage   *string            `json:"stage"`
+	Service *string            `json:"service"`
+	ID      *string            `json:"id"`
+	Labels  *map[string]string `json:"labels"`
 }
 
 var sendApprovalFinishedOptions sendApprovalFinishedStruct
@@ -68,7 +69,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 	var apiToken string
 	var err error
 	if !mocking {
-		endPoint, apiToken, err = credentialmanager.NewCredentialManager(false).GetCreds(namespace)
+		endPoint, apiToken, err = credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	} else {
 		endPointPtr, _ := url.Parse(os.Getenv("MOCK_SERVER"))
 		endPoint = *endPointPtr
@@ -80,7 +81,7 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 
 	logging.PrintLog("Starting to send approval.finished event", logging.InfoLevel)
 
-	if endPointErr := checkEndPointStatus(endPoint.String()); endPointErr != nil {
+	if endPointErr := CheckEndpointStatus(endPoint.String()); endPointErr != nil {
 		return fmt.Errorf("Error connecting to server: %s"+endPointErrorReasons,
 			endPointErr)
 	}
@@ -207,7 +208,7 @@ func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, scHandle
 
 	approvalTriggeredEvent := &keptnv2.ApprovalTriggeredEventData{}
 
-	err = mapstructure.Decode(eventToBeApproved.Data, approvalTriggeredEvent)
+	err = keptnv2.Decode(eventToBeApproved.Data, approvalTriggeredEvent)
 	if err != nil {
 		logging.PrintLog("Cannot decode approval.triggered event: "+err.Error(), logging.InfoLevel)
 		return "", "", nil, err
@@ -293,12 +294,12 @@ func printApprovalOptions(approvals []*apimodels.KeptnContextExtendedCE, eventHa
 
 	defer w.Flush()
 
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "GIT COMMIT", "EVALUATION")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "OPTION", "IMAGE", "EVALUATION")
 
 	for index, approval := range approvals {
 		score := getScoreForApprovalTriggeredEvent(eventHandler, approvalFinishedOptions, approval)
-		commitID := getCommitIDOfConfigurationChangeEvent(eventHandler, approvalFinishedOptions, approval)
-		appendOptionToWriter(w, index, commitID, score)
+		image := getApprovalImageEvent(approval)
+		appendOptionToWriter(w, index, image, score)
 	}
 	fmt.Fprintf(w, "\n")
 }
@@ -333,33 +334,25 @@ func getScoreForApprovalTriggeredEvent(eventHandler *apiutils.EventHandler, appr
 	return score
 }
 
-func getCommitIDOfConfigurationChangeEvent(eventHandler *apiutils.EventHandler, approvalFinishedOptions sendApprovalFinishedStruct, approval *apimodels.KeptnContextExtendedCE) string {
-	unknownCommitID := "n/a"
-	deploymentFinishedEvents, errorObj := eventHandler.GetEvents(&apiutils.EventFilter{
-		Project:      *approvalFinishedOptions.Project,
-		Stage:        *approvalFinishedOptions.Stage,
-		Service:      *approvalFinishedOptions.Service,
-		EventType:    keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
-		KeptnContext: approval.Shkeptncontext,
-	})
-	if errorObj != nil {
-		return unknownCommitID
-	}
-	if len(deploymentFinishedEvents) == 0 {
-		return unknownCommitID
-	}
-	deploymentFinishedData := &keptnv2.DeploymentFinishedEventData{}
+func getApprovalImageEvent(approval *apimodels.KeptnContextExtendedCE) string {
+	unknownImage := "n/a"
 
-	err := common.DecodeKeptnEventData(deploymentFinishedEvents[0].Data, deploymentFinishedData)
+	// the approval.triggered event should also include the configurationChange property (see https://github.com/keptn/keptn/issues/3199)
+	// therefore, we can cast its data property to a DeploymentTriggeredEventData struct and use the property from this struct
+	deploymentTriggeredData := &keptnv2.DeploymentTriggeredEventData{}
+
+	err := common.DecodeKeptnEventData(approval.Data, deploymentTriggeredData)
 
 	if err != nil {
-		return unknownCommitID
+		return unknownImage
 	}
 
-	if deploymentFinishedData.Deployment.GitCommit == "" {
-		return unknownCommitID
+	if deploymentTriggeredData.ConfigurationChange.Values != nil {
+		if image, ok := deploymentTriggeredData.ConfigurationChange.Values["image"].(string); ok {
+			return image
+		}
 	}
-	return deploymentFinishedData.Deployment.GitCommit
+	return unknownImage
 }
 
 func getApprovalFinishedForID(eventHandler *apiutils.EventHandler, sendApprovalFinishedOptions sendApprovalFinishedStruct) (string,
@@ -419,5 +412,6 @@ func init() {
 	sendApprovalFinishedOptions.ID = approvalFinishedCmd.Flags().StringP("id", "", "",
 		"The ID of the approval.triggered event to be approved")
 	// approvalFinishedCmd.MarkFlagRequired("id")
+	sendApprovalFinishedOptions.Labels = approvalFinishedCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be provided for the service that is to be approved")
 
 }

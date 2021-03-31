@@ -7,7 +7,7 @@ note over helm-service: Note, promote only if event.result == true
 helm-service-->NATS: release.started
 
 note over helm-service: 1.) Ensure canary deployment in //user-chart// retrieves 100% traffic
-helm-service->config-service: GET //genereated-chart//
+helm-service->config-service: GET //generated-chart//
 helm-service->config-service: PUT updated //generated-chart//
 helm-service->helm: UPGRADE //generated-chart// (canary deployment in //user-chart// retrieves 100% traffic)
 
@@ -18,7 +18,7 @@ helm-service->config-service: PUT updated //generated-chart//
 helm-service->helm: UPGRADE //generated-chart// (deploy updated primary-deployment, canary deployment in //user-chart// retrieves 100% traffic)
 
 note over helm-service: 3.) Ensure canary deployment in //user-chart// retrieves 0% traffic
-helm-service->config-service: GET //genereated-chart//
+helm-service->config-service: GET //generated-chart//
 helm-service->config-service: PUT updated //generated-chart//
 helm-service->helm: UPGRADE //generated-chart// (canary deployment in //user-chart// retrieves 0% traffic)
 

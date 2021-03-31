@@ -5,7 +5,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/remediation-service/handler"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"log"
@@ -48,9 +47,6 @@ func _main(args []string, env envConfig) int {
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
-
-	logger := keptncommon.NewLogger(shkeptncontext, event.Context.GetID(), "remediation-service")
-	logger.Debug("Received event for shkeptncontext:" + shkeptncontext)
 
 	handler, err := handler.NewHandler(event)
 	if err != nil {
