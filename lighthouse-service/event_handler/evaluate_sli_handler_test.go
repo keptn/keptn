@@ -3,6 +3,9 @@ package event_handler
 import (
 	"encoding/json"
 	"errors"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
+	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -2970,6 +2973,97 @@ func TestEvaluateSLIHandler_getPreviousEvaluations(t *testing.T) {
 			if !reflect.DeepEqual(got2, tt.want2) {
 				t.Errorf("getPreviousEvaluations() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
+	incomingEvent := cloudevents.NewEvent()
+	incomingEvent.SetID("my-id")
+	incomingEvent.SetSource("my-source")
+	incomingEvent.SetExtension("shkeptncontext", "my-context")
+
+	keptn, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
+		EventSender: &keptnfake.EventSender{},
+	})
+	type fields struct {
+		Event            cloudevents.Event
+		HTTPClient       *http.Client
+		KeptnHandler     *keptnv2.Keptn
+		SLOFileRetriever SLOFileRetriever
+		EventStore       EventStore
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		wantErr    bool
+		wantEvents []keptnv2.EvaluationFinishedEventData
+	}{
+		{
+			name: "no SLO file available",
+			fields: fields{
+				Event: incomingEvent,
+				EventStore: &event_handler_mock.EventStoreMock{GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
+					return []*models.KeptnContextExtendedCE{
+						{
+							Contenttype:        "",
+							Data:               keptnv2.EvaluationTriggeredEventData{},
+							ID:                 "my-id",
+							Shkeptncontext:     "my-context",
+							Shkeptnspecversion: "0.2.0",
+							Source:             stringp("my-source"),
+							Specversion:        "1.0",
+							Triggeredid:        "my-triggered-id",
+							Type:               stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+						},
+					}, nil
+				},
+				},
+				KeptnHandler: keptn,
+				SLOFileRetriever: SLOFileRetriever{
+					ResourceHandler: &event_handler_mock.ResourceHandlerMock{GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
+						return nil, nil
+					}},
+				},
+			},
+			wantErr: false,
+			wantEvents: []keptnv2.EvaluationFinishedEventData{
+				{
+					EventData: keptnv2.EventData{
+						Status:  keptnv2.StatusSucceeded,
+						Result:  keptnv2.ResultPass,
+						Message: "no evaluation performed by lighthouse because no SLO file configured for project ",
+					},
+					Evaluation: keptnv2.EvaluationDetails{},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			eh := &EvaluateSLIHandler{
+				Event:            tt.fields.Event,
+				HTTPClient:       tt.fields.HTTPClient,
+				KeptnHandler:     tt.fields.KeptnHandler,
+				SLOFileRetriever: tt.fields.SLOFileRetriever,
+				EventStore:       tt.fields.EventStore,
+			}
+			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
+				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			sender := tt.fields.KeptnHandler.EventSender.(*keptnfake.EventSender)
+
+			assert.Equal(t, len(sender.SentEvents), len(tt.wantEvents))
+
+			for index, event := range sender.SentEvents {
+				evaluationFinishedEvent := &keptnv2.EvaluationFinishedEventData{}
+				if err := event.DataAs(evaluationFinishedEvent); err != nil {
+					t.Errorf("could not decode event: %s", err.Error())
+				}
+				assert.EqualValues(t, tt.wantEvents[index].EventData, (*evaluationFinishedEvent).EventData)
+			}
+
 		})
 	}
 }

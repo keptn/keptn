@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"errors"
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"net/url"
 	"os"
 	"strings"
@@ -12,7 +13,6 @@ import (
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
@@ -39,17 +39,30 @@ var ErrStageNotFound = errors.New("stage not found")
 // ErrServiceNotFound godoc
 var ErrServiceNotFound = errors.New("service not found")
 
-func getSLOs(project string, stage string, service string) (*keptn.ServiceLevelObjectives, error) {
-	endpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+//go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/resource_handler_mock.go . ResourceHandler
+type ResourceHandler interface {
+	GetServiceResource(project string, stage string, service string, resourceURI string) (*keptnapimodels.Resource, error)
+}
+
+//go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/service_handler_mock.go . ServiceHandler
+type ServiceHandler interface {
+	GetService(project, stage, service string) (*keptnapimodels.Service, error)
+}
+
+//go:generate moq -pkg event_handler_mock -skip-ensure -out ./fake/event_store_mock.go . EventStore
+type EventStore interface {
+	GetEvents(filter *utils.EventFilter) ([]*keptnapimodels.KeptnContextExtendedCE, *keptnapimodels.Error)
+}
+
+type SLOFileRetriever struct {
+	ResourceHandler ResourceHandler
+	ServiceHandler  ServiceHandler
+}
+
+func (sr *SLOFileRetriever) GetSLOs(project, stage, service string) (*keptn.ServiceLevelObjectives, error) {
+	sloFile, err := sr.ResourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
 	if err != nil {
-		return nil, err
-	}
-	resourceHandler := utils.NewResourceHandler(endpoint.String())
-	sloFile, err := resourceHandler.GetServiceResource(project, stage, service, "slo.yaml")
-	if err != nil {
-		// check if service/stage/project actually exist
-		serviceHandler := utils.NewServiceHandler(endpoint.String())
-		_, err2 := serviceHandler.GetService(project, stage, service)
+		_, err2 := sr.ServiceHandler.GetService(project, stage, service)
 		if err2 != nil {
 			if strings.Contains(strings.ToLower(err2.Error()), "project not found") {
 				return nil, ErrProjectNotFound
