@@ -6,6 +6,8 @@ import (
 	"math"
 	"time"
 
+	"net/http"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -96,15 +98,25 @@ func (h *DeploymentHandler) HandleEvent(ce cloudevents.Event) {
 		return
 	}
 
-	// TODO - when we just applied a helm chart we should wait until the deployed service is ready
-	// right now - lets just add a 5 seconds wait but we need to find a better way for this, e.g: query if the deploymentURIs are accessible
-	waitDuration, err := time.ParseDuration("5s")
-	<-time.After(waitDuration)
+	warningMessage := ""
+
+	// If there is a customDeploymentURI specified in values.yaml lets validate that this deployment is accessible!
+	maxRetries := 10
+	checkDeploymentURIPublic := customDeploymentURIPublic
+	if checkDeploymentURIPublic == "" {
+		checkDeploymentURIPublic = customDeploymentURILocal
+	}
+	validateStatusCode, validateErr := h.validateDeploymentURI(checkDeploymentURIPublic, maxRetries)
+	if validateErr != nil {
+		// if it fails we should provide this information as a warning
+		warningMessage = fmt.Sprintf("Validate Custom Deployment URL %s failed. StatusCode=%d, Error: %s", checkDeploymentURIPublic, validateStatusCode, validateErr.Error())
+		h.getKeptnHandler().Logger.Info(warningMessage)
+	}
 
 	// Send finished event - and pass in deploymentURI in case we have a custom defined deploymentURIPublic & Private
 	data, err := h.getFinishedEventDataForSuccess(e, gitVersion,
 		getDeploymentName(deploymentStrategy, false), deploymentStrategy,
-		customDeploymentURIPublic, customDeploymentURILocal)
+		customDeploymentURIPublic, customDeploymentURILocal, warningMessage)
 	if err != nil {
 		h.handleError(ce.ID(), err, keptnv2.DeploymentTaskName, h.getFinishedEventDataForError(e.EventData, err))
 		return
@@ -214,11 +226,16 @@ func (h *DeploymentHandler) getStartedEventData(inEventData keptnv2.EventData) k
 }
 
 func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.DeploymentTriggeredEventData, gitCommit string,
-	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy, customDeploymentURIPublic string, customDeploymentURILocal string) (*keptnv2.DeploymentFinishedEventData, error) {
+	deploymentName string, deploymentStrategy keptnevents.DeploymentStrategy, customDeploymentURIPublic string, customDeploymentURILocal string, warningMessage string) (*keptnv2.DeploymentFinishedEventData, error) {
 
 	inEventData.Status = keptnv2.StatusSucceeded
-	inEventData.Result = keptnv2.ResultPass
-	inEventData.Message = "Successfully deployed"
+	if warningMessage == "" {
+		inEventData.Result = keptnv2.ResultPass
+		inEventData.Message = "Successfully deployed"
+	} else {
+		inEventData.Result = keptnv2.ResultWarning
+		inEventData.Message = "Deployed with warning: " + warningMessage
+	}
 
 	var localURIs, publicURIs []string
 	if customDeploymentURIPublic != "" || customDeploymentURILocal != "" {
@@ -270,4 +287,39 @@ func (h *DeploymentHandler) getFinishedEventDataForNoDeployment(eventData keptnv
 	return keptnv2.DeploymentFinishedEventData{
 		EventData: eventData,
 	}
+}
+
+func (h *DeploymentHandler) validateDeploymentURI(deploymentURI string, maxRetries int) (int, error) {
+
+	// No URL - nothing to check!
+	if deploymentURI == "" {
+		return 0, nil
+	}
+
+	lastRespCode := 0
+	var lastError error
+
+	for maxRetries > 0 {
+		maxRetries = maxRetries - 1
+
+		waitDuration, err := time.ParseDuration("5s")
+		<-time.After(waitDuration)
+
+		// Execute the HTTP Get Request
+		resp, err := http.Get(deploymentURI)
+		if err != nil {
+			lastError = err
+			continue
+		}
+
+		lastError = nil
+		lastRespCode = resp.StatusCode
+
+		// if everything is fine we break out of the check loop
+		if resp.StatusCode == 200 {
+			return resp.StatusCode, nil
+		}
+	}
+
+	return lastRespCode, lastError
 }
