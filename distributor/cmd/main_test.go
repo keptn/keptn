@@ -190,56 +190,6 @@ func getExpectedCloudEvent() *cloudevents.Event {
 	return &event
 }
 
-func Test_cleanSentEventList(t *testing.T) {
-	type args struct {
-		sentEvents []string
-		events     []*keptnmodels.KeptnContextExtendedCE
-	}
-	tests := []struct {
-		name string
-		args args
-		want []string
-	}{
-		{
-			name: "remove no element from list",
-			args: args{
-				sentEvents: []string{"id-1"},
-				events: []*keptnmodels.KeptnContextExtendedCE{
-					{
-						ID: "id-1",
-					},
-					{
-						ID: "id-2",
-					},
-				},
-			},
-			want: []string{"id-1"},
-		},
-		{
-			name: "remove element from list",
-			args: args{
-				sentEvents: []string{"id-3"},
-				events: []*keptnmodels.KeptnContextExtendedCE{
-					{
-						ID: "id-1",
-					},
-					{
-						ID: "id-2",
-					},
-				},
-			},
-			want: []string{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := cleanSentEventList(tt.args.sentEvents, tt.args.events); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("cleanSentEventList() = %v, want1 %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_hasEventBeenSent(t *testing.T) {
 	type args struct {
 		sentEvents []string
@@ -465,8 +415,7 @@ func Test_pollEventsForTopic(t *testing.T) {
 	for _, tt := range tests {
 		eventSourceReturnedPayload = tt.eventSourceReturnedPayload
 		t.Run(tt.name, func(t *testing.T) {
-			client := createRecipientConnection()
-			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic, client)
+			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic)
 		})
 	}
 }
@@ -511,7 +460,7 @@ func Test__main(t *testing.T) {
 		t.Errorf("Failed to process env var: %s", err)
 	}
 	env.APIProxyPort = TEST_PORT + 1
-	go _main(nil, env)
+	go _main(env)
 
 	<-time.After(2 * time.Second)
 
@@ -577,7 +526,7 @@ func Test__main(t *testing.T) {
 		t.Errorf("Could not handle API request")
 	}
 
-	close <- true
+	closeChan <- true
 }
 
 func Test_getProxyRequestURL(t *testing.T) {
@@ -921,4 +870,8 @@ func Test_matchesFilter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func stringp(s string) *string {
+	return &s
 }
