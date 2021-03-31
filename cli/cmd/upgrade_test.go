@@ -52,3 +52,77 @@ func TestSkipUpgradeCheck(t *testing.T) {
 		t.Errorf("upgrade Response did not match [skip] : \nERROR: %v\nOUT: %v", err, out)
 	}
 }
+
+func Test_isContinuousDeliveryEnable(t *testing.T) {
+	type args struct {
+		configValues map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "continuous delivery enabled - return true",
+			args: args{
+				configValues: map[string]interface{}{
+					"continuous-delivery": map[string]interface{}{
+						"enabled": true,
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "continuous delivery enabled (string value) - return true",
+			args: args{
+				configValues: map[string]interface{}{
+					"continuous-delivery": map[string]interface{}{
+						"enabled": "true",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "continuous delivery not enabled - return false",
+			args: args{
+				configValues: map[string]interface{}{
+					"continuous-delivery": map[string]interface{}{
+						"enabled": false,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "continuous delivery not enabled (string value) - return false",
+			args: args{
+				configValues: map[string]interface{}{
+					"continuous-delivery": map[string]interface{}{
+						"enabled": "false",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "continuous delivery not defined - return false",
+			args: args{
+				configValues: map[string]interface{}{
+					"schwifty": map[string]interface{}{
+						"enabled": "true",
+					},
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isContinuousDeliveryEnabled(tt.args.configValues); got != tt.want {
+				t.Errorf("isContinuousDeliveryEnabled() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

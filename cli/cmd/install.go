@@ -50,6 +50,13 @@ type installCmdParams struct {
 var installParams installCmdParams
 var keptnChart *chart.Chart
 
+var continuousDeliveryServiceCharts []*chart.Chart
+
+const helmServiceName = "helm-service"
+const jmeterServiceName = "jmeter-service"
+
+var continuousDeliveryServices = []string{helmServiceName, jmeterServiceName}
+
 // installCmd represents the version command
 var installCmd = &cobra.Command{
 	Use:   "install",
@@ -89,13 +96,14 @@ keptn install --hide-sensitive-data                                    # install
 			logging.PrintLog("Note: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
 		}
 
-		chartRepoURL := getChartRepoURL(installParams.ChartRepoURL)
+		helmHelper := helm.NewHelper()
+		keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
 		var err error
-		if keptnChart, err = helm.NewHelper().DownloadChart(chartRepoURL); err != nil {
+		if keptnChart, err = helmHelper.DownloadChart(keptnChartRepoURL); err != nil {
 			return err
 		}
 
-		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", chartRepoURL), logging.InfoLevel)
+		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", keptnChartRepoURL), logging.InfoLevel)
 
 		installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier)
 		if err != nil {
@@ -141,6 +149,10 @@ keptn install --hide-sensitive-data                                    # install
 					"but could not be found in your cluster in namespace istio-system.", logging.InfoLevel)
 				logging.PrintLog("Please install Istio as described "+
 					"in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
+			}
+
+			if continuousDeliveryServiceCharts, err = fetchContinuousDeliveryCharts(helmHelper, installParams.ChartRepoURL); err != nil {
+				return err
 			}
 		}
 
@@ -234,12 +246,23 @@ func doInstallation() error {
 		},
 	}
 
-	if err := helm.NewHelper().UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
+	helmHelper := helm.NewHelper()
+
+	if err := helmHelper.UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
 		msg := fmt.Sprintf("Could not complete Keptn installation: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 		return errors.New(msg)
 	}
 
-	logging.PrintLog("Keptn has been successfully set up on your cluster.", logging.InfoLevel)
+	logging.PrintLog("Keptn control plane has been successfully set up on your cluster.", logging.InfoLevel)
+
+	if installParams.UseCase == ContinuousDelivery {
+		for _, serviceChart := range continuousDeliveryServiceCharts {
+			if err := helmHelper.UpgradeChart(serviceChart, keptnReleaseName+serviceChart.Name(), keptnNamespace, values); err != nil {
+				msg := fmt.Sprintf("Could not complete Keptn installation: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
+				return errors.New(msg)
+			}
+		}
+	}
 
 	// Hide sensitive information like api-token and endpoint in post-installation output
 	if *installParams.HideSensitiveData {
@@ -261,6 +284,19 @@ func doInstallation() error {
 	}
 
 	return nil
+}
+
+func fetchContinuousDeliveryCharts(helmHelper helm.Helper, chartRepoURL *string) ([]*chart.Chart, error) {
+	charts := []*chart.Chart{}
+	for _, service := range continuousDeliveryServices {
+		chartURL := getExecutionPlaneServiceChartRepoURL(chartRepoURL, service)
+		chart, err := helmHelper.DownloadChart(chartURL)
+		if err != nil {
+			return nil, err
+		}
+		charts = append(charts, chart)
+	}
+	return charts, nil
 }
 
 func getInstallationTypeEnvVar(useCase string) string {
