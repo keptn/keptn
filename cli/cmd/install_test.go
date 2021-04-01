@@ -128,6 +128,50 @@ func TestInstallCmdHandler_doInstallation(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "installation: control plane only, namespace exists, cancel installation",
+			fields: fields{
+				helmHelper: &helmfake.IHelperMock{
+					DownloadChartFunc: func(chartRepoURL string) (*chart.Chart, error) {
+						var chartName string
+						if strings.Contains(chartRepoURL, helmServiceName) {
+							return nil, errors.New("should not be called")
+						} else if strings.Contains(chartRepoURL, jmeterServiceName) {
+							return nil, errors.New("should not be called")
+						} else {
+							chartName = keptnReleaseName
+						}
+						return &chart.Chart{
+							Metadata: &chart.Metadata{Name: chartName},
+						}, nil
+					},
+					UpgradeChartFunc: func(ch *chart.Chart, releaseName string, namespace string, vals map[string]interface{}) error {
+						return nil
+					},
+				},
+				namespaceHandler: &kubefake.IKeptnNamespaceHandlerMock{
+					CreateNamespaceFunc: func(useInClusterConfig bool, namespace string, namespaceMetadata ...metav1.ObjectMeta) error {
+						return nil
+					},
+					ExistsNamespaceFunc: func(useInClusterConfig bool, namespace string) (bool, error) {
+						return true, nil
+					},
+				},
+				userInput: &commonfake.IUserInputMock{AskBoolFunc: func(question string, opts *common.UserInputOptions) bool {
+					return false
+				}},
+			},
+			args: installCmdParams{
+				UseCase: QualityGates,
+				installUpgradeParams: installUpgradeParams{
+					PlatformIdentifier: stringp("kubernetes"),
+				},
+				UseCaseInput:      stringp(""),
+				HideSensitiveData: boolp(false),
+			},
+			chartsToBeApplied: []*chart.Chart{},
+			wantErr:           true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
