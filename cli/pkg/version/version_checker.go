@@ -104,20 +104,20 @@ const checkInterval = time.Hour * 24
 
 // VersionChecker manages data for checking the version
 type VersionChecker struct {
-	versionFetcherClient *versionFetcherClient
+	VersionFetcherClient *VersionFetcherClient
 }
 
 // NewVersionChecker creates a new VersionChecker
 func NewVersionChecker() *VersionChecker {
 	versionChecker := VersionChecker{}
-	versionChecker.versionFetcherClient = newVersionFetcherClient()
+	versionChecker.VersionFetcherClient = newVersionFetcherClient()
 	return &versionChecker
 }
 
 // getNewerCLIVersion checks for newer CLI versions
 func (v *VersionChecker) getNewerCLIVersion(usedVersionString string) (availableNewestVersions, error) {
 
-	cliVersionInfo, err := v.versionFetcherClient.getCLIVersionInfo(usedVersionString)
+	cliVersionInfo, err := v.VersionFetcherClient.getCLIVersionInfo(usedVersionString)
 	if err != nil {
 		return availableNewestVersions{}, fmt.Errorf("error when fetching CLI version infos: %v", err)
 	}

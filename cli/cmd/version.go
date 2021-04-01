@@ -50,49 +50,53 @@ const disableVersionCheckMsg = "To disable this notice, run: '%s set config Auto
 var KubeServerVersionConstraints string
 
 // versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:     "version",
-	Short:   "Shows the version of Keptn and Keptn CLI",
-	Long:    `Shows the version of Keptn and Keptn CLI, and a note when a new version is available.`,
-	Example: `keptn version`,
-	Run: func(cmd *cobra.Command, args []string) {
-		isLastCheckStale, err := isLastCheckStale()
-		if err != nil {
-			logging.PrintLog(err.Error(), logging.InfoLevel)
-			return
-		}
+var versionCmd = NewVersionCommand(version.NewVersionChecker())
 
-		var cliChecked, keptnChecked bool
-
-		// Keptn CLI
-		fmt.Println("\nKeptn CLI version: " + Version)
-		if isLastCheckStale {
-			vChecker := version.NewVersionChecker()
-			cliChecked, _ = vChecker.CheckCLIVersion(Version, false)
-		}
-
-		// Keptn
-		fmt.Print("Keptn cluster version: ")
-		keptnVersion, err := getKeptnServerVersion()
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println(keptnVersion)
-			if isLastCheckStale {
-				kvChecker := version.NewKeptnVersionChecker()
-				keptnChecked, _ = kvChecker.CheckKeptnVersion(Version, keptnVersion, false)
+func NewVersionCommand(vChecker *version.VersionChecker) *cobra.Command {
+	versionCmd := &cobra.Command{
+		Use:     "version",
+		Short:   "Shows the version of Keptn and Keptn CLI",
+		Long:    `Shows the version of Keptn and Keptn CLI, and a note when a new version is available.`,
+		Example: `keptn version`,
+		Run: func(cmd *cobra.Command, args []string) {
+			isLastCheckStale, err := isLastCheckStale()
+			if err != nil {
+				logging.PrintLog(err.Error(), logging.InfoLevel)
+				return
 			}
-		}
 
-		if cliChecked || keptnChecked {
-			updateLastVersionCheck()
-		}
+			var cliChecked, keptnChecked bool
 
-		if err := printDailyVersionCheckInfo(); err != nil {
-			logging.PrintLog(err.Error(), logging.InfoLevel)
-			return
-		}
-	},
+			// Keptn CLI
+			fmt.Println("\nKeptn CLI version: " + Version)
+			if isLastCheckStale {
+				cliChecked, _ = vChecker.CheckCLIVersion(Version, false)
+			}
+
+			// Keptn
+			fmt.Print("Keptn cluster version: ")
+			keptnVersion, err := getKeptnServerVersion()
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println(keptnVersion)
+				if isLastCheckStale {
+					kvChecker := version.NewKeptnVersionChecker()
+					keptnChecked, _ = kvChecker.CheckKeptnVersion(Version, keptnVersion, false)
+				}
+			}
+
+			if cliChecked || keptnChecked {
+				updateLastVersionCheck()
+			}
+
+			if err := printDailyVersionCheckInfo(); err != nil {
+				logging.PrintLog(err.Error(), logging.InfoLevel)
+				return
+			}
+		},
+	}
+	return versionCmd
 }
 
 // SetVersion sets version, versionCheckInfo and extracts and sets {Major} and {Minor} version for keptnReleaseDocsURL

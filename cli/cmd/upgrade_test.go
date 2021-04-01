@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/version"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -32,6 +34,17 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	mocking = true
 	cmd := fmt.Sprintf("upgrade --mock")
 
+	ts := getMockVersionHTTPServer()
+	vChecker := &version.KeptnVersionChecker{
+		VersionFetcherClient: &version.VersionFetcherClient{
+			HTTPClient: http.DefaultClient,
+			VersionURL: ts.URL,
+		},
+	}
+
+	testUpgraderCmd := NewUpgraderCommand(vChecker)
+
+	upgraderCmd.RunE = testUpgraderCmd.RunE
 	r := newRedirector()
 	r.redirectStdOut()
 
@@ -45,6 +58,7 @@ func TestSkipUpgradeCheck(t *testing.T) {
 	cmd = fmt.Sprintf("upgrade --skip-upgrade-check --mock")
 	r = newRedirector()
 	r.redirectStdOut()
+
 	_, err = executeActionCommandC(cmd)
 	out = r.revertStdOut()
 
