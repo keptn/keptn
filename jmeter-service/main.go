@@ -101,7 +101,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
 
-		net.LookupIP(serviceUrl.String())
+		res , err = net.LookupIP(serviceUrl.String())
 		if err != nil {
 			msg := fmt.Sprintf("Cant reach URL %s from JMeter-Service: %s", serviceUrl, err.Error())
 			logger.Error(msg)
