@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/go-utils/pkg/common/httputils"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"time"
@@ -14,15 +13,13 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 type createProjectCmdParams struct {
-	Shipyard        *string
-	GitUser         *string
-	GitToken        *string
-	RemoteURL       *string
-	ShipyardContent string
+	Shipyard  *string
+	GitUser   *string
+	GitToken  *string
+	RemoteURL *string
 }
 
 var createProjectParams *createProjectCmdParams
@@ -63,8 +60,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		shipyard := keptnv2.Shipyard{}
-		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
+		shipyard, err := retrieveShipyard(*createProjectParams.Shipyard)
 		if err != nil {
 			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
 		}
@@ -79,7 +75,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		}
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		encodedShipyardContent := base64.StdEncoding.EncodeToString([]byte(createProjectParams.ShipyardContent))
+		encodedShipyardContent := base64.StdEncoding.EncodeToString(shipyard)
 		project := apimodels.CreateProject{
 			Name:     &args[0],
 			Shipyard: &encodedShipyardContent,
@@ -127,7 +123,7 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func getAndParseYaml(location string, out interface{}) error {
+func retrieveShipyard(location string) ([]byte, error) {
 	var content []byte
 	var err error
 	if httputils.IsValidURL(location) {
@@ -136,14 +132,9 @@ func getAndParseYaml(location string, out interface{}) error {
 		content, err = fileutils.ReadFile(location)
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	err = yaml.Unmarshal(content, out)
-	if err != nil {
-		return err
-	}
-	return nil
+	return content, nil
 }
 
 func init() {
