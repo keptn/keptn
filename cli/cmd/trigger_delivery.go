@@ -9,6 +9,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/cli/internal"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/docker"
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -20,13 +21,13 @@ import (
 )
 
 type deliveryStruct struct {
-	Project  *string `json:"project"`
-	Service  *string `json:"service"`
-	Stage    *string `json:"stage"`
-	Image    *string `json:"image"`
-	Tag      *string `json:"tag"`
-	Sequence *string `json:"sequence"`
-	//Values    *[]string          `json:"values"`
+	Project   *string            `json:"project"`
+	Service   *string            `json:"service"`
+	Stage     *string            `json:"stage"`
+	Image     *string            `json:"image"`
+	Tag       *string            `json:"tag"`
+	Sequence  *string            `json:"sequence"`
+	Values    *[]string          `json:"values"`
 	Labels    *map[string]string `json:"labels"`
 	Watch     *bool
 	WatchTime *int
@@ -89,12 +90,12 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	shipyardResource, err := resourceHandler.GetProjectResource(*deliveryInputData.Project, "shipyard.yaml")
 	if err != nil {
-		return fmt.Errorf("Error while retrieving shipyard.yaml for project %s: %s:", *deliveryInputData.Project, err.Error())
+		return fmt.Errorf("Error while retrieving shipyard.yaml for project %v: %s:", *deliveryInputData.Project, err.Error())
 	}
 
 	shipyard, err := keptnv2.DecodeShipyardYAML([]byte(shipyardResource.ResourceContent))
 	if err != nil {
-		return fmt.Errorf("Error while decoding shipyard.yaml for project %s: %s", *deliveryInputData.Project, err.Error())
+		return fmt.Errorf("Error while decoding shipyard.yaml for project %v: %s", *deliveryInputData.Project, err.Error())
 	}
 
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
@@ -106,6 +107,15 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 		}
 	}
 
+	jsonStr, err := internal.JSONPathToJSONObj(*deliveryInputData.Values)
+	if err != nil {
+		return fmt.Errorf("Error while parsing --values flag %v", err)
+	}
+
+	valuesJson := map[string]interface{}{}
+	valuesJson["image"] = *deliveryInputData.Image + ":" + *deliveryInputData.Tag
+	json.Unmarshal([]byte(jsonStr), &valuesJson)
+
 	deploymentEvent := keptnv2.DeploymentTriggeredEventData{
 		EventData: keptnv2.EventData{
 			Project: *deliveryInputData.Project,
@@ -114,18 +124,17 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 			Labels:  *deliveryInputData.Labels,
 		},
 		ConfigurationChange: keptnv2.ConfigurationChange{
-			Values: map[string]interface{}{
-				"image": *deliveryInputData.Image + ":" + *deliveryInputData.Tag,
-			},
+			//Values: map[string]interface{}{
+			//	"image": *deliveryInputData.Image + ":" + *deliveryInputData.Tag,
+			//},
+			Values: valuesJson,
 		},
 	}
-
-	source, _ := url.Parse("https://github.com/keptn/keptn/cli#configuration-change")
 
 	sdkEvent := cloudevents.NewEvent()
 	sdkEvent.SetID(uuid.New().String())
 	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*deliveryInputData.Stage + "." + *deliveryInputData.Sequence))
-	sdkEvent.SetSource(source.String())
+	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 	sdkEvent.SetData(cloudevents.ApplicationJSON, deploymentEvent)
 
@@ -194,7 +203,7 @@ func init() {
 	delivery.Labels = triggerDeliveryCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 	delivery.Tag = triggerDeliveryCmd.Flags().StringP("tag", "", "", `The tag of the image. If no tag is specified, the "latest" tag is used`)
 	delivery.Sequence = triggerDeliveryCmd.Flags().StringP("sequence", "", "delivery", "The name of the sequence to be triggered")
-	//delivery.Values = triggerDeliveryCmd.Flags().StringSliceP("values", "", []string{}, "Values to use for the new artifact to be delivered")
+	delivery.Values = triggerDeliveryCmd.Flags().StringSlice("values", []string{}, "Values to use for the new artifact to be delivered")
 	delivery.Output = AddOutputFormatFlag(triggerDeliveryCmd)
 	delivery.Watch = AddWatchFlag(triggerDeliveryCmd)
 	delivery.WatchTime = AddWatchTimeFlag(triggerDeliveryCmd)

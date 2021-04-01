@@ -70,8 +70,8 @@ func TestDelivery(t *testing.T) {
 
 	os.Setenv("MOCK_SERVER", ts.URL)
 
-	cmd := fmt.Sprintf("send event new-artifact --project=%s --service=%s --stage=%s --sequence=%s "+
-		"--image=%s --tag=%s  --mock", "sockshop", "carts", "dev", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
+	cmd := fmt.Sprintf("trigger delivery --project=%s --service=%s --stage=%s --sequence=%s "+
+		"--image=%s --tag=%s --values=a.b.c=d --mock --values=c.d=e", "sockshop", "carts", "dev", "artifact-delivery", "docker.io/keptnexamples/carts", "0.9.1")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {

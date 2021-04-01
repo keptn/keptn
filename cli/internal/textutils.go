@@ -44,13 +44,14 @@ func (l leafnode) String() string {
 	return `"` + l.value + `"`
 }
 
-// JSONPathToJSONObj parse strings of the form "a.b.c=v" and
+// JSONPathToJSONObj parse a slice of strings of the form "a.b.c=v" and
 // returns a nested JSON of the form {"a":{"b":{"c":"v"}}}
-func JSONPathToJSONObj(input string) (string, error) {
-
+func JSONPathToJSONObj(input []string) (string, error) {
+	if input == nil {
+		return "", fmt.Errorf("input is nil")
+	}
 	root := newInnerNode()
-	paths := strings.Split(strings.ReplaceAll(input, " ", ""), ",")
-	for _, p := range paths {
+	for _, p := range input {
 		pathValuePair := strings.Split(p, "=")
 		if len(pathValuePair) != 2 {
 			return "", fmt.Errorf("unable to parse input. Expected input: a.b.c=v")

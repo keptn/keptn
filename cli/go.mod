@@ -12,7 +12,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.2
+	github.com/keptn/go-utils v0.8.3-0.20210401081409-49e02e17561e
 	github.com/keptn/kubernetes-utils v0.8.1
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
@@ -30,5 +30,3 @@ require (
 	k8s.io/kubectl v0.20.4
 	rsc.io/letsencrypt v0.0.3 // indirect
 )
-
-replace github.com/keptn/go-utils => ../../go-utils
