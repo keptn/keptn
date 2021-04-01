@@ -339,6 +339,8 @@ IDURL
 idx
 IEvaluation
 IEvent
+IHelper
+IKeptn
 img
 IMPL
 INamespace
@@ -363,6 +365,7 @@ istio
 istioctl
 itf
 Itoa
+IUser
 jasminewd
 javascript
 JCHECK
