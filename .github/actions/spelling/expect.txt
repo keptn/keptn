@@ -160,6 +160,7 @@ dbg
 DDTHH
 Debian
 Debugf
+ded
 deletecollection
 depd
 dependabot
@@ -190,9 +191,11 @@ dtx
 dvcm
 dynatrace
 dynatraceheader
+dynatracelabs
 EAP
 easytravel
 eb
+ebe
 ECDHE
 ECDSA
 echosequence
@@ -227,6 +230,7 @@ eventflow
 eventrepo
 eventselector
 eventsender
+eventtype
 Evts
 exe
 exechelper
@@ -419,6 +423,7 @@ keygen
 keyvalue
 Kibana
 kinbiko
+Kirdock
 kjhtml
 Knative
 kreuzberger
@@ -473,6 +478,7 @@ mholt
 microk
 microservice
 microsoft
+Microtasks
 middleware
 minikube
 minimist
@@ -715,6 +721,7 @@ simplenode
 simplenodeservice
 simpleproject
 sirupsen
+sjb
 skaffold
 slackbot
 sli
