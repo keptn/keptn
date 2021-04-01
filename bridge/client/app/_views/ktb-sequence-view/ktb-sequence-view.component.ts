@@ -96,6 +96,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
             filter(project => !!project && !!project.getServices() && !!project.stages),
             take(1)
           )
+          .pipe(takeUntil(this.unsubscribe$))
           .subscribe(project => {
             this.currentSequence = null;
             this.selectedStage = null;
@@ -141,6 +142,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this._tracesTimer.unsubscribe();
     if(moment().subtract(1, 'day').isBefore(root.time)) {
       this._tracesTimer = timer(0, this._tracesTimerInterval*1000)
+        .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
           this.dataService.loadTraces(root);
         });
@@ -223,5 +225,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this._tracesTimer.unsubscribe();
   }
 }
