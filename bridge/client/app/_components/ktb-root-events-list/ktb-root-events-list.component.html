@@ -2,7 +2,7 @@
   <div *ngFor="let event of _events;trackBy: identifyEvent">
     <ktb-selectable-tile (click)="selectEvent(event)"
                          [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())"
-                         [success]="event.isProblem() && event.isSuccessful()"
+                         [success]="!event.isFaulty() && event.isFinished()"
                          [highlight]="event.getPendingApprovals().length > 0" [selected]="_selectedEvent == event"
                          *ngIf="event">
       <ktb-selectable-tile-header>
