@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -99,6 +100,17 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	var res bool
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
+
+		net.LookupIP(serviceUrl.String())
+		if err != nil {
+			msg := fmt.Sprintf("Cant reach URL %s from JMeter-Service: %s", serviceUrl, err.Error())
+			logger.Error(msg)
+			if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
+				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
+			}
+			return
+		}
+
 		res, err = runWorkload(serviceUrl, testInfo, healthCheckWorkload, logger)
 		if err != nil {
 			msg := fmt.Sprintf("could not run test workload: %s", err.Error())
@@ -110,6 +122,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		}
 
 		if !res {
+			msg := fmt.Sprintf("Workload Testing Completed")
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
@@ -152,6 +165,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	}
 
 	// now lets send the test finished event
+	msg := fmt.Sprintf("Workload Testing Completed")
 	if !res {
 		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
@@ -242,7 +256,7 @@ func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Even
 	return sendEvent(event)
 }
 
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result keptnv2.ResultType, msg string, logger *keptncommon.Logger) error {
+func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, msg string, result keptnv2.ResultType, logger *keptncommon.Logger) error {
 	source, _ := url.Parse("jmeter-service")
 
 	testFinishedData := keptnv2.TestFinishedEventData{}
