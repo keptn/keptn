@@ -110,7 +110,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		}
 
 		if !res {
-			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultFailed, logger); err != nil {
+			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
@@ -153,13 +153,13 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 
 	// now lets send the test finished event
 	if !res {
-		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultFailed, logger); err != nil {
+		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		return
 	}
 
-	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, keptnv2.ResultPass, logger); err != nil {
+	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultPass, logger); err != nil {
 		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 	}
 }
