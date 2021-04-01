@@ -58,14 +58,22 @@ const jmeterServiceName = "jmeter-service"
 var continuousDeliveryServices = []string{helmServiceName, jmeterServiceName}
 
 // installCmd represents the version command
-var installCmd = &cobra.Command{
-	Use:   "install",
-	Short: "Installs Keptn on a Kubernetes cluster",
-	Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
+var installCmd = NewInstallCmd(helm.NewHelper(), kube.NewKubernetesUtilsKeptnNamespaceHandler(), common.NewUserInput())
+
+func NewInstallCmd(helmHelper helm.IHelper, namespaceHandler kube.IKeptnNamespaceHandler, userInput common.IUserInput) *cobra.Command {
+	installCmdHandler := &InstallCmdHandler{
+		helmHelper:       helmHelper,
+		namespaceHandler: namespaceHandler,
+		userInput:        userInput,
+	}
+	return &cobra.Command{
+		Use:   "install",
+		Short: "Installs Keptn on a Kubernetes cluster",
+		Long: `The Keptn CLI allows installing Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift.
 
 For more information, please follow the installation guide [Install Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/install/#install-keptn)
 `,
-	Example: `keptn install                                                          # install on Kubernetes
+		Example: `keptn install                                                          # install on Kubernetes
 
 keptn install --platform=openshift --use-case=continuous-delivery      # install continuous delivery on OpenShift
 
@@ -73,100 +81,86 @@ keptn install --platform=kubernetes --endpoint-service-type=NodePort   # install
 
 keptn install --hide-sensitive-data                                    # install on Kubernetes and hides sensitive data like api-token and endpoint in post-installation output
 `,
-	SilenceUsage: true,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+		SilenceUsage: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 
-		// Parse api service type
-		if val, ok := apiServiceTypeToID[*installParams.EndPointServiceTypeInput]; ok {
-			installParams.EndPointServiceType = val
-		} else {
-			return errors.New("value of 'endpoint-service-type' flag is unknown. Supported values are " +
-				"[" + ClusterIP.String() + "," + LoadBalancer.String() + "," + NodePort.String() + "]")
-		}
-
-		if val, ok := usecaseToID[*installParams.UseCaseInput]; ok {
-			installParams.UseCase = val
-		} else {
-			return errors.New("value of 'use-case' flag is unknown. Supported values are " +
-				"[" + ContinuousDelivery.String() + "]")
-		}
-
-		// Mark the quality-gates use case as deprecated - this is now the default option
-		if *installParams.UseCaseInput == QualityGates.String() {
-			logging.PrintLog("Note: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
-		}
-
-		helmHelper := helm.NewHelper()
-		keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
-		var err error
-		if keptnChart, err = helmHelper.DownloadChart(keptnChartRepoURL); err != nil {
-			return err
-		}
-
-		logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", keptnChartRepoURL), logging.InfoLevel)
-
-		installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier)
-		if err != nil {
-			return err
-		}
-
-		if !mocking {
-			if err := installPlatformManager.CheckRequirements(); err != nil {
-				return err
-			}
-		}
-
-		if installParams.ConfigFilePath != nil && *installParams.ConfigFilePath != "" {
-			// Config was provided in form of a file
-			if err := installPlatformManager.ParseConfig(*installParams.ConfigFilePath); err != nil {
-				return err
+			// Parse api service type
+			if val, ok := apiServiceTypeToID[*installParams.EndPointServiceTypeInput]; ok {
+				installParams.EndPointServiceType = val
+			} else {
+				return errors.New("value of 'endpoint-service-type' flag is unknown. Supported values are " +
+					"[" + ClusterIP.String() + "," + LoadBalancer.String() + "," + NodePort.String() + "]")
 			}
 
-			// Check whether the authentication at the cluster is valid
-			if err := installPlatformManager.CheckCreds(); err != nil {
-				return err
+			if val, ok := usecaseToID[*installParams.UseCaseInput]; ok {
+				installParams.UseCase = val
+			} else {
+				return errors.New("value of 'use-case' flag is unknown. Supported values are " +
+					"[" + ContinuousDelivery.String() + "]")
 			}
-		} else {
-			err = installPlatformManager.ReadCreds(assumeYes)
+
+			// Mark the quality-gates use case as deprecated - this is now the default option
+			if *installParams.UseCaseInput == QualityGates.String() {
+				logging.PrintLog("Note: The --use-case=quality-gates option is now deprecated and is now a synonym for the default installation of Keptn.", logging.InfoLevel)
+			}
+
+			installPlatformManager, err := platform.NewPlatformManager(*installParams.PlatformIdentifier)
 			if err != nil {
 				return err
 			}
-		}
 
-		// check if Kubernetes server version is compatible (except OpenShift)
-		if *installParams.PlatformIdentifier != platform.OpenShiftIdentifier {
-			if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
-				logging.PrintLog(err.Error(), logging.VerboseLevel)
-				logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
-				return fmt.Errorf("Failed to check kubernetes server version: %w", err)
-			}
-		}
-
-		// check if istio-system namespace and istio-ingressgateway is available (full installation only)
-		if installParams.UseCase == ContinuousDelivery {
-			if err := checkIstioInstallation(); err != nil {
-				logging.PrintLog("Istio is required for the continuous-delivery use case, "+
-					"but could not be found in your cluster in namespace istio-system.", logging.InfoLevel)
-				logging.PrintLog("Please install Istio as described "+
-					"in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
+			if !mocking {
+				if err := installPlatformManager.CheckRequirements(); err != nil {
+					return err
+				}
 			}
 
-			if continuousDeliveryServiceCharts, err = fetchContinuousDeliveryCharts(helmHelper, installParams.ChartRepoURL); err != nil {
-				return err
+			if installParams.ConfigFilePath != nil && *installParams.ConfigFilePath != "" {
+				// Config was provided in form of a file
+				if err := installPlatformManager.ParseConfig(*installParams.ConfigFilePath); err != nil {
+					return err
+				}
+
+				// Check whether the authentication at the cluster is valid
+				if err := installPlatformManager.CheckCreds(); err != nil {
+					return err
+				}
+			} else {
+				err = installPlatformManager.ReadCreds(assumeYes)
+				if err != nil {
+					return err
+				}
 			}
-		}
 
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+			// check if Kubernetes server version is compatible (except OpenShift)
+			if *installParams.PlatformIdentifier != platform.OpenShiftIdentifier {
+				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
+					logging.PrintLog(err.Error(), logging.VerboseLevel)
+					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
+					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
+				}
+			}
 
-		logging.PrintLog("Installing Keptn ...", logging.InfoLevel)
-		if !mocking {
-			return doInstallation()
-		}
-		fmt.Println("Skipping installation due to mocking flag")
-		return nil
-	},
+			// check if istio-system namespace and istio-ingressgateway is available (full installation only)
+			if installParams.UseCase == ContinuousDelivery {
+				if err := checkIstioInstallation(); err != nil {
+					logging.PrintLog("Istio is required for the continuous-delivery use case, "+
+						"but could not be found in your cluster in namespace istio-system.", logging.InfoLevel)
+					logging.PrintLog("Please install Istio as described "+
+						"in the Istio docs: https://istio.io/latest/docs/setup/getting-started/", logging.InfoLevel)
+				}
+			}
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			logging.PrintLog("Installing Keptn ...", logging.InfoLevel)
+			return installCmdHandler.doInstallation(installParams)
+			fmt.Println("Skipping installation due to mocking flag")
+			return nil
+		},
+	}
 }
 
 func init() {
@@ -197,19 +191,39 @@ func init() {
 
 }
 
-// Preconditions: 1. Already authenticated against the cluster.
-func doInstallation() error {
+////////
+type InstallCmdHandler struct {
+	helmHelper       helm.IHelper
+	namespaceHandler kube.IKeptnNamespaceHandler
+	userInput        common.IUserInput
+}
+
+func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
-	namespaceExists, err := keptnutils.ExistsNamespace(false, keptnNamespace)
+	keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
+	var err error
+	if keptnChart, err = i.helmHelper.DownloadChart(keptnChartRepoURL); err != nil {
+		return err
+	}
+
+	if installParams.UseCase == ContinuousDelivery {
+		if continuousDeliveryServiceCharts, err = fetchContinuousDeliveryCharts(i.helmHelper, installParams.ChartRepoURL); err != nil {
+			return err
+		}
+	}
+
+	logging.PrintLog(fmt.Sprintf("Helm Chart used for Keptn installation: %s", keptnChartRepoURL), logging.InfoLevel)
+
+	namespaceExists, err := i.namespaceHandler.ExistsNamespace(false, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Failed to check if namespace %s already exists: %v", keptnNamespace, err)
 	}
 
 	if namespaceExists {
 		fmt.Printf("Existing Keptn installation found in namespace %s\n\n", keptnNamespace)
-		userConfirmation := common.NewUserInput().AskBool("Do you want to overwrite this installation?", &common.UserInputOptions{assumeYes})
+		userConfirmation := i.userInput.AskBool("Do you want to overwrite this installation?", &common.UserInputOptions{assumeYes})
 
 		if !userConfirmation {
 			return fmt.Errorf("Stopping installation.")
@@ -223,7 +237,7 @@ func doInstallation() error {
 				"keptn.sh/managed-by": "keptn",
 			},
 		}
-		if err := keptnutils.CreateNamespace(false, keptnNamespace, namespaceMetadata); err != nil {
+		if err := i.namespaceHandler.CreateNamespace(false, keptnNamespace, namespaceMetadata); err != nil {
 			return fmt.Errorf("Failed to create Keptn namespace %s: %v", keptnNamespace, err)
 		}
 	}
@@ -246,9 +260,7 @@ func doInstallation() error {
 		},
 	}
 
-	helmHelper := helm.NewHelper()
-
-	if err := helmHelper.UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
+	if err := i.helmHelper.UpgradeChart(keptnChart, keptnReleaseName, keptnNamespace, values); err != nil {
 		msg := fmt.Sprintf("Could not complete Keptn installation: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 		return errors.New(msg)
 	}
@@ -256,8 +268,9 @@ func doInstallation() error {
 	logging.PrintLog("Keptn control plane has been successfully set up on your cluster.", logging.InfoLevel)
 
 	if installParams.UseCase == ContinuousDelivery {
+		logging.PrintLog("Installing execution plane services for continuous-delivery use case.", logging.InfoLevel)
 		for _, serviceChart := range continuousDeliveryServiceCharts {
-			if err := helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
+			if err := i.helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
 				msg := fmt.Sprintf("Could not complete Keptn installation: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 				return errors.New(msg)
 			}
@@ -286,7 +299,7 @@ func doInstallation() error {
 	return nil
 }
 
-func fetchContinuousDeliveryCharts(helmHelper helm.Helper, chartRepoURL *string) ([]*chart.Chart, error) {
+func fetchContinuousDeliveryCharts(helmHelper helm.IHelper, chartRepoURL *string) ([]*chart.Chart, error) {
 	charts := []*chart.Chart{}
 	for _, service := range continuousDeliveryServices {
 		chartURL := getExecutionPlaneServiceChartRepoURL(chartRepoURL, service)

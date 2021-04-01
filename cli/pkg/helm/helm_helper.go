@@ -44,13 +44,22 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/helper.go . IHelper
+type IHelper interface {
+	DownloadChart(chartRepoURL string) (*chart.Chart, error)
+	GetHistory(releaseName, namespace string) ([]*release.Release, error)
+	GetValues(releaseName, namespace string) (map[string]interface{}, error)
+	UpgradeChart(ch *chart.Chart, releaseName, namespace string, vals map[string]interface{}) error
+	UninstallRelease(releaseName, namespace string) error
+}
+
 // Helper provides helper functions for common Helm operations
 type Helper struct {
 }
 
 // NewHelper creates a Helper
-func NewHelper() Helper {
-	return Helper{}
+func NewHelper() *Helper {
+	return &Helper{}
 }
 
 // DownloadChart downloads a Helm chart using the provided repo URL

@@ -248,19 +248,22 @@ func doUpgrade() error {
 		return errors.New(msg)
 	}
 
+	logging.PrintLog("Upgrading of Keptn control plane has been successful.", logging.InfoLevel)
+
 	values, err := helmHelper.GetValues(keptnReleaseName, keptnNamespace)
 	if err != nil {
 		return fmt.Errorf("Could not determine configuration of current Keptn installation: %s", err.Error())
 	}
 	if isContinuousDeliveryEnabled(values) {
-		continuousDeliveryServiceCharts, err := fetchContinuousDeliveryCharts(helmHelper, upgradeParams.ChartRepoURL)
+		logging.PrintLog("Upgrading execution plane services for continuous-delivery use case.", logging.InfoLevel)
+		continuousDeliveryServiceCharts, err := fetchContinuousDeliveryCharts(*helmHelper, upgradeParams.ChartRepoURL)
 		if err != nil {
-			return fmt.Errorf("Could not fetch continuous delivery execution service charts: %s", err.Error())
+			return fmt.Errorf("Could not fetch continuous delivery execution service charts: %s \n", err.Error())
 		}
 
 		for _, serviceChart := range continuousDeliveryServiceCharts {
 			if err := helmHelper.UpgradeChart(serviceChart, keptnReleaseName+serviceChart.Name(), keptnNamespace, values); err != nil {
-				msg := fmt.Sprintf("Could not complete upgrade of Keptn Execution plane services: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
+				msg := fmt.Sprintf("Could not complete upgrade of Keptn execution plane services: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 				return errors.New(msg)
 			}
 		}
