@@ -1,9 +1,10 @@
-import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
 
 @Component({
   selector: 'ktb-sli-breakdown-criteria-item',
   templateUrl: './ktb-sli-breakdown-criteria-item.component.html',
-  styleUrls: ['./ktb-sli-breakdown-criteria-item.component.scss']
+  styleUrls: ['./ktb-sli-breakdown-criteria-item.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbSliBreakdownCriteriaItemComponent implements OnInit {
   private _targets: any;
@@ -14,8 +15,10 @@ export class KtbSliBreakdownCriteriaItemComponent implements OnInit {
   }
 
   set targets(targets: any) {
-    this._targets = targets;
-    this._changeDetectorRef.markForCheck();
+    if(this._targets !== targets) {
+      this._targets = targets;
+      this._changeDetectorRef.markForCheck();
+    }
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }

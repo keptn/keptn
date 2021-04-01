@@ -76,8 +76,8 @@ func TestCheckCLIVersion(t *testing.T) {
 	defer teardown()
 
 	versionChecker := NewVersionChecker()
-	versionChecker.versionFetcherClient.httpClient = httpClient
-	versionChecker.versionFetcherClient.versionUrl = url
+	versionChecker.VersionFetcherClient.HTTPClient = httpClient
+	versionChecker.VersionFetcherClient.VersionURL = url
 
 	res, err := versionChecker.getNewerCLIVersion("0.6.0")
 

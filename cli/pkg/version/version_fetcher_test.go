@@ -52,8 +52,8 @@ func TestGetCLIVersionInfo(t *testing.T) {
 	defer teardown()
 
 	client := newVersionFetcherClient()
-	client.httpClient = httpClient
-	client.versionUrl = url
+	client.HTTPClient = httpClient
+	client.VersionURL = url
 
 	cliVersionInfo, err := client.getCLIVersionInfo("0.6.0")
 	assert.Equal(t, err, nil, "Received unexpected error")
@@ -100,8 +100,8 @@ func TestGetKeptnVersionInfo(t *testing.T) {
 	defer teardown()
 
 	client := newVersionFetcherClient()
-	client.httpClient = httpClient
-	client.versionUrl = url
+	client.HTTPClient = httpClient
+	client.VersionURL = url
 
 	keptnVersionInfo, err := client.getKeptnVersionInfo("0.6.0")
 	assert.Equal(t, err, nil, "Received unexpected error")
