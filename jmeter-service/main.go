@@ -242,7 +242,7 @@ func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Even
 	return sendEvent(event)
 }
 
-func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result keptnv2.ResultType, logger *keptncommon.Logger) error {
+func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Event, startedAt time.Time, result keptnv2.ResultType, msg string, logger *keptncommon.Logger) error {
 	source, _ := url.Parse("jmeter-service")
 
 	testFinishedData := keptnv2.TestFinishedEventData{}
@@ -259,6 +259,7 @@ func sendTestsFinishedEvent(shkeptncontext string, incomingEvent cloudevents.Eve
 	// set test result
 	testFinishedData.Result = result
 	testFinishedData.Status = keptnv2.StatusSucceeded
+	testFinishedData.Message = msg
 
 	event := cloudevents.NewEvent()
 	event.SetType(keptnv2.GetFinishedEventType(keptnv2.TestTaskName))
