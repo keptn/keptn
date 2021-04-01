@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/commonutils"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"os"
 	"strings"
 
@@ -57,7 +57,7 @@ func (mng PlatformManager) CheckCreds() error {
 
 // ParseConfig reads and parses the provided config file
 func (mng PlatformManager) ParseConfig(configFile string) error {
-	data, err := commonutils.ReadFile(configFile)
+	data, err := fileutils.ReadFile(configFile)
 	if err != nil {
 		return err
 	}

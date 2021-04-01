@@ -4,10 +4,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/commonutils"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -128,10 +130,10 @@ func checkGitCredentials() error {
 func getAndParseYaml(location string, out interface{}) error {
 	var content []byte
 	var err error
-	if commonutils.IsValidURL(location) {
-		content, err = commonutils.DownloadFromURL(location)
+	if httputils.IsValidURL(location) {
+		content, err = httputils.NewDownloader(httputils.WithTimeout(5 * time.Second)).DownloadFromURL(location)
 	} else {
-		content, err = commonutils.ReadFile(location)
+		content, err = fileutils.ReadFile(location)
 	}
 	if err != nil {
 		return err

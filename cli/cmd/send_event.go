@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/commonutils"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -48,7 +48,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		eventString, err := commonutils.ReadFile(*eventFilePath)
+		eventString, err := fileutils.ReadFile(*eventFilePath)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 }
 
 func doSendEventPreRunChecks() error {
-	eventString, err := commonutils.ReadFile(*eventFilePath)
+	eventString, err := fileutils.ReadFile(*eventFilePath)
 	if err != nil {
 		return err
 	}

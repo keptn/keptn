@@ -3,7 +3,7 @@ package credentialmanager
 import (
 	"fmt"
 	"github.com/docker/docker-credential-helpers/credentials"
-	"github.com/keptn/go-utils/pkg/commonutils"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
@@ -119,7 +119,7 @@ func getCreds(h credentials.Helper, namespace string) (url.URL, string, error) {
 }
 
 func handleCustomCreds(configLocation string, namespace string) (url.URL, string, error) {
-	fileContent, err := commonutils.ReadFile(configLocation)
+	fileContent, err := fileutils.ReadFile(configLocation)
 	if err != nil {
 		return url.URL{}, "", err
 	}
@@ -174,7 +174,7 @@ func getCurrentContextFromKubeConfig() error {
 		)
 	}
 
-	fileContent, err := commonutils.ReadFile(kubeconfig)
+	fileContent, err := fileutils.ReadFile(kubeconfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not open KUBECONFIG file: "+err.Error()+"\n")
 		return nil

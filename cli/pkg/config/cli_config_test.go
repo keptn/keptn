@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/keptn/go-utils/pkg/commonutils"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"io/ioutil"
 	"log"
 	"os"
@@ -61,7 +61,7 @@ func TestStoreCLIConfig(t *testing.T) {
 		t.Errorf("Unexpected error %v", err)
 	}
 
-	data, err := commonutils.ReadFileAsStr(mng.CLIConfigPath)
+	data, err := fileutils.ReadFileAsStr(mng.CLIConfigPath)
 	if data != testConfig {
 		t.Errorf("Different config stored")
 	}

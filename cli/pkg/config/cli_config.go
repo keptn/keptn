@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/commonutils"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"io/ioutil"
 	"log"
 	"time"
@@ -39,11 +39,11 @@ func NewCLIConfigManager() *CLIConfigManager {
 func (c *CLIConfigManager) LoadCLIConfig() (CLIConfig, error) {
 
 	cliConfig := CLIConfig{AutomaticVersionCheck: true}
-	if !commonutils.FileExists(c.CLIConfigPath) {
+	if !fileutils.FileExists(c.CLIConfigPath) {
 		return cliConfig, nil
 	}
 
-	data, err := commonutils.ReadFile(c.CLIConfigPath)
+	data, err := fileutils.ReadFile(c.CLIConfigPath)
 	if err != nil {
 		return cliConfig, fmt.Errorf("error when reading config file: %v", err)
 	}
