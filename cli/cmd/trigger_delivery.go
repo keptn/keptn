@@ -90,12 +90,12 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	resourceHandler := apiutils.NewAuthenticatedResourceHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
 	shipyardResource, err := resourceHandler.GetProjectResource(*deliveryInputData.Project, "shipyard.yaml")
 	if err != nil {
-		return fmt.Errorf("Error while retrieving shipyard.yaml for project %v: %s:", *deliveryInputData.Project, err.Error())
+		return fmt.Errorf("Error while retrieving shipyard.yaml for project %v: %v:", *deliveryInputData.Project, err)
 	}
 
 	shipyard, err := keptnv2.DecodeShipyardYAML([]byte(shipyardResource.ResourceContent))
 	if err != nil {
-		return fmt.Errorf("Error while decoding shipyard.yaml for project %v: %s", *deliveryInputData.Project, err.Error())
+		return fmt.Errorf("Error while decoding shipyard.yaml for project %v: %v", *deliveryInputData.Project, err)
 	}
 
 	// if no stage has been provided to the delivery command, use the first stage in the shipyard.yaml
@@ -146,7 +146,7 @@ func doTriggerDelivery(deliveryInputData deliveryStruct) error {
 	apiEvent := apimodels.KeptnContextExtendedCE{}
 	err = json.Unmarshal(eventByte, &apiEvent)
 	if err != nil {
-		return fmt.Errorf("Failed to map cloud event to API event model. %s", err.Error())
+		return fmt.Errorf("Failed to map cloud event to API event model. %v", err)
 	}
 
 	apiHandler := apiutils.NewAuthenticatedAPIHandler(endPoint.String(), apiToken, "x-token", nil, endPoint.Scheme)
