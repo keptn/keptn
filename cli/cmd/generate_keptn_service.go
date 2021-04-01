@@ -2,16 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	keptnutils "github.com/keptn/keptn/cli/pkg/git"
 	"github.com/spf13/cobra"
 )
 
 type generateKeptnServiceStruct struct {
-	Service *string `json:"service"`
-	Image   *string `json:"image"`
+	Service *string            `json:"service"`
+	Image   *string            `json:"image"`
 	Events  *map[string]string `json:"events"`
 }
 
 var generateKeptnService generateKeptnServiceStruct
+var serviceTemplateRepoUrl = "https://github.com/keptn-sandbox/keptn-service-template-go"
 
 var generateKeptnServiceCmd = &cobra.Command{
 	Use:          "keptn-service",
@@ -20,8 +22,17 @@ var generateKeptnServiceCmd = &cobra.Command{
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Keptn Service CLI generation work in progress \n")
-		return nil
+		return generateServiceTemplate(generateKeptnService)
 	},
+}
+
+func generateServiceTemplate(generateKeptnService generateKeptnServiceStruct) error {
+	var err error
+	err = keptnutils.CloneGitHubUrl(*generateKeptnService.Service, serviceTemplateRepoUrl)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func init() {
