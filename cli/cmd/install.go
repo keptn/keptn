@@ -157,8 +157,6 @@ keptn install --hide-sensitive-data                                    # install
 
 			logging.PrintLog("Installing Keptn ...", logging.InfoLevel)
 			return installCmdHandler.doInstallation(installParams)
-			fmt.Println("Skipping installation due to mocking flag")
-			return nil
 		},
 	}
 }
