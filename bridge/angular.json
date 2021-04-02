@@ -101,6 +101,7 @@
             "karmaConfig": "karma.conf.js",
             "sourceMap": false,
             "codeCoverage": true,
+            "watch": false,
             "assets": [
               "client/favicon.ico",
               "client/assets"
