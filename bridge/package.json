@@ -9,7 +9,7 @@
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "ng test --karma-config karma.conf.js",
-    "test:ci": "ng test --karma-config karma-headless.conf.js",
+    "test:ci": "ng test --karma-config karma-headless.conf.js --source-map=false",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "preinstall": "npx npm-force-resolutions"
