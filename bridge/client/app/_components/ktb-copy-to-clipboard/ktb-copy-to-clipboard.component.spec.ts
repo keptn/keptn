@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
 
 import {KtbCopyToClipboardComponent} from './ktb-copy-to-clipboard.component';
 import {AppModule} from '../../app.module';
@@ -10,19 +10,22 @@ describe('KtbExpandableTileComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-      ],
+      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
     })
-    .compileComponents();
+    .compileComponents()
+    .then(() => {
+      fixture = TestBed.createComponent(KtbCopyToClipboardComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbCopyToClipboardComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

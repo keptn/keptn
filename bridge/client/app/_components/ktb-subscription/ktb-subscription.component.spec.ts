@@ -1,8 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
 
 import { KtbSubscriptionComponent } from './ktb-subscription.component';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {AppModule} from '../../app.module';
+import {KtbSubscriptionItemComponent} from "../ktb-subscription-item/ktb-subscription-item.component";
 
 describe('KtbSubscriptionComponent', () => {
   let component: KtbSubscriptionComponent;
@@ -10,18 +11,22 @@ describe('KtbSubscriptionComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbSubscriptionComponent ],
+      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
-      ]
+      ],
     })
-    .compileComponents();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbSubscriptionComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSubscriptionComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });
