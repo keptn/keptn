@@ -25,3 +25,7 @@ ktb-event-item.focused {
   animation: pulse 2s;
   animation-delay: .5s;
 }
+
+dt-quick-filter dt-drawer{
+  overflow-x: auto;
+}

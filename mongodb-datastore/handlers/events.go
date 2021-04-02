@@ -500,9 +500,9 @@ func findInDB(collectionName string, pageSize int64, nextPageKeyStr *string, onl
 		collectionName = collectionName + rootEventCollectionSuffix
 	}
 	if pageSize > 0 {
-		sortOptions = options.Find().SetSort(bson.D{{"time", -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
+		sortOptions = options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(nextPageKey).SetLimit(pageSize)
 	} else {
-		sortOptions = options.Find().SetSort(bson.D{{"time", -1}})
+		sortOptions = options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
 	}
 
 	collection := client.Database(mongoDBName).Collection(collectionName)
@@ -659,8 +659,20 @@ func getSearchOptions(params event.GetEventsParams) bson.M {
 		searchOptions["id"] = *params.EventID
 	}
 	if params.FromTime != nil {
+		if params.BeforeTime == nil {
+			searchOptions["time"] = bson.M{
+				"$gt": *params.FromTime,
+			}
+		} else {
+			searchOptions["$and"] = []bson.M{
+				{"time": bson.M{"$gt": *params.FromTime}},
+				{"time": bson.M{"$lt": *params.BeforeTime}},
+			}
+		}
+	}
+	if params.BeforeTime != nil && params.FromTime == nil {
 		searchOptions["time"] = bson.M{
-			"$gt": *params.FromTime,
+			"$lt": *params.BeforeTime,
 		}
 	}
 
@@ -774,11 +786,11 @@ func GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByType
 func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName string, matchFields bson.M) mongo.Pipeline {
 
 	matchStage := bson.D{
-		{"$match", matchFields},
+		{Key: "$match", Value: matchFields},
 	}
 
 	lookupStage := bson.D{
-		{"$lookup", bson.M{
+		{Key: "$lookup", Value: bson.M{
 			"from": getInvalidatedCollectionName(collectionName),
 			"let": bson.M{
 				"event_id":          "$id",
@@ -810,21 +822,21 @@ func getAggregationPipeline(params event.GetEventsByTypeParams, collectionName s
 	}
 
 	matchInvalidatedStage := bson.D{
-		{"$match", bson.M{
+		{Key: "$match", Value: bson.M{
 			"invalidated": bson.M{
 				"$size": 0,
 			},
 		}},
 	}
 	sortStage := bson.D{
-		{"$sort", bson.M{
+		{Key: "$sort", Value: bson.M{
 			"time": -1,
 		}},
 	}
 	var aggregationPipeline mongo.Pipeline
 	if params.Limit != nil && *params.Limit > 0 {
 		limitStage := bson.D{
-			{"$limit", *params.Limit},
+			{Key: "$limit", Value: *params.Limit},
 		}
 		aggregationPipeline = mongo.Pipeline{matchStage, lookupStage, matchInvalidatedStage, sortStage, limitStage}
 	} else {

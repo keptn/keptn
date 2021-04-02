@@ -69,6 +69,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
   private sequenceFilters = {};
+  private project: Project;
+  private loading = false;
 
   private _tracesTimerInterval = 10;
   private _tracesTimer: Subscription = Subscription.EMPTY;
@@ -99,16 +101,26 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             this.currentSequence = null;
             this.selectedStage = null;
+            this.project = project;
             this.updateFilterDataSource(project);
 
             this._changeDetectorRef.markForCheck();
           });
 
         this.dataService.roots
-          .pipe(takeUntil(this.unsubscribe$))
+          .pipe(
+            takeUntil(this.unsubscribe$),
+            filter(roots => !!roots)
+          )
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
-              this.selectSequence({root: roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext), stage: params.stage});
+              const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
+              if (root) {
+                this.selectSequence({root, stage: params.stage});
+              } else if (!this.loading) {
+                this.loading = true;
+                this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+              }
             }
             if (roots) {
               this.updateFilterSequence(roots);
