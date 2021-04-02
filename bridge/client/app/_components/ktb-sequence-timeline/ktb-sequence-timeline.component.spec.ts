@@ -2,6 +2,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbSequenceTimelineComponent } from './ktb-sequence-timeline.component';
 import {RouterTestingModule} from '@angular/router/testing';
+import {AppModule} from "../../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbSequenceTimelineComponent', () => {
   let component: KtbSequenceTimelineComponent;
@@ -11,7 +13,9 @@ describe('KtbSequenceTimelineComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ KtbSequenceTimelineComponent ],
       imports: [
-        RouterTestingModule
+        RouterTestingModule,
+        AppModule,
+        HttpClientTestingModule,
       ]
     })
     .compileComponents();

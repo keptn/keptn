@@ -11,7 +11,10 @@ describe('KtbSubscriptionComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ KtbSubscriptionComponent ],
-      imports: [AppModule, HttpClientTestingModule]
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ]
     })
     .compileComponents();
   }));

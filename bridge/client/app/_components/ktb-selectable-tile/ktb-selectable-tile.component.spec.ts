@@ -3,6 +3,8 @@ import {By} from "@angular/platform-browser";
 import {Component} from "@angular/core";
 
 import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
+import {AppModule} from "../../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbSelectableTileComponent', () => {
   let component: SimpleKtbSelectableTileComponent;
@@ -14,7 +16,10 @@ describe('KtbSelectableTileComponent', () => {
         SimpleKtbSelectableTileComponent,
         KtbSelectableTileComponent,
       ],
-      imports: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
     .compileComponents();
   }));

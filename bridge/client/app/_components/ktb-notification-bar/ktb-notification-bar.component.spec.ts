@@ -6,7 +6,7 @@ import {By} from "@angular/platform-browser";
 import {NotificationsService} from "../../_services/notifications.service";
 import {NotificationType} from "../../_models/notification";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {HttpClientModule} from "@angular/common/http";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('KtbNotificationBarComponent', () => {
   let service: NotificationsService;
@@ -20,7 +20,7 @@ describe('KtbNotificationBarComponent', () => {
         KtbNotificationBarComponent,
       ],
       imports: [
-        HttpClientModule,
+        HttpClientTestingModule,
         DtIconModule,
         DtIconModule.forRoot({
           svgIconLocation: `/assets/icons/{{name}}.svg`,

@@ -7,7 +7,10 @@ import {MockDataService} from './mock-data.service';
 describe('MockDataService', () => {
   beforeEach(() => TestBed.configureTestingModule({
     declarations: [],
-    imports: [AppModule, HttpClientTestingModule]
+    imports: [
+      AppModule,
+      HttpClientTestingModule,
+    ]
   }));
 
   it('should return 1 project', () => {
