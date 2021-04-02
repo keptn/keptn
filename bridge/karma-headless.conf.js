@@ -1,10 +1,11 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
-const puppeteer = require('puppeteer');
-process.env.CHROME_BIN = puppeteer.executablePath();
-
 module.exports = function (config) {
+
+  const puppeteer = require('puppeteer');
+  process.env.CHROME_BIN = puppeteer.executablePath();
+
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -33,7 +34,12 @@ module.exports = function (config) {
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox']
+        flags: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-gpu',
+          '--remote-debugging-port=9222',
+        ]
       }
     },
     captureTimeout: 60000,
