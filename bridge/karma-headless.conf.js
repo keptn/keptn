@@ -30,12 +30,14 @@ module.exports = function (config) {
     singleRun: true,
     sourceMap: false,
     codeCoverage: true,
-    browsers: ['ChromeHeadless'],
-    flags: [
-      '--disable-gpu',
-      '--no-sandbox'
-    ],
-    browserDisconnectTimeout: 100000,
+    browsers: ['ChromeHeadlessCI'],
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-translate', '--disable-extensions']
+      }
+    },
+    browserDisconnectTimeout: 10000,
     browserDisconnectTolerance: 3,
     browserNoActivityTimeout: 100000,
   });
