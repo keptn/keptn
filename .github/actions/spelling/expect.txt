@@ -302,6 +302,7 @@ goutils
 goutilsmodels
 govalidator
 gpg
+gpu
 grabnerandi
 grep
 grpc
