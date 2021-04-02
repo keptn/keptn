@@ -9,7 +9,7 @@
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "ng test --code-coverage --source-map=false",
-    "test:ci": "ng test --watch=false --code-coverage --browsers=ChromeHeadless",
+    "test:ci": "ng test --watch=false --code-coverage --source-map=false --browsers=ChromeHeadless",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "preinstall": "npx npm-force-resolutions"
