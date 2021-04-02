@@ -31,9 +31,6 @@ module.exports = function (config) {
     sourceMap: false,
     codeCoverage: true,
     browsers: ['Chrome'],
-    restartOnFileChange: true,
-    browserDisconnectTimeout: 10000,
-    browserDisconnectTolerance: 3,
-    browserNoActivityTimeout: 100000,
+    restartOnFileChange: true
   });
 };

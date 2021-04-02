@@ -35,7 +35,7 @@ module.exports = function (config) {
       '--disable-gpu',
       '--no-sandbox'
     ],
-    browserDisconnectTimeout: 10000,
+    browserDisconnectTimeout: 100000,
     browserDisconnectTolerance: 3,
     browserNoActivityTimeout: 100000,
   });
