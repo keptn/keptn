@@ -99,6 +99,8 @@
             "polyfills": "client/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
+            "sourceMap": false,
+            "codeCoverage": true,
             "assets": [
               "client/favicon.ico",
               "client/assets"
