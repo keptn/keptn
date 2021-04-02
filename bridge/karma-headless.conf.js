@@ -34,10 +34,10 @@ module.exports = function (config) {
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-translate', '--disable-extensions']
+        flags: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-translate', '--disable-extensions', '--js-flags="--max_old_space_size=4096"']
       }
     },
-    browserDisconnectTimeout: 10000,
+    browserDisconnectTimeout: 60000,
     browserDisconnectTolerance: 3,
     browserNoActivityTimeout: 100000,
   });
