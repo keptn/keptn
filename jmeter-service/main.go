@@ -122,7 +122,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		}
 
 		if !res {
-			msg := fmt.Sprintf("Workload Testing Completed")
+			msg := fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
@@ -165,7 +165,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	}
 
 	// now lets send the test finished event
-	msg := fmt.Sprintf("Workload Testing Completed")
+	msg := fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
 	if !res {
 		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
