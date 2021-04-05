@@ -103,9 +103,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 
 		res , err = net.LookupIP(serviceUrl.String())
 		if err != nil {
-			msg := fmt.Sprintf("Cant reach URL %s from JMeter-Service: %s", serviceUrl, err.Error())
+			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s", serviceUrl)
 			logger.Error(msg)
-			if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
+			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
