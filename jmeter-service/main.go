@@ -101,7 +101,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
 
-		res , err = net.LookupIP(serviceUrl.String())
+		_ , err := net.LookupIP(serviceUrl.String())
 		if err != nil {
 			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s", serviceUrl)
 			logger.Error(msg)
@@ -122,7 +122,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		}
 
 		if !res {
-			msg := fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
+			msg := fmt.Sprintf("Tests for %s with status = %s.%s", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo.ToString())
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
