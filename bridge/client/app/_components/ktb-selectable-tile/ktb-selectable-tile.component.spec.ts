@@ -1,8 +1,11 @@
-import {ComponentFixture, TestBed, fakeAsync} from '@angular/core/testing';
+import {ComponentFixture, TestBed, fakeAsync, async} from '@angular/core/testing';
 import {By} from "@angular/platform-browser";
 import {Component} from "@angular/core";
 
 import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
+import {AppModule} from "../../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {KtbRootEventsListComponent} from "../ktb-root-events-list/ktb-root-events-list.component";
 
 describe('KtbSelectableTileComponent', () => {
   let component: SimpleKtbSelectableTileComponent;
@@ -14,16 +17,23 @@ describe('KtbSelectableTileComponent', () => {
         SimpleKtbSelectableTileComponent,
         KtbSelectableTileComponent,
       ],
-      imports: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
-    .compileComponents();
+    .compileComponents()
+    .then(() => {
+      fixture = TestBed.createComponent(SimpleKtbSelectableTileComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(SimpleKtbSelectableTileComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 
   it('should add and remove the selected state', () => {
     let selectableTileDebugElement = fixture.debugElement.query(By.directive(KtbSelectableTileComponent));

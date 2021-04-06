@@ -97,16 +97,12 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     this.contextId = event.root.shkeptncontext;
     this.projectName = event.root.getProject();
     this.serviceName = event.root.getService();
-    if (event.stage) {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'service', event.root.getService(), 'context', event.root.shkeptncontext, 'stage', event.stage]);
-      this.location.go(routeUrl.toString());
-    } else {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'service', event.root.getService(), 'context', event.root.shkeptncontext]);
-      this.location.go(routeUrl.toString());
-    }
 
     this.currentRoot = event.root;
     this.selectedStage = event.stage || event.root.getStages().pop();
+
+    const routeUrl = this.router.createUrlTree(['/project', this.currentRoot.getProject(), 'service', this.currentRoot.getService(), 'context', this.currentRoot.shkeptncontext, 'stage', this.selectedStage]);
+    this.location.go(routeUrl.toString());
     this.loadTraces(this.currentRoot);
   }
 

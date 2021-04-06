@@ -1,6 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
 
 import { KtbSliBreakdownCriteriaItemComponent } from './ktb-sli-breakdown-criteria-item.component';
+import {AppModule} from "../../app.module";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {KtbServicesListComponent} from "../ktb-services-list/ktb-services-list.component";
 
 describe('KtbSliBreakdownCriteriaItemComponent', () => {
   let component: KtbSliBreakdownCriteriaItemComponent;
@@ -8,14 +11,22 @@ describe('KtbSliBreakdownCriteriaItemComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbSliBreakdownCriteriaItemComponent ]
+      declarations: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
     })
-    .compileComponents();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbSliBreakdownCriteriaItemComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSliBreakdownCriteriaItemComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

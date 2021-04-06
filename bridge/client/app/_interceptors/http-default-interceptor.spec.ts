@@ -1,7 +1,8 @@
-import {TestBed} from "@angular/core/testing";
+import {async, fakeAsync, TestBed} from "@angular/core/testing";
 import {AppModule} from "../app.module";
 import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
 import {ApiService} from "../_services/api.service";
+import {KtbTaskItemComponent} from "../_components/ktb-task-item/ktb-task-item.component";
 
 describe(`HttpDefaultInterceptor`, () => {
   let service: ApiService;

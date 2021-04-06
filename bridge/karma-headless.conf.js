@@ -1,10 +1,8 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
-const puppeteer = require('puppeteer');
-process.env.CHROME_BIN = puppeteer.executablePath();
-
 module.exports = function (config) {
+
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -27,11 +25,19 @@ module.exports = function (config) {
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
-    singleRun: false,
-    sourceMap: false,
-    codeCoverage: true,
-    browsers: ['Chrome'],
-    restartOnFileChange: true
+    autoWatch: false,
+    singleRun: true,
+    browsers: ['ChromeHeadlessCI'],
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: [
+        ]
+      }
+    },
+    captureTimeout: 60000,
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 1,
+    browserNoActivityTimeout: 60000,
   });
 };

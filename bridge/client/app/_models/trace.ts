@@ -6,6 +6,7 @@ import {ApprovalStates} from "./approval-states";
 import {EVENT_LABELS} from "./event-labels";
 import {EVENT_ICONS} from "./event-icons";
 import {ProblemStates} from "./problem-states";
+import {DateUtil} from "../_utils/date.utils";
 
 
 const DEFAULT_ICON = "information";
@@ -331,6 +332,32 @@ class Trace {
 
     const plainEvent = JSON.parse(JSON.stringify(data));
     return Object.assign(new this, data, { plainEvent });
+  }
+
+  static traceMapper(traces: Trace[]) {
+    traces = traces
+      .map(trace => Trace.fromJSON(trace))
+      .sort(DateUtil.compareTraceTimesDesc);
+
+    return traces.reduce((result: Trace[], trace: Trace) => {
+      const trigger = traces.find(t => {
+        if (trace.triggeredid) {
+          return t.id === trace.triggeredid;
+        } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
+          return t.isProblem() && !t.isProblemResolvedOrClosed();
+        } else if (!t.triggeredid && trace.isFinished()) {
+          return t.type.slice(0, -8) === trace.type.slice(0, -9);
+        }
+      });
+
+      if (trigger) {
+        trigger.traces.push(trace);
+      } else {
+        result.push(trace);
+      }
+
+      return result;
+    }, []);
   }
 }
 

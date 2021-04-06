@@ -10,7 +10,6 @@ describe('ProjectBoardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-
       declarations: [],
       imports: [
         AppModule,
