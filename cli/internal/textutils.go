@@ -12,13 +12,13 @@ type node interface {
 func newInnerNode() *innerNode {
 	return &innerNode{
 		sortedKeys: []string{},
-		childs:     make(map[string]node),
+		children:   make(map[string]node),
 	}
 }
 
 type innerNode struct {
 	sortedKeys []string
-	childs     map[string]node
+	children   map[string]node
 }
 
 func (i *innerNode) String() string {
@@ -26,7 +26,7 @@ func (i *innerNode) String() string {
 	var entries = []string{}
 	sb.WriteString("{")
 	for _, e := range i.sortedKeys {
-		entries = append(entries, `"`+e+`"`+":"+i.childs[e].String())
+		entries = append(entries, `"`+e+`"`+":"+i.children[e].String())
 	}
 
 	s := strings.Join(entries, ",")
@@ -36,12 +36,12 @@ func (i *innerNode) String() string {
 }
 
 func (i *innerNode) AddChild(name string, c node) {
-	i.childs[name] = c
+	i.children[name] = c
 	i.sortedKeys = append(i.sortedKeys, name)
 }
 
 func (i *innerNode) GetChild(name string) node {
-	n := i.childs[name]
+	n := i.children[name]
 	return n
 }
 

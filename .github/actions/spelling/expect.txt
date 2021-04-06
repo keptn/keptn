@@ -92,7 +92,6 @@ charset
 chartutil
 checkbox
 checkip
-childs
 chmod
 chown
 ci
