@@ -80,3 +80,6 @@ GitCommit:\s*"[^"]*"
 
 # gh workflows/actions "uses: abcd/abcd@v1"
 uses:\s*.*
+
+# uuid:
+[<({"'>][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[<'"})>]

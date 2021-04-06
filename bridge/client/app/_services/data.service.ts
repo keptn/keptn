@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {filter, map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
+import {map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -21,27 +20,21 @@ import {KeptnService} from '../_models/keptn-service';
 })
 export class DataService {
 
-  private _projects = new BehaviorSubject<Project[]>(null);
-  private _taskNames = new BehaviorSubject<string[]>([]);
-  private _roots = new BehaviorSubject<Root[]>(null);
-  private _openApprovals = new BehaviorSubject<Trace[]>([]);
-  private _keptnInfo = new BehaviorSubject<any>(null);
-  private _rootsLastUpdated: Object = {};
-  private _tracesLastUpdated: Object = {};
+  protected _projects = new BehaviorSubject<Project[]>(null);
+  protected _taskNames = new BehaviorSubject<string[]>([]);
+  protected _roots = new BehaviorSubject<Root[]>(null);
+  protected _traces = new BehaviorSubject<Trace[]>(null);
+  protected _openApprovals = new BehaviorSubject<Trace[]>([]);
+  protected _keptnInfo = new BehaviorSubject<any>(null);
+  protected _rootsLastUpdated: Object = {};
+  protected _tracesLastUpdated: Object = {};
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
-  private _evaluationResults = new Subject();
+  protected _evaluationResults = new Subject();
 
-  constructor(private http: HttpClient, private apiService: ApiService) {
-    this.loadKeptnInfo();
-    this.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(take(1))
-      .subscribe(keptnInfo => {
-        this.loadProjects();
-      });
+  constructor(private apiService: ApiService) {
   }
 
   get projects(): Observable<Project[]> {
@@ -60,6 +53,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get traces(): Observable<Trace[]> {
+    return this._traces.asObservable();
   }
 
   get openApprovals(): Observable<Trace[]> {
@@ -241,6 +238,18 @@ export class DataService {
             });
           });
         this._roots.next([...this._roots.getValue()]);
+      });
+  }
+
+  public loadTracesByContext(shkeptncontext: string) {
+    this.apiService.getTraces(shkeptncontext)
+      .pipe(
+        map(response => response.body),
+        map(result => result.events||[]),
+        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+      )
+      .subscribe((traces: Trace[]) => {
+        this._traces.next(traces);
       });
   }
 

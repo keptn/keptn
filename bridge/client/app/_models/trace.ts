@@ -8,7 +8,6 @@ import {EVENT_ICONS} from "./event-icons";
 import {ProblemStates} from "./problem-states";
 import {DateUtil} from '../_utils/date.utils';
 
-
 const DEFAULT_ICON = "information";
 
 class Trace {

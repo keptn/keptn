@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, startWith, switchMap, take, takeUntil} from "rxjs/operators";
+import {filter, startWith, switchMap, takeUntil} from "rxjs/operators";
 import {Observable, Subject, timer} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
 
@@ -7,9 +7,6 @@ import {Project} from "../_models/project";
 import {Trace} from "../_models/trace";
 
 import {DataService} from "../_services/data.service";
-import {ApiService} from "../_services/api.service";
-
-import {Location} from "@angular/common";
 
 @Component({
   selector: 'app-project-board',
@@ -26,19 +23,16 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public error: string = null;
   public view: string = 'environment';
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private route: ActivatedRoute, private dataService: DataService, private apiService: ApiService, private location: Location) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private route: ActivatedRoute, private dataService: DataService) { }
 
   ngOnInit() {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
         if (this.route.snapshot.url[0].path === 'trace') {
-          this.apiService.getTraces(params.shkeptncontext)
-            .pipe(
-              map(response => response.body),
-              map(result => result.events||[]),
-              map(traces => traces.map(trace => Trace.fromJSON(trace)))
-            )
+          this.dataService.loadTracesByContext(params.shkeptncontext);
+          this.dataService.traces
+            .pipe(filter(traces => !!traces))
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe((traces: Trace[]) => {
               if(traces.length > 0) {

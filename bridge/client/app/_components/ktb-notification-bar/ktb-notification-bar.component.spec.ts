@@ -1,4 +1,4 @@
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
 
 import {KtbNotificationBarComponent} from './ktb-notification-bar.component';
 import {Component} from "@angular/core";
@@ -6,7 +6,9 @@ import {By} from "@angular/platform-browser";
 import {NotificationsService} from "../../_services/notifications.service";
 import {NotificationType} from "../../_models/notification";
 import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {HttpClientModule} from "@angular/common/http";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {AppModule} from "../../app.module";
+import {KtbMarkdownComponent} from "../ktb-markdown/ktb-markdown.component";
 
 describe('KtbNotificationBarComponent', () => {
   let service: NotificationsService;
@@ -20,7 +22,7 @@ describe('KtbNotificationBarComponent', () => {
         KtbNotificationBarComponent,
       ],
       imports: [
-        HttpClientModule,
+        HttpClientTestingModule,
         DtIconModule,
         DtIconModule.forRoot({
           svgIconLocation: `/assets/icons/{{name}}.svg`,
@@ -28,16 +30,19 @@ describe('KtbNotificationBarComponent', () => {
       ],
       providers: [NotificationsService]
     })
-    .compileComponents();
+    .compileComponents()
+    .then(() => {
+      fixture = TestBed.createComponent(SimpleKtbNotificationBarComponent);
+      component = fixture.componentInstance;
+      service = TestBed.get(NotificationsService);
+      fixture.detectChanges();
+    });
   }));
 
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(SimpleKtbNotificationBarComponent);
-    component = fixture.componentInstance;
-    service = TestBed.get(NotificationsService);
-    fixture.detectChanges();
-  });
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 
   it('should add and remove notifications', () => {
     let notifications = fixture.debugElement.queryAll(By.css('.page-note'));

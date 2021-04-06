@@ -97,6 +97,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
             filter(project => !!project && !!project.getServices() && !!project.stages),
             take(1)
           )
+          .pipe(takeUntil(this.unsubscribe$))
           .subscribe(project => {
             this.currentSequence = null;
             this.selectedStage = null;
@@ -114,8 +115,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
               const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
+              let stage = params.eventId ? root.traces.find(t => t.id === params.eventId).getStage() : params.stage;
+              let eventId = params.eventId;
               if (root) {
-                this.selectSequence({root, stage: params.stage});
+                this.selectSequence({ root, stage, eventId });
               } else {
                 this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
               }
@@ -129,12 +132,13 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  selectSequence(event: {root: Root, stage: string}): void {
-    if (event.stage) {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', event.stage]);
+  selectSequence(event: {root: Root, stage: string, eventId: string}): void {
+    if(event.eventId) {
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'event', event.eventId]);
       this.location.go(routeUrl.toString());
     } else {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext]);
+      let stage = event.stage || event.root.getStages().pop();
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', stage]);
       this.location.go(routeUrl.toString());
     }
 
@@ -147,6 +151,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this._tracesTimer.unsubscribe();
     if(moment().subtract(1, 'day').isBefore(root.time)) {
       this._tracesTimer = timer(0, this._tracesTimerInterval*1000)
+        .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
           this.dataService.loadTraces(root);
         });
@@ -229,5 +234,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this._tracesTimer.unsubscribe();
   }
 }
