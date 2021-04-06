@@ -6,6 +6,8 @@ const {execSync} = require('child_process');
 
 const apiRouter = require('./api');
 const sessionInit = require('./user/session').initialize;
+const isAuthenticated = require('./user/session').isAuthenticated;
+const useRouter = require('./user').router;
 
 const app = express();
 let apiUrl = process.env.API_URL;
@@ -40,19 +42,25 @@ app.use(cookieParser());
 
 let authType;
 
-// todo : This needs to be set as a complete authentication mechanism
 if (process.env.OAUTH_ENABLED === 'true') {
   authType = "OAUTH";
+
+  // Initialise session middleware
   sessionInit(app);
 
-  // todo : handle by session
-  app.use('/', (req, resp, next) => {
-    req.session.authenticated = false;
+  // Register user router
+  app.use(useRouter);
+
+  // Authentication filter for API requests
+  app.use('/api', (req, resp, next) => {
+    if (!isAuthenticated(req)) {
+      resp.status(401).send('Unauthorized');
+      return;
+    }
     return next();
   });
-}
 
-if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
+} else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
   authType = 'BASIC';
 
   console.error("Installing Basic authentication - please check environment variables!");

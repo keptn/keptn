@@ -4,14 +4,20 @@ const expressSession = require('express-session');
 const memoryStore = require('memorystore')(expressSession);
 const random = require('crypto-random-string');
 
-const CHECK_PERIOD = 1800000; // check every 30 minutes
-const SESSION_TIME = 3600000; // max age is 60 minutes
-const COOKIE_LENGTH = 20;
+const CHECK_PERIOD = 600000; // check every 10 minutes
+const SESSION_TIME = 1200000; // max age is 20 minutes
+const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
 
-const SESSION_SECRET = random({length: 50});
+const SESSION_SECRET = random({length: 200});
 
+
+/**
+ * Uses a session cookie backed by in-memory cookies store.
+ *
+ * Cookie store is a LRU cache, hence session removal will occur when there are stale instances.
+ */
 const sessionConfig = {
   cookie: {
     path: '/',
@@ -32,6 +38,9 @@ const sessionConfig = {
   }),
 }
 
+/**
+ * Initialize session middleware for the application
+ */
 function initialize(app) {
   console.log('Enabling sessions for bridge.');
 
@@ -55,4 +64,18 @@ function initialize(app) {
   app.use(router);
 }
 
+/**
+ * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
+ */
+function isAuthenticated(req) {
+  if (req.session.authenticated) {
+    return true;
+  }
+
+  req.session.authenticated = false;
+  return false;
+}
+
+
 exports.initialize = initialize;
+exports.isAuthenticated = isAuthenticated;
