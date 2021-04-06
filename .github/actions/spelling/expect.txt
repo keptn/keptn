@@ -30,7 +30,6 @@ apps
 argjson
 args
 Arial
-asaskevich
 asc
 Assertf
 atob
@@ -182,6 +181,7 @@ Docu
 dominikmessner
 dompurify
 downlevel
+Downloader
 dpl
 dracula
 dropdown
@@ -241,6 +241,7 @@ featuretoggle
 filepath
 filesystem
 filetype
+fileutils
 Firefox
 firststage
 flagext
@@ -296,7 +297,6 @@ goreportcard
 GOTRACEBACK
 goutils
 goutilsmodels
-govalidator
 gpg
 grabnerandi
 grep
@@ -330,6 +330,7 @@ http
 httprequest
 HTTPSTATUS
 httptest
+httputils
 hyperv
 IChart
 ico
@@ -434,6 +435,7 @@ lastversioncheck
 lcovonly
 Ldate
 ldflags
+leafnode
 len
 libc
 libnpx

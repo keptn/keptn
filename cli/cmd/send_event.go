@@ -18,8 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/keptn/keptn/cli/pkg/file"
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
@@ -28,8 +27,6 @@ import (
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
-
-const timeout = 60
 
 var eventFilePath *string
 
@@ -51,13 +48,13 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 		if err != nil {
 			return errors.New(authErrorMsg)
 		}
-		eventString, err := file.ReadFile(*eventFilePath)
+		eventString, err := fileutils.ReadFile(*eventFilePath)
 		if err != nil {
 			return err
 		}
 
 		apiEvent := apimodels.KeptnContextExtendedCE{}
-		err = json.Unmarshal([]byte(eventString), &apiEvent)
+		err = json.Unmarshal(eventString, &apiEvent)
 		if err != nil {
 			return fmt.Errorf("Failed to map event to API event model. %s", err.Error())
 		}
@@ -86,12 +83,12 @@ In addition, the payload of the CloudEvent needs to follow the Keptn spec (https
 }
 
 func doSendEventPreRunChecks() error {
-	eventString, err := file.ReadFile(*eventFilePath)
+	eventString, err := fileutils.ReadFile(*eventFilePath)
 	if err != nil {
 		return err
 	}
 	var body interface{}
-	return json.Unmarshal([]byte(eventString), &body)
+	return json.Unmarshal(eventString, &body)
 }
 
 func init() {

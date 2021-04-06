@@ -28,6 +28,7 @@ type newArtifactStruct struct {
 	Tag       *string            `json:"tag"`
 	Sequence  *string            `json:"sequence"`
 	Labels    *map[string]string `json:"labels"`
+	Values    *[]string          `json:"values"`
 	Watch     *bool
 	WatchTime *int
 	Output    *string
@@ -66,6 +67,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			WatchTime: newArtifact.WatchTime,
 			Output:    newArtifact.Output,
 			Labels:    newArtifact.Labels,
+			Values:    newArtifact.Values,
 		}
 		return doTriggerDeliveryPreRunCheck(delivery)
 	},
@@ -81,6 +83,7 @@ For pulling an image from a private registry, we would like to refer to the Kube
 			WatchTime: newArtifact.WatchTime,
 			Output:    newArtifact.Output,
 			Labels:    newArtifact.Labels,
+			Values:    newArtifact.Values,
 		}
 		return doTriggerDelivery(delivery)
 	},
@@ -112,6 +115,8 @@ func init() {
 	newArtifactCmd.MarkFlagRequired("sequence")
 
 	newArtifact.Labels = newArtifactCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
+
+	newArtifact.Values = newArtifactCmd.Flags().StringSlice("values", []string{}, "Values to use for the new artifact to be delivered")
 
 	newArtifact.Output = AddOutputFormatFlag(newArtifactCmd)
 	newArtifact.Watch = AddWatchFlag(newArtifactCmd)
