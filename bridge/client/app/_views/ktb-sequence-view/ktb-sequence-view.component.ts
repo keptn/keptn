@@ -70,7 +70,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   };
   private sequenceFilters = {};
   private project: Project;
-  private loading = false;
 
   private _tracesTimerInterval = 10;
   private _tracesTimer: Subscription = Subscription.EMPTY;
@@ -117,8 +116,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
               if (root) {
                 this.selectSequence({root, stage: params.stage});
-              } else if (!this.loading) {
-                this.loading = true;
+              } else {
                 this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
               }
             }

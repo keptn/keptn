@@ -27,5 +27,6 @@ ktb-event-item.focused {
 }
 
 dt-quick-filter dt-drawer{
-  overflow-x: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

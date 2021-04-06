@@ -184,28 +184,26 @@ export class DataService {
   }
 
   public loadOldRoots(project: Project, fromRoot?: Root) {
-    if (project.sequences.length >= this.DEFAULT_SEQUENCE_PAGE_SIZE) {
-      this.apiService.getRoots(project.projectName, fromRoot ? this.MAX_SEQUENCE_PAGE_SIZE : this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE, null, fromRoot?.time ? new Date(fromRoot.time).toISOString() : null, new Date(project.sequences[project.sequences.length - 1].time).toISOString()).pipe(
-        map(response => response.body.events || []),
-        mergeMap((roots) => this.rootMapper(roots))
-      ).subscribe((roots: Root[]) => {
-        if (roots.length !== 0 || fromRoot) {
-          if (!fromRoot && roots.length < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
-            project.allSequencesLoaded = true;
-          }
-          project.sequences = [...(project.sequences || []), ...(roots || []).sort(DateUtil.compareTraceTimesAsc), ...(fromRoot ? [fromRoot] : [])];
-          project.stages.forEach(stage => this.stageMapper(stage, project));
-          this._roots.next(project.sequences);
+    this.apiService.getRoots(project.projectName, fromRoot ? this.MAX_SEQUENCE_PAGE_SIZE : this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE, null, fromRoot?.time ? new Date(fromRoot.time).toISOString() : null, new Date(project.sequences[project.sequences.length - 1].time).toISOString()).pipe(
+      map(response => response.body.events || []),
+      mergeMap((roots) => this.rootMapper(roots))
+    ).subscribe((roots: Root[]) => {
+      if (roots.length !== 0 || fromRoot) {
+        if (!fromRoot && roots.length < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
+          project.allSequencesLoaded = true;
         }
-      });
-    }
+        project.sequences = [...(project.sequences || []), ...(roots || []), ...(fromRoot ? [fromRoot] : [])].sort(DateUtil.compareTraceTimesAsc);
+        project.stages.forEach(stage => this.stageMapper(stage, project));
+        this._roots.next(project.sequences);
+      }
+    });
   }
 
   private getRoot(project: Project, shkeptncontext: string): Observable<Root> {
     return this.apiService.getRoots(project.projectName, 1, null, null, null, shkeptncontext).pipe(
       map(response => response.body.events || []),
       switchMap(roots => this.rootMapper(roots).pipe(
-        map(roots => roots.pop())
+        map(sequences => sequences.pop())
       ))
     )
   }
