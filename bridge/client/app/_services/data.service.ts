@@ -185,14 +185,14 @@ export class DataService {
       map(response => response.body.events || []),
       mergeMap((roots) => this.rootMapper(roots))
     ).subscribe((roots: Root[]) => {
+      if (!fromRoot && roots.length < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
+        project.allSequencesLoaded = true;
+      }
       if (roots.length !== 0 || fromRoot) {
-        if (!fromRoot && roots.length < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
-          project.allSequencesLoaded = true;
-        }
         project.sequences = [...(project.sequences || []), ...(roots || []), ...(fromRoot ? [fromRoot] : [])].sort(DateUtil.compareTraceTimesAsc);
         project.stages.forEach(stage => this.stageMapper(stage, project));
-        this._roots.next(project.sequences);
       }
+      this._roots.next(project.sequences);
     });
   }
 

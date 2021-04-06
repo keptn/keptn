@@ -133,12 +133,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   selectSequence(event: {root: Root, stage: string, eventId: string}): void {
-    if(event.eventId) {
+    if (event.eventId) {
       const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'event', event.eventId]);
       this.location.go(routeUrl.toString());
     } else {
-      let stage = event.stage || event.root.getStages().pop();
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', stage]);
+      const stage = event.stage || event.root.getStages().pop();
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, ...(stage ? ['stage', stage] : [])]);
       this.location.go(routeUrl.toString());
     }
 
