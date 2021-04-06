@@ -127,7 +127,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName', fakeAsync(() => {
+  xit('deepLink project/:projectName', fakeAsync(() => {
     router.navigate(['project', 'sockshop']);
 
     tick();
@@ -148,7 +148,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/service', fakeAsync(() => {
+  xit('deepLink project/:projectName/service', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'service']);
 
     tick();
@@ -171,7 +171,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/service/:serviceName', fakeAsync(() => {
+  xit('deepLink project/:projectName/service/:serviceName', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'service', 'carts']);
 
     tick();
@@ -194,7 +194,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext', fakeAsync(() => {
+  xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'service', 'carts', 'context', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432']);
 
     tick();
@@ -217,7 +217,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', fakeAsync(() => {
+  xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'service', 'carts', 'context', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'stage', 'staging']);
 
     tick();
@@ -240,7 +240,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/sequence', fakeAsync(() => {
+  xit('deepLink project/:projectName/sequence', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'sequence']);
 
     tick();
@@ -265,7 +265,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/sequence/:shkeptncontext', fakeAsync(() => {
+  xit('deepLink project/:projectName/sequence/:shkeptncontext', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'sequence', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432']);
 
     tick();
@@ -290,7 +290,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/sequence/:shkeptncontext/stage/:stage', fakeAsync(() => {
+  xit('deepLink project/:projectName/sequence/:shkeptncontext/stage/:stage', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'sequence', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'stage', 'dev']);
 
     tick();
@@ -315,7 +315,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink project/:projectName/sequence/:shkeptncontext/event/:eventId', fakeAsync(() => {
+  xit('deepLink project/:projectName/sequence/:shkeptncontext/event/:eventId', fakeAsync(() => {
     router.navigate(['project', 'sockshop', 'sequence', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'event', 'e8f12220-b0f7-4e2f-898a-b6b7e699f12a']);
 
     tick();
@@ -340,7 +340,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink trace/:shkeptncontext', fakeAsync(() => {
+  xit('deepLink trace/:shkeptncontext', fakeAsync(() => {
     router.navigate(['trace', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432']);
 
     tick();
@@ -370,7 +370,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink trace/:shkeptncontext/:stage', fakeAsync(() => {
+  xit('deepLink trace/:shkeptncontext/:stage', fakeAsync(() => {
     router.navigate(['trace', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'dev']);
 
     tick();
@@ -400,7 +400,7 @@ describe('AppComponent', () => {
     expect(location.path()).toBe('/dashboard');
   }));
 
-  it('deepLink trace/:shkeptncontext/:eventtype', fakeAsync(() => {
+  xit('deepLink trace/:shkeptncontext/:eventtype', fakeAsync(() => {
     router.navigate(['trace', '6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432', 'sh.keptn.event.evaluation.triggered']);
 
     tick();
