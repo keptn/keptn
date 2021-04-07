@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.40.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.9.0 // indirect
-	github.com/cloudevents/sdk-go/v2 v2.3.1
+	github.com/cloudevents/sdk-go/v2 v2.4.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/strfmt v0.20.0
 	github.com/go-openapi/validate v0.20.2 // indirect
@@ -14,7 +14,6 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
-	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
