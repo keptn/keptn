@@ -63,14 +63,14 @@ func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {
 
 func (h *HandlerBase) getCustomDeploymentURLs(chart *chart.Chart) (string, string) {
 	customDeploymentURIPublic := ""
-	customDeploymentURIlocal := ""
+	customDeploymentURILocal := ""
 
 	if chart.Values[CustomDeploymentURIPublicValuesProperty] != nil {
 		customDeploymentURIPublic = chart.Values[CustomDeploymentURIPublicValuesProperty].(string)
 	}
 
 	if chart.Values[CustomDeploymentURILocalValuesProperty] != nil {
-		customDeploymentURIlocal = chart.Values[CustomDeploymentURILocalValuesProperty].(string)
+		customDeploymentURILocal = chart.Values[CustomDeploymentURILocalValuesProperty].(string)
 	}
 
 	// sanity check on values
@@ -78,11 +78,11 @@ func (h *HandlerBase) getCustomDeploymentURLs(chart *chart.Chart) (string, strin
 		customDeploymentURIPublic = ""
 	}
 
-	if customDeploymentURIlocal == "null" || customDeploymentURIlocal == "nil" {
-		customDeploymentURIlocal = ""
+	if customDeploymentURILocal == "null" || customDeploymentURILocal == "nil" {
+		customDeploymentURILocal = ""
 	}
 
-	return customDeploymentURIPublic, customDeploymentURIlocal
+	return customDeploymentURIPublic, customDeploymentURILocal
 }
 
 // HandleError logs the error and sends a finished-event
