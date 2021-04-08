@@ -7,7 +7,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/validate v0.19.5 // indirect
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.5.0
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.2
