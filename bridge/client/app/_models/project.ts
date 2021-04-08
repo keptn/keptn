@@ -107,7 +107,12 @@ export class Project {
         if (deployment) {
           deployment.stages.push(stage.stageName);
         } else {
-          const deployment = new Deployment(image, service.serviceName, stage.stageName);
+          const deployment = Deployment.fromJSON({
+            version: image,
+            service: service.serviceName,
+            stages: [stage.stageName]
+          });
+
           deployments.push(deployment);
         }
       }
