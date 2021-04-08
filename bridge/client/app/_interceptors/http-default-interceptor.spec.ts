@@ -33,5 +33,8 @@ describe(`HttpDefaultInterceptor`, () => {
     expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
     expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
     expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
+    expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
+    expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
+    expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
   });
 });
