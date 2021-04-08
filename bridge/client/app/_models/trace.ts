@@ -6,8 +6,7 @@ import {ApprovalStates} from "./approval-states";
 import {EVENT_LABELS} from "./event-labels";
 import {EVENT_ICONS} from "./event-icons";
 import {ProblemStates} from "./problem-states";
-import {DateUtil} from "../_utils/date.utils";
-
+import {DateUtil} from '../_utils/date.utils';
 
 const DEFAULT_ICON = "information";
 

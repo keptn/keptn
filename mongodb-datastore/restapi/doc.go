@@ -13,7 +13,6 @@
 //    - application/json
 //
 //  Produces:
-//    - application/cloudevents+json
 //    - application/json
 //
 // swagger:meta

@@ -25,9 +25,6 @@ func init() {
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http"
-  ],
   "swagger": "2.0",
   "info": {
     "title": "mongodb-datastore",
@@ -59,6 +56,12 @@ func init() {
             "type": "string",
             "description": "From time to fetch keptn cloud events",
             "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Before time to fetch keptn cloud events",
+            "name": "beforeTime",
             "in": "query"
           },
           {
@@ -306,9 +309,6 @@ func init() {
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http"
-  ],
   "swagger": "2.0",
   "info": {
     "title": "mongodb-datastore",
@@ -340,6 +340,12 @@ func init() {
             "type": "string",
             "description": "From time to fetch keptn cloud events",
             "name": "fromTime",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Before time to fetch keptn cloud events",
+            "name": "beforeTime",
             "in": "query"
           },
           {
