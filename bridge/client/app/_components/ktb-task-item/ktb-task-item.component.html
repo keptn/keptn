@@ -81,11 +81,12 @@
     </table>
   </div>
   <div class="sub-task-item pt-2 pb-2" #subTaskRef *ngFor="let subTask of task.traces">
-    <div fxLayout="row">
-      <div fxFlex>
+    <ktb-task-item *ngIf="subTask.traces.length > 0; else taskLine" [task]="subTask"></ktb-task-item>
+    <div fxLayout="row" #taskLine>
+      <div class="overflow-auto" fxFlex>
         <p class="m-0" *ngIf="!subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> started</p>
         <p class="m-0" *ngIf="subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> finished with result <span class="italic" [textContent]="subTask.data.result"></span></p>
-        <pre class="m-0 small" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></pre>
+        <pre class="m-0 small overflow-auto" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></pre>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
         <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event, subTask)"><dt-icon name="coding"></dt-icon></button>

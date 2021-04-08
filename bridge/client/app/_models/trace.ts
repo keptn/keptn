@@ -325,6 +325,13 @@ class Trace {
     return this.data.deployment.deploymentURIsPublic[0];
   }
 
+  findTrace(comp) {
+    if(comp(this))
+      return this;
+    else
+      return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
+  }
+
   static fromJSON(data: any) {
     if(data instanceof Trace)
       return data;
@@ -338,24 +345,25 @@ class Trace {
       .map(trace => Trace.fromJSON(trace))
       .sort(DateUtil.compareTraceTimesDesc);
 
-    return traces.reduce((result: Trace[], trace: Trace) => {
-      const trigger = traces.find(t => {
-        if (trace.triggeredid) {
-          return t.id === trace.triggeredid;
-        } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-          return t.isProblem() && !t.isProblemResolvedOrClosed();
-        } else if (!t.triggeredid && trace.isFinished()) {
-          return t.type.slice(0, -8) === trace.type.slice(0, -9);
-        }
-      });
+    return traces.reduce((seq: Trace[], trace: Trace) => {
+      let trigger: Trace = null;
+      if(trace.triggeredid) {
+        trigger = traces.reduce((trigger, t) => trigger || t.findTrace((tt) => tt.id == trace.triggeredid), null);
+      } else if(trace.isProblem() && trace.isProblemResolvedOrClosed()) {
+        trigger = traces.reduce((trigger, t) => trigger || t.findTrace((tt) => tt.isProblem() && !tt.isProblemResolvedOrClosed()), null);
+      } else if(trace.isFinished()) {
+        trigger = traces.reduce((trigger, t) => trigger || t.findTrace((tt) => !tt.triggeredid && tt.type.slice(0, -8) === trace.type.slice(0, -9)), null);
+      }
 
       if (trigger) {
         trigger.traces.push(trace);
+      } else if (trace.type.split(".").length == 6) { //is this the way to determine a "sequence"
+        seq.push(trace);
       } else {
-        result.push(trace);
+        seq[seq.length-1].traces.push(trace);
       }
 
-      return result;
+      return seq;
     }, []);
   }
 }
