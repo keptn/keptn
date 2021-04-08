@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 
 	datastoremodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -66,41 +67,31 @@ func Test_createOrApplyKeptnContext(t *testing.T) {
 			got := createOrApplyKeptnContext(tt.args.eventKeptnContext)
 
 			_, err := uuid.Parse(got)
-
-			if err != nil {
-				t.Errorf("createOrApplyKeptnContext(): generated value %v is not a valid UUID", got)
-			}
+			require.NoError(t, err)
 
 			if tt.keepProvided {
-				if got != tt.args.eventKeptnContext {
-					t.Errorf("createOrApplyKeptnContext() = %v, want %v", got, tt.args.eventKeptnContext)
-				}
-			} else if !tt.keepProvided && got == tt.args.eventKeptnContext {
-				t.Errorf("createOrApplyKeptnContext() = %v, want != %v", got, tt.args.eventKeptnContext)
+				require.Equal(t, tt.args.eventKeptnContext, got)
+			} else {
+				require.NotEqual(t, tt.args.eventKeptnContext, got)
 			}
 
 			got2 := createOrApplyKeptnContext(tt.args.eventKeptnContext)
 
 			_, err = uuid.Parse(got2)
-
-			if err != nil {
-				t.Errorf("createOrApplyKeptnContext(): generated value %v is not a valid UUID", got2)
-			}
+			require.NoError(t, err)
 
 			if tt.idempotent {
-				if got != got2 {
-					t.Errorf("createOrApplyKeptnContext() = %v, want = %v", got2, got)
-				}
-			} else if !tt.idempotent && got == got2 {
-				t.Errorf("createOrApplyKeptnContext() = %v, want != %v", got2, got)
+				require.Equal(t, got, got2)
+			} else {
+				require.NotEqual(t, got, got2)
 			}
-
 		})
 	}
 }
 
 func TestPostEventHandlerFunc(t *testing.T) {
-	_ = os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
+	err := os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
+	require.NoError(t, err)
 
 	returnedStatus := 200
 
@@ -113,7 +104,8 @@ func TestPostEventHandlerFunc(t *testing.T) {
 	)
 	defer ts.Close()
 
-	_ = os.Setenv("EVENTBROKER_URI", ts.URL)
+	err = os.Setenv("EVENTBROKER_URI", ts.URL)
+	require.NoError(t, err)
 
 	type args struct {
 		params    event.PostEventParams
@@ -149,7 +141,6 @@ func TestPostEventHandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
 		t.Run(tt.name, func(t *testing.T) {
 			returnedStatus = tt.statusFromEventBroker
 			got := PostEventHandlerFunc(tt.args.params, tt.args.principal)
@@ -171,7 +162,6 @@ func stringp(s string) *string {
 }
 
 func TestGetEventHandlerFunc(t *testing.T) {
-
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -202,7 +192,9 @@ func TestGetEventHandlerFunc(t *testing.T) {
 	)
 	defer ts.Close()
 
-	_ = os.Setenv("DATASTORE_URI", ts.URL)
+	err := os.Setenv("DATASTORE_URI", ts.URL)
+	require.NoError(t, err)
+
 	type args struct {
 		params    event.GetEventParams
 		principal *models.Principal
@@ -258,11 +250,10 @@ func Test_getDatastoreURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("DATASTORE_URI", tt.datastoreURLEnv)
+			err := os.Setenv("DATASTORE_URI", tt.datastoreURLEnv)
+			require.NoError(t, err)
 
-			if got := utils.GetDatastoreURL(); got != tt.want {
-				t.Errorf("getDatastoreURL() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.want, utils.GetDatastoreURL())
 		})
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/stretchr/testify/require"
 
 	"github.com/keptn/keptn/api/utils"
 )
@@ -33,9 +34,7 @@ func Test_sanitizeURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := utils.SanitizeURL(tt.in); got != tt.want {
-				t.Errorf("sanitizeURL() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.want, utils.SanitizeURL(tt.in))
 		})
 	}
 }
@@ -45,7 +44,5 @@ func verifyHTTPResponse(got middleware.Responder, expectedStatus int, t *testing
 	recorder := &httptest.ResponseRecorder{}
 	got.WriteResponse(recorder, producer)
 
-	if recorder.Result().StatusCode != expectedStatus {
-		t.Errorf("Returned HTTP status = %v, want %v", recorder.Result().StatusCode, expectedStatus)
-	}
+	require.Equal(t, expectedStatus, recorder.Result().StatusCode)
 }
