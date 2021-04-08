@@ -5,7 +5,7 @@ ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/api
 
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
@@ -32,7 +32,7 @@ RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/
 
 
 # Build the command inside the container.
-# (You may fetch or manage dependencies here, 
+# (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
