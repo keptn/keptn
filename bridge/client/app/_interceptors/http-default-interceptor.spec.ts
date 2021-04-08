@@ -30,5 +30,8 @@ describe(`HttpDefaultInterceptor`, () => {
     const httpRequest = httpMock.expectOne(`${service.baseUrl}/controlPlane/v1/project?disableUpstreamSync=true`);
     expect(httpRequest.request.headers.has('Content-Type')).toEqual(true);
     expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
+    expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
+    expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
+    expect(httpRequest.request.headers.get('Content-Type')).toEqual('application/json');
   });
 });
