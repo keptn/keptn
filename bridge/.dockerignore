@@ -1,5 +1,6 @@
 .vscode/
 .idea/
 deploy/
+dist/
 Dockerfile
-node_modules/
+**/node_modules

@@ -11,7 +11,10 @@ describe('KtbUniformViewComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ KtbUniformViewComponent ],
-      imports: [AppModule, HttpClientTestingModule]
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ]
     })
     .compileComponents();
   }));

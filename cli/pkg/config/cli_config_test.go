@@ -1,14 +1,13 @@
 package config
 
 import (
+	"github.com/keptn/go-utils/pkg/common/fileutils"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/keptn/keptn/cli/pkg/file"
 )
 
 const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-02-20T00:00:00Z","current-context":""}`
@@ -62,7 +61,7 @@ func TestStoreCLIConfig(t *testing.T) {
 		t.Errorf("Unexpected error %v", err)
 	}
 
-	data, err := file.ReadFile(mng.CLIConfigPath)
+	data, err := fileutils.ReadFileAsStr(mng.CLIConfigPath)
 	if data != testConfig {
 		t.Errorf("Different config stored")
 	}

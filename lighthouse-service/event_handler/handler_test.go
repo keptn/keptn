@@ -2,6 +2,7 @@ package event_handler
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -14,6 +15,8 @@ import (
 
 func TestNewEventHandler(t *testing.T) {
 	incomingEvent := cloudevents.NewEvent()
+	incomingEvent.SetID("my-id")
+	incomingEvent.SetSource("my-source")
 
 	serviceName := "lighthouse-service"
 	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
@@ -56,6 +59,7 @@ func TestNewEventHandler(t *testing.T) {
 				Event:        incomingEvent,
 				KeptnHandler: keptnHandler,
 				HTTPClient:   &http.Client{},
+				EventStore:   keptnHandler.EventHandler,
 			},
 			wantErr: false,
 		},
@@ -87,6 +91,7 @@ func TestNewEventHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.event.SetType(tt.eventType)
+			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
 			got, err := NewEventHandler(tt.args.event, tt.args.logger)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)

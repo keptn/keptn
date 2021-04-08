@@ -30,7 +30,6 @@ apps
 argjson
 args
 Arial
-asaskevich
 asc
 Assertf
 atob
@@ -159,6 +158,8 @@ Davila
 dbg
 DDTHH
 Debian
+Debugf
+ded
 deletecollection
 depd
 dependabot
@@ -181,6 +182,7 @@ Docu
 dominikmessner
 dompurify
 downlevel
+Downloader
 dpl
 dracula
 dropdown
@@ -189,9 +191,11 @@ dtx
 dvcm
 dynatrace
 dynatraceheader
+dynatracelabs
 EAP
 easytravel
 eb
+ebe
 ECDHE
 ECDSA
 echosequence
@@ -226,6 +230,7 @@ eventflow
 eventrepo
 eventselector
 eventsender
+eventtype
 Evts
 exe
 exechelper
@@ -240,6 +245,7 @@ featuretoggle
 filepath
 filesystem
 filetype
+fileutils
 Firefox
 firststage
 flagext
@@ -295,8 +301,8 @@ goreportcard
 GOTRACEBACK
 goutils
 goutilsmodels
-govalidator
 gpg
+gpu
 grabnerandi
 grep
 grpc
@@ -329,6 +335,7 @@ http
 httprequest
 HTTPSTATUS
 httptest
+httputils
 hyperv
 IChart
 ico
@@ -339,6 +346,8 @@ IDURL
 idx
 IEvaluation
 IEvent
+IHelper
+IKeptn
 img
 IMPL
 INamespace
@@ -363,6 +372,7 @@ istio
 istioctl
 itf
 Itoa
+IUser
 jasminewd
 javascript
 JCHECK
@@ -418,6 +428,7 @@ keygen
 keyvalue
 Kibana
 kinbiko
+Kirdock
 kjhtml
 Knative
 kreuzberger
@@ -433,6 +444,7 @@ lastversioncheck
 lcovonly
 Ldate
 ldflags
+leafnode
 len
 libc
 libnpx
@@ -472,6 +484,7 @@ mholt
 microk
 microservice
 microsoft
+Microtasks
 middleware
 minikube
 minimist
@@ -714,6 +727,7 @@ simplenode
 simplenodeservice
 simpleproject
 sirupsen
+sjb
 skaffold
 slackbot
 sli

@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {filter, map, mergeMap, take, toArray} from "rxjs/operators";
+import {map, mergeMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -22,24 +21,18 @@ import {Deployment} from '../_models/Deployment';
 })
 export class DataService {
 
-  private _projects = new BehaviorSubject<Project[]>(null);
-  private _taskNames = new BehaviorSubject<string[]>([]);
-  private _roots = new BehaviorSubject<Root[]>(null);
-  private _openApprovals = new BehaviorSubject<Trace[]>([]);
-  private _keptnInfo = new BehaviorSubject<any>(null);
-  private _rootsLastUpdated: Object = {};
-  private _tracesLastUpdated: Object = {};
+  protected _projects = new BehaviorSubject<Project[]>(null);
+  protected _taskNames = new BehaviorSubject<string[]>([]);
+  protected _roots = new BehaviorSubject<Root[]>(null);
+  protected _traces = new BehaviorSubject<Trace[]>(null);
+  protected _openApprovals = new BehaviorSubject<Trace[]>([]);
+  protected _keptnInfo = new BehaviorSubject<any>(null);
+  protected _rootsLastUpdated: Object = {};
+  protected _tracesLastUpdated: Object = {};
 
-  private _evaluationResults = new Subject();
+  protected _evaluationResults = new Subject();
 
-  constructor(private http: HttpClient, private apiService: ApiService) {
-    this.loadKeptnInfo();
-    this.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(take(1))
-      .subscribe(keptnInfo => {
-        this.loadProjects();
-      });
+  constructor(private apiService: ApiService) {
   }
 
   get projects(): Observable<Project[]> {
@@ -58,6 +51,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get traces(): Observable<Trace[]> {
+    return this._traces.asObservable();
   }
 
   get openApprovals(): Observable<Trace[]> {
@@ -185,7 +182,7 @@ export class DataService {
                           return response.body;
                         }),
                         map(result => result.events||[]),
-                        map(this.traceMapper),
+                        map(Trace.traceMapper),
                         map(traces => ({ ...root, traces}))
                       )
                   }
@@ -225,7 +222,7 @@ export class DataService {
         map(traces => traces.map(trace => Trace.fromJSON(trace)))
       )
       .subscribe((traces: Trace[]) => {
-        root.traces = this.traceMapper([...traces||[], ...root.traces||[]]);
+        root.traces = Trace.traceMapper([...traces||[], ...root.traces||[]]);
         this.getProject(root.getProject()).pipe(take(1))
           .subscribe(project => {
             project.stages.filter(s => root.getStages().includes(s.stageName)).forEach(stage => {
@@ -242,6 +239,18 @@ export class DataService {
     return this.apiService.getDeploymentsOfService(projectName, serviceName).pipe(
       map(deployments => deployments.map(deployment => Deployment.fromJSON(deployment)))
     );
+  }
+  
+  public loadTracesByContext(shkeptncontext: string) {
+    this.apiService.getTraces(shkeptncontext)
+      .pipe(
+        map(response => response.body),
+        map(result => result.events||[]),
+        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+      )
+      .subscribe((traces: Trace[]) => {
+        this._traces.next(traces);
+      });
   }
 
   public loadEvaluationResults(event: Trace) {
@@ -293,31 +302,5 @@ export class DataService {
       .subscribe(taskNames => {
       this._taskNames.next(taskNames);
     });
-  }
-
-  private traceMapper(traces: Trace[]) {
-    traces = traces
-      .map(trace => Trace.fromJSON(trace))
-      .sort(DateUtil.compareTraceTimesDesc);
-
-    return traces.reduce((result: Trace[], trace: Trace) => {
-      const trigger = traces.find(t => {
-          if (trace.triggeredid) {
-            return t.id === trace.triggeredid;
-          } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-            return t.isProblem() && !t.isProblemResolvedOrClosed();
-          } else if (!t.triggeredid && trace.isFinished()) {
-            return t.type.slice(0, -8) === trace.type.slice(0, -9);
-          }
-      });
-
-      if (trigger) {
-        trigger.traces.push(trace);
-      } else {
-        result.push(trace);
-      }
-
-      return result;
-    }, []);
   }
 }

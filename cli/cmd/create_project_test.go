@@ -3,8 +3,8 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-test/deep"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -105,6 +105,19 @@ func errorContains(out error, want string) bool {
 }
 
 func Test_getAndParseYaml(t *testing.T) {
+
+	testShipyard := `apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata:
+  name: shipyard-sockshop
+spec:
+  stages:
+  - name: dev
+    sequences:
+    - name: artifact-delivery
+      tasks:
+      - name: evaluation`
+
 	var returnedShipyardContent string
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusOK)
@@ -127,17 +140,7 @@ func Test_getAndParseYaml(t *testing.T) {
 				arg: server.URL,
 				out: &keptnv2.Shipyard{},
 			},
-			shipyardContentFromHTTPServer: `apiVersion: spec.keptn.sh/0.2.0
-kind: Shipyard
-metadata:
-  name: shipyard-sockshop
-spec:
-  stages:
-  - name: dev
-    sequences:
-    - name: artifact-delivery
-      tasks:
-      - name: evaluation`,
+			shipyardContentFromHTTPServer: testShipyard,
 			expectedShipyard: &keptnv2.Shipyard{
 				ApiVersion: "spec.keptn.sh/0.2.0",
 				Kind:       "Shipyard",
@@ -169,15 +172,10 @@ spec:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			returnedShipyardContent = tt.shipyardContentFromHTTPServer
-			if err := getAndParseYaml(tt.args.arg, tt.args.out); (err != nil) != tt.wantErr {
-				t.Errorf("getAndParseYaml() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if diff := deep.Equal(tt.expectedShipyard, tt.args.out); len(diff) > 0 {
-				t.Error("Did not get expected Shipyard")
-				for _, d := range diff {
-					t.Log(d)
-				}
-			}
+			shipyard, err := retrieveShipyard(tt.args.arg)
+			assert.Equal(t, string(shipyard), testShipyard)
+			assert.Equal(t, tt.wantErr, err != nil)
+
 		})
 	}
 }

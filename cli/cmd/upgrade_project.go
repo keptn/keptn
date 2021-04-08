@@ -169,13 +169,12 @@ For more information about upgrading projects, go to [Manage Keptn](https://kept
 }
 
 func isShipyardUpgraded(resource *apimodels.Resource) (bool, error) {
-	v2Shipyard := &keptnv2.Shipyard{}
-
-	if err := yaml.Unmarshal([]byte(resource.ResourceContent), v2Shipyard); err != nil {
+	shipyard, err := keptnv2.DecodeShipyardYAML([]byte(resource.ResourceContent))
+	if err != nil {
 		return false, err
 	}
 
-	if strings.Contains(v2Shipyard.ApiVersion, *upgradeProjectParams.ToVersion) {
+	if strings.Contains(shipyard.ApiVersion, *upgradeProjectParams.ToVersion) {
 		return true, nil
 	}
 	return false, nil

@@ -1,4 +1,4 @@
-FROM node:10-alpine as builder
+FROM node:10-alpine as angularBuilder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -6,7 +6,7 @@ ENV VERSION="${version}"
 # Prepare app directory
 WORKDIR /usr/src/app
 
-# copy package.json only to install dependencies first
+# copy package.json only to install angular dependencies first
 COPY package.json package-lock.json /usr/src/app/
 RUN npm install
 
@@ -26,18 +26,18 @@ ENV VERSION="${version}"
 ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local"
 ENV API_TOKEN ""
 
-RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
-
-# Prepare app directory
-WORKDIR /usr/src/app
-
-# install additional dependencies for running the app
-RUN npm install express@4.17.1 depd@1.1.2 cookie-parser@1.4.4 morgan@1.9.1 axios@0.19.2
+# copy angular output from angularBuilder
+COPY --from=angularBuilder /usr/src/app/dist /usr/src/app/dist
 
 # copy source
 COPY . /usr/src/app
-# copy dist from builder
-COPY --from=builder /usr/src/app/dist /usr/src/app/dist
+
+# install additional npm dependencies for express server
+WORKDIR /usr/src/app/server
+RUN npm install
+WORKDIR /usr/src/app
+
+RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
 # Set user
 USER myuser

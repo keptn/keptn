@@ -27,14 +27,17 @@ apiGatewayNginx:
 remediationService:
   image:
     repository: docker.io/keptn/remediation-service
+    tag: ""
 
 apiService:
   image:
     repository: docker.io/keptn/api
+    tag: ""
 
 bridge:
   image:
     repository: docker.io/keptn/bridge2
+    tag: ""
   cliDownloadLink: null
   integrationsPageLink: null
   secret:
@@ -48,18 +51,22 @@ bridge:
 distributor:
   image:
     repository: docker.io/keptn/distributor
+    tag: ""
 
 shipyardController:
   image:
     repository: docker.io/keptn/shipyard-controller
+    tag: ""
 
 secretService:
   image:
     repository: docker.io/keptn/secret-service
+    tag: ""
 
 configurationService:
   image:
     repository: docker.io/keptn/configuration-service
+    tag: ""
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
   storageClass: null
@@ -67,15 +74,19 @@ configurationService:
 mongodbDatastore:
   image:
     repository: docker.io/keptn/mongodb-datastore
+    tag: ""
 
 lighthouseService:
   image:
     repository: docker.io/keptn/lighthouse-service
+    tag: ""
 
 statisticsService:
   image:
     repository: docker.io/keptn/statistics-service
+    tag: ""
 
 approvalService:
   image:
     repository: docker.io/keptn/approval-service
+    tag: ""
