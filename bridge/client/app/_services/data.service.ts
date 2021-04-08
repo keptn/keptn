@@ -14,7 +14,7 @@ import {DateUtil} from "../_utils/date.utils";
 
 import * as moment from 'moment';
 import {KeptnService} from '../_models/keptn-service';
-import {Deployment} from '../_models/Deployment';
+import {Deployment} from '../_models/deployment';
 
 @Injectable({
   providedIn: 'root'
@@ -240,7 +240,7 @@ export class DataService {
       map(deployments => deployments.map(deployment => Deployment.fromJSON(deployment)))
     );
   }
-  
+
   public loadTracesByContext(shkeptncontext: string) {
     this.apiService.getTraces(shkeptncontext)
       .pipe(

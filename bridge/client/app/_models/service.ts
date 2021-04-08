@@ -1,6 +1,6 @@
 import {Root} from "./root";
 import {Trace} from "./trace";
-import { Deployment } from './Deployment';
+import { Deployment } from './deployment';
 
 export class Service {
   serviceName: string;

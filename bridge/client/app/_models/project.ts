@@ -3,7 +3,7 @@ import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";
 import {Root} from "./root";
-import { Deployment } from './Deployment';
+import { Deployment } from './deployment';
 
 export class Project {
   projectName: string;
@@ -107,12 +107,7 @@ export class Project {
         if (deployment) {
           deployment.stages.push(stage.stageName);
         } else {
-          const deployment = Object.assign(new Deployment(), {
-            version: image,
-            service: service.serviceName,
-            stages: [stage.stageName]
-          });
-
+          const deployment = new Deployment(image, service.serviceName, stage.stageName);
           deployments.push(deployment);
         }
       }

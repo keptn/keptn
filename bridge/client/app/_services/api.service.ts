@@ -16,7 +16,7 @@ import {Project} from "../_models/project";
 import {KeptnService} from '../_models/keptn-service';
 import {KeptnServicesMock} from '../_models/keptn-services-mock';
 import {TaskNames} from '../_models/task-names-mock';
-import {Deployment} from '../_models/Deployment';
+import {Deployment} from '../_models/deployment';
 
 @Injectable({
   providedIn: 'root'
