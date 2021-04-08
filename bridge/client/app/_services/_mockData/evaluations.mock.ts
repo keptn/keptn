@@ -1,5 +1,5 @@
 import {Trace} from "../../_models/trace";
-import {traceData} from "./traces-mock";
+import {traceData} from "./traces.mock";
 
 const evaluationData = [
   {

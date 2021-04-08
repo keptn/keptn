@@ -14,8 +14,8 @@ import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
 import {Project} from "../_models/project";
 import {KeptnService} from '../_models/keptn-service';
-import {KeptnServicesMock} from '../_models/keptn-services-mock';
-import {TaskNames} from '../_models/task-names-mock';
+import {KeptnServicesMock} from '../_models/keptn-services.mock';
+import {TaskNames} from '../_models/task-names.mock';
 
 @Injectable({
   providedIn: 'root'
