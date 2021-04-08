@@ -15,6 +15,7 @@ import (
 
 // GetEventsURL generates an URL for the get events operation
 type GetEventsURL struct {
+	BeforeTime   *string
 	EventID      *string
 	FromTime     *string
 	KeptnContext *string
@@ -60,6 +61,14 @@ func (o *GetEventsURL) Build() (*url.URL, error) {
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
+
+	var beforeTimeQ string
+	if o.BeforeTime != nil {
+		beforeTimeQ = *o.BeforeTime
+	}
+	if beforeTimeQ != "" {
+		qs.Set("beforeTime", beforeTimeQ)
+	}
 
 	var eventIDQ string
 	if o.EventID != nil {

@@ -14,8 +14,8 @@ import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
 import {Project} from "../_models/project";
 import {KeptnService} from '../_models/keptn-service';
-import {KeptnServicesMock} from '../_models/keptn-services-mock';
-import {TaskNames} from '../_models/task-names-mock';
+import {KeptnServicesMock} from '../_models/keptn-services.mock';
+import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
 
 @Injectable({
@@ -122,12 +122,21 @@ export class ApiService {
       .get<ServiceResult>(url);
   }
 
-  public getRoots(projectName: string, serviceName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
-    let url = `${this._baseUrl}/mongodb-datastore/event?root=true&pageSize=20&project=${projectName}`;
-    if(serviceName)
+  public getRoots(projectName: string, pageSize: number, serviceName?: string, fromTime?: string, beforeTime?: string, shkeptncontext?: string): Observable<HttpResponse<EventResult>> {
+    let url = `${this._baseUrl}/mongodb-datastore/event?root=true&pageSize=${pageSize}&project=${projectName}`;
+    if (serviceName) {
       url += `&service=${serviceName}`;
-    if(fromTime)
+    }
+    if (fromTime) {
       url += `&fromTime=${fromTime}`;
+    }
+    if (beforeTime) {
+      url += `&beforeTime=${beforeTime}`;
+    }
+    if (shkeptncontext) {
+      url += `&keptnContext=${shkeptncontext}`;
+    }
+
     return this.http
       .get<EventResult>(url, { observe: 'response' });
   }

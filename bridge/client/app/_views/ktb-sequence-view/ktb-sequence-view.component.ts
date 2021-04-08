@@ -69,6 +69,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
   private sequenceFilters = {};
+  private project: Project;
 
   private _tracesTimerInterval = 10;
   private _tracesTimer: Subscription = Subscription.EMPTY;
@@ -100,19 +101,27 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             this.currentSequence = null;
             this.selectedStage = null;
+            this.project = project;
             this.updateFilterDataSource(project);
 
             this._changeDetectorRef.markForCheck();
           });
 
         this.dataService.roots
-          .pipe(takeUntil(this.unsubscribe$))
+          .pipe(
+            takeUntil(this.unsubscribe$),
+            filter(roots => !!roots)
+          )
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
-              let root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
+              const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
               let stage = params.eventId ? root.traces.find(t => t.id === params.eventId).getStage() : params.stage;
               let eventId = params.eventId;
-              this.selectSequence({ root, stage, eventId });
+              if (root) {
+                this.selectSequence({ root, stage, eventId });
+              } else {
+                this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+              }
             }
             if (roots) {
               this.updateFilterSequence(roots);
@@ -124,12 +133,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   selectSequence(event: {root: Root, stage: string, eventId: string}): void {
-    if(event.eventId) {
+    if (event.eventId) {
       const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'event', event.eventId]);
       this.location.go(routeUrl.toString());
     } else {
-      let stage = event.stage || event.root.getStages().pop();
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'stage', stage]);
+      const stage = event.stage || event.root.getStages().pop();
+      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, ...(stage ? ['stage', stage] : [])]);
       this.location.go(routeUrl.toString());
     }
 

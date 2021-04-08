@@ -56,4 +56,8 @@
       <p class="m-0 small" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
     </ktb-selectable-tile>
   </div>
+  <div fxLayout="row" fxLayoutAlign="center center">
+    <dt-loading-distractor *ngIf="loading">Loading …</dt-loading-distractor>
+    <button dt-show-more *ngIf="!loading && !project.allSequencesLoaded" (click)="loadOldSequences()">Show older sequences</button>
+  </div>
 </div>

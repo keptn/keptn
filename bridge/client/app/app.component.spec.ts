@@ -13,7 +13,7 @@ import {By} from "@angular/platform-browser";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {Location} from '@angular/common';
 import {DataService} from "./_services/data.service";
-import {MockDataService} from "./_services/mock-data.service";
+import {DataServiceMock} from "./_services/data.service.mock";
 import {Router} from "@angular/router";
 import {AppModule} from "./app.module";
 import {RouterTestingModule} from "@angular/router/testing";
@@ -23,7 +23,7 @@ describe('AppComponent', () => {
   let router: Router;
   let location: Location;
   let comp: AppComponent;
-  let mockDataService: MockDataService;
+  let mockDataService: DataServiceMock;
   let fixture: ComponentFixture<AppComponent>;
 
   beforeEach(async(() => {
@@ -35,13 +35,13 @@ describe('AppComponent', () => {
         RouterTestingModule.withRoutes(routes),
       ],
       providers: [
-        {provide: DataService, useClass: MockDataService}
+        {provide: DataService, useClass: DataServiceMock}
       ]
     }).compileComponents().then(() => {
       router = TestBed.get(Router);
       location = TestBed.get(Location);
       fixture = TestBed.createComponent(AppComponent);
-      mockDataService = TestBed.inject(MockDataService);
+      mockDataService = TestBed.inject(DataServiceMock);
       comp = fixture.componentInstance;
 
       router.initialNavigation();

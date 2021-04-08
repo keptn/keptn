@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {map, mergeMap, take, toArray} from "rxjs/operators";
+import {map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -29,6 +29,9 @@ export class DataService {
   protected _keptnInfo = new BehaviorSubject<any>(null);
   protected _rootsLastUpdated: Object = {};
   protected _tracesLastUpdated: Object = {};
+  private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
+  private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
+  private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
   protected _evaluationResults = new Subject();
 
@@ -158,53 +161,57 @@ export class DataService {
     let fromTime: Date = this._rootsLastUpdated[project.projectName];
     this._rootsLastUpdated[project.projectName] = new Date();
 
-    from(project.services).pipe(
-      mergeMap(
-        service => this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
-          .pipe(
-            map(response => {
-              let lastUpdated = moment(response.headers.get("date"));
-              let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
-              this._rootsLastUpdated[project.projectName] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
-              return response.body;
-            }),
-            map(result => result.events||[]),
-            mergeMap((roots) =>
-              from(roots).pipe(
-                mergeMap(
-                  root => {
-                    return this.apiService.getTraces(root.shkeptncontext, root.data.project)
-                      .pipe(
-                        map(response => {
-                          let lastUpdated = moment(response.headers.get("date"));
-                          let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
-                          this._tracesLastUpdated[root.shkeptncontext] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
-                          return response.body;
-                        }),
-                        map(result => result.events||[]),
-                        map(Trace.traceMapper),
-                        map(traces => ({ ...root, traces}))
-                      )
-                  }
-                ),
-                toArray()
-              )
-            ),
-            map(roots => roots.map(root => Root.fromJSON(root)))
-          )
-      ),
-      toArray(),
-      map(roots => roots.reduce((result, roots) => result.concat(roots), []))
+    this.apiService.getRoots(project.projectName, this.DEFAULT_SEQUENCE_PAGE_SIZE, null, fromTime ? fromTime.toISOString() : null)
+      .pipe(
+        map(response => {
+          let lastUpdated = moment(response.headers.get("date"));
+          let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+          this._rootsLastUpdated[project.projectName] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
+          return response.body;
+        }),
+        map(result => result.events||[]),
+        mergeMap((roots) => this.rootMapper(roots))
+      ).subscribe((roots: Root[]) => {
+        if(!project.sequences?.length && roots.length < this.DEFAULT_SEQUENCE_PAGE_SIZE) {
+          project.allSequencesLoaded = true;
+        }
+        project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
+        project.stages.forEach(stage => this.stageMapper(stage, project));
+        this._roots.next(project.sequences);
+    });
+  }
+
+  public loadOldRoots(project: Project, fromRoot?: Root) {
+    this.apiService.getRoots(project.projectName, fromRoot ? this.MAX_SEQUENCE_PAGE_SIZE : this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE, null, fromRoot?.time ? new Date(fromRoot.time).toISOString() : null, new Date(project.sequences[project.sequences.length - 1].time).toISOString()).pipe(
+      map(response => response.body.events || []),
+      mergeMap((roots) => this.rootMapper(roots))
     ).subscribe((roots: Root[]) => {
-      project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
-      project.stages.forEach(stage => {
-        stage.services.forEach(service => {
-          service.roots = project.sequences.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
-          service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
-        });
-      });
+      if (!fromRoot && roots.length < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
+        project.allSequencesLoaded = true;
+      }
+      if (roots.length !== 0 || fromRoot) {
+        project.sequences = [...(project.sequences || []), ...(roots || []), ...(fromRoot ? [fromRoot] : [])].sort(DateUtil.compareTraceTimesAsc);
+        project.stages.forEach(stage => this.stageMapper(stage, project));
+      }
       this._roots.next(project.sequences);
     });
+  }
+
+  private getRoot(project: Project, shkeptncontext: string): Observable<Root> {
+    return this.apiService.getRoots(project.projectName, 1, null, null, null, shkeptncontext).pipe(
+      map(response => response.body.events || []),
+      switchMap(roots => this.rootMapper(roots).pipe(
+        map(sequences => sequences.pop())
+      ))
+    )
+  }
+
+  public loadUntilRoot(project: Project, shkeptncontext: string): void {
+    this.getRoot(project, shkeptncontext).subscribe((root: Root) => {
+      if (root) {
+        this.loadOldRoots(project, root);
+      }
+    })
   }
 
   public loadTraces(root: Root) {
@@ -301,6 +308,36 @@ export class DataService {
       )
       .subscribe(taskNames => {
       this._taskNames.next(taskNames);
+    });
+  }
+
+  private rootMapper(roots: Trace[]): Observable<Root[]> {
+    return from(roots).pipe(
+      mergeMap(
+        root => {
+          return this.apiService.getTraces(root.shkeptncontext, root.data.project)
+            .pipe(
+              map(response => {
+                const lastUpdated = moment(response.headers.get('date'));
+                const lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+                this._tracesLastUpdated[root.shkeptncontext] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
+                return response.body;
+              }),
+              map(result => result.events || []),
+              map(Trace.traceMapper),
+              map(traces => ({ ...root, traces}))
+            );
+        }
+      ),
+      toArray(),
+      map(rs => rs.map(root => Root.fromJSON(root)))
+    );
+  }
+
+  private stageMapper(stage: Stage, project: Project) {
+    stage.services.forEach(service => {
+      service.roots = project.sequences.filter(s => s.getService() === service.serviceName && s.getStages().includes(stage.stageName));
+      service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
     });
   }
 }
