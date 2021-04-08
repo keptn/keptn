@@ -64,7 +64,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
-  loadVersions(serviceName: string): void {
+  loadVersions(): void {
     if (this.pageSize === this.minPageSize) {
       if (this.service.allDeploymentsLoaded) {
         this.updateDataSource();
@@ -72,7 +72,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
         this.loading = true;
         this._changeDetectorRef.markForCheck();
 
-        this.dataService.getDeploymentsOfService(this.projectName, serviceName).subscribe(deployments => {
+        this.dataService.getDeploymentsOfService(this.projectName, this.service.serviceName).subscribe(deployments => {
           this.service.deployments = [...this.service.deployments, ...deployments];
           this.service.allDeploymentsLoaded = true;
           this.loading = false;

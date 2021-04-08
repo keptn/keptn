@@ -20,7 +20,3 @@
 
   <dt-row *dtRowDef="let row; columns: ['version', 'commit', 'stages']"></dt-row>
 </dt-table>
-<div fxLayout="row" fxLayoutAlign="center center">
-  <dt-loading-distractor *ngIf="loading">Loading …</dt-loading-distractor>
-  <button dt-show-more disabled="true" *ngIf="!(pageSize === service.deployments.length && service.allDeploymentsLoaded && pageSize === minPageSize) && !loading" [showLess]="pageSize > minPageSize" (click)="loadVersions(service.serviceName)">Show all versions</button>
-</div>
