@@ -8,17 +8,17 @@ import {Root} from "../_models/root";
 import {Project} from "../_models/project";
 import {DateUtil} from "../_utils/date.utils";
 
-import {KeptnInfo} from "./_mockData/keptnInfo-mock";
-import {Projects} from "./_mockData/projects-mock";
-import {RootEvents} from "./_mockData/roots-mock";
-import {Traces} from "./_mockData/traces-mock";
-import {Evaluations} from "./_mockData/evaluations-mock";
+import {KeptnInfo} from "./_mockData/keptnInfo.mock";
+import {Projects} from "./_mockData/projects.mock";
+import {RootEvents} from "./_mockData/roots.mock";
+import {Traces} from "./_mockData/traces.mock";
+import {Evaluations} from "./_mockData/evaluations.mock";
 import {Trace} from "../_models/trace";
 
 @Injectable({
   providedIn: 'root'
 })
-export class MockDataService extends DataService {
+export class DataServiceMock extends DataService {
 
   constructor(apiService: ApiService) {
     super(apiService);

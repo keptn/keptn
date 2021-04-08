@@ -6,7 +6,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Project} from '../../_models/project';
 import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filter-field';
 import {Subject} from 'rxjs';
-import {ProjectMock} from '../../_models/project-mock';
+import {ProjectMock} from '../../_models/project.mock';
 
 @Component({
   selector: 'ktb-subscription-item',
