@@ -3,7 +3,7 @@
     <ktb-selectable-tile (click)="selectEvent(event)"
                          [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())"
                          [success]="!event.isFaulty() && event.isFinished()"
-                         [highlight]="event.getPendingApprovals().length > 0" [selected]="_selectedEvent == event"
+                         [highlight]="!!event.getPendingApproval()" [selected]="_selectedEvent == event"
                          *ngIf="event">
       <ktb-selectable-tile-header>
         <div class="container">

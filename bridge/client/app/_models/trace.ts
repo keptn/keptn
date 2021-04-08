@@ -204,7 +204,7 @@ class Trace {
   }
 
   public isEvaluation(): string {
-    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) ? this.data.stage : null;
+    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) && !this.isSequence() ? this.data.stage : null;
   }
 
   public isEvaluationInvalidation(): boolean {
@@ -309,6 +309,10 @@ class Trace {
     return this.finished;
   }
 
+  isTriggered() {
+    return this.type.includes('.triggered');
+  }
+
   isLoading() {
     return this.isStarted() && !this.isFinished();
   }
@@ -330,6 +334,10 @@ class Trace {
       return this;
     else
       return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
+  }
+
+  isSequence() {
+    return this.type.split(".").length == 6 && this.type.includes(this.getStage());
   }
 
   static fromJSON(data: any) {
@@ -357,10 +365,12 @@ class Trace {
 
       if (trigger) {
         trigger.traces.push(trace);
-      } else if (trace.type.split(".").length == 6) { //is this the way to determine a "sequence"
+      } else if (trace.isSequence()) {
         seq.push(trace);
-      } else {
+      } else if(seq.length > 0) {
         seq[seq.length-1].traces.push(trace);
+      } else {
+        seq.push(trace);
       }
 
       return seq;
