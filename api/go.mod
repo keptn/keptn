@@ -18,6 +18,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.2
 	github.com/keptn/kubernetes-utils v0.8.1
+	github.com/stretchr/testify v1.7.0
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
