@@ -7,6 +7,8 @@ import (
 
 const SecretAPIBasePath = "/secret"
 
+var k string
+
 type SecretController struct {
 	SecretHandler handler.ISecretHandler
 }
