@@ -49,7 +49,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.15"
+            VERSION: "1.17"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"

@@ -85,7 +85,6 @@ type MongodbDatastoreAPI struct {
 	JSONConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for the following mime types:
-	//   - application/cloudevents+json
 	//   - application/json
 	JSONProducer runtime.Producer
 
@@ -228,8 +227,6 @@ func (o *MongodbDatastoreAPI) ProducersFor(mediaTypes []string) map[string]runti
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-		case "application/cloudevents+json":
-			result["application/cloudevents+json"] = o.JSONProducer
 		case "application/json":
 			result["application/json"] = o.JSONProducer
 		}

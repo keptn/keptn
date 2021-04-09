@@ -2,7 +2,7 @@
   <div *ngFor="let event of _events;trackBy: identifyEvent">
     <ktb-selectable-tile (click)="selectEvent(event)"
                          [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())"
-                         [success]="event.isProblem() && event.isSuccessful()"
+                         [success]="!event.isFaulty() && event.isFinished()"
                          [highlight]="event.getPendingApprovals().length > 0" [selected]="_selectedEvent == event"
                          *ngIf="event">
       <ktb-selectable-tile-header>
@@ -33,7 +33,8 @@
               <ktb-stage-badge [stage]="stage" [evaluation]="event.getEvaluation(stage)"
                                [success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()"
                                [error]="stage == event.isFaulty()" [class.warning]="stage == event.isWarning()"
-                               [highlight]="event.hasPendingApproval(stage)"></ktb-stage-badge>
+                               [highlight]="event.hasPendingApproval(stage)"
+                               (click)="$event.stopPropagation();selectEvent(event, stage)"></ktb-stage-badge>
             </ng-container>
           </div>
         </div>
@@ -54,5 +55,9 @@
       </p>
       <p class="m-0 small" *ngIf="event.data.ProblemTitle" [textContent]="event.data.ProblemTitle"></p>
     </ktb-selectable-tile>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="center center">
+    <dt-loading-distractor *ngIf="loading">Loading …</dt-loading-distractor>
+    <button dt-show-more *ngIf="!loading && !project.allSequencesLoaded" (click)="loadOldSequences()">Show older sequences</button>
   </div>
 </div>

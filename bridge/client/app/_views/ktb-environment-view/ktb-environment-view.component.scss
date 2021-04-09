@@ -6,11 +6,11 @@
     height: 25px;
     color: $gray-300;
     fill: $gray-300;
-  }
 
-  .dt-icon {
+    &.error {
+      fill: $error-color;
+    }
     &.highlight {
-      border: none;
       fill: $blue-400;
     }
   }

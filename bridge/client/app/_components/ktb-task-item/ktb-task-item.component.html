@@ -9,6 +9,7 @@
           </button>
           <dt-icon *ngIf="!_task.isLoading()" class="event-icon" [class.error]="_task.isFaulty()" [class.success]="_task.isSuccessful()" [class.highlight]="_task.isApproval()" [name]="_task.getIcon()"></dt-icon>
           <h4 class="m-0 mt-1 mb-1" [class.error]="_task.isFaulty()" [textContent]="_task.getLabel()"></h4>
+          <ktb-evaluation-info class="ml-1" *ngIf="_task.isEvaluation() && _task.isFinished()" [evaluation]="_task" [overlayDisabled]="true"></ktb-evaluation-info>
         </div>
         <div *ngIf="_task.data.canary">
           <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_task.data.canary.action"></span> <span [textContent]="_task.data.canary.value"></span></p>
@@ -84,7 +85,7 @@
       <div fxFlex>
         <p class="m-0" *ngIf="!subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> started</p>
         <p class="m-0" *ngIf="subTask.isFinished()"><span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span> finished with result <span class="italic" [textContent]="subTask.data.result"></span></p>
-        <p class="m-0 small" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></p>
+        <pre class="m-0 small" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></pre>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
         <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event, subTask)"><dt-icon name="coding"></dt-icon></button>

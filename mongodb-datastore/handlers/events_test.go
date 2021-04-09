@@ -19,9 +19,9 @@ import (
 func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 	logger := keptncommon.NewLogger("", "", "mongodb-service")
 
-	grandchild := bson.D{{"apple", "red"}, {"orange", "orange"}}
-	child := bson.D{{"foo", "bar"}, {"grandchild", grandchild}}
-	parent := bson.D{{"hello", "world"}, {"child", child}}
+	grandchild := bson.D{{Key: "apple", Value: "red"}, {Key: "orange", Value: "orange"}}
+	child := bson.D{{Key: "foo", Value: "bar"}, {Key: "grandchild", Value: grandchild}}
+	parent := bson.D{{Key: "hello", Value: "world"}, {Key: "child", Value: child}}
 
 	// checks:
 	flattened, _ := flattenRecursively(parent, logger)
@@ -40,9 +40,9 @@ func TestFlattenRecursivelyNestedDocuments(t *testing.T) {
 func TestFlattenRecursivelyNestedDocumentsWithArray(t *testing.T) {
 	logger := keptncommon.NewLogger("", "", "mongodb-service")
 
-	grandchild := bson.D{{"apple", "red"}, {"orange", "orange"}}
+	grandchild := bson.D{{Key: "apple", Value: "red"}, {Key: "orange", Value: "orange"}}
 	child := bson.A{grandchild, "foo", "bar"}
-	parent := bson.D{{"hello", "world"}, {"child", child}}
+	parent := bson.D{{Key: "hello", Value: "world"}, {Key: "child", Value: child}}
 
 	// checks:
 	flattened, _ := flattenRecursively(parent, logger)
@@ -130,6 +130,7 @@ func Test_getSearchOptions(t *testing.T) {
 				params: event.GetEventsParams{
 					HTTPRequest:  nil,
 					FromTime:     stringp("1"),
+					BeforeTime:   nil,
 					KeptnContext: stringp("test-context"),
 					NextPageKey:  nil,
 					PageSize:     nil,
@@ -159,6 +160,7 @@ func Test_getSearchOptions(t *testing.T) {
 				params: event.GetEventsParams{
 					HTTPRequest:  nil,
 					FromTime:     stringp("1"),
+					BeforeTime:   nil,
 					KeptnContext: stringp("test-context"),
 					NextPageKey:  nil,
 					PageSize:     nil,
@@ -396,12 +398,12 @@ func Test_getAggregationPipeline(t *testing.T) {
 			},
 			want: mongo.Pipeline{
 				bson.D{
-					{"$match", bson.M{
+					{Key: "$match", Value: bson.M{
 						"project": "test-project",
 					}},
 				},
 				bson.D{
-					{"$lookup", bson.M{
+					{Key: "$lookup", Value: bson.M{
 						"from": "test-collection-invalidatedEvents",
 						"let": bson.M{
 							"event_id":          "$id",
@@ -430,22 +432,22 @@ func Test_getAggregationPipeline(t *testing.T) {
 					}},
 				},
 				bson.D{
-					{"$match", bson.M{
+					{Key: "$match", Value: bson.M{
 						"invalidated": bson.M{
 							"$size": 0,
 						},
 					}},
 				},
 				bson.D{
-					{"$sort",
-						bson.M{
+					{Key: "$sort",
+						Value: bson.M{
 							"time": -1,
 						},
 					},
 				},
 				bson.D{
 					{
-						"$limit", limit,
+						Key: "$limit", Value: limit,
 					},
 				},
 			},

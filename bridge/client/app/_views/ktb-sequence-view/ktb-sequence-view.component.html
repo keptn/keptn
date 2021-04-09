@@ -32,7 +32,7 @@
         </p>
       </dt-info-group>
     </div>
-    <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
+    <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" [selectedStage]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
     <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
     <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
       <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>

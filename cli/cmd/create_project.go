@@ -4,31 +4,22 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"time"
-
+	"github.com/keptn/go-utils/pkg/common/fileutils"
+	"github.com/keptn/go-utils/pkg/common/httputils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
+	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
-
-	"github.com/asaskevich/govalidator"
-	"github.com/keptn/keptn/cli/pkg/file"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 type createProjectCmdParams struct {
-	Shipyard        *string
-	GitUser         *string
-	GitToken        *string
-	RemoteURL       *string
-	ShipyardContent string
+	Shipyard  *string
+	GitUser   *string
+	GitToken  *string
+	RemoteURL *string
 }
 
 var createProjectParams *createProjectCmdParams
@@ -69,8 +60,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		shipyard := keptnv2.Shipyard{}
-		err := getAndParseYaml(*createProjectParams.Shipyard, &shipyard)
+		shipyard, err := retrieveShipyard(*createProjectParams.Shipyard)
 		if err != nil {
 			return fmt.Errorf("Failed to read and parse shipyard file - %s", err.Error())
 		}
@@ -85,7 +75,7 @@ keptn create project PROJECTNAME --shipyard=FILEPATH --git-user=GIT_USER --git-t
 		}
 		logging.PrintLog("Starting to create project", logging.InfoLevel)
 
-		encodedShipyardContent := base64.StdEncoding.EncodeToString([]byte(createProjectParams.ShipyardContent))
+		encodedShipyardContent := base64.StdEncoding.EncodeToString(shipyard)
 		project := apimodels.CreateProject{
 			Name:     &args[0],
 			Shipyard: &encodedShipyardContent,
@@ -133,51 +123,18 @@ func checkGitCredentials() error {
 	return errors.New(gitErrMsg)
 }
 
-func getAndParseYaml(arg string, out interface{}) error {
-	var content string
+func retrieveShipyard(location string) ([]byte, error) {
+	var content []byte
 	var err error
-	if govalidator.IsURL(arg) {
-		content, err = getYamlFromURL(arg)
+	if httputils.IsValidURL(location) {
+		content, err = httputils.NewDownloader(httputils.WithTimeout(5 * time.Second)).DownloadFromURL(location)
 	} else {
-		content, err = getYamlFromFile(arg)
+		content, err = fileutils.ReadFile(location)
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = yaml.Unmarshal([]byte(content), out)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func getYamlFromURL(arg string) (string, error) {
-	c := http.Client{
-		Timeout: 5 * time.Second,
-	}
-	resp, err := c.Get(arg)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	createProjectParams.ShipyardContent = string(body)
-	return string(body), nil
-}
-
-func getYamlFromFile(arg string) (string, error) {
-	if _, err := os.Stat(keptnutils.ExpandTilde(arg)); os.IsNotExist(err) {
-		return "", fmt.Errorf("Cannot find file %s", arg)
-	}
-	fileContent, err := file.ReadFile(arg)
-	if err != nil {
-		return "", err
-	}
-	createProjectParams.ShipyardContent = fileContent
-	return fileContent, nil
+	return content, nil
 }
 
 func init() {

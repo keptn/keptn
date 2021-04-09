@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
 
 import {KtbApprovalItemComponent} from './ktb-approval-item.component';
 import {AppModule} from '../../app.module';
@@ -17,12 +17,15 @@ describe('KtbEventItemComponent', () => {
         HttpClientTestingModule,
       ],
     })
-    .compileComponents();
+    .compileComponents().then(() => {
+      fixture = TestBed.createComponent(KtbApprovalItemComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbApprovalItemComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

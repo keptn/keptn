@@ -30,7 +30,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/secrets": {
+        "/secret": {
             "put": {
                 "security": [
                     {

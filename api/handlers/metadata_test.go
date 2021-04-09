@@ -2,15 +2,15 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-test/deep"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,7 +48,8 @@ func TestGetMetadataHandlerFunc(t *testing.T) {
 		},
 	}
 
-	_ = os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
+	err := os.Setenv("SECRET_TOKEN", "testtesttesttesttest")
+	require.NoError(t, err)
 
 	returnedStatus := 200
 
@@ -61,7 +62,8 @@ func TestGetMetadataHandlerFunc(t *testing.T) {
 	)
 	defer ts.Close()
 
-	_ = os.Setenv("EVENTBROKER_URI", ts.URL)
+	err = os.Setenv("EVENTBROKER_URI", ts.URL)
+	require.NoError(t, err)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -73,7 +75,6 @@ func TestGetMetadataHandlerFunc(t *testing.T) {
 }
 
 func Test_metadataHandler_getMetadata(t *testing.T) {
-
 	clientSet := fake.NewSimpleClientset(
 		getBridgeDeployment(),
 	)
@@ -96,12 +97,12 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 			},
 			want: &metadata.MetadataOK{
 				Payload: &models.Metadata{
-					Bridgeversion: "bridge:0.8.0",
-					Keptnlabel:    "keptn",
-					Keptnservices: nil,
-					Keptnversion:  "develop",
+					Bridgeversion:   "bridge:0.8.0",
+					Keptnlabel:      "keptn",
+					Keptnservices:   nil,
+					Keptnversion:    "develop",
 					Shipyardversion: "0.2.0",
-					Namespace:     "keptn",
+					Namespace:       "keptn",
 				},
 			},
 		},
@@ -115,24 +116,25 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 			k8sAPIError: true,
 			want: &metadata.MetadataOK{
 				Payload: &models.Metadata{
-					Bridgeversion: "N/A",
-					Keptnlabel:    "keptn",
-					Keptnservices: nil,
-					Keptnversion:  "develop",
+					Bridgeversion:   "N/A",
+					Keptnlabel:      "keptn",
+					Keptnservices:   nil,
+					Keptnversion:    "develop",
 					Shipyardversion: "0.2.0",
-					Namespace:     "keptn",
+					Namespace:       "keptn",
 				},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("POD_NAMESPACE", "keptn")
+			err := os.Setenv("POD_NAMESPACE", "keptn")
+			require.NoError(t, err)
+
 			tmpSwaggerFileName := "tmp-swagger.yaml"
 
-			if err := ioutil.WriteFile(tmpSwaggerFileName, []byte(testSwaggerYaml), os.ModePerm); err != nil {
-				fmt.Println(err.Error())
-			}
+			require.NoError(t, ioutil.WriteFile(tmpSwaggerFileName, []byte(testSwaggerYaml), os.ModePerm))
+
 			defer os.Remove(tmpSwaggerFileName)
 			if tt.k8sAPIError {
 				clientSet.AppsV1().(*fakeappsv1.FakeAppsV1).PrependReactor("get", "deployments", func(action test.Action) (handled bool, ret runtime.Object, err error) {
@@ -145,14 +147,7 @@ func Test_metadataHandler_getMetadata(t *testing.T) {
 				logger:          tt.fields.logger,
 				swaggerFilePath: tmpSwaggerFileName,
 			}
-			got := h.getMetadata()
-
-			if diff := deep.Equal(got, tt.want); len(diff) > 0 {
-				t.Errorf("getMetadata() did not return expected value:")
-				for _, d := range diff {
-					t.Log(d)
-				}
-			}
+			require.Equal(t, tt.want, h.getMetadata())
 		})
 	}
 }

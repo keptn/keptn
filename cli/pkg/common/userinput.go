@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/user_input.go . IUserInput
+type IUserInput interface {
+	AskBool(question string, opts *UserInputOptions) bool
+}
+
 type UserInput struct {
 	Writer io.Writer
 	Reader *bufio.Reader

@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,9 +47,7 @@ func Test_getBridgeCredentials(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getBridgeCredentials(tt.args.user, tt.args.password); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getBridgeCredentials() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.want, getBridgeCredentials(tt.args.user, tt.args.password))
 		})
 	}
 }

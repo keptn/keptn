@@ -10,6 +10,7 @@ export class Project {
   gitRemoteURI: string;
   gitToken: string;
   shipyardVersion: string;
+  allSequencesLoaded: boolean;
 
   stages: Stage[];
   services: Service[];

@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/keptn/keptn/cli/pkg/version"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -32,6 +34,17 @@ func TestVersionCmd(t *testing.T) {
 
 	r := newRedirector()
 	r.redirectStdOut()
+
+	ts := getMockVersionHTTPServer()
+	vChecker := &version.VersionChecker{
+		VersionFetcherClient: &version.VersionFetcherClient{
+			HTTPClient: http.DefaultClient,
+			VersionURL: ts.URL,
+		},
+	}
+
+	testVersionCmd := NewVersionCommand(vChecker)
+	versionCmd.Run = testVersionCmd.Run
 
 	_, err := executeActionCommandC(cmd)
 	if err != nil {

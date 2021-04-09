@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {filter, map, mergeMap, take, toArray} from "rxjs/operators";
+import {map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -21,24 +20,21 @@ import {KeptnService} from '../_models/keptn-service';
 })
 export class DataService {
 
-  private _projects = new BehaviorSubject<Project[]>(null);
-  private _taskNames = new BehaviorSubject<string[]>([]);
-  private _roots = new BehaviorSubject<Root[]>(null);
-  private _openApprovals = new BehaviorSubject<Trace[]>([]);
-  private _keptnInfo = new BehaviorSubject<any>(null);
-  private _rootsLastUpdated: Object = {};
-  private _tracesLastUpdated: Object = {};
+  protected _projects = new BehaviorSubject<Project[]>(null);
+  protected _taskNames = new BehaviorSubject<string[]>([]);
+  protected _roots = new BehaviorSubject<Root[]>(null);
+  protected _traces = new BehaviorSubject<Trace[]>(null);
+  protected _openApprovals = new BehaviorSubject<Trace[]>([]);
+  protected _keptnInfo = new BehaviorSubject<any>(null);
+  protected _rootsLastUpdated: Object = {};
+  protected _tracesLastUpdated: Object = {};
+  private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
+  private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
+  private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
-  private _evaluationResults = new Subject();
+  protected _evaluationResults = new Subject();
 
-  constructor(private http: HttpClient, private apiService: ApiService) {
-    this.loadKeptnInfo();
-    this.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(take(1))
-      .subscribe(keptnInfo => {
-        this.loadProjects();
-      });
+  constructor(private apiService: ApiService) {
   }
 
   get projects(): Observable<Project[]> {
@@ -57,6 +53,10 @@ export class DataService {
 
   get roots(): Observable<Root[]> {
     return this._roots.asObservable();
+  }
+
+  get traces(): Observable<Trace[]> {
+    return this._traces.asObservable();
   }
 
   get openApprovals(): Observable<Trace[]> {
@@ -160,53 +160,57 @@ export class DataService {
     let fromTime: Date = this._rootsLastUpdated[project.projectName];
     this._rootsLastUpdated[project.projectName] = new Date();
 
-    from(project.services).pipe(
-      mergeMap(
-        service => this.apiService.getRoots(project.projectName, service.serviceName, fromTime ? fromTime.toISOString() : null)
-          .pipe(
-            map(response => {
-              let lastUpdated = moment(response.headers.get("date"));
-              let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
-              this._rootsLastUpdated[project.projectName] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
-              return response.body;
-            }),
-            map(result => result.events||[]),
-            mergeMap((roots) =>
-              from(roots).pipe(
-                mergeMap(
-                  root => {
-                    return this.apiService.getTraces(root.shkeptncontext, root.data.project)
-                      .pipe(
-                        map(response => {
-                          let lastUpdated = moment(response.headers.get("date"));
-                          let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
-                          this._tracesLastUpdated[root.shkeptncontext] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
-                          return response.body;
-                        }),
-                        map(result => result.events||[]),
-                        map(this.traceMapper),
-                        map(traces => ({ ...root, traces}))
-                      )
-                  }
-                ),
-                toArray()
-              )
-            ),
-            map(roots => roots.map(root => Root.fromJSON(root)))
-          )
-      ),
-      toArray(),
-      map(roots => roots.reduce((result, roots) => result.concat(roots), []))
+    this.apiService.getRoots(project.projectName, this.DEFAULT_SEQUENCE_PAGE_SIZE, null, fromTime ? fromTime.toISOString() : null)
+      .pipe(
+        map(response => {
+          let lastUpdated = moment(response.headers.get("date"));
+          let lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+          this._rootsLastUpdated[project.projectName] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
+          return response.body;
+        }),
+        map(result => result.events||[]),
+        mergeMap((roots) => this.rootMapper(roots))
+      ).subscribe((roots: Root[]) => {
+        if(!project.sequences?.length && roots.length < this.DEFAULT_SEQUENCE_PAGE_SIZE) {
+          project.allSequencesLoaded = true;
+        }
+        project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
+        project.stages.forEach(stage => this.stageMapper(stage, project));
+        this._roots.next(project.sequences);
+    });
+  }
+
+  public loadOldRoots(project: Project, fromRoot?: Root) {
+    this.apiService.getRoots(project.projectName, fromRoot ? this.MAX_SEQUENCE_PAGE_SIZE : this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE, null, fromRoot?.time ? new Date(fromRoot.time).toISOString() : null, new Date(project.sequences[project.sequences.length - 1].time).toISOString()).pipe(
+      map(response => response.body.events || []),
+      mergeMap((roots) => this.rootMapper(roots))
     ).subscribe((roots: Root[]) => {
-      project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);
-      project.stages.forEach(stage => {
-        stage.services.forEach(service => {
-          service.roots = project.sequences.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
-          service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
-        });
-      });
+      if (!fromRoot && roots.length < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
+        project.allSequencesLoaded = true;
+      }
+      if (roots.length !== 0 || fromRoot) {
+        project.sequences = [...(project.sequences || []), ...(roots || []), ...(fromRoot ? [fromRoot] : [])].sort(DateUtil.compareTraceTimesAsc);
+        project.stages.forEach(stage => this.stageMapper(stage, project));
+      }
       this._roots.next(project.sequences);
     });
+  }
+
+  private getRoot(project: Project, shkeptncontext: string): Observable<Root> {
+    return this.apiService.getRoots(project.projectName, 1, null, null, null, shkeptncontext).pipe(
+      map(response => response.body.events || []),
+      switchMap(roots => this.rootMapper(roots).pipe(
+        map(sequences => sequences.pop())
+      ))
+    )
+  }
+
+  public loadUntilRoot(project: Project, shkeptncontext: string): void {
+    this.getRoot(project, shkeptncontext).subscribe((root: Root) => {
+      if (root) {
+        this.loadOldRoots(project, root);
+      }
+    })
   }
 
   public loadTraces(root: Root) {
@@ -224,7 +228,7 @@ export class DataService {
         map(traces => traces.map(trace => Trace.fromJSON(trace)))
       )
       .subscribe((traces: Trace[]) => {
-        root.traces = this.traceMapper([...traces||[], ...root.traces||[]]);
+        root.traces = Trace.traceMapper([...traces||[], ...root.traces||[]]);
         this.getProject(root.getProject()).pipe(take(1))
           .subscribe(project => {
             project.stages.filter(s => root.getStages().includes(s.stageName)).forEach(stage => {
@@ -234,6 +238,18 @@ export class DataService {
             });
           });
         this._roots.next([...this._roots.getValue()]);
+      });
+  }
+
+  public loadTracesByContext(shkeptncontext: string) {
+    this.apiService.getTraces(shkeptncontext)
+      .pipe(
+        map(response => response.body),
+        map(result => result.events||[]),
+        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+      )
+      .subscribe((traces: Trace[]) => {
+        this._traces.next(traces);
       });
   }
 
@@ -288,29 +304,33 @@ export class DataService {
     });
   }
 
-  private traceMapper(traces: Trace[]) {
-    traces = traces
-      .map(trace => Trace.fromJSON(trace))
-      .sort(DateUtil.compareTraceTimesDesc);
+  private rootMapper(roots: Trace[]): Observable<Root[]> {
+    return from(roots).pipe(
+      mergeMap(
+        root => {
+          return this.apiService.getTraces(root.shkeptncontext, root.data.project)
+            .pipe(
+              map(response => {
+                const lastUpdated = moment(response.headers.get('date'));
+                const lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+                this._tracesLastUpdated[root.shkeptncontext] = lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated;
+                return response.body;
+              }),
+              map(result => result.events || []),
+              map(Trace.traceMapper),
+              map(traces => ({ ...root, traces}))
+            );
+        }
+      ),
+      toArray(),
+      map(rs => rs.map(root => Root.fromJSON(root)))
+    );
+  }
 
-    return traces.reduce((result: Trace[], trace: Trace) => {
-      const trigger = traces.find(t => {
-          if (trace.triggeredid) {
-            return t.id === trace.triggeredid;
-          } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-            return t.isProblem() && !t.isProblemResolvedOrClosed();
-          } else if (!t.triggeredid && trace.isFinished()) {
-            return t.type.slice(0, -8) === trace.type.slice(0, -9);
-          }
-      });
-
-      if (trigger) {
-        trigger.traces.push(trace);
-      } else {
-        result.push(trace);
-      }
-
-      return result;
-    }, []);
+  private stageMapper(stage: Stage, project: Project) {
+    stage.services.forEach(service => {
+      service.roots = project.sequences.filter(s => s.getService() === service.serviceName && s.getStages().includes(stage.stageName));
+      service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
+    });
   }
 }

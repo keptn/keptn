@@ -3,12 +3,17 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input,
+  Input, OnDestroy,
   OnInit, Output,
   ViewEncapsulation
 } from '@angular/core';
-import {Root} from "../../_models/root";
-import {DateUtil} from "../../_utils/date.utils";
+import {Root} from '../../_models/root';
+import {DateUtil} from '../../_utils/date.utils';
+import {filter, takeUntil} from 'rxjs/operators';
+import {ActivatedRoute} from '@angular/router';
+import {DataService} from '../../_services/data.service';
+import {Subject} from 'rxjs';
+import {Project} from '../../_models/project';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -21,10 +26,12 @@ import {DateUtil} from "../../_utils/date.utils";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbRootEventsListComponent implements OnInit {
-
+export class KtbRootEventsListComponent implements OnInit, OnDestroy {
+  private readonly unsubscribe$ = new Subject<void>();
+  public project: Project;
   public _events: Root[] = [];
   public _selectedEvent: Root = null;
+  public loading = true;
 
   @Output() readonly selectedEventChange = new EventEmitter<any>();
 
@@ -50,17 +57,43 @@ export class KtbRootEventsListComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil, private route: ActivatedRoute, private dataService: DataService) { }
 
   ngOnInit() {
+    this.route.params
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(params => {
+        this.dataService.getProject(params.projectName).pipe(
+          takeUntil(this.unsubscribe$)
+        ).subscribe(project => {
+          this.project = project;
+        });
+        this.dataService.roots.pipe(
+          takeUntil(this.unsubscribe$),
+          filter(roots => !!roots)
+        ).subscribe(() => {
+          this.loading = false;
+          this._changeDetectorRef.markForCheck();
+        });
+      });
   }
 
-  selectEvent(event: Root, stage?: String) {
-    this.selectedEvent = event;
-    this.selectedEventChange.emit({ root: event, stage: stage });
+  selectEvent(root: Root, stage?: String) {
+    this.selectedEvent = root;
+    this.selectedEventChange.emit({ root, stage });
   }
 
   identifyEvent(index, item) {
-    return item ? item.time : null;
+    return item?.time;
+  }
+
+  loadOldSequences() {
+    this.loading = true;
+    this._changeDetectorRef.markForCheck();
+    this.dataService.loadOldRoots(this.project);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
   }
 }

@@ -43,7 +43,7 @@
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
                     <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
-                      <a *ngIf="deployment.getFinishedEvent().getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+                      <a *ngIf="deployment.getFinishedEvent()?.getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
                     </ng-container>
                   </div>
                 </dt-info-group-title>
@@ -54,7 +54,7 @@
               <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.ImpactedEntity"></span></p>
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
                 <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName).getFinishedEvent() as evaluation">
+                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName)?.getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #evaluationOverlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
