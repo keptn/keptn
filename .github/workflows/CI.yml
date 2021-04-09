@@ -10,7 +10,7 @@ on:
     branches:
       - 'master'
       - 'release-*'
-    type: [labeled]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   workflow_dispatch: # run CI when triggered manually
 
 defaults:
