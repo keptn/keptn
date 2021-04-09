@@ -10,5 +10,5 @@ jobs:
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:
-          golangci_lint_flags: "--disable-all -E deadcode,errcheck,gosimple,govet,ineffassign,staticcheck,typecheck,unused,funlen,dupl,stylecheck"
+          golangci_lint_flags: "-p=bugs,unused --tests=false"
           github_token: ${{ secrets.GITHUB_TOKEN }}
