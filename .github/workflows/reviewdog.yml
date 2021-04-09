@@ -7,9 +7,10 @@ jobs:
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v1
-      - name: golangci-lint
+      - name: golangci-lint/secret-service
         uses: reviewdog/action-golangci-lint@v1
         with:
           golangci_lint_flags: "-p=bugs,unused --tests=false"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: true
           workdir: secret-service
