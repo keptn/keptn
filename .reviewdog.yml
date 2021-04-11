@@ -1,5 +1,5 @@
 runner:
   # examples
   golangci-lint:
-    cmd: golangci-lint ./... --out-format=line-number ./...
+    cmd: golangci-lint run --out-format=line-number ./...
     format: golangci-lint
