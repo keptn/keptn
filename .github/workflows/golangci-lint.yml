@@ -2,7 +2,7 @@ name: golangci-lint
 on: [pull_request]
 jobs:
   golangci-secret-service:
-    name: lint
+    name: lint/secret-service
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -11,8 +11,9 @@ jobs:
         with:
           version: v1.29
           working-directory: secret-service
+          only-new-issues: true
   golangci-distributor:
-    name: lint
+    name: lint/distributor
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,3 +22,4 @@ jobs:
         with:
           version: v1.29
           working-directory: distributor
+          only-new-issues: true
