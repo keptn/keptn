@@ -11,7 +11,7 @@ jobs:
         with:
           version: v1.29
           working-directory: secret-service
-          github-token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
   golangci-distributor:
     name: lint/distributor
     runs-on: ubuntu-latest
@@ -22,4 +22,4 @@ jobs:
         with:
           version: v1.29
           working-directory: distributor
-          github-token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
