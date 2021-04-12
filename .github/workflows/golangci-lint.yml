@@ -11,10 +11,12 @@ jobs:
         with:
           version: v1.29
           working-directory: secret-service
+          args: --tests=false
           github-token: $${{ secrets.GITHUB_TOKEN }}
       - name: lint/distributor
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.29
           working-directory: distributor
+          args: --tests=false
           github-token: $${{ secrets.GITHUB_TOKEN }}
