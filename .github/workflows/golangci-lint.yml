@@ -1,25 +1,20 @@
 name: golangci-lint
 on: [pull_request]
 jobs:
-  golangci-secret-service:
-    name: lint/secret-service
+  golangci-lint:
+    name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: golangci-lint
+      - name: lint/secret-service
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.29
           working-directory: secret-service
           github-token: $${{ secrets.GITHUB_TOKEN }}
-  golangci-distributor:
-    name: lint/distributor
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: golangci-lint
+      - name: lint/distributor
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.29
           working-directory: distributor
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
