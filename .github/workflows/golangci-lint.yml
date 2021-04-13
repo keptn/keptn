@@ -4,19 +4,15 @@ jobs:
   golangci-lint:
     name: lint
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        svc: [ secret-service, distributor]
     steps:
       - uses: actions/checkout@v2
-      - name: lint/secret-service
+      - name: ${{ matrix.svc }}
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.29
-          working-directory: secret-service
-          args: --tests=false
-          github-token: $${{ secrets.GITHUB_TOKEN }}
-      - name: lint/distributor
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.29
-          working-directory: distributor
+          working-directory: ${{ matrix.svc }}
           args: --tests=false
           github-token: $${{ secrets.GITHUB_TOKEN }}
