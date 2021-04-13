@@ -37,7 +37,7 @@ WORKDIR /usr/src/app/server
 RUN npm install
 WORKDIR /usr/src/app
 
-RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
+RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
 # Set user
 USER myuser
@@ -46,8 +46,5 @@ USER myuser
 #travis-uncomment ADD MANIFEST /
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
-
-RUN adduser -D nonroot -u 65532
-USER nonroot
 
 CMD ["/usr/local/bin/npm", "start"]
