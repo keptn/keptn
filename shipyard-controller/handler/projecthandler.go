@@ -48,7 +48,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSe
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Param   disableUpstreamSync	query		boolean		false	"Disable sync of upstream repo before reading content"
-// @Success 201 {object} models.ExpandedProjects	"ok"
+// @Success 200 {object} models.ExpandedProjects	"ok"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [get]
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
@@ -127,7 +127,7 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 200 {object} operations.CreateProjectResponse	"ok"
+// @Success 201 {object} operations.CreateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
