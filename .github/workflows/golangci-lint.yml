@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        svc: [ secret-service, distributor]
+        svc: [api, approval-service, cli, configuration-service, distributor, helm-service, jmeter-service, lighthouse-service, mongodb-datastore, remediation-service, secret-service, statistics-service]
     steps:
       - uses: actions/checkout@v2
       - name: ${{ matrix.svc }}
