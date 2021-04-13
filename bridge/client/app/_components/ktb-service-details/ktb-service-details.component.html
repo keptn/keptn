@@ -5,18 +5,17 @@
       <dt-info-group-title>
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
           <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
-            <p class="m-0">
-              <span class="bold" [textContent]="deployment.sequence.getShortImageName()"></span>&nbsp;
-            </p>
+            <span class="bold" [textContent]="deployment.sequence.getShortImageName()"></span>&nbsp;
+            <dt-tag-list aria-label="deployment-labels">
+              <dt-tag *ngFor="let label of deployment.sequence.data.labels | keyvalue">
+                <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
+                <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
+              </dt-tag>
+            </dt-tag-list>
           </div>
         </div>
       </dt-info-group-title>
-      <dt-tag-list aria-label="deployment-labels">
-        <dt-tag *ngFor="let label of deployment.sequence.data.labels | keyvalue">
-          <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
-          <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
-        </dt-tag>
-      </dt-tag-list>
+
     </dt-info-group>
 
     <ktb-sequence-timeline class="mb-3" [selectedStage]="selectedStage" [currentSequence]="deployment.sequence" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
