@@ -36,7 +36,7 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3.11
+FROM alpine:3.13
 ENV ENV=production
 
 # Install extra packages
@@ -69,6 +69,9 @@ ENV GOTRACEBACK=all
 #travis-uncomment ADD MANIFEST /
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
+
+RUN adduser -D nonroot -u 65532
+USER nonroot
 
 # Run the web service on container startup.
 ENV GIN_MODE=release

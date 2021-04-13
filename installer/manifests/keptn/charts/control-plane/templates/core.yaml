@@ -73,6 +73,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.apiService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}    
     spec:
+      securityContext:
+        fsGroup: 65532
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
@@ -105,6 +107,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -121,6 +128,11 @@ spec:
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
@@ -174,6 +186,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}      
     spec:
+      securityContext:
+        fsGroup: 65532
       containers:
         - name: bridge
           image: {{ .Values.bridge.image.repository }}:{{ .Values.bridge.image.tag | default .Chart.AppVersion }}
@@ -209,6 +223,11 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       serviceAccountName: keptn-default
 
 ---
@@ -265,6 +284,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      securityContext:
+        fsGroup: 65532
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
@@ -311,6 +332,11 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -333,6 +359,11 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service
@@ -407,6 +438,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.secretService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      securityContext:
+        fsGroup: 65532
       serviceAccountName: keptn-secret-service
       containers:
         - name: secret-service
@@ -436,6 +469,11 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: secret-service-configmap-volume
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       volumes:
         - name: secret-service-configmap-volume
           configMap:
@@ -516,6 +554,20 @@ spec:
         app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}   
     spec:
+      securityContext:
+        fsGroup: 65532
+      initContainers:
+        - name: change-user-init
+          image: "alpine:3.13"
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /data/config
+              name: configuration-volume
+          command:
+            - sh
+            - -c
+            - chown -R 65532 /data/config
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
@@ -542,6 +594,11 @@ spec:
           volumeMounts:
             - mountPath: /data/config
               name: configuration-volume
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       volumes:
         - name: configuration-volume
           persistentVolumeClaim:
@@ -601,6 +658,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      securityContext:
+        fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
         - name: statistics-service
@@ -641,6 +700,11 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -663,6 +727,11 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service
@@ -714,6 +783,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
+      securityContext:
+        fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
         - name: approval-service
@@ -734,6 +805,11 @@ spec:
               value: 'http://configuration-service:8080'
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -748,6 +824,11 @@ spec:
               value: 'sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service

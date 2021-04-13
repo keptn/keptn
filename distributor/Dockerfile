@@ -35,7 +35,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS 
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3.11
+FROM alpine:3.13
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the binary to the production image from the builder stage.
@@ -49,6 +49,9 @@ ENV GOTRACEBACK=all
 #travis-uncomment ADD MANIFEST /
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
+
+RUN adduser -D nonroot -u 65532
+USER nonroot
 
 # Run the web service on container startup.
 CMD ["/distributor"]

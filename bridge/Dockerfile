@@ -47,4 +47,7 @@ USER myuser
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
+RUN adduser -D nonroot -u 65532
+USER nonroot
+
 CMD ["/usr/local/bin/npm", "start"]

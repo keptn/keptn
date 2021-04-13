@@ -65,6 +65,11 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/mongodb/data
               name: mongodata
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 184
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       restartPolicy: Always
       volumes:
         - name: mongodata

@@ -29,6 +29,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}         
     spec:
+      securityContext:
+        fsGroup: 65532
       containers:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
@@ -56,6 +58,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
@@ -70,6 +77,11 @@ spec:
               value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
       serviceAccountName: keptn-lighthouse-service
 ---
 apiVersion: v1

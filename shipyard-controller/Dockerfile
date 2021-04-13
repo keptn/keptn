@@ -33,7 +33,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.11
+FROM alpine:3.13
 
 ENV env=production
 
@@ -57,6 +57,9 @@ ENV GOTRACEBACK=all
 #travis-uncomment ADD MANIFEST /
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
+
+RUN adduser -D nonroot -u 65532
+USER nonroot
 
 # Run the web service on container startup.
 ENV GIN_MODE=release
