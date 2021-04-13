@@ -8,14 +8,11 @@ export interface RetryParams {
 }
 
 /**
- * Retry for either client or server errors.
+ * Avoid retry for status codes which are part of a logical flow
  *
- * Server purposefully send 401 OR 403 based on login flow enabled for this Keptn instance.
- *
- *  - 401 : Unauthorized. Login required
- *  - 403 : Forbidden. Login was successful, however, it's not acceptable for this instance.
+ *  - 401 : Unauthorized. Login flow get triggered with this status.
  */
-const avoidRetryFor = [401, 403];
+const avoidRetryFor = [401];
 
 const defaultParams: RetryParams = {
   maxAttempts: 3,

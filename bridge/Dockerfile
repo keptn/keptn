@@ -28,6 +28,7 @@ ENV API_TOKEN ""
 
 # OAuth and session cookie related configurations
 ENV OAUTH_ENABLED "false"
+ENV OAUTH_DISCOVERY ""
 ENV SECURE_COOKIE "false"
 # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
 ENV TRUST_PROXY ""

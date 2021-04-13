@@ -12,7 +12,6 @@ const DEFAULT_TRUST_PROXY = 1;
 
 const SESSION_SECRET = random({length: 200});
 
-
 /**
  * Uses a session cookie backed by in-memory cookies store.
  *
@@ -39,9 +38,33 @@ const sessionConfig = {
 }
 
 /**
- * Initialize session middleware for the application
+ * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
  */
-function initialize(app) {
+function isAuthenticated(req) {
+  if (req.session.authenticated) {
+    return true;
+  }
+
+  req.session.authenticated = false;
+  return false;
+}
+
+/**
+ * Set the session authenticated state for the specific principal
+ */
+function setAuthenticatedPrincipal(req, principal) {
+  req.session.authenticated = true;
+  req.session.principal = principal;
+}
+
+/**
+ * Destroy the session comes with this request
+ */
+function removeSession(req) {
+  req.session.destroy();
+}
+
+module.exports = (app) => {
   console.log('Enabling sessions for bridge.');
 
   if (process.env.SECURE_COOKIE === 'true') {
@@ -61,21 +84,10 @@ function initialize(app) {
 
   // Register session middleware
   router.use(expressSession(sessionConfig));
-  app.use(router);
+
+  return router
 }
 
-/**
- * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
- */
-function isAuthenticated(req) {
-  if (req.session.authenticated) {
-    return true;
-  }
-
-  req.session.authenticated = false;
-  return false;
-}
-
-
-exports.initialize = initialize;
-exports.isAuthenticated = isAuthenticated;
+module.exports.isAuthenticated = isAuthenticated;
+module.exports.setAuthenticatedPrincipal = setAuthenticatedPrincipal;
+module.exports.removeSession = removeSession;
