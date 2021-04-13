@@ -44,7 +44,7 @@
     <div fxLayout="row">
       <div fxFlex></div>
       <div fxLayout="row" fxLayoutAlign="start end">
-        <button dt-button variant="nested" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluation.sloFileContentParsed">Show SLO</button>
+        <button dt-button variant="secondary" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluation.sloFileContentParsed"><dt-icon name="services"></dt-icon> Show SLO</button>
         <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">Ignore for comparison</button>
       </div>
     </div>
