@@ -1,22 +1,82 @@
 name: golangci-lint
 on: [pull_request]
+env:
+  golangci-lint-args: '--presets=bugs,error,unused,complexity --tests=false'
 jobs:
   golangci-lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: lint/secret-service
+      - name: lint/api
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
-          working-directory: secret-service
-          args: --tests=false
+          working-directory: api
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/approval-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: approval-service
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/cli
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: cli
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/configuration-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: configuration-service
+          args: ${{ env.golangci-lint-args }}
           github-token: $${{ secrets.GITHUB_TOKEN }}
       - name: lint/distributor
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
           working-directory: distributor
-          args: --tests=false
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/helm-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: helm-service
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/jmeter-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: jmeter-service
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/lighthouse-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: lighthouse-service
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/mongodb-datastore
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: mongodb-datastore
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/secret-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: secret-service
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/shipyard-controller
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: shipyard-controller
+          args: ${{ env.golangci-lint-args }}
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/statistics-service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          working-directory: statistics-service
+          args: ${{ env.golangci-lint-args }}
           github-token: $${{ secrets.GITHUB_TOKEN }}
