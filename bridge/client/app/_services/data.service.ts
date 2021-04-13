@@ -197,8 +197,8 @@ export class DataService {
     });
   }
 
-  private getRoot(project: Project, shkeptncontext: string): Observable<Root> {
-    return this.apiService.getRoots(project.projectName, 1, null, null, null, shkeptncontext).pipe(
+  public getRoot(projectName: string, shkeptncontext: string): Observable<Root> {
+    return this.apiService.getRoots(projectName, 1, null, null, null, shkeptncontext).pipe(
       map(response => response.body.events || []),
       switchMap(roots => this.rootMapper(roots).pipe(
         map(sequences => sequences.pop())
@@ -207,7 +207,7 @@ export class DataService {
   }
 
   public loadUntilRoot(project: Project, shkeptncontext: string): void {
-    this.getRoot(project, shkeptncontext).subscribe((root: Root) => {
+    this.getRoot(project.projectName, shkeptncontext).subscribe((root: Root) => {
       if (root) {
         this.loadOldRoots(project, root);
       }
