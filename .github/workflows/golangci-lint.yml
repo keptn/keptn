@@ -1,7 +1,7 @@
 name: golangci-lint
 on: [pull_request]
 env:
-  golangci-lint-args: '--presets=bugs,error,unused,complexity --tests=false'
+  golangci-lint-args: '--presets=bugs,unused,complexity --tests=false'
 jobs:
   golangci-lint:
     name: lint
