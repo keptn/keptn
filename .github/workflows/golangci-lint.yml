@@ -4,15 +4,19 @@ jobs:
   golangci-lint:
     name: lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        svc: [api, approval-service, cli, configuration-service, distributor, helm-service, jmeter-service, lighthouse-service, mongodb-datastore, remediation-service, secret-service, statistics-service]
     steps:
       - uses: actions/checkout@v2
-      - name: ${{ matrix.svc }}
+      - name: lint/secret-service
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.29
-          working-directory: ${{ matrix.svc }}
+          working-directory: secret-service
+          args: --tests=false
+          github-token: $${{ secrets.GITHUB_TOKEN }}
+      - name: lint/distributor
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
+          working-directory: distributor
           args: --tests=false
           github-token: $${{ secrets.GITHUB_TOKEN }}
