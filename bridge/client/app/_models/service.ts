@@ -1,16 +1,23 @@
 import {Root} from "./root";
 import {Trace} from "./trace";
+import { Deployment } from './deployment';
 
 export class Service {
   serviceName: string;
   deployedImage: string;
   stage: string;
+  allDeploymentsLoaded = false;
+  deployments: Deployment[] = [];
 
   roots: Root[] = [];
   openApprovals: Trace[] = [];
 
   getShortImageName(): string {
-    return this.deployedImage?.split("/").pop();
+    return this.deployedImage?.split('/').pop();
+  }
+
+  getImageVersion(): string {
+    return this.deployedImage?.split(':').pop();
   }
 
   getOpenApprovals(): Trace[] {
