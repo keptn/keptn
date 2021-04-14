@@ -127,7 +127,7 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   project     body    operations.CreateProjectParams     true        "Project"
-// @Success 200 {object} operations.CreateProjectResponse	"ok"
+// @Success 201 {object} operations.CreateProjectResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /project [post]
