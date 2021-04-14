@@ -111,12 +111,6 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 10999
-            initialDelaySeconds: 5
-            periodSeconds: 5
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
@@ -298,12 +292,6 @@ spec:
               value: {{ .Values.keptnSpecVersion }}
           ports:
             - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 10999
-            initialDelaySeconds: 5
-            periodSeconds: 5
           resources:
             requests:
               memory: "32Mi"
@@ -317,12 +305,6 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 10999
-            initialDelaySeconds: 5
-            periodSeconds: 5
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
@@ -420,12 +402,6 @@ spec:
                   fieldPath: metadata.namespace
           ports:
             - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 10999
-            initialDelaySeconds: 5
-            periodSeconds: 5
           resources:
             requests:
               memory: "32Mi"
@@ -628,12 +604,6 @@ spec:
               value: keptn
           ports:
             - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 10999
-            initialDelaySeconds: 5
-            periodSeconds: 5
           resources:
             requests:
               memory: "32Mi"
@@ -647,12 +617,6 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 10999
-            initialDelaySeconds: 5
-            periodSeconds: 5
           {{- include "keptn.distributor.resources" . | nindent 10 }}
           env:
             - name: PUBSUB_URL
