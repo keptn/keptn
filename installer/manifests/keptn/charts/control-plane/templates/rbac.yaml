@@ -57,7 +57,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -69,7 +69,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -115,6 +115,7 @@ rules:
       - get
       - delete
       - update
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -175,14 +176,6 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - pods
-    verbs:
-      - get
-      - delete
-      - deletecollection
-  - apiGroups:
-      - ""
-    resources:
       - secrets
     verbs:
       - get
@@ -190,6 +183,29 @@ rules:
       - create
     resourceNames:
       - "bridge-credentials"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-delete-bridge-pod
+  labels:
+    app.kubernetes.io/name: keptn-delete-bridge-pod
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - delete
+      - deletecollection
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -214,9 +230,9 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-api-service-configure-bridge
+  name: keptn-api-service-manage-bridge-secret
   labels:
-    app.kubernetes.io/name: keptn-api-service-configure-bridge
+    app.kubernetes.io/name: keptn-api-service-manage-bridge-secret
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
@@ -226,6 +242,26 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: keptn-manage-bridge-secret
+subjects:
+  - kind: ServiceAccount
+    name: keptn-api-service
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-api-service-delete-bridge-pod
+  labels:
+    app.kubernetes.io/name: keptn-api-service-delete-bridge-pod
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-delete-bridge-pod
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
@@ -289,6 +325,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-shipyard-controller
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -308,6 +345,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-secret-service
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
