@@ -597,7 +597,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false # False is necessary because we have to write the git config file
             allowPrivilegeEscalation: false
       volumes:
         - name: configuration-volume
