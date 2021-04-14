@@ -334,7 +334,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 101
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
       volumes:
         - name: api-nginx-config

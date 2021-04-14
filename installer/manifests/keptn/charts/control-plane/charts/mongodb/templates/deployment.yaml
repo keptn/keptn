@@ -68,7 +68,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 184
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
       restartPolicy: Always
       volumes:
