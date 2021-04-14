@@ -163,9 +163,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: keptn-configure-bridge
+  name: keptn-manage-bridge-secret
   labels:
-    app.kubernetes.io/name: keptn-configure-bridge
+    app.kubernetes.io/name: keptn-manage-bridge-secret
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
@@ -185,14 +185,9 @@ rules:
     resources:
       - secrets
     verbs:
-      - create
-  - apiGroups:
-      - ""
-    resources:
-      - secrets
-    verbs:
       - get
       - update
+      - create
     resourceNames:
       - "bridge-credentials"
 ---
@@ -230,7 +225,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: keptn-configure-bridge
+  name: keptn-manage-bridge-secret
 subjects:
   - kind: ServiceAccount
     name: keptn-api-service
