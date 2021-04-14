@@ -62,8 +62,8 @@ ENV GOTRACEBACK=all
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 
-RUN adduser -D nonroot -u 65532
-USER nonroot
+RUN adduser -D unprivileged -u 65532
+USER unprivileged
 
 # Run the web service on container startup.
 CMD ["/mongodb-datastore", "--port=8080", "--host=0.0.0.0"]
