@@ -103,24 +103,41 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		ProjectName:  *params.Name,
 	})
 
+	rollbackFunc := func() error {
+		pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
+			pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+			return err
+		}
+		return nil
+	}
+
 	if err != nil {
 		pm.Logger.Error(fmt.Sprintf("Error occurred while creating project in configuration service: %s", err.Error()))
-		return err, func() error {
-			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
-			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
-				pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
-				return err
-			}
-			return nil
-		}
+		return err, rollbackFunc
 	}
 	pm.Logger.Info(fmt.Sprintf("Created project in configuration service: %s", *params.Name))
+
+	// extend the rollback func to also delete the project in case anything goes wrong afterwards
+	rollbackFunc = func() error {
+		pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
+		if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
+			pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error()))
+			return err
+		}
+		pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
+			pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+			return err
+		}
+		return nil
+	}
 
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
 	shipyard, err := common.UnmarshalShipyard(string(decodedShipyard))
 	for _, shipyardStage := range shipyard.Spec.Stages {
 		if err := pm.ConfigurationStore.CreateStage(*params.Name, shipyardStage.Name); err != nil {
-			return err, nil
+			return err, rollbackFunc
 		}
 		pm.Logger.Info(fmt.Sprintf("Stage %s created", shipyardStage.Name))
 	}
@@ -135,31 +152,11 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	}
 	if err := pm.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
 		pm.Logger.Error(fmt.Sprintf("Error occurred while uploading shipyard resource to configuration service: %s", err.Error()))
-		return err, func() error {
-			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
-			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
-				pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error()))
-				return err
-			}
-			pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
-			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
-				pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
-				return err
-			}
-			return nil
-		}
+		return err, rollbackFunc
 	}
 
 	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard); err != nil {
-		return err, func() error {
-			if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
-				return err
-			}
-			if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
-				return err
-			}
-			return nil
-		}
+		return err, rollbackFunc
 	}
 	return nil, nilRollback
 
