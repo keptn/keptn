@@ -58,6 +58,17 @@ function setAuthenticatedPrincipal(req, principal) {
 }
 
 /**
+ * Returns the current principal if session is authenticated. Otherwise returns undefined
+ */
+function getCurrentPrincipal(req) {
+  if (req.session !== undefined && req.session.authenticated) {
+    return req.session.principal;
+  }
+
+  return undefined;
+}
+
+/**
  * Destroy the session comes with this request
  */
 function removeSession(req) {
@@ -91,3 +102,4 @@ module.exports = (app) => {
 module.exports.isAuthenticated = isAuthenticated;
 module.exports.setAuthenticatedPrincipal = setAuthenticatedPrincipal;
 module.exports.removeSession = removeSession;
+module.exports.getCurrentPrincipal = getCurrentPrincipal;

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 @Component({
   selector: 'ktb-user',
@@ -7,8 +7,9 @@ import {Component} from '@angular/core';
 })
 export class KtbUserComponent {
 
+  @Input() user;
+
   logout(): void {
     window.location.href = '/logout';
   }
-
 }

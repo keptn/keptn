@@ -64,7 +64,7 @@
     </div>
     <p class="m-0 mt-2 small">By enabling this feature (recommended), Keptn will notify about new versions and security patches for Keptn and therefore collect statistical data. Details can be found at <a [href]="versionCheckReference | keptnUrl" target="_blank" [textContent]="versionCheckReference | keptnUrl"></a></p>
   </div>
-  <ktb-user *ngIf="keptnInfo?.bridgeInfo.authType === 'OAUTH' "></ktb-user>
+  <ktb-user *ngIf="keptnInfo?.bridgeInfo.authType === 'OAUTH'" [user]="keptnInfo?.bridgeInfo.user"></ktb-user>
 </dt-context-dialog>
 
 <dt-confirmation-dialog [state]="versionCheckDialogState" aria-label="Version check feature info">

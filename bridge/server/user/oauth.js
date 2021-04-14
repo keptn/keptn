@@ -5,7 +5,7 @@ const sessionAuthentication = require('./session').setAuthenticatedPrincipal;
 const removeSession = require('./session').removeSession;
 
 const AUTHORIZATION = "authorization";
-const AUTH_URL = "authorizationUrl";
+const AUTH_URL = "authorization_url";
 const TOKEN_DECISION = "token_decision";
 
 module.exports = (async () => {
@@ -111,7 +111,7 @@ module.exports = (async () => {
       }
     }
 
-    sessionAuthentication(req, tokenDecision['user']);
+    sessionAuthentication(req, tokenDecision.data['user']);
 
     return res.redirect('/');
   });
