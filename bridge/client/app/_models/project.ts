@@ -102,9 +102,9 @@ export class Project {
     const deployments: Deployment[] = [];
     this.stages.forEach(stage => {
       const service = stage.services.find(service => service.serviceName === serviceName);
-      if (service) {
+      if (service?.deploymentContext) {
         const image = service.getImageVersion();
-        const deployment = deployments.find(deployment => deployment.version === image);
+        const deployment = deployments.find(deployment => deployment.version === image && deployment.shkeptncontext === service.deploymentContext);
         if (deployment) {
           deployment.stages.push(stage.stageName);
         } else {
