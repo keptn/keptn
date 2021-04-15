@@ -1,10 +1,10 @@
 <ng-container *ngIf="deployment">
   <dt-loading-distractor *ngIf="!deployment.sequence, else details">Loading …</dt-loading-distractor>
   <ng-template #details>
-    <dt-info-group>
+    <dt-info-group class="mb-2">
       <dt-info-group-title>
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-          <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
+          <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center" class="service-title">
             <span class="bold" [textContent]="deployment.sequence.getShortImageName()"></span>&nbsp;
             <dt-tag-list aria-label="deployment-labels">
               <dt-tag *ngFor="let label of (deployment.sequence.getEvaluation(selectedStage)?.getFinishedEvent()?.data.labels || deployment.sequence.data.labels) | keyvalue">
@@ -15,19 +15,18 @@
           </div>
         </div>
       </dt-info-group-title>
-
     </dt-info-group>
 
-    <ktb-sequence-timeline class="mb-3" [selectedStage]="selectedStage" [currentSequence]="deployment.sequence" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
+    <ktb-sequence-timeline [selectedStage]="selectedStage" [currentSequence]="deployment.sequence" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
 
-    <div fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence.getEvaluation(selectedStage) as evaluationEvent">
+    <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence.getEvaluation(selectedStage) as evaluationEvent">
       <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">
         <ktb-event-item-detail>
           <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
         </ktb-event-item-detail>
       </ktb-event-item>
     </div>
-    <div fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApprovals(selectedStage).length > 0">
+    <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApprovals(selectedStage).length > 0">
       <ktb-event-item *ngFor="let approvalEvent of deployment.sequence.getPendingApprovals(selectedStage)" [event]="approvalEvent"></ktb-event-item>
     </div>
   </ng-template>
