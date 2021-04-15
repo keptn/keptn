@@ -50,7 +50,7 @@ module.exports = (async function (){
 
     // Initialise session middleware
     app.use(sessionRouter);
-    // Initialising OAuth middleware.
+    // Initializing OAuth middleware.
     app.use(oauthRouter);
 
     // Authentication filter for API requests
