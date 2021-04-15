@@ -294,6 +294,8 @@ spec:
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
+      securityContext:
+        fsGroup: 101
       containers:
         - name: api-gateway-nginx
           image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
@@ -329,6 +331,11 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "250m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 101
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
       volumes:
         - name: api-nginx-config
           configMap:

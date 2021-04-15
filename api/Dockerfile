@@ -37,7 +37,8 @@ RUN sed -i "s/version: develop/${REPLACE}/g" /go/src/github.com/keptn/keptn/api/
 RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.11
+FROM alpine:3.13
+
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 
@@ -57,6 +58,9 @@ ENV GOTRACEBACK=all
 #travis-uncomment ADD MANIFEST /
 #travis-uncomment COPY entrypoint.sh /
 #travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
+
+RUN adduser -D nonroot -u 65532
+USER nonroot
 
 # Run the web service on container startup.
 CMD ["/api", "--host=0.0.0.0", "--port=8080"]

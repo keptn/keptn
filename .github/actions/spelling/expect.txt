@@ -192,7 +192,6 @@ dvcm
 dynatrace
 dynatraceheader
 dynatracelabs
-EAP
 easytravel
 eb
 ebe
@@ -302,7 +301,6 @@ GOTRACEBACK
 goutils
 goutilsmodels
 gpg
-gpu
 grabnerandi
 grep
 grpc
@@ -534,7 +532,6 @@ Nano
 nats
 natsbox
 nbsp
-nc
 nch
 netutil
 Neue
@@ -553,6 +550,7 @@ nodemon
 nodeport
 nokubectl
 noname
+nonroot
 noopener
 Nop
 noreferrer
@@ -760,7 +758,7 @@ strconv
 stretchr
 strfmt
 stringify
-stringp
+Stringp
 structs
 stylesheet
 subdomain

@@ -30,6 +30,8 @@ spec:
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}     
     spec:
+      securityContext:
+        fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
@@ -62,6 +64,11 @@ spec:
             secretKeyRef:
                 name: mongodb-credentials
                 key: password
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
@@ -80,6 +87,11 @@ spec:
             value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH
             value: '/event'
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service
