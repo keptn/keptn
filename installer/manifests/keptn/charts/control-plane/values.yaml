@@ -16,11 +16,6 @@ nats:
   natsbox:
     enabled: false
 
-  securityContext:
-    fsGroup: 1000
-    runAsUser: 1000
-    runAsNonRoot: true
-
 apiGatewayNginx:
   type: ClusterIP
   port: 80
