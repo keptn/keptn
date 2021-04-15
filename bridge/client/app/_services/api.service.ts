@@ -17,6 +17,7 @@ import {KeptnService} from '../_models/keptn-service';
 import {KeptnServicesMock} from '../_models/keptn-services.mock';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
+import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root'
@@ -61,12 +62,17 @@ export class ApiService {
       .get<any>(url, { responseType: 'text' as 'json' });
   }
 
-  public isVersionCheckEnabled(): boolean {
-    return JSON.parse(localStorage.getItem(this.VERSION_CHECK_COOKIE));
+  public isVersionCheckEnabled(): boolean | undefined {
+    const versionInfo = JSON.parse(localStorage.getItem(this.VERSION_CHECK_COOKIE));
+    let enabled = typeof versionInfo === 'boolean' ? versionInfo : versionInfo?.enabled; // support old format
+    if (!enabled && (!versionInfo?.time || moment().subtract(5, 'days').isAfter(versionInfo.time))) {
+      enabled = undefined;
+    }
+    return enabled;
   }
 
   public setVersionCheck(enabled: boolean): void {
-    localStorage.setItem(this.VERSION_CHECK_COOKIE, String(enabled));
+    localStorage.setItem(this.VERSION_CHECK_COOKIE, JSON.stringify({enabled, time: moment().valueOf()}));
   }
 
   public getAvailableVersions(): Observable<any> {
