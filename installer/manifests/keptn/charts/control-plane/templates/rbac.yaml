@@ -97,6 +97,26 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: keptn-get-secrets
+  labels:
+    app.kubernetes.io/name: keptn-get-secrets
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: keptn-manage-roles
   labels:
     app.kubernetes.io/name: keptn-manage-roles
@@ -306,7 +326,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: keptn-manage-secrets
+  name: keptn-get-secrets
 subjects:
   - kind: ServiceAccount
     name: keptn-configuration-service
