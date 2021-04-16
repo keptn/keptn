@@ -46,7 +46,7 @@ module.exports = (async function (){
     const oauthRouter = await require('./user/oauth');
     const authCheck = require('./user/session').isAuthenticated;
 
-    authType = "OAUTH";
+    authType = 'OAUTH';
 
     // Initialise session middleware
     app.use(sessionRouter);

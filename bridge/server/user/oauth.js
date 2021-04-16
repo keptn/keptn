@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const axios = require("axios");
+const axios = require('axios');
 const sessionAuthentication = require('./session').setAuthenticatedPrincipal;
 const removeSession = require('./session').removeSession;
 
-const AUTHORIZATION = "authorization";
-const AUTH_URL = "authorization_url";
-const TOKEN_DECISION = "token_decision";
+const AUTHORIZATION = 'authorization';
+const AUTH_URL = 'authorization_url';
+const TOKEN_DECISION = 'token_decision';
 
 module.exports = (async () => {
   console.log('Enabling OAuth for bridge.');
