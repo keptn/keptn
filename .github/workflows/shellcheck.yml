@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   lint_shellscripts:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Run ShellCheck
