@@ -204,6 +204,10 @@ spec:
               value: "{{ .Values.bridge.showApiToken.enabled }}"
             - name: KEPTN_INSTALLATION_TYPE
               value: "{{ .Values.bridge.installationType |default (print "QUALITY_GATES,CONTINUOUS_OPERATIONS") }}"
+            {{- range $key, $value := .Values.bridge.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           envFrom:
             - secretRef:
                 name: bridge-credentials
@@ -558,6 +562,10 @@ spec:
                   fieldPath: metadata.namespace
             - name: DATASTORE_URI
               value: mongodb-datastore:8080
+            {{- range $key, $value := .Values.configurationService.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           ports:
             - containerPort: 8080
           resources:
