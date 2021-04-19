@@ -322,7 +322,7 @@ class Trace {
   }
 
   getDeploymentUrl() {
-    return this.data.deployment.deploymentURIsPublic[0];
+    return this.data.deployment?.deploymentURIsPublic?.find(e => true);
   }
 
   findTrace(comp) {
