@@ -29,6 +29,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
+        this.error = null;
         if (this.route.snapshot.url[0].path === 'trace') {
           this.dataService.loadTracesByContext(params.shkeptncontext);
           this.dataService.traces
