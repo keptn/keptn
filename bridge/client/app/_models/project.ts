@@ -95,7 +95,7 @@ export class Project {
   getDeploymentEvaluation(trace: Trace): Trace {
     let service = this.getServices().find(s => s.serviceName == trace.data.service);
     let root = this.getRootEvent(service, trace);
-    return root?.traces.slice().reverse().find(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
+    return root?.findLastTrace(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
   }
 
   getDeploymentsOfService(serviceName: string): Deployment[] {

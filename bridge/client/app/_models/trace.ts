@@ -332,6 +332,13 @@ class Trace {
       return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
   }
 
+  findLastTrace(comp) {
+    if(comp(this))
+      return this;
+    else
+      return this.traces.reduce((result, trace) => trace.findTrace(comp) || result, null);
+  }
+
   getLastTrace(): Trace {
     return this.traces.length ? this.traces[this.traces.length - 1].getLastTrace() : this;
   }
