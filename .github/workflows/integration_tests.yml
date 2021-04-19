@@ -421,7 +421,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
+          #DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
           QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
           QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
         run: test/test_quality_gates_standalone.sh
@@ -454,7 +454,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
+          #DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
         run: test/test_delivery_assistant.sh
 
       - name: Test Continuous Delivery with parallel stages (with sockshop)
