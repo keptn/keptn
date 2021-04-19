@@ -16,11 +16,9 @@ export class Root extends Trace {
   isFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
-      this.traces.forEach((trace) => {
-        if(trace.isFailedEvaluation()) {
-          result = trace.data.stage;
-        }
-      });
+      let failedEvaluation = this.findTrace(t => t.isEvaluation() && t.isFailedEvaluation());
+      if(failedEvaluation)
+        result = failedEvaluation.getStage();
     }
     return result;
   }

@@ -78,7 +78,7 @@ export class Project {
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.roots?.find(root => (root?.isDeployment() || root?.isEvaluation()) && root.traces.some(trace => trace.data.stage === stage.stageName))).filter(root => root?.isFailedEvaluation() === stage.stageName);
+    return this.getServices().map(service => service.getRecentSequence()).filter(seq => seq?.isFailedEvaluation() === stage.stageName);
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
