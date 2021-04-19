@@ -46,8 +46,8 @@ export class Root extends Trace {
     const tracesOfStage = this.getTracesOfStage(stage);
     let pending = undefined;
 
-    for(let i = 0; i < tracesOfStage.length && pending === undefined; ++i){
-      if(tracesOfStage[i].isApproval()){
+    for(let i = 0; i < tracesOfStage.length && pending === undefined; ++i) {
+      if(tracesOfStage[i].getLastTrace().isApproval()) {
         pending = tracesOfStage[i].isApprovalPending();
       }
     }
@@ -56,10 +56,6 @@ export class Root extends Trace {
 
   getPendingApproval(stageName?: string): Trace {
     return this.findTrace(trace => trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.getStage() == stageName));
-  }
-
-  getLastTrace(): Trace {
-    return this.traces ? this.traces[this.traces.length - 1] : null;
   }
 
   getTracesOfStage(stage: string): Trace[] {
@@ -72,7 +68,7 @@ export class Root extends Trace {
 
   getLastTraceOfStage(stage: string): Trace {
     let traces = this.getTracesOfStage(stage);
-    return traces ? traces[traces.length-1] : null;
+    return traces ? traces[traces.length-1].getLastTrace() : null;
   }
 
   getStages(): string[] {

@@ -9,8 +9,9 @@
         <div class="container">
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
             <dt-icon *ngIf="!event.isLoading(); else showLoading" class="event-icon"
+                     [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"
                      [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()"
-                     [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"></dt-icon>
+                     [class.highlight]="event.hasPendingApproval(event.getLastTrace().getStage())"></dt-icon>
             <ng-template #showLoading>
               <button class="m-0 p-0" dt-button disabled variant="nested">
                 <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
