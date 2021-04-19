@@ -282,8 +282,8 @@ class Trace {
   }
 
   isStarted() {
-    if(!this.started) {
-      this.started = this.traces.some(t => t.type.includes(".started"));
+    if(!this.started && this.traces) {
+      this.started = this.traces.some(t => t.type.includes(".started") || t.isStarted());
     }
 
     return this.started;

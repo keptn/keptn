@@ -69,6 +69,11 @@ export class Root extends Trace {
     return traces ? traces[traces.length-1].getLastTrace() : null;
   }
 
+  getLastSequenceOfStage(stage: string): Trace {
+    let traces = this.getTracesOfStage(stage);
+    return traces ? traces[traces.length-1] : null;
+  }
+
   getStages(): string[] {
     let result: string[] = [];
     if(this.traces) {
