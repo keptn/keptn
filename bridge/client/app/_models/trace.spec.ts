@@ -2161,7 +2161,7 @@ describe('Trace', () => {
     expect(rootTraces[8].getService()).toBe('control-plane');
 
     expect(evaluationTraces[0].type).toBe('sh.keptn.event.evaluation.finished');
-    expect(evaluationTraces[0].getLabel()).toBe('Evaluation finished', 'Label for trace "sh.keptn.event.evaluation.finished" should be "Evaluation finished"');
+    expect(evaluationTraces[0].getLabel()).toBe('evaluation', 'Label for trace "sh.keptn.event.evaluation.finished" should be "evaluation"');
     expect(evaluationTraces[0].getIcon()).toBe('traffic-light', 'Icon for trace "sh.keptn.event.evaluation.finished" should be "traffic-light"');
     expect(evaluationTraces[0].isFaulty()).toBe(null);
     expect(evaluationTraces[0].isWarning()).toBe(null);
