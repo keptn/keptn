@@ -29,7 +29,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-        this.error = null;
         if (this.route.snapshot.url[0].path === 'trace') {
           this.dataService.loadTracesByContext(params.shkeptncontext);
           this.dataService.traces
@@ -63,8 +62,11 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           this.project$
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe(project => {
-              if (project === undefined)
+              if (project === undefined) {
                 this.error = 'project';
+              } else {
+                this.error = null;
+              }
               this._changeDetectorRef.markForCheck();
             }, error => {
               this.error = 'projects';
