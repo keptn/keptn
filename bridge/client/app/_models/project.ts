@@ -4,6 +4,7 @@ import {Service} from "./service";
 import {Trace} from "./trace";
 import {Root} from "./root";
 import { Deployment } from './deployment';
+import {EventTypes} from "./event-types";
 
 export class Project {
   projectName: string;
@@ -47,13 +48,9 @@ export class Project {
   getLatestDeployment(service: Service, stage?: Stage): Trace {
     let currentService = this.getService(service.serviceName);
 
-    if(currentService.roots)
-      return currentService.roots
-        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage.stageName)?.isDirectDeployment())
-        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
-    else
-      return null;
+    return currentService.roots
+      ?.find(r => r.shkeptncontext == currentService.lastEventTypes[EventTypes.DEPLOYMENT_FINISHED].keptnContext)
+      ?.findTrace(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
   }
 
   getLatestSuccessfulArtifact(service: Service, stage?: Stage): Trace {
