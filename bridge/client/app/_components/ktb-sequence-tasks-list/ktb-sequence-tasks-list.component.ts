@@ -51,6 +51,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   set stage(value: String) {
     if (this._stage !== value) {
       this._stage = value;
+      this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage).id;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -74,6 +75,8 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         if (params['eventId']) {
           this.focusedEventId = params['eventId'];
+        } else {
+          this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage).id;
         }
       });
   }

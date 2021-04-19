@@ -27,7 +27,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project>;
   public _task: Trace;
-  public isExpanded: boolean;
+  @Input() public isExpanded: boolean;
 
   @ViewChild('taskPayloadDialog')
   public taskPayloadDialog: TemplateRef<any>;
