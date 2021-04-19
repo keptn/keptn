@@ -216,13 +216,9 @@ class Trace {
   }
 
   getLabel(): string {
-    // TODO: use translation file
+    // TODO: use translation file; see also EVENT_LABELS in event-labels.ts
     if(!this.label) {
-      if(this.isApprovalFinished()) {
-        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.getShortType();
-      } else {
-        this.label = EVENT_LABELS[this.type] || this.getShortType();
-      }
+      this.label = this.getShortType();
     }
 
     return this.label;
@@ -334,6 +330,10 @@ class Trace {
       return this;
     else
       return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
+  }
+
+  getLastTrace(): Trace {
+    return this.traces.length ? this.traces[this.traces.length - 1].getLastTrace() : this;
   }
 
   isSequence() {
