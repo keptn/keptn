@@ -62,7 +62,7 @@
         <dt-switch (change)="versionCheckClicked($event)" [checked]="keptnInfo?.versionCheckEnabled !== false"></dt-switch>
       </div>
     </div>
-    <p class="m-0 mt-2 small">By enabling this feature, Keptn will notify about new versions and security patches for Keptn and therefore collect statistical data. Details can be found at <a [href]="versionCheckReference | keptnUrl" target="_blank" [textContent]="versionCheckReference | keptnUrl"></a></p>
+    <p class="m-0 mt-2 small">By enabling this feature (recommended), Keptn will notify about new versions and security patches for Keptn and therefore collect statistical data. Details can be found at <a [href]="versionCheckReference | keptnUrl" target="_blank" [textContent]="versionCheckReference | keptnUrl"></a></p>
   </div>
 </dt-context-dialog>
 
