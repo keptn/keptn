@@ -26,8 +26,8 @@
         </ktb-event-item-detail>
       </ktb-event-item>
     </div>
-    <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApprovals(selectedStage).length > 0">
-      <ktb-event-item *ngFor="let approvalEvent of deployment.sequence.getPendingApprovals(selectedStage)" [event]="approvalEvent"></ktb-event-item>
+    <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApproval(selectedStage)">
+      <ktb-event-item [event]="deployment.sequence.getPendingApproval(selectedStage)"></ktb-event-item>
     </div>
   </ng-template>
 </ng-container>

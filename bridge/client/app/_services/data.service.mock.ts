@@ -41,7 +41,13 @@ export class DataServiceMock extends DataService {
     project.stages.forEach(stage => {
       stage.services.forEach(service => {
         service.roots = project.sequences.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
-        service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
+        service.openApprovals = service.roots.reduce((openApprovals, root) => {
+          const approval = root.getPendingApproval(stage.stageName);
+          if(approval) {
+            openApprovals.push(approval);
+          }
+          return openApprovals;
+        }, []);
       });
     });
     this._roots.next(project.sequences);

@@ -1,4 +1,14 @@
-import { ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Directive,
+  Input,
+  TemplateRef,
+  ViewChild,
+  OnInit,
+  OnDestroy,
+  Output, EventEmitter
+} from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import {Observable, Subject} from "rxjs";
 import {map, takeUntil} from "rxjs/operators";
@@ -10,6 +20,7 @@ import {DataService} from "../../_services/data.service";
 
 import {DateUtil} from '../../_utils/date.utils';
 import {ActivatedRoute} from '@angular/router';
+import {KeptnService} from "../../_models/keptn-service";
 
 @Directive({
   selector: `ktb-task-item-detail, [ktb-task-item-detail], [ktbTaskItemDetail]`,
@@ -27,11 +38,13 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project>;
   public _task: Trace;
-  public isExpanded: boolean;
+  @Input() public isExpanded: boolean;
 
   @ViewChild('taskPayloadDialog')
   public taskPayloadDialog: TemplateRef<any>;
   public taskPayloadDialogRef: MatDialogRef<any, any>;
+
+  @Output() itemClicked: EventEmitter<Trace> = new EventEmitter();
 
   @Input()
   get task(): Trace {
@@ -80,6 +93,10 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
       return false;
     }
     return true;
+  }
+
+  onClick(item: Trace) {
+    this.itemClicked.emit(item);
   }
 
   ngOnInit() {
