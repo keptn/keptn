@@ -145,18 +145,6 @@ export class DataService {
     });
   }
 
-  public loadProject(projectName) {
-    this.apiService.getProject(projectName)
-      .pipe(
-        map(project => Project.fromJSON(project))
-      ).subscribe((project: Project) => {
-        let projects = this._projects.getValue();
-        let index = projects.findIndex(p => p.projectName == projectName);
-        projects.splice((index < 0) ? projects.length : index, (index < 0) ? 0 : 1, project);
-        this._projects.next([...projects]);
-    });
-  }
-
   public loadRoots(project: Project) {
     let fromTime: Date = this._rootsLastUpdated[project.projectName];
     this._rootsLastUpdated[project.projectName] = new Date();

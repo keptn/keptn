@@ -87,6 +87,23 @@ func TestGetByNameErr(t *testing.T) {
 	assert.Equal(t, "my-project", projectsDBOperations.GetProjectCalls()[0].ProjectName)
 }
 
+func TestGetByNameNotFound(t *testing.T) {
+	secretStore := &common_mock.SecretStoreMock{}
+	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
+
+	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
+	project, err := instance.GetByName("my-project")
+	assert.NotNil(t, err)
+	assert.Equal(t, errProjectNotFound, err)
+	assert.Nil(t, project)
+	assert.Equal(t, "my-project", projectsDBOperations.GetProjectCalls()[0].ProjectName)
+}
+
 func TestCreate_GettingProjectFails(t *testing.T) {
 	secretStore := &common_mock.SecretStoreMock{}
 	projectsDBOperations := &db_mock.ProjectsDBOperationsMock{}

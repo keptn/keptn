@@ -12,7 +12,6 @@ import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
-import {Project} from "../_models/project";
 import {KeptnService} from '../_models/keptn-service';
 import {KeptnServicesMock} from '../_models/keptn-services.mock';
 import {TaskNames} from '../_models/task-names.mock';
@@ -85,11 +84,6 @@ export class ApiService {
       url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
-  }
-
-  public getProject(projectName: string): Observable<Project> {
-    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
-    return this.http.get<Project>(url);
   }
 
   public getKeptnServices(projectName: string): Observable<KeptnService[]> {
