@@ -26,15 +26,15 @@ func GetKeptnNamespace() string {
 }
 
 // GetShipyard godoc
-func GetShipyard(eventScope *keptnv2.EventData) (*keptnv2.Shipyard, error) {
+func GetShipyard(projectName string) (*keptnv2.Shipyard, error) {
 	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
 	if err != nil {
 		return nil, errors.New("Could not get configuration-service URL: " + err.Error())
 	}
 	resourceHandler := keptnapi.NewResourceHandler(csEndpoint.String())
-	resource, err := resourceHandler.GetProjectResource(eventScope.Project, "shipyard.yaml")
+	resource, err := resourceHandler.GetProjectResource(projectName, "shipyard.yaml")
 	if err != nil {
-		return nil, errors.New("Could not retrieve shipyard.yaml for project " + eventScope.Project + ": " + err.Error())
+		return nil, errors.New("Could not retrieve shipyard.yaml for project " + projectName + ": " + err.Error())
 	}
 
 	shipyard, err := UnmarshalShipyard(resource.ResourceContent)

@@ -209,7 +209,7 @@ func Test_getEventScope(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *keptnv2.EventData
+		want    *EventScope
 		wantErr bool
 	}{
 		{
@@ -228,7 +228,7 @@ func Test_getEventScope(t *testing.T) {
 					Type:           nil,
 				},
 			},
-			want:    &keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"},
+			want:    &EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}},
 			wantErr: false,
 		},
 		{
@@ -1764,7 +1764,7 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 
 func Test_getTaskSequencesByTrigger(t *testing.T) {
 	type args struct {
-		eventScope            *keptnv2.EventData
+		eventScope            *EventScope
 		completedTaskSequence string
 		shipyard              *keptnv2.Shipyard
 	}
@@ -1776,10 +1776,10 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "default behavior - get sequence triggered by result=pass,warning",
 			args: args{
-				eventScope: &keptnv2.EventData{
+				eventScope: &EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultPass,
 					Stage:  "dev",
-				},
+				}},
 				completedTaskSequence: "artifact-delivery",
 				shipyard: &keptnv2.Shipyard{
 					ApiVersion: shipyardVersion,
@@ -1840,10 +1840,10 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "get sequence triggered by result=fail",
 			args: args{
-				eventScope: &keptnv2.EventData{
+				eventScope: &EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultFailed,
 					Stage:  "dev",
-				},
+				}},
 				completedTaskSequence: "artifact-delivery",
 				shipyard: &keptnv2.Shipyard{
 					ApiVersion: shipyardVersion,
