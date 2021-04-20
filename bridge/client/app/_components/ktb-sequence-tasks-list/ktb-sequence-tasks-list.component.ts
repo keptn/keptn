@@ -41,6 +41,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     if (this._tasks !== value) {
       this._tasks = value;
       this._changeDetectorRef.markForCheck();
+      this.focusLastSequence();
     }
   }
 
@@ -51,8 +52,8 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   set stage(value: String) {
     if (this._stage !== value) {
       this._stage = value;
-      this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage).id;
       this._changeDetectorRef.markForCheck();
+      this.focusLastSequence();
     }
   }
 
@@ -76,7 +77,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
         if (params['eventId']) {
           this.focusedEventId = params['eventId'];
         } else {
-          this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage).id;
+          this.focusLastSequence();
         }
       });
   }
@@ -101,6 +102,11 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
       const routeUrl = this.router.createUrlTree(['/project', event.getProject(), 'sequence', event.shkeptncontext, 'event' , event.id]);
       this.location.go(routeUrl.toString());
     }
+  }
+
+  focusLastSequence() {
+    if(!this.getTasksByStage(this.tasks, this.stage).map(t => t.id).includes(this.focusedEventId))
+      this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage)?.id;
   }
 
   getTasksByStage(tasks: Trace[], stage: String) {
