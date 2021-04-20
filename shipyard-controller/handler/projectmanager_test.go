@@ -94,9 +94,7 @@ func TestGetByNameNotFound(t *testing.T) {
 	taskSequenceRepo := &db_mock.TaskSequenceRepoMock{}
 	configStore := &common_mock.ConfigurationStoreMock{}
 
-	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
-		return nil, nil
-	}
+	projectsDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) { return nil, nil }
 
 	instance := NewProjectManager(configStore, secretStore, projectsDBOperations, taskSequenceRepo, eventRepo)
 	project, err := instance.GetByName("my-project")
