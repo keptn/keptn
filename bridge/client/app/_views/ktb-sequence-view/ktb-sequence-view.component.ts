@@ -115,7 +115,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
               const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
-              let stage = params.eventId ? root.traces.find(t => t.id === params.eventId).getStage() : params.stage;
+              let stage = params.eventId ? root.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
               let eventId = params.eventId;
               if (root) {
                 this.selectSequence({ root, stage, eventId });

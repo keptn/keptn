@@ -81,7 +81,7 @@
     </table>
   </div>
   <div class="sub-task-item pt-2 pb-2" #subTaskRef *ngFor="let subTask of task.traces">
-    <ktb-task-item *ngIf="subTask.isTriggered(); else taskLine" [task]="subTask"></ktb-task-item>
+    <ktb-task-item *ngIf="subTask.isTriggered(); else taskLine" [task]="subTask" (itemClicked)="onClick($event)" (click)="$event.stopPropagation();onClick(subTask)"></ktb-task-item>
     <ng-template #taskLine>
       <div fxLayout="row">
         <div class="overflow-auto" fxFlex>
