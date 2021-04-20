@@ -291,7 +291,7 @@ func Test_getEventScope(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getEventScope(tt.args.event)
+			got, err := NewEventScope(tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getEventScope() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2168,7 +2168,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		return "", true
 	}
 
-	scope, _ := getEventScope(finishedEvent)
+	scope, _ := NewEventScope(finishedEvent)
 	if nextStage == "" {
 		nextStage = scope.Stage
 	}
@@ -2225,7 +2225,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 		return true
 	}
 
-	scope, _ := getEventScope(finishedEvent)
+	scope, _ := NewEventScope(finishedEvent)
 	if nextStage == "" {
 		nextStage = scope.Stage
 	}
@@ -2268,7 +2268,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		return true
 	}
 
-	scope, _ := getEventScope(finishedEvent)
+	scope, _ := NewEventScope(finishedEvent)
 	if nextStage == "" {
 		nextStage = scope.Stage
 	}
@@ -2443,7 +2443,7 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 	result := []models.Event{}
 
 	for _, event := range eventsCollection {
-		scope, _ := getEventScope(event)
+		scope, _ := NewEventScope(event)
 		if filter.Type != "" && *event.Type != filter.Type {
 			continue
 		}

@@ -37,6 +37,28 @@ type EventScope struct {
 	keptnContext string
 }
 
+func NewEventScope(event models.Event) (*EventScope, error) {
+	marshal, err := json.Marshal(event.Data)
+	if err != nil {
+		return nil, err
+	}
+	data := &keptnv2.EventData{}
+	err = json.Unmarshal(marshal, data)
+	if err != nil {
+		return nil, err
+	}
+	if data.Project == "" {
+		return nil, errors.New("event does not contain a project")
+	}
+	if data.Stage == "" {
+		return nil, errors.New("event does not contain a stage")
+	}
+	if data.Service == "" {
+		return nil, errors.New("event does not contain a service")
+	}
+	return &EventScope{*data, event.Shkeptncontext}, nil
+}
+
 type shipyardController struct {
 	projectRepo        db.ProjectRepo
 	eventRepo          db.EventRepo
@@ -105,35 +127,12 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 
 }
 
-// getEventScope decodes the .data property of the incoming event and checks if all properties that are relevant for determining the scope of a task sequence are present
-func getEventScope(event models.Event) (*EventScope, error) {
-	marshal, err := json.Marshal(event.Data)
-	if err != nil {
-		return nil, err
-	}
-	data := &keptnv2.EventData{}
-	err = json.Unmarshal(marshal, data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Project == "" {
-		return nil, errors.New("event does not contain a project")
-	}
-	if data.Stage == "" {
-		return nil, errors.New("event does not contain a stage")
-	}
-	if data.Service == "" {
-		return nil, errors.New("event does not contain a service")
-	}
-	return &EventScope{*data, event.Shkeptncontext}, nil
-}
-
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 
 	sc.logger.Info("Received .started event: " + *event.Type)
 	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
 	// if those are not present the next action can not be determined
-	eventScope, err := getEventScope(event)
+	eventScope, err := NewEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
@@ -171,7 +170,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
 	// if those are not present the next action can not be determined
-	eventScope, err := getEventScope(event)
+	eventScope, err := NewEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
@@ -263,7 +262,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
 	// if those are not present the next action can not be determined
-	eventScope, err := getEventScope(event)
+	eventScope, err := NewEventScope(event)
 	if err != nil {
 		sc.logger.Error("Could not determine eventScope of event: " + err.Error())
 		return err
