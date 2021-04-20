@@ -20,3 +20,7 @@
 .wide-input {
   min-width: 440px;
 }
+
+::ng-deep .dt-chart-pane {
+  overflow: visible !important;
+}
