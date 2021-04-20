@@ -50,8 +50,8 @@ bridge:
   oauth:
     enabled: false
     discovery: ""
-    securecookie: false
-    trustproxy: ""
+    secureCookie: false
+    trustProxy: ""
 
 distributor:
   image:

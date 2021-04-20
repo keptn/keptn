@@ -701,7 +701,6 @@ secondstage
 secretbackend
 secretstore
 secuirtycontextconstraints
-securecookie
 securitycontextconstraints
 Segoe
 selfmon
@@ -816,7 +815,6 @@ treemap
 triggeredid
 triggerid
 trunc
-trustproxy
 tsc
 tsconfig
 tslib
