@@ -11,8 +11,24 @@
   animation: slideDown 4s ease 0s 1 forwards;
 }
 
+:host ::ng-deep .info-note a,
+:host ::ng-deep .error-note a,
+:host ::ng-deep .success-note a {
+  color: #ffffff;
+}
+
+:host ::ng-deep .info-note .dt-button-nested .dt-button-icon .dt-icon svg,
+:host ::ng-deep .error-note .dt-button-nested .dt-button-icon .dt-icon svg,
+:host ::ng-deep .success-note .dt-button-nested .dt-button-icon .dt-icon svg {
+  fill: #ffffff;
+}
+
+.info-note, .error-note, .success-note {
+  color: #ffffff;
+}
+
 .info-note {
-  background-color: $linkcolor;
+  background-color: $secondary-color;
 }
 .error-note {
   background-color: $error-color;

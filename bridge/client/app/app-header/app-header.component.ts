@@ -44,47 +44,34 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.keptnInfo = keptnInfo;
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
-        } else if (keptnInfo.versionCheckEnabled) {
-          keptnInfo.keptnVersionInvalid = !this.doVersionCheck(keptnInfo.keptnVersion, keptnInfo.availableVersions.cli.stable, keptnInfo.availableVersions.cli.prerelease, 'Keptn');
-          keptnInfo.bridgeVersionInvalid = !this.doVersionCheck(keptnInfo.bridgeInfo.bridgeVersion, keptnInfo.availableVersions.bridge.stable, keptnInfo.availableVersions.bridge.prerelease, 'Keptn Bridge');;
+        } else if(keptnInfo.versionCheckEnabled) {
+          keptnInfo.keptnVersionInvalid = !this.doVersionCheck(keptnInfo.keptnVersion, keptnInfo.availableVersions.cli.stable);
         }
       });
   }
 
-  doVersionCheck(currentVersion, stableVersions, prereleaseVersions, type): boolean {
+  doVersionCheck(currentVersion, stableVersions:String[]): boolean {
     if(!semver.valid(currentVersion))
       return false;
 
-    stableVersions.forEach(stableVersion => {
-      if (semver.lt(currentVersion, stableVersion)) {
-        let genMessage;
-        switch (semver.diff(currentVersion, stableVersion)) {
-          case 'patch':
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a patch version with bug fixes and minor improvements. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
-            break;
-          case 'minor':
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a minor update with backwards compatible improvements. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
-            break;
-          case 'major':
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a major update and it might contain incompatible changes. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
-            break;
-          default:
-            genMessage = (version, type, major, minor) => `New ${type} ${version} available. It might contain incompatible changes. For details how to upgrade visit https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
-        }
+    const latestVersion = stableVersions[stableVersions.length-1];
+    const newerVersions = [];
+    let genMessage = (versions, major, minor) => `New Keptn ${versions} available. For details how to upgrade visit <a href="https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/" target="_blank">https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/</a>`;
 
-        const major = semver.major(stableVersion);
-        const minor = semver.minor(stableVersion);
-        this.notificationsService.addNotification(NotificationType.Info, genMessage(stableVersion, type, major, minor));
+    stableVersions.forEach(stableVersion => {
+      if(semver.lt(currentVersion, stableVersion)) {
+        newerVersions.push(stableVersion);
       }
     });
-    prereleaseVersions.forEach(prereleaseVersion => {
-      if (semver.lt(currentVersion, prereleaseVersion)) {
-        const genMessage = (version, type, major, minor) => `New ${type} ${version} available. This is a pre-release version with experimental features. For details how to upgrade visit: https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/`;
-        const major = semver.major(prereleaseVersion);
-        const minor = semver.minor(prereleaseVersion);
-        this.notificationsService.addNotification(NotificationType.Info, genMessage(prereleaseVersion, type, major, minor));
+
+    if(newerVersions.length > 0) {
+      let versionsString = newerVersions[0];
+      if (newerVersions.length > 1) {
+        versionsString = '(' + newerVersions.join(', ') + ')';
       }
-    });
+
+      this.notificationsService.addNotification(NotificationType.Info, genMessage(versionsString, semver.major(latestVersion), semver.minor(latestVersion)));
+    }
 
     return true;
   }
