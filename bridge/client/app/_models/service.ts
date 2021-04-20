@@ -1,6 +1,7 @@
-import {Root} from "./root";
-import {Trace} from "./trace";
+import {Root} from './root';
+import {Trace} from './trace';
 import { Deployment } from './deployment';
+import {EventTypes} from './event-types';
 
 export class Service {
   serviceName: string;
@@ -8,9 +9,14 @@ export class Service {
   stage: string;
   allDeploymentsLoaded = false;
   deployments: Deployment[] = [];
+  lastEventTypes: {[key: string]: {eventId: string, keptnContext: string, time: Date}};
 
   roots: Root[] = [];
   openApprovals: Trace[] = [];
+
+  get deploymentContext(): string {
+    return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
+  }
 
   getShortImageName(): string {
     return this.deployedImage?.split('/').pop();
@@ -37,6 +43,6 @@ export class Service {
   }
 
   static fromJSON(data: any) {
-    return Object.assign(new this, data);
+    return Object.assign(new this(), data);
   }
 }

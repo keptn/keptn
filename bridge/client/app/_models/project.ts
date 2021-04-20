@@ -49,7 +49,7 @@ export class Project {
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage)?.isDirectDeployment())
+        .filter(root => !stage || root.isFaulty() != stage.stageName || root.getDeploymentDetails(stage.stageName)?.isDirectDeployment())
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
     else
@@ -61,7 +61,7 @@ export class Project {
 
     if(currentService.roots)
       return currentService.roots
-        .filter(root => (root.isEvaluation() || root.isDeployment()) && (!stage || root.isFaulty() != stage.stageName || root.isDeployment() && root.getDeploymentDetails(stage)?.isDirectDeployment()))
+        .filter(root => (root.isEvaluation() || root.isDeployment()) && (!stage || root.isFaulty() != stage.stageName || root.isDeployment() && root.getDeploymentDetails(stage.stageName)?.isDirectDeployment()))
         .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
         .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
     else
@@ -102,17 +102,18 @@ export class Project {
     const deployments: Deployment[] = [];
     this.stages.forEach(stage => {
       const service = stage.services.find(service => service.serviceName === serviceName);
-      if (service) {
+      if (service?.deploymentContext) {
         const image = service.getImageVersion();
-        const deployment = deployments.find(deployment => deployment.version === image);
+        const deployment = deployments.find(deployment => deployment.version === image && deployment.shkeptncontext === service.deploymentContext);
         if (deployment) {
           deployment.stages.push(stage.stageName);
         } else {
           const deployment = Deployment.fromJSON({
             version: image,
             service: service.serviceName,
-            stages: [stage.stageName]
-          });
+            stages: [stage.stageName],
+            shkeptncontext: service.deploymentContext
+          } as Deployment);
 
           deployments.push(deployment);
         }

@@ -11,7 +11,7 @@
       <dt-icon class="icon" name="information"></dt-icon>
       <p>No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
     </div>
-    <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName">
+    <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName" (click)="selectService(project.projectName, service.serviceName)">
       <ktb-expandable-tile-header>
         <dt-info-group>
           <dt-info-group-title>
@@ -32,13 +32,13 @@
           </button>
         </dt-info-group>
       </ktb-expandable-tile-header>
-      <ktb-deployment-list [service]="service"></ktb-deployment-list>
+      <ktb-deployment-list [service]="service" [(selectedDeployment)]="serviceDetails.deployment"></ktb-deployment-list>
     </ktb-expandable-tile>
     <div class="mb-3"></div>
   </div>
 </div>
 <div class="container dark" fxFlex="66" fxLayout="column" fxLayoutGap="15px">
-
+  <ktb-service-details #serviceDetails></ktb-service-details>
 </div>
 <ng-template #noDeployment>
   <p class="m-0">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>

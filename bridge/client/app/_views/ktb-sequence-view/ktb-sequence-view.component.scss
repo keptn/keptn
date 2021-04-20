@@ -1,6 +1,10 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
+.sequence-title {
+  height: 32px;
+}
+
 .dt-tag.error {
   background-color: $error-color;
   color: $white;

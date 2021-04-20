@@ -6,11 +6,13 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
-import {Observable, Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
-import {Project} from "../../_models/project";
-import {DataService} from "../../_services/data.service";
+import {ActivatedRoute, Router} from '@angular/router';
+import {Observable, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {Project} from '../../_models/project';
+import {DataService} from '../../_services/data.service';
+import {Location} from '@angular/common';
+import { Deployment } from 'client/app/_models/deployment';
 
 @Component({
   selector: 'ktb-service-view',
@@ -28,8 +30,9 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project>;
   public serviceName: string;
+  public selectedDeployment: Deployment;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
 
   ngOnInit() {
     this.route.params
@@ -38,8 +41,16 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
         this.serviceName = params.serviceName;
 
         this.project$ = this.dataService.getProject(params.projectName);
+        this.serviceName = params.serviceName;
         this._changeDetectorRef.markForCheck();
       });
+  }
+
+  public selectService(projectName: string, serviceName: string): void {
+    if (this.serviceName !== serviceName) {
+      this.serviceName = serviceName;
+      this._changeDetectorRef.markForCheck();
+    }
   }
 
   ngOnDestroy(): void {

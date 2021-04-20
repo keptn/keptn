@@ -1,0 +1,6 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.active {
+  background-color: $yellow-100 !important;
+}
