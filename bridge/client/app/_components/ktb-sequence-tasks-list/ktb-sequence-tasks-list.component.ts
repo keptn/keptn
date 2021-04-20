@@ -105,7 +105,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   }
 
   focusLastSequence() {
-    if(!this.getTasksByStage(this.tasks, this.stage).map(t => t.id).includes(this.focusedEventId))
+    if(!this.getTasksByStage(this.tasks, this.stage).some(seq => seq.id === this.focusedEventId || seq.findTrace(t => t.id === this.focusedEventId)))
       this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage)?.id;
   }
 
@@ -115,6 +115,10 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
 
   isInvalidated(event) {
     return !!this.tasks.find(e => e.isEvaluationInvalidation() && e.triggeredid === event.id);
+  }
+
+  isFocusedTask(task) {
+    return task.id == this.focusedEventId || task.findTrace(t => t.id == this.focusedEventId);
   }
 
   ngOnDestroy(): void {

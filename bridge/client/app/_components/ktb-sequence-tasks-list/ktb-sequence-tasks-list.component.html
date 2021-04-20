@@ -1,5 +1,5 @@
 <div fxLayout="column" fxLayoutGap="15px">
   <div #taskRef fxLayout="column" fxLayoutGap="15px" *ngFor="let task of getTasksByStage(tasks, stage); let i = index; trackBy: identifyEvent">
-    <ktb-task-item [task]="task" [isExpanded]="task.id == focusedEventId" [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)" (itemClicked)="focusEvent($event)" (click)="focusEvent(task)"></ktb-task-item>
+    <ktb-task-item [task]="task" [isExpanded]="isFocusedTask(task)" [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)" (itemClicked)="focusEvent($event)" (click)="focusEvent(task)"></ktb-task-item>
   </div>
 </div>
