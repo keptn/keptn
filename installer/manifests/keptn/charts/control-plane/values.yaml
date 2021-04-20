@@ -47,6 +47,11 @@ bridge:
   showApiToken:
     enabled: true
   installationType: null
+  oauth:
+    enabled: false
+    discovery: ""
+    securecookie: false
+    trustproxy: ""
 
 distributor:
   image:

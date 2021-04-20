@@ -54,6 +54,15 @@ spec:
            value: "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
            Description: >
              Should contain the supported use cases as comma-separated string. "QUALITY_GATES", "CONTINUOUS_OPERATIONS" and "CONTINUOUS_DELIVERY" are valid values.
+         - name: OAUTH_ENABLED
+           value: "false"
+         - name: OAUTH_DISCOVERY
+           value: ""
+         - name: SECURE_COOKIE
+           value: "false"
+          # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
+         - name: TRUST_PROXY
+           value: ""
         envFrom:
           - secretRef:
               name: bridge-credentials
