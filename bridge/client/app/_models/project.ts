@@ -18,14 +18,18 @@ export class Project {
   services: Service[];
   sequences: Root[];
 
-  getServices(): Service[] {
-    if(!this.services) {
+  getServices(stage?: Stage): Service[] {
+    if(this.services && !stage) {
+      return this.services;
+    } else if(!this.services && !stage) {
       this.services = [];
       this.stages.forEach((stage: Stage) => {
         this.services = this.services.concat(stage.services.filter(s => !this.services.some(ss => ss.serviceName == s.serviceName)));
       });
+      return this.services;
+    } else {
+      return this.stages.find(s => s.stageName == stage.stageName).services;
     }
-    return this.services;
   }
 
   getShipyardVersion(): string {
@@ -78,7 +82,7 @@ export class Project {
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getServices().map(service => service.getRecentSequence()).filter(seq => seq?.isFailedEvaluation() === stage.stageName);
+    return this.getServices(stage).map(service => service.getRecentSequence()).filter(seq => seq?.isFailedEvaluation() === stage.stageName);
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {
