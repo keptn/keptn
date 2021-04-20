@@ -484,6 +484,8 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/keptn/go-utils v0.8.0/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/keptn/go-utils v0.8.3-0.20210401103138-485323a967fc h1:BDa2vmIgBrDgOH4a7/rpo0hzBjiVgE9pQ/z8yNbhDMg=
 github.com/keptn/go-utils v0.8.3-0.20210401103138-485323a967fc/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
+github.com/keptn/go-utils v0.8.3-0.20210420113635-5c618fc554f3 h1:8DEWr/K5x9HA9NZySOlB+wjpeT6XKywxvz0mzKiArLk=
+github.com/keptn/go-utils v0.8.3-0.20210420113635-5c618fc554f3/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/keptn/kubernetes-utils v0.8.1 h1:y02DIIiXeFWU+XfO8Y7y8U8u4HPZx1Lcy3ZVCM27guQ=
 github.com/keptn/kubernetes-utils v0.8.1/go.mod h1:bGCSnzuDVZK1ZwC40HFP5sn+ALB6FY8sw0RYM2M1ARc=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
