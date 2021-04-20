@@ -328,14 +328,16 @@ jobs:
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
         run: |
           go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
-          bash <(curl -s https://codecov.io/bash) -c -F api
+          env
+          # bash <(curl -s https://codecov.io/bash) -c -F api
         working-directory: ./api
 
       - name: Test os route svc
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
         run: |
           go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
+          env
+          # bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
         working-directory: ./platform-support/openshift-route-service
 
       - name: Test jmeter svc
@@ -450,7 +452,7 @@ jobs:
         working-directory: ./bridge
       - name: Coverage report
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
+        run: env # bash <(curl -s https://codecov.io/bash) -c -F bridge
 
 
   unit-tests-cli:
@@ -484,7 +486,7 @@ jobs:
         run: make test-unit-cli # go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Coverage report
-        run: bash <(curl -s https://codecov.io/bash) -c -F cli
+        run: env # bash <(curl -s https://codecov.io/bash) -c -F cli
 
   ############################################################################
   # Build CLI                                                                #
