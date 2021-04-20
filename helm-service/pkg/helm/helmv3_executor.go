@@ -144,6 +144,7 @@ func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace st
 			iCli.ReleaseName = releaseName
 			iCli.Wait = true
 			iCli.Timeout = time.Minute * 3
+			iCli.Atomic = true
 			release, err = iCli.Run(ch, vals)
 		} else {
 			iCli := action.NewUpgrade(cfg)
@@ -151,6 +152,7 @@ func (h *HelmV3Executor) UpgradeChart(ch *chart.Chart, releaseName, namespace st
 			iCli.Wait = true
 			iCli.ResetValues = true
 			iCli.Timeout = time.Minute * 3
+			iCli.Atomic = true
 			release, err = iCli.Run(releaseName, ch, vals)
 		}
 		if err != nil {
