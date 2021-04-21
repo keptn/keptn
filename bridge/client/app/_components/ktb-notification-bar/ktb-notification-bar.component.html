@@ -1,6 +1,6 @@
 <ng-container *ngFor="let notification of notifications$ | async">
   <div [className]="'page-note '+notification.type+'-note'" fxLayout="row">
-    <p class="m-0" [textContent]="notification.message" fxFlex></p>
+    <p class="m-0" [innerHtml]="notification.message" fxFlex></p>
     <button dt-icon-button variant="nested" aria-label="Hide Notification" (click)="hideNotification(notification)">
       <dt-icon name="abort"></dt-icon>
     </button>
