@@ -36,7 +36,6 @@ type shipyardController struct {
 	eventDispatcher    IEventDispatcher
 }
 
-// TODO inject eventDispatcher
 func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardController {
 	if shipyardControllerInstance == nil {
 		logger := keptncommon.NewLogger("", "", "shipyard-controller")
@@ -646,7 +645,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
 
-	return common.SendEvent(event)
+	return sc.eventDispatcher.Add(DispatcherEvent{timestamp: time.Now(), event: event})
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
@@ -661,7 +660,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 	event.SetExtension("triggeredid", triggeredID)
 	event.SetData(cloudevents.ApplicationJSON, eventScope.EventData)
 
-	return common.SendEvent(event)
+	return sc.eventDispatcher.Add(DispatcherEvent{timestamp: time.Now(), event: event})
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventScope, taskSequenceName string, task keptnv2.Task, eventHistory []interface{}) error {
@@ -730,7 +729,8 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		return err
 	}
 
-	return common.SendEvent(event)
+	// TODO: consider delay
+	return sc.eventDispatcher.Add(DispatcherEvent{timestamp: time.Now(), event: event})
 }
 
 func printObject(obj interface{}) string {
