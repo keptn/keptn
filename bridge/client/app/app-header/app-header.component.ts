@@ -44,36 +44,67 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.keptnInfo = keptnInfo;
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
-        } else if(keptnInfo.versionCheckEnabled) {
-          keptnInfo.keptnVersionInvalid = !this.doVersionCheck(keptnInfo.keptnVersion, keptnInfo.availableVersions.cli.stable);
+        } else if (keptnInfo.versionCheckEnabled) {
+          keptnInfo.keptnVersionInvalid = !this.doVersionCheck(
+            keptnInfo.bridgeInfo.bridgeVersion,
+            keptnInfo.keptnVersion,
+            keptnInfo.availableVersions.bridge,
+            keptnInfo.availableVersions.cli);
         }
       });
   }
 
-  doVersionCheck(currentVersion, stableVersions:String[]): boolean {
-    if(!semver.valid(currentVersion))
+  doVersionCheck(bridgeVersion, cliVersion, availableBridgeVersions, availableCliVersions): boolean {
+    if (!semver.valid(bridgeVersion) || !semver.valid(cliVersion))
       return false;
 
-    const latestVersion = stableVersions[stableVersions.length-1];
-    const newerVersions = [];
-    let genMessage = (versions, major, minor) => `New Keptn ${versions} available. For details how to upgrade visit <a href="https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/" target="_blank">https://keptn.sh/docs/${major}.${minor}.x/operate/upgrade/</a>`;
+    const latestVersion = availableCliVersions.stable[availableCliVersions.stable.length - 1];
+    const bridgeVersionsString = AppHeaderComponent.buildVersionString(this.getNewerVersions(availableBridgeVersions, bridgeVersion));
+    const cliVersionsString = AppHeaderComponent.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
 
-    stableVersions.forEach(stableVersion => {
-      if(semver.lt(currentVersion, stableVersion)) {
-        newerVersions.push(stableVersion);
-      }
-    });
-
-    if(newerVersions.length > 0) {
-      let versionsString = newerVersions[0];
-      if (newerVersions.length > 1) {
-        versionsString = '(' + newerVersions.join(', ') + ')';
-      }
-
-      this.notificationsService.addNotification(NotificationType.Info, genMessage(versionsString, semver.major(latestVersion), semver.minor(latestVersion)));
+    if (bridgeVersionsString || cliVersionsString) {
+      let versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${cliVersionsString && bridgeVersionsString ? 'and' : ''}
+                            ${bridgeVersionsString ? ' Keptn Bridge ' + bridgeVersionsString : ''} available. For details how to upgrade visit
+                            <a href="https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(latestVersion)}.x/operate/upgrade/" target="_blank">
+                            https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(latestVersion)}.x/operate/upgrade/</a>`;
+      this.notificationsService.addNotification(NotificationType.Info, versionMessage);
     }
 
     return true;
+  }
+
+  private static buildVersionString(versions) {
+    if (versions.stable.length > 0) {
+      return versions.stable.join(', ');
+    } else if (versions.prerelease.length > 0) {
+      return versions.prerelease.join(', ');
+    }
+
+    return null;
+  }
+
+  private getNewerVersions(availableVersions, currentVersion) {
+    const newerVersions = {
+      stable: [],
+      prerelease: []
+    }
+
+    newerVersions.stable = availableVersions.stable.filter((stableVersion) => {
+      if (semver.lt(currentVersion, stableVersion)) {
+        return stableVersion;
+      }
+    });
+
+    // It is only necessary to check prerelease versions when no stable update is available
+    if (newerVersions.stable.length === 0) {
+      newerVersions.prerelease = availableVersions.prerelease.filter((prereleaseVersion) => {
+        if (semver.lt(currentVersion, prereleaseVersion)) {
+          return prereleaseVersion;
+        }
+      });
+    }
+
+    return newerVersions;
   }
 
   showVersionCheckInfoDialog() {
