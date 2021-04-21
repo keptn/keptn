@@ -7,7 +7,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/common/eventutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -81,7 +80,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 		}()
 	}
 
-	statusType, err := eventutils.ParseEventKind(*event.Type)
+	statusType, err := keptnv2.ParseEventKind(*event.Type)
 	if err != nil {
 		return err
 	}
@@ -108,7 +107,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
-	triggeredEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
+	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
 	if err != nil {
 		return err
 	}
@@ -153,7 +152,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	sc.logger.Info("Checking if .triggered event should start a sequence in project " + eventScope.Project)
 	// get stage and taskSequenceName - cannot tell if this is actually a task sequence triggered event though
 
-	stageName, taskSequenceName, _, err := eventutils.ParseSequenceEventType(*event.Type)
+	stageName, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
 	if err != nil {
 		return err
 	}
@@ -235,7 +234,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
-	startedEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.StartedEvent))
+	startedEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.StartedEvent))
 	if err != nil {
 		return err
 	}
@@ -274,7 +273,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
-		triggeredEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
+		triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
 		if err != nil {
 			return err
 		}
@@ -331,7 +330,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return errors.New(msg)
 		}
 
-		task, _, err := eventutils.ParseTaskEventType(*event.Type)
+		task, _, err := keptnv2.ParseTaskEventType(*event.Type)
 		if err != nil {
 			return err
 		}
