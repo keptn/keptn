@@ -37,7 +37,7 @@
     </div>
   </div>
   <hr/>
-  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && !keptnInfo?.versionCheckEnabled">
+  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && keptnInfo?.versionCheckEnabled === false">
     <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
     <p class="small m-0">Automatic version and security check disabled</p>
   </div>
@@ -59,19 +59,19 @@
         <p class="m-0">Version check</p>
       </div>
       <div>
-        <dt-switch (change)="versionCheckClicked($event)" [checked]="keptnInfo?.versionCheckEnabled"></dt-switch>
+        <dt-switch (change)="versionCheckClicked($event)" [checked]="keptnInfo?.versionCheckEnabled !== false"></dt-switch>
       </div>
     </div>
-    <p class="m-0 mt-2 small">By enabling this feature, Keptn will collect statistical data and notify about new version and security patches for Keptn and Keptn Bridge. Details can be found at <a [href]="versionCheckReference | keptnUrl" target="_blank" [textContent]="versionCheckReference | keptnUrl"></a></p>
+    <p class="m-0 mt-2 small">By enabling this feature (recommended), Keptn will notify about new versions and security patches for Keptn and therefore collect statistical data. Details can be found at <a [href]="versionCheckReference | keptnUrl" target="_blank" [textContent]="versionCheckReference | keptnUrl"></a></p>
   </div>
 </dt-context-dialog>
 
 <dt-confirmation-dialog [state]="versionCheckDialogState" aria-label="Version check feature info">
   <dt-confirmation-dialog-state name="info">
-    As of now you can enable automatic version check to be notified about new version and security patches for Keptn and Keptn Bridge. This setting can be changed in the user menu on the top right.
+    Keptn provides an automatic version check to be notified about new versions and security patches for Keptn. It is recommended to have this check enabled. This setting can be changed in the user menu on the top right.
     <dt-confirmation-dialog-actions>
+      <button dt-button (click)="acceptVersionCheck(true)">Accept (recommended)</button>
       <button dt-button variant="secondary" (click)="acceptVersionCheck(false)">Decline</button>
-      <button dt-button (click)="acceptVersionCheck(true)">Accept</button>
     </dt-confirmation-dialog-actions>
   </dt-confirmation-dialog-state>
   <dt-confirmation-dialog-state name="success">
