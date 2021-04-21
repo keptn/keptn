@@ -61,6 +61,7 @@ type shipyardController struct {
 	taskSequenceRepo   db.TaskSequenceRepo
 	eventsDbOperations db.EventsDbOperations
 	logger             *keptncommon.Logger
+	eventDispatcher    IEventDispatcher
 }
 
 func GetShipyardControllerInstance() *shipyardController {
