@@ -691,46 +691,41 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 	// make sure the 'message' property from the previous event is set to ""
 	eventPayload["message"] = ""
 
-	source, _ := url.Parse("shipyard-controller")
+	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
+	event.SetID(uuid.NewString())
 
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
-	event.SetType(keptnv2.GetTriggeredEventType(task.Name))
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", eventScope.KeptnContext)
-	event.SetData(cloudevents.ApplicationJSON, eventPayload)
-
-	marshal, err := json.Marshal(event)
-	if err != nil {
-		return err
-	}
 	storeEvent := &models.Event{}
-	err = json.Unmarshal(marshal, &storeEvent)
-	if err != nil {
+	if err := keptnv2.Decode(event, storeEvent); err != nil {
 		sc.logger.Error("could not transform CloudEvent for storage in mongodb: " + err.Error())
 		return err
 	}
 
-	err = sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent)
-	if err != nil {
+	if err := sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent); err != nil {
 		sc.logger.Error("Could not store event: " + err.Error())
 		return err
 	}
 
-	err = sc.taskSequenceRepo.CreateTaskSequenceMapping(eventScope.Project, models.TaskSequenceEvent{
+	if err := sc.taskSequenceRepo.CreateTaskSequenceMapping(eventScope.Project, models.TaskSequenceEvent{
 		TaskSequenceName: taskSequenceName,
 		TriggeredEventID: event.ID(),
 		Stage:            eventScope.Stage,
 		KeptnContext:     eventScope.KeptnContext,
-	})
-	if err != nil {
+	}); err != nil {
 		sc.logger.Error("Could not store mapping between eventID and task: " + err.Error())
 		return err
 	}
 
-	// TODO: consider delay
-	return sc.eventDispatcher.Add(DispatcherEvent{timestamp: time.Now(), event: event})
+	sendTaskTimestamp := time.Now()
+	if task.TriggeredAfter != "" {
+		if duration, err := time.ParseDuration(task.TriggeredAfter); err == nil {
+			sendTaskTimestamp = sendTaskTimestamp.Add(duration)
+		} else {
+			sc.logger.Error(fmt.Sprintf("could not parse triggeredAfter property: %s", err.Error()))
+			// TODO how do we handle this? send event immediately or not at all?
+		}
+		sc.logger.Info(fmt.Sprintf("queueing %s event with ID %s to be sent at %s", event.Type(), event.ID(), sendTaskTimestamp.String()))
+	}
+	return sc.eventDispatcher.Add(DispatcherEvent{timestamp: sendTaskTimestamp, event: event})
 }
 
 func printObject(obj interface{}) string {

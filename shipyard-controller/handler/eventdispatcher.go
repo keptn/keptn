@@ -7,6 +7,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (e *EventDispatcher) Add(event DispatcherEvent) error {
 		// send event immediately
 		return e.eventSender.SendEvent(event.event)
 	}
-	return e.eventQueueRepo.QueueEvent(db.QueueItem{
+	return e.eventQueueRepo.QueueEvent(models.QueueItem{
 		EventID:   event.event.ID(),
 		Timestamp: event.timestamp,
 	})

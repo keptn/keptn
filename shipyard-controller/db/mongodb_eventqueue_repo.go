@@ -22,7 +22,7 @@ type MongoDBEventQueueRepo struct {
 }
 
 // GetQueuedEvents gets all queued events that should be sent next
-func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]QueueItem, error) {
+func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error) {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]Qu
 		return nil, ErrNoEventFound
 	}
 
-	queuedItems := []QueueItem{}
+	queuedItems := []models.QueueItem{}
 
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
@@ -62,7 +62,7 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]Qu
 
 		data, _ := json.Marshal(outputEvent)
 
-		queueItem := &QueueItem{}
+		queueItem := &models.QueueItem{}
 		err = json.Unmarshal(data, queueItem)
 		if err != nil {
 			continue
@@ -73,7 +73,7 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]Qu
 	return queuedItems, nil
 }
 
-func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item QueueItem) error {
+func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err
