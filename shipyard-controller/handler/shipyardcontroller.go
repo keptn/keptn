@@ -19,11 +19,7 @@ import (
 
 const maxRepoReadRetries = 30
 
-var errNoFurtherTaskForSequence = errors.New("no further task for sequence")
-var errNoTaskSequence = errors.New("no task sequence found")
-var errNoStage = errors.New("no stage found")
 var errNoMatchingEvent = errors.New("no matching event found")
-
 var shipyardControllerInstance *shipyardController
 
 type IShipyardController interface {
@@ -126,7 +122,6 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
-
 	sc.logger.Info("Received .started event: " + *event.Type)
 	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
 	// if those are not present the next action can not be determined
@@ -154,7 +149,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		msg := "error while retrieving matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
 		sc.logger.Error(msg)
 		return errors.New(msg)
-	} else if events == nil || len(events) == 0 {
+	} else if len(events) == 0 {
 		msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		sc.logger.Error(msg)
 		return errNoMatchingEvent
@@ -164,7 +159,6 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
-
 	if *event.Source == "shipyard-controller" {
 		sc.logger.Info("Received event from myself. Ignoring.")
 		return nil
@@ -237,11 +231,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	}
 
 	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
-	if err != nil && err == errNoTaskSequence {
-		sc.logger.Info("no task sequence with name " + taskSequenceName + " found in stage " + stageName)
-		return err
-	} else if err != nil && err == errNoStage {
-		sc.logger.Info("no stage with name " + stageName + " found in project " + eventScope.Project)
+	if err != nil {
+		sc.logger.Error(err.Error())
 		return err
 	}
 
@@ -254,7 +245,6 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
-
 	if *event.Source == "shipyard-controller" {
 		sc.logger.Info("Received event from myself. Ignoring.")
 		return nil
@@ -443,9 +433,8 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *EventScope, taskSe
 		return err
 	}
 
-	task, err := sc.getNextTaskOfSequence(taskSequence, previousTask, eventScope, eventHistory)
-	if err != nil && err == errNoFurtherTaskForSequence {
-
+	task := sc.getNextTaskOfSequence(taskSequence, previousTask, eventScope, eventHistory)
+	if task == nil {
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(eventScope, taskSequence.Name, inputEvent.ID)
 		if err != nil {
@@ -453,9 +442,6 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *EventScope, taskSe
 			return err
 		}
 		return sc.triggerNextTaskSequences(eventScope, taskSequence, shipyard, eventHistory, inputEvent)
-	} else if err != nil {
-		sc.logger.Error("Could not get next task of sequence: " + err.Error())
-		return err
 	}
 	return sc.sendTaskTriggeredEvent(eventScope, taskSequence.Name, *task, eventHistory)
 }
@@ -548,7 +534,7 @@ func (sc *shipyardController) completeTaskSequence(eventScope *EventScope, taskS
 }
 
 func getTaskSequencesByTrigger(eventScope *EventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard) []NextTaskSequence {
-	result := []NextTaskSequence{}
+	var result []NextTaskSequence
 	for _, stage := range shipyard.Spec.Stages {
 		for tsIndex, taskSequence := range stage.Sequences {
 			for _, trigger := range taskSequence.TriggeredOn {
@@ -599,13 +585,13 @@ func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName
 					},
 				}, nil
 			}
-			return nil, errNoTaskSequence
+			return nil, fmt.Errorf("no task sequence with name %s found in stage %s", taskSequenceName, stageName)
 		}
 	}
-	return nil, errNoStage
+	return nil, fmt.Errorf("no stage with name %s", stageName)
 }
 
-func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string, eventScope *EventScope, eventHistory []interface{}) (*keptnv2.Task, error) {
+func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string, eventScope *EventScope, eventHistory []interface{}) *keptnv2.Task {
 	if previousTask != "" {
 		for _, e := range eventHistory {
 			eventData := keptnv2.EventData{}
@@ -614,31 +600,31 @@ func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequen
 			if eventData.Status == keptnv2.StatusErrored || eventData.Result == keptnv2.ResultFailed {
 				eventScope.Status = eventData.Status
 				eventScope.Result = eventData.Result
-				return nil, errNoFurtherTaskForSequence
+				return nil
 			}
 		}
 	}
 
 	if len(taskSequence.Tasks) == 0 {
 		sc.logger.Info("Task sequence " + taskSequence.Name + " does not contain any tasks.")
-		return nil, errNoFurtherTaskForSequence
+		return nil
 	}
 	if previousTask == "" {
 		sc.logger.Info("Returning first task of task sequence " + taskSequence.Name)
-		return &taskSequence.Tasks[0], nil
+		return &taskSequence.Tasks[0]
 	}
 	sc.logger.Info("Getting task that should be executed after task " + previousTask)
 	for index := range taskSequence.Tasks {
 		if taskSequence.Tasks[index].Name == previousTask {
 			if len(taskSequence.Tasks) > index+1 {
 				sc.logger.Info("found next task: " + taskSequence.Tasks[index+1].Name)
-				return &taskSequence.Tasks[index+1], nil
+				return &taskSequence.Tasks[index+1]
 			}
 			break
 		}
 	}
 	sc.logger.Info("No further tasks detected")
-	return nil, errNoFurtherTaskForSequence
+	return nil
 }
 
 func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *EventScope, taskSequenceName string, inputEvent *models.Event) error {
@@ -742,7 +728,9 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *EventScope, tas
 	event.SetData(cloudevents.ApplicationJSON, eventPayload)
 
 	marshal, err := json.Marshal(event)
-
+	if err != nil {
+		return err
+	}
 	storeEvent := &models.Event{}
 	err = json.Unmarshal(marshal, &storeEvent)
 	if err != nil {
