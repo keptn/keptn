@@ -120,4 +120,4 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 
 ## Upgrade to 0.8.2
 
-- The upgrade from 0.8.x to 0.8.2 is supported by the `keptn upgrade` command. Find the documentation here: [Upgrade from Keptn 0.8.x to 0.8.2](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-8-1-to-0-8-2)
+- The upgrade from 0.8.1 to 0.8.2 is supported by the `keptn upgrade` command. Find the documentation here: [Upgrade from Keptn 0.8.x to 0.8.2](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-8-1-to-0-8-2)
