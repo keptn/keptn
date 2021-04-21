@@ -109,7 +109,7 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 		service, _ := sm.GetService(projectName, stage.StageName, *params.ServiceName)
 		if service != nil {
 			sm.logger.Info(fmt.Sprintf("Service %s already exists in project %s", *params.ServiceName, projectName))
-			//_ = sendServiceCreateFailedFinishedEvent(keptnContext, projectName, params)
+			//_ = sendServiceCreateFailedFinishedEvent(KeptnContext, projectName, params)
 			return errServiceAlreadyExists
 		}
 

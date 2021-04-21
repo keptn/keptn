@@ -209,7 +209,7 @@ func Test_getEventScope(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *EventScope
+		want    *models.EventScope
 		wantErr bool
 	}{
 		{
@@ -228,7 +228,7 @@ func Test_getEventScope(t *testing.T) {
 					Type:           nil,
 				},
 			},
-			want:    &EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}},
+			want:    &models.EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}},
 			wantErr: false,
 		},
 		{
@@ -291,7 +291,7 @@ func Test_getEventScope(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewEventScope(tt.args.event)
+			got, err := models.NewEventScope(tt.args.event)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getEventScope() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1764,7 +1764,7 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 
 func Test_getTaskSequencesByTrigger(t *testing.T) {
 	type args struct {
-		eventScope            *EventScope
+		eventScope            *models.EventScope
 		completedTaskSequence string
 		shipyard              *keptnv2.Shipyard
 	}
@@ -1776,7 +1776,7 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "default behavior - get sequence triggered by result=pass,warning",
 			args: args{
-				eventScope: &EventScope{EventData: keptnv2.EventData{
+				eventScope: &models.EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultPass,
 					Stage:  "dev",
 				}},
@@ -1840,7 +1840,7 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 		{
 			name: "get sequence triggered by result=fail",
 			args: args{
-				eventScope: &EventScope{EventData: keptnv2.EventData{
+				eventScope: &models.EventScope{EventData: keptnv2.EventData{
 					Result: keptnv2.ResultFailed,
 					Stage:  "dev",
 				}},
@@ -2168,7 +2168,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		return "", true
 	}
 
-	scope, _ := NewEventScope(finishedEvent)
+	scope, _ := models.NewEventScope(finishedEvent)
 	if nextStage == "" {
 		nextStage = scope.Stage
 	}
@@ -2225,7 +2225,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 		return true
 	}
 
-	scope, _ := NewEventScope(finishedEvent)
+	scope, _ := models.NewEventScope(finishedEvent)
 	if nextStage == "" {
 		nextStage = scope.Stage
 	}
@@ -2268,7 +2268,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		return true
 	}
 
-	scope, _ := NewEventScope(finishedEvent)
+	scope, _ := models.NewEventScope(finishedEvent)
 	if nextStage == "" {
 		nextStage = scope.Stage
 	}
@@ -2443,7 +2443,7 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 	result := []models.Event{}
 
 	for _, event := range eventsCollection {
-		scope, _ := NewEventScope(event)
+		scope, _ := models.NewEventScope(event)
 		if filter.Type != "" && *event.Type != filter.Type {
 			continue
 		}
