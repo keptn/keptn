@@ -7,13 +7,13 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/common/eventutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -86,10 +86,6 @@ func GetShipyardControllerInstance() *shipyardController {
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
-	// check if the status type is either 'triggered', 'started', or 'finished'
-	split := strings.Split(*event.Type, ".")
-
-	statusType := split[len(split)-1]
 
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event.Data, eventData)
@@ -114,6 +110,10 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 		}()
 	}
 
+	statusType, err := eventutils.ParseEventKind(*event.Type)
+	if err != nil {
+		return err
+	}
 	switch statusType {
 	case string(common.TriggeredEvent):
 		return sc.handleTriggeredEvent(event)
@@ -139,10 +139,14 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
-	trimmedEventType := strings.TrimSuffix(*event.Type, string(common.StartedEvent))
+	triggeredEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
+	if err != nil {
+		return err
+	}
+
 	// get corresponding 'triggered' event for the incoming 'started' event
 	filter := common.EventFilter{
-		Type: trimmedEventType + string(common.TriggeredEvent),
+		Type: triggeredEventType,
 		ID:   &event.Triggeredid,
 	}
 
@@ -178,14 +182,12 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
 	sc.logger.Info("received event of type " + *event.Type + " from " + *event.Source)
-	split := strings.Split(*event.Type, ".")
-
 	sc.logger.Info("Checking if .triggered event should start a sequence in project " + eventScope.Project)
 	// get stage and taskSequenceName - cannot tell if this is actually a task sequence triggered event though
-	var stageName, taskSequenceName string
-	if len(split) >= 3 {
-		taskSequenceName = split[len(split)-2]
-		stageName = split[len(split)-3]
+
+	stageName, taskSequenceName, _, err := eventutils.ParseSequenceEventType(*event.Type)
+	if err != nil {
+		return err
 	}
 
 	shipyard, err := common.GetShipyard(eventScope.Project)
@@ -269,10 +271,13 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	sc.logger.Info(fmt.Sprintf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event)))
 
-	trimmedEventType := strings.TrimSuffix(*event.Type, string(common.FinishedEvent))
+	startedEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.StartedEvent))
+	if err != nil {
+		return err
+	}
 	// get corresponding 'started' event for the incoming 'finished' event
 	filter := common.EventFilter{
-		Type:        trimmedEventType + string(common.StartedEvent),
+		Type:        startedEventType,
 		TriggeredID: &event.Triggeredid,
 	}
 	startedEvents, err := sc.getEvents(eventScope.Project, filter, common.StartedEvent, maxRepoReadRetries)
@@ -305,8 +310,14 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
+
+		triggeredEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
+		if err != nil {
+			return err
+		}
+
 		triggeredEventFilter := common.EventFilter{
-			Type: trimmedEventType + string(common.TriggeredEvent),
+			Type: triggeredEventType,
 			ID:   &event.Triggeredid,
 		}
 		triggeredEvents, err := sc.getEvents(eventScope.Project, triggeredEventFilter, common.TriggeredEvent, maxRepoReadRetries)
@@ -357,7 +368,11 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return errors.New(msg)
 		}
 
-		sc.logger.Info("retrieving all .finished events for task " + trimmedEventType + " triggered by " + event.Triggeredid + " to aggregate data")
+		task, _, err := eventutils.ParseTaskEventType(*event.Type)
+		if err != nil {
+			return err
+		}
+		sc.logger.Info("retrieving all .finished events for task " + task + " triggered by " + event.Triggeredid + " to aggregate data")
 		allFinishedEventsForTask, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 			Type:    "",
 			Stage:   &eventScope.Stage,
@@ -382,15 +397,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			finishedEventsData = append(finishedEventsData, tmp)
 		}
 
-		split := strings.Split(trimmedEventType, ".")
-
-		if len(split) < 2 {
-			msg := "Could not determine task name "
-			sc.logger.Error(msg)
-			return errors.New(msg)
-		}
-
-		return sc.proceedTaskSequence(eventScope, sequence, shipyard, finishedEventsData, split[len(split)-2])
+		return sc.proceedTaskSequence(eventScope, sequence, shipyard, finishedEventsData, task)
 	}
 	return nil
 }
