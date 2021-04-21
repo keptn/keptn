@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/go-test/deep"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -12,6 +13,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"reflect"
 	"testing"
@@ -538,22 +540,14 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController()
 
+	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
 	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
 
 	done := false
 
 	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
-
-	mockEV := fake.NewEventBroker(t,
-		func(meb *fake.EventBroker, event *models.Event) {
-			meb.ReceivedEvents = append(meb.ReceivedEvents, *event)
-		},
-		func(meb *fake.EventBroker) {
-
-		})
-	defer mockEV.Server.Close()
-	_ = os.Setenv("EVENTBROKER", mockEV.Server.URL)
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
@@ -564,43 +558,17 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		return
 	}
 
-	// check event broker -> should contain deployment.triggered event with properties: [deployment]
-	if len(mockEV.ReceivedEvents) != 1 {
-		t.Errorf("STEP 1 failed: expected %d events in eventbroker, but got %d", 1, len(mockEV.ReceivedEvents))
-		return
-	}
-	done = fake.ShouldContainEvent(t,
-		mockEV.ReceivedEvents,
-		keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		"",
-		func(t *testing.T, event models.Event) bool {
-			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+	// check event dispatcher -> should contain deployment.triggered event with properties: [deployment]
+	require.Equal(t, 1, len(mockDispatcher.AddCalls()))
+	verifyEvent := mockDispatcher.AddCalls()[0].Event
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), verifyEvent.event.Type())
 
-			marshal, _ := json.Marshal(event.Data)
-			if err := json.Unmarshal(marshal, deploymentEvent); err != nil {
-				t.Error("could not parse incoming deployment.triggered event: " + err.Error())
-				return true
-			}
-
-			if len(deploymentEvent.Deployment.DeploymentURIsPublic) > 1 {
-				t.Errorf("ohoh")
-				return true
-			}
-
-			if deploymentEvent.Deployment.DeploymentStrategy != "direct" {
-				t.Errorf("did not receive correct deployment strategy. Expected 'direct' but got '%s'", deploymentEvent.Deployment.DeploymentStrategy)
-				return true
-			}
-			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
-				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
-				return true
-			}
-			return false
-		},
-	)
-	if done {
-		return
-	}
+	deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
+	err = verifyEvent.event.DataAs(deploymentEvent)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(deploymentEvent.Deployment.DeploymentURIsPublic))
+	require.Equal(t, "direct", deploymentEvent.Deployment.DeploymentStrategy)
+	require.Equal(t, "carts", deploymentEvent.ConfigurationChange.Values["image"])
 
 	// check triggeredEvent Collection -> should contain deployment.triggered event
 	triggeredEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
@@ -630,53 +598,26 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
 		keptnv2.DeploymentTaskName,
 		keptnv2.TestTaskName,
-		mockEV,
 		"",
-		func(t *testing.T, e models.Event) bool {
-			marshal, _ := json.Marshal(e.Data)
-			testData := &keptnv2.TestTriggeredEventData{}
-
-			err := json.Unmarshal(marshal, testData)
-
-			if err != nil {
-				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
-				return true
-			}
-
-			if len(testData.Deployment.DeploymentURIsLocal) != 2 {
-				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
-				return true
-			}
-			if len(testData.Deployment.DeploymentURIsPublic) != 3 {
-				t.Errorf("DeploymentURIsLocal property was not transmitted correctly")
-				return true
-			}
-
-			// also check if the payload of the .triggered event that started the sequence is present
-
-			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
-
-			err = json.Unmarshal(marshal, deploymentEvent)
-			if err != nil {
-				t.Errorf("Expected deployment.triggered data but could not convert: %v: %s", e.Data, err.Error())
-				return true
-			}
-
-			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
-				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
-				return true
-			}
-
-			// check if the message property of the previous .finished event has been reset correctly
-			if deploymentEvent.Message != "" {
-				t.Errorf("expected message property to be empty, but got: '%s'", deploymentEvent.Message)
-				return true
-			}
-			return false
-		})
+	)
 	if done {
 		return
 	}
+	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
+	verifyEvent = mockDispatcher.AddCalls()[1].Event
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), verifyEvent.event.Type())
+
+	taskEvent := &keptnv2.TestTriggeredEventData{}
+	err = verifyEvent.event.DataAs(taskEvent)
+	require.Nil(t, err)
+	require.Equal(t, 2, len(taskEvent.Deployment.DeploymentURIsPublic))
+	require.Equal(t, 2, len(taskEvent.Deployment.DeploymentURIsLocal))
+
+	// also check if the payload of the .triggered event that started the sequence is present
+	deploymentEvent = &keptnv2.DeploymentTriggeredEventData{}
+	err = verifyEvent.event.DataAs(deploymentEvent)
+	require.Equal(t, "direct", deploymentEvent.Deployment.DeploymentStrategy)
+	require.Equal(t, "carts", deploymentEvent.ConfigurationChange.Values["image"])
 
 	// STEP 4
 	// send test.started event
@@ -693,31 +634,22 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		getTestTaskFinishedEvent("dev", triggeredID),
 		keptnv2.TestTaskName,
 		keptnv2.EvaluationTaskName,
-		mockEV,
 		"",
-		func(t *testing.T, e models.Event) bool {
-			marshal, _ := json.Marshal(e.Data)
-			testData := &keptnv2.EvaluationTriggeredEventData{}
-
-			err := json.Unmarshal(marshal, testData)
-
-			if err != nil {
-				t.Errorf("Expected test.triggered data but could not convert: %v: %s", e.Data, err.Error())
-				return true
-			}
-
-			if len(testData.Deployment.DeploymentNames) != 1 {
-				t.Errorf("Deployment property was not transmitted correctly: %v", testData.Deployment)
-				return true
-			}
-			if testData.Test.Start != "start" || testData.Test.End != "end" {
-				t.Errorf("Test property was not transmitted correctly: %v", testData.Test)
-			}
-			return false
-		})
+	)
 	if done {
 		return
 	}
+	require.Equal(t, 3, len(mockDispatcher.AddCalls()))
+	verifyEvent = mockDispatcher.AddCalls()[2].Event
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), verifyEvent.event.Type())
+
+	evaluationEvent := &keptnv2.EvaluationTriggeredEventData{}
+	err = verifyEvent.event.DataAs(evaluationEvent)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(evaluationEvent.Deployment.DeploymentNames))
+	require.Equal(t, "start", evaluationEvent.Test.Start)
+	require.Equal(t, "end", evaluationEvent.Test.End)
+
 	// STEP 6
 	// send evaluation.started event
 	done = sendAndVerifyStartedEvent(t, sc, keptnv2.EvaluationTaskName, triggeredID, "dev", "test-source")
@@ -727,10 +659,13 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 7
 	// send evaluation.finished event -> result = warning should not abort the task sequence
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning, keptnv2.StatusSucceeded), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, mockEV, "", nil)
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning, keptnv2.StatusSucceeded), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, "")
 	if done {
 		return
 	}
+	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
+	verifyEvent = mockDispatcher.AddCalls()[3].Event
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName), verifyEvent.event.Type())
 
 	// STEP 8
 	// send release.started event
@@ -741,70 +676,35 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 9
 	// send release.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getReleaseTaskFinishedEvent("dev", triggeredID), keptnv2.ReleaseTaskName, keptnv2.DeploymentTaskName, mockEV, "hardening", nil)
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getReleaseTaskFinishedEvent("dev", triggeredID), keptnv2.ReleaseTaskName, keptnv2.DeploymentTaskName, "hardening")
 	if done {
 		return
 	}
 
-	// check if dev.artifact-delivery.finished has been sent
-	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetFinishedEventType("dev.artifact-delivery"), "dev", func(t *testing.T, event models.Event) bool {
-		if event.Triggeredid != sequenceTriggeredEvent.ID {
-			t.Error("expected triggeredid dev.artifact-delivery.finished to match ID of dev.artifact-delivery.triggered event")
-			return true
-		}
-		return false
-	})
-	if done {
-		return
-	}
+	require.Equal(t, 7, len(mockDispatcher.AddCalls()))
 
-	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), "hardening", func(t *testing.T, event models.Event) bool {
-		marshal, _ := json.Marshal(event.Data)
-		triggeredEvent := map[string]interface{}{}
+	// verify dev.artifact-delivery.finished event
+	sequenceFinishedEvent := mockDispatcher.AddCalls()[4].Event
+	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), sequenceFinishedEvent.event.Type())
+	require.Equal(t, sequenceTriggeredEvent.ID, sequenceFinishedEvent.event.Extensions()["triggeredid"])
 
-		err := json.Unmarshal(marshal, &triggeredEvent)
+	// verify hardening.artifact-delivery.triggered event
+	nextSequenceTriggeredEvent := mockDispatcher.AddCalls()[5].Event
+	require.Equal(t, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), nextSequenceTriggeredEvent.event.Type())
 
-		if err != nil {
-			t.Errorf("Expected hardening.artifact-delivery.triggered data but could not convert: %v: %s", event.Data, err.Error())
-			return true
-		}
+	sequenceTriggeredDataMap := map[string]interface{}{}
+	err = nextSequenceTriggeredEvent.event.DataAs(&sequenceTriggeredEvent)
+	require.Nil(t, err)
+	require.NotNil(t, sequenceTriggeredDataMap["configurationChange"])
 
-		if triggeredEvent["configurationChange"] == nil {
-			t.Error("expected 'configurationChange' property to be present")
-			return true
-		}
-		return false
-	})
-	if done {
-		return
-	}
-
-	done = fake.ShouldContainEvent(
-		t,
-		mockEV.ReceivedEvents,
-		keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
-		"hardening",
-		func(t *testing.T, event models.Event) bool {
-			marshal, _ := json.Marshal(event.Data)
-			deploymentEvent := &keptnv2.DeploymentTriggeredEventData{}
-
-			err := json.Unmarshal(marshal, deploymentEvent)
-
-			if err != nil {
-				t.Errorf("Expected test.triggered data but could not convert: %v: %s", event.Data, err.Error())
-				return true
-			}
-
-			if deploymentEvent.ConfigurationChange.Values["image"] != "carts" {
-				t.Errorf("did not receive correct image. Expected 'carts' but got '%s'", deploymentEvent.ConfigurationChange.Values["image"])
-				return true
-			}
-			return false
-		},
-	)
-	if done {
-		return
-	}
+	// verify deployment.triggered event for hardening stage
+	verifyEvent = mockDispatcher.AddCalls()[6].Event
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), verifyEvent.event.Type())
+	deploymentEvent = &keptnv2.DeploymentTriggeredEventData{}
+	err = verifyEvent.event.DataAs(deploymentEvent)
+	require.Nil(t, err)
+	require.Equal(t, "hardening", deploymentEvent.Stage)
+	require.Equal(t, "carts", deploymentEvent.ConfigurationChange.Values["image"])
 
 	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Stage: common.Stringp("dev"),
@@ -831,17 +731,21 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 10.1
 	// send deployment.finished event 1 with ID 1
-	done = sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, mockEV, "")
+	done = sendAndVerifyPartialFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-1", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.ReleaseTaskName, "")
 	if done {
 		return
 	}
+	// number of calls for dispatcher should not have increased before both finished events are received
+	require.Equal(t, 7, len(mockDispatcher.AddCalls()))
 
 	// STEP 10.2
 	// send deployment.finished event 1 with ID 1
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, mockEV, "", nil)
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getDeploymentFinishedEvent("hardening", triggeredID, "test-source-2", keptnv2.ResultPass), keptnv2.DeploymentTaskName, keptnv2.TestTaskName, "")
 	if done {
 		return
 	}
+	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), len(mockDispatcher.AddCalls()[7].Event.event.Type()))
 
 	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
 	// make sure that the UpdateEventOfServiceCalls has been called
@@ -2161,7 +2065,7 @@ func sendFinishedEvent(sc *shipyardController, finishedEvent models.Event) error
 	return sc.HandleIncomingEvent(finishedEvent)
 }
 
-func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string, verifyTriggeredEvent func(t *testing.T, e models.Event) bool) (string, bool) {
+func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) (string, bool) {
 	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -2210,11 +2114,6 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		return "", true
 	}
 
-	// check event broker -> should contain <nextEventType>.triggered event with properties
-	done = fake.ShouldContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, verifyTriggeredEvent)
-	if done {
-		return "", true
-	}
 	return triggeredID, false
 }
 
@@ -2261,7 +2160,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 	return false
 }
 
-func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, mockEV *fake.EventBroker, nextStage string) bool {
+func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) bool {
 	err := sc.HandleIncomingEvent(finishedEvent)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
@@ -2313,11 +2212,6 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 		return true
 	}
 
-	// check event broker -> should not contain <nextEventType>.triggered event with properties
-	done = fake.ShouldNotContainEvent(t, mockEV.ReceivedEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage)
-	if done {
-		return true
-	}
 	return false
 }
 
@@ -2433,6 +2327,14 @@ func getTestShipyardController() *shipyardController {
 			},
 			UpdateShipyardFunc: func(projectName string, shipyardContent string) error {
 				return nil
+			},
+		},
+		eventDispatcher: &fake.IEventDispatcherMock{
+			AddFunc: func(event DispatcherEvent) error {
+				return nil
+			},
+			RunFunc: func() {
+
 			},
 		},
 	}
