@@ -70,7 +70,6 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 <details><summary>Bridge</summary>
 <p>
 
-- OAuth/OpenID connect based login for Keptn bridge [3448](https://github.com/keptn/keptn/issues/3448)
 - Text in the notification is hard to read and the link is not working [3634](https://github.com/keptn/keptn/issues/3634)
 - Chart tooltip should show all active metrics [2546](https://github.com/keptn/keptn/issues/2546)
 - Better sequence visualization when having more than one sequence in a stage [3542](https://github.com/keptn/keptn/issues/3542)
