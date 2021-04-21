@@ -86,7 +86,6 @@ func GetShipyardControllerInstance() *shipyardController {
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
-
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event.Data, eventData)
 	if err != nil {
@@ -124,7 +123,6 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 	default:
 		return nil
 	}
-
 }
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
@@ -286,7 +284,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		msg := "error while retrieving matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid + ": " + err.Error()
 		sc.logger.Error(msg)
 		return errors.New(msg)
-	} else if startedEvents == nil || len(startedEvents) == 0 {
+	} else if len(startedEvents) == 0 {
 		msg := "no matching '.started' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 		sc.logger.Error(msg)
 		return errNoMatchingEvent
@@ -310,7 +308,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	// check if this was the last '.started' event
 	if len(startedEvents) == 1 {
-
 		triggeredEventType, err := eventutils.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
 		if err != nil {
 			return err
@@ -326,7 +323,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			sc.logger.Error(msg)
 			return errors.New(msg)
 		}
-		if triggeredEvents == nil || len(triggeredEvents) == 0 {
+		if len(triggeredEvents) == 0 {
 			msg := "no matching '.triggered' event for event " + event.ID + " with triggeredid " + event.Triggeredid
 			sc.logger.Error(msg)
 			return errNoMatchingEvent
@@ -493,7 +490,6 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope *EventScop
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(eventScope *EventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, eventHistory []interface{}, inputEvent *models.Event) error {
-
 	nextSequences := getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
 
 	for _, sequence := range nextSequences {
@@ -610,7 +606,6 @@ func (sc *shipyardController) getTaskSequenceInStage(stageName, taskSequenceName
 }
 
 func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequence, previousTask string, eventScope *EventScope, eventHistory []interface{}) (*keptnv2.Task, error) {
-
 	if previousTask != "" {
 		for _, e := range eventHistory {
 			eventData := keptnv2.EventData{}
@@ -647,7 +642,6 @@ func (sc *shipyardController) getNextTaskOfSequence(taskSequence *keptnv2.Sequen
 }
 
 func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *EventScope, taskSequenceName string, inputEvent *models.Event) error {
-
 	eventPayload := map[string]interface{}{}
 
 	eventPayload["project"] = eventScope.Project
@@ -710,7 +704,6 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *EventSco
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *EventScope, taskSequenceName string, task keptnv2.Task, eventHistory []interface{}) error {
-
 	eventPayload := map[string]interface{}{}
 
 	eventPayload["project"] = eventScope.Project
