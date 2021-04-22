@@ -73,6 +73,12 @@ updates:
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
   - package-ecosystem: gomod
+    directory: "/secret-service"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 4
+    rebase-strategy: "disabled"
+  - package-ecosystem: gomod
     directory: "/shipyard-controller"
     schedule:
       interval: daily
