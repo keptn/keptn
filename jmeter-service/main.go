@@ -231,11 +231,11 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger)
 }
 
-func checkEndpointAvailable(timeout time.Duration, serviceUrl *url.URL) error {
+func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	client := http.Client{
 		Timeout: timeout,
 	}
-	_, err := client.Get(serviceUrl.String())
+	_, err := client.Get(serviceURL.String())
 	return err
 }
 
