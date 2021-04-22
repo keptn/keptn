@@ -614,7 +614,6 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	// also check if the payload of the .triggered event that started the sequence is present
 	deploymentEvent = &keptnv2.DeploymentTriggeredEventData{}
 	err = verifyEvent.Event.DataAs(deploymentEvent)
-	require.Equal(t, "direct", deploymentEvent.Deployment.DeploymentStrategy)
 	require.Equal(t, "carts", deploymentEvent.ConfigurationChange.Values["image"])
 
 	// STEP 4
@@ -691,7 +690,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), nextSequenceTriggeredEvent.Event.Type())
 
 	sequenceTriggeredDataMap := map[string]interface{}{}
-	err = nextSequenceTriggeredEvent.Event.DataAs(&sequenceTriggeredEvent)
+	err = nextSequenceTriggeredEvent.Event.DataAs(&sequenceTriggeredDataMap)
 	require.Nil(t, err)
 	require.NotNil(t, sequenceTriggeredDataMap["configurationChange"])
 
@@ -743,7 +742,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 		return
 	}
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
-	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), len(mockDispatcher.AddCalls()[7].Event.Event.Type()))
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
 
 	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
 	// make sure that the UpdateEventOfServiceCalls has been called
@@ -888,15 +887,19 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 	}
 
 	// check for dev.artifact-delivery.finished event
-	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
+	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
 	taskSequenceCompletionEvent := mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), taskSequenceCompletionEvent.Event.Type())
 
 	eventData := &keptnv2.EventData{}
-	err = verifyEvent.Event.DataAs(eventData)
+	err = taskSequenceCompletionEvent.Event.DataAs(eventData)
 	require.Nil(t, err)
 	require.Equal(t, keptnv2.StatusErrored, eventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+
+	require.Equal(t, keptnv2.GetTriggeredEventType("dev.rollback"), mockDispatcher.AddCalls()[2].Event.Event.Type())
+	require.Equal(t, keptnv2.GetTriggeredEventType("rollback"), mockDispatcher.AddCalls()[3].Event.Event.Type())
+
 }
 
 // Scenario 4: Received .finished event with result "fail" - stop task sequence
@@ -1009,16 +1012,18 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	}
 
 	// check for dev.artifact-delivery.finished event
-	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
+	require.Equal(t, 6, len(mockDispatcher.AddCalls()))
 	taskSequenceCompletionEvent := mockDispatcher.AddCalls()[3].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), taskSequenceCompletionEvent.Event.Type())
 
 	eventData := &keptnv2.EventData{}
-	err = verifyEvent.Event.DataAs(eventData)
+	err = taskSequenceCompletionEvent.Event.DataAs(eventData)
 	require.Nil(t, err)
 	require.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
 
+	require.Equal(t, keptnv2.GetTriggeredEventType("dev.rollback"), mockDispatcher.AddCalls()[4].Event.Event.Type())
+	require.Equal(t, keptnv2.GetTriggeredEventType("rollback"), mockDispatcher.AddCalls()[5].Event.Event.Type())
 }
 
 // Scenario 4a: Handling multiple finished events, one has result==failed, ==> task sequence is stopped
@@ -1076,7 +1081,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 	// STEP 3
 	// send deployment.finished event
 	err = sendFinishedEvent(sc, getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultFailed))
-	require.NotNil(t, err)
+	require.Nil(t, err)
 
 	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
 		t,
@@ -1087,15 +1092,18 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 	)
 
 	// check for dev.artifact-delivery.finished event
-	require.Equal(t, 2, len(mockDispatcher.AddCalls()))
+	require.Equal(t, 4, len(mockDispatcher.AddCalls()))
 	taskSequenceCompletionEvent := mockDispatcher.AddCalls()[1].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), taskSequenceCompletionEvent.Event.Type())
 
 	eventData := &keptnv2.EventData{}
-	err = verifyEvent.Event.DataAs(eventData)
+	err = taskSequenceCompletionEvent.Event.DataAs(eventData)
 	require.Nil(t, err)
 	require.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
+
+	require.Equal(t, keptnv2.GetTriggeredEventType("dev.rollback"), mockDispatcher.AddCalls()[2].Event.Event.Type())
+	require.Equal(t, keptnv2.GetTriggeredEventType("rollback"), mockDispatcher.AddCalls()[3].Event.Event.Type())
 }
 
 // Scenario 4b: Received .finished event with result "fail" - stop task sequence and trigger next sequence based on result filter
@@ -1165,7 +1173,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), taskSequenceCompletionEvent.Event.Type())
 
 	eventData := &keptnv2.EventData{}
-	err = verifyEvent.Event.DataAs(eventData)
+	err = taskSequenceCompletionEvent.Event.DataAs(eventData)
 	require.Nil(t, err)
 	require.Equal(t, keptnv2.StatusSucceeded, eventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, eventData.Result)
@@ -1181,8 +1189,6 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 	for _, addCall := range mockDispatcher.AddCalls() {
 		// hardening.artifact-delivery should not be triggered
 		require.NotEqual(t, keptnv2.GetTriggeredEventType("hardening.artifact-delivery"), addCall.Event.Event.Type())
-		// hardening.deployment should not be triggered
-		require.NotEqual(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), addCall.Event.Event.Type())
 	}
 }
 
