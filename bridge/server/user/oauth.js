@@ -8,6 +8,24 @@ const AUTHORIZATION = 'authorization';
 const AUTH_URL = 'authorization_url';
 const TOKEN_DECISION = 'token_decision';
 
+const prefixPath = process.env.PREFIX_PATH;
+
+/**
+ * Bridge root redirection. The exact path depends on deployment & PREFIX_PATH value
+ *
+ * If PREFIX_PATH is defined, redirect to <PREFIX_PATH>/bridge. Otherwise, redirect to root.
+ *
+ * Redirection to root will either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
+ * */
+function redirectToRoot(resp) {
+  if (prefixPath !== undefined) {
+    return resp.redirect(`${prefixPath}/bridge`);
+  }
+
+  return resp.redirect('/');
+
+}
+
 module.exports = (async () => {
   console.log('Enabling OAuth for bridge.');
 
@@ -74,7 +92,7 @@ module.exports = (async () => {
     const state = req.query.state;
 
     if (authCode === undefined || state === undefined) {
-      return res.redirect('/');
+      return redirectToRoot(res);
     }
 
     let tokensPayload = {
@@ -112,8 +130,7 @@ module.exports = (async () => {
     }
 
     sessionAuthentication(req, tokenDecision.data['user']);
-
-    return res.redirect('/');
+    return redirectToRoot(res);
   });
 
   /**
@@ -121,7 +138,7 @@ module.exports = (async () => {
    */
   router.get('/logout', (req, res) => {
     removeSession(req);
-    return res.redirect('/');
+    return redirectToRoot(res);
   });
 
   return router;

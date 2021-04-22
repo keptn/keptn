@@ -4,7 +4,7 @@ import {Observable, of, throwError} from 'rxjs';
 import {catchError, retryWhen} from 'rxjs/operators';
 import {genericRetryStrategy} from './http-generic-retry-strategy';
 import {DtToast} from '@dynatrace/barista-components/toast';
-import {Router} from '@angular/router';
+import {Location} from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   private isReloading = false;
 
   constructor(private readonly toast: DtToast,
-              private readonly router: Router) {
+              private readonly location: Location) {
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -26,7 +26,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             if (!this.isReloading) {
               this.isReloading = true;
               this.toast.create('Login required. Redirecting to login.');
-              setTimeout(() => window.location.href = '/login', 1000);
+              // Wait for few moments to let user see the toast message and navigate to external login route
+              setTimeout(
+                () => window.location.href = this.location.prepareExternalUrl('/login'),
+                1000
+              );
             }
 
             return of(undefined);
