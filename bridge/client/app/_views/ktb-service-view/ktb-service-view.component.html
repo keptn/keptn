@@ -21,15 +21,14 @@
               </div>
             </div>
           </dt-info-group-title>
-          <div *ngIf="service.roots">
-            <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestArtifact(service) as artifact; else noDeployment">
-              <span class="bold">Last processed artifact: </span><span *ngIf="artifact.getShortImageName()" [textContent]="artifact.getShortImageName()"></span><span *ngIf="!artifact.getShortImageName()">unknown</span>
+          <ng-container *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">
+            <p class="m-0">Use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a> to trigger a quality gate evaluation.</p>
+          </ng-container>
+          <ng-container *ngIf="!isQualityGatesOnly">
+            <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service.serviceName) as lastService; else noDeployment">
+              <span class="bold">Last processed artifact: </span><span *ngIf="lastService.getShortImageName()" [textContent]="lastService.getShortImageName()"></span><span *ngIf="!lastService.getShortImageName()">unknown</span>
             </p>
-          </div>
-          <button dt-button disabled variant="nested" *ngIf="!service.roots">
-            <dt-loading-spinner></dt-loading-spinner>
-            Loading ...
-          </button>
+          </ng-container>
         </dt-info-group>
       </ktb-expandable-tile-header>
       <ktb-deployment-list [service]="service" [(selectedDeployment)]="serviceDetails.deployment"></ktb-deployment-list>
