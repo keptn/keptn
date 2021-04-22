@@ -18,6 +18,10 @@ export class Service {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }
 
+  get deploymentTime(): Date {
+    return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time || this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time;
+  }
+
   getShortImageName(): string {
     return this.deployedImage?.split('/').pop();
   }
