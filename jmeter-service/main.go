@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -100,8 +100,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	var res bool
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
-
-		_ , err := net.LookupIP(serviceUrl.String())
+		err := checkEndpointAvailable(5*time.Second, serviceUrl)
 		if err != nil {
 			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s", serviceUrl)
 			logger.Error(msg)
@@ -230,6 +229,14 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	os.RemoveAll("output.txt")
 
 	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger)
+}
+
+func checkEndpointAvailable(timeout time.Duration, serviceUrl *url.URL) error {
+	client := http.Client{
+		Timeout: timeout,
+	}
+	_, err := client.Get(serviceUrl.String())
+	return err
 }
 
 func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptncommon.Logger) error {
