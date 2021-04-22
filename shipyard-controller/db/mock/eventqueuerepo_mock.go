@@ -15,10 +15,10 @@ import (
 //
 // 		// make and configure a mocked db.EventQueueRepo
 // 		mockedEventQueueRepo := &EventQueueRepoMock{
-// 			DeleteQueuedEventFunc: func(eventID string)  {
+// 			DeleteQueuedEventFunc: func(eventID string) error {
 // 				panic("mock out the DeleteQueuedEvent method")
 // 			},
-// 			DeleteQueuedEventsFunc: func(scope models.EventScope)  {
+// 			DeleteQueuedEventsFunc: func(scope models.EventScope) error {
 // 				panic("mock out the DeleteQueuedEvents method")
 // 			},
 // 			GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
@@ -35,10 +35,10 @@ import (
 // 	}
 type EventQueueRepoMock struct {
 	// DeleteQueuedEventFunc mocks the DeleteQueuedEvent method.
-	DeleteQueuedEventFunc func(eventID string)
+	DeleteQueuedEventFunc func(eventID string) error
 
 	// DeleteQueuedEventsFunc mocks the DeleteQueuedEvents method.
-	DeleteQueuedEventsFunc func(scope models.EventScope)
+	DeleteQueuedEventsFunc func(scope models.EventScope) error
 
 	// GetQueuedEventsFunc mocks the GetQueuedEvents method.
 	GetQueuedEventsFunc func(timestamp time.Time) ([]models.QueueItem, error)
@@ -76,7 +76,7 @@ type EventQueueRepoMock struct {
 }
 
 // DeleteQueuedEvent calls DeleteQueuedEventFunc.
-func (mock *EventQueueRepoMock) DeleteQueuedEvent(eventID string) {
+func (mock *EventQueueRepoMock) DeleteQueuedEvent(eventID string) error {
 	if mock.DeleteQueuedEventFunc == nil {
 		panic("EventQueueRepoMock.DeleteQueuedEventFunc: method is nil but EventQueueRepo.DeleteQueuedEvent was just called")
 	}
@@ -88,7 +88,7 @@ func (mock *EventQueueRepoMock) DeleteQueuedEvent(eventID string) {
 	mock.lockDeleteQueuedEvent.Lock()
 	mock.calls.DeleteQueuedEvent = append(mock.calls.DeleteQueuedEvent, callInfo)
 	mock.lockDeleteQueuedEvent.Unlock()
-	mock.DeleteQueuedEventFunc(eventID)
+	return mock.DeleteQueuedEventFunc(eventID)
 }
 
 // DeleteQueuedEventCalls gets all the calls that were made to DeleteQueuedEvent.
@@ -107,7 +107,7 @@ func (mock *EventQueueRepoMock) DeleteQueuedEventCalls() []struct {
 }
 
 // DeleteQueuedEvents calls DeleteQueuedEventsFunc.
-func (mock *EventQueueRepoMock) DeleteQueuedEvents(scope models.EventScope) {
+func (mock *EventQueueRepoMock) DeleteQueuedEvents(scope models.EventScope) error {
 	if mock.DeleteQueuedEventsFunc == nil {
 		panic("EventQueueRepoMock.DeleteQueuedEventsFunc: method is nil but EventQueueRepo.DeleteQueuedEvents was just called")
 	}
@@ -119,7 +119,7 @@ func (mock *EventQueueRepoMock) DeleteQueuedEvents(scope models.EventScope) {
 	mock.lockDeleteQueuedEvents.Lock()
 	mock.calls.DeleteQueuedEvents = append(mock.calls.DeleteQueuedEvents, callInfo)
 	mock.lockDeleteQueuedEvents.Unlock()
-	mock.DeleteQueuedEventsFunc(scope)
+	return mock.DeleteQueuedEventsFunc(scope)
 }
 
 // DeleteQueuedEventsCalls gets all the calls that were made to DeleteQueuedEvents.

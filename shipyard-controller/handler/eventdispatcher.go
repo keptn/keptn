@@ -27,9 +27,20 @@ type EventDispatcher struct {
 	syncInterval   time.Duration
 }
 
-func NewEventDispatcher() EventDispatcher {
-	return EventDispatcher{
-		theClock: clock.New(),
+func NewEventDispatcher(
+	eventRepo db.EventRepo,
+	eventQueueRepo db.EventQueueRepo,
+	eventSender keptncommon.EventSender,
+	syncInterval time.Duration,
+	logger keptncommon.LoggerInterface,
+) IEventDispatcher {
+	return &EventDispatcher{
+		eventRepo:      eventRepo,
+		eventQueueRepo: eventQueueRepo,
+		eventSender:    eventSender,
+		logger:         logger,
+		theClock:       clock.New(),
+		syncInterval:   syncInterval,
 	}
 }
 

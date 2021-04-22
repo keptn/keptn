@@ -9,6 +9,6 @@ import (
 type EventQueueRepo interface {
 	QueueEvent(item models.QueueItem) error
 	GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error)
-	DeleteQueuedEvent(eventID string)
-	DeleteQueuedEvents(scope models.EventScope)
+	DeleteQueuedEvent(eventID string) error
+	DeleteQueuedEvents(scope models.EventScope) error
 }

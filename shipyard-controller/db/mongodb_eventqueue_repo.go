@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -104,7 +103,7 @@ func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 }
 
 // DeleteQueuedEvent deletes a queue item from the collection
-func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvent(project, eventID string, status common.EventStatus) error {
+func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err

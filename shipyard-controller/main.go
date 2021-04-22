@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/rest"
 	"log"
 	"os"
+	"time"
 )
 
 // @title Control Plane API
@@ -68,7 +69,9 @@ func main() {
 		logger)
 
 	stageManager := handler.NewStageManager(createMaterializedView(logger), logger)
-	shipyardController := handler.GetShipyardControllerInstance(&handler.EventDispatcher{})
+
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(logger), createEventQueueRepo(logger), eventSender, 10*time.Second, logger)
+	shipyardController := handler.GetShipyardControllerInstance(eventDispatcher)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
@@ -115,6 +118,10 @@ func createProjectRepo(logger *keptncommon.Logger) *db.MongoDBProjectsRepo {
 
 func createEventsRepo(logger *keptncommon.Logger) *db.MongoDBEventsRepo {
 	return &db.MongoDBEventsRepo{Logger: logger}
+}
+
+func createEventQueueRepo(logger *keptncommon.Logger) *db.MongoDBEventQueueRepo {
+	return &db.MongoDBEventQueueRepo{Logger: logger}
 }
 
 func createTaskSequenceRepo(logger *keptncommon.Logger) *db.TaskSequenceMongoDBRepo {
