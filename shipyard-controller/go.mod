@@ -3,6 +3,7 @@ module github.com/keptn/keptn/shipyard-controller
 go 1.13
 
 require (
+	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3

@@ -127,8 +127,8 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 
 }
 
-func NewEventHandler() IEventHandler {
+func NewEventHandler(shipyardController IShipyardController) IEventHandler {
 	return &EventHandler{
-		ShipyardController: GetShipyardControllerInstance(&EventDispatcher{}),
+		ShipyardController: shipyardController,
 	}
 }

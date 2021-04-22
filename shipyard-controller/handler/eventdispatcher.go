@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -11,14 +12,9 @@ import (
 	"time"
 )
 
-type DispatcherEvent struct {
-	event     cloudevents.Event
-	timestamp time.Time
-}
-
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 type IEventDispatcher interface {
-	Add(event DispatcherEvent) error
+	Add(event models.DispatcherEvent) error
 	Run()
 }
 
@@ -26,48 +22,49 @@ type EventDispatcher struct {
 	eventRepo      db.EventRepo
 	eventQueueRepo db.EventQueueRepo
 	eventSender    keptncommon.EventSender
-	syncTimer      *time.Ticker
 	logger         keptncommon.LoggerInterface
+	theClock       clock.Clock
+	syncInterval   time.Duration
 }
 
 func NewEventDispatcher() EventDispatcher {
-	return EventDispatcher{}
+	return EventDispatcher{
+		theClock: clock.New(),
+	}
 }
 
-func (e *EventDispatcher) Add(event DispatcherEvent) error {
-	if time.Now().After(event.timestamp) {
+func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
+	if e.theClock.Now().After(event.TimeStamp) {
 		// send event immediately
-		return e.eventSender.SendEvent(event.event)
+		return e.eventSender.SendEvent(event.Event)
 	}
 	return e.eventQueueRepo.QueueEvent(models.QueueItem{
-		EventID:   event.event.ID(),
-		Timestamp: event.timestamp,
+		EventID:   event.Event.ID(),
+		Timestamp: event.TimeStamp,
 	})
 }
 
 func (e *EventDispatcher) Run() {
-	// TODO make sync interval configurable
-	syncInterval := 10
-	e.syncTimer = time.NewTicker(time.Duration(syncInterval) * time.Second)
+	ticker := e.theClock.Ticker(e.syncInterval)
 	go func() {
 		for {
-			<-e.syncTimer.C
-			e.logger.Info(fmt.Sprintf("%d seconds have passed. Synchronizing services", syncInterval))
+			<-ticker.C
+			e.logger.Info(fmt.Sprintf("%d seconds have passed. Synchronizing services", e.syncInterval))
 			e.dispatchEvents()
 		}
 	}()
-	e.dispatchEvents()
+
 }
 
 func (e *EventDispatcher) dispatchEvents() {
 
-	events, err := e.eventQueueRepo.GetQueuedEvents(time.Now())
+	events, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now())
 	if err != nil {
 		e.logger.Error(fmt.Sprintf("could not fetch event queue: %s", err.Error()))
 	}
 
 	for _, queueItem := range events {
-		events, err := e.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{ID: &queueItem.EventID}, common.TriggeredEvent)
+		events, err := e.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{ID: &queueItem.EventID})
 		if err != nil {
 			e.logger.Error(fmt.Sprintf("could not fetch event with ID %s: %s", queueItem.EventID, err.Error()))
 			continue
