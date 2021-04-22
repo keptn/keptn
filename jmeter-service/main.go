@@ -232,6 +232,10 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 }
 
 func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
+	if serviceURL == nil {
+		return fmt.Errorf("url to check for reachability is nil")
+	}
+
 	client := http.Client{
 		Timeout: timeout,
 	}
