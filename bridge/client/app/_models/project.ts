@@ -103,7 +103,7 @@ export class Project {
     let lastService: Service;
     this.stages.forEach((stage: Stage) => {
       const service = stage.services.find(s => s.serviceName === serviceName);
-      if(!lastService || service.deploymentContext && moment(service.deploymentTime).isAfter(moment(lastService.deploymentTime))) {
+      if(service?.deploymentContext && (!lastService || moment.unix(service.deploymentTime).isAfter(moment.unix(lastService.deploymentTime)))) {
         lastService = service;
       }
     });
