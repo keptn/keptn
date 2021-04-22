@@ -42,12 +42,16 @@
                       <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
-                    <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                    <ng-container *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment">
                       <a *ngIf="deployment.getFinishedEvent()?.getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
                     </ng-container>
                   </div>
                 </dt-info-group-title>
                 <p class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getShortImageName()"></p>
+                <ng-template #noDeployment>
+                  <p class="m-0" *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">Use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a> to trigger a quality gate evaluation.</p>
+                  <p class="m-0" *ngIf="!isQualityGatesOnly">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>
+                </ng-template>
               </dt-info-group>
             </ktb-expandable-tile-header>
             <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
@@ -74,20 +78,19 @@
                 </dt-tag-list>
                 <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.getProject(), 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               </div>
-              <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage.stageName)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeployment(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
+              <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage.stageName)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
               <hr />
             </ng-container>
             <div *ngIf="service.getOpenApprovals().length > 0; else noOutOfSyncDeployments">
               <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
               <ktb-approval-item class="mt-1" *ngFor="let approval of service.getOpenApprovals()" [event]="approval"></ktb-approval-item>
             </div>
-            <ng-template #noOutOfSyncDeployments>No pending deployments for this stage available.</ng-template>
+            <ng-template #noOutOfSyncDeployments>
+              <span *ngIf="!isQualityGatesOnly">No pending deployments for this stage available.</span>
+            </ng-template>
           </ktb-expandable-tile>
         </ng-container>
       </ng-container>
     </ng-container>
   </ng-container>
 </div>
-<ng-template #noDeployment>
-  <p class="m-0">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>
-</ng-template>

@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {DtToggleButtonItem} from '@dynatrace/barista-components/toggle-button-group';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
 
@@ -8,19 +8,23 @@ import {Service} from '../../_models/service';
 import {Root} from '../../_models/root';
 
 import {DataService} from '../../_services/data.service';
+import {filter, takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'ktb-stage-details',
   templateUrl: './ktb-stage-details.component.html',
   styleUrls: ['./ktb-stage-details.component.scss']
 })
-export class KtbStageDetailsComponent implements OnInit {
+export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   public _project: Project;
   public selectedStage: Stage = null;
   public filterEventType: string = null;
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
   };
+  public isQualityGatesOnly: boolean;
+  private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
@@ -42,6 +46,12 @@ export class KtbStageDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.dataService.keptnInfo
+      .pipe(filter(keptnInfo => !!keptnInfo))
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(keptnInfo => {
+        this.isQualityGatesOnly = keptnInfo.bridgeInfo.keptnInstallationType?.includes('QUALITY_GATES');
+      });
   }
 
   selectStage($event) {
@@ -66,6 +76,10 @@ export class KtbStageDetailsComponent implements OnInit {
 
   findFailedRootEvent(failedRootEvents: Root[], service: Service): Root {
     return failedRootEvents.find(root => root.data.service === service.serviceName);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
   }
 
 }

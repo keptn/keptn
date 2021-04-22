@@ -59,7 +59,7 @@
       <table>
         <tr>
           <td><p class="m-0">Currently deployed artifact: </p></td>
-          <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_task.data.service), project.getStage(_task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+          <td><p class="m-0" [textContent]="project.getLatestDeploymentTrace(project.getService(_task.data.service), project.getStage(_task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
         </tr>
         <tr>
           <td><p class="m-0">Deployable artifact: </p></td>
@@ -72,7 +72,7 @@
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeploymentTrace(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>
