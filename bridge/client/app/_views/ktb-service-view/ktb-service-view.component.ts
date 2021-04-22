@@ -40,7 +40,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       .pipe(filter(keptnInfo => !!keptnInfo))
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
-        this.isQualityGatesOnly = keptnInfo.bridgeInfo.keptnInstallationType?.includes('QUALITY_GATES');
+        this.isQualityGatesOnly = !keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY');
       });
 
     this.route.params
