@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Observable, Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {filter, takeUntil} from 'rxjs/operators';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
 import {Location} from '@angular/common';
@@ -31,10 +31,18 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public project$: Observable<Project>;
   public serviceName: string;
   public selectedDeployment: Deployment;
+  public isQualityGatesOnly: boolean;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
 
   ngOnInit() {
+    this.dataService.keptnInfo
+      .pipe(filter(keptnInfo => !!keptnInfo))
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(keptnInfo => {
+        this.isQualityGatesOnly = keptnInfo.bridgeInfo.keptnInstallationType?.includes('QUALITY_GATES');
+      });
+
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {

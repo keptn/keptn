@@ -5,6 +5,7 @@ import {Trace} from "./trace";
 import {Root} from "./root";
 import { Deployment } from './deployment';
 import {EventTypes} from "./event-types";
+import * as moment from 'moment';
 
 export class Project {
   projectName: string;
@@ -57,30 +58,6 @@ export class Project {
       ?.findTrace(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
   }
 
-  getLatestSuccessfulArtifact(service: Service, stage?: Stage): Trace {
-    let currentService = this.getService(service.serviceName);
-
-    if(currentService.roots)
-      return currentService.roots
-        .filter(root => (root.isEvaluation() || root.isDeployment()) && (!stage || root.isFaulty() != stage.stageName || root.isDeployment() && root.getDeploymentDetails(stage.stageName)?.isDirectDeployment()))
-        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
-    else
-      return null;
-  }
-
-  getLatestArtifact(service: Service, stage?: Stage): Trace {
-    let currentService = this.getService(service.serviceName);
-
-    if(currentService.roots)
-      return currentService.roots
-        .filter(root => root.isEvaluation() || root.isDeployment())
-        .reduce((traces: Trace[], root) => [...traces, ...root.traces], [])
-        .find(trace => stage ? trace.isDeployment() == stage.stageName || trace.isEvaluation() == stage.stageName : !!trace.isDeployment() || !!trace.isEvaluation());
-    else
-      return null;
-  }
-
   getLatestFailedRootEvents(stage: Stage): Root[] {
     return this.getServices(stage).map(service => service.getRecentSequence()).filter(seq => seq?.isFailedEvaluation() === stage.stageName);
   }
@@ -120,7 +97,21 @@ export class Project {
         }
       }
     });
-    return deployments.sort((a,b) => a.version && b.version && semver.gt(a.version, b.version) ? -1 : 1);
+    return deployments.sort((a, b) => a.version && b.version && semver.gt(a.version, b.version) ? -1 : 1);
+  }
+  public getLastService(serviceName: string): Service {
+    let lastService: Service;
+    this.stages.forEach((stage: Stage) => {
+      const service = stage.services.find(s => s.serviceName === serviceName);
+      if(!lastService || service.deploymentContext && moment(service.deploymentTime).isAfter(moment(lastService.deploymentTime))) {
+        lastService = service;
+      }
+    });
+    return lastService;
+  }
+
+  public hasDeployment(serviceName: string): boolean {
+    return this.getDeploymentsOfService(serviceName).length !== 0;
   }
 
   static fromJSON(data: any) {
