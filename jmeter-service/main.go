@@ -100,10 +100,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	var res bool
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
-
-		_ , err := net.LookupIP(serviceUrl.String())
+		err := checkEndpointAvailable(5*time.Second, serviceUrl)
 		if err != nil {
-			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s", serviceUrl)
+			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", serviceUrl, err.Error())
 			logger.Error(msg)
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
@@ -230,6 +229,16 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	os.RemoveAll("output.txt")
 
 	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger)
+}
+
+func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
+	if serviceURL == nil {
+		return fmt.Errorf("url to check for reachability is nil")
+	}
+	if _, err := net.DialTimeout("tcp", serviceURL.Host, timeout); err != nil {
+		return err
+	}
+	return nil
 }
 
 func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptncommon.Logger) error {
