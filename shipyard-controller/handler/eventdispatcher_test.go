@@ -80,6 +80,13 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	timeAfter2 := time.Date(2021, 4, 21, 15, 00, 00, 2, time.UTC)
 	timeAfter3 := time.Date(2021, 4, 21, 15, 00, 00, 2, time.UTC)
 
+	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), nil).Build()
+	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
+	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), nil).Build()
+	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
+	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), nil).Build()
+	dispatcherEvent3 := models.DispatcherEvent{keptnv2.ToCloudEvent(event3), timeAfter3}
+
 	eventRepo := &db_mock.EventRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
 	eventSender := &fake.EventSender{}
@@ -101,7 +108,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	}
 
 	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-		return []models.Event{}, nil
+		return []models.Event{models.Event{ID: *filter.ID, Specversion: "1.0"}}, nil
 	}
 
 	dispatcher := EventDispatcher{
@@ -113,13 +120,6 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		syncInterval:   10 * time.Second,
 	}
 
-	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), nil).Build()
-	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
-	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), nil).Build()
-	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
-	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), nil).Build()
-	dispatcherEvent3 := models.DispatcherEvent{keptnv2.ToCloudEvent(event3), timeAfter3}
-
 	dispatcher.Add(dispatcherEvent1)
 	dispatcher.Add(dispatcherEvent2)
 	dispatcher.Add(dispatcherEvent3)
@@ -127,28 +127,8 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Equal(t, 3, len(eventQueueRepo.QueueEventCalls()))
 	dispatcher.Run()
-	clock.Add(10 * time.Second)
-
+	clock.Add(9 * time.Second)
+	require.Equal(t, 0, len(eventSender.SentEvents))
+	clock.Add(1 * time.Second)
+	require.Equal(t, 3, len(eventSender.SentEvents))
 }
-
-//type EventQueueRepoDecorator struct {
-//	db_mock.EventQueueRepoMock
-//	QueuedEvents []models.QueueItem
-//}
-//
-//func (e *EventQueueRepoDecorator) QueueEvent(item models.QueueItem) error {
-//	e.QueuedEvents = append(e.QueuedEvents, item)
-//	return e.QueueEvent(item)
-//}
-//
-//func (e *EventQueueRepoDecorator) GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error) {
-//	return e.GetQueuedEvents(timestamp)
-//}
-//
-//func (e *EventQueueRepoDecorator) DeleteQueuedEvent(eventID string) {
-//	e.DeleteQueuedEvent(eventID)
-//}
-//
-//func (e *EventQueueRepoDecorator) DeleteQueuedEvents(scope models.EventScope) {
-//	e.DeleteQueuedEvents(scope)
-//}

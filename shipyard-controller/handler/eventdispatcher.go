@@ -64,11 +64,13 @@ func (e *EventDispatcher) dispatchEvents() {
 	}
 
 	for _, queueItem := range events {
+		e.logger.Info("Dispatching event with ID " + queueItem.EventID)
 		events, err := e.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{ID: &queueItem.EventID})
 		if err != nil {
 			e.logger.Error(fmt.Sprintf("could not fetch event with ID %s: %s", queueItem.EventID, err.Error()))
 			continue
 		}
+
 		if len(events) == 0 {
 			e.logger.Info(fmt.Sprintf("could not find event with ID %s in project %s", queueItem.EventID, queueItem.Scope.Project))
 			continue
