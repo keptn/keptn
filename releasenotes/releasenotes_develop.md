@@ -79,6 +79,8 @@ Implemented **Keptn spec** version: [0.2.1](https://github.com/keptn/spec/tree/0
 - Add "load older Sequences" button in Sequence screen [2280](https://github.com/keptn/keptn/issues/2280)
 - Sequence icon colors represent status [3591](https://github.com/keptn/keptn/issues/3591)
 - Show target values for criteria when hovering over values [2757](https://github.com/keptn/keptn/issues/2757)
+- *Fixed*: Bridge showing a NaN as a number [3815](https://github.com/keptn/keptn/issues/3815)
+- *Fixed*: Service shows "Service not deployed yet" even if it is deployed [3848](https://github.com/keptn/keptn/issues/3848)
 - *Fixed*: Chart in Heatmap shows incorrect Y-axis and incorrect tooltip [3645](https://github.com/keptn/keptn/issues/3645)
 - *Fixed*: Daily version check was disabled [3668](https://github.com/keptn/keptn/issues/3668)
 - *Fixed*: Quality gate icon in the environment screen does not turn red [3592](https://github.com/keptn/keptn/issues/3592)
