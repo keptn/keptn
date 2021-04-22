@@ -9,39 +9,51 @@
 
   <ng-container dtColumnDef="value" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell *dtHeaderCellDef>Value</dt-header-cell>
-    <dt-cell *dtCellDef="let row">{{ row.value }}</dt-cell>
+    <dt-cell *dtCellDef="let row">
+      <span *ngIf="row.success" [textContent]="row.value"></span>
+      <ng-container *ngIf="!row.success">
+        <dt-icon class="event-icon error" [dtOverlay]="errorOverlay" [name]="'criticalevent'"></dt-icon>
+        <ng-template #errorOverlay>
+          <span class="error small" [textContent]="row.value"></span>
+        </ng-template>
+      </ng-container>
+    </dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="passTargets" dtColumnAlign="number"dtColumnProportion="2">
+  <ng-container dtColumnDef="passTargets" dtColumnAlign="number" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>pass Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ktb-sli-breakdown-criteria-item [targets]="row.passTargets"></ktb-sli-breakdown-criteria-item>
+      <ktb-sli-breakdown-criteria-item [isInformative]="!row.success" [targets]="row.passTargets"></ktb-sli-breakdown-criteria-item>
     </dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="warningTargets" dtColumnAlign="number"dtColumnProportion="2">
+  <ng-container dtColumnDef="warningTargets" dtColumnAlign="number" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>warning Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ktb-sli-breakdown-criteria-item [targets]="row.warningTargets"></ktb-sli-breakdown-criteria-item>
+      <ktb-sli-breakdown-criteria-item [isInformative]="!row.success" [targets]="row.warningTargets"></ktb-sli-breakdown-criteria-item>
     </dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="targets" dtColumnAlign="number"dtColumnProportion="2">
+  <ng-container dtColumnDef="targets" dtColumnAlign="number" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ktb-sli-breakdown-criteria-item [targets]="row.targets"></ktb-sli-breakdown-criteria-item>
+      <ktb-sli-breakdown-criteria-item *ngIf="row.success" [targets]="row.targets"></ktb-sli-breakdown-criteria-item>
+      <span *ngIf="!row.success">-</span>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="result" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
-    <dt-cell *dtCellDef="let row">{{ evaluationState[row.result] }}</dt-cell>
+    <dt-cell *dtCellDef="let row" >
+      <span *ngIf="row.success" [textContent]="evaluationState[row.result]"></span>
+    </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="score" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Score</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <span [class.error]="row.result === 'fail'" [class.warning]="row.result === 'warning'" [textContent]="row.score"></span>
+      <span *ngIf="row.success" [class.error]="row.result === 'fail'" [class.warning]="row.result === 'warning'"
+            [textContent]="row.score"></span>
     </dt-cell>
   </ng-container>
 
