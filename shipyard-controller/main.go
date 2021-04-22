@@ -68,6 +68,7 @@ func main() {
 		logger)
 
 	stageManager := handler.NewStageManager(createMaterializedView(logger), logger)
+	shipyardController := handler.GetShipyardControllerInstance(&handler.EventDispatcher{})
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
@@ -79,7 +80,7 @@ func main() {
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	eventHandler := handler.NewEventHandler()
+	eventHandler := handler.NewEventHandler(shipyardController)
 	eventController := controller.NewEventController(eventHandler)
 	eventController.Inject(apiV1)
 

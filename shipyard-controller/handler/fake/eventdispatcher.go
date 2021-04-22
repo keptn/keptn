@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/handler"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked handler.IEventDispatcher
 // 		mockedIEventDispatcher := &IEventDispatcherMock{
-// 			AddFunc: func(event handler.DispatcherEvent) error {
+// 			AddFunc: func(event models.DispatcherEvent) error {
 // 				panic("mock out the Add method")
 // 			},
 // 			RunFunc: func()  {
@@ -28,7 +28,7 @@ import (
 // 	}
 type IEventDispatcherMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(event handler.DispatcherEvent) error
+	AddFunc func(event models.DispatcherEvent) error
 
 	// RunFunc mocks the Run method.
 	RunFunc func()
@@ -38,7 +38,7 @@ type IEventDispatcherMock struct {
 		// Add holds details about calls to the Add method.
 		Add []struct {
 			// Event is the event argument value.
-			Event handler.DispatcherEvent
+			Event models.DispatcherEvent
 		}
 		// Run holds details about calls to the Run method.
 		Run []struct {
@@ -49,12 +49,12 @@ type IEventDispatcherMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *IEventDispatcherMock) Add(event handler.DispatcherEvent) error {
+func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent) error {
 	if mock.AddFunc == nil {
 		panic("IEventDispatcherMock.AddFunc: method is nil but IEventDispatcher.Add was just called")
 	}
 	callInfo := struct {
-		Event handler.DispatcherEvent
+		Event models.DispatcherEvent
 	}{
 		Event: event,
 	}
@@ -68,10 +68,10 @@ func (mock *IEventDispatcherMock) Add(event handler.DispatcherEvent) error {
 // Check the length with:
 //     len(mockedIEventDispatcher.AddCalls())
 func (mock *IEventDispatcherMock) AddCalls() []struct {
-	Event handler.DispatcherEvent
+	Event models.DispatcherEvent
 } {
 	var calls []struct {
-		Event handler.DispatcherEvent
+		Event models.DispatcherEvent
 	}
 	mock.lockAdd.RLock()
 	calls = mock.calls.Add

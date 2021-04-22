@@ -21,10 +21,10 @@ import (
 // 			DeleteQueuedEventsFunc: func(scope models.EventScope)  {
 // 				panic("mock out the DeleteQueuedEvents method")
 // 			},
-// 			GetQueuedEventsFunc: func(timestamp time.Time) ([]db.QueueItem, error) {
+// 			GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
 // 				panic("mock out the GetQueuedEvents method")
 // 			},
-// 			QueueEventFunc: func(item db.QueueItem) error {
+// 			QueueEventFunc: func(item models.QueueItem) error {
 // 				panic("mock out the QueueEvent method")
 // 			},
 // 		}
