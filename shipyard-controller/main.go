@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -12,7 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"log"
-	"os"
+	"strconv"
 	"time"
 )
 
@@ -31,15 +32,25 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @BasePath /v1
+
+const ENV_VAR_CONFIGURATION_SVC_ENDPOINT = "CONFIGURATION_SERVICE"
+const ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC = "EVENT_DISPATCH_INTERVAL_SEC"
+const ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC_DEFAULT = "10"
+
 func main() {
 
-	if os.Getenv("GIN_MODE") == "release" {
-		docs.SwaggerInfo.Version = os.Getenv("version")
+	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
+		docs.SwaggerInfo.Version = osutils.GetOSEnv("version")
 		docs.SwaggerInfo.BasePath = "/api/shipyard-controller/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
-	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC, ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC_DEFAULT))
+	if err != nil {
+		log.Fatalf("Unexpected value of EVENT_DISPATCH_INTERVAL_SEC environment variable. Need to be a number")
+	}
+
+	csEndpoint, err := keptncommon.GetServiceEndpoint(ENV_VAR_CONFIGURATION_SVC_ENDPOINT)
 	if err != nil {
 		log.Fatalf("could not get configuration-service URL: %s", err.Error())
 	}
@@ -70,7 +81,7 @@ func main() {
 
 	stageManager := handler.NewStageManager(createMaterializedView(logger), logger)
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(logger), createEventQueueRepo(logger), eventSender, 10*time.Second, logger)
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(logger), createEventQueueRepo(logger), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second, logger)
 	shipyardController := handler.GetShipyardControllerInstance(eventDispatcher)
 
 	engine := gin.Default()
