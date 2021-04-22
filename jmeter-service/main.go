@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -102,7 +102,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	if healthCheckWorkload != nil {
 		err := checkEndpointAvailable(5*time.Second, serviceUrl)
 		if err != nil {
-			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s", serviceUrl)
+			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", serviceUrl, err.Error())
 			logger.Error(msg)
 			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
@@ -235,12 +235,10 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	if serviceURL == nil {
 		return fmt.Errorf("url to check for reachability is nil")
 	}
-
-	client := http.Client{
-		Timeout: timeout,
+	if _, err := net.DialTimeout("tcp", serviceURL.Host, timeout); err != nil {
+		return err
 	}
-	_, err := client.Get(serviceURL.String())
-	return err
+	return nil
 }
 
 func sendTestsStartedEvent(shkeptncontext string, incomingEvent cloudevents.Event, logger *keptncommon.Logger) error {
