@@ -50,7 +50,7 @@ export class Project {
     return this.stages.find(s => s.stageName == stageName);
   }
 
-  getLatestDeployment(service: Service, stage?: Stage): Trace {
+  getLatestDeploymentTrace(service: Service, stage?: Stage): Trace {
     let currentService = this.getService(service.serviceName);
 
     return currentService.roots
@@ -99,7 +99,8 @@ export class Project {
     });
     return deployments.sort((a, b) => a.version && b.version && semver.gt(a.version, b.version) ? -1 : 1);
   }
-  public getLastService(serviceName: string): Service {
+
+  public getLatestDeployment(serviceName: string): Service {
     let lastService: Service;
     this.stages.forEach((stage: Stage) => {
       const service = stage.services.find(s => s.serviceName === serviceName);
