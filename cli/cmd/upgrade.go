@@ -266,7 +266,7 @@ func doUpgrade() error {
 		}
 
 		for _, serviceChart := range continuousDeliveryServiceCharts {
-			if err := helmHelper.UpgradeChart(serviceChart, keptnReleaseName+serviceChart.Name(), keptnNamespace, values); err != nil {
+			if err := helmHelper.UpgradeChart(serviceChart, serviceChart.Name(), keptnNamespace, values); err != nil {
 				msg := fmt.Sprintf("Could not complete upgrade of Keptn execution plane services: %s \nFor troubleshooting, please check the status of the keptn deployment by executing the following command: \n\nkubectl get pods -n %s\n", err.Error(), keptnNamespace)
 				return errors.New(msg)
 			}
