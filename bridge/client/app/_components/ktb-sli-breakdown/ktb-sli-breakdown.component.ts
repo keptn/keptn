@@ -101,13 +101,14 @@ export class KtbSliBreakdownComponent implements OnInit {
     return indicatorResults.map(indicatorResult =>  {
       return {
         name: indicatorResult.displayName || indicatorResult.value.metric,
-        value: this.formatNumber(indicatorResult.value.value),
+        value: indicatorResult.value.message || this.formatNumber(indicatorResult.value.value),
         result: indicatorResult.status,
         score: totalscore === 0 ? 0 : this.round(indicatorResult.score / totalscore * this.score, 2),
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,
-        keySli: indicatorResult.keySli
+        keySli: indicatorResult.keySli,
+        success: indicatorResult.value.success
       };
     });
   }
