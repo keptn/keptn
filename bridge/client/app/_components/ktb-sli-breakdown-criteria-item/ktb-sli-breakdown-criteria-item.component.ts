@@ -14,6 +14,9 @@ export class KtbSliBreakdownCriteriaItemComponent implements OnInit {
     return this._targets;
   }
 
+  @Input()
+  public isInformative = false;
+
   set targets(targets: any) {
     if(this._targets !== targets) {
       this._targets = targets;

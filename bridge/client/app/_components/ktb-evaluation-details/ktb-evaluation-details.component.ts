@@ -350,7 +350,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
               x: x,
               y: index,
               z: s.indicatorResult.score,
-              color: this._evaluationColor[s.indicatorResult.status]
+              color: s.indicatorResult.value.success ? this._evaluationColor[s.indicatorResult.status] : this._evaluationColor['info']
             };
           })], [])
         },
