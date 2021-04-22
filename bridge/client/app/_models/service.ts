@@ -9,13 +9,17 @@ export class Service {
   stage: string;
   allDeploymentsLoaded = false;
   deployments: Deployment[] = [];
-  lastEventTypes: {[key: string]: {eventId: string, keptnContext: string, time: Date}};
+  lastEventTypes: {[key: string]: {eventId: string, keptnContext: string, time: number}};
 
   roots: Root[] = [];
   openApprovals: Trace[] = [];
 
   get deploymentContext(): string {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
+  }
+
+  get deploymentTime(): number {
+    return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time || this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time;
   }
 
   getShortImageName(): string {
