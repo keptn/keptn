@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,8 +37,8 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]mo
 	}
 
 	searchOptions := bson.M{}
-	searchOptions["time"] = bson.M{
-		"$lte": timestamp.String(),
+	searchOptions["timestamp"] = bson.M{
+		"$lte": timeutils.GetKeptnTimeStamp(timestamp),
 	}
 
 	cur, err := collection.Find(ctx, searchOptions)
@@ -53,18 +54,10 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]mo
 
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
-		var outputEvent interface{}
-		err := cur.Decode(&outputEvent)
+		queueItem := &models.QueueItem{}
+		err := cur.Decode(&queueItem)
 		if err != nil {
 			return nil, err
-		}
-
-		data, _ := json.Marshal(outputEvent)
-
-		queueItem := &models.QueueItem{}
-		err = json.Unmarshal(data, queueItem)
-		if err != nil {
-			continue
 		}
 		queuedItems = append(queuedItems, *queueItem)
 	}

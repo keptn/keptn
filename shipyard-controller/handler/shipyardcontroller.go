@@ -628,7 +628,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 
 	event := cloudevents.NewEvent()
 	event.SetID(uuid.New().String())
-	event.SetTime(time.Now())
+	event.SetTime(time.Now().UTC())
 	event.SetType(keptnv2.GetTriggeredEventType(eventType))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
@@ -647,7 +647,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
 
-	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now(), Event: event})
+	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event})
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
@@ -662,7 +662,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 	event.SetExtension("triggeredid", triggeredID)
 	event.SetData(cloudevents.ApplicationJSON, eventScope.EventData)
 
-	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now(), Event: event})
+	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event})
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventScope, taskSequenceName string, task keptnv2.Task, eventHistory []interface{}) error {
@@ -717,7 +717,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		return err
 	}
 
-	sendTaskTimestamp := time.Now()
+	sendTaskTimestamp := time.Now().UTC()
 	if task.TriggeredAfter != "" {
 		if duration, err := time.ParseDuration(task.TriggeredAfter); err == nil {
 			sendTaskTimestamp = sendTaskTimestamp.Add(duration)

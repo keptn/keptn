@@ -46,7 +46,7 @@ func NewEventDispatcher(
 }
 
 func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
-	if e.theClock.Now().After(event.TimeStamp) {
+	if e.theClock.Now().UTC().After(event.TimeStamp) {
 		// send event immediately
 		return e.eventSender.SendEvent(event.Event)
 	}
@@ -74,7 +74,7 @@ func (e *EventDispatcher) Run(ctx context.Context) {
 
 func (e *EventDispatcher) dispatchEvents() {
 
-	events, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now())
+	events, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 	if err != nil {
 		e.logger.Error(fmt.Sprintf("could not fetch event queue: %s", err.Error()))
 	}

@@ -210,6 +210,8 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/keptn/go-utils v0.8.3-0.20210422154053-b3039fd3618b h1:I5L4AOHwcWdU8dHJnNgsdLd/JIrIkhxx1QIQkIdZiL0=
 github.com/keptn/go-utils v0.8.3-0.20210422154053-b3039fd3618b/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
+github.com/keptn/go-utils v0.8.3-0.20210423102500-916c1a99f6eb h1:/NkGRWnac9Wt4Y/o8e4LIuWLGGmjQ1u/L4zUn45q83w=
+github.com/keptn/go-utils v0.8.3-0.20210423102500-916c1a99f6eb/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.9.5 h1:U+CaK85mrNNb4k8BNOfgJtJ/gr6kswUCFj6miSzVC6M=
