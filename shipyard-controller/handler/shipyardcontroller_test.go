@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"github.com/go-test/deep"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -2111,7 +2112,7 @@ func getTestShipyardController() *shipyardController {
 			AddFunc: func(event models.DispatcherEvent) error {
 				return nil
 			},
-			RunFunc: func() {
+			RunFunc: func(ctx context.Context) {
 
 			},
 		},

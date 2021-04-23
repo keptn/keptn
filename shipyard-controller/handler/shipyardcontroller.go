@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -38,6 +39,7 @@ type shipyardController struct {
 
 func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardController {
 	if shipyardControllerInstance == nil {
+		eventDispatcher.Run(context.Background())
 		logger := keptncommon.NewLogger("", "", "shipyard-controller")
 		shipyardControllerInstance = &shipyardController{
 			projectRepo:      &db.MongoDBProjectsRepo{Logger: logger},

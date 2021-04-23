@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -15,7 +16,7 @@ import (
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 type IEventDispatcher interface {
 	Add(event models.DispatcherEvent) error
-	Run()
+	Run(ctx context.Context)
 }
 
 type EventDispatcher struct {
@@ -55,16 +56,20 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 	})
 }
 
-func (e *EventDispatcher) Run() {
+func (e *EventDispatcher) Run(ctx context.Context) {
 	ticker := e.theClock.Ticker(e.syncInterval)
 	go func() {
 		for {
-			<-ticker.C
-			e.logger.Info(fmt.Sprintf("%d seconds have passed. Synchronizing services", e.syncInterval))
-			e.dispatchEvents()
+			select {
+			case <-ctx.Done():
+				e.logger.Info("cancelling event dispatcher loop")
+				return
+			case <-ticker.C:
+				e.logger.Info(fmt.Sprintf("%d seconds have passed. Synchronizing services", e.syncInterval))
+				e.dispatchEvents()
+			}
 		}
 	}()
-
 }
 
 func (e *EventDispatcher) dispatchEvents() {
@@ -98,6 +103,11 @@ func (e *EventDispatcher) dispatchEvents() {
 			e.logger.Error(fmt.Sprintf("could not send CloudEvent: %s", err.Error()))
 			continue
 		}
+
+		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
+			e.logger.Error(fmt.Sprintf("could not delete event from event queue: %s", err.Error()))
+		}
+
 	}
 
 }

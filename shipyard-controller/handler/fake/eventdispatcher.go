@@ -4,6 +4,7 @@
 package fake
 
 import (
+	"context"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
@@ -17,7 +18,7 @@ import (
 // 			AddFunc: func(event models.DispatcherEvent) error {
 // 				panic("mock out the Add method")
 // 			},
-// 			RunFunc: func()  {
+// 			RunFunc: func(ctx context.Context)  {
 // 				panic("mock out the Run method")
 // 			},
 // 		}
@@ -31,7 +32,7 @@ type IEventDispatcherMock struct {
 	AddFunc func(event models.DispatcherEvent) error
 
 	// RunFunc mocks the Run method.
-	RunFunc func()
+	RunFunc func(ctx context.Context)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -42,6 +43,8 @@ type IEventDispatcherMock struct {
 		}
 		// Run holds details about calls to the Run method.
 		Run []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 		}
 	}
 	lockAdd sync.RWMutex
@@ -80,24 +83,29 @@ func (mock *IEventDispatcherMock) AddCalls() []struct {
 }
 
 // Run calls RunFunc.
-func (mock *IEventDispatcherMock) Run() {
+func (mock *IEventDispatcherMock) Run(ctx context.Context) {
 	if mock.RunFunc == nil {
 		panic("IEventDispatcherMock.RunFunc: method is nil but IEventDispatcher.Run was just called")
 	}
 	callInfo := struct {
-	}{}
+		Ctx context.Context
+	}{
+		Ctx: ctx,
+	}
 	mock.lockRun.Lock()
 	mock.calls.Run = append(mock.calls.Run, callInfo)
 	mock.lockRun.Unlock()
-	mock.RunFunc()
+	mock.RunFunc(ctx)
 }
 
 // RunCalls gets all the calls that were made to Run.
 // Check the length with:
 //     len(mockedIEventDispatcher.RunCalls())
 func (mock *IEventDispatcherMock) RunCalls() []struct {
+	Ctx context.Context
 } {
 	var calls []struct {
+		Ctx context.Context
 	}
 	mock.lockRun.RLock()
 	calls = mock.calls.Run
