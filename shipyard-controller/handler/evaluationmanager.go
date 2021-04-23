@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"github.com/go-openapi/swag"
 	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -49,7 +49,7 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 	if err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrServiceNotAvailable,
-			Message: swag.String(err.Error()),
+			Message: strutils.Stringp(err.Error()),
 		}
 	}
 
@@ -61,7 +61,7 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 	if err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrInvalidTimeframe,
-			Message: swag.String(err.Error()),
+			Message: strutils.Stringp(err.Error()),
 		}
 	}
 
