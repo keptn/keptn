@@ -49,6 +49,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
 
   set filteredServices(services: string[]) {
     this._filteredServices = services;
+    this.resetFilter();
     this._changeDetectorRef.markForCheck();
   }
 
@@ -67,11 +68,15 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   selectStage($event) {
     this.selectedStage = $event.stage;
     if (this.filterEventType !== $event.filterType) {
-      this.problemFilterEventButton?.deselect();
-      this.evaluationFilterEventButton?.deselect();
-      this.approvalFilterEventButton?.deselect();
-      this.filterEventType = $event.filterType;
+      this.resetFilter($event.filterType);
     }
+  }
+
+  private resetFilter(eventType = null): void {
+    this.problemFilterEventButton?.deselect();
+    this.evaluationFilterEventButton?.deselect();
+    this.approvalFilterEventButton?.deselect();
+    this.filterEventType = eventType;
   }
 
   selectFilterEvent($event) {
