@@ -315,9 +315,9 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-configuration-service-manage-secrets
+  name: keptn-configuration-service-get-secrets
   labels:
-    app.kubernetes.io/name: keptn-configuration-service-manage-secrets
+    app.kubernetes.io/name: keptn-configuration-service-get-secrets
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
