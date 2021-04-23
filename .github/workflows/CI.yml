@@ -504,9 +504,10 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
-            GOOS: "darwin"
-            GOARCH: "amd64"
+# temporarily disable macOS builds due to an issue on GH actions
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+#            GOOS: "darwin"
+#            GOARCH: "amd64"
           # support for apple silicon (arm64 on macOS) is pending Go 1.16 release
 #          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
 #            GOOS: "darwin"
