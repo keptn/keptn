@@ -13,7 +13,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.3
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/nats-io/nats-server/v2 v2.1.9
+	github.com/nats-io/nats-server/v2 v2.2.2
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/appengine v1.6.5 // indirect
