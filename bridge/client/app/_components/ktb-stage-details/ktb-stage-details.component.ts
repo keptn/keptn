@@ -24,6 +24,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     pinnable: true
   };
   public isQualityGatesOnly: boolean;
+  private _filteredServices: string[];
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
@@ -40,6 +41,15 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
       this._project = project;
       this._changeDetectorRef.markForCheck();
     }
+  }
+
+  get filteredServices(): string[] {
+    return this._filteredServices;
+  }
+
+  set filteredServices(services: string[]) {
+    this._filteredServices = services;
+    this._changeDetectorRef.markForCheck();
   }
 
   constructor(private dataService: DataService, private _changeDetectorRef: ChangeDetectorRef) {
@@ -76,6 +86,14 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
 
   findFailedRootEvent(failedRootEvents: Root[], service: Service): Root {
     return failedRootEvents.find(root => root.data.service === service.serviceName);
+  }
+
+  public filterServices(services: Service[]): Service[] {
+    return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
+  }
+
+  public filterRoots(roots: Root[]): Root[] {
+    return this.filteredServices.length === 0 ? roots : roots?.filter(root => this.filteredServices.includes(root.getService()));
   }
 
   ngOnDestroy(): void {
