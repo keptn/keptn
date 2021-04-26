@@ -1,9 +1,9 @@
 import semver from 'semver';
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {Router, RoutesRecognized} from '@angular/router';
 import {Observable, Subject} from 'rxjs';
-import {filter, takeUntil} from 'rxjs/operators';
+import {filter, map, takeUntil} from 'rxjs/operators';
 
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
@@ -26,15 +26,23 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public versionCheckDialogState: string | null;
   public versionCheckReference = '/reference/version_check/';
 
-  constructor(private route: ActivatedRoute, private dataService: DataService, private notificationsService: NotificationsService) { }
+  constructor(private router: Router, private dataService: DataService, private notificationsService: NotificationsService) {}
 
   ngOnInit() {
     this.projects = this.dataService.projects;
 
-    this.route.params
+    this.router.events
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.project = this.dataService.getProject(params.projectName);
+      .subscribe(event => {
+        if(event instanceof RoutesRecognized) {
+          let projectName = event.state.root.children[0].params['projectName'];
+          this.project = this.dataService.projects.pipe(
+            filter(projects => !!projects),
+            map(projects => projects.find(p => {
+              return p.projectName === projectName;
+            }))
+          );
+        }
       });
 
     this.dataService.keptnInfo
