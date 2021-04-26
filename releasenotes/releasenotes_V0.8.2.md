@@ -6,9 +6,9 @@ Keptn 0.8.2 is a hardening release and incorporates changes that are required to
 
 **Key announcements:**
 
-:cocktail: *Keptn drinks its own champaign*: Each merge on the *master* (aka. main) branch of the keptn/keptn repository triggers a Keptn to deploy this new version into a development environment. This helps the Keptn project to have the latest and greatest version of Keptn running and to do feature presentations using this deployment. 
+:cocktail: *Keptn drinks its own champagne*: Each merge on the *master* (aka. main) branch of the keptn/keptn repository triggers a Keptn to deploy this new version into a development environment. This helps the Keptn project to have the latest and greatest version of Keptn running and to do feature presentations using this deployment.  
 
-> A GitHub action has been implemented that allows sending a Keptn event to a Keptn installation: [gh-action-send-event](https://github.com/keptn/gh-action-send-event). Do wait to integrate it into your CI on GitHub today!
+> A GitHub action has been implemented that allows sending a Keptn event to a Keptn installation: [gh-action-send-event](https://github.com/keptn/gh-action-send-event). Don't wait to integrate it into your CI on GitHub today!
 
 :hammer: *Hardening of Keptn*: Containers of Keptn core services are not running as root users and a security context has been defined. *Please note*: Defining the security context for NATS is not possible yet, since we are waiting for a new release containing the PR: https://github.com/nats-io/k8s/pull/222.  
 
