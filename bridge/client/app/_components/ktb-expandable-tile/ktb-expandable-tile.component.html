@@ -1,5 +1,5 @@
 <div class="ktb-expandable-tile-container">
-  <div class="ktb-expandable-tile-header" (click)="panel.toggle()">
+  <div class="ktb-expandable-tile-header" (click)="toggle()">
     <ng-content
       select="
     ktb-expandable-tile-header,
@@ -8,7 +8,7 @@
     <button class="show-more" dt-show-more [showLess]="expanded"></button>
   </div>
   <div class="ktb-expandable-tile-content">
-    <dt-expandable-panel #panel [expanded]="expanded">
+    <dt-expandable-panel [expanded]="expanded">
       <div class="container">
         <ng-content></ng-content>
       </div>
