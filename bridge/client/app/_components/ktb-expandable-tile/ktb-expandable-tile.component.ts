@@ -131,4 +131,8 @@ export class KtbExpandableTileComponent implements OnInit {
   ngOnInit() {
   }
 
+  toggle() {
+    this.expanded = !this.expanded;
+  }
+
 }
