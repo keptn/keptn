@@ -197,22 +197,16 @@ jobs:
       - name: Debug - Get Kubernetes Deployments
         run: kubectl get deployments --all-namespaces -owide
       - name: Download CLI artifact from specified branch
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v2.14.0
         with:
-          # Optional, GitHub token
+          # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
-          # Required, workflow file name or ID
           workflow: CI.yml
-          # Optional, the status or conclusion of a completed workflow to search for
-          # Can be one of a workflow conclusion::
-          # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
-          # Or a workflow status:
-          # "completed", "in_progress", "queued"
-          # Default: "completed"
+          event: push
           workflow_conclusion: success
-          # Optional, will use the branch
+          # use the following branch
           branch: ${{ steps.determine_branch.outputs.BRANCH}}
-          # Optional, directory where to extract artifact
+          # directory where to extract artifacts to
           path: ./dist
 
       - name: Extract Keptn CLI artifact
@@ -659,15 +653,16 @@ jobs:
           # Todo: some calculations should be done...
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v2.14.0
         with:
+          # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
-          # Required, workflow file name or ID
           workflow: CI.yml
+          event: push
           workflow_conclusion: success
-          # Use the branch
+          # use the following branch
           branch: ${{ env.BRANCH}}
-          # Optional, directory where to extract artifact
+          # directory where to extract artifacts to
           path: ./dist
 
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
