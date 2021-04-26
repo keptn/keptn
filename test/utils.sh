@@ -285,7 +285,7 @@ function verify_image_of_deployment() {
   if [[ "$CURRENT_IMAGE_NAME" == "$IMAGE_NAME" ]]; then
     echo "Found image ${CURRENT_IMAGE_NAME} in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
   else
-    echo "ERROR: Found image ${CURRENT_IMAGE_NAME} but expected ${IMAGE_NAME}  in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    print_error "ERROR: Found image ${CURRENT_IMAGE_NAME} but expected ${IMAGE_NAME}  in deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
     exit 1
   fi
 }
@@ -316,7 +316,7 @@ function wait_for_deployment_in_namespace() {
   done
 
   if [[ $RETRY == "$RETRY_MAX" ]]; then
-    echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    print_error "Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
     exit 1
   fi
 }
@@ -346,7 +346,7 @@ function wait_for_deployment_with_image_in_namespace() {
   done
 
   if [[ $RETRY == "$RETRY_MAX" ]]; then
-    echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    print_error "Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
     exit 1
   fi
 }
@@ -375,7 +375,7 @@ function wait_for_pod_number_in_deployment_in_namespace() {
   done
 
   if [[ $RETRY == "$RETRY_MAX" ]]; then
-    echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    print_error "Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
     exit 1
   fi
 }
@@ -405,7 +405,7 @@ function wait_for_daemonset_in_namespace() {
   done
 
   if [[ $RETRY == "$RETRY_MAX" ]]; then
-    echo "Error: Could not find daemonset ${DAEMONSET} in namespace ${NAMESPACE}"
+    print_error "Could not find daemonset ${DAEMONSET} in namespace ${NAMESPACE}"
     exit 1
   fi
 }
@@ -415,7 +415,7 @@ function verify_deployment_in_namespace() {
 
   DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
   if [[ -z "$DEPLOYMENT_LIST" ]]; then
-    echo "Error: Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    print_error "Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
     exit 1
   else
     echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
@@ -427,7 +427,7 @@ function verify_pod_in_namespace() {
 
   POD_LIST=$(eval "kubectl get pod -n ${NAMESPACE} | awk '/$POD/'" | awk '{print $1}') # list of multiple deployments when starting with the same name
   if [[ -z "$POD_LIST" ]]; then
-    echo "Error: Could not find pod ${POD} in namespace ${NAMESPACE}"
+    print_error "Could not find pod ${POD} in namespace ${NAMESPACE}"
     exit 1
   else
     echo "Found pod ${POD} in namespace ${NAMESPACE}: ${POD_LIST}"
@@ -440,7 +440,7 @@ function verify_namespace_exists() {
   NAMESPACE_LIST=$(eval "kubectl get namespaces -L istio-injection | grep ${NAMESPACE} | awk '/$NAMESPACE/'" | awk '{print $1}')
 
   if [[ -z "$NAMESPACE_LIST" ]]; then
-    echo "Error: Could not find namespace ${NAMESPACE}"
+    print_error "Could not find namespace ${NAMESPACE}"
     exit 2
   else
     echo "Found namespace ${NAMESPACE}"
@@ -464,7 +464,7 @@ function wait_for_problem_open_event() {
   done
 
   if [[ $RETRY == "$RETRY_MAX" ]]; then
-    echo "Error: Could not find problem.open event for service ${SERVICE} in project ${PROJECT}"
+    print_error "Could not find problem.open event for service ${SERVICE} in project ${PROJECT}"
     exit 1
   fi
 }
@@ -489,7 +489,7 @@ function wait_for_event_with_field_output() {
   done
 
   if [[ $RETRY == "$RETRY_MAX" ]]; then
-    echo "Error: Could not find event ${EVENT} in project ${PROJECT}"
+    print_error "Could not find event ${EVENT} in project ${PROJECT}"
     exit 1
   fi
 }
@@ -507,32 +507,53 @@ function verify_sockshop_deployment() {
   KEPTN_NAMESPACE=$5
   BLUE_GREEN_DEPLOYMENT=$6
 
-  echo "---------------------------------------------"
-  echo "Checking ${STAGE} deployment"
+  echo "-------------------------------------------------------------"
+  echo "Checking ${STAGE} deployment (namespace: ${PROJECT}-${STAGE})"
   echo ""
 
+  echo "Pre-req: Checking if carts-db is already running..."
+
+  # verify that a carts-db deployment exists
   wait_for_deployment_in_namespace "carts-db" "${PROJECT}-${STAGE}"
   verify_test_step $? "Deployment carts-db not up in ${PROJECT}-${STAGE}, exiting ..."
+
+  # verify that a cards-db pod is up and running
+  verify_pod_in_namespace "carts-db" "${PROJECT}-${STAGE}"
+  verify_test_step $? "Pod carts-db not found in $${PROJECT}-${STAGE}, exiting ..."
+
+  echo ""
+  echo "Checking if carts is up and running..."
+
+  # verify that a carts deployment is up and running
   wait_for_deployment_with_image_in_namespace "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+  verify_test_step $? "Deployment carts not up in ${PROJECT}-${STAGE}, exiting ..."
+
+  # verify that a carts pod is up and running
   verify_pod_in_namespace "carts" "${PROJECT}-${STAGE}"
   verify_test_step $? "Pod carts not found, exiting ..."
 
   if [[ "${BLUE_GREEN_DEPLOYMENT}" == "true" ]]; then
+    # verify that a blue-green carts deployment is up and running
     wait_for_deployment_with_image_in_namespace "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+    verify_test_step $? "Deployment carts not up in ${PROJECT}-${STAGE}, exiting ..."
+
+    # verify that a blue-green carts pod is up and running
     verify_pod_in_namespace "carts-primary" "${PROJECT}-${STAGE}"
     verify_test_step $? "Pod carts-primary not found, exiting ..."
   fi
 
-  verify_pod_in_namespace "carts-db" "${PROJECT}-${STAGE}"
-  verify_test_step $? "Pod carts-db not found in $${PROJECT}-${STAGE}, exiting ..."
+  echo ""
+  echo "Verifying that the correct image has been deployed..."
+  # verify image name of carts deployment
+  verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
+  verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE}"
+
+  echo ""
+  echo "Trying to access public URI for carts..."
 
   # get URL for that deployment
   URL="http://carts.${PROJECT}-${STAGE}.$(kubectl get cm ingress-config -n "${KEPTN_NAMESPACE}" -o=jsonpath='{.data.ingress_hostname_suffix}')"
   # try to access that URL
   wait_for_url "$URL/health"
   verify_test_step $? "Trying to access $URL/health failed"
-
-  # verify image name of carts deployment
-  verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
-  verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE}"
 }
