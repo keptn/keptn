@@ -77,7 +77,7 @@ func (e *EventDispatcher) Run(ctx context.Context) {
 				e.logger.Info("cancelling event dispatcher loop")
 				return
 			case <-ticker.C:
-				e.logger.Info(fmt.Sprintf("%d seconds have passed. Synchronizing services", e.syncInterval))
+				e.logger.Debug(fmt.Sprintf("%.2f seconds have passed. Dispatching events", e.syncInterval.Seconds()))
 				e.dispatchEvents()
 			}
 		}
@@ -88,7 +88,7 @@ func (e *EventDispatcher) dispatchEvents() {
 
 	events, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 	if err != nil {
-		e.logger.Error(fmt.Sprintf("could not fetch event queue: %s", err.Error()))
+		e.logger.Debug(fmt.Sprintf("could not fetch event queue: %s", err.Error()))
 	}
 
 	for _, queueItem := range events {
