@@ -7,8 +7,8 @@ import (
 )
 
 type EventScope struct {
-	v0_2_0.EventData
-	KeptnContext string `json:"keptnContext" bson:"keptnContext"`
+	v0_2_0.EventData `bson:",inline"`
+	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
 }
 
 func NewEventScope(event Event) (*EventScope, error) {

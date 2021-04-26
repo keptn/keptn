@@ -34,8 +34,12 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
 	}
-
-	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), nil).Build()
+	data := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "my-service",
+	}
+	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
 
 	dispatcher.Add(dispatcherEvent)
@@ -66,7 +70,13 @@ func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 		syncInterval:   10 * time.Second,
 	}
 
-	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), nil).Build()
+	data := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "my-service",
+	}
+
+	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeAfter}
 
 	dispatcher.Add(dispatcherEvent)
@@ -81,11 +91,17 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	timeAfter2 := time.Date(2021, 4, 21, 15, 00, 00, 2, time.UTC)
 	timeAfter3 := time.Date(2021, 4, 21, 15, 00, 00, 3, time.UTC)
 
-	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), nil).Build()
+	data := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "my-service",
+	}
+
+	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
-	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), nil).Build()
+	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).Build()
 	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
-	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), nil).Build()
+	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).Build()
 	dispatcherEvent3 := models.DispatcherEvent{keptnv2.ToCloudEvent(event3), timeAfter3}
 
 	eventRepo := &db_mock.EventRepoMock{}

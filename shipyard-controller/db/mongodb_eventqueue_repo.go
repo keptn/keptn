@@ -54,12 +54,12 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]mo
 
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
-		queueItem := &models.QueueItem{}
+		queueItem := models.QueueItem{}
 		err := cur.Decode(&queueItem)
 		if err != nil {
 			return nil, err
 		}
-		queuedItems = append(queuedItems, *queueItem)
+		queuedItems = append(queuedItems, queueItem)
 	}
 
 	return queuedItems, nil
@@ -83,7 +83,7 @@ func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 	var eventInterface interface{}
 	_ = json.Unmarshal(marshal, &eventInterface)
 
-	existingEvent := collection.FindOne(ctx, bson.M{"id": item.EventID})
+	existingEvent := collection.FindOne(ctx, bson.M{"eventID": item.EventID})
 	if existingEvent.Err() == nil || existingEvent.Err() != mongo.ErrNoDocuments {
 		return errors.New("queue item with ID " + item.EventID + " already exists in collection")
 	}

@@ -10,7 +10,7 @@ require (
 	github.com/go-test/deep v1.0.5
 	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.8.3-0.20210423102500-916c1a99f6eb
+	github.com/keptn/go-utils v0.8.3-0.20210426085446-b31b5e4c450b
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0
 	go.mongodb.org/mongo-driver v1.4.6
@@ -18,3 +18,7 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 )
+
+//replace (
+//	github.com/keptn/go-utils => ../../go-utils
+//)

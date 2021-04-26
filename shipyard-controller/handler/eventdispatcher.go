@@ -46,11 +46,23 @@ func NewEventDispatcher(
 }
 
 func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
+
 	if e.theClock.Now().UTC().After(event.TimeStamp) {
 		// send event immediately
 		return e.eventSender.SendEvent(event.Event)
 	}
+
+	ed, err := models.ConvertToEvent(event.Event)
+	if err != nil {
+		return err
+	}
+	eventScope, err := models.NewEventScope(*ed)
+	if err != nil {
+		return err
+	}
+
 	return e.eventQueueRepo.QueueEvent(models.QueueItem{
+		Scope:     *eventScope,
 		EventID:   event.Event.ID(),
 		Timestamp: event.TimeStamp,
 	})
@@ -81,7 +93,7 @@ func (e *EventDispatcher) dispatchEvents() {
 
 	for _, queueItem := range events {
 		e.logger.Info("Dispatching event with ID " + queueItem.EventID)
-		events, err := e.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{ID: &queueItem.EventID})
+		events, err := e.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{ID: &queueItem.EventID}, common.TriggeredEvent)
 		if err != nil {
 			e.logger.Error(fmt.Sprintf("could not fetch event with ID %s: %s", queueItem.EventID, err.Error()))
 			continue
