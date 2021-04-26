@@ -154,3 +154,70 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	require.Equal(t, 3, len(eventSender.SentEvents))
 	require.Equal(t, 3, len(eventQueueRepo.DeleteQueuedEventCalls()))
 }
+
+func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
+
+	timeNow := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
+	timeAfter1 := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
+	timeAfter2 := time.Date(2021, 4, 21, 15, 00, 00, 2, time.UTC)
+
+	data := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "my-service",
+	}
+
+	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
+	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
+	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).Build()
+	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
+
+	eventRepo := &db_mock.EventRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	eventSender := &fake.EventSender{}
+	clock := clock.NewMock()
+	clock.Set(timeNow)
+
+	eventQueueRepo.QueueEventFunc = func(item models.QueueItem) error {
+		return nil
+	}
+
+	eventQueueRepo.GetQueuedEventsFunc = func(timestamp time.Time) ([]models.QueueItem, error) {
+		var items []models.QueueItem
+		for _, i := range eventQueueRepo.QueueEventCalls() {
+			if timestamp.After(i.Item.Timestamp) {
+				items = append(items, i.Item)
+			}
+		}
+		return items, nil
+	}
+
+	eventQueueRepo.DeleteQueuedEventFunc = func(eventID string) error {
+		return nil
+	}
+
+	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+		if *filter.ID == event1.ID {
+			return []models.Event{}, nil
+		}
+		return []models.Event{{ID: *filter.ID, Specversion: "1.0"}}, nil
+	}
+
+	dispatcher := EventDispatcher{
+		eventRepo:      eventRepo,
+		eventQueueRepo: eventQueueRepo,
+		eventSender:    eventSender,
+		logger:         &keptn.Logger{},
+		theClock:       clock,
+		syncInterval:   10 * time.Second,
+	}
+
+	dispatcher.Add(dispatcherEvent1)
+	dispatcher.Add(dispatcherEvent2)
+	dispatcher.Run(context.Background())
+
+	clock.Add(10 * time.Second)
+	require.Equal(t, 1, len(eventSender.SentEvents))
+	require.Equal(t, 1, len(eventQueueRepo.DeleteQueuedEventCalls()))
+	require.Equal(t, event2.ID, eventQueueRepo.DeleteQueuedEventCalls()[0].EventID)
+}

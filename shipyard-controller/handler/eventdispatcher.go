@@ -118,6 +118,7 @@ func (e *EventDispatcher) dispatchEvents() {
 
 		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
 			e.logger.Error(fmt.Sprintf("could not delete event from event queue: %s", err.Error()))
+			continue
 		}
 
 	}
