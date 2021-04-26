@@ -1,6 +1,6 @@
-# Release Notes 0.8.3
+# Release Notes develop
 
-Keptn 0.8.3 is
+Keptn 0.x.x is
 
 ---
 
