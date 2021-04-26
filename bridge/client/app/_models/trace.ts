@@ -283,21 +283,25 @@ class Trace {
 
   isStarted() {
     if(!this.started && this.traces) {
-      this.started = this.traces.some(t => t.type.includes(".started") || t.isStarted());
+      this.started = this.traces.some(t => t.type.endsWith('.started') || t.isStarted());
     }
 
     return this.started;
   }
 
+  isChanged() {
+    return this.type.endsWith('.changed')
+  }
+
   isFinished() {
     if (!this.finished) {
       if (!this.traces || this.traces.length === 0) {
-        this.finished = this.type.includes('.finished');
+        this.finished = this.type.endsWith('.finished');
       } else if (this.isProblem()) {
         this.finished = this.isProblemResolvedOrClosed();
       } else {
-        const countStarted = this.traces.filter(t => t.type.includes('.started')).length;
-        const countFinished = this.traces.filter(t => t.type.includes('.finished')).length;
+        const countStarted = this.traces.filter(t => t.type.endsWith('.started')).length;
+        const countFinished = this.traces.filter(t => t.type.endsWith('.finished')).length;
         this.finished = countFinished >= countStarted && countFinished !== 0;
       }
     }
@@ -306,7 +310,7 @@ class Trace {
   }
 
   isTriggered() {
-    return this.type.includes('.triggered');
+    return this.type.endsWith('.triggered');
   }
 
   isLoading() {
@@ -318,7 +322,7 @@ class Trace {
   }
 
   getFinishedEvent() {
-    return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
+    return this.type.endsWith('.finished') ? this : this.traces.find(t => t.type.endsWith('.finished'));
   }
 
   getDeploymentUrl() {
