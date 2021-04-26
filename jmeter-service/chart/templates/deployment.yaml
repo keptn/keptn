@@ -84,7 +84,8 @@ spec:
             - name: KEPTN_API_TOKEN
               value: "{{ .Values.remoteControlPlane.api.token }}"
             - name: HTTP_SSL_VERIFY
-              value: "{{ .Values.remoteControlPlane.api.apiValidateTls | default "true" }}"
+              {{- $apiValidateTls := .Values.remoteControlPlane.api.apiValidateTls | ternary "true" "false" }}
+              value: "{{ $apiValidateTls }}"
             {{- end }}
 
       {{- with .Values.nodeSelector }}
