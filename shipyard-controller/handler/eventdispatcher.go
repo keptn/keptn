@@ -127,7 +127,6 @@ func (e *EventDispatcher) dispatchEvents() {
 			log.Errorf("could not delete event from event queue: %s", err.Error())
 			continue
 		}
-
 	}
 
 }
