@@ -74,6 +74,9 @@ func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject
 	if err != nil {
 		return nil, err
 	}
+	if project == nil {
+		return nil, errProjectNotFound
+	}
 	return project, err
 }
 

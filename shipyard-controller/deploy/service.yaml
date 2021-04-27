@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
-        image: keptn/shipyard-controller:latest
+        image: warber/shipyard-controller:latest
         env:
           - name: CONFIGURATION_SERVICE
             value: "http://configuration-service:8080"

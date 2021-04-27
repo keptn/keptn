@@ -10,7 +10,6 @@ on:
     branches:
       - 'master'
       - 'release-*'
-    types: [opened, synchronize, reopened, labeled, unlabeled]
   workflow_dispatch: # run CI when triggered manually
 
 defaults:
@@ -219,7 +218,7 @@ jobs:
 
       - name: 'Get Previous tag'
         id: get_previous_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1.0.1"
+        uses: "WyriHaximus/github-action-get-previous-tag@v1.1"
       - name: 'Get next patch version'
         id: get_next_semver_tag
         uses: "WyriHaximus/github-action-next-semvers@v1.1"
@@ -317,7 +316,7 @@ jobs:
           env-file: .ci_env
 
       # cache go modules
-      - uses: actions/cache@v2.1.4
+      - uses: actions/cache@v2.1.5
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -427,7 +426,7 @@ jobs:
           node-version: 12.x
       - name: Checkout Code
         uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/cache@v2.1.5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -473,7 +472,7 @@ jobs:
         uses: actions/checkout@v2
 
       # cache go modules
-      - uses: actions/cache@v2.1.4
+      - uses: actions/cache@v2.1.5
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
@@ -505,9 +504,10 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
-            GOOS: "darwin"
-            GOARCH: "amd64"
+# temporarily disable macOS builds due to an issue on GH actions
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+#            GOOS: "darwin"
+#            GOARCH: "amd64"
           # support for apple silicon (arm64 on macOS) is pending Go 1.16 release
 #          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
 #            GOOS: "darwin"
@@ -527,7 +527,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
       # cache go modules
-      - uses: actions/cache@v2.1.4
+      - uses: actions/cache@v2.1.5
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}

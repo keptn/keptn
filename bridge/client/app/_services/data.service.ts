@@ -145,18 +145,6 @@ export class DataService {
     });
   }
 
-  public loadProject(projectName) {
-    this.apiService.getProject(projectName)
-      .pipe(
-        map(project => Project.fromJSON(project))
-      ).subscribe((project: Project) => {
-        let projects = this._projects.getValue();
-        let index = projects.findIndex(p => p.projectName == projectName);
-        projects.splice((index < 0) ? projects.length : index, (index < 0) ? 0 : 1, project);
-        this._projects.next([...projects]);
-    });
-  }
-
   public loadRoots(project: Project) {
     let fromTime: Date = this._rootsLastUpdated[project.projectName];
     this._rootsLastUpdated[project.projectName] = new Date();
@@ -197,8 +185,8 @@ export class DataService {
     });
   }
 
-  private getRoot(project: Project, shkeptncontext: string): Observable<Root> {
-    return this.apiService.getRoots(project.projectName, 1, null, null, null, shkeptncontext).pipe(
+  public getRoot(projectName: string, shkeptncontext: string): Observable<Root> {
+    return this.apiService.getRoots(projectName, 1, null, null, null, shkeptncontext).pipe(
       map(response => response.body.events || []),
       switchMap(roots => this.rootMapper(roots).pipe(
         map(sequences => sequences.pop())
@@ -207,7 +195,7 @@ export class DataService {
   }
 
   public loadUntilRoot(project: Project, shkeptncontext: string): void {
-    this.getRoot(project, shkeptncontext).subscribe((root: Root) => {
+    this.getRoot(project.projectName, shkeptncontext).subscribe((root: Root) => {
       if (root) {
         this.loadOldRoots(project, root);
       }
@@ -234,7 +222,13 @@ export class DataService {
           .subscribe(project => {
             project.stages.filter(s => root.getStages().includes(s.stageName)).forEach(stage => {
               stage.services.filter(s => root.getService() == s.serviceName).forEach(service => {
-                service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
+                service.openApprovals = service.roots.reduce((openApprovals, root) => {
+                  const approval = root.getPendingApproval(stage.stageName);
+                  if(approval) {
+                    openApprovals.push(approval);
+                  }
+                  return openApprovals;
+                }, []);
               });
             });
           });
@@ -337,7 +331,13 @@ export class DataService {
   private stageMapper(stage: Stage, project: Project) {
     stage.services.forEach(service => {
       service.roots = project.sequences.filter(s => s.getService() === service.serviceName && s.getStages().includes(stage.stageName));
-      service.openApprovals = service.roots.reduce((openApprovals, root) => [...openApprovals, ...root.getPendingApprovals(stage.stageName)], []);
+      service.openApprovals = service.roots.reduce((openApprovals, root) => {
+        const approval = root.getPendingApproval(stage.stageName);
+        if(approval) {
+          openApprovals.push(approval);
+        }
+        return openApprovals;
+      }, []);
     });
   }
 }

@@ -41,6 +41,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     if (this._tasks !== value) {
       this._tasks = value;
       this._changeDetectorRef.markForCheck();
+      this.focusLastSequence();
     }
   }
 
@@ -52,6 +53,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     if (this._stage !== value) {
       this._stage = value;
       this._changeDetectorRef.markForCheck();
+      this.focusLastSequence();
     }
   }
 
@@ -74,6 +76,8 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         if (params['eventId']) {
           this.focusedEventId = params['eventId'];
+        } else {
+          this.focusLastSequence();
         }
       });
   }
@@ -100,12 +104,21 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     }
   }
 
+  focusLastSequence() {
+    if(!this.getTasksByStage(this.tasks, this.stage).some(seq => seq.id === this.focusedEventId || seq.findTrace(t => t.id === this.focusedEventId)))
+      this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage)?.id;
+  }
+
   getTasksByStage(tasks: Trace[], stage: String) {
     return tasks.filter(t => t.data?.stage === stage);
   }
 
   isInvalidated(event) {
     return !!this.tasks.find(e => e.isEvaluationInvalidation() && e.triggeredid === event.id);
+  }
+
+  isFocusedTask(task) {
+    return task.id == this.focusedEventId || task.findTrace(t => t.id == this.focusedEventId);
   }
 
   ngOnDestroy(): void {

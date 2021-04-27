@@ -16,11 +16,9 @@ export class Root extends Trace {
   isFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
-      this.traces.forEach((trace) => {
-        if(trace.isFailedEvaluation()) {
-          result = trace.data.stage;
-        }
-      });
+      let failedEvaluation = this.findTrace(t => t.isEvaluation() && t.isFailedEvaluation());
+      if(failedEvaluation)
+        result = failedEvaluation.getStage();
     }
     return result;
   }
@@ -46,20 +44,16 @@ export class Root extends Trace {
     const tracesOfStage = this.getTracesOfStage(stage);
     let pending = undefined;
 
-    for(let i = 0; i < tracesOfStage.length && pending === undefined; ++i){
-      if(tracesOfStage[i].isApproval()){
+    for(let i = 0; i < tracesOfStage.length && pending === undefined; ++i) {
+      if(tracesOfStage[i].getLastTrace().isApproval()) {
         pending = tracesOfStage[i].isApprovalPending();
       }
     }
     return pending === undefined ? false : pending;
   }
 
-  getPendingApprovals(stageName?: string): Trace[] {
-    return this.traces.filter(trace => trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.getStage() == stageName));
-  }
-
-  getLastTrace(): Trace {
-    return this.traces ? this.traces[this.traces.length - 1] : null;
+  getPendingApproval(stageName?: string): Trace {
+    return this.findTrace(trace => trace.isApproval() && trace.isApprovalPending() && (!stageName || trace.getStage() == stageName));
   }
 
   getTracesOfStage(stage: string): Trace[] {
@@ -71,6 +65,11 @@ export class Root extends Trace {
   }
 
   getLastTraceOfStage(stage: string): Trace {
+    let traces = this.getTracesOfStage(stage);
+    return traces ? traces[traces.length-1].getLastTrace() : null;
+  }
+
+  getLastSequenceOfStage(stage: string): Trace {
     let traces = this.getTracesOfStage(stage);
     return traces ? traces[traces.length-1] : null;
   }
@@ -88,22 +87,22 @@ export class Root extends Trace {
 
   getProject(): string {
     if(!this.data.project)
-      this.data.project = this.traces.find(trace => !!trace.data.project).data.project;
+      this.data.project = this.findTrace(trace => !!trace.data.project).data.project;
     return this.data.project;
   }
 
   getService(): string {
     if(!this.data.service)
-      this.data.service = this.traces.find(trace => !!trace.data.project).data.service;
+      this.data.service = this.findTrace(trace => !!trace.data.project).data.service;
     return this.data.service;
   }
 
   getEvaluation(stageName: String): Trace {
-    return this.traces.find(t => t.type == EventTypes.EVALUATION_TRIGGERED && t.data.stage == stageName);
+    return this.findTrace(t => t.type == EventTypes.EVALUATION_TRIGGERED && t.data.stage == stageName);
   }
 
-  getDeploymentDetails(stage: Stage): Trace {
-    return this.traces.find(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage.stageName)?.getFinishedEvent();
+  getDeploymentDetails(stage: string): Trace {
+    return this.findTrace(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage)?.getFinishedEvent();
   }
 
   getRemediationActions(): Root[] {
@@ -149,7 +148,7 @@ export class Root extends Trace {
       case "succeeded":
         return "succeeded";
       case "active":
-        if(this.getPendingApprovals().length > 0)
+        if(this.getPendingApproval() != null)
           return "waiting for approval";
         else
           return "started";

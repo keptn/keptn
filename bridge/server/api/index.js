@@ -1,12 +1,13 @@
 const express = require('express');
 const axios = require('axios');
 const https = require('https');
+const currentPrincipal = require('../user/session').getCurrentPrincipal;
 
 const router = express.Router();
 
 module.exports = (params) => {
   // fetch parameters for bridgeInfo endpoint
-  const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink } = params;
+  const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
 
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== "false";
   const showApiToken = process.env.SHOW_API_TOKEN !== "false";
@@ -22,8 +23,26 @@ module.exports = (params) => {
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
+    const bridgeInfo = {
+      bridgeVersion,
+      keptnInstallationType,
+      apiUrl, ...showApiToken && {apiToken},
+      cliDownloadLink,
+      enableVersionCheckFeature,
+      showApiToken,
+      projectsPageSize,
+      servicesPageSize,
+      authType
+    };
+
+    const user = currentPrincipal(req)
+
+    if (user !== undefined) {
+      bridgeInfo.user = user;
+    }
+
     try {
-      return res.json({ bridgeVersion, keptnInstallationType, apiUrl, ...showApiToken && { apiToken }, cliDownloadLink, enableVersionCheckFeature, showApiToken, projectsPageSize, servicesPageSize });
+      return res.json(bridgeInfo);
     } catch (err) {
       return next(err);
     }

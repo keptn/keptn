@@ -204,7 +204,7 @@ class Trace {
   }
 
   public isEvaluation(): string {
-    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) ? this.data.stage : null;
+    return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) && !this.isSequence() ? this.data.stage : null;
   }
 
   public isEvaluationInvalidation(): boolean {
@@ -216,13 +216,9 @@ class Trace {
   }
 
   getLabel(): string {
-    // TODO: use translation file
+    // TODO: use translation file; see also EVENT_LABELS in event-labels.ts
     if(!this.label) {
-      if(this.isApprovalFinished()) {
-        this.label = EVENT_LABELS[EventTypes.APPROVAL_FINISHED][this.data.approval?.result] || this.getShortType();
-      } else {
-        this.label = EVENT_LABELS[this.type] || this.getShortType();
-      }
+      this.label = this.getShortType();
     }
 
     return this.label;
@@ -286,27 +282,35 @@ class Trace {
   }
 
   isStarted() {
-    if(!this.started) {
-      this.started = this.traces.some(t => t.type.includes(".started"));
+    if(!this.started && this.traces) {
+      this.started = this.traces.some(t => t.type.endsWith('.started') || t.isStarted());
     }
 
     return this.started;
   }
 
+  isChanged() {
+    return this.type.endsWith('.changed')
+  }
+
   isFinished() {
     if (!this.finished) {
       if (!this.traces || this.traces.length === 0) {
-        this.finished = this.type.includes('.finished');
+        this.finished = this.type.endsWith('.finished');
       } else if (this.isProblem()) {
         this.finished = this.isProblemResolvedOrClosed();
       } else {
-        const countStarted = this.traces.filter(t => t.type.includes('.started')).length;
-        const countFinished = this.traces.filter(t => t.type.includes('.finished')).length;
+        const countStarted = this.traces.filter(t => t.type.endsWith('.started')).length;
+        const countFinished = this.traces.filter(t => t.type.endsWith('.finished')).length;
         this.finished = countFinished >= countStarted && countFinished !== 0;
       }
     }
 
     return this.finished;
+  }
+
+  isTriggered() {
+    return this.type.endsWith('.triggered');
   }
 
   isLoading() {
@@ -318,11 +322,33 @@ class Trace {
   }
 
   getFinishedEvent() {
-    return this.type.includes(".finished") ? this : this.traces.find(t => t.type.includes(".finished"));
+    return this.type.endsWith('.finished') ? this : this.traces.find(t => t.type.endsWith('.finished'));
   }
 
   getDeploymentUrl() {
-    return this.data.deployment.deploymentURIsPublic[0];
+    return this.data.deployment?.deploymentURIsPublic?.find(e => true);
+  }
+
+  findTrace(comp) {
+    if(comp(this))
+      return this;
+    else
+      return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
+  }
+
+  findLastTrace(comp) {
+    if(comp(this))
+      return this;
+    else
+      return this.traces.reduce((result, trace) => trace.findTrace(comp) || result, null);
+  }
+
+  getLastTrace(): Trace {
+    return this.traces.length ? this.traces[this.traces.length - 1].getLastTrace() : this;
+  }
+
+  isSequence() {
+    return this.type.split(".").length == 6 && this.type.includes(this.getStage());
   }
 
   static fromJSON(data: any) {
@@ -338,24 +364,27 @@ class Trace {
       .map(trace => Trace.fromJSON(trace))
       .sort(DateUtil.compareTraceTimesDesc);
 
-    return traces.reduce((result: Trace[], trace: Trace) => {
-      const trigger = traces.find(t => {
-        if (trace.triggeredid) {
-          return t.id === trace.triggeredid;
-        } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-          return t.isProblem() && !t.isProblemResolvedOrClosed();
-        } else if (!t.triggeredid && trace.isFinished()) {
-          return t.type.slice(0, -8) === trace.type.slice(0, -9);
-        }
-      });
+    return traces.reduce((seq: Trace[], trace: Trace) => {
+      let trigger: Trace = null;
+      if(trace.triggeredid) {
+        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => t.id == trace.triggeredid), null);
+      } else if(trace.isProblem() && trace.isProblemResolvedOrClosed()) {
+        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()), null);
+      } else if(trace.isFinished()) {
+        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)), null);
+      }
 
       if (trigger) {
         trigger.traces.push(trace);
+      } else if (trace.isSequence()) {
+        seq.push(trace);
+      } else if(seq.length > 0) {
+        seq[seq.length-1].traces.push(trace);
       } else {
-        result.push(trace);
+        seq.push(trace);
       }
 
-      return result;
+      return seq;
     }, []);
   }
 }

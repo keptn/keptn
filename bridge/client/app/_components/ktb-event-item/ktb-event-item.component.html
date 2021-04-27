@@ -18,7 +18,7 @@
     </div>
     <div fxLayout="column" fxLayoutAlign="start end">
       <div fxLayout="row" fxLayoutAlign="start start">
-        <p class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
+        <p *ngIf="showTime" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
         <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
         <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
       </div>
@@ -35,7 +35,7 @@
       </dt-tag-list>
     </div>
   </div>
-  <div *ngIf="_event.getFinishedEvent()?.hasLabels()">
+  <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()">
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">
@@ -50,7 +50,7 @@
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeploymentTrace(project.getService(_event.data.service), project.getStage(_event.data.stage))?.getShortImageName() || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>

@@ -115,7 +115,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           .subscribe(roots => {
             if (!this.currentSequence && roots && params.shkeptncontext) {
               const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
-              let stage = params.eventId ? root.traces.find(t => t.id === params.eventId).getStage() : params.stage;
+              let stage = params.eventId ? root.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
               let eventId = params.eventId;
               if (root) {
                 this.selectSequence({ root, stage, eventId });
@@ -222,13 +222,11 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     return moment().subtract(1, 'day').isAfter(root.time);
   }
 
-  selectStage(event: {stageName: string, triggerByEvent: boolean}) {
-    if (!event.triggerByEvent) {
-      const routeUrl = this.router.createUrlTree(['/project', this.currentSequence.getProject(), 'sequence', this.currentSequence.shkeptncontext, 'stage', event.stageName]);
-      this.location.go(routeUrl.toString());
-    }
+  selectStage(stageName: string) {
+    const routeUrl = this.router.createUrlTree(['/project', this.currentSequence.getProject(), 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName]);
+    this.location.go(routeUrl.toString());
 
-    this.selectedStage = event.stageName;
+    this.selectedStage = stageName;
     this._changeDetectorRef.markForCheck();
   }
 

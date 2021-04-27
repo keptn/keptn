@@ -1,16 +1,19 @@
-import { Injectable } from '@angular/core';
-import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
-import {Observable, throwError} from "rxjs";
-import {catchError, retryWhen} from "rxjs/operators";
-import {genericRetryStrategy} from "./http-generic-retry-strategy";
-import {DtToast} from "@dynatrace/barista-components/toast";
+import {Injectable} from '@angular/core';
+import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
+import {Observable, of, throwError} from 'rxjs';
+import {catchError, retryWhen} from 'rxjs/operators';
+import {genericRetryStrategy} from './http-generic-retry-strategy';
+import {DtToast} from '@dynatrace/barista-components/toast';
+import {Location} from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
+  private isReloading = false;
 
-  constructor(private readonly toast: DtToast){
+  constructor(private readonly toast: DtToast,
+              private readonly location: Location) {
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -18,6 +21,21 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       .pipe(
         retryWhen(genericRetryStrategy()),
         catchError((error: HttpErrorResponse) => {
+
+          if (error.status === 401) {
+            if (!this.isReloading) {
+              this.isReloading = true;
+              this.toast.create('Login required. Redirecting to login.');
+              // Wait for few moments to let user see the toast message and navigate to external login route
+              setTimeout(
+                () => window.location.href = this.location.prepareExternalUrl('/login'),
+                1000
+              );
+            }
+
+            return of(undefined);
+          }
+
           if (error.error instanceof ErrorEvent) {
             // A client-side or network error occurred. Handle it accordingly.
             console.error('An error occurred:', error.error.message);

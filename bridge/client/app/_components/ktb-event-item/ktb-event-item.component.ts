@@ -31,6 +31,8 @@ export class KtbEventItemComponent {
   @ViewChild('eventPayloadDialog')
   public eventPayloadDialog: TemplateRef<any>;
   public eventPayloadDialogRef: MatDialogRef<any, any>;
+  @Input() public showTime = true;
+  @Input() public showLabels = true;
 
   @Input()
   get event(): Trace {

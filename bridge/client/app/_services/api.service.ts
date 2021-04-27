@@ -12,11 +12,11 @@ import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
-import {Project} from "../_models/project";
 import {KeptnService} from '../_models/keptn-service';
 import {KeptnServicesMock} from '../_models/keptn-services.mock';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
+import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root'
@@ -61,12 +61,17 @@ export class ApiService {
       .get<any>(url, { responseType: 'text' as 'json' });
   }
 
-  public isVersionCheckEnabled(): boolean {
-    return JSON.parse(localStorage.getItem(this.VERSION_CHECK_COOKIE));
+  public isVersionCheckEnabled(): boolean | undefined {
+    const versionInfo = JSON.parse(localStorage.getItem(this.VERSION_CHECK_COOKIE));
+    let enabled = typeof versionInfo === 'boolean' ? versionInfo : versionInfo?.enabled; // support old format
+    if (!enabled && (!versionInfo?.time || moment().subtract(5, 'days').isAfter(versionInfo.time))) {
+      enabled = undefined;
+    }
+    return enabled;
   }
 
   public setVersionCheck(enabled: boolean): void {
-    localStorage.setItem(this.VERSION_CHECK_COOKIE, String(enabled));
+    localStorage.setItem(this.VERSION_CHECK_COOKIE, JSON.stringify({enabled, time: moment().valueOf()}));
   }
 
   public getAvailableVersions(): Observable<any> {
@@ -85,11 +90,6 @@ export class ApiService {
       url += `&pageSize=${pageSize}`;
     return this.http
       .get<ProjectResult>(url);
-  }
-
-  public getProject(projectName: string): Observable<Project> {
-    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
-    return this.http.get<Project>(url);
   }
 
   public getKeptnServices(projectName: string): Observable<KeptnService[]> {

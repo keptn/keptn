@@ -10,13 +10,13 @@
       </div>
     </div>
   </div>
-  <div class="m-0 mr-2" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
-    <dt-chart #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'"
+  <div class="m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
+    <dt-chart class="mr-2" #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'"
               [options]="_heatmapOptions"
               [series]="_heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
-    <dt-chart *ngIf="showChart && _comparisonView == 'chart'"
+    <dt-chart fxFlex="99%" *ngIf="showChart && _comparisonView == 'chart'"
               [options]="_chartOptions"
               [series]="_chartSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
@@ -24,12 +24,12 @@
         <ng-template let-tooltip>
           <p>SLO evaluation of <span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:dateUtil.getDateTimeFormat()"></span></p>
           <dt-key-value-list style="min-width: 100px;">
-            <dt-key-value-list-item>
+            <dt-key-value-list-item *ngFor="let data of filterPoints(tooltip.points)">
               <dt-key-value-list-key>
-                {{ tooltip.points[0].series.name }}
+                {{ data.series.name }}
               </dt-key-value-list-key>
               <dt-key-value-list-value>
-                {{ tooltip.points[0].point.y | number:'1.0-0' }}
+                {{ data.point.y | number:'1.0-2'}}
               </dt-key-value-list-value>
             </dt-key-value-list-item>
           </dt-key-value-list>
@@ -44,7 +44,7 @@
     <div fxLayout="row">
       <div fxFlex></div>
       <div fxLayout="row" fxLayoutAlign="start end">
-        <button dt-button variant="nested" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluation.sloFileContentParsed">Show SLO</button>
+        <button dt-button variant="secondary" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluation.sloFileContentParsed"><dt-icon name="services"></dt-icon> Show SLO</button>
         <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">Ignore for comparison</button>
       </div>
     </div>

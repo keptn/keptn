@@ -2,7 +2,7 @@ apiVersion: skaffold/v2beta10
 kind: Config
 build:
   artifacts:
-    - image: keptn/shipyard-controller
+    - image: warber/shipyard-controller
       docker:
         dockerfile: Dockerfile
 deploy:

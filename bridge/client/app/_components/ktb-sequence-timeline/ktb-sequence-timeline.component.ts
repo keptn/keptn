@@ -12,7 +12,7 @@ export class KtbSequenceTimelineComponent{
   private _currentSequence: Root;
   public _selectedStage: String;
 
-  @Output() selectedStageChange: EventEmitter<{ stageName: String, triggerByEvent: boolean }> = new EventEmitter();
+  @Output() selectedStageChange: EventEmitter<String> = new EventEmitter();
 
   @Input()
   get selectedStage(): String {
@@ -40,10 +40,10 @@ export class KtbSequenceTimelineComponent{
     }
   }
 
-  stageChanged(stageName: String, triggerByEvent = false) {
+  stageChanged(stageName: String) {
     this.selectedStage = stageName;
     this._changeDetectorRef.markForCheck();
-    this.selectedStageChange.emit({stageName, triggerByEvent});
+    this.selectedStageChange.emit(stageName);
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef) {

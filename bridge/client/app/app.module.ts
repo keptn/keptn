@@ -94,6 +94,8 @@ import { KtbSubscriptionComponent } from './_components/ktb-subscription/ktb-sub
 import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
+import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
+import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -140,11 +142,13 @@ registerLocaleData(localeEn, 'en');
     KeptnUrlPipe,
     KtbSliBreakdownCriteriaItemComponent,
     KtbServicesListComponent,
+    KtbUserComponent,
     KtbUniformViewComponent,
     KtbKeptnServicesListComponent,
     KtbSubscriptionComponent,
     KtbSubscriptionItemComponent,
     KtbDeploymentListComponent,
+    KtbServiceDetailsComponent,
   ],
   imports: [
     BrowserModule,

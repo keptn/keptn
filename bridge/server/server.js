@@ -4,7 +4,6 @@
  * Module dependencies.
  */
 
-const app = require('./app');
 const debug = require('debug')('server-stub:server');
 
 /**
@@ -14,14 +13,25 @@ const debug = require('debug')('server-stub:server');
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
 
-app.set('port', PORT);
+(async () => {
+  let app;
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+  try {
+    app = await require('./app');
+  } catch (e) {
+    console.log(`Error while starting the application. Cause : ${e}`);
+    process.exit(1);
+  }
 
-console.log(`Running on http://${HOST}:${PORT}`);
-app.listen(PORT, HOST);
+  app.set('port', PORT);
+
+  /**
+   * Listen on provided port, on all network interfaces.
+   */
+  console.log(`Running on http://${HOST}:${PORT}`);
+  app.listen(PORT, HOST);
+})();
+
 
 /**
  * Normalize a port into a number, string, or false.
