@@ -501,7 +501,7 @@ jobs:
         run: |
           HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
           keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
-          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
+          keptn add-resource --project=keptn --service=keptn --all-stages --resource=${HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
 
       - name: Trigger Keptn delivery
         id: trigger-keptn-delivery
