@@ -908,7 +908,7 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: push
+          #event: push
           workflow_conclusion: success
           # use the following branch
           branch: ${{ env.BRANCH}}
