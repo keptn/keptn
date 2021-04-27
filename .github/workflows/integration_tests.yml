@@ -25,13 +25,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - CLOUD_PROVIDER: "minishift-on-GHA"
-            PLATFORM: "openshift"
-            VERSION: "3.11"
-            KEPTN_SERVICE_TYPE: "ClusterIP"
-            RUN_QUALITY_GATES_TEST: "false"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            COLLECT_RESOURCE_LIMITS: "true"
+          #- CLOUD_PROVIDER: "minishift-on-GHA"
+          #  PLATFORM: "openshift"
+          #  VERSION: "3.11"
+          #  KEPTN_SERVICE_TYPE: "ClusterIP"
+          #  RUN_QUALITY_GATES_TEST: "false"
+          #  RUN_CONTINUOUS_DELIVERY_TEST: "false"
+          #  COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -40,32 +40,32 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "k3s-on-GHA"
-            VERSION: "v1.20.4+k3s1" # see https://github.com/rancher/k3s/releases
-            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.17"
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
-            REMOTE_EXECUTION_PLANE: "true"
-            COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.18"
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
-            REMOTE_EXECUTION_PLANE: "false"
-            COLLECT_RESOURCE_LIMITS: "true"
+          #- CLOUD_PROVIDER: "k3s-on-GHA"
+          #  VERSION: "v1.20.4+k3s1" # see https://github.com/rancher/k3s/releases
+          #  KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+          #  PLATFORM: "kubernetes"
+          #  KEPTN_SERVICE_TYPE: "NodePort"
+          #  RUN_QUALITY_GATES_TEST: "true"
+          #  RUN_CONTINUOUS_DELIVERY_TEST: "false"
+          #  COLLECT_RESOURCE_LIMITS: "false"
+          #- CLOUD_PROVIDER: "GKE"
+          #  VERSION: "1.17"
+          #  KUBECONFIG: ""
+          #  PLATFORM: "kubernetes"
+          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
+          #  RUN_QUALITY_GATES_TEST: "true"
+          #  RUN_CONTINUOUS_DELIVERY_TEST: "true"
+          #  REMOTE_EXECUTION_PLANE: "true"
+          #  COLLECT_RESOURCE_LIMITS: "false"
+          #- CLOUD_PROVIDER: "GKE"
+          #  VERSION: "1.18"
+          #  KUBECONFIG: ""
+          #  PLATFORM: "kubernetes"
+          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
+          #  RUN_QUALITY_GATES_TEST: "true"
+          #  RUN_CONTINUOUS_DELIVERY_TEST: "true"
+          #  REMOTE_EXECUTION_PLANE: "false"
+          #  COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -884,13 +884,19 @@ jobs:
   # This job deploys Keptn with Keptn                                   #
   #######################################################################
   deploy_keptn_with_keptn:
-    name: Publish Draft release
+    name: Deploy Keptn with Keptn
     needs: integration-test
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
+          submodules: 'true'
+
       - name: Load CI Environment from .ci_env
         id: load_ci_env
         uses: c-py/action-dotenv-to-setenv@v3
