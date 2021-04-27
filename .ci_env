@@ -33,3 +33,5 @@ MONGODB_DS_IMAGE="mongodb-datastore"
 MONGODB_DS_FOLDER="mongodb-datastore/"
 STATISTICS_SVC_IMAGE="statistics-service"
 STATISTICS_SVC_FOLDER="statistics-service/"
+
+META_KEPTN_KEPTN_PROJECT="keptn"

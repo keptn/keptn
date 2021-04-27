@@ -891,6 +891,11 @@ jobs:
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
+      - name: Load CI Environment from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: .ci_env
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         with:
