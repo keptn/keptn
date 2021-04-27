@@ -127,6 +127,7 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 
 }
 
+// NewEventHandler creates a new EventHandler
 func NewEventHandler(shipyardController IShipyardController) IEventHandler {
 	return &EventHandler{
 		ShipyardController: shipyardController,

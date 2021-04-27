@@ -14,11 +14,15 @@ import (
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
+// IEventDispatcher is responsible for dispatching events to be sent to the event broker
 type IEventDispatcher interface {
 	Add(event models.DispatcherEvent) error
 	Run(ctx context.Context)
 }
 
+// EventDispatcher is an implementation of IEventDispatcher
+// It regularly fetches (queued) events from the database and eventually
+// forwards them to the event broker
 type EventDispatcher struct {
 	eventRepo      db.EventRepo
 	eventQueueRepo db.EventQueueRepo
@@ -28,6 +32,7 @@ type EventDispatcher struct {
 	syncInterval   time.Duration
 }
 
+// NewEventDispatcher creates a new EventDispatcher
 func NewEventDispatcher(
 	eventRepo db.EventRepo,
 	eventQueueRepo db.EventQueueRepo,
@@ -45,6 +50,7 @@ func NewEventDispatcher(
 	}
 }
 
+// Add adds a DispatcherEvent to the event queue
 func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 
 	if e.theClock.Now().UTC().After(event.TimeStamp) {
@@ -68,6 +74,9 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 	})
 }
 
+// Run starts the event dispatcher loop which will periodically fetch (queued) events
+// from the database and eventually forward/send them to the event broker
+// The fetch interval is configured when creating a EventDispatcher using the "syncInterval" field
 func (e *EventDispatcher) Run(ctx context.Context) {
 	ticker := e.theClock.Ticker(e.syncInterval)
 	go func() {

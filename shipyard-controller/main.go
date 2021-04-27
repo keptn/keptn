@@ -33,9 +33,9 @@ import (
 
 // @BasePath /v1
 
-const ENV_VAR_CONFIGURATION_SVC_ENDPOINT = "CONFIGURATION_SERVICE"
-const ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC = "EVENT_DISPATCH_INTERVAL_SEC"
-const ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC_DEFAULT = "10"
+const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
+const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
+const envVarEventDispatchIntervalSecDefault = "10"
 
 func main() {
 
@@ -45,12 +45,12 @@ func main() {
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
-	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC, ENV_VAR_EVENT_DISPATCH_INTERVAL_SEC_DEFAULT))
+	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))
 	if err != nil {
 		log.Fatalf("Unexpected value of EVENT_DISPATCH_INTERVAL_SEC environment variable. Need to be a number")
 	}
 
-	csEndpoint, err := keptncommon.GetServiceEndpoint(ENV_VAR_CONFIGURATION_SVC_ENDPOINT)
+	csEndpoint, err := keptncommon.GetServiceEndpoint(envVarConfigurationSvcEndpoint)
 	if err != nil {
 		log.Fatalf("could not get configuration-service URL: %s", err.Error())
 	}
