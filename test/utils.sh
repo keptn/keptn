@@ -290,6 +290,30 @@ function verify_image_of_deployment() {
   fi
 }
 
+# check if a deployment exists (does not need to be running)
+function wait_and_check_if_deployment_exists() {
+  DEPLOYMENT=$1; NAMESPACE=$2;
+  RETRY=0; RETRY_MAX=40;
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
+    if [[ -z "$DEPLOYMENT_LIST" ]]; then
+      RETRY=$((RETRY+1))
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Deployment not found - waiting 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+      sleep 15
+    else
+      echo "Found deployment ${DEPLOYMENT} in namespace ${NAMESPACE}: ${DEPLOYMENT_LIST}"
+      break
+    fi
+  done
+
+  if [[ $RETRY == "$RETRY_MAX" ]]; then
+    print_error "Could not find deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+    exit 1
+  fi
+}
+
+# wait for a deployment to be up and running
 function wait_for_deployment_in_namespace() {
   DEPLOYMENT=$1; NAMESPACE=$2;
   RETRY=0; RETRY_MAX=40;
@@ -298,7 +322,7 @@ function wait_for_deployment_in_namespace() {
     DEPLOYMENT_LIST=$(eval "kubectl get deployments -n ${NAMESPACE} | awk '/$DEPLOYMENT /'" | awk '{print $1}') # list of multiple deployments when starting with the same name
     if [[ -z "$DEPLOYMENT_LIST" ]]; then
       RETRY=$((RETRY+1))
-      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Deployment not found - waiting 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
       sleep 15
     else
       READY_REPLICAS=$(eval kubectl get deployments "$DEPLOYMENT" -n "$NAMESPACE" -o=jsonpath='{$.status.availableReplicas}')
@@ -309,7 +333,7 @@ function wait_for_deployment_in_namespace() {
         break
       else
           RETRY=$((RETRY+1))
-          echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
+          echo "Retry: ${RETRY}/${RETRY_MAX} - Unsufficient replicas for deployment - waiting 15s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE}"
           sleep 15
       fi
     fi
@@ -526,15 +550,11 @@ function verify_sockshop_deployment() {
   echo ""
   echo "Checking if carts is up and running..."
 
-  # verify that a carts deployment is up and running
-  wait_for_deployment_with_image_in_namespace "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
-  verify_test_step $? "Deployment ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} carts not up in ${PROJECT}-${STAGE}, exiting ..."
-
-  # verify that a carts pod is up and running
-  verify_pod_in_namespace "carts" "${PROJECT}-${STAGE}"
-  verify_test_step $? "Pod carts not found, exiting ..."
-
   if [[ "${BLUE_GREEN_DEPLOYMENT}" == "true" ]]; then
+    # verify that a carts deployment exists (but it does not need to be up, as we need to look for carts-primary)
+    wait_and_check_if_deployment_exists "carts" "${PROJECT}-${STAGE}"
+    verify_test_step $? "Deployment ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} carts not found in ${PROJECT}-${STAGE}, exiting ..."
+
     # verify that a blue-green carts deployment is up and running
     wait_for_deployment_with_image_in_namespace "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
     verify_test_step $? "Deployment carts ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} not up in ${PROJECT}-${STAGE}, exiting ..."
@@ -542,13 +562,23 @@ function verify_sockshop_deployment() {
     # verify that a blue-green carts pod is up and running
     verify_pod_in_namespace "carts-primary" "${PROJECT}-${STAGE}"
     verify_test_step $? "Pod carts-primary not found, exiting ..."
-  fi
 
-  echo ""
-  echo "Verifying that the correct image has been deployed..."
-  # verify image name of carts deployment
-  verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
-  verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE} - expected ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+    # verify image name of carts-primary deployment
+    verify_image_of_deployment "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
+    verify_test_step $? "Wrong image for deployment carts-primary in ${PROJECT}-${STAGE} - expected ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+  else # direct deployment
+    # verify that a carts deployment is up and running
+    wait_for_deployment_with_image_in_namespace "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+    verify_test_step $? "Deployment ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} carts not up in ${PROJECT}-${STAGE}, exiting ..."
+
+    # verify that a carts pod is up and running
+    verify_pod_in_namespace "carts" "${PROJECT}-${STAGE}"
+    verify_test_step $? "Pod carts not found, exiting ..."
+
+    # verify image name of carts deployment
+    verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
+    verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE} - expected ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+  fi
 
   echo ""
   echo "Trying to access public URI for carts..."
