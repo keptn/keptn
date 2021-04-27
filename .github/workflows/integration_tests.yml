@@ -918,6 +918,7 @@ jobs:
       - name: Install Keptn CLI
         id: install_keptn_cli
         run: |
+          mkdir ${HOME}/downloads
           wget "https://github.com/keptn/keptn/releases/download/${{ env.META_KEPTN_VERSION }}/keptn-${{ env.META_KEPTN_VERSION }}-linux-amd64.tar.gz" -O "${HOME}/downloads/keptn-cli.tar.gz"
           tar -zxvf ${HOME}/downloads/keptn-cli.tar.gz
           sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
