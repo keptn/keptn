@@ -507,8 +507,10 @@ function verify_sockshop_deployment() {
   KEPTN_NAMESPACE=$5
   BLUE_GREEN_DEPLOYMENT=$6
 
-  echo "-------------------------------------------------------------"
-  echo "Checking ${STAGE} deployment (namespace: ${PROJECT}-${STAGE})"
+  echo ""
+  echo "---------------------------------------------------------------------------------------------------------"
+  echo "Checking ${STAGE} deployment (namespace: ${PROJECT}-${STAGE}) for ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
+  echo "---------------------------------------------------------------------------------------------------------"
   echo ""
 
   echo "Pre-req: Checking if carts-db is already running..."
@@ -526,7 +528,7 @@ function verify_sockshop_deployment() {
 
   # verify that a carts deployment is up and running
   wait_for_deployment_with_image_in_namespace "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
-  verify_test_step $? "Deployment carts not up in ${PROJECT}-${STAGE}, exiting ..."
+  verify_test_step $? "Deployment ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} carts not up in ${PROJECT}-${STAGE}, exiting ..."
 
   # verify that a carts pod is up and running
   verify_pod_in_namespace "carts" "${PROJECT}-${STAGE}"
@@ -535,7 +537,7 @@ function verify_sockshop_deployment() {
   if [[ "${BLUE_GREEN_DEPLOYMENT}" == "true" ]]; then
     # verify that a blue-green carts deployment is up and running
     wait_for_deployment_with_image_in_namespace "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
-    verify_test_step $? "Deployment carts not up in ${PROJECT}-${STAGE}, exiting ..."
+    verify_test_step $? "Deployment carts ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} not up in ${PROJECT}-${STAGE}, exiting ..."
 
     # verify that a blue-green carts pod is up and running
     verify_pod_in_namespace "carts-primary" "${PROJECT}-${STAGE}"
@@ -546,7 +548,7 @@ function verify_sockshop_deployment() {
   echo "Verifying that the correct image has been deployed..."
   # verify image name of carts deployment
   verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
-  verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE}"
+  verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE} - expected ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
 
   echo ""
   echo "Trying to access public URI for carts..."

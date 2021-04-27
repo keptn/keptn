@@ -3,6 +3,27 @@
 # shellcheck disable=SC1091
 source test/utils.sh
 
+function debuglogs() {
+  echo "::group::Namespaces"
+  kubectl get namespaces
+  echo "::endgroup::"
+  echo "::group::Pods"
+  echo "Show pods in all sockshop-* namespaces"
+  kubectl get pods -n "$PROJECT-dev"
+  kubectl get pods -n "$PROJECT-staging"
+  kubectl get pods -n "$PROJECT-prod-a"
+  kubectl get pods -n "$PROJECT-prod-b"
+  echo "::endgroup::"
+  echo "::group::Deployments"
+  echo "Show deployments in all sockshop-* namespaces"
+  kubectl get deployments -n "$PROJECT-dev" -owide
+  kubectl get deployments -n "$PROJECT-staging" -owide
+  kubectl get deployments -n "$PROJECT-prod-a" -owide
+  kubectl get deployments -n "$PROJECT-prod-b" -owide
+  echo "::endgroup::"
+}
+trap debuglogs EXIT SIGINT
+
 echo "---------------------------------------------"
 echo "- Trigger delivery for mongo            -"
 echo "---------------------------------------------"
