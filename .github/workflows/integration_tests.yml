@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # run integration tests only when triggered manually
     inputs:
       branch:
-        description: 'Branch for integration tests (e.g., master, release-x.y.z)'
+        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
       artifacts_ci_event_type:

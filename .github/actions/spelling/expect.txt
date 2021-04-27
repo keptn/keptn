@@ -450,6 +450,7 @@ len
 libc
 libnpx
 lifecycle
+LINENO
 linkcolor
 linkid
 linkmode

@@ -5,7 +5,7 @@ function timestamp() {
 }
 
 function print_error() {
-  echo "::error::$(timestamp) $1"
+  echo "::error file=${BASH_SOURCE[1]##*/},line=${BASH_LINENO[0]}::$(timestamp) ${*}"
 }
 
 function auth_at_keptn() {
