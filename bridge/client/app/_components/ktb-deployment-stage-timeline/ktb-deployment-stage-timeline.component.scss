@@ -1,0 +1,17 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.timeline {
+  background-color: $gray-200;
+  border-radius: 15px;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.link-icon {
+  height: 25px;
+  width: 25px;
+  fill: $link-icon-color;
+}
