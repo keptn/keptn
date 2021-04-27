@@ -205,13 +205,13 @@ spec:
             - name: KEPTN_INSTALLATION_TYPE
               value: "{{ .Values.bridge.installationType |default (print "QUALITY_GATES,CONTINUOUS_OPERATIONS") }}"
             - name: PREFIX_PATH
-              value: {{ .Values.prefixPath }}
+              value: "{{ .Values.prefixPath }}"
             - name: OAUTH_ENABLED
-              value: {{ .Values.bridge.oauth.enabled }}
+              value: "{{ .Values.bridge.oauth.enabled }}"
             - name: OAUTH_DISCOVERY
-              value: {{ .Values.bridge.oauth.discovery }}
+              value: "{{ .Values.bridge.oauth.discovery }}"
             - name: SECURE_COOKIE
-              value: {{ .Values.bridge.oauth.secureCookie }}
+              value: "{{ .Values.bridge.oauth.secureCookie }}"
             # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
               value: {{ .Values.bridge.oauth.trustProxy }}
