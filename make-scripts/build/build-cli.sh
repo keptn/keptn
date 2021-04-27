@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERSION=${VERSION:-$(git describe --abbrev=1 --tags || echo "dev")}
-KUBE_CONSTRAINTS=${KUBE_CONSTRAINT:-">= 1.14, <= 1.20"}
+KUBE_CONSTRAINTS=${KUBE_CONSTRAINT:-""}
 OUTPUT_EXECUTABLE_NAME=${OUTPUT_EXECUTABLE_NAME:-"keptn"}
 
 cd ./cli/ || return
