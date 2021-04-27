@@ -879,3 +879,67 @@ jobs:
             gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
             gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
           fi
+
+  #######################################################################
+  # This job deploys Keptn with Keptn                                   #
+  #######################################################################
+  deploy_keptn_with_keptn:
+    name: Publish Draft release
+    needs: integration-test
+    if: always() # always run, regardless of the outcome of the last job
+    runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
+    steps:
+      - name: Download all artifacts from last successful build of specified branch
+        uses: dawidd6/action-download-artifact@v2.14.0
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          event: push
+          workflow_conclusion: success
+          # use the following branch
+          branch: ${{ env.BRANCH}}
+          # directory where to extract artifacts to
+          path: ./dist
+
+      - name: Deploy Keptn with Keptn
+        id: deploy_keptn_with_keptn
+        run: |
+          HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
+          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
+
+      - name: Trigger Keptn delivery
+        id: trigger-keptn-delivery
+        uses: keptn/gh-action-send-event@main
+        with:
+          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          event: |
+            {
+              "data": {
+                "configurationChange": {
+                  "values": {
+                    "control-plane": {
+                      "enabled": true
+                    }
+                  }
+                },
+                "deployment": {
+                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-hardening"],
+                  "deploymentstrategy": "direct"
+                },
+                "message": "",
+                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
+                "result": "",
+                "service": "keptn",
+                "stage": "dev",
+                "status": ""
+              },
+              "source": "gh",
+              "specversion": "1.0",
+              "type": "sh.keptn.event.dev.delivery.triggered",
+              "shkeptnspecversion": "0.2.1"
+            }
