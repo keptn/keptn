@@ -10,9 +10,9 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"log"
 	"strconv"
 	"time"
 )
@@ -38,6 +38,8 @@ const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarEventDispatchIntervalSecDefault = "10"
 
 func main() {
+
+	log.SetLevel(log.InfoLevel)
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
 		docs.SwaggerInfo.Version = osutils.GetOSEnv("version")
@@ -65,32 +67,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		createSecretStore(kubeAPI),
-		createMaterializedView(logger),
-		createTaskSequenceRepo(logger),
-		createEventsRepo(logger))
+		createMaterializedView(),
+		createTaskSequenceRepo(),
+		createEventsRepo())
 
 	serviceManager := handler.NewServiceManager(
-		createMaterializedView(logger),
+		createMaterializedView(),
 		common.NewGitConfigurationStore(csEndpoint.String()),
-		logger)
+	)
 
-	stageManager := handler.NewStageManager(createMaterializedView(logger), logger)
+	stageManager := handler.NewStageManager(createMaterializedView())
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(logger), createEventQueueRepo(logger), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second, logger)
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	shipyardController := handler.GetShipyardControllerInstance(eventDispatcher)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
-	projectService := handler.NewProjectHandler(projectManager, eventSender, logger)
+	projectService := handler.NewProjectHandler(projectManager, eventSender)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
-	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender, logger)
+	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
@@ -102,7 +102,7 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	evaluationManager, err := handler.NewEvaluationManager(eventSender, createMaterializedView(logger), logger)
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, createMaterializedView())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,29 +114,28 @@ func main() {
 	engine.Run()
 }
 
-func createMaterializedView(logger *keptncommon.Logger) *db.ProjectsMaterializedView {
+func createMaterializedView() *db.ProjectsMaterializedView {
 	projectesMaterializedView := &db.ProjectsMaterializedView{
-		ProjectRepo:     createProjectRepo(logger),
-		EventsRetriever: createEventsRepo(logger),
-		Logger:          logger,
+		ProjectRepo:     createProjectRepo(),
+		EventsRetriever: createEventsRepo(),
 	}
 	return projectesMaterializedView
 }
 
-func createProjectRepo(logger *keptncommon.Logger) *db.MongoDBProjectsRepo {
-	return &db.MongoDBProjectsRepo{Logger: logger}
+func createProjectRepo() *db.MongoDBProjectsRepo {
+	return &db.MongoDBProjectsRepo{}
 }
 
-func createEventsRepo(logger *keptncommon.Logger) *db.MongoDBEventsRepo {
-	return &db.MongoDBEventsRepo{Logger: logger}
+func createEventsRepo() *db.MongoDBEventsRepo {
+	return &db.MongoDBEventsRepo{}
 }
 
-func createEventQueueRepo(logger *keptncommon.Logger) *db.MongoDBEventQueueRepo {
-	return &db.MongoDBEventQueueRepo{Logger: logger}
+func createEventQueueRepo() *db.MongoDBEventQueueRepo {
+	return &db.MongoDBEventQueueRepo{}
 }
 
-func createTaskSequenceRepo(logger *keptncommon.Logger) *db.TaskSequenceMongoDBRepo {
-	return &db.TaskSequenceMongoDBRepo{Logger: logger}
+func createTaskSequenceRepo() *db.TaskSequenceMongoDBRepo {
+	return &db.TaskSequenceMongoDBRepo{}
 }
 
 func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {

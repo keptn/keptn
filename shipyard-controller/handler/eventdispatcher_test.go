@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/benbjohnson/clock"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -31,7 +30,6 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
 		eventSender:    eventSender,
-		logger:         &keptn.Logger{},
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
 	}
@@ -66,7 +64,6 @@ func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
 		eventSender:    eventSender,
-		logger:         &keptn.Logger{},
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
 	}
@@ -137,7 +134,6 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
 		eventSender:    eventSender,
-		logger:         &keptn.Logger{},
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
 	}
@@ -216,7 +212,6 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
 		eventSender:    eventSender,
-		logger:         &keptn.Logger{},
 		theClock:       clock,
 		syncInterval:   10 * time.Second,
 	}

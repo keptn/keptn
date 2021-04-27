@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -18,7 +17,6 @@ const eventQueueCollectionName = "shipyard-controller-event-queue"
 // MongoDBEventQueueRepo retrieves and stores events in a mongodb collection
 type MongoDBEventQueueRepo struct {
 	DBConnection MongoDBConnection
-	Logger       keptncommon.LoggerInterface
 }
 
 // GetQueuedEvents gets all queued events that should be sent next
@@ -90,7 +88,7 @@ func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 
 	_, err = collection.InsertOne(ctx, eventInterface)
 	if err != nil {
-		mdbrepo.Logger.Error("Could not insert event " + item.EventID + ": " + err.Error())
+		log.Errorf("Could not insert event %s: %s", item.EventID, err.Error())
 	}
 	return nil
 }
@@ -112,10 +110,10 @@ func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
 
 	_, err = collection.DeleteMany(ctx, bson.M{"eventID": eventID})
 	if err != nil {
-		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventID, err.Error()))
+		log.Errorf("Could not delete event %s : %s\n", eventID, err.Error())
 		return err
 	}
-	mdbrepo.Logger.Info("Deleted event " + eventID)
+	log.Infof("Deleted event %s", eventID)
 	return nil
 }
 
@@ -149,9 +147,9 @@ func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope
 	}
 	_, err = collection.DeleteMany(ctx, searchOptions)
 	if err != nil {
-		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete queue items : %s\n", err.Error()))
+		log.Errorf("Could not delete queue items : %s\n", err.Error())
 		return err
 	}
-	mdbrepo.Logger.Info("Deleted queue items")
+	log.Info("Deleted queue items")
 	return nil
 }

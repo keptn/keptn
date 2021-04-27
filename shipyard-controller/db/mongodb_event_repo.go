@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jeremywohl/flatten"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -22,7 +22,6 @@ const remediationCollectionNameSuffix = "-remediations"
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptncommon.LoggerInterface
 }
 
 // GetEvents gets all events of a project, based on the provided filter
@@ -104,7 +103,7 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 
 	_, err = collection.InsertOne(ctx, eventInterface)
 	if err != nil {
-		mdbrepo.Logger.Error("Could not insert event " + event.ID + ": " + err.Error())
+		log.Errorf("Could not insert event %s: %s", event.ID, err.Error())
 	}
 	return nil
 }
@@ -126,10 +125,10 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status co
 
 	_, err = collection.DeleteMany(ctx, bson.M{"id": eventID})
 	if err != nil {
-		mdbrepo.Logger.Error(fmt.Sprintf("Could not delete event %s : %s\n", eventID, err.Error()))
+		log.Errorf("Could not delete event %s : %s\n", eventID, err.Error())
 		return err
 	}
-	mdbrepo.Logger.Info("Deleted event " + eventID)
+	log.Infof("Deleted event %s", eventID)
 	return nil
 }
 
@@ -148,25 +147,25 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 
 	if err := mdbrepo.deleteCollection(triggeredCollection); err != nil {
 		// log the error but continue
-		mdbrepo.Logger.Error(err.Error())
+		log.Error(err.Error())
 	}
 	if err := mdbrepo.deleteCollection(startedCollection); err != nil {
 		// log the error but continue
-		mdbrepo.Logger.Error(err.Error())
+		log.Error(err.Error())
 	}
 	if err := mdbrepo.deleteCollection(finishedCollection); err != nil {
 		// log the error but continue
-		mdbrepo.Logger.Error(err.Error())
+		log.Error(err.Error())
 	}
 	if err := mdbrepo.deleteCollection(remediationCollection); err != nil {
 		// log the error but continue
-		mdbrepo.Logger.Error(err.Error())
+		log.Error(err.Error())
 	}
 	return nil
 }
 
 func (mdbrepo *MongoDBEventsRepo) deleteCollection(collection *mongo.Collection) error {
-	mdbrepo.Logger.Debug(fmt.Sprintf("Delete collection: %s", collection.Name()))
+	log.Debugf("Delete collection: %s", collection.Name())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	err := collection.Drop(ctx)

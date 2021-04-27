@@ -1,7 +1,6 @@
 package handler
 
 import (
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
@@ -16,7 +15,7 @@ type StageManager struct {
 	StagesDbOperations db.StagesDbOperations
 }
 
-func NewStageManager(dbOperations db.StagesDbOperations, logger keptncommon.LoggerInterface) *StageManager {
+func NewStageManager(dbOperations db.StagesDbOperations) *StageManager {
 	return &StageManager{
 		StagesDbOperations: dbOperations,
 	}

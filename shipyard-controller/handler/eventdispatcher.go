@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -10,6 +9,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -27,7 +27,6 @@ type EventDispatcher struct {
 	eventRepo      db.EventRepo
 	eventQueueRepo db.EventQueueRepo
 	eventSender    keptncommon.EventSender
-	logger         keptncommon.LoggerInterface
 	theClock       clock.Clock
 	syncInterval   time.Duration
 }
@@ -38,13 +37,12 @@ func NewEventDispatcher(
 	eventQueueRepo db.EventQueueRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
-	logger keptncommon.LoggerInterface,
+
 ) IEventDispatcher {
 	return &EventDispatcher{
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
 		eventSender:    eventSender,
-		logger:         logger,
 		theClock:       clock.New(),
 		syncInterval:   syncInterval,
 	}
@@ -83,10 +81,10 @@ func (e *EventDispatcher) Run(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				e.logger.Info("cancelling event dispatcher loop")
+				log.Info("cancelling event dispatcher loop")
 				return
 			case <-ticker.C:
-				e.logger.Debug(fmt.Sprintf("%.2f seconds have passed. Dispatching events", e.syncInterval.Seconds()))
+				log.Debugf("%.2f seconds have passed. Dispatching events", e.syncInterval.Seconds())
 				e.dispatchEvents()
 			}
 		}
@@ -97,36 +95,36 @@ func (e *EventDispatcher) dispatchEvents() {
 
 	events, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 	if err != nil {
-		e.logger.Debug(fmt.Sprintf("could not fetch event queue: %s", err.Error()))
+		log.Debugf("could not fetch event queue: %s", err.Error())
 	}
 
 	for _, queueItem := range events {
-		e.logger.Info("Dispatching event with ID " + queueItem.EventID)
+		log.Infof("Dispatching event with ID %s", queueItem.EventID)
 		events, err := e.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{ID: &queueItem.EventID}, common.TriggeredEvent)
 		if err != nil {
-			e.logger.Error(fmt.Sprintf("could not fetch event with ID %s: %s", queueItem.EventID, err.Error()))
+			log.Errorf("could not fetch event with ID %s: %s", queueItem.EventID, err.Error())
 			continue
 		}
 
 		if len(events) == 0 {
-			e.logger.Info(fmt.Sprintf("could not find event with ID %s in project %s", queueItem.EventID, queueItem.Scope.Project))
+			log.Debugf("could not find event with ID %s in project %s", queueItem.EventID, queueItem.Scope.Project)
 			continue
 		}
 		triggeredEvent := events[0]
 
 		ce := &cloudevents.Event{}
 		if err := keptnv2.Decode(triggeredEvent, ce); err != nil {
-			e.logger.Error(fmt.Sprintf("could not convert triggeredEvent to CloudEvent: %s", err.Error()))
+			log.Errorf("could not convert triggeredEvent to CloudEvent: %s", err.Error())
 			continue
 		}
 
 		if err := e.eventSender.SendEvent(*ce); err != nil {
-			e.logger.Error(fmt.Sprintf("could not send CloudEvent: %s", err.Error()))
+			log.Errorf("could not send CloudEvent: %s", err.Error())
 			continue
 		}
 
 		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
-			e.logger.Error(fmt.Sprintf("could not delete event from event queue: %s", err.Error()))
+			log.Errorf("could not delete event from event queue: %s", err.Error())
 			continue
 		}
 

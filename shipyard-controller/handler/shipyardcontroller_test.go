@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/go-test/deep"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -308,7 +307,6 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
 		projectRepo db.ProjectRepo
 		eventRepo   db.EventRepo
-		logger      *keptncommon.Logger
 	}
 	type args struct {
 		event models.Event
@@ -342,7 +340,6 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						return nil
 					},
 				},
-				logger: nil,
 			},
 			args: args{
 				event: fake.GetTestStartedEvent(),
@@ -368,7 +365,6 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						return nil
 					},
 				},
-				logger: nil,
 			},
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
@@ -382,7 +378,6 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.eventRepo,
-				logger:      tt.fields.logger,
 			}
 			err := em.handleStartedEvent(tt.args.event)
 			if (err != nil) != tt.wantErr {
@@ -399,7 +394,6 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
 		projectRepo db.ProjectRepo
 		eventRepo   db.EventRepo
-		logger      *keptncommon.Logger
 	}
 	type args struct {
 		event models.Event
@@ -430,7 +424,6 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 						return nil
 					},
 				},
-				logger: nil,
 			},
 			args: args{
 				event: fake.GetTestFinishedEventWithUnmatchedSource(),
@@ -443,7 +436,6 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.eventRepo,
-				logger:      tt.fields.logger,
 			}
 			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
@@ -457,7 +449,6 @@ func Test_eventManager_getEvents(t *testing.T) {
 	type fields struct {
 		projectRepo db.ProjectRepo
 		eventRepo   db.EventRepo
-		logger      *keptncommon.Logger
 	}
 	type args struct {
 		project string
@@ -480,7 +471,6 @@ func Test_eventManager_getEvents(t *testing.T) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
 					},
 				},
-				logger: keptncommon.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -503,7 +493,6 @@ func Test_eventManager_getEvents(t *testing.T) {
 						return nil, db.ErrNoEventFound
 					},
 				},
-				logger: keptncommon.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -519,7 +508,6 @@ func Test_eventManager_getEvents(t *testing.T) {
 			em := &shipyardController{
 				projectRepo: tt.fields.projectRepo,
 				eventRepo:   tt.fields.eventRepo,
-				logger:      tt.fields.logger,
 			}
 			got, err := em.getEvents(tt.args.project, tt.args.filter, tt.args.status, 1)
 			if (err != nil) != tt.wantErr {
@@ -1319,7 +1307,6 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 		projectRepo      db.ProjectRepo
 		eventRepo        db.EventRepo
 		taskSequenceRepo db.TaskSequenceRepo
-		logger           *keptncommon.Logger
 	}
 	type args struct {
 		stageName        string
@@ -1339,7 +1326,6 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				projectRepo:      nil,
 				eventRepo:        nil,
 				taskSequenceRepo: nil,
-				logger:           keptncommon.NewLogger("", "", ""),
 			},
 			args: args{
 				stageName:        "dev",
@@ -1376,7 +1362,6 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				projectRepo:      nil,
 				eventRepo:        nil,
 				taskSequenceRepo: nil,
-				logger:           keptncommon.NewLogger("", "", ""),
 			},
 			args: args{
 				stageName:        "dev",
@@ -1433,7 +1418,6 @@ func Test_shipyardController_getTaskSequenceInStage(t *testing.T) {
 				projectRepo:      tt.fields.projectRepo,
 				eventRepo:        tt.fields.eventRepo,
 				taskSequenceRepo: tt.fields.taskSequenceRepo,
-				logger:           tt.fields.logger,
 			}
 			got, err := sc.getTaskSequenceInStage(tt.args.stageName, tt.args.taskSequenceName, tt.args.shipyard)
 			if (err != nil) != tt.wantErr {

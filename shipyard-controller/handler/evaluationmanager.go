@@ -31,14 +31,12 @@ type IEvaluationManager interface {
 type EvaluationManager struct {
 	EventSender keptn.EventSender
 	ServiceAPI  db.ServicesDbOperations
-	Logger      keptn.LoggerInterface
 }
 
-func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI db.ServicesDbOperations, logger keptn.LoggerInterface) (*EvaluationManager, error) {
+func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI db.ServicesDbOperations) (*EvaluationManager, error) {
 	return &EvaluationManager{
 		EventSender: eventSender,
 		ServiceAPI:  serviceAPI,
-		Logger:      logger,
 	}, nil
 
 }

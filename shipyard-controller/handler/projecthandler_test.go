@@ -119,7 +119,7 @@ func TestGetAllProjects(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, nil)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
 			c.Request, _ = http.NewRequest(http.MethodGet, tt.queryParams, bytes.NewBuffer([]byte{}))
 
 			handler.GetAllProjects(c)
@@ -207,7 +207,7 @@ func TestGetProjectByName(t *testing.T) {
 				gin.Param{Key: "project", Value: "my-project"},
 			}
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, nil)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 
 			handler.GetProjectByName(c)
@@ -332,7 +332,7 @@ func TestCreateProject(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			c.Set("projectName", tt.projectNameParam)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, nil)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.CreateProject(c)
@@ -417,7 +417,7 @@ func TestUpdateProject(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, nil)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
 			c.Request, _ = http.NewRequest(http.MethodPut, "", bytes.NewBuffer([]byte(tt.jsonPayload)))
 
 			handler.UpdateProject(c)
@@ -500,7 +500,7 @@ func TestDeleteProject(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender, nil)
+			handler := NewProjectHandler(tt.fields.ProjectManager, tt.fields.EventSender)
 			c.Params = gin.Params{
 				gin.Param{Key: "project", Value: tt.projectPathParam},
 			}
