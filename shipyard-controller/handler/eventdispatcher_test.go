@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -160,6 +161,7 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	timeNow := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
 	timeAfter1 := time.Date(2021, 4, 21, 15, 00, 00, 1, time.UTC)
 	timeAfter2 := time.Date(2021, 4, 21, 15, 00, 00, 2, time.UTC)
+	timeAfter3 := time.Date(2021, 4, 21, 15, 00, 00, 3, time.UTC)
 
 	data := keptnv2.EventData{
 		Project: "my-project",
@@ -171,6 +173,8 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	dispatcherEvent1 := models.DispatcherEvent{keptnv2.ToCloudEvent(event1), timeAfter1}
 	event2, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task2"), "source", data).Build()
 	dispatcherEvent2 := models.DispatcherEvent{keptnv2.ToCloudEvent(event2), timeAfter2}
+	event3, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task3"), "source", data).Build()
+	dispatcherEvent3 := models.DispatcherEvent{keptnv2.ToCloudEvent(event3), timeAfter3}
 
 	eventRepo := &db_mock.EventRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{}
@@ -197,8 +201,13 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	}
 
 	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+		// first event is not found
 		if *filter.ID == event1.ID {
 			return []models.Event{}, nil
+		}
+		// fetching for second event fails
+		if *filter.ID == event2.ID {
+			return nil, fmt.Errorf("error")
 		}
 		return []models.Event{{ID: *filter.ID, Specversion: "1.0"}}, nil
 	}
@@ -214,10 +223,11 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 
 	dispatcher.Add(dispatcherEvent1)
 	dispatcher.Add(dispatcherEvent2)
+	dispatcher.Add(dispatcherEvent3)
 	dispatcher.Run(context.Background())
 
 	clock.Add(10 * time.Second)
 	require.Equal(t, 1, len(eventSender.SentEvents))
 	require.Equal(t, 1, len(eventQueueRepo.DeleteQueuedEventCalls()))
-	require.Equal(t, event2.ID, eventQueueRepo.DeleteQueuedEventCalls()[0].EventID)
+	require.Equal(t, event3.ID, eventQueueRepo.DeleteQueuedEventCalls()[0].EventID)
 }
