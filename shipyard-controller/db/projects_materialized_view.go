@@ -305,7 +305,6 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 			break
 		}
 	}
-
 	return nil
 }
 
