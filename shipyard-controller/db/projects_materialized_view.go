@@ -298,7 +298,7 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 			log.Infof("Adding %s to stage %s in project %s in database", service, stage, project)
 			err := mv.ProjectRepo.UpdateProject(existingProject)
 			if err != nil {
-				log.Errorf("Could not add service %s to stage %s in proejct %s. Could not update project: %s", service, stage, project, err.Error())
+				log.Errorf("Could not add service %s to stage %s in project %s. Could not update project: %s", service, stage, project, err.Error())
 				return err
 			}
 			log.Infof("Service %s has been added to stage %s in project %s", service, stage, project)
