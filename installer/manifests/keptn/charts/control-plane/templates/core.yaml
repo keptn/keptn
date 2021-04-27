@@ -214,7 +214,7 @@ spec:
               value: "{{ .Values.bridge.oauth.secureCookie }}"
             # Correlates to trust proxy number of hops as defined at http://expressjs.com/en/guide/behind-proxies.html
             - name: TRUST_PROXY
-              value: {{ .Values.bridge.oauth.trustProxy }}
+              value: "{{ .Values.bridge.oauth.trustProxy }}"
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
