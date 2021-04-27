@@ -25,13 +25,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- CLOUD_PROVIDER: "minishift-on-GHA"
-          #  PLATFORM: "openshift"
-          #  VERSION: "3.11"
-          #  KEPTN_SERVICE_TYPE: "ClusterIP"
-          #  RUN_QUALITY_GATES_TEST: "false"
-          #  RUN_CONTINUOUS_DELIVERY_TEST: "false"
-          #  COLLECT_RESOURCE_LIMITS: "true"
+          - CLOUD_PROVIDER: "minishift-on-GHA"
+            PLATFORM: "openshift"
+            VERSION: "3.11"
+            KEPTN_SERVICE_TYPE: "ClusterIP"
+            RUN_QUALITY_GATES_TEST: "false"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -40,32 +40,32 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
-          #- CLOUD_PROVIDER: "k3s-on-GHA"
-          #  VERSION: "v1.20.4+k3s1" # see https://github.com/rancher/k3s/releases
-          #  KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-          #  PLATFORM: "kubernetes"
-          #  KEPTN_SERVICE_TYPE: "NodePort"
-          #  RUN_QUALITY_GATES_TEST: "true"
-          #  RUN_CONTINUOUS_DELIVERY_TEST: "false"
-          #  COLLECT_RESOURCE_LIMITS: "false"
-          #- CLOUD_PROVIDER: "GKE"
-          #  VERSION: "1.17"
-          #  KUBECONFIG: ""
-          #  PLATFORM: "kubernetes"
-          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
-          #  RUN_QUALITY_GATES_TEST: "true"
-          #  RUN_CONTINUOUS_DELIVERY_TEST: "true"
-          #  REMOTE_EXECUTION_PLANE: "true"
-          #  COLLECT_RESOURCE_LIMITS: "false"
-          #- CLOUD_PROVIDER: "GKE"
-          #  VERSION: "1.18"
-          #  KUBECONFIG: ""
-          #  PLATFORM: "kubernetes"
-          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
-          #  RUN_QUALITY_GATES_TEST: "true"
-          #  RUN_CONTINUOUS_DELIVERY_TEST: "true"
-          #  REMOTE_EXECUTION_PLANE: "false"
-          #  COLLECT_RESOURCE_LIMITS: "true"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            VERSION: "v1.20.4+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            VERSION: "1.17"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            VERSION: "1.18"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -398,58 +398,58 @@ jobs:
           helm test jmeter-service -n keptn-jmeter-service
           helm test helm-service -n keptn-helm-service
 
-      #- name: Test Linking Stages
-      #  id: test_linking_stages
-      #  timeout-minutes: 5
-      #  continue-on-error: true
-      #  env:
-      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #  run: test/test_linking_stages.sh
-#
-      #- name: Test Quality Gates Standalone
-      #  id: test_quality_gates
-      #  # Note: quality gates test requires network access, which doesn't work on some platforms
-      #  if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
-      #  timeout-minutes: 10
-      #  continue-on-error: true
-      #  env:
-      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #    PROJECT: "musicshop"
-      #    DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
-      #    QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
-      #    QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
-      #  run: test/test_quality_gates_standalone.sh
-#
-      #- name: Test Quality Gates Backwards compatibility
-      #  id: test_quality_gates_backwards_compatibility
-      #  # Note: quality gates test requires network access, which doesn't work on some platforms
-      #  if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
-      #  timeout-minutes: 10
-      #  continue-on-error: true
-      #  env:
-      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #  run: test/test_quality_gates_backwards_compatibility.sh
-#
-      #- name: Test Self Healing
-      #  id: test_self_healing
-      #  timeout-minutes: 10
-      #  continue-on-error: true
-      #  env:
-      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #    UNLEASH_SERVICE_VERSION: "release-0.3.0"
-      #  run: test/test_self_healing.sh
-#
-      #- name: Test Delivery Assistant
-      #  id: test_delivery_assistant
-      #  # Delivery Assistant only works when we install keptn with continuous delivery use-case
-      #  if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run test only if set to true
-      #  timeout-minutes: 5
-      #  continue-on-error: true
-      #  env:
-      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #    PROJECT: "musicshop"
-      #    DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
-      #  run: test/test_delivery_assistant.sh
+      - name: Test Linking Stages
+        id: test_linking_stages
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_linking_stages.sh
+
+      - name: Test Quality Gates Standalone
+        id: test_quality_gates
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "musicshop"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
+          QG_INTEGRATION_TEST_DT_TENANT: ${{ secrets.QG_INTEGRATION_TEST_DT_TENANT }}
+          QG_INTEGRATION_TEST_DT_API_TOKEN: ${{ secrets.QG_INTEGRATION_TEST_DT_API_TOKEN }}
+        run: test/test_quality_gates_standalone.sh
+
+      - name: Test Quality Gates Backwards compatibility
+        id: test_quality_gates_backwards_compatibility
+        # Note: quality gates test requires network access, which doesn't work on some platforms
+        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: test/test_quality_gates_backwards_compatibility.sh
+
+      - name: Test Self Healing
+        id: test_self_healing
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          UNLEASH_SERVICE_VERSION: "release-0.3.0"
+        run: test/test_self_healing.sh
+
+      - name: Test Delivery Assistant
+        id: test_delivery_assistant
+        # Delivery Assistant only works when we install keptn with continuous delivery use-case
+        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run test only if set to true
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          PROJECT: "musicshop"
+          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
+        run: test/test_delivery_assistant.sh
 
       - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
@@ -886,7 +886,7 @@ jobs:
   deploy_keptn_with_keptn:
     name: Deploy Keptn with Keptn
     needs: integration-test
-    if: always() # always run, regardless of the outcome of the last job
+    if: ${{ needs.integration-test.outputs.BRANCH }} == 'master' # only deploy after successful integration test on nightly master build
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
