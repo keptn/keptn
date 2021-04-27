@@ -10,6 +10,10 @@ on:
         description: 'Branch for integration tests (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
+      artifacts_ci_event_type:
+        description: 'Event Type for CI artifacts (e.g., push, pull_request, workflow_dispatch)'
+        required: true
+        default: 'push'
       examples_branch:
         description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
         required: true
@@ -80,6 +84,7 @@ jobs:
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+      ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
     steps:
       - name: Check out code.
         uses: actions/checkout@v2
@@ -94,10 +99,12 @@ jobs:
             ~/downloads
           key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
 
+      # This step is supposed to determine the target branch where to download the build-artifacts from
       - name: Determine Target Branch for Integration Tests
         id: determine_branch
         run: |
           if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
+            # branch was manually set by user -> probably a workflow_dispatch action
             BRANCH=${{ github.event.inputs.branch }}
             echo "Using $BRANCH as target branch for integration tests"
           else
@@ -196,19 +203,20 @@ jobs:
         run: kubectl get services --all-namespaces
       - name: Debug - Get Kubernetes Deployments
         run: kubectl get deployments --all-namespaces -owide
+      # try to download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download CLI artifact from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
+        id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: push
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           workflow_conclusion: success
           # use the following branch
           branch: ${{ steps.determine_branch.outputs.BRANCH}}
           # directory where to extract artifacts to
           path: ./dist
-
       - name: Extract Keptn CLI artifact
         run: |
           tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
@@ -605,6 +613,7 @@ jobs:
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
+      ARTIFACTS_CI_EVENT_TYPE: ${{ needs.integration-test.outputs.ARTIFACTS_CI_EVENT_TYPE }}
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
@@ -658,7 +667,7 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: push
+          event: ${{ env.ARTIFACTS_CI_EVENT_TYPE }} # e.g., push, pull_request
           workflow_conclusion: success
           # use the following branch
           branch: ${{ env.BRANCH}}
