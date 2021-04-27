@@ -185,6 +185,9 @@ jobs:
         run: |
           sleep 30
           kubectl run -i --restart=Never --rm test-${RANDOM} --image=alpine:3.13 -- sh -c "wget https://keptn.sh"
+          if [[ $? -ne 0 ]]; then
+            echo "::error::Could not reach https://keptn.sh - this cluster probably has no working network connection (expected for MiniShift).
+          fi
 
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
