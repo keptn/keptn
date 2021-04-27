@@ -137,7 +137,7 @@ keptn install --hide-sensitive-data                                    # install
 				if err := kube.CheckKubeServerVersion(KubeServerVersionConstraints); err != nil {
 					logging.PrintLog(err.Error(), logging.VerboseLevel)
 					logging.PrintLog("See https://keptn.sh/docs/"+keptnReleaseDocsURL+"/operate/k8s_support/ for details.", logging.VerboseLevel)
-					logging.PrintLog(fmt.Sprintf("Warning: Failed to check kubernetes server version: %w", err), logging.InfoLevel)
+					return fmt.Errorf("Failed to check kubernetes server version: %w", err)
 				}
 			}
 
