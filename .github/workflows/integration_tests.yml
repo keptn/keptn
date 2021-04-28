@@ -962,7 +962,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+                  "github-action-run": "${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID}}"
                 }
               },
               "source": "gh",
@@ -988,7 +988,7 @@ jobs:
                   }
                 },
                 "deployment": {
-                  "deploymentURIsLocal": ["http://helm-service.keptn-hardening"],
+                  "deploymentURIsLocal": ["http://helm-service.keptn-hardening:8080"],
                   "deploymentstrategy": "direct"
                 },
                 "message": "",
@@ -998,7 +998,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+                  "github-action-run": "${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID}}"
                 }
               },
               "source": "gh",
@@ -1024,7 +1024,7 @@ jobs:
                   }
                 },
                 "deployment": {
-                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-hardening"],
+                  "deploymentURIsLocal": ["http://jmeter-service.keptn-hardening:8080"],
                   "deploymentstrategy": "direct"
                 },
                 "message": "",
@@ -1034,7 +1034,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+                  "github-action-run": "${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID}}"
                 }
               },
               "source": "gh",
