@@ -940,7 +940,7 @@ jobs:
         uses: keptn/gh-action-send-event@main
         with:
           keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
-          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }} # TODO: add github action run as label
           event: |
             {
               "data": {
@@ -960,7 +960,10 @@ jobs:
                 "result": "",
                 "service": "keptn",
                 "stage": "dev",
-                "status": ""
+                "status": "",
+                "labels": {
+                  "github-action-run": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+                }
               },
               "source": "gh",
               "specversion": "1.0",
@@ -985,7 +988,7 @@ jobs:
                   }
                 },
                 "deployment": {
-                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-hardening"],
+                  "deploymentURIsLocal": ["http://helm-service.keptn-hardening"],
                   "deploymentstrategy": "direct"
                 },
                 "message": "",
@@ -993,7 +996,10 @@ jobs:
                 "result": "",
                 "service": "helm-service",
                 "stage": "dev",
-                "status": ""
+                "status": "",
+                "labels": {
+                  "github-action-run": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+                }
               },
               "source": "gh",
               "specversion": "1.0",
@@ -1026,7 +1032,10 @@ jobs:
                 "result": "",
                 "service": "jmeter-service",
                 "stage": "dev",
-                "status": ""
+                "status": "",
+                "labels": {
+                  "github-action-run": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+                }
               },
               "source": "gh",
               "specversion": "1.0",
