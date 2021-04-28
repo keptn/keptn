@@ -886,7 +886,7 @@ jobs:
   deploy_keptn_with_keptn:
     name: Deploy Keptn with Keptn
     needs: integration-test
-    #if: ${{ needs.integration-test.outputs.BRANCH }} == 'master' # only deploy after successful integration test on nightly master build
+    #if: github.event_name == 'schedule'
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
@@ -962,7 +962,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                 }
               },
               "source": "gh",
@@ -998,7 +998,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                 }
               },
               "source": "gh",
@@ -1034,7 +1034,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                 }
               },
               "source": "gh",
