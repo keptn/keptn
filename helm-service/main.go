@@ -83,21 +83,24 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	mesh := mesh.NewIstioMesh()
 	keptnHandler.Logger.Debug("Got event of type " + event.Type())
 
+	// ToDo: Multithreaded is important here, such that the endpoint responds immediately
+	// else we will have deployment handler take 30 seconds, and after that the response will be sent
+
 	if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
 		deploymentHandler := createDeploymentHandler(configServiceURL, keptnHandler, mesh)
-		deploymentHandler.HandleEvent(event)
+		go deploymentHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ReleaseTaskName) {
 		releaseHandler := createReleaseHandler(configServiceURL, mesh, keptnHandler)
-		releaseHandler.HandleEvent(event)
+		go releaseHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.RollbackTaskName) {
 		rollbackHandler := createRollbackHandler(configServiceURL, mesh, keptnHandler)
-		rollbackHandler.HandleEvent(event)
+		go rollbackHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName) {
 		actionHandler := createActionTriggeredHandler(configServiceURL, keptnHandler)
-		actionHandler.HandleEvent(event)
+		go actionHandler.HandleEvent(event)
 	} else if event.Type() == keptnv2.GetFinishedEventType(keptnv2.ServiceDeleteTaskName) {
 		deleteHandler := createDeleteHandler(configServiceURL, shipyardControllerURL, keptnHandler)
-		deleteHandler.HandleEvent(event)
+		go deleteHandler.HandleEvent(event)
 	} else {
 		keptnHandler.Logger.Error("Received unexpected keptn event")
 	}
