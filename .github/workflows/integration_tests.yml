@@ -48,24 +48,24 @@ jobs:
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
-          #- CLOUD_PROVIDER: "GKE"
-          #  VERSION: "1.17"
-          #  KUBECONFIG: ""
-          #  PLATFORM: "kubernetes"
-          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
-          #  RUN_QUALITY_GATES_TEST: "true"
-          #  RUN_CONTINUOUS_DELIVERY_TEST: "true"
-          #  REMOTE_EXECUTION_PLANE: "true"
-          #  COLLECT_RESOURCE_LIMITS: "false"
-          #- CLOUD_PROVIDER: "GKE"
-          #  VERSION: "1.18"
-          #  KUBECONFIG: ""
-          #  PLATFORM: "kubernetes"
-          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
-          #  RUN_QUALITY_GATES_TEST: "true"
-          #  RUN_CONTINUOUS_DELIVERY_TEST: "true"
-          #  REMOTE_EXECUTION_PLANE: "false"
-          #  COLLECT_RESOURCE_LIMITS: "true"
+          - CLOUD_PROVIDER: "GKE"
+            VERSION: "1.17"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            VERSION: "1.18"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -886,7 +886,7 @@ jobs:
   deploy_keptn_with_keptn:
     name: Deploy Keptn with Keptn
     needs: integration-test
-    #if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
