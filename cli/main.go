@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/hashicorp/go-version"
 	"os"
 
 	"github.com/keptn/keptn/cli/cmd"
@@ -26,7 +27,11 @@ func main() {
 	cmd.SetVersion(Version)
 
 	if len(KubeServerVersionConstraints) > 0 {
-		cmd.KubeServerVersionConstraints = KubeServerVersionConstraints
+		if _, err := version.NewConstraint(KubeServerVersionConstraints); err != nil {
+			cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints
+		} else {
+			cmd.KubeServerVersionConstraints = KubeServerVersionConstraints
+		}
 	} else {
 		cmd.KubeServerVersionConstraints = DefaultKubeServerVersionConstraints
 	}
