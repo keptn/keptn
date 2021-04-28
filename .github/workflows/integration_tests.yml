@@ -886,7 +886,7 @@ jobs:
   deploy_keptn_with_keptn:
     name: Deploy Keptn with Keptn
     needs: integration-test
-    if: github.event_name == 'schedule'
+    #if: github.event_name == 'schedule'
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
@@ -908,20 +908,22 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          #event: push
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           workflow_conclusion: success
           # use the following branch
           branch: ${{ env.BRANCH}}
           # directory where to extract artifacts to
           path: ./dist
 
-      - name: Install Keptn CLI
+      - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
         run: |
-          mkdir ${HOME}/downloads
-          wget "https://github.com/keptn/keptn/releases/download/${{ env.META_KEPTN_VERSION }}/keptn-${{ env.META_KEPTN_VERSION }}-linux-amd64.tar.gz" -O "${HOME}/downloads/keptn-cli.tar.gz"
-          tar -zxvf ${HOME}/downloads/keptn-cli.tar.gz
-          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
+          curl -sL https://get.keptn.sh | KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash
+
+      - name: Authenticate Keptn CLI
+        id: authenticate_keptn_cli
+        run: |
+          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
 
       - name: Deploy Keptn with Keptn
         id: deploy_keptn_with_keptn
@@ -930,7 +932,6 @@ jobs:
           HELM_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/helm-service*.tgz | head -1)
           JMETER_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/jmeter-service*.tgz | head -1)
 
-          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${KEPTN_HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=helm-service --all-stages --resource=${HELM_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/helm-service.tgz
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=jmeter-service --all-stages --resource=${JMETER_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/jmeter-service.tgz
@@ -940,20 +941,13 @@ jobs:
         uses: keptn/gh-action-send-event@main
         with:
           keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
-          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }} # TODO: add github action run as label
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
           event: |
             {
               "data": {
-                "configurationChange": {
-                  "values": {
-                    "control-plane": {
-                      "enabled": true
-                    }
-                  }
-                },
                 "deployment": {
-                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-hardening"],
-                  "deploymentstrategy": "direct"
+                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-dev"],
+                  "deploymentstrategy": "user_managed"
                 },
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
@@ -980,16 +974,9 @@ jobs:
           event: |
             {
               "data": {
-                "configurationChange": {
-                  "values": {
-                    "control-plane": {
-                      "enabled": true
-                    }
-                  }
-                },
                 "deployment": {
-                  "deploymentURIsLocal": ["http://helm-service.keptn-hardening:8080"],
-                  "deploymentstrategy": "direct"
+                  "deploymentURIsLocal": ["http://helm-service.keptn-dev:8080"],
+                  "deploymentstrategy": "user_managed"
                 },
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
@@ -1016,16 +1003,9 @@ jobs:
           event: |
             {
               "data": {
-                "configurationChange": {
-                  "values": {
-                    "control-plane": {
-                      "enabled": true
-                    }
-                  }
-                },
                 "deployment": {
-                  "deploymentURIsLocal": ["http://jmeter-service.keptn-hardening:8080"],
-                  "deploymentstrategy": "direct"
+                  "deploymentURIsLocal": ["http://jmeter-service.keptn-dev:8080"],
+                  "deploymentstrategy": "user_managed"
                 },
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
