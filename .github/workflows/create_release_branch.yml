@@ -5,12 +5,12 @@ on:
   workflow_dispatch:
     inputs:
       versionName:
-        description: 'Version (e.g., 0.8.0)'
+        description: 'Semantic Version (e.g., 0.8.0, 0.8.0-hotfix1)'
         required: true
       baseBranch:
-        description: 'Which branch to create the release from (e.g., master)'
+        description: 'Which branch to create the release from (e.g., master, release-0.8.0)'
         default: 'master'
-        required: false
+        required: true
 jobs:
   createrelease:
     runs-on: ubuntu-20.04
@@ -18,6 +18,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
+          submodules: 'true'
           token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
 
       - name: Verify version is semantic
