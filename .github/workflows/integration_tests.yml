@@ -962,7 +962,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID}}"
+                  "github-action-run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
                 }
               },
               "source": "gh",
@@ -998,7 +998,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID}}"
+                  "github-action-run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
                 }
               },
               "source": "gh",
@@ -1034,7 +1034,7 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID}}"
+                  "github-action-run": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
                 }
               },
               "source": "gh",
