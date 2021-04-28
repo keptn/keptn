@@ -886,7 +886,7 @@ jobs:
   deploy_keptn_with_keptn:
     name: Deploy Keptn with Keptn
     needs: integration-test
-    if: ${{ needs.integration-test.outputs.BRANCH }} == 'master' # only deploy after successful integration test on nightly master build
+    #if: ${{ needs.integration-test.outputs.BRANCH }} == 'master' # only deploy after successful integration test on nightly master build
     runs-on: ubuntu-20.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
@@ -926,12 +926,17 @@ jobs:
       - name: Deploy Keptn with Keptn
         id: deploy_keptn_with_keptn
         run: |
-          HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
-          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
-          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
+          KEPTN_HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
+          HELM_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/helm-service*.tgz | head -1)
+          JMETER_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/jmeter-service*.tgz | head -1)
 
-      - name: Trigger Keptn delivery
-        id: trigger-keptn-delivery
+          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${KEPTN_HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=helm-service --all-stages --resource=${HELM_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/helm-service.tgz
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=jmeter-service --all-stages --resource=${JMETER_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/jmeter-service.tgz
+
+      - name: Trigger Keptn Control Plane Delivery
+        id: trigger-keptn-control-plane-delivery
         uses: keptn/gh-action-send-event@main
         with:
           keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
@@ -954,6 +959,72 @@ jobs:
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
                 "result": "",
                 "service": "keptn",
+                "stage": "dev",
+                "status": ""
+              },
+              "source": "gh",
+              "specversion": "1.0",
+              "type": "sh.keptn.event.dev.delivery.triggered",
+              "shkeptnspecversion": "0.2.1"
+            }
+
+      - name: Trigger Helm Service Delivery
+        id: trigger-helm-service-delivery
+        uses: keptn/gh-action-send-event@main
+        with:
+          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          event: |
+            {
+              "data": {
+                "configurationChange": {
+                  "values": {
+                    "control-plane": {
+                      "enabled": true
+                    }
+                  }
+                },
+                "deployment": {
+                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-hardening"],
+                  "deploymentstrategy": "direct"
+                },
+                "message": "",
+                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
+                "result": "",
+                "service": "helm-service",
+                "stage": "dev",
+                "status": ""
+              },
+              "source": "gh",
+              "specversion": "1.0",
+              "type": "sh.keptn.event.dev.delivery.triggered",
+              "shkeptnspecversion": "0.2.1"
+            }
+
+      - name: Trigger Jmeter Service Delivery
+        id: trigger-jmeter-service-delivery
+        uses: keptn/gh-action-send-event@main
+        with:
+          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          event: |
+            {
+              "data": {
+                "configurationChange": {
+                  "values": {
+                    "control-plane": {
+                      "enabled": true
+                    }
+                  }
+                },
+                "deployment": {
+                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-hardening"],
+                  "deploymentstrategy": "direct"
+                },
+                "message": "",
+                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
+                "result": "",
+                "service": "jmeter-service",
                 "stage": "dev",
                 "status": ""
               },
