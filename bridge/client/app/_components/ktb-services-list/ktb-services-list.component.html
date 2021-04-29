@@ -1,14 +1,16 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <ng-container *ngIf="services && services.length > 0; else noService">
     <dt-table [dataSource]="dataSource">
+
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0">
-            <span *ngIf="row.getShortImageName()" [textContent]="row.getShortImageName()"></span>
+            <a [routerLink]="getServiceLink(row)" *ngIf="row.getShortImageName()" [textContent]="row.getShortImageName()"></a>
             <span *ngIf="!row.getShortImageName()" class="italic" [textContent]="row.serviceName"></span>
           </p>
         </dt-cell>
       </ng-container>
+
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="row.getRecentSequence() as currentSequence">
@@ -27,6 +29,7 @@
           <p class="m-0" *ngIf="!row.roots">-</p>
         </dt-cell>
       </ng-container>
+
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
           <div *ngIf="row.roots">
@@ -35,11 +38,14 @@
           <p class="m-0" *ngIf="!row.roots">-</p>
         </dt-cell>
       </ng-container>
+
       <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
     </dt-table>
     <button *ngIf="services.length > DEFAULT_PAGE_SIZE" dt-show-more [showLess]="pageSize > DEFAULT_PAGE_SIZE" (click)="toggleAllServices()">Show all <span [textContent]="services.length"></span> services</button>
   </ng-container>
 </div>
+
+
 <ng-template #noService>
   <div fxLayout="row" fxLayoutAlign="start center">
     <dt-icon class="icon" name="information"></dt-icon>
