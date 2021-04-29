@@ -50,14 +50,28 @@
   }
 
   .dt-menu-item {
-    padding: 6px 40px 6px 20px !important;
+    padding: 9px 10px 9px 9px !important;
     height: auto !important;
     cursor: pointer;
+    border-radius: 0;
   }
 
   .dt-menu-item.active,
-  .dt-menu-item:hover {
+  .dt-menu-item:hover,
+  .dt-menu-item:active {
     background: $gray-700 !important;
+  }
+
+  .dt-menu-item.dt-button-nested .dt-button-icon .dt-icon svg,
+  .dt-menu-item:hover.dt-button-nested .dt-button-icon .dt-icon svg,
+  .dt-menu-item:active.dt-button-nested .dt-button-icon .dt-icon svg{
+    fill: #ffffff;
+  }
+
+  .dt-menu-item.dt-button-nested .dt-button-icon {
+    margin-top: 0;
+    height: 30px;
+    width: 30px;
   }
 
   .ktb-expandable-tile .dt-show-more-icon {

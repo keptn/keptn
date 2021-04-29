@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # run integration tests only when triggered manually
     inputs:
       branch:
-        description: 'Branch for integration tests (e.g., master, release-x.y.z)'
+        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
       artifacts_ci_event_type:
@@ -185,6 +185,9 @@ jobs:
         run: |
           sleep 30
           kubectl run -i --restart=Never --rm test-${RANDOM} --image=alpine:3.13 -- sh -c "wget https://keptn.sh"
+          if [[ $? -ne 0 ]]; then
+            echo "::error::Could not reach https://keptn.sh - this cluster probably has no working network connection (expected for MiniShift).
+          fi
 
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
@@ -896,3 +899,146 @@ jobs:
             gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
             gh-actions-scripts/upload_helm_chart_to_google_cloud.sh dist/keptn-installer/
           fi
+
+  #######################################################################
+  # This job deploys Keptn with Keptn                                   #
+  #######################################################################
+  deploy_keptn_with_keptn:
+    name: Deploy Keptn with Keptn
+    needs: integration-test
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
+          submodules: 'true'
+
+      - name: Load CI Environment from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: .ci_env
+      - name: Download all artifacts from last successful build of specified branch
+        uses: dawidd6/action-download-artifact@v2.14.0
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
+          workflow_conclusion: success
+          # use the following branch
+          branch: ${{ env.BRANCH}}
+          # directory where to extract artifacts to
+          path: ./dist
+
+      - name: Install Keptn CLI for META_KEPTN
+        id: install_keptn_cli
+        run: |
+          curl -sL https://get.keptn.sh | KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash
+
+      - name: Authenticate Keptn CLI
+        id: authenticate_keptn_cli
+        run: |
+          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
+
+      - name: Deploy Keptn with Keptn
+        id: deploy_keptn_with_keptn
+        run: |
+          KEPTN_HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
+          HELM_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/helm-service*.tgz | head -1)
+          JMETER_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/jmeter-service*.tgz | head -1)
+
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${KEPTN_HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=helm-service --all-stages --resource=${HELM_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/helm-service.tgz
+          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=jmeter-service --all-stages --resource=${JMETER_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/jmeter-service.tgz
+
+      - name: Trigger Keptn Control Plane Delivery
+        id: trigger-keptn-control-plane-delivery
+        uses: keptn/gh-action-send-event@main
+        with:
+          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          event: |
+            {
+              "data": {
+                "deployment": {
+                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-dev"],
+                  "deploymentstrategy": "user_managed"
+                },
+                "message": "",
+                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
+                "result": "",
+                "service": "keptn",
+                "stage": "dev",
+                "status": "",
+                "labels": {
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              },
+              "source": "gh",
+              "specversion": "1.0",
+              "type": "sh.keptn.event.dev.delivery.triggered",
+              "shkeptnspecversion": "0.2.1"
+            }
+
+      - name: Trigger Helm Service Delivery
+        id: trigger-helm-service-delivery
+        uses: keptn/gh-action-send-event@main
+        with:
+          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          event: |
+            {
+              "data": {
+                "deployment": {
+                  "deploymentURIsLocal": ["http://helm-service.keptn-dev:8080"],
+                  "deploymentstrategy": "user_managed"
+                },
+                "message": "",
+                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
+                "result": "",
+                "service": "helm-service",
+                "stage": "dev",
+                "status": "",
+                "labels": {
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              },
+              "source": "gh",
+              "specversion": "1.0",
+              "type": "sh.keptn.event.dev.delivery.triggered",
+              "shkeptnspecversion": "0.2.1"
+            }
+
+      - name: Trigger Jmeter Service Delivery
+        id: trigger-jmeter-service-delivery
+        uses: keptn/gh-action-send-event@main
+        with:
+          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
+          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
+          event: |
+            {
+              "data": {
+                "deployment": {
+                  "deploymentURIsLocal": ["http://jmeter-service.keptn-dev:8080"],
+                  "deploymentstrategy": "user_managed"
+                },
+                "message": "",
+                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
+                "result": "",
+                "service": "jmeter-service",
+                "stage": "dev",
+                "status": "",
+                "labels": {
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              },
+              "source": "gh",
+              "specversion": "1.0",
+              "type": "sh.keptn.event.dev.delivery.triggered",
+              "shkeptnspecversion": "0.2.1"
+            }
