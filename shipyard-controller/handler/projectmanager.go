@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
 	"time"
@@ -30,7 +30,6 @@ type IProjectManager interface {
 }
 
 type ProjectManager struct {
-	Logger                  keptncommon.LoggerInterface
 	ConfigurationStore      common.ConfigurationStore
 	SecretStore             common.SecretStore
 	ProjectMaterializedView db.ProjectsDBOperations
@@ -54,13 +53,12 @@ func NewProjectManager(
 		ProjectMaterializedView: dbProjectsOperations,
 		TaskSequenceRepository:  taskSequenceRepo,
 		EventRepository:         eventRepo,
-		Logger:                  keptncommon.NewLogger("", "", "shipyard-controller"),
 	}
 	return projectUpdater
 }
 
 func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
-	pm.Logger.Info("Getting all projects")
+	log.Info("Getting all projects")
 	allProjects, err := pm.ProjectMaterializedView.GetProjects()
 	if err != nil {
 		return nil, err
@@ -69,7 +67,7 @@ func (pm *ProjectManager) Get() ([]*models.ExpandedProject, error) {
 }
 
 func (pm *ProjectManager) GetByName(projectName string) (*models.ExpandedProject, error) {
-	pm.Logger.Info("Getting project with name " + projectName)
+	log.Infof("Getting project with name %s", projectName)
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
 	if err != nil {
 		return nil, err
@@ -107,30 +105,30 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	})
 
 	rollbackFunc := func() error {
-		pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
 		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
-			pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
 			return err
 		}
 		return nil
 	}
 
 	if err != nil {
-		pm.Logger.Error(fmt.Sprintf("Error occurred while creating project in configuration service: %s", err.Error()))
+		log.Errorf("Error occurred while creating project in configuration service: %s", err.Error())
 		return err, rollbackFunc
 	}
-	pm.Logger.Info(fmt.Sprintf("Created project in configuration service: %s", *params.Name))
+	log.Infof("Created project in configuration service: %s", *params.Name)
 
 	// extend the rollback func to also delete the project in case anything goes wrong afterwards
 	rollbackFunc = func() error {
-		pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete project %s from configuration service", *params.Name))
+		log.Infof("Rollback: Try to delete project %s from configuration service", *params.Name)
 		if err := pm.ConfigurationStore.DeleteProject(*params.Name); err != nil {
-			pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error()))
+			log.Errorf("Rollback failed: Unable to delete project %s from configuration service: %s", *params.Name, err.Error())
 			return err
 		}
-		pm.Logger.Info(fmt.Sprintf("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name))
+		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
 		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
-			pm.Logger.Error(fmt.Sprintf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error()))
+			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
 			return err
 		}
 		return nil
@@ -142,9 +140,9 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		if err := pm.ConfigurationStore.CreateStage(*params.Name, shipyardStage.Name); err != nil {
 			return err, rollbackFunc
 		}
-		pm.Logger.Info(fmt.Sprintf("Stage %s created", shipyardStage.Name))
+		log.Infof("Stage %s created", shipyardStage.Name)
 	}
-	pm.Logger.Info(fmt.Sprintf("Created all stages of project %s", *params.Name))
+	log.Infof("Created all stages of project %s", *params.Name)
 
 	uri := "shipyard.yaml"
 	projectResource := []*apimodels.Resource{
@@ -154,7 +152,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		},
 	}
 	if err := pm.ConfigurationStore.CreateProjectShipyard(*params.Name, projectResource); err != nil {
-		pm.Logger.Error(fmt.Sprintf("Error occurred while uploading shipyard resource to configuration service: %s", err.Error()))
+		log.Errorf("Error occurred while uploading shipyard resource to configuration service: %s", err.Error())
 		return err, rollbackFunc
 	}
 
@@ -284,7 +282,7 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 }
 
 func (pm *ProjectManager) Delete(projectName string) (error, string) {
-	pm.Logger.Info(fmt.Sprintf("Deleting project %s", projectName))
+	log.Infof("Deleting project %s", projectName)
 	var resultMessage strings.Builder
 
 	project, err := pm.ProjectMaterializedView.GetProject(projectName)
@@ -296,11 +294,11 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 
 	secret, err := pm.SecretStore.GetSecret("git-credentials-" + projectName)
 	if err != nil {
-		pm.Logger.Error("could not delete git upstream credentials secret: " + err.Error())
+		log.Errorf("could not delete git upstream credentials secret: %s", err.Error())
 	}
 	if secret != nil {
 		if err := pm.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
-			pm.Logger.Error("could not delete git upstream credentials secret: " + err.Error())
+			log.Errorf("could not delete git upstream credentials secret: %s", err.Error())
 			resultMessage.WriteString("WARNING: Could not delete secret containing the git upstream repo credentials. \n")
 			resultMessage.WriteString(fmt.Sprintf("Please make sure to delete the secret manually by executing 'kubectl delete secret %s -n %s' \n", "git-credentials-"+projectName, common.GetKeptnNamespace()))
 		}
@@ -313,15 +311,15 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
 
 	if err := pm.EventRepository.DeleteEventCollections(projectName); err != nil {
-		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
+		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
 	if err := pm.TaskSequenceRepository.DeleteTaskSequenceCollection(projectName); err != nil {
-		pm.Logger.Error(fmt.Sprintf("could not delete task sequence collection: %s", err.Error()))
+		log.Errorf("could not delete task sequence collection: %s", err.Error())
 	}
 
 	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
-		pm.Logger.Error(fmt.Sprintf("could not delete project: %s", err.Error()))
+		log.Errorf("could not delete project: %s", err.Error())
 	}
 
 	return nil, resultMessage.String()
@@ -391,12 +389,12 @@ func (pm *ProjectManager) updateGITRepositorySecret(projectName string, credenti
 }
 
 func (pm *ProjectManager) deleteGITRepositorySecret(projectName string) error {
-	pm.Logger.Info("deleting git credentials for project " + projectName)
+	log.Infof("deleting git credentials for project %s", projectName)
 
 	if err := pm.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
 		return fmt.Errorf("could not delete git credentials: %s", err.Error())
 	}
-	pm.Logger.Info("deleted git credentials for project " + projectName)
+	log.Infof("deleted git credentials for project %s", projectName)
 	return nil
 
 }
@@ -424,7 +422,7 @@ func (pm *ProjectManager) getDeleteInfoMessage(project string) string {
 }
 
 func (pm *ProjectManager) logAndReturnError(msg string) error {
-	pm.Logger.Error(msg)
+	log.Error(msg)
 	return errors.New(msg)
 }
 

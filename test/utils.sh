@@ -80,7 +80,7 @@ function get_event_with_retry() {
 
     if [[ "$response" == "No event returned" ]]; then
       RETRY=$((RETRY+1))
-      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for ${event_type} event..."
+      echo "Retry: ${RETRY}/${RETRY_MAX} - Wait 10s for ${event_type} event..." >&2
       sleep 10
     else
       echo "$response"

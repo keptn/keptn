@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -13,7 +13,6 @@ import (
 // TaskSequenceMongoDBRepo godoc
 type TaskSequenceMongoDBRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptncommon.LoggerInterface
 }
 
 const taskSequenceCollectionNameSuffix = "-taskSequences"
@@ -33,7 +32,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID str
 		if res.Err() == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		mdbrepo.Logger.Error("Error retrieving projects from mongoDB: " + err.Error())
+		log.Errorf("Error retrieving projects from mongoDB: %s", err.Error())
 		return nil, err
 	}
 
@@ -41,7 +40,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID str
 	err = res.Decode(taskSequenceEvent)
 
 	if err != nil {
-		mdbrepo.Logger.Error("Could not cast to *models.TaskSequenceEvent: " + err.Error())
+		log.Errorf("Could not cast to *models.TaskSequenceEvent: %s", err.Error())
 		return nil, err
 	}
 
@@ -61,7 +60,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) CreateTaskSequenceMapping(project string
 
 	_, err = collection.InsertOne(ctx, taskSequenceEvent)
 	if err != nil {
-		mdbrepo.Logger.Error("Could not store mapping " + taskSequenceEvent.TriggeredEventID + " -> " + taskSequenceEvent.TaskSequenceName + ": " + err.Error())
+		log.Errorf("Could not store mapping %s -> %s: %s", taskSequenceEvent.TriggeredEventID, taskSequenceEvent.TaskSequenceName, err.Error())
 		return err
 	}
 	return nil
@@ -80,7 +79,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, 
 
 	_, err = collection.DeleteMany(ctx, bson.M{"keptnContext": keptnContext, "stage": stage, "taskSequenceName": taskSequenceName})
 	if err != nil {
-		mdbrepo.Logger.Error("Could not delete entries for task " + taskSequenceName + " with context " + keptnContext + " in stage " + stage + ": " + err.Error())
+		log.Errorf("Could not delete entries for task %s with context %s in stage %s: %s", taskSequenceName, keptnContext, stage, err.Error())
 		return err
 	}
 	return nil
@@ -95,14 +94,14 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceCollection(project str
 	taskSequenceCollection := mdbrepo.getTaskSequenceCollection(project)
 
 	if err := mdbrepo.deleteCollection(taskSequenceCollection); err != nil {
-		mdbrepo.Logger.Error(err.Error())
+		log.Error(err.Error())
 		return err
 	}
 	return nil
 }
 
 func (mdbrepo *TaskSequenceMongoDBRepo) deleteCollection(collection *mongo.Collection) error {
-	mdbrepo.Logger.Debug(fmt.Sprintf("Delete collection: %s", collection.Name()))
+	log.Debugf("Delete collection: %s", collection.Name())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	err := collection.Drop(ctx)

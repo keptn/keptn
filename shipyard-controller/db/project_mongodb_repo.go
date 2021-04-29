@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -15,7 +15,6 @@ const projectsCollectionName = "keptnProjectsMV"
 
 type MongoDBProjectsRepo struct {
 	DbConnection MongoDBConnection
-	Logger       keptncommon.LoggerInterface
 }
 
 func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, error) {
@@ -116,7 +115,7 @@ func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri stri
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
 		if err := m.updateProject(existingProject); err != nil {
-			m.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+			log.Errorf("could not update upstream credentials of project %s: %s", projectName, err.Error())
 			return err
 		}
 	}

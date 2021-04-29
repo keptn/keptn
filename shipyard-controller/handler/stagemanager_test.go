@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
@@ -12,8 +11,7 @@ import (
 func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 
 	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewStageManager(stagesDbOperations, logger)
+	instance := NewStageManager(stagesDbOperations)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
@@ -26,8 +24,7 @@ func TestGetAllStages_GettingProjectFromDBFails(t *testing.T) {
 
 func TestGetAllStages_ProjectNotFound(t *testing.T) {
 	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewStageManager(stagesDbOperations, logger)
+	instance := NewStageManager(stagesDbOperations)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
@@ -41,8 +38,7 @@ func TestGetAllStages_ProjectNotFound(t *testing.T) {
 
 func TestGetAllStages(t *testing.T) {
 	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewStageManager(stagesDbOperations, logger)
+	instance := NewStageManager(stagesDbOperations)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 
@@ -67,8 +63,7 @@ func TestGetAllStages(t *testing.T) {
 
 func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
 	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewStageManager(stagesDbOperations, logger)
+	instance := NewStageManager(stagesDbOperations)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
@@ -81,8 +76,7 @@ func TestGetStage_GettingProjectFromDBFails(t *testing.T) {
 
 func TestGetStage_ProjectNotFound(t *testing.T) {
 	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewStageManager(stagesDbOperations, logger)
+	instance := NewStageManager(stagesDbOperations)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, nil
@@ -96,8 +90,7 @@ func TestGetStage_ProjectNotFound(t *testing.T) {
 
 func TestGetStage_StageNotFound(t *testing.T) {
 	stagesDbOperations := &db_mock.StagesDbOperationsMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewStageManager(stagesDbOperations, logger)
+	instance := NewStageManager(stagesDbOperations)
 
 	stagesDbOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -10,6 +9,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sort"
 )
@@ -23,7 +23,6 @@ type IServiceHandler interface {
 
 type ServiceHandler struct {
 	serviceManager IServiceManager
-	logger         keptncommon.LoggerInterface
 	EventSender    keptncommon.EventSender
 }
 
@@ -62,12 +61,12 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 	defer common.UnlockProject(projectName)
 
 	if err := sh.sendServiceCreateStartedEvent(keptnContext, projectName, createServiceParams); err != nil {
-		sh.logger.Error(fmt.Sprintf("could not send service.create.started event: %s", err.Error()))
+		log.Errorf("could not send service.create.started event: %s", err.Error())
 	}
 	if err := sh.serviceManager.CreateService(projectName, createServiceParams); err != nil {
 
 		if err := sh.sendServiceCreateFailedFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
-			sh.logger.Error(fmt.Sprintf("could not send service.create.finished event: %s", err.Error()))
+			log.Errorf("could not send service.create.finished event: %s", err.Error())
 		}
 
 		if err == errServiceAlreadyExists {
@@ -79,7 +78,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		return
 	}
 	if err := sh.sendServiceCreateSuccessFinishedEvent(keptnContext, projectName, createServiceParams); err != nil {
-		sh.logger.Error(fmt.Sprintf("could not send service.create.finished event: %s", err.Error()))
+		log.Errorf("could not send service.create.finished event: %s", err.Error())
 	}
 
 	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
@@ -114,12 +113,12 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	defer common.UnlockProject(projectName)
 
 	if err := sh.sendServiceDeleteStartedEvent(keptnContext, projectName, serviceName); err != nil {
-		sh.logger.Error(fmt.Sprintf("could not send service.delete.started event: %s", err.Error()))
+		log.Errorf("could not send service.delete.started event: %s", err.Error())
 	}
 
 	if err := sh.serviceManager.DeleteService(projectName, serviceName); err != nil {
 		if err := sh.sendServiceDeleteFailedFinishedEvent(keptnContext, projectName, serviceName); err != nil {
-			sh.logger.Error(fmt.Sprintf("could not send service.delete.finished event: %s", err.Error()))
+			log.Errorf("could not send service.delete.finished event: %s", err.Error())
 		}
 
 		SetInternalServerErrorResponse(err, c)
@@ -127,7 +126,7 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 	}
 
 	if err := sh.sendServiceDeleteSuccessFinishedEvent(keptnContext, projectName, serviceName); err != nil {
-		sh.logger.Error(fmt.Sprintf("could not send service.delete.finished event: %s", err.Error()))
+		log.Errorf("could not send service.delete.finished event: %s", err.Error())
 	}
 
 	c.JSON(http.StatusOK, &operations.DeleteServiceResponse{})
@@ -222,10 +221,9 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func NewServiceHandler(serviceManager IServiceManager, eventSender keptncommon.EventSender, logger keptncommon.LoggerInterface) IServiceHandler {
+func NewServiceHandler(serviceManager IServiceManager, eventSender keptncommon.EventSender) IServiceHandler {
 	return &ServiceHandler{
 		serviceManager: serviceManager,
-		logger:         logger,
 		EventSender:    eventSender,
 	}
 }
