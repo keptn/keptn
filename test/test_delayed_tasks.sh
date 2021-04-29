@@ -56,7 +56,7 @@ sleep 2
 echo "Sending trigger echosequence event"
 keptn_context_id=$(send_event_json ./test/assets/trigger_echosequence_event_2.json)
 
-echo "Wating for sequence triggered event"
+echo "Waiting for sequence triggered event"
 sequenceTriggeredEvent=$(get_event_with_retry sh.keptn.event.firststage.echosequence.triggered "${keptn_context_id}" "${PROJECT}")
 sequenceTriggeredEventTime=$(echo "$sequenceTriggeredEvent" | jq -r '.time')
 sequenceTriggeredEventTimeUNIX=$(date -d "$sequenceTriggeredEventTime" +%s)
