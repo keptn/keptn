@@ -557,27 +557,19 @@ function verify_sockshop_deployment() {
 
     # verify that a blue-green carts deployment is up and running
     wait_for_deployment_with_image_in_namespace "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
-    verify_test_step $? "Deployment carts ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} not up in ${PROJECT}-${STAGE}, exiting ..."
+    verify_test_step $? "Deployment carts-primary with image ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} not up in ${PROJECT}-${STAGE}, exiting ..."
 
     # verify that a blue-green carts pod is up and running
     verify_pod_in_namespace "carts-primary" "${PROJECT}-${STAGE}"
     verify_test_step $? "Pod carts-primary not found, exiting ..."
-
-    # verify image name of carts-primary deployment
-    verify_image_of_deployment "carts-primary" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
-    verify_test_step $? "Wrong image for deployment carts-primary in ${PROJECT}-${STAGE} - expected ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
   else # direct deployment
     # verify that a carts deployment is up and running
     wait_for_deployment_with_image_in_namespace "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
-    verify_test_step $? "Deployment ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} carts not up in ${PROJECT}-${STAGE}, exiting ..."
+    verify_test_step $? "Deployment carts with image ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG} carts not up in ${PROJECT}-${STAGE}, exiting ..."
 
     # verify that a carts pod is up and running
     verify_pod_in_namespace "carts" "${PROJECT}-${STAGE}"
     verify_test_step $? "Pod carts not found, exiting ..."
-
-    # verify image name of carts deployment
-    verify_image_of_deployment "carts" "${PROJECT}-${STAGE}" "${ARTIFACT_IMAGE}:$ARTIFACT_IMAGE_TAG"
-    verify_test_step $? "Wrong image for deployment carts in ${PROJECT}-${STAGE} - expected ${ARTIFACT_IMAGE}:${ARTIFACT_IMAGE_TAG}"
   fi
 
   echo ""
