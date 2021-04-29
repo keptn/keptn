@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# shellcheck disable=SC2004
+# shellcheck disable=SC2004,SC1091
 source test/utils.sh
 
 function cleanup() {
