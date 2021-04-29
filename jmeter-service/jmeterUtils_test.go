@@ -139,3 +139,28 @@ func Test_executeJMeter(t *testing.T) {
 		})
 	}
 }
+
+func Test_derivePort(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+		want string
+	}{
+		{"HTTP Address without port", "http://1.2.3.4", "80"},
+		{"HTTP Address with port", "http://1.2.3.4:80", "80"},
+		{"HTTP Address with different port", "http://1.2.3.4:1234", "1234"},
+		{"HTTPS Address without port", "https://1.2.3.4", "443"},
+		{"HTTPS Address with port", "https://1.2.3.4:443", "443"},
+		{"HTTPS Address with different port", "http://1.2.3.4:1234", "1234"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parsedURL, _ := url.Parse(tt.url)
+			got := derivePort(parsedURL)
+			if got != tt.want {
+				t.Errorf("derivePort(%v) got = %v, want %v", tt.url, got, tt.want)
+			}
+		})
+	}
+}
