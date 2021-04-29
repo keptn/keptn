@@ -292,6 +292,7 @@ gofmt
 gohugoio
 goland
 golang
+golangci
 golangswaggerpaths
 golint
 gomock

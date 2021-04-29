@@ -12,8 +12,10 @@ jobs:
         id: go
       - name: Check out code.
         uses: actions/checkout@v1
-      - name: Install linters
-        run: '( mkdir linters && cd linters && go get golang.org/x/lint/golint )'
+      - name: Install golangci-lint
+        run: |
+          # binary will be $(go env GOPATH)/bin/golangci-lint
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.39.0
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
