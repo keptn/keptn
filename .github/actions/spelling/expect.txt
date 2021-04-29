@@ -159,6 +159,7 @@ dbg
 DDTHH
 Debian
 Debugf
+debuglogs
 ded
 deletecollection
 depd
@@ -202,6 +203,7 @@ ecline
 EKS
 elif
 Emoji
+endgroup
 endpointurl
 entrypoint
 enum
@@ -450,6 +452,7 @@ len
 libc
 libnpx
 lifecycle
+LINENO
 linkcolor
 linkid
 linkmode
