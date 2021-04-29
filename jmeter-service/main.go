@@ -235,7 +235,12 @@ func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
 	if serviceURL == nil {
 		return fmt.Errorf("url to check for reachability is nil")
 	}
-	if _, err := net.DialTimeout("tcp", serviceURL.Host, timeout); err != nil {
+
+	// serviceURL.Host does not contain the port in case of serviceURL=http://1.2.3.4/ (without port)
+	// hence we need to manually construct hostWithPort here
+	hostWithPort := fmt.Sprintf("%s:%s", serviceURL.Hostname(), derivePort(serviceURL))
+
+	if _, err := net.DialTimeout("tcp", hostWithPort, timeout); err != nil {
 		return err
 	}
 	return nil
