@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/shipyard-controller
 
-go 1.15
+go 1.16
 
 require (
 	github.com/benbjohnson/clock v1.1.0
