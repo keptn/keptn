@@ -11,7 +11,7 @@ require (
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.3
+	github.com/keptn/go-utils v0.8.4-0.20210429120423-086f16f75234
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nats-io/nats-server/v2 v2.2.2
 	github.com/onsi/ginkgo v1.11.0 // indirect

@@ -13,7 +13,7 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/uuid v1.2.0
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.3
+	github.com/keptn/go-utils v0.8.4-0.20210429120423-086f16f75234
 	github.com/keptn/kubernetes-utils v0.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
