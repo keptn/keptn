@@ -11,7 +11,7 @@
     aria-label="Filter by service"
     clearAllLabel="Clear all"
   ></dt-filter-field>
-  <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
+  <div class="stage-overview mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
     <ktb-selectable-tile *ngFor="let stage of project.stages; trackBy:trackStage"
                          fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%"
                          (click)="selectStage($event, stage);" [selected]="selectedStage == stage">
