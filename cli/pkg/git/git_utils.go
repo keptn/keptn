@@ -6,7 +6,7 @@ import (
 
 func CloneGitHubUrl(filePath string, url string) error {
 	_, err := git.PlainClone(filePath, false, &git.CloneOptions{
-		URL: url,
+		URL:           url,
 	})
 	if err != nil {
 		return err
