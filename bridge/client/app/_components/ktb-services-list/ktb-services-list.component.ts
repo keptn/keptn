@@ -94,7 +94,7 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     }
   }
 
-  getServiceLink(service) {
+  getServiceLink(service: Service) {
     return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage]
   }
 

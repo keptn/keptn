@@ -5,8 +5,8 @@
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0">
-            <a [routerLink]="getServiceLink(row)" *ngIf="row.getShortImageName()" [textContent]="row.getShortImageName()"></a>
-            <span *ngIf="!row.getShortImageName()" class="italic" [textContent]="row.serviceName"></span>
+            <a *ngIf="row.deploymentContext" [routerLink]="getServiceLink(row)" [textContent]="row.getShortImageName() ? row.getShortImageName() : row.serviceName"></a>
+            <span *ngIf="!row.deploymentContext" class="italic" [textContent]="row.getShortImageName() ? row.getShortImageName() : row.serviceName"></span>
           </p>
         </dt-cell>
       </ng-container>
