@@ -15,12 +15,7 @@ import (
 
 func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 
-	resourceHandlerMock := &fake.ResourceHandlerMock{}
-	resourceHandlerMock.GetServiceResourceFunc = func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-		return newRemediationResource("test/remediation.yaml"), nil
-	}
-
-	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", resourceHandlerMock, sdk.WithHandler(NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
+	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler(NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/get-action.triggered.json"))
 
@@ -35,19 +30,6 @@ func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 	getActionFinishedData := keptnv2.GetActionFinishedEventData{}
 	event.DataAs(&getActionFinishedData)
 	require.Equal(t, 1, getActionFinishedData.ActionIndex)
-}
-
-func newRemediationResource(filename string) *models.Resource {
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return &models.Resource{
-		Metadata:        nil,
-		ResourceContent: string(content),
-		ResourceURI:     nil,
-	}
 }
 
 func newGetActionTriggeredEvent(filename string) cloudevents.Event {

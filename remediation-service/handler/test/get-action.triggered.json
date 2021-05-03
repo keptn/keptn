@@ -7,9 +7,9 @@
   "contenttype": "application/json",
   "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50f",
   "data": {
-    "project": "my-project",
-    "service": "my-service",
-    "stage": "ms-stage",
+    "project": "myproject",
+    "service": "myservice",
+    "stage": "mystage",
     "problemDetails": {
       "problemTitle": "Response time degradation",
       "rootCause": "Response time degradation"

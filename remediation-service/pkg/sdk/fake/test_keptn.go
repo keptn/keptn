@@ -34,10 +34,11 @@ func (f *FakeKeptn) GetEventSender() *TestSender {
 	return f.Keptn.EventSender.(*TestSender)
 }
 
-func NewFakeKeptn(source string, resourceHandler sdk.ResourceHandler, opts ...sdk.KeptnOption) *FakeKeptn {
+func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
 
 	eventReceiver := &TestReceiver{}
 	eventSender := &TestSender{}
+	resourceHandler := &TestResourceHandler{}
 
 	var fakeKeptn = &FakeKeptn{
 		Keptn: &sdk.Keptn{

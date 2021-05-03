@@ -1,14 +1,32 @@
 package fake
 
-import "github.com/keptn/go-utils/pkg/api/models"
+import (
+	"fmt"
+	"github.com/keptn/go-utils/pkg/api/models"
+	"io/ioutil"
+	"log"
+)
 
 type TestResourceHandler struct {
 }
 
 func (t TestResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-	panic("implement me")
+	return newResourceFromFile(fmt.Sprintf("test/resources/%s/%s/%s/%s", project, stage, service, resourceURI)), nil
 }
 
 func (t TestResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {
 	panic("implement me")
+}
+
+func newResourceFromFile(filename string) *models.Resource {
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatalf("Unable to locate resources requested by the service: %s", err.Error())
+	}
+
+	return &models.Resource{
+		Metadata:        nil,
+		ResourceContent: string(content),
+		ResourceURI:     nil,
+	}
 }
