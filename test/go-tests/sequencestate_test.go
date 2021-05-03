@@ -3,9 +3,12 @@ package go_tests
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/imroc/req"
-	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
@@ -61,9 +64,12 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	// TODO
 	os.Setenv("KEPTN_NAMESPACE", "keptn")
 	projectName := "state"
+	serviceName := "my-service"
 	file, err := createTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
 	defer os.Remove(file)
+
+	source := "golang-test"
 
 	uniform := []string{"helm-service", "jmeter-service", "lighthouse-service"}
 	if err := scaleDownUniform(uniform); err != nil {
@@ -84,6 +90,11 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
+	output, err = executeCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
 	states := &scmodels.SequenceStates{}
 
 	resp, err := apiGETRequest("/controlPlane/v1/state/" + projectName)
@@ -92,38 +103,89 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	err = resp.ToJSON(states)
 	require.Nil(t, err)
-	require.Equal(t, http.StatusOK, resp.Response().Status)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 	require.Empty(t, states.States)
-	require.Equal(t, 0, states.NextPageKey)
-	require.Equal(t, 0, states.TotalCount)
+	require.Empty(t, states.NextPageKey)
+	require.Empty(t, states.TotalCount)
+
+	// send a delivery.triggered event
+	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
+	resp, err = apiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.DeploymentTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   "dev",
+				Service: serviceName,
+			},
+			ConfigurationChange: keptnv2.ConfigurationChange{
+				Values: map[string]interface{}{"image": "carts:test"},
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptnspecversion: "0.2.0",
+		Source:             &source,
+		Specversion:        "1.0",
+		Type:               &eventType,
+	})
+	require.Nil(t, err)
+	body := resp.String()
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	require.NotEmpty(t, body)
 }
 
 func apiGETRequest(path string) (*req.Resp, error) {
-	apiToken, err := keptnutils.GetKeptnAPITokenFromSecret(false, os.Getenv("KEPTN_NAMESPACE"), "keptn-api-token")
+	apiToken, keptnAPIURL, err := getApiCredentials()
 	if err != nil {
 		return nil, err
 	}
-	keptnAPIURL := os.Getenv("KEPTN_ENDPOINT")
-	if keptnAPIURL == "" {
-		serviceIP, err := keptnutils.GetKeptnEndpointFromService(false, os.Getenv("KEPTN_NAMESPACE"), "api-gateway-nginx")
-		if err != nil {
-			return nil, err
-		}
-		keptnAPIURL = "http://" + serviceIP + "/api"
-	}
 
 	authHeader := req.Header{
-		"Accept":        "application/json",
+		"Accept":  "application/json",
 		"x-token": apiToken,
 	}
 
-	r, err := req.Get(keptnAPIURL + path, authHeader)
+	r, err := req.Get(keptnAPIURL+path, authHeader)
 	if err != nil {
 		return nil, err
 	}
 
 	return r, nil
+}
 
+func apiPOSTRequest(path string, payload interface{}) (*req.Resp, error) {
+	apiToken, keptnAPIURL, err := getApiCredentials()
+	if err != nil {
+		return nil, err
+	}
+
+	authHeader := req.Header{
+		"Accept":  "application/json",
+		"x-token": apiToken,
+	}
+
+	r, err := req.Post(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+func getApiCredentials() (string, string, error) {
+	apiToken, err := keptnutils.GetKeptnAPITokenFromSecret(false, os.Getenv("KEPTN_NAMESPACE"), "keptn-api-token")
+	if err != nil {
+		return "", "", err
+	}
+	keptnAPIURL := os.Getenv("KEPTN_ENDPOINT")
+	if keptnAPIURL == "" {
+		serviceIP, err := keptnutils.GetKeptnEndpointFromService(false, os.Getenv("KEPTN_NAMESPACE"), "api-gateway-nginx")
+		if err != nil {
+			return "", "", err
+		}
+		keptnAPIURL = "http://" + serviceIP + "/api"
+	}
+	return apiToken, keptnAPIURL, nil
 }
 
 func scaleDownUniform(deployments []string) error {
