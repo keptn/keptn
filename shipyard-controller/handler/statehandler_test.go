@@ -46,7 +46,7 @@ func TestStateHandler_GetState(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("POST", "/state?project=my-project", nil),
+			request:    httptest.NewRequest("POST", "/state/my-project", nil),
 			wantStatus: http.StatusOK,
 		},
 		{
@@ -58,7 +58,7 @@ func TestStateHandler_GetState(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("POST", "/state?project=my-project", nil),
+			request:    httptest.NewRequest("POST", "/state/my-project", nil),
 			wantStatus: http.StatusInternalServerError,
 		},
 	}

@@ -11,6 +11,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"net/url"
@@ -29,11 +30,16 @@ type IShipyardController interface {
 }
 
 type shipyardController struct {
-	projectRepo        db.ProjectRepo
-	eventRepo          db.EventRepo
-	taskSequenceRepo   db.TaskSequenceRepo
-	eventsDbOperations db.EventsDbOperations
-	eventDispatcher    IEventDispatcher
+	projectRepo                db.ProjectRepo
+	eventRepo                  db.EventRepo
+	taskSequenceRepo           db.TaskSequenceRepo
+	eventsDbOperations         db.EventsDbOperations
+	eventDispatcher            IEventDispatcher
+	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
+	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
+	sequenceTaskStartedHooks   []sequencehooks.ISequenceTaskStartedHook
+	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook
+	sequenceFinishedHooks      []sequencehooks.ISequenceFinishedHook
 }
 
 func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardController {
@@ -51,6 +57,56 @@ func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardCo
 		}
 	}
 	return shipyardControllerInstance
+}
+
+func (sc *shipyardController) AddSequenceTriggeredHook(hook sequencehooks.ISequenceTriggeredHook) {
+	sc.sequenceTriggeredHooks = append(sc.sequenceTriggeredHooks, hook)
+}
+
+func (sc *shipyardController) AddSequenceTaskTriggeredHook(hook sequencehooks.ISequenceTaskTriggeredHook) {
+	sc.sequenceTaskTriggeredHooks = append(sc.sequenceTaskTriggeredHooks, hook)
+}
+
+func (sc *shipyardController) AddSequenceTaskStartedHook(hook sequencehooks.ISequenceTaskStartedHook) {
+	sc.sequenceTaskStartedHooks = append(sc.sequenceTaskStartedHooks, hook)
+}
+
+func (sc *shipyardController) AddSequenceTaskFinishedHook(hook sequencehooks.ISequenceTaskFinishedHook) {
+	sc.sequenceTaskFinishedHooks = append(sc.sequenceTaskFinishedHooks, hook)
+}
+
+func (sc *shipyardController) AddSequenceFinishedHook(hook sequencehooks.ISequenceFinishedHook) {
+	sc.sequenceFinishedHooks = append(sc.sequenceFinishedHooks, hook)
+}
+
+func (sc *shipyardController) onSequenceTriggered(event models.Event) {
+	for _, hook := range sc.sequenceTriggeredHooks {
+		go hook.OnSequenceTriggered(event)
+	}
+}
+
+func (sc *shipyardController) onSequenceTaskStarted(event models.Event) {
+	for _, hook := range sc.sequenceTaskStartedHooks {
+		go hook.OnSequenceTaskStarted(event)
+	}
+}
+
+func (sc *shipyardController) onSequenceTaskTriggered(event models.Event) {
+	for _, hook := range sc.sequenceTaskTriggeredHooks {
+		go hook.OnSequenceTaskTriggered(event)
+	}
+}
+
+func (sc *shipyardController) onSequenceTaskFinished(event models.Event) {
+	for _, hook := range sc.sequenceTaskFinishedHooks {
+		go hook.OnSequenceTaskFinished(event)
+	}
+}
+
+func (sc *shipyardController) onSequenceFinished(event models.Event) {
+	for _, hook := range sc.sequenceFinishedHooks {
+		go hook.OnSequenceFinished(event)
+	}
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
@@ -127,6 +183,7 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		return errNoMatchingEvent
 	}
 
+	sc.onSequenceTaskStarted(event)
 	return sc.eventRepo.InsertEvent(eventScope.Project, event, common.StartedEvent)
 }
 
@@ -211,6 +268,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
+
+	sc.onSequenceTriggered(event)
 
 	eventScope.Stage = stageName
 	return sc.proceedTaskSequence(eventScope, taskSequence, shipyard, []interface{}{}, "")
@@ -356,6 +415,8 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			finishedEventsData = append(finishedEventsData, tmp)
 		}
 
+		sc.onSequenceTaskFinished(event)
+
 		return sc.proceedTaskSequence(eventScope, sequence, shipyard, finishedEventsData, task)
 	}
 	return nil
@@ -413,6 +474,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *models.EventScope,
 			log.Errorf("Could not complete task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext)
 			return err
 		}
+		sc.onSequenceFinished(*inputEvent)
 		return sc.triggerNextTaskSequences(eventScope, taskSequence, shipyard, eventHistory, inputEvent)
 	}
 	return sc.sendTaskTriggeredEvent(eventScope, taskSequence.Name, *task, eventHistory)

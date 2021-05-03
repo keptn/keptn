@@ -27,14 +27,15 @@ func NewStateHandler(stateRepo db.StateRepo) *StateHandler {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     query    string     false        "Project"
+// @Param   project     path    string     false        "Project"
 // @Param	pageSize			query		int			false	"The number of items to return"
 // @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
 // @Success 200 {object} models.SequenceStates	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /state [get]
+// @Router /state/{project} [get]
 func (sh *StateHandler) GetState(c *gin.Context) {
+	projectName := c.Param("project")
 	params := &models.GetStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
@@ -42,6 +43,7 @@ func (sh *StateHandler) GetState(c *gin.Context) {
 			Message: common.Stringp("Invalid request format"),
 		})
 	}
+	params.Project = projectName
 
 	states, err := sh.StateRepo.FindStates(models.StateFilter{
 		GetStateParams: *params,
