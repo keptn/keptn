@@ -93,12 +93,17 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     return failedRootEvents.find(root => root.data.service === service.serviceName);
   }
 
+  getServiceLink(service) {
+    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage]
+  }
+    
   public filterServices(services: Service[]): Service[] {
     return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
   }
 
   public filterRoots(roots: Root[]): Root[] {
     return this.filteredServices.length === 0 ? roots : roots?.filter(root => this.filteredServices.includes(root.getService()));
+
   }
 
   ngOnDestroy(): void {
