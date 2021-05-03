@@ -78,12 +78,8 @@ func (mdbrepo *MongoDBStateRepo) FindStates(filter models.StateFilter) (*models.
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	if err != nil && err == mongo.ErrNoDocuments {
-		return nil, ErrNoStateFound
-	} else if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
-	} else if cur.RemainingBatchLength() == 0 {
-		return nil, ErrNoStateFound
 	}
 
 	result := &models.SequenceStates{

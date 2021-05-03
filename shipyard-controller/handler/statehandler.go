@@ -52,6 +52,7 @@ func (sh *StateHandler) GetState(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.Error{
 			Message: common.Stringp(err.Error()),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, states)
