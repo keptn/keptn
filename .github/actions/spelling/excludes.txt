@@ -18,3 +18,4 @@ ignore$
 \.sum$
 \.xlf$
 _test\.go$
+.reviewdog.yml
