@@ -35,15 +35,17 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         this.dataService.getProject(params.projectName)
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe(project => {
-            this.projectName = project.projectName;
-            if (project.gitRemoteURI) {
-              this.gitUrlControl.setValue(project.gitRemoteURI);
-            }
-            if (project.gitUser) {
-              this.gitUserControl.setValue(project.gitUser);
-            }
-            if (project.gitRemoteURI && project.gitUser) {
-              this.gitTokenControl.setValue('***********************');
+            if (project) {
+              this.projectName = project.projectName;
+              if (project.gitRemoteURI) {
+                this.gitUrlControl.setValue(project.gitRemoteURI);
+              }
+              if (project.gitUser) {
+                this.gitUserControl.setValue(project.gitUser);
+              }
+              if (project.gitRemoteURI && project.gitUser) {
+                this.gitTokenControl.setValue('***********************');
+              }
             }
           });
       })
