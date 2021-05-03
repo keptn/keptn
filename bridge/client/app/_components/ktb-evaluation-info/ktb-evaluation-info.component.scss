@@ -1,2 +1,23 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
+
+
+.border {
+  background-color: transparent;
+  color: black;
+
+  &.success {
+    border: 1px solid $cta-color !important;
+  }
+  &.warning {
+    border: 1px solid $warning-color !important;
+  }
+  &.error {
+    border: 1px solid $error-color !important;
+  }
+}
+
+.fill {
+  background-color: $cta-color-active !important;
+  color: white;
+}

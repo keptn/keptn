@@ -16,8 +16,7 @@
         </div>
       </dt-info-group-title>
     </dt-info-group>
-
-    <ktb-sequence-timeline [selectedStage]="selectedStage" [currentSequence]="deployment.sequence" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
+    <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
 
     <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence.getEvaluation(selectedStage) as evaluationEvent">
       <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">

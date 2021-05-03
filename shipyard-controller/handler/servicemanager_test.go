@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/common/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
@@ -16,8 +15,7 @@ import (
 func TestCreateService_GettingStagesFails(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -34,8 +32,7 @@ func TestCreateService_GettingStagesFails(t *testing.T) {
 func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -68,8 +65,7 @@ func TestCreateService_ServiceAlreadyExists(t *testing.T) {
 func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -106,8 +102,7 @@ func TestCreatService_CreatingServiceInConfigurationServiceFails(t *testing.T) {
 func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -148,8 +143,7 @@ func TestCreatService_CreatingServiceInDBFails(t *testing.T) {
 func TestCreateService(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	params := &operations.CreateServiceParams{
 		ServiceName: common.Stringp("service-name"),
@@ -205,8 +199,7 @@ func TestCreateService(t *testing.T) {
 func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		return nil, errors.New("whoops")
@@ -220,8 +213,7 @@ func TestDeleteService_GettingAllStagesFails(t *testing.T) {
 func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
@@ -256,8 +248,7 @@ func TestDeleteService_DeleteServiceInConfigurationServiceFails(t *testing.T) {
 func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{
@@ -296,8 +287,7 @@ func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
 func TestDeleteService(t *testing.T) {
 	servicesDBOperations := &db_mock.ServicesDbOperationsMock{}
 	configurationStore := &common_mock.ConfigurationStoreMock{}
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-	instance := NewServiceManager(servicesDBOperations, configurationStore, logger)
+	instance := NewServiceManager(servicesDBOperations, configurationStore)
 
 	servicesDBOperations.GetProjectFunc = func(projectName string) (*models.ExpandedProject, error) {
 		service := &models.ExpandedService{

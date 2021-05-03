@@ -1,7 +1,7 @@
 <div fxLayout="column" fxLayoutGap="15px">
   <ng-container *ngIf="selectedStage">
-    <ng-container *ngIf="project.getLatestFailedRootEvents(selectedStage) as failedRootEvents">
-      <ng-container *ngIf="project.getLatestProblemEvents(selectedStage) as problemEvents">
+    <ng-container *ngIf="filterRoots(project.getLatestFailedRootEvents(selectedStage)) as failedRootEvents">
+      <ng-container *ngIf="filterRoots(project.getLatestProblemEvents(selectedStage)) as problemEvents">
         <h2 [textContent]="selectedStage.stageName"></h2>
         <dt-toggle-button-group (change)="selectFilterEvent($event)">
           <button #problemFilterEventButton dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0" [selected]="filterEventType == 'problem'">
@@ -27,7 +27,7 @@
           <dt-icon class="icon" name="information"></dt-icon>
           <p class="m-0">No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
         </div>
-        <ng-container *ngFor="let service of selectedStage.services">
+        <ng-container *ngFor="let service of filterServices(selectedStage.services)">
           <ktb-expandable-tile class="mt-1" [expanded]="service.getOpenApprovals().length > 0"
                                *ngIf="!filterEventType || filterEventType == 'problem' && findProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
             <ktb-expandable-tile-header>

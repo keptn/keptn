@@ -51,6 +51,7 @@ bak
 barista
 basiccheck
 bc
+benbjohnson
 bestpractices
 Bitbucket
 blacklistip
@@ -137,7 +138,6 @@ cov
 covermode
 coverprofile
 crcdemos
-crds
 CREATEBIN
 createrelease
 credentialmanager
@@ -227,7 +227,9 @@ evaluationdetails
 evaluationmanager
 evaluationsdetails
 eventbroker
+eventdispatcher
 eventflow
+eventqueuerepo
 eventrepo
 eventselector
 eventsender
@@ -290,6 +292,7 @@ gofmt
 gohugoio
 goland
 golang
+golangci
 golangswaggerpaths
 golint
 gomock
@@ -453,7 +456,6 @@ libc
 libnpx
 lifecycle
 LINENO
-linkcolor
 linkid
 linkmode
 linting
@@ -468,9 +470,9 @@ lodash
 Logf
 logrus
 loopcount
-lrun
 Lshortfile
 LSN
+lte
 Ltime
 LTN
 MAKEFLAGS
@@ -504,8 +506,6 @@ mng
 mockgen
 mongodata
 mongodb
-mongoexport
-mongoimport
 mongosecret
 monorepo
 monto
@@ -518,7 +518,6 @@ mtls
 muratovic
 musicshop
 mutex
-MVJSON
 myapp
 myclientcert
 mydbserver
@@ -563,7 +562,6 @@ Nop
 noreferrer
 noreply
 noscript
-notin
 Noto
 nowrap
 npm
@@ -572,11 +570,9 @@ nss
 nvie
 oauth
 objectutils
-OIFS
 ojson
 ojsonpath
 okm
-OLDPWD
 OLDVAL
 omitempty
 onboarded
@@ -591,6 +587,7 @@ openjdk
 openshift
 orgs
 oss
+osutils
 osxkeychain
 otiai
 owasp
@@ -620,7 +617,6 @@ pprove
 prebuilt
 preemptible
 prepender
-prereqs
 printf
 Println
 prj
@@ -761,13 +757,13 @@ stdduration
 Stderr
 stdin
 stdout
-strarr
 strconv
 stretchr
 strfmt
 stringify
 Stringp
 structs
+strutils
 stylesheet
 subdomain
 subfolder
@@ -800,6 +796,7 @@ thirdstage
 threadgroup
 timeframe
 timeline
+timeutils
 tlf
 tls
 TLSCA
@@ -848,7 +845,6 @@ unmarshalling
 unsubscribe
 upgradable
 upgradeable
-upgradecollections
 uprinc
 upstreams
 uri

@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
@@ -113,7 +112,6 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.CreateProject(tt.args.prj); (err != nil) != tt.wantErr {
 				t.Errorf("CreateProject() error = %v, wantErr %v", err, tt.wantErr)
@@ -330,7 +328,6 @@ func Test_projectsMaterializedView_CreateStage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.CreateStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
 				t.Errorf("CreateStage() error = %v, wantErr %v", err, tt.wantErr)
@@ -433,7 +430,6 @@ func Test_projectsMaterializedView_DeleteStage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.DeleteStage(tt.args.project, tt.args.stage); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteStage() error = %v, wantErr %v", err, tt.wantErr)
@@ -609,7 +605,6 @@ func Test_projectsMaterializedView_CreateService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.CreateService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
 				t.Errorf("CreateService() error = %v, wantErr %v", err, tt.wantErr)
@@ -725,7 +720,6 @@ func Test_projectsMaterializedView_DeleteService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      keptncommon.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.DeleteService(tt.args.project, tt.args.stage, tt.args.service); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteService() error = %v, wantErr %v", err, tt.wantErr)
@@ -933,7 +927,6 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo:     tt.fields.ProjectRepo,
 				EventsRetriever: tt.fields.EventRetriever,
-				Logger:          keptncommon.NewLogger("", "", "configuration-service"),
 			}
 			if err := mv.UpdateEventOfService(tt.args.keptnBase, tt.args.eventType, tt.args.keptnContext, "test-event-id", "the-triggered-id"); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateEventOfService() error = %v, wantErr %v", err, tt.wantErr)
@@ -945,7 +938,6 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 	type fields struct {
 		ProjectRepo ProjectRepo
-		Logger      keptncommon.LoggerInterface
 	}
 	type args struct {
 		project     string
@@ -962,7 +954,6 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 		{
 			name: "",
 			fields: fields{
-				Logger: keptncommon.NewLogger("", "", "configuration-service"),
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
 					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
@@ -1026,7 +1017,6 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      tt.fields.Logger,
 			}
 			if err := mv.CreateRemediation(tt.args.project, tt.args.stage, tt.args.service, tt.args.remediation); (err != nil) != tt.wantErr {
 				t.Errorf("CreateRemediation() error = %v, wantErr %v", err, tt.wantErr)
@@ -1038,7 +1028,6 @@ func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
 func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 	type fields struct {
 		ProjectRepo ProjectRepo
-		Logger      keptncommon.LoggerInterface
 	}
 	type args struct {
 		project      string
@@ -1055,7 +1044,6 @@ func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 		{
 			name: "close open approval",
 			fields: fields{
-				Logger: keptncommon.NewLogger("", "", "configuration-service"),
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
 					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
@@ -1111,7 +1099,6 @@ func Test_projectsMaterializedView_CloseOpenRemediations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &ProjectsMaterializedView{
 				ProjectRepo: tt.fields.ProjectRepo,
-				Logger:      tt.fields.Logger,
 			}
 			if err := mv.CloseOpenRemediations(tt.args.project, tt.args.stage, tt.args.service, tt.args.keptnContext); (err != nil) != tt.wantErr {
 				t.Errorf("CloseOpenRemediations() error = %v, wantErr %v", err, tt.wantErr)

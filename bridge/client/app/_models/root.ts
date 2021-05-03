@@ -23,6 +23,10 @@ export class Root extends Trace {
     return result;
   }
 
+  getDeploymentTrace(stage: string): Trace {
+    return this.findTrace(trace => trace.isDeployment() === stage);
+  }
+
   isDeployment(): string {
     return this.traces.reduce((result: string, trace: Trace) => result ? result : trace.isDeployment(), null);
   }
