@@ -25,8 +25,6 @@ KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-keptn}
 # get keptn API details
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "${KEPTN_NAMESPACE}" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
-echo "KEPTN_ENDPOINT $KEPTN_ENDPOINT"
-
 #test configuration
 PROJECT="link-project"
 SERVICE="my-service"

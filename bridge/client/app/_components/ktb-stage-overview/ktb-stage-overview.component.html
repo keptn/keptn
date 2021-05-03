@@ -2,6 +2,15 @@
   <dt-info-group-title>
     <p><span [textContent]="project.stages.length"></span> Stages</p>
   </dt-info-group-title>
+  <dt-filter-field
+    class="mb-3"
+    [dataSource]="_dataSource"
+    [filters]="filter"
+    (filterChanges)="filterChanged($event)"
+    label="Filter by service"
+    aria-label="Filter by service"
+    clearAllLabel="Clear all"
+  ></dt-filter-field>
   <div class="mr-minus-15" fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
     <ktb-selectable-tile *ngFor="let stage of project.stages; trackBy:trackStage"
                          fxFlex="0 1 calc(33.3% - 15px)" fxFlex.lt-md="0 1 calc(50% - 15px)" fxFlex.lt-sm="100%"
@@ -9,23 +18,23 @@
       <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
       <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
-             *ngIf="project.getLatestProblemEvents(stage) as problemEvents"
+             *ngIf="filterRoots(project.getLatestProblemEvents(stage)) as problemEvents"
              (click)="problemEvents.length > 0 && selectStage($event, stage, 'problem')">
           <dt-icon class="stage-state-icon" name="criticalevent" [class.error]="problemEvents.length > 0"></dt-icon>
           <span [textContent]="problemEvents.length"></span>
         </div>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
-             *ngIf="project.getLatestFailedRootEvents(stage) as failedRootEvents"
+             *ngIf="filterRoots(project.getLatestFailedRootEvents(stage)) as failedRootEvents"
              (click)="failedRootEvents.length > 0 && selectStage($event, stage, 'evaluation')">
           <dt-icon class="stage-state-icon" name="traffic-light" [class.error]="failedRootEvents.length > 0"></dt-icon>
           <span [textContent]="failedRootEvents.length"></span>
         </div>
-        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" (click)="stage.servicesWithOpenApprovals().length > 0 && selectStage($event, stage, 'approval')">
-          <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="stage.servicesWithOpenApprovals().length > 0"></dt-icon>
-          <span [textContent]="stage.servicesWithOpenApprovals().length"></span>
+        <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" (click)="filterServices(stage.servicesWithOpenApprovals()).length > 0 && selectStage($event, stage, 'approval')">
+          <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="filterServices(stage.servicesWithOpenApprovals()).length > 0"></dt-icon>
+          <span [textContent]="filterServices(stage.servicesWithOpenApprovals()).length"></span>
         </div>
       </div>
-      <ktb-services-list [services]="stage.services"></ktb-services-list>
+      <ktb-services-list [services]="filterServices(stage.services)"></ktb-services-list>
     </ktb-selectable-tile>
   </div>
 </dt-info-group>

@@ -1,0 +1,11 @@
+{
+    "type": "sh.keptn.event.firststage.echosequence.triggered",
+    "specversion": "1.0",
+    "source": "travis-ci",
+    "contenttype": "application/json",
+    "data": {
+      "project": "delayed-task-project",
+      "stage": "firststage",
+      "service": "my-service"
+    }
+  }

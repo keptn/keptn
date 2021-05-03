@@ -64,6 +64,7 @@ func Test_checkEndpointAvailable(t *testing.T) {
 	defer ts.Close()
 	reachableURL, _ := url.Parse(ts.URL)
 	nonReachableURL, _ := url.Parse("http://1.2.3.4:1234")
+	nonReachableURLwithoutPort, _ := url.Parse("http://1.2.3.4")
 
 	type args struct {
 		timeout    time.Duration
@@ -77,6 +78,7 @@ func Test_checkEndpointAvailable(t *testing.T) {
 		{"Url reachable", args{1 * time.Second, reachableURL}, false},
 		{"Url not reachable", args{1 * time.Nanosecond, nonReachableURL}, true},
 		{"nil", args{1 * time.Nanosecond, nil}, true},
+		{"Url without port not reachable", args{1 * time.Nanosecond, nonReachableURLwithoutPort}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

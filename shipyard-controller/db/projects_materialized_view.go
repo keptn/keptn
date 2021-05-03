@@ -6,9 +6,9 @@ import (
 	"github.com/ghodss/yaml"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"strconv"
@@ -37,7 +37,6 @@ type EventsRetriever interface {
 type ProjectsMaterializedView struct {
 	ProjectRepo     ProjectRepo
 	EventsRetriever EventRepo
-	Logger          keptncommon.LoggerInterface
 }
 
 // GetProjectsMaterializedView returns the materialized view
@@ -47,7 +46,6 @@ func GetProjectsMaterializedView() *ProjectsMaterializedView {
 		instance = &ProjectsMaterializedView{
 			ProjectRepo:     &MongoDBProjectsRepo{},
 			EventsRetriever: nil, //TODO
-			Logger:          keptncommon.NewLogger("", "", "configuration-service"),
 		}
 	}
 	return instance
@@ -75,7 +73,7 @@ func (mv *ProjectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 
 	existingProject.Shipyard = shipyardContent
 	if err := setShipyardVersion(existingProject); err != nil {
-		mv.Logger.Error(fmt.Sprintf("could not update shipyard version fo project %s: %s"+projectName, err.Error()))
+		log.Errorf("could not update shipyard version fo project %s: %s"+projectName, err.Error())
 	}
 
 	return mv.ProjectRepo.UpdateProject(existingProject)
@@ -118,7 +116,7 @@ func (mv *ProjectsMaterializedView) UpdateUpstreamInfo(projectName string, uri, 
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
 		if err := mv.ProjectRepo.UpdateProject(existingProject); err != nil {
-			mv.Logger.Error(fmt.Sprintf("could not update upstream credentials of project %s: %s", projectName, err.Error()))
+			log.Errorf("could not update upstream credentials of project %s: %s", projectName, err.Error())
 			return err
 		}
 	}
@@ -138,7 +136,7 @@ func (mv *ProjectsMaterializedView) UpdatedShipyard(projectName string, shipyard
 		existingProject.Shipyard = shipyard
 		mv.ProjectRepo.UpdateProject(existingProject)
 		if err != nil {
-			mv.Logger.Error(fmt.Sprintf("could not update shipyard of project %s: %s", projectName, err.Error()))
+			log.Errorf("could not update shipyard of project %s: %s", projectName, err.Error())
 			return nil
 		}
 	}
@@ -158,7 +156,7 @@ func (mv *ProjectsMaterializedView) DeleteUpstreamInfo(projectName string) error
 	existingProject.GitUser = ""
 	existingProject.GitRemoteURI = ""
 	if err := mv.ProjectRepo.UpdateProject(existingProject); err != nil {
-		mv.Logger.Error(fmt.Sprintf("could not delete upstream credentials of project %s: %s", projectName, err.Error()))
+		log.Errorf("could not delete upstream credentials of project %s: %s", projectName, err.Error())
 		return err
 	}
 	return nil
@@ -173,7 +171,7 @@ func (mv *ProjectsMaterializedView) GetProjects() ([]*models.ExpandedProject, er
 	for _, project := range projects {
 		if err := setShipyardVersion(project); err != nil {
 			// log the error but continue
-			mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+			log.Errorf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error())
 		}
 	}
 	return projects, nil
@@ -188,7 +186,7 @@ func (mv *ProjectsMaterializedView) GetProject(projectName string) (*models.Expa
 	if project != nil {
 		if err := setShipyardVersion(project); err != nil {
 			// log the error but continue
-			mv.Logger.Error(fmt.Sprintf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error()))
+			log.Errorf("could not set shipyard version of project %s: %s", project.ProjectName, err.Error())
 		}
 	}
 	return project, nil
@@ -201,11 +199,11 @@ func (mv *ProjectsMaterializedView) DeleteProject(projectName string) error {
 
 // CreateStage creates a stage
 func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) error {
-	mv.Logger.Info("Adding stage " + stage + " to project " + project)
+	log.Infof("Adding stage %s to project %s ", stage, project)
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
-		mv.Logger.Error(fmt.Sprintf("Could not add stage %s to project %s : %s\n", stage, project, err.Error()))
+		log.Errorf("Could not add stage %s to project %s : %s\n", stage, project, err.Error())
 		return err
 	}
 
@@ -218,7 +216,7 @@ func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) er
 	}
 
 	if stageAlreadyExists {
-		mv.Logger.Info("Stage " + stage + " already exists in project " + project)
+		log.Infof("Stage %s already exists in project %s", stage, project)
 		return nil
 	}
 
@@ -232,7 +230,7 @@ func (mv *ProjectsMaterializedView) CreateStage(project string, stage string) er
 		return err
 	}
 
-	mv.Logger.Info("Added stage " + stage + " to project " + project)
+	log.Infof("Added stage %s to project %s", stage, project)
 	return nil
 }
 
@@ -240,7 +238,7 @@ func (mv *ProjectsMaterializedView) createProject(project *models.ExpandedProjec
 
 	err := mv.ProjectRepo.CreateProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not create project " + project.ProjectName + ": " + err.Error())
+		log.Errorf("Could not create project %s: %s", project.ProjectName, err.Error())
 		return err
 	}
 	return nil
@@ -248,7 +246,7 @@ func (mv *ProjectsMaterializedView) createProject(project *models.ExpandedProjec
 
 // DeleteStage deletes a stage
 func (mv *ProjectsMaterializedView) DeleteStage(project string, stage string) error {
-	mv.Logger.Info("Deleting stage " + stage + " from project " + project)
+	log.Infof("Deleting stage %s from project %s", stage, project)
 	prj, err := mv.GetProject(project)
 
 	if err != nil {
@@ -280,7 +278,7 @@ func (mv *ProjectsMaterializedView) DeleteStage(project string, stage string) er
 func (mv *ProjectsMaterializedView) CreateService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		log.Errorf("Could not add service %s to stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
 		return err
 	}
 
@@ -288,7 +286,7 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 		if stg.StageName == stage {
 			for _, svc := range stg.Services {
 				if svc.ServiceName == service {
-					mv.Logger.Info("Service " + service + " already exists in stage " + stage + " in project " + project)
+					log.Infof("Service %s already exists in stage %s in project %s", service, stage, project)
 					return nil
 				}
 			}
@@ -297,17 +295,16 @@ func (mv *ProjectsMaterializedView) CreateService(project string, stage string, 
 				DeployedImage: "",
 				ServiceName:   service,
 			})
-			mv.Logger.Info("Adding " + service + " to stage " + stage + " in project " + project + " in database")
+			log.Infof("Adding %s to stage %s in project %s in database", service, stage, project)
 			err := mv.ProjectRepo.UpdateProject(existingProject)
 			if err != nil {
-				mv.Logger.Error("Could not add service " + service + " to stage " + stage + " in project " + project + ". Could not update project: " + err.Error())
+				log.Errorf("Could not add service %s to stage %s in project %s. Could not update project: %s", service, stage, project, err.Error())
 				return err
 			}
-			mv.Logger.Info("Service " + service + " has been added to stage " + stage + " in project " + project)
+			log.Infof("Service %s has been added to stage %s in project %s", service, stage, project)
 			break
 		}
 	}
-
 	return nil
 }
 
@@ -337,7 +334,7 @@ func (mv *ProjectsMaterializedView) GetService(projectName, stageName, serviceNa
 func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, service string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		log.Errorf("Could not delete service %s from stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
 		return err
 	}
 
@@ -350,7 +347,7 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 				}
 			}
 			if serviceIndex < 0 {
-				mv.Logger.Info("Could not delete service " + service + " from stage " + stage + " in project " + project + ". Service not found in database")
+				log.Infof("Could not delete service %s from stage %s in project %s. Service not found in database", service, stage, project)
 				return nil
 			}
 			copy(stg.Services[serviceIndex:], stg.Services[serviceIndex+1:])
@@ -361,10 +358,10 @@ func (mv *ProjectsMaterializedView) DeleteService(project string, stage string, 
 	}
 	err = mv.ProjectRepo.UpdateProject(existingProject)
 	if err != nil {
-		mv.Logger.Error("Could not delete service " + service + " from stage " + stage + " in project " + project + ": " + err.Error())
+		log.Errorf("Could not delete service %s from stage %s in project %s: %s", service, stage, project, err.Error())
 		return err
 	}
-	mv.Logger.Info("Deleted service " + service + " from stage " + stage + " in project " + project)
+	log.Infof("Deleted service %s from stage %s in project %s", service, stage, project)
 	return nil
 }
 
@@ -373,16 +370,16 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event, eventData)
 	if err != nil {
-		mv.Logger.Error("Could not parse event data: " + err.Error())
+		log.Errorf("Could not parse event data: %s", err.Error())
 		return err
 	}
 
 	existingProject, err := mv.GetProject(eventData.Project)
 	if err != nil {
-		mv.Logger.Error("Could not update service " + eventData.Service + " in stage " + eventData.Stage + " in project " + eventData.Project + ". Could not load project: " + err.Error())
+		log.Errorf("Could not update service %s in stage %s in project %s. Could not load project: %s", eventData.Service, eventData.Stage, eventData.Project, err.Error())
 		return err
 	} else if existingProject == nil {
-		mv.Logger.Error("Could not update service " + eventData.Service + " in stage " + eventData.Stage + " in project " + eventData.Project + ": Project not found.")
+		log.Errorf("Could not update service %s in stage %s in project %s: Project not found.", eventData.Service, eventData.Stage, eventData.Project)
 		return ErrProjectNotFound
 	}
 
@@ -423,12 +420,12 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 	})
 
 	if err != nil {
-		mv.Logger.Error("Could not update image of service " + eventData.Service + ": " + err.Error())
+		log.Errorf("Could not update image of service %s: %s", eventData.Service, err.Error())
 		return err
 	}
 	err = mv.ProjectRepo.UpdateProject(existingProject)
 	if err != nil {
-		mv.Logger.Error("Could not update " + eventData.Project + ": " + err.Error())
+		log.Errorf("Could not update project %s: %s", eventData.Project, err.Error())
 		return err
 	}
 	return nil
@@ -438,7 +435,7 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 func (mv *ProjectsMaterializedView) CreateRemediation(project, stage, service string, remediation *models.Remediation) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not create remediation for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		log.Errorf("Could not create remediation for service %s in stage %s in project%s. Could not load project: %s", service, stage, project, err.Error())
 		return ErrProjectNotFound
 	}
 
@@ -456,11 +453,11 @@ func (mv *ProjectsMaterializedView) CreateRemediation(project, stage, service st
 func (mv *ProjectsMaterializedView) CloseOpenRemediations(project, stage, service, keptnContext string) error {
 	existingProject, err := mv.GetProject(project)
 	if err != nil {
-		mv.Logger.Error("Could not close remediation for service " + service + " in stage " + stage + " in project " + project + ". Could not load project: " + err.Error())
+		log.Errorf("Could not close remediation for service %s in stage %s in project %s. Could not load project: %s", service, stage, project, err.Error())
 		return ErrProjectNotFound
 	}
 	if keptnContext == "" {
-		mv.Logger.Debug("No keptnContext has been set.")
+		log.Warn("No keptnContext has been set.")
 		return errors.New("no keptnContext has been set")
 	}
 

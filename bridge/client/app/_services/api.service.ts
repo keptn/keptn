@@ -25,6 +25,7 @@ export class ApiService {
 
   private _baseUrl: string;
   private VERSION_CHECK_COOKIE = 'keptn_versioncheck';
+  private ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
 
   constructor(private http: HttpClient) {
     this._baseUrl = `./api`;
@@ -36,6 +37,14 @@ export class ApiService {
 
   public get baseUrl() {
     return this._baseUrl;
+  }
+
+  public get environmentFilter(): string[] {
+    return JSON.parse(localStorage.getItem(this.ENVIRONMENT_FILTER_COOKIE)) || [];
+  }
+
+  public set environmentFilter(services: string[]) {
+    localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(services));
   }
 
   public getKeptnInfo(): Observable<any> {

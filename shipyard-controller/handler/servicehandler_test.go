@@ -166,7 +166,6 @@ func TestServiceHandler_CreateService(t *testing.T) {
 
 			sh := &ServiceHandler{
 				serviceManager: tt.fields.serviceManager,
-				logger:         keptncommon.NewLogger("", "", ""),
 				EventSender:    tt.fields.EventSender,
 			}
 
@@ -272,7 +271,6 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 
 			sh := &ServiceHandler{
 				serviceManager: tt.fields.serviceManager,
-				logger:         keptncommon.NewLogger("", "", ""),
 				EventSender:    tt.fields.EventSender,
 			}
 
@@ -425,7 +423,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte{}))
 
-			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender, keptncommon.NewLogger("", "", ""))
+			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender)
 
 			sh.GetService(c)
 
@@ -568,7 +566,7 @@ func TestServiceHandler_GetServices(t *testing.T) {
 
 			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer([]byte{}))
 
-			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender, keptncommon.NewLogger("", "", ""))
+			sh := NewServiceHandler(tt.fields.serviceManager, tt.fields.EventSender)
 
 			sh.GetServices(c)
 

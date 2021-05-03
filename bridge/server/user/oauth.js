@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const sessionAuthentication = require('./session').setAuthenticatedPrincipal;
+const sessionAuthentication = require('./session').setAuthenticatedSession;
 const removeSession = require('./session').removeSession;
+const isAuthenticated = require('./session').isAuthenticated;
+const getLogoutHint = require('./session').getLogoutHint;
 
 const AUTHORIZATION = 'authorization';
 const AUTH_URL = 'authorization_url';
 const TOKEN_DECISION = 'token_decision';
+const USER = 'user';
+const LOGOUT_HINT = 'logout_hint';
+const RP_LOGOUT = 'rp_logout';
+const LOGOUT_URL = 'logout_path';
 
 const prefixPath = process.env.PREFIX_PATH;
 
@@ -58,6 +64,13 @@ module.exports = (async () => {
 
   console.log(`Using authorization endpoint : ${authorizationEndpoint}.`);
   console.log(`Using token decision endpoint : ${tokenDecisionEndpoint}.`);
+
+  let logoutEndpoint;
+
+  if (discoveryResp.data.hasOwnProperty(RP_LOGOUT)) {
+    logoutEndpoint = discoveryResp.data[RP_LOGOUT];
+    console.log(`RP logout is supported by OAuth service. Using logout endpoint : ${logoutEndpoint}.`);
+  }
 
   /**
    * Router level middleware for login
@@ -129,16 +142,58 @@ module.exports = (async () => {
       }
     }
 
-    sessionAuthentication(req, tokenDecision.data['user']);
+    sessionAuthentication(req, tokenDecision.data[USER], tokenDecision.data[LOGOUT_HINT]);
     return redirectToRoot(res);
   });
 
   /**
    * Router level middleware for logout
    */
-  router.get('/logout', (req, res) => {
+  router.get('/logout', async (req, res) => {
+    if (!isAuthenticated(req)) {
+      // Session is not authenticated, redirect to root
+      return redirectToRoot(res);
+    }
+
+    if (!logoutEndpoint) {
+      removeSession(req);
+      return redirectToRoot(res);
+    }
+
+    const hint = getLogoutHint(req);
     removeSession(req);
-    return redirectToRoot(res);
+
+    let logoutResponse;
+
+    try {
+      logoutResponse = await axios({
+        method: "post",
+        url: logoutEndpoint,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {
+          logout_hint: hint
+        }
+      });
+    } catch (err) {
+      console.log(`Error while handling the RP logout. Cause : ${err.message}`);
+      return res.status(500).send({
+        error: 'Logout was successfully handled.' +
+          ' However, there was an error while redirecting you to the correct endpoint.'
+      });
+    }
+
+    if (!logoutResponse.data.hasOwnProperty(LOGOUT_URL)) {
+      console.log('Invalid response from rp_logout.');
+      return res.status(500).send({
+        error: 'Logout was successfully handled.' +
+          ' However, there was an error while redirecting you to the correct endpoint.'
+      });
+    }
+
+    return res.redirect(logoutResponse.data[LOGOUT_URL]);
+
   });
 
   return router;

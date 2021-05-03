@@ -96,6 +96,7 @@ import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-ite
 import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
+import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -149,6 +150,7 @@ registerLocaleData(localeEn, 'en');
     KtbSubscriptionItemComponent,
     KtbDeploymentListComponent,
     KtbServiceDetailsComponent,
+    KtbDeploymentStageTimelineComponent,
   ],
   imports: [
     BrowserModule,

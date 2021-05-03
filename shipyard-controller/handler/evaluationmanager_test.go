@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -161,7 +160,6 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 	type fields struct {
 		EventSender *keptnfake.EventSender
 		ServiceAPI  db.ServicesDbOperations
-		Logger      keptn.LoggerInterface
 	}
 	type args struct {
 		project string
@@ -188,7 +186,6 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
-				Logger: keptn.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -228,7 +225,6 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
-				Logger: keptn.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -258,7 +254,6 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				ServiceAPI: &db_mock.ServicesDbOperationsMock{GetServiceFunc: func(project string, stage string, service string) (*models.ExpandedService, error) {
 					return &models.ExpandedService{}, nil
 				}},
-				Logger: keptn.NewLogger("", "", ""),
 			},
 			args: args{
 				project: "test-project",
@@ -281,7 +276,6 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 			em, err := NewEvaluationManager(
 				tt.fields.EventSender,
 				tt.fields.ServiceAPI,
-				tt.fields.Logger,
 			)
 			if err != nil {
 				t.Error(err.Error())

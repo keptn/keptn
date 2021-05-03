@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -9,10 +10,11 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"log"
-	"os"
+	"strconv"
+	"time"
 )
 
 // @title Control Plane API
@@ -30,15 +32,27 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @BasePath /v1
+
+const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
+const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
+const envVarEventDispatchIntervalSecDefault = "10"
+
 func main() {
 
-	if os.Getenv("GIN_MODE") == "release" {
-		docs.SwaggerInfo.Version = os.Getenv("version")
+	log.SetLevel(log.InfoLevel)
+
+	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
+		docs.SwaggerInfo.Version = osutils.GetOSEnv("version")
 		docs.SwaggerInfo.BasePath = "/api/shipyard-controller/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
-	csEndpoint, err := keptncommon.GetServiceEndpoint("CONFIGURATION_SERVICE")
+	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))
+	if err != nil {
+		log.Fatalf("Unexpected value of EVENT_DISPATCH_INTERVAL_SEC environment variable. Need to be a number")
+	}
+
+	csEndpoint, err := keptncommon.GetServiceEndpoint(envVarConfigurationSvcEndpoint)
 	if err != nil {
 		log.Fatalf("could not get configuration-service URL: %s", err.Error())
 	}
@@ -53,33 +67,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger := keptncommon.NewLogger("", "", "shipyard-controller")
-
 	projectManager := handler.NewProjectManager(
 		common.NewGitConfigurationStore(csEndpoint.String()),
 		createSecretStore(kubeAPI),
-		createMaterializedView(logger),
-		createTaskSequenceRepo(logger),
-		createEventsRepo(logger))
+		createMaterializedView(),
+		createTaskSequenceRepo(),
+		createEventsRepo())
 
 	serviceManager := handler.NewServiceManager(
-		createMaterializedView(logger),
+		createMaterializedView(),
 		common.NewGitConfigurationStore(csEndpoint.String()),
-		logger)
+	)
 
-	stageManager := handler.NewStageManager(createMaterializedView(logger), logger)
+	stageManager := handler.NewStageManager(createMaterializedView())
+
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	shipyardController := handler.GetShipyardControllerInstance(eventDispatcher)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
-	projectService := handler.NewProjectHandler(projectManager, eventSender, logger)
+	projectService := handler.NewProjectHandler(projectManager, eventSender)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
-	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender, logger)
+	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender)
 	serviceController := controller.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
-	eventHandler := handler.NewEventHandler()
+	eventHandler := handler.NewEventHandler(shipyardController)
 	eventController := controller.NewEventController(eventHandler)
 	eventController.Inject(apiV1)
 
@@ -87,7 +102,7 @@ func main() {
 	stageController := controller.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
-	evaluationManager, err := handler.NewEvaluationManager(eventSender, createMaterializedView(logger), logger)
+	evaluationManager, err := handler.NewEvaluationManager(eventSender, createMaterializedView())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,25 +114,28 @@ func main() {
 	engine.Run()
 }
 
-func createMaterializedView(logger *keptncommon.Logger) *db.ProjectsMaterializedView {
+func createMaterializedView() *db.ProjectsMaterializedView {
 	projectesMaterializedView := &db.ProjectsMaterializedView{
-		ProjectRepo:     createProjectRepo(logger),
-		EventsRetriever: createEventsRepo(logger),
-		Logger:          logger,
+		ProjectRepo:     createProjectRepo(),
+		EventsRetriever: createEventsRepo(),
 	}
 	return projectesMaterializedView
 }
 
-func createProjectRepo(logger *keptncommon.Logger) *db.MongoDBProjectsRepo {
-	return &db.MongoDBProjectsRepo{Logger: logger}
+func createProjectRepo() *db.MongoDBProjectsRepo {
+	return &db.MongoDBProjectsRepo{}
 }
 
-func createEventsRepo(logger *keptncommon.Logger) *db.MongoDBEventsRepo {
-	return &db.MongoDBEventsRepo{Logger: logger}
+func createEventsRepo() *db.MongoDBEventsRepo {
+	return &db.MongoDBEventsRepo{}
 }
 
-func createTaskSequenceRepo(logger *keptncommon.Logger) *db.TaskSequenceMongoDBRepo {
-	return &db.TaskSequenceMongoDBRepo{Logger: logger}
+func createEventQueueRepo() *db.MongoDBEventQueueRepo {
+	return &db.MongoDBEventQueueRepo{}
+}
+
+func createTaskSequenceRepo() *db.TaskSequenceMongoDBRepo {
+	return &db.TaskSequenceMongoDBRepo{}
 }
 
 func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {

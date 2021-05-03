@@ -2,7 +2,7 @@
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
-        <img class="mt-2" src="assets/keptn_logo.png" />
+        <img alt="Keptn logo" class="mt-2" src="assets/keptn_logo.png" />
       </dt-empty-state-item-img>
       <ng-container [ngSwitch]="error">
         <ng-container *ngSwitchCase="'project'">
@@ -31,13 +31,29 @@
   </div>
 </div>
 <div class="project-board" fxLayout="row" *ngIf="project$ | async as project">
-  <dt-menu aria-label="Default Menu Example" class="dt-default-menu-example" fxFlex="0 0 150px">
-    <dt-menu-group label="">
-      <a (click)="selectView('environment', project.projectName)" [class.active]="view === 'environment'" dtMenuItem>Environment</a>
-      <a (click)="redirectView('service', project.projectName)" [class.active]="view === 'service'" dtMenuItem>Services</a>
-      <a (click)="redirectView('sequence', project.projectName)" [class.active]="view === 'sequence'" dtMenuItem>Sequences</a>
-      <a (click)="redirectView('integration', project.projectName)" [class.active]="view === 'integration'" dtMenuItem>Integration</a>
-      <a (click)="redirectView('ff-uniform', project.projectName)" [class.active]="view === 'ff-uniform'" *ngIf="view === 'ff-uniform'" dtMenuItem>Uniform</a>
+  <dt-menu aria-label="Keptn Menu" class="dt-default-menu-example" fxFlex="0 0 50px">
+    <dt-menu-group>
+      <ng-template #overlay let-data><span>{{data.text}}</span></ng-template>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" (click)="selectView('environment', project.projectName)" [class.active]="view === 'environment'">
+        <dt-icon name="environment"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" (click)="redirectView('service', project.projectName)" [class.active]="view === 'service'">
+        <dt-icon name="services"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" (click)="redirectView('sequence', project.projectName)" [class.active]="view === 'sequence'">
+        <dt-icon name="hops"></dt-icon>
+      </button>
+
+      <button *ngIf="view === 'ff-uniform'" dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" (click)="redirectView('ff-uniform', project.projectName)" [class.active]="view === 'ff-uniform'">
+        <dt-icon name="infrastructure"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" (click)="redirectView('integration', project.projectName)" [class.active]="view === 'integration'">
+        <dt-icon name="plugin-connection"></dt-icon>
+      </button>
     </dt-menu-group>
   </dt-menu>
   <ng-container [ngSwitch]="view">
