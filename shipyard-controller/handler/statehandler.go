@@ -23,7 +23,7 @@ func NewStateHandler(stateRepo db.StateRepo) *StateHandler {
 // GetState godoc
 // @Summary Get task sequence states
 // @Description Get task sequence states
-// @Tags state
+// @Tags State
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json

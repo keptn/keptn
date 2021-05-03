@@ -18,6 +18,10 @@ type ISequenceTaskFinishedHook interface {
 	OnSequenceTaskFinished(models.Event)
 }
 
+type ISubSequenceFinishedHook interface {
+	OnSubSequenceFinished(event models.Event)
+}
+
 type ISequenceFinishedHook interface {
 	OnSequenceFinished(event models.Event)
 }

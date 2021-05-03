@@ -60,6 +60,13 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.E
 		return
 	}
 
+	if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
+		if err := smv.updateImageOfSequence(event, state); err != nil {
+			log.Errorf("could not update deployed image of sequence state: %s", err.Error())
+			return
+		}
+	}
+
 	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
@@ -89,12 +96,19 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 			log.Errorf("could not update evaluation of sequence state: %s", err.Error())
 			return
 		}
-	} else if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-		if err := smv.updateImageOfSequence(event, state); err != nil {
-			log.Errorf("could not update deployed image of sequence state: %s", err.Error())
-			return
-		}
 	}
+	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
+		log.Errorf("could not update sequence state: %s", err.Error())
+	}
+}
+
+func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Event) {
+	state, err := smv.updateLastEventOfSequence(event)
+	if err != nil {
+		log.Errorf("could not update sequence state: %s", err.Error())
+		return
+	}
+
 	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
@@ -137,7 +151,7 @@ func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event model
 	}
 	for index, stage := range state.Stages {
 		if stage.Name == eventScope.Stage {
-			state.Stages[index].LatestEvaluation = models.SequenceStateEvaluation{
+			state.Stages[index].LatestEvaluation = &models.SequenceStateEvaluation{
 				Result: string(eventScope.Result),
 				Score:  evaluationFinishedEventData.Evaluation.Score,
 			}
@@ -184,7 +198,12 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 
 	state := states.States[0]
 
-	newLastEvent := models.SequenceStateEvent{
+	eventData := &keptnv2.EventData{}
+	if err := keptnv2.Decode(event.Data, eventData); err != nil {
+		return models.SequenceState{}, fmt.Errorf("could not parse event data: %s", err.Error())
+	}
+
+	newLastEvent := &models.SequenceStateEvent{
 		Type: *event.Type,
 		ID:   event.ID,
 		Time: timeutils.GetKeptnTimeStamp(time.Now()),
@@ -195,13 +214,21 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		if stage.Name == eventScope.Stage {
 			stageFound = true
 			state.Stages[index].LatestEvent = newLastEvent
+
+			if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
+				state.Stages[index].LatestFailedEvent = newLastEvent
+			}
 		}
 	}
 	if !stageFound {
-		state.Stages = append(state.Stages, models.SequenceStateStage{
+		newStage := models.SequenceStateStage{
 			Name:        eventScope.Stage,
 			LatestEvent: newLastEvent,
-		})
+		}
+		if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
+			newStage.LatestFailedEvent = newLastEvent
+		}
+		state.Stages = append(state.Stages, newStage)
 	}
 	return state, nil
 }

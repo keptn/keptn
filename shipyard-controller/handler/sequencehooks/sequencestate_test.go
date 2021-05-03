@@ -138,15 +138,15 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 
 func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 	tests := []struct {
-		name                        string
-		fields                      SequenceStateMVTestFields
-		eventId                     string
-		eventData                   keptncommon.EventProperties
-		keptnContext                string
-		eventType                   string
-		expectUpdateStateToBeCalled bool
-		expectEvaluationToBeUpdated bool
-		expectImageToBeUpdated      bool
+		name                         string
+		fields                       SequenceStateMVTestFields
+		eventId                      string
+		eventData                    keptncommon.EventProperties
+		keptnContext                 string
+		eventType                    string
+		expectUpdateStateToBeCalled  bool
+		expectEvaluationToBeUpdated  bool
+		expectFailedEventToBeUpdated bool
 	}{
 		{
 			name: "update evaluation",
@@ -189,7 +189,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			expectEvaluationToBeUpdated: true,
 		},
 		{
-			name: "update image",
+			name: "failed task",
 			fields: SequenceStateMVTestFields{
 				SequenceStateRepo: &db_mock.StateRepoMock{
 					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
@@ -215,16 +215,13 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			keptnContext:                "my-context",
 			eventType:                   keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
 			eventId:                     "my-id",
-			eventData: &keptnv2.DeploymentTriggeredEventData{
-				EventData: keptnv2.EventData{
-					Project: "my-project",
-					Stage:   "my-state",
-					Service: "my-service",
-					Result:  keptnv2.ResultPass,
-				},
-				ConfigurationChange: keptnv2.ConfigurationChange{Values: map[string]interface{}{"image": "my-image"}},
+			eventData: &keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-state",
+				Service: "my-service",
+				Result:  keptnv2.ResultFailed,
 			},
-			expectImageToBeUpdated: true,
+			expectFailedEventToBeUpdated: true,
 		},
 	}
 	for _, tt := range tests {
@@ -254,10 +251,10 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 					evaluationFinishedData := tt.eventData.(*keptnv2.EvaluationFinishedEventData)
 					require.Equal(t, evaluationFinishedData.Evaluation.Score, call.State.Stages[0].LatestEvaluation.Score)
 					require.Equal(t, string(evaluationFinishedData.Result), call.State.Stages[0].LatestEvaluation.Result)
-				} else if tt.expectImageToBeUpdated {
-					require.NotEmpty(t, 1, call.State.Stages[0].Image)
-					deploymentData := tt.eventData.(*keptnv2.DeploymentTriggeredEventData)
-					require.Equal(t, deploymentData.ConfigurationChange.Values["image"], call.State.Stages[0].Image)
+				}
+				if tt.expectFailedEventToBeUpdated {
+					require.NotEmpty(t, call.State.Stages[0].LatestFailedEvent)
+					require.Equal(t, tt.eventId, call.State.Stages[0].LatestFailedEvent.ID)
 				}
 
 			} else {
@@ -294,6 +291,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 		name                        string
 		fields                      SequenceStateMVTestFields
 		expectUpdateStateToBeCalled bool
+		expectImageToBeUpdated      bool
 		project                     string
 		service                     string
 		stage                       string
@@ -348,7 +346,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 									Stages: []models.SequenceStateStage{
 										{
 											Name: "my-stage",
-											LatestEvent: models.SequenceStateEvent{
+											LatestEvent: &models.SequenceStateEvent{
 												Type: "my-old-event-type",
 												ID:   "my-old-event-id",
 											},
@@ -415,6 +413,18 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 				Type:           &tt.eventType,
 			}
 
+			if tt.expectImageToBeUpdated {
+				event.Data = &keptnv2.DeploymentTriggeredEventData{
+					EventData: keptnv2.EventData{
+						Project: tt.project,
+						Stage:   tt.stage,
+						Service: tt.service,
+						Result:  keptnv2.ResultPass,
+					},
+					ConfigurationChange: keptnv2.ConfigurationChange{Values: map[string]interface{}{"image": "my-image"}},
+				}
+			}
+
 			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 
 			smv.OnSequenceTaskTriggered(event)
@@ -427,6 +437,12 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 				require.Equal(t, tt.keptnContext, call.State.Shkeptncontext)
 				require.Equal(t, tt.eventType, call.State.Stages[0].LatestEvent.Type)
 				require.Equal(t, tt.eventId, call.State.Stages[0].LatestEvent.ID)
+
+				if tt.expectImageToBeUpdated {
+					require.NotEmpty(t, 1, call.State.Stages[0].Image)
+					deploymentData := event.Data.(*keptnv2.DeploymentTriggeredEventData)
+					require.Equal(t, deploymentData.ConfigurationChange.Values["image"], call.State.Stages[0].Image)
+				}
 
 			} else {
 				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.UpdateStateCalls()))

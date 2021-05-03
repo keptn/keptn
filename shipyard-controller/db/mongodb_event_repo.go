@@ -144,6 +144,7 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 
 	// not the ideal place to delete the remediation collection, but the management of remediations will likely move to the shipyard controller anyway
 	remediationCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + remediationCollectionNameSuffix)
+	sequenceStateCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + taskSequenceStateCollectionSuffix)
 
 	if err := mdbrepo.deleteCollection(triggeredCollection); err != nil {
 		// log the error but continue
@@ -158,6 +159,10 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 		log.Error(err.Error())
 	}
 	if err := mdbrepo.deleteCollection(remediationCollection); err != nil {
+		// log the error but continue
+		log.Error(err.Error())
+	}
+	if err := mdbrepo.deleteCollection(sequenceStateCollection); err != nil {
 		// log the error but continue
 		log.Error(err.Error())
 	}

@@ -30,17 +30,17 @@ type SequenceStateEvaluation struct {
 }
 
 type SequenceStateEvent struct {
-	Type   string `json:"type" bson:"type"`
-	ID     string `json:"id" bson:"id"`
-	Time   string `json:"time" bson:"time"`
-	Result string `json:"result" bson:"result"`
+	Type string `json:"type" bson:"type"`
+	ID   string `json:"id" bson:"id"`
+	Time string `json:"time" bson:"time"`
 }
 
 type SequenceStateStage struct {
-	Name             string                  `json:"name" bson:"name"`
-	Image            string                  `json:"image" bson:"image"`
-	LatestEvaluation SequenceStateEvaluation `json:"latestEvaluation" bson:"latestEvaluation"`
-	LatestEvent      SequenceStateEvent      `json:"latestEvent" bson:"latestEvent"`
+	Name              string                   `json:"name" bson:"name"`
+	Image             string                   `json:"image,omitempty" bson:"image"`
+	LatestEvaluation  *SequenceStateEvaluation `json:"latestEvaluation,omitempty" bson:"latestEvaluation"`
+	LatestEvent       *SequenceStateEvent      `json:"latestEvent,omitempty" bson:"latestEvent"`
+	LatestFailedEvent *SequenceStateEvent      `json:"latestFailedEvent,omitempty" bson:"latestFailedEvent"`
 }
 
 type SequenceState struct {

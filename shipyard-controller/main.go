@@ -120,6 +120,7 @@ func main() {
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
+	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 
 	engine.Static("/swagger-ui", "./swagger-ui")

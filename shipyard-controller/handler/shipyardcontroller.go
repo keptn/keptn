@@ -39,6 +39,7 @@ type shipyardController struct {
 	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
 	sequenceTaskStartedHooks   []sequencehooks.ISequenceTaskStartedHook
 	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook
+	subSequenceFinishedHooks   []sequencehooks.ISubSequenceFinishedHook
 	sequenceFinishedHooks      []sequencehooks.ISequenceFinishedHook
 }
 
@@ -75,37 +76,47 @@ func (sc *shipyardController) AddSequenceTaskFinishedHook(hook sequencehooks.ISe
 	sc.sequenceTaskFinishedHooks = append(sc.sequenceTaskFinishedHooks, hook)
 }
 
+func (sc *shipyardController) AddSubSequenceFinishedHook(hook sequencehooks.ISubSequenceFinishedHook) {
+	sc.subSequenceFinishedHooks = append(sc.subSequenceFinishedHooks, hook)
+}
+
 func (sc *shipyardController) AddSequenceFinishedHook(hook sequencehooks.ISequenceFinishedHook) {
 	sc.sequenceFinishedHooks = append(sc.sequenceFinishedHooks, hook)
 }
 
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
 	for _, hook := range sc.sequenceTriggeredHooks {
-		go hook.OnSequenceTriggered(event)
+		hook.OnSequenceTriggered(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTaskStarted(event models.Event) {
 	for _, hook := range sc.sequenceTaskStartedHooks {
-		go hook.OnSequenceTaskStarted(event)
+		hook.OnSequenceTaskStarted(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTaskTriggered(event models.Event) {
 	for _, hook := range sc.sequenceTaskTriggeredHooks {
-		go hook.OnSequenceTaskTriggered(event)
+		hook.OnSequenceTaskTriggered(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTaskFinished(event models.Event) {
 	for _, hook := range sc.sequenceTaskFinishedHooks {
-		go hook.OnSequenceTaskFinished(event)
+		hook.OnSequenceTaskFinished(event)
+	}
+}
+
+func (sc *shipyardController) onSubSequenceFinished(event models.Event) {
+	for _, hook := range sc.subSequenceFinishedHooks {
+		hook.OnSubSequenceFinished(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceFinished(event models.Event) {
 	for _, hook := range sc.sequenceFinishedHooks {
-		go hook.OnSequenceFinished(event)
+		hook.OnSequenceFinished(event)
 	}
 }
 
@@ -471,10 +482,10 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *models.EventScope,
 		// task sequence completed -> send .finished event and check if a new task sequence should be triggered by the completion
 		err = sc.completeTaskSequence(eventScope, taskSequence.Name, inputEvent.ID)
 		if err != nil {
-			log.Errorf("Could not complete task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext)
+			log.Errorf("Could not complete task sequence %s.%s with KeptnContext %s: %s", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext, err.Error())
 			return err
 		}
-		sc.onSequenceFinished(*inputEvent)
+
 		return sc.triggerNextTaskSequences(eventScope, taskSequence, shipyard, eventHistory, inputEvent)
 	}
 	return sc.sendTaskTriggeredEvent(eventScope, taskSequence.Name, *task, eventHistory)
@@ -512,6 +523,9 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope *models.Ev
 func (sc *shipyardController) triggerNextTaskSequences(eventScope *models.EventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, eventHistory []interface{}, inputEvent *models.Event) error {
 	nextSequences := getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
 
+	if len(nextSequences) == 0 {
+		sc.onSequenceFinished(*inputEvent)
+	}
 	for _, sequence := range nextSequences {
 		newScope := &models.EventScope{
 			EventData: keptnv2.EventData{
@@ -714,12 +728,17 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 	eventType := eventScope.Stage + "." + taskSequenceName
 
 	event := cloudevents.NewEvent()
+	event.SetID(uuid.NewString())
 	event.SetType(keptnv2.GetFinishedEventType(eventType))
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
 	event.SetExtension("shkeptncontext", eventScope.KeptnContext)
 	event.SetExtension("triggeredid", triggeredID)
 	event.SetData(cloudevents.ApplicationJSON, eventScope.EventData)
+
+	if toEvent, err := models.ConvertToEvent(event); err == nil {
+		sc.onSubSequenceFinished(*toEvent)
+	}
 
 	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event})
 }
