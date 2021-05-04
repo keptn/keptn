@@ -9,12 +9,14 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 const sequenceStateShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
@@ -95,18 +97,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
-	states := &scmodels.SequenceStates{}
-
-	resp, err := apiGETRequest("/controlPlane/v1/state/" + projectName)
-
-	require.Nil(t, err)
-
-	err = resp.ToJSON(states)
-	require.Nil(t, err)
-	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
-	require.Empty(t, states.States)
-	require.Empty(t, states.NextPageKey)
-	require.Empty(t, states.TotalCount)
+	states, resp, err := getState(projectName)
 
 	// send a delivery.triggered event
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
@@ -132,6 +123,53 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	body := resp.String()
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 	require.NotEmpty(t, body)
+
+	// verify state
+
+	assert.Eventually(t, func() bool {
+		states, resp, err = getState(projectName)
+		if err != nil {
+			return false
+			return false
+		}
+
+		if states.TotalCount != 1 {
+			return false
+			return false
+		}
+
+		if len(states.States) != 1 {
+			return false
+		}
+		require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+		require.Empty(t, states.States)
+		require.Empty(t, states.NextPageKey)
+		require.Empty(t, states.TotalCount)
+
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+}
+
+func verifyStateWithRetry(projectName string, retries int, verify func(resp *req.Resp, states *scmodels.SequenceStates, err error) error) error {
+	for i := 0; i < retries; i = i + 1 {
+		states, resp, err := getState(projectName)
+
+		if verifyErr := verify(resp, states, err); verifyErr == nil {
+			return nil
+		}
+		<-time.After(5 * time.Second)
+	}
+	return errors.New("could not verify sequence state")
+}
+
+func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
+	states := &scmodels.SequenceStates{}
+
+	resp, err := apiGETRequest("/controlPlane/v1/state/" + projectName)
+	err = resp.ToJSON(states)
+
+	return states, resp, err
 }
 
 func apiGETRequest(path string) (*req.Resp, error) {
