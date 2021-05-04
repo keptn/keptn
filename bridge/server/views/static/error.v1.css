@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  margin: 24px;
+  font-family: monospace;
+}
+
+.image {
+  margin: 16px;
+}
+
+.image img {
+  height: 120px;
+}
+
+.text {
+  margin: 16px;
+}
+
+.location {
+  padding: 16px 0;
+  font-weight: bold;
+}
+
+
