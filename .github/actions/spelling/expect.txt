@@ -368,10 +368,12 @@ IProject
 iptables
 IRemediation
 ISecret
+ISequence
 IService
 IShipyard
 issuecomment
 istage
+IState
 istio
 istioctl
 itf
@@ -705,6 +707,7 @@ selfmon
 selfmonitoring
 selfservice
 semver
+sequencehooks
 serr
 serrors
 serviceaccount
@@ -734,6 +737,7 @@ slackbot
 sli
 slo
 Smode
+smv
 sni
 sockshop
 sockshot
@@ -752,6 +756,7 @@ stagemanager
 stakeholders
 standalone
 startedat
+staterepo
 stdduration
 Stderr
 stdin
