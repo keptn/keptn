@@ -12,6 +12,7 @@ const routes: Routes = [
   {path: 'project/:projectName', component: ProjectBoardComponent},
   {path: 'project/:projectName/ff-uniform', component: ProjectBoardComponent},
   {path: 'project/:projectName/integration', component: ProjectBoardComponent},
+  {path: 'project/:projectName/settings', component: ProjectBoardComponent},
   {path: 'project/:projectName/service', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext', component: ProjectBoardComponent},

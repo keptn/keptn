@@ -172,6 +172,16 @@ export class ApiService {
       .get<EventResult>(url);
   }
 
+  public sendGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string) {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.put(url, {
+      gitRemoteURL: gitUrl,
+      gitToken: gitToken,
+      gitUser: gitUser,
+      name: projectName
+    });
+  }
+
   public sendApprovalEvent(approval: Trace, approve: boolean, eventType: EventTypes, source: string ) {
     const url = `${this._baseUrl}/v1/event`;
 
