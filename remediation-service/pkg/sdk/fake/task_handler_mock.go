@@ -18,7 +18,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 //
 // 		// make and configure a mocked sdk.TaskHandler
 // 		mockedTaskHandler := &TaskHandlerMock{
-// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, error) {
+// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
 // 				panic("mock out the Execute method")
 // 			},
 // 			GetDataFunc: func() interface{} {
@@ -32,7 +32,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 // 	}
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, error)
+	ExecuteFunc func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error)
 
 	// GetDataFunc mocks the GetData method.
 	GetDataFunc func() interface{}
@@ -57,7 +57,7 @@ type TaskHandlerMock struct {
 }
 
 // Execute calls ExecuteFunc.
-func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but TaskHandler.Execute was just called")
 	}

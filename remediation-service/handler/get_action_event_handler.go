@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/remediation-service/pkg/sdk"
 )
 
@@ -16,25 +17,25 @@ func NewGetActionEventHandler() *GetActionEventHandler {
 	return &GetActionEventHandler{GetActionTriggeredData: &v0_2_0.GetActionTriggeredEventData{}}
 }
 
-func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, error) {
+func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
 	data := ce.(*v0_2_0.GetActionTriggeredEventData)
 
 	// get remediation.yaml resource
 	resource, err := g.getRemediationResource(k, data)
 	if err != nil {
-		return context, err
+		return context, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "unable to get remediation.yaml"}
 	}
 
 	// parse remediation.yaml resource
 	remediation, err := ParseRemediationResource(resource)
 	if err != nil {
-		return context, err
+		return context, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "unable to parse remediation.yaml"}
 	}
 
 	// determine next action
 	action, err := GetNextAction(remediation, data.ProblemDetails, data.ActionIndex)
 	if err != nil {
-		return context, err
+		return context, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "unable to get next action from remediation.yaml"}
 	}
 
 	// set finished data

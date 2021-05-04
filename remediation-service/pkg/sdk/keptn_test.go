@@ -13,7 +13,7 @@ import (
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 
 	taskHandler := &fake.TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, error) {
+	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
 		return context, nil
 	}
 	taskHandler.GetDataFunc = func() interface{} {

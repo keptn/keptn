@@ -7,7 +7,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -22,7 +22,10 @@ type ResourceHandler interface {
 }
 
 type Error struct {
-	Message string
+	StatusType keptnv2.StatusType
+	ResultType keptnv2.ResultType
+	Message    string
+	Err        error
 }
 
 type Context struct {
@@ -41,7 +44,7 @@ type KeptnEventData struct {
 
 //go:generate moq  -pkg fake -out ./fake/task_handler_mock.go . TaskHandler
 type TaskHandler interface {
-	Execute(keptnHandle IKeptn, ce interface{}, context Context) (Context, error)
+	Execute(keptnHandle IKeptn, ce interface{}, context Context) (Context, *Error)
 	GetData() interface{}
 }
 
@@ -101,12 +104,13 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 	if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
 		data := handler.TaskHandler.GetData()
 		if err := event.DataAs(&data); err != nil {
-			k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, err))
+			k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed}))
 		}
 		k.send(k.createStartedEventForTriggeredEvent(event))
 
 		newContext, err := handler.TaskHandler.Execute(k, data, handler.Context)
 		if err != nil {
+			log.Errorf("error during task execution %v", err.Err)
 			k.send(k.createErrorFinishedEventForTriggeredEvent(event, newContext.FinishedData, err))
 			return
 		}
@@ -151,17 +155,17 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 
 }
 
-func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err error) cloudevents.Event {
+func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
 	commonEventData := keptnv2.EventData{}
 	if eventData != nil {
 		keptnv2.Decode(eventData, &commonEventData)
-		commonEventData.Status = keptnv2.StatusErrored
-		commonEventData.Result = keptnv2.ResultFailed
-		commonEventData.Message = err.Error()
+		commonEventData.Status = err.StatusType
+		commonEventData.Result = err.ResultType
+		commonEventData.Message = err.Message
 	} else {
-		commonEventData.Status = keptnv2.StatusErrored
-		commonEventData.Result = keptnv2.ResultFailed
-		commonEventData.Message = err.Error()
+		commonEventData.Status = err.StatusType
+		commonEventData.Result = err.ResultType
+		commonEventData.Message = err.Message
 	}
 
 	finishedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".finished"
