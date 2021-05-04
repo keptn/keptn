@@ -46,7 +46,7 @@ func TestStateHandler_GetState(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("POST", "/state/my-project", nil),
+			request:    httptest.NewRequest("GET", "/state/my-project", nil),
 			wantStatus: http.StatusOK,
 		},
 		{
@@ -58,7 +58,7 @@ func TestStateHandler_GetState(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("POST", "/state/my-project", nil),
+			request:    httptest.NewRequest("GET", "/state/my-project", nil),
 			wantStatus: http.StatusInternalServerError,
 		},
 	}
@@ -67,14 +67,11 @@ func TestStateHandler_GetState(t *testing.T) {
 
 			sh := NewStateHandler(tt.fields.StateRepo)
 
-			handler := func(w http.ResponseWriter, r *http.Request) {
-				c, _ := gin.CreateTestContext(w)
-				c.Request = r
+			router := gin.Default()
+			router.GET("/state/:project", func(c *gin.Context) {
 				sh.GetState(c)
-			}
-
-			w := httptest.NewRecorder()
-			handler(w, tt.request)
+			})
+			w := performRequest(router, tt.request)
 
 			require.Equal(t, tt.wantStatus, w.Code)
 
@@ -82,4 +79,10 @@ func TestStateHandler_GetState(t *testing.T) {
 			require.Equal(t, "my-project", tt.fields.StateRepo.FindStatesCalls()[0].Filter.Project)
 		})
 	}
+}
+
+func performRequest(r http.Handler, request *http.Request) *httptest.ResponseRecorder {
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, request)
+	return w
 }
