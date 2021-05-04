@@ -55,6 +55,11 @@
         <dt-icon name="plugin-connection"></dt-icon>
       </button>
     </dt-menu-group>
+    <dt-menu-group class="bottom-menu">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open settings view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Settings'}}" (click)="redirectView('settings', project.projectName)" [class.active]="view === 'settings'">
+        <dt-icon name="options-menu"></dt-icon>
+      </button>
+    </dt-menu-group>
   </dt-menu>
   <ng-container [ngSwitch]="view">
     <ktb-environment-view *ngSwitchCase="'environment'" fxFlex="calc(100% - 150px)"></ktb-environment-view>
@@ -62,5 +67,6 @@
     <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="calc(100% - 150px)"></ktb-sequence-view>
     <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="calc(100% - 150px)"></ktb-integration-view>
     <ktb-uniform-view *ngSwitchCase="'ff-uniform'" fxFlex="calc(100% - 150px)"></ktb-uniform-view>
+    <ktb-settings-view *ngSwitchCase="'settings'" fxFlex="calc(100% - 150px)"></ktb-settings-view>
   </ng-container>
 </div>
