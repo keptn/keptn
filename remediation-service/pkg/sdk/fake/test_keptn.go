@@ -55,6 +55,6 @@ func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
 	return fakeKeptn
 }
 
-func (f FakeKeptn) Start() {
-	f.Keptn.Start()
+func (f *FakeKeptn) Start() error {
+	return f.Keptn.Start()
 }

@@ -21,6 +21,10 @@ type ResourceHandler interface {
 	GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error)
 }
 
+type Error struct {
+	Message string
+}
+
 type Context struct {
 	FinishedData interface{}
 }
@@ -50,7 +54,7 @@ func WithHandler(handler TaskHandler, eventType string) KeptnOption {
 }
 
 type IKeptn interface {
-	Start()
+	Start() error
 	GetResourceHandler() ResourceHandler
 	GetTaskRegistry() *TaskRegistry
 }
@@ -64,6 +68,7 @@ type Keptn struct {
 }
 
 func NewKeptn(ceClient cloudevents.Client, source string, opts ...KeptnOption) *Keptn {
+
 	keptn := &Keptn{
 		EventSender:     NewHTTPEventSender(ceClient),
 		EventReceiver:   ceClient,
@@ -77,11 +82,11 @@ func NewKeptn(ceClient cloudevents.Client, source string, opts ...KeptnOption) *
 	return keptn
 }
 
-func (k *Keptn) Start() {
+func (k *Keptn) Start() error {
+	go api.RunHealthEndpoint("10999")
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
-	err := k.EventReceiver.StartReceiver(ctx, k.gotEvent)
-	_ = err
+	return k.EventReceiver.StartReceiver(ctx, k.gotEvent)
 }
 
 func (k *Keptn) GetResourceHandler() ResourceHandler {
@@ -96,13 +101,13 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 	if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
 		data := handler.TaskHandler.GetData()
 		if err := event.DataAs(&data); err != nil {
-			k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil))
+			k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, err))
 		}
 		k.send(k.createStartedEventForTriggeredEvent(event))
 
 		newContext, err := handler.TaskHandler.Execute(k, data, handler.Context)
 		if err != nil {
-			k.send(k.createErrorFinishedEventForTriggeredEvent(event, newContext.FinishedData))
+			k.send(k.createErrorFinishedEventForTriggeredEvent(event, newContext.FinishedData, err))
 			return
 		}
 		k.send(k.createFinishedEventForTriggeredEvent(event, newContext.FinishedData))
@@ -146,17 +151,17 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 
 }
 
-func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}) cloudevents.Event {
+func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err error) cloudevents.Event {
 	commonEventData := keptnv2.EventData{}
 	if eventData != nil {
 		keptnv2.Decode(eventData, &commonEventData)
 		commonEventData.Status = keptnv2.StatusErrored
 		commonEventData.Result = keptnv2.ResultFailed
-		commonEventData.Message = "MSG_FAIL"
+		commonEventData.Message = err.Error()
 	} else {
 		commonEventData.Status = keptnv2.StatusErrored
 		commonEventData.Result = keptnv2.ResultFailed
-		commonEventData.Message = "no valid event data"
+		commonEventData.Message = err.Error()
 	}
 
 	finishedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".finished"

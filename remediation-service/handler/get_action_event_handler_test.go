@@ -14,6 +14,17 @@ import (
 	"testing"
 )
 
+func newGetActionTriggeredEvent(filename string) cloudevents.Event {
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	event := models.KeptnContextExtendedCE{}
+	err = json.Unmarshal(content, &event)
+	_ = err
+	return keptnv2.ToCloudEvent(event)
+}
+
 func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 
 	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler(handler.NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
@@ -31,15 +42,4 @@ func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 	getActionFinishedData := keptnv2.GetActionFinishedEventData{}
 	event.DataAs(&getActionFinishedData)
 	require.Equal(t, 1, getActionFinishedData.ActionIndex)
-}
-
-func newGetActionTriggeredEvent(filename string) cloudevents.Event {
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	event := models.KeptnContextExtendedCE{}
-	err = json.Unmarshal(content, &event)
-	_ = err
-	return keptnv2.ToCloudEvent(event)
 }
