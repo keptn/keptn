@@ -470,9 +470,13 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 
 		if e != nil {
 			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, env.PubSubRecipient)
+			// add to cloudevents cache
+			ceCache.Add(*event.Type, event.ID)
 			go func() {
-				if err := sendEvent(*e); err == nil {
-					ceCache.Add(*event.Type, event.ID)
+				if err := sendEvent(*e); err != nil {
+					logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, env.PubSubRecipient, err.Error())
+					// Sending failed, remove from cloudevents cache
+					ceCache.Remove(*event.Type, event.ID)
 				}
 				logger.Infof("Number of sent events for topic %s: %d", topic, ceCache.Length(topic))
 			}()
