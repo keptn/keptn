@@ -461,7 +461,7 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 			continue
 		}
 
-		logger.Infof("CloudEvent with ID %s has not been sent yet", event.ID)
+		logger.Infof("CloudEvnet with ID %s has not been sent yet", event.ID)
 
 		marshal, _ := json.Marshal(event)
 		e, _ := decodeCloudEvent(marshal)
