@@ -182,9 +182,7 @@ func Generate(outputDir string) {
 	createSection(md, "Get SLI Finished", keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName), getSLIFinishedEventData)
 
 	createSectionTitle(md, "Monitoring")
-	createSection(md, "Configure Monitoring Triggered", keptnv2.GetTriggeredEventType(keptnv2.ConfigureMonitoringTaskName), configureMonitoringTriggeredEventData)
-	createSection(md, "Configure Monitoring Started", keptnv2.GetStartedEventType(keptnv2.ConfigureMonitoringTaskName), configureMonitoringStartedEventData)
-	createSection(md, "Configure Monitoring Finished", keptnv2.GetFinishedEventType(keptnv2.ConfigureMonitoringTaskName), configureMonitoringFinishedEventData)
+	createSection(md, "Configure Monitoring", keptn.ConfigureMonitoringEventType, configureMonitoringEventData)
 
 	createSectionTitle(md, "Problem")
 	createSection(md, "Problem Open", keptn.ProblemOpenEventType, problemOpenEventData)
