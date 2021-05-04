@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -374,6 +375,9 @@ func Test_pollEventsForTopic(t *testing.T) {
 	os.Setenv("PUBSUB_RECIPIENT", split[0])
 	os.Setenv("PUBSUB_RECIPIENT_PORT", split[1])
 
+	env.PubSubRecipient = split[0]
+	env.PubSubRecipientPort = split[1]
+
 	type args struct {
 		endpoint string
 		token    string
@@ -405,6 +409,18 @@ func Test_pollEventsForTopic(t *testing.T) {
 						Triggeredid:    "1234",
 						Type:           stringp("my-topic"),
 					},
+					{
+						Contenttype:    "application/json",
+						Data:           "",
+						Extensions:     nil,
+						ID:             "3456",
+						Shkeptncontext: "1234",
+						Source:         stringp("my-source"),
+						Specversion:    "1.0",
+						Time:           strfmt.DateTime{},
+						Triggeredid:    "1234",
+						Type:           stringp("my-topic"),
+					},
 				},
 				NextPageKey: "",
 				PageSize:    1,
@@ -416,6 +432,16 @@ func Test_pollEventsForTopic(t *testing.T) {
 		eventSourceReturnedPayload = tt.eventSourceReturnedPayload
 		t.Run(tt.name, func(t *testing.T) {
 			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic)
+			assert.Eventually(t, func() bool {
+				if !ceCache.Contains("my-topic", "1234") {
+					return false
+				}
+				if !ceCache.Contains("my-topic", "3456") {
+					return false
+				}
+				return true
+			}, 5*time.Second, 10*time.Millisecond)
+
 		})
 	}
 }
