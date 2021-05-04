@@ -423,8 +423,8 @@ func Test_pollEventsForTopic(t *testing.T) {
 					},
 				},
 				NextPageKey: "",
-				PageSize:    1,
-				TotalCount:  1,
+				PageSize:    2,
+				TotalCount:  2,
 			},
 		},
 	}
