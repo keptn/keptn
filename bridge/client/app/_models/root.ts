@@ -102,7 +102,7 @@ export class Root extends Trace {
   }
 
   getEvaluation(stageName: String): Trace {
-    return this.findTrace(t => t.type == EventTypes.EVALUATION_TRIGGERED && t.data.stage == stageName);
+    return this.findTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
   }
 
   getDeploymentDetails(stage: string): Trace {
