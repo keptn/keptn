@@ -1,9 +1,10 @@
-package handler
+package handler_test
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
+	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -65,7 +66,7 @@ func TestStateHandler_GetState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			sh := NewStateHandler(tt.fields.StateRepo)
+			sh := handler.NewStateHandler(tt.fields.StateRepo)
 
 			router := gin.Default()
 			router.GET("/state/:project", func(c *gin.Context) {
