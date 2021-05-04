@@ -449,7 +449,9 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", topic, endpoint, err)
 	}
 	logger.Infof("Received %d new .triggered events", len(events))
-	for _, event := range events {
+	for index, _ := range events {
+		var event keptnmodels.KeptnContextExtendedCE
+		event = *events[index]
 		logger.Infof("Check if event %s has already been sent", event.ID)
 		if ceCache == nil {
 			logger.Debug("Cache containing sent CloudEvents is nil. Creating a new one")
