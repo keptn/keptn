@@ -4,7 +4,7 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/remediation-service/pkg/sdk"
+	"github.com/keptn/keptn/remediation-service/internal/sdk"
 	"sync"
 )
 

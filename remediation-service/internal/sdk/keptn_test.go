@@ -4,8 +4,8 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	"github.com/keptn/keptn/remediation-service/pkg/sdk"
-	"github.com/keptn/keptn/remediation-service/pkg/sdk/fake"
+	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/remediation-service/internal/sdk/fake"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

@@ -5,7 +5,7 @@ package fake
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/remediation-service/pkg/sdk"
+	"github.com/keptn/keptn/remediation-service/internal/sdk"
 	"sync"
 )
 
