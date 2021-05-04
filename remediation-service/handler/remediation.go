@@ -37,7 +37,7 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails v0_2_0.Proble
 		return nil, fmt.Errorf("unable to find actions for root cause %s", rootCause)
 	}
 
-	if actionIndex > len(actions) {
+	if actionIndex >= len(actions) {
 		return nil, fmt.Errorf("failed to get action for root cause %s. There is no action with index %d", rootCause, actionIndex)
 
 	}

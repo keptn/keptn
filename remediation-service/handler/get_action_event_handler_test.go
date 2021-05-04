@@ -31,20 +31,35 @@ func Test_Receiving_GetActionTriggeredEvent_RemedöiationFromServiceLevel(t *tes
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-2.json"))
 
-	require.Equal(t, 4, len(fakeKeptn.GetEventSender().SentEvents))
+	require.Equal(t, 6, len(fakeKeptn.GetEventSender().SentEvents))
+
+	require.Equal(t, keptnv2.GetStartedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[0].Type())
+	require.Equal(t, keptnv2.GetFinishedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[1].Type())
+	require.Equal(t, keptnv2.GetStartedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[2].Type())
+	require.Equal(t, keptnv2.GetFinishedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[3].Type())
+	require.Equal(t, keptnv2.GetStartedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[4].Type())
+	require.Equal(t, keptnv2.GetFinishedEventType("get-action"), fakeKeptn.GetEventSender().SentEvents[5].Type())
 
 	finishedEvent, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
-	require.Equal(t, "sh.keptn.event.get-action.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
-	require.Equal(t, "sh.keptn.event.get-action.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
 	getActionFinishedData := keptnv2.GetActionFinishedEventData{}
 	finishedEvent.DataAs(&getActionFinishedData)
 	require.Equal(t, 1, getActionFinishedData.ActionIndex)
+	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
+	require.Equal(t, keptnv2.ResultPass, getActionFinishedData.Result)
 
 	finishedEvent, _ = keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[3])
-	require.Equal(t, "sh.keptn.event.get-action.started", fakeKeptn.GetEventSender().SentEvents[2].Type())
-	require.Equal(t, "sh.keptn.event.get-action.finished", fakeKeptn.GetEventSender().SentEvents[3].Type())
 	getActionFinishedData = keptnv2.GetActionFinishedEventData{}
 	finishedEvent.DataAs(&getActionFinishedData)
 	require.Equal(t, 2, getActionFinishedData.ActionIndex)
+	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
+	require.Equal(t, keptnv2.ResultPass, getActionFinishedData.Result)
+
+	finishedEvent, _ = keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[5])
+	getActionFinishedData = keptnv2.GetActionFinishedEventData{}
+	finishedEvent.DataAs(&getActionFinishedData)
+	require.Equal(t, keptnv2.StatusSucceeded, getActionFinishedData.Status)
+	require.Equal(t, keptnv2.ResultFailed, getActionFinishedData.Result)
+
 }

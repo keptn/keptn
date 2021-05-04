@@ -87,7 +87,7 @@ func TestGetNextAction(t *testing.T) {
 			args{
 				newRemediation("test/remediation.yaml"),
 				newProblemDetails("", ""),
-				20,
+				2,
 			},
 			nil,
 			true,

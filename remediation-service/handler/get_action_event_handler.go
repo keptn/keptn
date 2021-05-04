@@ -35,7 +35,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}, context sd
 	// determine next action
 	action, err := GetNextAction(remediation, data.ProblemDetails, data.ActionIndex)
 	if err != nil {
-		return context, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "unable to get next action from remediation.yaml"}
+		return context, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "unable to get next action from remediation.yaml"}
 	}
 
 	// set finished data

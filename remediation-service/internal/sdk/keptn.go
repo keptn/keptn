@@ -36,12 +36,6 @@ func (c *Context) SetFinishedData(data interface{}) {
 	c.FinishedData = data
 }
 
-type KeptnEventData struct {
-	Project string
-	Stage   string
-	Service string
-}
-
 //go:generate moq  -pkg fake -out ./fake/task_handler_mock.go . TaskHandler
 type TaskHandler interface {
 	Execute(keptnHandle IKeptn, ce interface{}, context Context) (Context, *Error)
