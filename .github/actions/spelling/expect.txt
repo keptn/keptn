@@ -50,7 +50,6 @@ backports
 bak
 barista
 basiccheck
-bc
 benbjohnson
 bestpractices
 Bitbucket
@@ -95,7 +94,6 @@ checkbox
 checkip
 chmod
 chown
-ci
 ciphersuite
 ckf
 CLA
@@ -194,7 +192,6 @@ dynatrace
 dynatraceheader
 dynatracelabs
 easytravel
-eb
 ebe
 ECDHE
 ECDSA
@@ -215,14 +212,12 @@ ermin
 errorable
 errored
 Errorf
-errorformat
 errstr
 eslint
 esnext
 esource
 Eter
 euo
-ev
 evaluationdetails
 evaluationmanager
 evaluationsdetails
@@ -267,7 +262,6 @@ fullname
 func
 funcvalidation
 fwlink
-fx
 gcc
 gcflags
 gcloud
@@ -277,7 +271,6 @@ genid
 Getenv
 getpostman
 GFzc
-gh
 ghodss
 gitcommit
 github
@@ -292,7 +285,6 @@ gofmt
 gohugoio
 goland
 golang
-golangci
 golangswaggerpaths
 golint
 gomock
@@ -316,8 +308,7 @@ gtr
 gtrp
 guiclass
 gunzip
-gw
-gz
+gws
 halem
 hammerjs
 hardcoded
@@ -363,7 +354,6 @@ inp
 instanceof
 Intelli
 ioutil
-ip
 ipaddress
 IProject
 iptables
@@ -390,13 +380,11 @@ jetbrains
 jetzlstorfer
 JKEPTN
 JLoop
-JM
 jmeter
 jmeterconf
 jmeterservice
 jmx
 JPROTOCOL
-jq
 jre
 jsdoc
 JSERVER
@@ -596,7 +584,6 @@ oyaml
 padchar
 params
 passthrough
-pb
 pem
 perc
 perfservice
@@ -638,8 +625,6 @@ pubsub
 pvc
 PVs
 pwd
-px
-QG
 qhk
 quickstart
 quotemark
@@ -680,14 +665,12 @@ rollme
 rootcacerts
 Routable
 rowsize
-rp
 rsa
 rsp
 runasuser
 runbook
 runlocal
 RUnlock
-rw
 rxjs
 samuelfahrngruber
 sandroschmid
@@ -781,7 +764,6 @@ tabwriter
 tada
 tasksequencerepo
 tcp
-td
 templating
 Testcase
 testclass
@@ -822,7 +804,6 @@ tslint
 TSN
 ttl
 typeof
-TZ
 tzdata
 uarr
 ubuntu
@@ -831,7 +812,6 @@ ucdr
 uem
 uid
 uint
-ul
 unarchive
 uncomment
 undeploy
@@ -867,14 +847,13 @@ uuid
 validator
 vals
 varint
-ve
 versioncheck
 versioned
 versioning
 virtualbox
 virtualisation
 virtualservice
-vm
+VMs
 vuser
 Vwd
 webhook
