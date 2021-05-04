@@ -333,23 +333,10 @@ var getSLIFinishedEventData = &keptnv2.GetSLIFinishedEventData{
 	},
 }
 
-var configureMonitoringTriggeredEventData = keptnv2.ConfigureMonitoringTriggeredEventData{
-	EventData: keptnv2.EventData{
-		Project: "sockshop",
-		Service: "carts",
-		Stage:   "dev",
-	},
-	ConfigureMonitoring: keptnv2.ConfigureMonitoringTriggeredParams{
-		Type: "dynatrace",
-	},
-}
-
-var configureMonitoringStartedEventData = keptnv2.ConfigureMonitoringStartedEventData{
-	EventData: commonEventData,
-}
-
-var configureMonitoringFinishedEventData = keptnv2.ConfigureMonitoringFinishedEventData{
-	EventData: commonEventData,
+var configureMonitoringEventData = keptn.ConfigureMonitoringEventData{
+	Type:    "dynatrace",
+	Project: "sockshop",
+	Service: "service",
 }
 
 var p = `{
