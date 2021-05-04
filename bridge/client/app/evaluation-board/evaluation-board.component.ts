@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {map, takeUntil} from 'rxjs/operators';
+import {filter, map, takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {Location} from '@angular/common';
@@ -7,6 +7,8 @@ import {Root} from '../_models/root';
 import {Trace} from '../_models/trace';
 import {ApiService} from '../_services/api.service';
 import {EventTypes} from '../_models/event-types';
+import {DataService} from '../_services/data.service';
+import {Deployment} from '../_models/deployment';
 
 @Component({
   selector: 'app-project-board',
@@ -23,8 +25,9 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
   public root: Root;
   public evaluations: Trace[];
   public hasHistory: boolean;
+  private deployments: Deployment[] = [];
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private location: Location, private route: ActivatedRoute, private apiService: ApiService) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private location: Location, private route: ActivatedRoute, private apiService: ApiService, private dataService: DataService) {
     this.hasHistory = window.history.length > 1;
   }
 
@@ -46,16 +49,30 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
                 this.root = Root.fromJSON(traces[0]);
                 this.root.traces = traces;
                 this.evaluations = traces.filter(t => t.type === EventTypes.EVALUATION_FINISHED && (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector)) ;
+
+                this.dataService.getProject(this.root.getProject())
+                  .pipe(
+                    takeUntil(this.unsubscribe$),
+                    filter(project => !!project)
+                  )
+                  .subscribe(project => {
+                    this.deployments = project.getDeploymentsOfService(this.root.getService());
+                    this._changeDetectorRef.markForCheck();
+                  });
               } else {
                 this.error = 'contextError';
+                this._changeDetectorRef.markForCheck();
               }
-              this._changeDetectorRef.markForCheck();
             }, () => {
               this.error = 'error';
               this._changeDetectorRef.markForCheck();
             });
         }
       });
+  }
+
+  public getDeployment(stage: string) {
+    return this.deployments.find(deployment => deployment.stages.includes(stage));
   }
 
   goBack(): void {

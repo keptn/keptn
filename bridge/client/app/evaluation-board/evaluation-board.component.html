@@ -1,5 +1,8 @@
 <div class="pr-4 pl-4">
-  <button class="mt-2" dt-button variant="secondary" *ngIf="hasHistory" (click)="goBack()">Go back</button>
+  <button class="mt-2" dt-button variant="secondary" *ngIf="hasHistory" (click)="goBack()">
+    <dt-icon name="left"></dt-icon>
+    Go back
+  </button>
   <div *ngIf="evaluations" class="evaluation-board" fxLayout="column">
     <dt-info-group>
       <dt-info-group-title>
@@ -7,7 +10,6 @@
           <div fxLayout="row" fxLayoutAlign="start center">
             <button dt-icon-button disabled variant="nested" *ngIf="root.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
             <p [textContent]="root.getShortImageName() || root.getService()"></p>
-            <button class="ml-3" dt-button variant="secondary" [routerLink]="['/project', root.getProject(), 'service', root.getService(), 'context',  root.shkeptncontext]">View service</button>
           </div>
         </div>
       </dt-info-group-title>
@@ -17,8 +19,11 @@
     <div *ngFor="let evaluation of evaluations;">
       <p><span class="bold">Stage: </span>
         <span [textContent]="evaluation.data.stage"></span>
-        <button class="ml-3" dt-button variant="secondary" [routerLink]="['/project', root.getProject(), 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]">View stage in sequence</button>
       </p>
+      <div class="mb-2">
+        <button *ngIf="getDeployment(evaluation.data.stage)?.shkeptncontext as shkeptncontext" dt-button variant="secondary" [routerLink]="['/project', root.getProject(), 'service', root.getService(), 'context',  shkeptncontext, 'stage', evaluation.data.stage]">View service details</button>
+        <button class="ml-3" dt-button variant="secondary" [routerLink]="['/project', root.getProject(), 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]">View sequence details</button>
+      </div>
       <ktb-event-item [event]="evaluation">
         <ktb-event-item-detail>
           <ktb-evaluation-details *ngIf="evaluation.data.evaluation" [evaluationData]="evaluation"></ktb-evaluation-details>
