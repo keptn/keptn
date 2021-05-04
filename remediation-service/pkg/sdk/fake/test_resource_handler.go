@@ -11,7 +11,7 @@ type TestResourceHandler struct {
 }
 
 func (t TestResourceHandler) GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
-	return newResourceFromFile(fmt.Sprintf("test/resources/%s/%s/%s/%s", project, stage, service, resourceURI)), nil
+	return newResourceFromFile(fmt.Sprintf("test/keptn/resources/%s/%s/%s/%s", project, stage, service, resourceURI)), nil
 }
 
 func (t TestResourceHandler) GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error) {

@@ -1,10 +1,11 @@
-package handler
+package handler_test
 
 import (
 	"encoding/json"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/remediation-service/handler"
 	"github.com/keptn/keptn/remediation-service/pkg/sdk"
 	"github.com/keptn/keptn/remediation-service/pkg/sdk/fake"
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ import (
 
 func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 
-	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler(NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
+	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler(handler.NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/get-action.triggered.json"))
 

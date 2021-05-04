@@ -23,11 +23,13 @@ func ParseRemediationResource(resource *models.Resource) (*v0_1_4.Remediation, e
 
 func GetNextAction(remediation *v0_1_4.Remediation, problemDetails v0_2_0.ProblemDetails, actionIndex int) (*v0_2_0.ActionInfo, error) {
 	rootCause := problemDetails.RootCause
+	problemTitle := problemDetails.ProblemTitle
 
 	var actions []v0_1_4.RemediationActionsOnOpen
 	for _, r := range remediation.Spec.Remediations {
-		if r.ProblemType == rootCause {
+		if r.ProblemType == rootCause || r.ProblemType == problemTitle {
 			actions = r.ActionsOnOpen
+			break
 		}
 	}
 
