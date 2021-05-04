@@ -25,21 +25,26 @@ func newGetActionTriggeredEvent(filename string) cloudevents.Event {
 	return keptnv2.ToCloudEvent(event)
 }
 
-func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
+func Test_Receiving_GetActionTriggeredEvent_RemedöiationFromServiceLevel(t *testing.T) {
 
 	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler(handler.NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
 	fakeKeptn.Start()
-	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/get-action.triggered.json"))
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
+	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))
 
-	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
-	event, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	require.Equal(t, 4, len(fakeKeptn.GetEventSender().SentEvents))
 
-	// verify started event
+	finishedEvent, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
 	require.Equal(t, "sh.keptn.event.get-action.started", fakeKeptn.GetEventSender().SentEvents[0].Type())
-
-	// verify finished event
 	require.Equal(t, "sh.keptn.event.get-action.finished", fakeKeptn.GetEventSender().SentEvents[1].Type())
 	getActionFinishedData := keptnv2.GetActionFinishedEventData{}
-	event.DataAs(&getActionFinishedData)
+	finishedEvent.DataAs(&getActionFinishedData)
 	require.Equal(t, 1, getActionFinishedData.ActionIndex)
+
+	finishedEvent, _ = keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[3])
+	require.Equal(t, "sh.keptn.event.get-action.started", fakeKeptn.GetEventSender().SentEvents[2].Type())
+	require.Equal(t, "sh.keptn.event.get-action.finished", fakeKeptn.GetEventSender().SentEvents[3].Type())
+	getActionFinishedData = keptnv2.GetActionFinishedEventData{}
+	finishedEvent.DataAs(&getActionFinishedData)
+	require.Equal(t, 2, getActionFinishedData.ActionIndex)
 }

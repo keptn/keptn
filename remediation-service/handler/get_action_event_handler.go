@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/remediation-service/pkg/sdk"
 )
@@ -19,7 +20,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}, context sd
 	data := ce.(*v0_2_0.GetActionTriggeredEventData)
 
 	// get remediation.yaml resource
-	resource, err := k.GetResourceHandler().GetServiceResource(data.Project, data.Stage, data.Service, "remediation.yaml")
+	resource, err := g.getRemediationResource(k, data)
 	if err != nil {
 		return context, err
 	}
@@ -49,4 +50,13 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}, context sd
 
 func (g *GetActionEventHandler) GetData() interface{} {
 	return g.GetActionTriggeredData
+}
+
+func (g *GetActionEventHandler) getRemediationResource(keptn sdk.IKeptn, eventData *v0_2_0.GetActionTriggeredEventData) (*models.Resource, error) {
+	if eventData.Service == "" {
+		return keptn.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, "remediation.yaml")
+	}
+
+	return keptn.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, "remediation.yaml")
+
 }
