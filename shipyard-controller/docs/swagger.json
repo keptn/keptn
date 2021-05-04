@@ -839,7 +839,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "state"
+                    "State"
                 ],
                 "summary": "Get task sequence states",
                 "parameters": [
@@ -1195,9 +1195,6 @@
                 "id": {
                     "type": "string"
                 },
-                "result": {
-                    "type": "string"
-                },
                 "time": {
                     "type": "string"
                 },
@@ -1216,6 +1213,9 @@
                     "$ref": "#/definitions/models.SequenceStateEvaluation"
                 },
                 "latestEvent": {
+                    "$ref": "#/definitions/models.SequenceStateEvent"
+                },
+                "latestFailedEvent": {
                     "$ref": "#/definitions/models.SequenceStateEvent"
                 },
                 "name": {

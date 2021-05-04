@@ -226,8 +226,6 @@ definitions:
     properties:
       id:
         type: string
-      result:
-        type: string
       time:
         type: string
       type:
@@ -240,6 +238,8 @@ definitions:
       latestEvaluation:
         $ref: '#/definitions/models.SequenceStateEvaluation'
       latestEvent:
+        $ref: '#/definitions/models.SequenceStateEvent'
+      latestFailedEvent:
         $ref: '#/definitions/models.SequenceStateEvent'
       name:
         type: string
@@ -927,7 +927,7 @@ paths:
       - ApiKeyAuth: []
       summary: Get task sequence states
       tags:
-      - state
+      - State
 securityDefinitions:
   ApiKeyAuth:
     in: header

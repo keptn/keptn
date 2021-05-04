@@ -855,7 +855,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "state"
+                    "State"
                 ],
                 "summary": "Get task sequence states",
                 "parameters": [
@@ -1211,9 +1211,6 @@ var doc = `{
                 "id": {
                     "type": "string"
                 },
-                "result": {
-                    "type": "string"
-                },
                 "time": {
                     "type": "string"
                 },
@@ -1232,6 +1229,9 @@ var doc = `{
                     "$ref": "#/definitions/models.SequenceStateEvaluation"
                 },
                 "latestEvent": {
+                    "$ref": "#/definitions/models.SequenceStateEvent"
+                },
+                "latestFailedEvent": {
                     "$ref": "#/definitions/models.SequenceStateEvent"
                 },
                 "name": {
