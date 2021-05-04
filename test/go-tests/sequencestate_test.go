@@ -3,13 +3,14 @@ package go_tests
 import (
 	"errors"
 	"fmt"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
@@ -32,11 +33,7 @@ spec:
             - name: "deployment"
               properties:
                 deploymentstrategy: "direct"
-            - name: "test"
-              properties:
-                teststrategy: "functional"
             - name: "evaluation"
-            - name: "release"
 
 
     - name: "staging"
@@ -48,23 +45,14 @@ spec:
             - name: "deployment"
               properties:
                 deploymentstrategy: "blue_green_service"
-            - name: "test"
-              properties:
-                teststrategy: "performance"
-            - name: "evaluation"
-            - name: "release"
-        - name: "rollback"
-          triggeredOn:
-            - event: "staging.delivery.finished"
-              selector:
-                match:
-                  result: "fail"
-          tasks:
-            - name: "rollback"`
+            - name: "evaluation"`
+
+const defaultKeptnNamespace = "keptn"
 
 func Test_SequenceStateIntegrationTest(t *testing.T) {
-	// TODO
-	os.Setenv("KEPTN_NAMESPACE", "keptn")
+	if os.Getenv("KEPTN_NAMESPACE") == "" {
+		os.Setenv("KEPTN_NAMESPACE", defaultKeptnNamespace)
+	}
 	projectName := "state"
 	serviceName := "my-service"
 	file, err := createTmpShipyardFile(sequenceStateShipyard)
@@ -124,43 +112,281 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 	require.NotEmpty(t, body)
 
-	// verify state
+	context := &models.EventContext{}
+	err = resp.ToJSON(context)
+	require.Nil(t, err)
+	require.NotNil(t, context.KeptnContext)
 
-	assert.Eventually(t, func() bool {
+	// verify state
+	require.Eventually(t, func() bool {
 		states, resp, err = getState(projectName)
 		if err != nil {
 			return false
+		}
+		if !isEqual(t, "resp.Response().StatusCode", http.StatusOK, resp.Response().StatusCode) {
+			return false
+		}
+		if !isEqual(t, "states.TotalCount", int64(1), states.TotalCount) {
+			return false
+		}
+		if !isEqual(t, "len(states.States)", 1, len(states.States)) {
 			return false
 		}
 
-		if states.TotalCount != 1 {
+		state := states.States[0]
+
+		if !isEqual(t, "state.Project", projectName, state.Project) {
 			return false
+		}
+		if !isEqual(t, "state.Shkeptncontext", *context.KeptnContext, state.Shkeptncontext) {
+			return false
+		}
+		if !isEqual(t, "state.State", "triggered", state.State) {
 			return false
 		}
 
-		if len(states.States) != 1 {
+		if !isEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
 			return false
 		}
-		require.Equal(t, http.StatusOK, resp.Response().StatusCode)
-		require.Empty(t, states.States)
-		require.Empty(t, states.NextPageKey)
-		require.Empty(t, states.TotalCount)
+
+		stage := state.Stages[0]
+
+		if !isEqual(t, "stage.Name", "dev", stage.Name) {
+			return false
+		}
+		if !isEqual(t, "stage.Image", "carts:test", stage.Image) {
+			return false
+		}
+
+		if !isEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stage.LatestEvent.Type) {
+			return false
+		}
 
 		return true
 	}, 10*time.Second, 2*time.Second)
 
+	// get deployment.triggered event
+	resp, err = apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + *context.KeptnContext)
+	require.Nil(t, err)
+	events := &models.Events{}
+	err = resp.ToJSON(events)
+	require.Nil(t, err)
+
+	var deploymentTriggeredEvent *models.KeptnContextExtendedCE
+	for _, event := range events.Events {
+		if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
+			deploymentTriggeredEvent = event
+			break
+		}
+	}
+	require.NotNil(t, deploymentTriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = getState(projectName)
+		if err != nil {
+			return false
+		}
+		if http.StatusOK != resp.Response().StatusCode {
+			return false
+		}
+		state := states.States[0]
+		if state.Project != projectName {
+			return false
+		}
+		if state.Shkeptncontext != *context.KeptnContext {
+			return false
+		}
+		if state.State != "triggered" {
+			return false
+		}
+
+		if len(state.Stages) != 1 {
+			return false
+		}
+
+		stage := state.Stages[0]
+
+		if stage.LatestEvent.Type != keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName) {
+			return false
+		}
+
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+	_, err = keptn.SendTaskFinishedEvent(nil, source)
+	require.Nil(t, err)
+
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = getState(projectName)
+		if err != nil {
+			return false
+		}
+		state := states.States[0]
+
+		if !isEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+			return false
+		}
+
+		stage := state.Stages[0]
+
+		if !isEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), stage.LatestEvent.Type) {
+			return false
+		}
+
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+	// get evaluation.triggered event
+	resp, err = apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + *context.KeptnContext)
+	require.Nil(t, err)
+	err = resp.ToJSON(events)
+	require.Nil(t, err)
+
+	var evaluationTriggeredEvent *models.KeptnContextExtendedCE
+	for _, event := range events.Events {
+		if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName) {
+			evaluationTriggeredEvent = event
+			break
+		}
+	}
+	require.NotNil(t, evaluationTriggeredEvent)
+
+	cloudEvent = keptnv2.ToCloudEvent(*evaluationTriggeredEvent)
+
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+
+	// send started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// send finished event with score
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EvaluationFinishedEventData{
+		EventData: keptnv2.EventData{
+			Status: keptnv2.StatusSucceeded,
+			Result: keptnv2.ResultPass,
+		},
+		Evaluation: keptnv2.EvaluationDetails{
+			Score: 100.0,
+		},
+	}, source)
+	require.Nil(t, err)
+
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = getState(projectName)
+		if err != nil {
+			return false
+		}
+		state := states.States[0]
+
+		if !isEqual(t, "state.State", "triggered", state.State) {
+			return false
+		}
+
+		if !isEqual(t, "len(state.Stages)", 2, len(state.Stages)) {
+			return false
+		}
+
+		devStage := state.Stages[0]
+
+		if !isEqual(t, "devStage.LatestEvaluation.Score", 100.0, devStage.LatestEvaluation.Score) {
+			return false
+		}
+
+		if !isEqual(t, "devStage.LatestEvent.Type", keptnv2.GetFinishedEventType("dev.delivery"), devStage.LatestEvent.Type) {
+			return false
+		}
+
+		stagingStage := state.Stages[1]
+
+		if !isEqual(t, "stagingStage.LatestEvent.Type", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stagingStage.LatestEvent.Type) {
+			return false
+		}
+
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+	// get deployment.triggered event for staging stage
+	resp, err = apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + *context.KeptnContext + "&stage=staging")
+	require.Nil(t, err)
+	err = resp.ToJSON(events)
+	require.Nil(t, err)
+
+	deploymentTriggeredEvent = nil
+	for _, event := range events.Events {
+		if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
+			deploymentTriggeredEvent = event
+			break
+		}
+	}
+	require.NotNil(t, deploymentTriggeredEvent)
+
+	cloudEvent = keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
+
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+
+	// send started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// send finished event with result=fail
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Status: keptnv2.StatusSucceeded,
+		Result: keptnv2.ResultFailed,
+	}, source)
+	require.Nil(t, err)
+
+	// verify state
+	require.Eventually(t, func() bool {
+		states, resp, err = getState(projectName)
+		if err != nil {
+			return false
+		}
+		state := states.States[0]
+
+		if !isEqual(t, "state.State", "finished", state.State) {
+			return false
+		}
+
+		if !isEqual(t, "len(state.Stages)", 2, len(state.Stages)) {
+			return false
+		}
+
+		stagingStage := state.Stages[1]
+
+		if !isEqual(t, "stagingStage.LatestEvent.Type", keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type) {
+			return false
+		}
+
+		return true
+	}, 10*time.Second, 2*time.Second)
 }
 
-func verifyStateWithRetry(projectName string, retries int, verify func(resp *req.Resp, states *scmodels.SequenceStates, err error) error) error {
-	for i := 0; i < retries; i = i + 1 {
-		states, resp, err := getState(projectName)
-
-		if verifyErr := verify(resp, states, err); verifyErr == nil {
-			return nil
-		}
-		<-time.After(5 * time.Second)
+func isEqual(t *testing.T, property string, expected, actual interface{}) bool {
+	if expected != actual {
+		t.Logf("%s: expected %v, got %v", property, expected, actual)
+		return false
 	}
-	return errors.New("could not verify sequence state")
+	return true
+}
+
+type APIEventSender struct {
+}
+
+func (sender *APIEventSender) SendEvent(event cloudevents.Event) error {
+	_, err := apiPOSTRequest("/v1/event", event)
+	return err
 }
 
 func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {

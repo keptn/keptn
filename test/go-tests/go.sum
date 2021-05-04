@@ -481,6 +481,8 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/keptn/go-utils v0.8.0/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/keptn/go-utils v0.8.3-0.20210426085446-b31b5e4c450b h1:npFneUWqjWMjjeXfQG4OP3PvRMTOy0bVA2BCjWcV+/Q=
 github.com/keptn/go-utils v0.8.3-0.20210426085446-b31b5e4c450b/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
+github.com/keptn/go-utils v0.8.4-0.20210429120423-086f16f75234 h1:fYhWVP9u8omYiU3Pu1YpKZ2qdT/uIKkAzsBS2+8Cn2E=
+github.com/keptn/go-utils v0.8.4-0.20210429120423-086f16f75234/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/keptn/keptn/shipyard-controller v0.0.0-20210503133401-8c1194432b46 h1:csFcf13udY8Zkit6uTO7yVyJBzj0cO+socReyuhgHWI=
 github.com/keptn/keptn/shipyard-controller v0.0.0-20210503133401-8c1194432b46/go.mod h1:8mpFtd6w4Pjtf4FGQXJtB9zt6DCr2tSxkiN149Cjy2s=
 github.com/keptn/kubernetes-utils v0.8.1 h1:y02DIIiXeFWU+XfO8Y7y8U8u4HPZx1Lcy3ZVCM27guQ=

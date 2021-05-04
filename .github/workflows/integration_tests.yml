@@ -417,6 +417,14 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: test/test_linking_stages.sh
 
+      - name: Test Sequence States
+        id: test_sequence_states
+        timeout_minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test sequencestate_test.go
+
       - name: Test Delayed Tasks
         id: test_delayed_tasks
         timeout-minutes: 5
