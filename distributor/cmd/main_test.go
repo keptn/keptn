@@ -487,9 +487,8 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 			// Okay, now we have to wait a little bit, until the recipient service has processed everything
 			time.Sleep(time.Second * 1)
 
-			// verify that recipientServer has processed 3 CloudEvents
+			// verify that recipientServer has processed 3 CloudEvents eventually
 			assert.Eventually(t, func() bool {
-				fmt.Printf("%d\n", recipientReceivedCloudEvents)
 				if recipientReceivedCloudEvents == 3 {
 					return true
 				}
@@ -499,6 +498,9 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 			// wait a little bit longer, and verify that it is still only 3 CloudEvents
 			time.Sleep(time.Second * time.Duration(tt.recipientSleepTimeSeconds) * 2)
 			assert.Equal(t, 3, recipientReceivedCloudEvents)
+
+			// verify that there is still only 3 events in ceCache
+			assert.Equal(t, ceCache.Length("my-topic"), 3)
 		})
 	}
 }
