@@ -218,7 +218,8 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 				ShipyardVersion: "spec.keptn.sh/0.2.0",
 				Stages: []*models.ExpandedStage{
 					{
-						StageName: "dev",
+						StageName:    "dev",
+						ParentStages: []string{},
 					},
 					{
 						StageName:    "staging",
@@ -265,7 +266,7 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 
 				require.Equal(t, tt.expectProject.ShipyardVersion, call.Project.ShipyardVersion)
 				require.Equal(t, tt.expectProject.Shipyard, call.Project.Shipyard)
-				require.EqualValues(t, tt.expectProject.Stages, call.Project.Stages)
+				require.Equal(t, tt.expectProject.Stages, call.Project.Stages)
 				mockRepo.UpdateProjectCalls()
 			} else {
 				require.Empty(t, mockRepo.UpdateProjectCalls())

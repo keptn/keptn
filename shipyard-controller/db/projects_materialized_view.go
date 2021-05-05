@@ -58,11 +58,12 @@ func (mv *ProjectsMaterializedView) CreateProject(prj *models.ExpandedProject) e
 	if existingProject != nil {
 		return nil
 	}
-	err = mv.createProject(prj)
+
+	updatedProject, err := generateStageInfo(*prj)
 	if err != nil {
 		return err
 	}
-	return nil
+	return mv.createProject(&updatedProject)
 }
 
 // UpdatedShipyard updates the shipyard of a project
@@ -74,16 +75,27 @@ func (mv *ProjectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 
 	existingProject.Shipyard = shipyardContent
 	if err := setShipyardVersion(existingProject); err != nil {
-		log.Errorf("could not update shipyard version fo project %s: %s"+projectName, err.Error())
+		log.Errorf("could not update shipyard version of project %s: %s"+projectName, err.Error())
 	}
 
-	shipyard, err := common.UnmarshalShipyard(shipyardContent)
-
-	for index := range existingProject.Stages {
-		existingProject.Stages[index].ParentStages = getParentStages(existingProject.Stages[index].StageName, shipyard)
+	updatedProject, err := generateStageInfo(*existingProject)
+	if err != nil {
+		log.Errorf("could not update stage information of project %s: %s"+projectName, err.Error())
 	}
 
-	return mv.ProjectRepo.UpdateProject(existingProject)
+	return mv.ProjectRepo.UpdateProject(&updatedProject)
+}
+
+func generateStageInfo(project models.ExpandedProject) (models.ExpandedProject, error) {
+	shipyard, err := common.UnmarshalShipyard(project.Shipyard)
+	if err != nil {
+		return project, err
+	}
+
+	for index := range project.Stages {
+		project.Stages[index].ParentStages = getParentStages(project.Stages[index].StageName, shipyard)
+	}
+	return project, nil
 }
 
 func getParentStages(stageName string, shipyard *keptnv2.Shipyard) []string {
