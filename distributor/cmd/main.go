@@ -478,7 +478,7 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 					// Sending failed, remove from cloudevents cache
 					ceCache.Remove(*event.Type, event.ID)
 				}
-				logger.Infof("Number of sent events for topic %s: %d", topic, ceCache.Length(topic))
+				logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", topic, ceCache.Length(topic))
 			}()
 		}
 	}

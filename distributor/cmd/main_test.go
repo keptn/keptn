@@ -356,18 +356,28 @@ func Test_getEventsFromEndpoint(t *testing.T) {
 	}
 }
 
-func Test_pollEventsForTopic(t *testing.T) {
+// Test_pollAndForwardEventsForTopic tests the polling and forwarding mechanism (in combination of ceCache)
+func Test_pollAndForwardEventsForTopic(t *testing.T) {
 
 	var eventSourceReturnedPayload keptnmodels.Events
+	var recipientSleepTimeSeconds int
+
+	// store number of received CloudEvents for the recipient server
+	var recipientReceivedCloudEvents int
+
+	// mock the server where we poll CloudEvents from
 	eventSourceServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		marshal, _ := json.Marshal(eventSourceReturnedPayload)
 		w.Write(marshal)
 	}))
 
+	// mock the recipient server where CloudEvents are sent to
 	recipientServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		time.Sleep(time.Second * time.Duration(recipientSleepTimeSeconds))
 		w.Header().Add("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
+		recipientReceivedCloudEvents += 1
 	}))
 
 	parsedURL, _ := url.Parse(recipientServer.URL)
@@ -378,6 +388,46 @@ func Test_pollEventsForTopic(t *testing.T) {
 	env.PubSubRecipient = split[0]
 	env.PubSubRecipientPort = split[1]
 
+	// define CloudEvents that are provided by the polling mechanism
+	cloudEventsToSend := []*keptnmodels.KeptnContextExtendedCE{
+		{
+			Contenttype:    "application/json",
+			Data:           "",
+			Extensions:     nil,
+			ID:             "1234",
+			Shkeptncontext: "1234",
+			Source:         stringp("my-source"),
+			Specversion:    "1.0",
+			Time:           strfmt.DateTime{},
+			Triggeredid:    "1234",
+			Type:           stringp("my-topic"),
+		},
+		{
+			Contenttype:    "application/json",
+			Data:           "",
+			Extensions:     nil,
+			ID:             "3456",
+			Shkeptncontext: "1234",
+			Source:         stringp("my-source"),
+			Specversion:    "1.0",
+			Time:           strfmt.DateTime{},
+			Triggeredid:    "1234",
+			Type:           stringp("my-topic"),
+		},
+		{
+			Contenttype:    "application/json",
+			Data:           "",
+			Extensions:     nil,
+			ID:             "7890",
+			Shkeptncontext: "1234",
+			Source:         stringp("my-source"),
+			Specversion:    "1.0",
+			Time:           strfmt.DateTime{},
+			Triggeredid:    "1234",
+			Type:           stringp("my-topic"),
+		},
+	}
+
 	type args struct {
 		endpoint string
 		token    string
@@ -387,6 +437,7 @@ func Test_pollEventsForTopic(t *testing.T) {
 		name                       string
 		args                       args
 		eventSourceReturnedPayload keptnmodels.Events
+		recipientSleepTimeSeconds  int
 	}{
 		{
 			name: "",
@@ -396,52 +447,58 @@ func Test_pollEventsForTopic(t *testing.T) {
 				topic:    "my-topic",
 			},
 			eventSourceReturnedPayload: keptnmodels.Events{
-				Events: []*keptnmodels.KeptnContextExtendedCE{
-					{
-						Contenttype:    "application/json",
-						Data:           "",
-						Extensions:     nil,
-						ID:             "1234",
-						Shkeptncontext: "1234",
-						Source:         stringp("my-source"),
-						Specversion:    "1.0",
-						Time:           strfmt.DateTime{},
-						Triggeredid:    "1234",
-						Type:           stringp("my-topic"),
-					},
-					{
-						Contenttype:    "application/json",
-						Data:           "",
-						Extensions:     nil,
-						ID:             "3456",
-						Shkeptncontext: "1234",
-						Source:         stringp("my-source"),
-						Specversion:    "1.0",
-						Time:           strfmt.DateTime{},
-						Triggeredid:    "1234",
-						Type:           stringp("my-topic"),
-					},
-				},
+				// incoming events (topic: my-topic)
+				Events: cloudEventsToSend,
 				NextPageKey: "",
-				PageSize:    2,
-				TotalCount:  2,
+				PageSize:    3,
+				TotalCount:  3,
 			},
+			recipientSleepTimeSeconds: 2,
 		},
 	}
 	for _, tt := range tests {
 		eventSourceReturnedPayload = tt.eventSourceReturnedPayload
+		recipientSleepTimeSeconds = tt.recipientSleepTimeSeconds
+		recipientReceivedCloudEvents = 0
 		t.Run(tt.name, func(t *testing.T) {
+			// poll events
 			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic)
-			assert.Eventually(t, func() bool {
-				if !ceCache.Contains("my-topic", "1234") {
-					return false
-				}
-				if !ceCache.Contains("my-topic", "3456") {
-					return false
-				}
-				return true
-			}, 5*time.Second, 10*time.Millisecond)
 
+			// assert that the events above are present in ceCache
+			assert.True(t, ceCache.Contains("my-topic", "1234"), "Event with ID 1234 not in ceCache")
+			assert.True(t, ceCache.Contains("my-topic", "3456"), "Event with ID 3456 not in ceCache")
+			assert.True(t, ceCache.Contains("my-topic", "7890"), "Event with ID 7890 not in ceCache")
+
+			// assert that the correct number of events is in ceCache
+			assert.Equal(t, ceCache.Length("my-topic"), 3)
+
+			// however, due to recipientSleepTimeSeconds no events should be received by the recipient yet
+			assert.Equal(t, recipientReceivedCloudEvents, 0, "The recipient should not have received any CloudEvents")
+
+			// poll again
+			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic)
+
+			// verify that there is still only 3 events in ceCache
+			assert.Equal(t, ceCache.Length("my-topic"), 3)
+
+			// and there still should be no events received by the recipient yet
+			assert.Equal(t, recipientReceivedCloudEvents, 0, "The recipient should not have received any CloudEvents")
+
+			// Okay, now we have to wait a little bit, until the recipient service has processed everything
+			time.Sleep(time.Second * 1)
+
+			// verify that recipientServer has processed 3 CloudEvents
+			assert.Eventually(t, func() bool {
+				fmt.Printf("%d\n", recipientReceivedCloudEvents)
+				if recipientReceivedCloudEvents == 3 {
+					return true
+				}
+				return false
+			}, time.Second * time.Duration(tt.recipientSleepTimeSeconds), 100*time.Millisecond)
+
+			// wait a little bit longer, and verify that it is still only 3 CloudEvents
+			time.Sleep(time.Second * time.Duration(tt.recipientSleepTimeSeconds) * 2)
+			assert.Equal(t, 3, recipientReceivedCloudEvents)
 		})
 	}
 }
