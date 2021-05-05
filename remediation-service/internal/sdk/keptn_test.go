@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/keptn/keptn/remediation-service/internal/sdk"
 	"github.com/keptn/keptn/remediation-service/internal/sdk/fake"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -14,6 +14,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 
 	taskHandler := &fake.TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
+		context.SetFinishedData(FakeTaskData{})
 		return context, nil
 	}
 	taskHandler.GetDataFunc = func() interface{} {
@@ -48,9 +49,9 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	keptn.Start()
 	eventReceiver.NewEvent(newTestTaskTriggeredEvent())
 
-	assert.Equal(t, 2, len(eventSender.SendEventCalls()))
-	assert.Equal(t, "sh.keptn.event.faketask.started", eventSender.SendEventCalls()[0].EventMoqParam.Type())
-	assert.Equal(t, "sh.keptn.event.faketask.finished", eventSender.SendEventCalls()[1].EventMoqParam.Type())
+	require.Equal(t, 2, len(eventSender.SendEventCalls()))
+	require.Equal(t, "sh.keptn.event.faketask.started", eventSender.SendEventCalls()[0].EventMoqParam.Type())
+	require.Equal(t, "sh.keptn.event.faketask.finished", eventSender.SendEventCalls()[1].EventMoqParam.Type())
 }
 
 func newTestTaskTriggeredEvent() cloudevents.Event {

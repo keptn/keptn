@@ -51,7 +51,7 @@ func TestGetNextAction(t *testing.T) {
 			},
 			&v0_2_0.ActionInfo{
 				Name:        "actionName1",
-				Action:      "",
+				Action:      "action1",
 				Description: "actionDescription1",
 				Value:       map[string]interface{}{"foo": "bar"},
 			},
@@ -66,7 +66,7 @@ func TestGetNextAction(t *testing.T) {
 			},
 			&v0_2_0.ActionInfo{
 				Name:        "actionName1",
-				Action:      "",
+				Action:      "action1",
 				Description: "actionDescription1",
 				Value:       map[string]interface{}{"foo": "bar"},
 			},

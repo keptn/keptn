@@ -108,7 +108,11 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 			k.send(k.createErrorFinishedEventForTriggeredEvent(event, newContext.FinishedData, err))
 			return
 		}
-		k.send(k.createFinishedEventForTriggeredEvent(event, newContext.FinishedData))
+		if newContext.FinishedData == nil {
+			log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
+		} else {
+			k.send(k.createFinishedEventForTriggeredEvent(event, newContext.FinishedData))
+		}
 	}
 }
 
@@ -135,6 +139,16 @@ func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.E
 
 func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}) cloudevents.Event {
 
+	var genericEvent map[string]interface{}
+	keptnv2.Decode(eventData, &genericEvent)
+	if genericEvent["status"] == nil || genericEvent["status"] == "" {
+		genericEvent["status"] = "succeeded"
+	}
+
+	if genericEvent["result"] == nil || genericEvent["result"] == "" {
+		genericEvent["result"] = "pass"
+	}
+
 	finishedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".finished"
 	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
 	c := cloudevents.NewEvent()
@@ -144,7 +158,7 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
 	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
 	c.SetSource(k.Source)
-	c.SetData(cloudevents.ApplicationJSON, eventData)
+	c.SetData(cloudevents.ApplicationJSON, genericEvent)
 	return c
 
 }

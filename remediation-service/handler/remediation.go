@@ -45,7 +45,7 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails v0_2_0.Proble
 	action := actions[actionIndex]
 	return &v0_2_0.ActionInfo{
 		Name:        action.Name,
-		Action:      "",
+		Action:      action.Action,
 		Description: action.Description,
 		Value:       action.Value,
 	}, nil
