@@ -67,8 +67,8 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       return false;
 
     const latestVersion = availableCliVersions.stable[availableCliVersions.stable.length - 1];
-    const bridgeVersionsString = AppHeaderComponent.buildVersionString(this.getNewerVersions(availableBridgeVersions, bridgeVersion));
-    const cliVersionsString = AppHeaderComponent.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
+    const bridgeVersionsString = this.buildVersionString(this.getNewerVersions(availableBridgeVersions, bridgeVersion));
+    const cliVersionsString = this.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
 
     if (bridgeVersionsString || cliVersionsString) {
       let versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${cliVersionsString && bridgeVersionsString ? 'and' : ''}
@@ -81,7 +81,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  private static buildVersionString(versions) {
+  private buildVersionString(versions) {
     if (versions.stable.length > 0) {
       return versions.stable.join(', ');
     } else if (versions.prerelease.length > 0) {
