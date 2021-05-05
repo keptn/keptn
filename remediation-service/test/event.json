@@ -1,0 +1,19 @@
+{
+  "type": "sh.keptn.event.get-action.triggered",
+  "specversion": "1.0",
+  "source": "test",
+  "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79d",
+  "time": "2019-06-07T07:02:15.64489Z",
+  "contenttype": "application/json",
+  "shkeptncontext": "08735340-6f9e-4b32-97ff-3b6c292bc50f",
+  "data": {
+    "project": "sockshop",
+    "service": "carts-db",
+    "stage": "dev",
+    "problemDetails": {
+      "problemTitle": "Response time degradation",
+      "rootCause": "problemType1"
+    },
+    "actionIndex": 0
+  }
+}
