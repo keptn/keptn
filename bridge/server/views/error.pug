@@ -1,12 +1,14 @@
 html
+  include common.pug
+
   head
-    link(rel="stylesheet", href="/static/error.v1.css")
+    link(rel="stylesheet", href="static/error.v1.css")
     title= title
   body
     div.container
 
       div.image
-        img(src="/static/logo.png", alt="Logo")
+        img(src="static/logo.png", alt="Logo")
 
       div.text
         h2= title
