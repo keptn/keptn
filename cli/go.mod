@@ -22,11 +22,17 @@ require (
 	github.com/stretchr/testify v1.7.0
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.5.1
+	helm.sh/helm/v3 v3.5.4
 	k8s.io/api v0.20.4
 	k8s.io/apimachinery v0.20.4
 	k8s.io/cli-runtime v0.20.4
 	k8s.io/client-go v0.20.4
 	k8s.io/kubectl v0.20.4
 	rsc.io/letsencrypt v0.0.3 // indirect
+)
+
+// required as per https://github.com/helm/helm/issues/9354
+replace (
+	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 )
