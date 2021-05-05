@@ -66,7 +66,7 @@ var uptimeTicker *time.Ticker
 
 var closeChan = make(chan bool)
 
-var ceCache *lib.CloudEventsCache
+var ceCache = lib.NewCloudEventsCache()
 
 var pubSubConnections map[string]*cenats.Sender
 
@@ -395,8 +395,6 @@ func createHTTPConnection() {
 		return
 	}
 
-	ceCache = lib.NewCloudEventsCache()
-
 	eventEndpoint := getHTTPPollingEndpoint()
 	topics := strings.Split(env.PubSubTopic, ",")
 
@@ -451,16 +449,9 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 	}
 	logger.Infof("Received %d new .triggered events", len(events))
 
-	// ensure CloudEvents Cache exists
-	if ceCache == nil {
-		logger.Debug("Cache containing sent CloudEvents is nil. Creating a new one")
-		ceCache = lib.NewCloudEventsCache()
-	}
-
 	// iterate over all events, discard the event if it has already been sent
 	for index, _ := range events {
-		var event keptnmodels.KeptnContextExtendedCE
-		event = *events[index]
+		event := *events[index]
 		logger.Infof("Check if event %s has already been sent", event.ID)
 
 		if ceCache.Contains(topic, event.ID) {
