@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/remediation-service
 
-go 1.13
+go 1.16
 
 require (
 	cloud.google.com/go v0.40.0 // indirect

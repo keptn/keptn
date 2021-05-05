@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/configuration-service
 
-go 1.13
+go 1.16
 
 require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869

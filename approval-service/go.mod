@@ -1,6 +1,6 @@
 module keptn/approval-service
 
-go 1.13
+go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1

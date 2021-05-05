@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/distributor
 
-go 1.12
+go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.3.1

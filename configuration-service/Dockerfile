@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.13.7-alpine as builder
+FROM golang:1.16.2-alpine as builder
 ARG version=develop
 
 WORKDIR /go/src/github.com/keptn/keptn/configuration-service
@@ -34,7 +34,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/configuration-service-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.11
+FROM alpine:3.13
 
 ENV env=production
 

@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/cli
 
-go 1.13
+go 1.16
 
 require (
 	github.com/alecthomas/jsonschema v0.0.0-20210214200137-e6fc2822d59d
