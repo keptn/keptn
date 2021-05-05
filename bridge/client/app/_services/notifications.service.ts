@@ -18,7 +18,10 @@ export class NotificationsService {
 
   addNotification(type, message) {
     let notification = Notification.fromJSON({ type, message });
-    this._notifications.next([...this._notifications.getValue(), notification]);
+    const duplicateNotifications = this._notifications.getValue().filter(n => n != notification);
+    if(duplicateNotifications.length === 0) {
+      this._notifications.next([...this._notifications.getValue(), notification]);
+    }
   }
 
   removeNotification(notification) {
