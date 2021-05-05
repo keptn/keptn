@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -123,7 +124,50 @@ func Test_projectsMaterializedView_CreateProject(t *testing.T) {
 const testShipyardContent = `apiVersion: "spec.keptn.sh/0.2.0"
 kind: "Shipyard"
 metadata:
-  name: "shipyard-sockshop"`
+  name: "shipyard-sockshop"
+spec:
+  stages:
+    - name: "dev"
+      sequences:
+        - name: "delivery"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "test"
+              properties:
+                teststrategy: "functional"
+            - name: "evaluation"
+            - name: "release"
+        - name: "delivery-direct"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "direct"
+            - name: "release"
+
+    - name: "staging"
+      sequences:
+        - name: "delivery"
+          triggeredOn:
+            - event: "dev.delivery.finished"
+          tasks:
+            - name: "deployment"
+              properties:
+                deploymentstrategy: "blue_green_service"
+            - name: "test"
+              properties:
+                teststrategy: "performance"
+            - name: "evaluation"
+            - name: "release"
+        - name: "rollback"
+          triggeredOn:
+            - event: "staging.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: "rollback"`
 
 func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 	type fields struct {
@@ -134,10 +178,11 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 		shipyardContent string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name          string
+		fields        fields
+		args          args
+		expectProject *models.ExpandedProject
+		wantErr       bool
 	}{
 		{
 			name: "Update shipyard",
@@ -145,13 +190,19 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
 					GetProjectFunc: func(projectName string) (project *models.ExpandedProject, err error) {
-						return &models.ExpandedProject{ProjectName: "test-project"}, nil
+						return &models.ExpandedProject{
+							ProjectName: "test-project",
+							Stages: []*models.ExpandedStage{
+								{
+									StageName: "dev",
+								},
+								{
+									StageName: "staging",
+								},
+							}}, nil
 					},
 					UpdateProjectFunc: func(project *models.ExpandedProject) error {
-						if project.Shipyard == testShipyardContent && project.ShipyardVersion == "spec.keptn.sh/0.2.0" {
-							return nil
-						}
-						return errors.New("shipyard content was not updated properly")
+						return nil
 					},
 					DeleteProjectFunc: nil,
 					GetProjectsFunc:   nil,
@@ -160,6 +211,20 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 			args: args{
 				projectName:     "test-project",
 				shipyardContent: testShipyardContent,
+			},
+			expectProject: &models.ExpandedProject{
+				ProjectName:     "test-project",
+				Shipyard:        testShipyardContent,
+				ShipyardVersion: "spec.keptn.sh/0.2.0",
+				Stages: []*models.ExpandedStage{
+					{
+						StageName: "dev",
+					},
+					{
+						StageName:    "staging",
+						ParentStages: []string{"dev"},
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -190,6 +255,20 @@ func Test_projectsMaterializedView_UpdateShipyard(t *testing.T) {
 			}
 			if err := mv.UpdateShipyard(tt.args.projectName, tt.args.shipyardContent); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateShipyard() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			mockRepo := mv.ProjectRepo.(*db_mock.ProjectRepoMock)
+
+			if tt.expectProject != nil {
+				require.Equal(t, 1, len(mockRepo.UpdateProjectCalls()))
+				call := mockRepo.UpdateProjectCalls()[0]
+
+				require.Equal(t, tt.expectProject.ShipyardVersion, call.Project.ShipyardVersion)
+				require.Equal(t, tt.expectProject.Shipyard, call.Project.Shipyard)
+				require.EqualValues(t, tt.expectProject.Stages, call.Project.Stages)
+				mockRepo.UpdateProjectCalls()
+			} else {
+				require.Empty(t, mockRepo.UpdateProjectCalls())
 			}
 		})
 	}

@@ -9,6 +9,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	log "github.com/sirupsen/logrus"
+	"strings"
 
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"strconv"
@@ -76,7 +77,48 @@ func (mv *ProjectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 		log.Errorf("could not update shipyard version fo project %s: %s"+projectName, err.Error())
 	}
 
+	shipyard, err := common.UnmarshalShipyard(shipyardContent)
+
+	for index := range existingProject.Stages {
+		existingProject.Stages[index].ParentStages = getParentStages(existingProject.Stages[index].StageName, shipyard)
+	}
+
 	return mv.ProjectRepo.UpdateProject(existingProject)
+}
+
+func getParentStages(stageName string, shipyard *keptnv2.Shipyard) []string {
+	parentStages := []string{}
+	for _, stage := range shipyard.Spec.Stages {
+		if stage.Name != stageName {
+			continue
+		}
+
+		for _, sequence := range stage.Sequences {
+			for _, trigger := range sequence.TriggeredOn {
+				// trigger events have the format <stage>.<sequenceName>.finished
+				split := strings.Split(trigger.Event, ".")
+				if len(split) == 3 {
+					newParentStageName := split[0]
+					if newParentStageName == stageName {
+						// do not add the stage itself as a parent
+						continue
+					}
+					parentStageAvailable := false
+					for _, parentStage := range parentStages {
+						if parentStage == newParentStageName {
+							parentStageAvailable = true
+							break
+						}
+					}
+					if !parentStageAvailable {
+						parentStages = append(parentStages, newParentStageName)
+					}
+				}
+			}
+		}
+		break
+	}
+	return parentStages
 }
 
 // UpdateProject updates a project
