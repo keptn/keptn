@@ -166,19 +166,8 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	}, 10*time.Second, 2*time.Second)
 
 	// get deployment.triggered event
-	resp, err = apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + *context.KeptnContext)
+	deploymentTriggeredEvent, err := getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
 	require.Nil(t, err)
-	events := &models.Events{}
-	err = resp.ToJSON(events)
-	require.Nil(t, err)
-
-	var deploymentTriggeredEvent *models.KeptnContextExtendedCE
-	for _, event := range events.Events {
-		if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-			deploymentTriggeredEvent = event
-			break
-		}
-	}
 	require.NotNil(t, deploymentTriggeredEvent)
 
 	cloudEvent := keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
@@ -246,18 +235,8 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	}, 10*time.Second, 2*time.Second)
 
 	// get evaluation.triggered event
-	resp, err = apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + *context.KeptnContext)
+	evaluationTriggeredEvent, err := getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 	require.Nil(t, err)
-	err = resp.ToJSON(events)
-	require.Nil(t, err)
-
-	var evaluationTriggeredEvent *models.KeptnContextExtendedCE
-	for _, event := range events.Events {
-		if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName) {
-			evaluationTriggeredEvent = event
-			break
-		}
-	}
 	require.NotNil(t, evaluationTriggeredEvent)
 
 	cloudEvent = keptnv2.ToCloudEvent(*evaluationTriggeredEvent)
@@ -316,19 +295,9 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
-	// get deployment.triggered event for staging stage
-	resp, err = apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + *context.KeptnContext + "&stage=staging")
-	require.Nil(t, err)
-	err = resp.ToJSON(events)
-	require.Nil(t, err)
+	deploymentTriggeredEvent, err = getLatestEventOfType(*context.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
 
-	deploymentTriggeredEvent = nil
-	for _, event := range events.Events {
-		if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) {
-			deploymentTriggeredEvent = event
-			break
-		}
-	}
+	require.Nil(t, err)
 	require.NotNil(t, deploymentTriggeredEvent)
 
 	cloudEvent = keptnv2.ToCloudEvent(*deploymentTriggeredEvent)
@@ -371,6 +340,21 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 		return true
 	}, 10*time.Second, 2*time.Second)
+}
+
+func getLatestEventOfType(keptnContext, projectName, stage, eventType string) (*models.KeptnContextExtendedCE, error) {
+	resp, err := apiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + keptnContext + "&stage=" + stage + "&type=" + eventType)
+	if err != nil {
+		return nil, err
+	}
+	events := &models.Events{}
+	if err := resp.ToJSON(events); err != nil {
+		return nil, err
+	}
+	if len(events.Events) > 0 {
+		return events.Events[0], nil
+	}
+	return nil, nil
 }
 
 func isEqual(t *testing.T, property string, expected, actual interface{}) bool {
