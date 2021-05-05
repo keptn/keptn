@@ -419,7 +419,7 @@ jobs:
 
       - name: Test Sequence States
         id: test_sequence_states
-        timeout_minutes: 5
+        timeout-minutes: 5
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
