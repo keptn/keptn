@@ -72,8 +72,13 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		}
 	}()
 
-	_, err = executeCommand(fmt.Sprintf("keptn delete project %s", projectName))
-	require.Nil(t, err)
+	resp, err := apiGETRequest("/controlPlane/v1/project/" + projectName)
+
+	if resp.Response().StatusCode != http.StatusNotFound {
+		// delete project if it exists
+		_, err = executeCommand(fmt.Sprintf("keptn delete project %s", projectName))
+		require.NotNil(t, err)
+	}
 
 	output, err := executeCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, file))
 
@@ -439,7 +444,8 @@ func getApiCredentials() (string, string, error) {
 func scaleDownUniform(deployments []string) error {
 	for _, deployment := range deployments {
 		if err := keptnutils.ScaleDeployment(false, deployment, os.Getenv("KEPTN_NAMESPACE"), 0); err != nil {
-			return err
+			// log the error but continue
+			fmt.Println("could not scale down deployment: " + err.Error())
 		}
 	}
 	return nil
@@ -448,7 +454,8 @@ func scaleDownUniform(deployments []string) error {
 func scaleUpUniform(deployments []string) error {
 	for _, deployment := range deployments {
 		if err := keptnutils.ScaleDeployment(false, deployment, os.Getenv("KEPTN_NAMESPACE"), 1); err != nil {
-			return err
+			// log the error but continue
+			fmt.Println("could not scale up deployment: " + err.Error())
 		}
 	}
 	return nil
