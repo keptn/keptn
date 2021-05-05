@@ -136,6 +136,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 }
 
 func (k *Keptn) send(event cloudevents.Event) error {
+	log.Infof("Sending %s event", event.Type())
 	if err := k.EventSender.SendEvent(event); err != nil {
 		log.Println("Error sending .started event")
 	}
@@ -143,8 +144,11 @@ func (k *Keptn) send(event cloudevents.Event) error {
 }
 
 func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.Event) cloudevents.Event {
+
 	startedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".started"
 	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	eventData := keptnv2.EventData{}
+	triggeredEvent.DataAs(&eventData)
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType(startedEventType)
@@ -152,7 +156,7 @@ func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.E
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
 	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
 	c.SetSource(k.Source)
-	c.SetData(cloudevents.ApplicationJSON, keptnv2.EventData{})
+	c.SetData(cloudevents.ApplicationJSON, eventData)
 	return c
 }
 
