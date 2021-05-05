@@ -38,7 +38,7 @@ func (c *Context) SetFinishedData(data interface{}) {
 
 //go:generate moq  -pkg fake -out ./fake/task_handler_mock.go . TaskHandler
 type TaskHandler interface {
-	// Execute is called whenever the actual business-logic of the serice shall be executed.
+	// Execute is called whenever the actual business-logic of the service shall be executed.
 	// Thus, the core logic of the service shall be triggered/implemented in this method.
 	//
 	// Note, that the contract of the method is to return a valid Context as well as a Error Pointer
@@ -69,7 +69,7 @@ type IKeptn interface {
 	Start() error
 	// GetResourceHandler returns a handler to fetch data from the configuration service
 	GetResourceHandler() ResourceHandler
-	// GetTaskRegistry provides access to the internal data structur used for organizing task exeuctors
+	// GetTaskRegistry provides access to the internal data structure used for organizing task execuctors
 	GetTaskRegistry() *TaskRegistry
 }
 

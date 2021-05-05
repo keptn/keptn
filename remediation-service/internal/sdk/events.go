@@ -5,7 +5,7 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
-	httpprotocol "github.com/cloudevents/sdk-go/v2/protocol/http"
+	"github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	"time"
 )
@@ -45,7 +45,7 @@ func (httpSender HTTPEventSender) SendEvent(event cloudevents.Event) error {
 	var result protocol.Result
 	for i := 0; i <= MAX_SEND_RETRIES; i++ {
 		result = httpSender.Client.Send(ctx, event)
-		httpResult, ok := result.(*httpprotocol.Result)
+		httpResult, ok := result.(*http.Result)
 		if ok {
 			if httpResult.StatusCode >= 200 && httpResult.StatusCode < 300 {
 				return nil
