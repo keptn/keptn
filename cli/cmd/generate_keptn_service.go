@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	fileutils "github.com/keptn/keptn/cli/pkg/file"
-	keptnutils "github.com/keptn/keptn/cli/pkg/git"
+	fileUtils "github.com/keptn/keptn/cli/pkg/file"
+	keptnUtils "github.com/keptn/keptn/cli/pkg/git"
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
 type generateKeptnServiceStruct struct {
@@ -15,7 +16,6 @@ type generateKeptnServiceStruct struct {
 
 var generateKeptnService generateKeptnServiceStruct
 var serviceTemplateRepoUrl = "https://github.com/keptn-sandbox/keptn-service-template-go"
-var serviceImageFilePaths = []string{"/skaffold.yaml", "/deploy/service.yaml"}
 
 var generateKeptnServiceCmd = &cobra.Command{
 	Use:          "keptn-service",
@@ -30,23 +30,43 @@ var generateKeptnServiceCmd = &cobra.Command{
 
 func generateServiceTemplate(generateKeptnService generateKeptnServiceStruct) error {
 	var err error
-	err = keptnutils.CloneGitHubUrl(*generateKeptnService.Service, serviceTemplateRepoUrl)
-	for _, filePaths := range serviceImageFilePaths {
-		err = replaceImageFiles(*generateKeptnService.Service+filePaths, *generateKeptnService.Image)
-		if err != nil {
-			return err
-		}
+	fmt.Printf("Cloning the template\n")
+	err = keptnUtils.CloneGitHubUrl(*generateKeptnService.Service, serviceTemplateRepoUrl)
+	if err != nil{
+		return err
+	}
+	fmt.Printf("Replacing Image name to: %s\n", *generateKeptnService.Image)
+	err = replaceImageFiles(*generateKeptnService.Image, *generateKeptnService.Service)
+
+	if err != nil{
+		return err
+	}
+
+	fmt.Printf("Creating your service named: %s\n", *generateKeptnService.Service)
+	err = replaceServiceName(*generateKeptnService.Service)
+	if err != nil{
+		return err
+	}
+
+
+	return nil
+}
+
+
+func replaceImageFiles(imageName string, serviceName string) error {
+	var err error
+	filePatterns := []string{"*"}
+	err = filepath.Walk(serviceName, fileUtils.RecursiveRefactor("keptnsandbox/keptn-service-template-go",imageName,filePatterns))
+	if err != nil{
+		return err
 	}
 	return nil
 }
 
-func replaceImageFiles(filePath string, imageName string) error {
-	var err error
-	var placeHolderReplacement fileutils.PlaceholderReplacement
-	placeHolderReplacement.PlaceholderValue = "keptnsandbox/keptn-service-template-go"
-	placeHolderReplacement.DesiredValue = imageName
-	err = fileutils.Replace(filePath, placeHolderReplacement)
-	if err != nil {
+func replaceServiceName(serviceName string) error {
+	filePatterns := []string{"*"}
+	err := filepath.Walk(serviceName, fileUtils.RecursiveRefactor("keptn-service-template-go",serviceName,filePatterns))
+	if err != nil{
 		return err
 	}
 	return nil
