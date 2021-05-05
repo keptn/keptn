@@ -143,8 +143,8 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEventCollections(project string) error {
 	finishedCollection := mdbrepo.getEventsCollection(project, common.FinishedEvent)
 
 	// not the ideal place to delete the remediation collection, but the management of remediations will likely move to the shipyard controller anyway
-	remediationCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + remediationCollectionNameSuffix)
-	sequenceStateCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + taskSequenceStateCollectionSuffix)
+	remediationCollection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + remediationCollectionNameSuffix)
+	sequenceStateCollection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + taskSequenceStateCollectionSuffix)
 
 	if err := mdbrepo.deleteCollection(triggeredCollection); err != nil {
 		// log the error but continue
@@ -183,16 +183,16 @@ func (mdbrepo *MongoDBEventsRepo) deleteCollection(collection *mongo.Collection)
 
 func (mdbrepo *MongoDBEventsRepo) getEventsCollection(project string, status ...common.EventStatus) *mongo.Collection {
 	if len(status) == 0 {
-		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project)
+		return mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project)
 	}
 
 	switch status[0] {
 	case common.TriggeredEvent:
-		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + triggeredEventsCollectionNameSuffix)
+		return mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + triggeredEventsCollectionNameSuffix)
 	case common.StartedEvent:
-		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + startedEventsCollectionNameSuffix)
+		return mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + startedEventsCollectionNameSuffix)
 	case common.FinishedEvent:
-		return mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + finishedEventsCollectionNameSuffix)
+		return mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + finishedEventsCollectionNameSuffix)
 	default:
 		return nil
 	}

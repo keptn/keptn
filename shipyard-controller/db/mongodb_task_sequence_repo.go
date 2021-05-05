@@ -113,6 +113,6 @@ func (mdbrepo *TaskSequenceMongoDBRepo) deleteCollection(collection *mongo.Colle
 }
 
 func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceCollection(project string) *mongo.Collection {
-	projectCollection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(project + taskSequenceCollectionNameSuffix)
+	projectCollection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + taskSequenceCollectionNameSuffix)
 	return projectCollection
 }

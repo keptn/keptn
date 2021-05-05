@@ -38,6 +38,7 @@ func (mdbrepo *MongoDBStateRepo) CreateState(state models.SequenceState) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	databaseName := getDatabaseName()
 	collection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(state.Project + taskSequenceStateCollectionSuffix)
 
 	existingSequence := collection.FindOne(ctx, bson.M{"shkeptncontext": state.Shkeptncontext})
@@ -59,7 +60,7 @@ func (mdbrepo *MongoDBStateRepo) FindStates(filter models.StateFilter) (*models.
 	if err != nil {
 		return nil, err
 	}
-	collection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(filter.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -134,7 +135,7 @@ func (mdbrepo *MongoDBStateRepo) UpdateState(state models.SequenceState) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(state.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(state.Project + taskSequenceStateCollectionSuffix)
 	_, err = collection.ReplaceOne(ctx, bson.M{"shkeptncontext": state.Shkeptncontext}, state)
 	if err != nil {
 		return err
@@ -158,7 +159,7 @@ func (mdbrepo *MongoDBStateRepo) DeleteStates(filter models.StateFilter) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(filter.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
 	_, err = collection.DeleteMany(ctx, searchOptions)
 	if err != nil {
 		return err
