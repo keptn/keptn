@@ -94,6 +94,10 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     }
   }
 
+  getServiceLink(service: Service) {
+    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage]
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
   }

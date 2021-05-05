@@ -41,7 +41,7 @@ const sessionConfig = {
  * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
  */
 function isAuthenticated(req) {
-  if (req.session.authenticated) {
+  if (req.session !== undefined && req.session.authenticated) {
     return true;
   }
 
@@ -51,10 +51,22 @@ function isAuthenticated(req) {
 
 /**
  * Set the session authenticated state for the specific principal
+ *
+ * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
+ * logout supported from OAuth service.
  */
-function setAuthenticatedPrincipal(req, principal) {
+function setAuthenticatedSession(req, principal, logoutHint) {
+
+  if (!principal) {
+    throw 'Invalid session initialisation. Principal is mandatory.';
+  }
+
   req.session.authenticated = true;
   req.session.principal = principal;
+
+  if (logoutHint) {
+    req.session.logoutHint = logoutHint;
+  }
 }
 
 /**
@@ -63,6 +75,17 @@ function setAuthenticatedPrincipal(req, principal) {
 function getCurrentPrincipal(req) {
   if (req.session !== undefined && req.session.authenticated) {
     return req.session.principal;
+  }
+
+  return undefined;
+}
+
+/**
+ * Returns the logout hint bound to this session
+ */
+function getLogoutHint(req) {
+  if (req.session !== undefined && req.session.logoutHint) {
+    return req.session.logoutHint;
   }
 
   return undefined;
@@ -100,6 +123,7 @@ module.exports = (app) => {
 }
 
 module.exports.isAuthenticated = isAuthenticated;
-module.exports.setAuthenticatedPrincipal = setAuthenticatedPrincipal;
+module.exports.setAuthenticatedSession = setAuthenticatedSession;
 module.exports.removeSession = removeSession;
 module.exports.getCurrentPrincipal = getCurrentPrincipal;
+module.exports.getLogoutHint = getLogoutHint;

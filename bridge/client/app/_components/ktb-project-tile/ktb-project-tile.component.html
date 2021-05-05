@@ -10,7 +10,8 @@
     <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI"><a [href]="project.gitRemoteURI" [textContent]="project.gitRemoteURI" target="_blank" (click)="$event.stopPropagation()"></a></p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!project.gitRemoteURI">
       <dt-icon class="info mr-1" [name]="'information'"></dt-icon>
-      <p class="small m-0">No Git upstream configured. <br/>Please use <a [href]="'/reference/cli/commands/keptn_update_project/' | keptnUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn update project</a> to set a Git upstream.</p>
+      <p class="small m-0">No Git upstream configured.
+        <a [routerLink]="['/project', project.projectName, 'settings']">Set Git upstream</a>
     </div>
   </dt-tile-subtitle>
   <dt-tag-list aria-label="stages">

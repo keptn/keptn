@@ -23,6 +23,10 @@ export class Root extends Trace {
     return result;
   }
 
+  getDeploymentTrace(stage: string): Trace {
+    return this.findTrace(trace => trace.isDeployment() === stage);
+  }
+
   isDeployment(): string {
     return this.traces.reduce((result: string, trace: Trace) => result ? result : trace.isDeployment(), null);
   }
@@ -98,7 +102,7 @@ export class Root extends Trace {
   }
 
   getEvaluation(stageName: String): Trace {
-    return this.findTrace(t => t.type == EventTypes.EVALUATION_TRIGGERED && t.data.stage == stageName);
+    return this.findTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
   }
 
   getDeploymentDetails(stage: string): Trace {

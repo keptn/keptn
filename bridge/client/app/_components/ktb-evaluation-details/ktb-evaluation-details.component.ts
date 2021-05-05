@@ -49,6 +49,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public invalidateEvaluationDialogRef: MatDialogRef<any, any>;
 
   private heatmapChart: DtChart;
+
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
     this.heatmapChart = heatmap;
   }
@@ -121,8 +122,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       },
     },
   };
-  public _chartSeries: Highcharts.SeriesOptions[] = [
-  ];
+  public _chartSeries: Highcharts.SeriesOptions[] = [];
 
   public _heatmapOptions: Highcharts.Options = {
     chart: {
@@ -151,7 +151,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }],
 
     colorAxis: {
-      dataClasses: Object.keys(this._evaluationColor).filter(key => key != 'failed').map((key) => { return { color: this._evaluationColor[key], name: key } })
+      dataClasses: Object.keys(this._evaluationColor).filter(key => key != 'failed').map((key) => {
+        return {color: this._evaluationColor[key], name: key}
+      })
     },
 
     plotOptions: {
@@ -173,6 +175,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   get evaluationData(): any {
     return this._evaluationData;
   }
+
   set evaluationData(evaluationData: any) {
     if (this._evaluationData !== evaluationData) {
       this._evaluationData = evaluationData;
@@ -186,17 +189,18 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService, public dateUtil: DateUtil) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private dialog: MatDialog, private clipboard: ClipboardService, public dateUtil: DateUtil) {
+  }
 
   ngOnInit() {
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((results) => {
-        if(results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
-          this.evaluationData.data.evaluationHistory = [...results.traces||[], ...this.evaluationData.data.evaluationHistory||[]].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+        if (results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
+          this.evaluationData.data.evaluationHistory = [...results.traces || [], ...this.evaluationData.data.evaluationHistory || []].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
           this.updateChartData(this.evaluationData.data.evaluationHistory);
           this._changeDetectorRef.markForCheck();
-        } else if(results.type == "invalidateEvaluation" &&
+        } else if (results.type == "invalidateEvaluation" &&
           this.evaluationData.data.project == results.triggerEvent.data.project &&
           this.evaluationData.data.service == results.triggerEvent.data.service &&
           this.evaluationData.data.stage == results.triggerEvent.data.stage) {
@@ -209,7 +213,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private evaluationDataChanged() {
-    if(this._evaluationData) {
+    if (this._evaluationData) {
       this.dataService.loadEvaluationResults(this._evaluationData);
       if (this.isInvalidated)
         this.selectEvaluationData(this._evaluationData);
@@ -219,7 +223,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private parseSloFile(evaluationData) {
-    if(evaluationData && evaluationData.data && evaluationData.data.evaluation.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
+    if (evaluationData && evaluationData.data && evaluationData.data.evaluation.sloFileContent && !evaluationData.data.evaluation.sloFileContentParsed) {
       evaluationData.data.evaluation.sloFileContentParsed = atob(evaluationData.data.evaluation.sloFileContent);
       evaluationData.data.evaluation.score_pass = evaluationData.data.evaluation.sloFileContentParsed.split("total_score:")[1]?.split("pass:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
       evaluationData.data.evaluation.score_warning = evaluationData.data.evaluation.sloFileContentParsed.split("total_score:")[1]?.split("warning:")[1]?.split(" ")[1]?.replace(/\"/g, "")?.split("%")[0];
@@ -250,7 +254,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
         let indicatorScoreSeriesColumn = chartSeries.find(series => series.name == 'Score' && series.type == 'column');
         let indicatorScoreSeriesLine = chartSeries.find(series => series.name == 'Score' && series.type == 'line');
-        if(!indicatorScoreSeriesColumn) {
+        if (!indicatorScoreSeriesColumn) {
           indicatorScoreSeriesColumn = {
             metricName: 'Score',
             name: 'Score',
@@ -387,13 +391,13 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         this._heatmapOptions.yAxis[0].categories.unshift(series.name);
         this._metrics.unshift(series.metricName);
       }
-      if(series.name == "Score") {
+      if (series.name == "Score") {
         let categories = series.data
           .sort((a, b) => moment(a.evaluationData.time).unix() - moment(b.evaluationData.time).unix())
           .map((item, index, items) => {
             let duplicateItems = items.filter(c => c.evaluationData.getHeatmapLabel() == item.evaluationData.getHeatmapLabel());
-            if(duplicateItems.length > 1)
-              item.label = `${item.evaluationData.getHeatmapLabel()} (${duplicateItems.indexOf(item)+1})`;
+            if (duplicateItems.length > 1)
+              item.label = `${item.evaluationData.getHeatmapLabel()} (${duplicateItems.indexOf(item) + 1})`;
             else
               item.label = item.evaluationData.getHeatmapLabel();
             return item;
@@ -407,7 +411,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       }
     });
 
-    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length*28 + 160;
+    this._heatmapOptions.chart.height = this._heatmapOptions.yAxis[0].categories.length * 28 + 160;
   }
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
@@ -429,28 +433,28 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   highlightHeatmap() {
-    if(this._selectedEvaluationData && !this.isInvalidated) {
+    if (this._selectedEvaluationData && !this.isInvalidated) {
       let _this = this;
       let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
       let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
       let plotBands = [];
-      if(highlightIndex >= 0)
+      if (highlightIndex >= 0)
         plotBands.push({
           className: 'highlight-primary',
-          from: highlightIndex-0.5,
-          to: highlightIndex+0.5,
+          from: highlightIndex - 0.5,
+          to: highlightIndex + 0.5,
           zIndex: 100
         });
       secondaryHighlightIndexes?.forEach(highlightIndex => {
-        if(highlightIndex >= 0)
+        if (highlightIndex >= 0)
           plotBands.push({
             className: 'highlight-secondary',
-            from: highlightIndex-0.5,
-            to: highlightIndex+0.5,
+            from: highlightIndex - 0.5,
+            to: highlightIndex + 0.5,
             zIndex: 100,
             events: {
               click: function () {
-                let index = this.options.from+0.5;
+                let index = this.options.from + 0.5;
                 setTimeout(() => {
                   _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
                 });
@@ -462,14 +466,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._selectedEvaluationData.data.evaluation.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluation.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
     } else {
       this._heatmapOptions.xAxis[0].plotBands = [];
-      this._selectedEvaluationData.data.evaluation.number_of_missing_comparison_results = 0;
+      if (this._selectedEvaluationData) {
+        this._selectedEvaluationData.data.evaluation.number_of_missing_comparison_results = 0;
+      }
     }
     this.heatmapChart?._update();
     this._changeDetectorRef.markForCheck();
   }
 
   showSloDialog() {
-    this.sloDialogRef = this.dialog.open(this.sloDialog, { data: this._selectedEvaluationData.data.evaluation.sloFileContentParsed });
+    this.sloDialogRef = this.dialog.open(this.sloDialog, {data: this._selectedEvaluationData.data.evaluation.sloFileContentParsed});
   }
 
   closeSloDialog() {
@@ -483,7 +489,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   invalidateEvaluationTrigger() {
-    this.invalidateEvaluationDialogRef = this.dialog.open(this.invalidateEvaluationDialog, { data: this._selectedEvaluationData });
+    this.invalidateEvaluationDialogRef = this.dialog.open(this.invalidateEvaluationDialog, {data: this._selectedEvaluationData});
   }
 
   invalidateEvaluation(evaluation, reason) {

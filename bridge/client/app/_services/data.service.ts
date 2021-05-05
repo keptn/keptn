@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
+import {catchError, map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -93,6 +93,15 @@ export class DataService {
 
   public getTracesLastUpdated(root: Root): Date {
     return this._tracesLastUpdated[root.shkeptncontext];
+  }
+
+  public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<boolean> {
+    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(res => {
+      this.loadProjects();
+      return true;
+    }), catchError((err) => {
+      return of(false);
+    }));
   }
 
   public loadKeptnInfo() {
