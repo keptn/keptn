@@ -69,7 +69,7 @@ type IKeptn interface {
 	Start() error
 	// GetResourceHandler returns a handler to fetch data from the configuration service
 	GetResourceHandler() ResourceHandler
-	// GetTaskRegistry provides access to the internal data structure used for organizing task execuctors
+	// GetTaskRegistry provides access to the internal data structure used for organizing task executors
 	GetTaskRegistry() *TaskRegistry
 }
 
