@@ -86,7 +86,7 @@ type Keptn struct {
 func NewKeptn(ceClient cloudevents.Client, source string, opts ...KeptnOption) *Keptn {
 
 	keptn := &Keptn{
-		EventSender:     NewHTTPEventSender(ceClient),
+		EventSender:     &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: ceClient},
 		EventReceiver:   ceClient,
 		Source:          source,
 		TaskRegistry:    NewTasksMap(),
