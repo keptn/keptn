@@ -49,7 +49,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}, context sd
 	return context, nil
 }
 
-func (g *GetActionEventHandler) GetData() interface{} {
+func (g *GetActionEventHandler) GetTriggeredData() interface{} {
 	return g.GetActionTriggeredData
 }
 

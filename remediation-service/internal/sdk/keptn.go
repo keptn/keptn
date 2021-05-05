@@ -38,12 +38,25 @@ func (c *Context) SetFinishedData(data interface{}) {
 
 //go:generate moq  -pkg fake -out ./fake/task_handler_mock.go . TaskHandler
 type TaskHandler interface {
+	// Execute is called whenever the actual business-logic of the serice shall be executed.
+	// Thus, the core logic of the service shall be triggered/implemented in this method.
+	//
+	// Note, that the contract of the method is to return a valid Context as well as a Error Pointer
+	// or nil, if there was no error during execution.
+	//
+	// During or at the end of execution the implementation is expected to call Context.SetFinishedData(data interface{})
+	// to set the data of the .finished event which will eventually be sent out
+	//
 	Execute(keptnHandle IKeptn, ce interface{}, context Context) (Context, *Error)
-	GetData() interface{}
+
+	// GetTriggeredData is called when a new event was received. It is expected that this method returns a pointer to
+	// a struct value of the .triggered event data the service is supposed to process.
+	GetTriggeredData() interface{}
 }
 
 type KeptnOption func(IKeptn)
 
+// WithHandler registers a handler which is responsible for processing a .triggered event
 func WithHandler(handler TaskHandler, eventType string) KeptnOption {
 	return func(k IKeptn) {
 		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler})
@@ -51,11 +64,16 @@ func WithHandler(handler TaskHandler, eventType string) KeptnOption {
 }
 
 type IKeptn interface {
+	// Start starts the internal event handling logic and needs to be called by the user
+	// after creating value of IKeptn
 	Start() error
+	// GetResourceHandler returns a handler to fetch data from the configuration service
 	GetResourceHandler() ResourceHandler
+	// GetTaskRegistry provides access to the internal data structur used for organizing task exeuctors
 	GetTaskRegistry() *TaskRegistry
 }
 
+// Keptn is the default implementation of IKeptn
 type Keptn struct {
 	EventSender     EventSender
 	EventReceiver   EventReceiver
@@ -64,6 +82,7 @@ type Keptn struct {
 	TaskRegistry    TaskRegistry
 }
 
+// NewKeptn creates a new Keptn
 func NewKeptn(ceClient cloudevents.Client, source string, opts ...KeptnOption) *Keptn {
 
 	keptn := &Keptn{
@@ -96,7 +115,7 @@ func (k *Keptn) GetTaskRegistry() *TaskRegistry {
 
 func (k *Keptn) gotEvent(event cloudevents.Event) {
 	if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
-		data := handler.TaskHandler.GetData()
+		data := handler.TaskHandler.GetTriggeredData()
 		if err := event.DataAs(&data); err != nil {
 			k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed}))
 		}
@@ -138,7 +157,6 @@ func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.E
 }
 
 func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}) cloudevents.Event {
-
 	var genericEvent map[string]interface{}
 	keptnv2.Decode(eventData, &genericEvent)
 	if genericEvent["status"] == nil || genericEvent["status"] == "" {

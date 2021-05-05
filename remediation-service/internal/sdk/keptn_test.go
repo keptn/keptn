@@ -17,7 +17,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		context.SetFinishedData(FakeTaskData{})
 		return context, nil
 	}
-	taskHandler.GetDataFunc = func() interface{} {
+	taskHandler.GetTriggeredDataFunc = func() interface{} {
 		return FakeTaskData{}
 	}
 	taskContext := sdk.Context{}
