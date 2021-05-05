@@ -18,7 +18,11 @@ export class NotificationsService {
 
   addNotification(type, message) {
     let notification = Notification.fromJSON({ type, message });
+
+    // Check if the notification to add already exists
     const duplicateNotifications = this._notifications.getValue().filter(n => n.type === notification.type && n.message === notification.message);
+
+    // Only show notification if it is not shown yet
     if(duplicateNotifications.length === 0) {
       this._notifications.next([...this._notifications.getValue(), notification]);
     }
