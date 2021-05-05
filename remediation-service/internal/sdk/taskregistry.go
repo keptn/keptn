@@ -1,6 +1,9 @@
 package sdk
 
+import "sync"
+
 type TaskRegistry struct {
+	sync.RWMutex
 	Entries map[string]TaskEntry
 }
 
@@ -15,18 +18,24 @@ func NewTasksMap() TaskRegistry {
 	}
 }
 
-func (tm *TaskRegistry) Contains(name string) (*TaskEntry, bool) {
-	if e, ok := tm.Entries[name]; ok {
+func (t *TaskRegistry) Contains(name string) (*TaskEntry, bool) {
+	t.Lock()
+	defer t.Unlock()
+	if e, ok := t.Entries[name]; ok {
 		return &e, true
 	}
 	return nil, false
 }
 
-func (tm *TaskRegistry) Add(name string, entry TaskEntry) {
-	tm.Entries[name] = entry
+func (t *TaskRegistry) Add(name string, entry TaskEntry) {
+	t.Lock()
+	defer t.Unlock()
+	t.Entries[name] = entry
 }
 
-func (tm *TaskRegistry) Get(name string) *TaskEntry {
-	entry := tm.Entries[name]
+func (t *TaskRegistry) Get(name string) *TaskEntry {
+	t.Lock()
+	defer t.Unlock()
+	entry := t.Entries[name]
 	return &entry
 }
