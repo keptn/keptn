@@ -17,7 +17,7 @@ export class KeptnUrlPipe implements PipeTransform {
       KeptnUrlPipe._version = dataservice.keptnInfo;
       KeptnUrlPipe._version
         .pipe(
-          filter(info => !!info.metadata),
+          filter(info => !!info && !!info.metadata),
           take(1)
         )
         .subscribe(info => {
