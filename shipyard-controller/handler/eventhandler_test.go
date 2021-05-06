@@ -2,12 +2,11 @@ package handler
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,10 +20,11 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 	tests := []struct {
 		name             string
 		fields           fields
+		payload          []byte
 		expectStatusCode int
 	}{
 		{
-			name: "return 500 on error",
+			name: "return 200 to indicate the event has been received - also in case of an error",
 			fields: fields{
 				ShipyardController: &fake.ShipyardController{
 					HandleIncomingEventFunc: func(event models.Event) error {
@@ -32,10 +32,11 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 					},
 				},
 			},
-			expectStatusCode: http.StatusInternalServerError,
+			payload:          []byte(`{"specversion": "1.0"}`),
+			expectStatusCode: http.StatusOK,
 		},
 		{
-			name: "return 400 on errNoMatchingEvent",
+			name: "return 400 on invalid event payload",
 			fields: fields{
 				ShipyardController: &fake.ShipyardController{
 					HandleIncomingEventFunc: func(event models.Event) error {
@@ -43,6 +44,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 					},
 				},
 			},
+			payload:          []byte("invalid"),
 			expectStatusCode: http.StatusBadRequest,
 		},
 	}
@@ -51,18 +53,13 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			dummyEvent := &models.Event{
-				Specversion: "1.0",
-			}
-
-			marshal, _ := json.Marshal(dummyEvent)
-			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer(marshal))
+			c.Request, _ = http.NewRequest(http.MethodPost, "", bytes.NewBuffer(tt.payload))
 			service := &EventHandler{
 				ShipyardController: tt.fields.ShipyardController,
 			}
 
 			service.HandleEvent(c)
-			assert.Equal(t, tt.expectStatusCode, w.Code)
+			require.Equal(t, tt.expectStatusCode, w.Code)
 		})
 	}
 }

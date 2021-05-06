@@ -113,7 +113,7 @@ func _main(env envConfig) int {
 
 func startEventReceiver(waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
-
+	setupCloudEventClient()
 	switch getPubSubConnectionType() {
 	case connectionTypeNATS:
 		createNATSClientConnection()
@@ -606,7 +606,7 @@ func createNATSClientConnection() {
 	}
 }
 
-func ensureRecipientConnection() {
+func setupCloudEventClient() {
 	if ceClient == nil {
 		p, err := cloudevents.NewHTTP()
 		if err != nil {
@@ -681,14 +681,14 @@ func contains(s []string, str string) bool {
 }
 
 func sendEvent(event cloudevents.Event) error {
-	ensureRecipientConnection()
+
 	if !matchesFilter(event) {
 		// Do not send cloud event if it does not match the filter
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	ctx = cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	ctx = cloudevents.ContextWithTarget(ctx, getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 

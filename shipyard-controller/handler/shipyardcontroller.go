@@ -314,7 +314,16 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 		log.Infof("Task sequence related to eventID %s: %s.%s", event.Triggeredid, eventToSequence.Stage, eventToSequence.TaskSequenceName)
 		log.Info("Trying to fetch shipyard and get next task")
-		shipyard, err := common.GetShipyard(eventScope.Project)
+
+		project, err := sc.projectRepo.GetProject(eventScope.Project)
+		if err != nil {
+			log.Errorf("could not load project: %s", err.Error())
+		}
+		shipyard, err := common.UnmarshalShipyard(project.Shipyard)
+		if err != nil {
+			log.Errorf("could not decode shipyard file: %s", err.Error())
+		}
+
 		if err != nil {
 			msg := "Could not retrieve shipyard of project " + eventScope.Project + ": " + err.Error()
 			log.Error(msg)
