@@ -3,7 +3,6 @@ module github.com/keptn/keptn/shipyard-controller
 go 1.16
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/ghodss/yaml v1.0.0
@@ -11,8 +10,8 @@ require (
 	github.com/go-test/deep v1.0.5
 	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/ory/dockertest/v3 v3.6.5
 	github.com/keptn/go-utils v0.8.4-0.20210506073402-95bb36d6f884
+	github.com/ory/dockertest/v3 v3.6.5
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0

@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/alecthomas/template"
 	"github.com/swaggo/swag"
+	"text/template"
 )
 
 var doc = `{
