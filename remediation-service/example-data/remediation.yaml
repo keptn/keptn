@@ -1,6 +1,0 @@
-remediations:
-- name: cpu_usage_sockshop_carts
-  actions:
-  - action: scaling
-    value: +1
-

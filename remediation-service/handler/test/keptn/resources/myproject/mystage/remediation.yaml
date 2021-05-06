@@ -1,0 +1,18 @@
+apiVersion: spec.keptn.sh/0.1.4
+kind: Remediation
+metadata:
+  name: service-remediation
+spec:
+  remediations:
+    - problemType: Response time degradation
+      actionsOnOpen:
+        - action: toggle-feature
+          name: toggle-feature
+          description: Toggle feature flag EnablePromotion to OFF
+          value:
+            EnablePromotion: "off"
+        - action: run-snow-wf
+          name: run-snow-wf
+          description: Call SNOW workflow
+          value:
+            hook: https://myremediationlink
