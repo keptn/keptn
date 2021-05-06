@@ -73,6 +73,21 @@ func TestGetNextAction(t *testing.T) {
 			false,
 		},
 		{
+			"determine action - by rootCause2",
+			args{
+				newRemediation("test/remediation.yaml"),
+				newProblemDetails("problemType1", "problemType2"),
+				0,
+			},
+			&v0_2_0.ActionInfo{
+				Name:        "actionName11",
+				Action:      "action11",
+				Description: "actionDescription11",
+				Value:       map[string]interface{}{"foo": "bar"},
+			},
+			false,
+		},
+		{
 			"determine action - not found",
 			args{
 				newRemediation("test/remediation.yaml"),

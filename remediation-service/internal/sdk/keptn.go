@@ -186,17 +186,15 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 }
 
 func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
+
 	commonEventData := keptnv2.EventData{}
-	if eventData != nil {
-		keptnv2.Decode(eventData, &commonEventData)
-		commonEventData.Status = err.StatusType
-		commonEventData.Result = err.ResultType
-		commonEventData.Message = err.Message
-	} else {
-		commonEventData.Status = err.StatusType
-		commonEventData.Result = err.ResultType
-		commonEventData.Message = err.Message
+	if eventData == nil {
+		triggeredEvent.DataAs(&commonEventData)
 	}
+
+	commonEventData.Result = err.ResultType
+	commonEventData.Status = err.StatusType
+	commonEventData.Message = err.Message
 
 	finishedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".finished"
 	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
