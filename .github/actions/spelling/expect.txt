@@ -99,7 +99,7 @@ clickable
 clientcmd
 clientset
 CLN
-cloudevent
+cloudevents
 cloudsdk
 CLZ
 cmdutil
