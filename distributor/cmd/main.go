@@ -66,7 +66,7 @@ var uptimeTicker *time.Ticker
 
 var closeChan = make(chan bool)
 
-var ceCache = lib.NewCloudEventsCache()
+var ceCache *lib.CloudEventsCache
 
 var pubSubConnections map[string]*cenats.Sender
 
@@ -86,6 +86,8 @@ var externalAPIProxyMappings = map[string]string{
 
 const connectionTypeNATS = "nats"
 const connectionTypeHTTP = "http"
+
+var ceClient cloudevents.Client
 
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
@@ -395,6 +397,8 @@ func createHTTPConnection() {
 		return
 	}
 
+	ceCache = lib.NewCloudEventsCache()
+
 	eventEndpoint := getHTTPPollingEndpoint()
 	topics := strings.Split(env.PubSubTopic, ",")
 
@@ -440,7 +444,6 @@ func pollHTTPEventSource(endpoint string, token string, topics []string) {
 	}
 }
 
-// pollEventsForTopic polls .triggered events from the Keptn api, and forwards them to the receiving service
 func pollEventsForTopic(endpoint string, token string, topic string) {
 	logger.Infof("Retrieving events of type %s", topic)
 	events, err := getEventsFromEndpoint(endpoint, token, topic)
@@ -448,45 +451,32 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", topic, endpoint, err)
 	}
 	logger.Infof("Received %d new .triggered events", len(events))
-
-	// iterate over all events, discard the event if it has already been sent
 	for index, _ := range events {
-		event := *events[index]
+		var event keptnmodels.KeptnContextExtendedCE
+		event = *events[index]
 		logger.Infof("Check if event %s has already been sent", event.ID)
+		if ceCache == nil {
+			logger.Debug("Cache containing sent CloudEvents is nil. Creating a new one")
+			ceCache = lib.NewCloudEventsCache()
+		}
 
 		if ceCache.Contains(topic, event.ID) {
-			// Skip this event as it has already been sent
 			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
 			continue
 		}
 
 		logger.Infof("CloudEvent with ID %s has not been sent yet", event.ID)
 
-		marshal, err := json.Marshal(event)
-
-		if err != nil {
-			logger.Errorf("Marshalling CloudEvent with ID %s failed: %s", event.ID, err.Error())
-			continue
-		}
-
-		e, err := decodeCloudEvent(marshal)
-
-		if err != nil {
-			logger.Errorf("Decoding CloudEvent with ID %s failed: %s", event.ID, err.Error())
-			continue
-		}
+		marshal, _ := json.Marshal(event)
+		e, _ := decodeCloudEvent(marshal)
 
 		if e != nil {
 			logger.Infof("Sending CloudEvent with ID %s to %s", event.ID, env.PubSubRecipient)
-			// add to CloudEvents cache
-			ceCache.Add(*event.Type, event.ID)
 			go func() {
-				if err := sendEvent(*e); err != nil {
-					logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, env.PubSubRecipient, err.Error())
-					// Sending failed, remove from CloudEvents cache
-					ceCache.Remove(*event.Type, event.ID)
+				if err := sendEvent(*e); err == nil {
+					ceCache.Add(*event.Type, event.ID)
 				}
-				logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", topic, ceCache.Length(topic))
+				logger.Infof("Number of sent events for topic %s: %d", topic, ceCache.Length(topic))
 			}()
 		}
 	}
@@ -616,17 +606,18 @@ func createNATSClientConnection() {
 	}
 }
 
-func createRecipientConnection() cloudevents.Client {
-	p, err := cloudevents.NewHTTP()
-	if err != nil {
-		log.Fatalf("failed to create protocol: %s", err.Error())
-	}
+func ensureRecipientConnection() {
+	if ceClient == nil {
+		p, err := cloudevents.NewHTTP()
+		if err != nil {
+			log.Fatalf("failed to create protocol: %s", err.Error())
+		}
 
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		ceClient, err = cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+		if err != nil {
+			log.Fatalf("failed to create client, %v", err)
+		}
 	}
-	return c
 }
 
 func handleMessage(m *nats.Msg) {
@@ -690,16 +681,18 @@ func contains(s []string, str string) bool {
 }
 
 func sendEvent(event cloudevents.Event) error {
-	client := createRecipientConnection()
-
+	ensureRecipientConnection()
 	if !matchesFilter(event) {
 		// Do not send cloud event if it does not match the filter
 		return nil
 	}
 
-	ctx := cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx = cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
-	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
+	defer cancel()
+
+	if result := ceClient.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		fmt.Printf("failed to send: %s\n", result.Error())
 		return errors.New(result.Error())
 	}
