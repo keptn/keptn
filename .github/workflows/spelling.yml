@@ -2,9 +2,8 @@ name: Spell checking
 on:
   push:
     branches:
-      - "**"
-    tags-ignore:
-      - "**"
+      - 'master'
+      - 'release-*'
   pull_request_target:
     branches:
       - "**"
@@ -15,7 +14,7 @@ on:
 jobs:
   build:
     name: Spell checking
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: checkout-merge
       if: "contains(github.event_name, 'pull_request')"
@@ -26,5 +25,3 @@ jobs:
       if: "!contains(github.event_name, 'pull_request')"
       uses: actions/checkout@v2.0.0
     - uses: check-spelling/check-spelling@v0.0.18
-      with:
-        experimental_apply_changes_via_bot: 1

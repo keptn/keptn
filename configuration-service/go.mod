@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/configuration-service
 
-go 1.13
+go 1.16
 
 require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
@@ -15,8 +15,8 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/martian v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.3
-	github.com/keptn/kubernetes-utils v0.8.1
+	github.com/keptn/go-utils v0.8.4-0.20210506073402-95bb36d6f884
+	github.com/keptn/kubernetes-utils v0.8.2-0.20210506073412-a06581ae8a26
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.4.2

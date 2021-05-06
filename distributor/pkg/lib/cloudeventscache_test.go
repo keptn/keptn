@@ -28,6 +28,25 @@ func TestAddEventTwice(t *testing.T) {
 	assert.Equal(t, 2, len(cache.Get("t1")))
 }
 
+func TestAddRemoveEvent(t *testing.T) {
+	cache := lib.NewCloudEventsCache()
+	cache.Add("t1", "e1")
+	cache.Add("t1", "e2")
+	cache.Add("t1", "e3")
+
+	assert.Equal(t, 3, cache.Length("t1"))
+
+	cache.Remove("t1", "e1")
+	assert.Equal(t, 2, cache.Length("t1"))
+	assert.True(t, cache.Contains("t1", "e2"))
+	assert.True(t, cache.Contains("t1", "e3"))
+
+
+	cache.Remove("t1", "e3")
+	assert.Equal(t, 1, cache.Length("t1"))
+	assert.True(t, cache.Contains("t1", "e2"))
+}
+
 func TestKeep(t *testing.T) {
 	cache := lib.NewCloudEventsCache()
 	cache.Add("t1", "e1")

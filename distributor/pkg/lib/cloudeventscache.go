@@ -39,6 +39,23 @@ func (c *CloudEventsCache) Get(topicName string) []string {
 	return cp
 }
 
+// Remove a CloudEvent with specified type from the cache
+func (c *CloudEventsCache) Remove(topicName, eventID string) bool {
+	c.Lock()
+	defer c.Unlock()
+
+	eventsForTopic := c.cache[topicName]
+	for index, id := range eventsForTopic {
+		if id == eventID {
+			// found
+			// make sure to store the result back in c.cache[topicName]
+			c.cache[topicName] = append(eventsForTopic[:index], eventsForTopic[index+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 func (c *CloudEventsCache) Contains(topicName, eventID string) bool {
 	c.RLock()
 	defer c.RUnlock()
