@@ -128,6 +128,9 @@ func (mdbrepo *MongoDBStateRepo) UpdateState(state models.SequenceState) error {
 	if state.Shkeptncontext == "" {
 		return errors.New("shkeptncontext must be set")
 	}
+	if state.Name == "" {
+		return errors.New("name must be set")
+	}
 	err := mdbrepo.DbConnection.EnsureDBConnection()
 	if err != nil {
 		return err

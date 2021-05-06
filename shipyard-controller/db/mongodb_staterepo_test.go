@@ -57,7 +57,7 @@ func shutDownLocalMongoDB(pool *dockertest.Pool, resource *dockertest.Resource) 
 	}
 }
 
-func TestMongoDBStateRepo_StateRepo(t *testing.T) {
+func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	pool, dbResource := setupLocalMongoDB()
 	defer shutDownLocalMongoDB(pool, dbResource)
 
@@ -82,6 +82,7 @@ func TestMongoDBStateRepo_StateRepo(t *testing.T) {
 		GetStateParams: models.GetStateParams{
 			Project: "my-project",
 		},
+		Name:           "my-sequence",
 		Shkeptncontext: "my-context",
 	})
 
@@ -131,5 +132,49 @@ func TestMongoDBStateRepo_StateRepo(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, int64(0), states.TotalCount)
 	require.Equal(t, 0, len(states.States))
+}
 
+func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
+	pool, dbResource := setupLocalMongoDB()
+	defer shutDownLocalMongoDB(pool, dbResource)
+
+	mdbrepo := &db.MongoDBStateRepo{
+		DbConnection: db.MongoDBConnection{},
+	}
+
+	// create a state without a project
+	invalidState := models.SequenceState{
+		Name:           "my-sequence",
+		Service:        "my-service",
+		Time:           "",
+		Shkeptncontext: "my-context",
+		State:          "triggered",
+		Stages:         nil,
+	}
+
+	err := mdbrepo.CreateState(invalidState)
+	require.NotNil(t, err)
+
+	err = mdbrepo.UpdateState(invalidState)
+	require.NotNil(t, err)
+
+	// project set, but not context
+	invalidState.Project = "my-project"
+	invalidState.Shkeptncontext = ""
+
+	err = mdbrepo.CreateState(invalidState)
+	require.NotNil(t, err)
+
+	err = mdbrepo.UpdateState(invalidState)
+	require.NotNil(t, err)
+
+	// context and project set, but not name
+	invalidState.Shkeptncontext = "my-context"
+	invalidState.Name = ""
+
+	err = mdbrepo.CreateState(invalidState)
+	require.NotNil(t, err)
+
+	err = mdbrepo.UpdateState(invalidState)
+	require.NotNil(t, err)
 }
