@@ -13,7 +13,6 @@ import (
 
 const taskSequenceStateCollectionSuffix = "-taskSequenceStates"
 
-var ErrNoStateFound = errors.New("no sequence state found")
 var ErrStateAlreadyExists = errors.New("sequence state already exists")
 
 type MongoDBStateRepo struct {

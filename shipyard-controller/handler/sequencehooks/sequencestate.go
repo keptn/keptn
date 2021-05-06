@@ -11,7 +11,6 @@ import (
 )
 
 const sequenceTriggeredState = "triggered"
-const sequenceStartedState = "started"
 const sequenceFinished = "finished"
 
 type SequenceStateMaterializedView struct {
