@@ -20,6 +20,8 @@ import (
 	"time"
 )
 
+const KeptnSpecVersion = "0.2.0"
+
 const sequenceStateShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
 kind: "Shipyard"
 metadata:
@@ -50,9 +52,7 @@ spec:
 const defaultKeptnNamespace = "keptn"
 
 func Test_SequenceStateIntegrationTest(t *testing.T) {
-	if os.Getenv("KEPTN_NAMESPACE") == "" {
-		os.Setenv("KEPTN_NAMESPACE", defaultKeptnNamespace)
-	}
+	prepareEnvVars()
 	projectName := "state"
 	serviceName := "my-service"
 	file, err := createTmpShipyardFile(sequenceStateShipyard)
@@ -61,7 +61,10 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	source := "golang-test"
 
-	uniform := []string{"helm-service", "jmeter-service", "lighthouse-service"}
+	uniform := []string{"helm-service"}
+
+	// scale down the services that are usually involved in the sequence defined in the shipyard above.
+	// this way we can control the events sent during this sequence and check whether the state is updated appropriately
 	if err := scaleDownUniform(uniform); err != nil {
 		t.Errorf("scaling down uniform failed: %s", err.Error())
 	}
@@ -72,6 +75,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		}
 	}()
 
+	// check if the project 'state' is already available - if not, delete it before creating it again
 	resp, err := apiGETRequest("/controlPlane/v1/project/" + projectName)
 
 	if resp.Response().StatusCode != http.StatusNotFound {
@@ -94,6 +98,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	// send a delivery.triggered event
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
+
 	resp, err = apiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentTriggeredEventData{
@@ -107,7 +112,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 			},
 		},
 		ID:                 uuid.NewString(),
-		Shkeptnspecversion: "0.2.0",
+		Shkeptnspecversion: KeptnSpecVersion,
 		Source:             &source,
 		Specversion:        "1.0",
 		Type:               &eventType,
@@ -345,6 +350,12 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 		return true
 	}, 10*time.Second, 2*time.Second)
+}
+
+func prepareEnvVars() {
+	if os.Getenv("KEPTN_NAMESPACE") == "" {
+		os.Setenv("KEPTN_NAMESPACE", defaultKeptnNamespace)
+	}
 }
 
 func getLatestEventOfType(keptnContext, projectName, stage, eventType string) (*models.KeptnContextExtendedCE, error) {

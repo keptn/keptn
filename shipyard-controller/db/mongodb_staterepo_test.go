@@ -14,7 +14,6 @@ import (
 )
 
 func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
-	os.Setenv("MONGODB_HOST", "localhost:27017")
 	os.Setenv("MONGO_DB_NAME", "keptn")
 	os.Setenv("MONGODB_USER", "keptn")
 	os.Setenv("MONGODB_PASSWORD", "password")
@@ -33,6 +32,7 @@ func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
 
 	port := resource.GetPort("27017/tcp")
 	os.Setenv("MONGODB_HOST", "localhost:"+port)
+
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	if err := pool.Retry(func() error {
 		var err error
