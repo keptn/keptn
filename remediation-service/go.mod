@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/remediation-service
 
-go 1.13
+go 1.16
 
 require (
 	cloud.google.com/go v0.40.0 // indirect
@@ -16,7 +16,7 @@ require (
 	github.com/gophercloud/gophercloud v0.9.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.3
+	github.com/keptn/go-utils v0.8.4-0.20210506073402-95bb36d6f884
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
