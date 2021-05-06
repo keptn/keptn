@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.2.0
 	github.com/keptn/go-utils v0.8.3
-	github.com/keptn/kubernetes-utils v0.8.1
+	github.com/keptn/kubernetes-utils v0.8.2-0.20210506075327-6777c347ada4
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.1
