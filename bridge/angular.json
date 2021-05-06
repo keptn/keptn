@@ -99,7 +99,7 @@
             "polyfills": "client/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "sourceMap": false,
+            "sourceMap": true,
             "codeCoverage": true,
             "watch": false,
             "assets": [

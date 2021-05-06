@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/helm-service
 
-go 1.13
+go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.3.1
@@ -10,8 +10,8 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.3
-	github.com/keptn/kubernetes-utils v0.8.1
+	github.com/keptn/go-utils v0.8.4-0.20210506073402-95bb36d6f884
+	github.com/keptn/kubernetes-utils v0.8.2-0.20210506073412-a06581ae8a26
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
