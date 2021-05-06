@@ -9,7 +9,6 @@ type TaskRegistry struct {
 
 type TaskEntry struct {
 	TaskHandler TaskHandler
-	Context     Context
 }
 
 func NewTasksMap() TaskRegistry {

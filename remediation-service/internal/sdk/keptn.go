@@ -41,13 +41,9 @@ type TaskHandler interface {
 	// Execute is called whenever the actual business-logic of the service shall be executed.
 	// Thus, the core logic of the service shall be triggered/implemented in this method.
 	//
-	// Note, that the contract of the method is to return a valid Context as well as a Error Pointer
+	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
 	// or nil, if there was no error during execution.
-	//
-	// During or at the end of execution the implementation is expected to call Context.SetFinishedData(data interface{})
-	// to set the data of the .finished event which will eventually be sent out
-	//
-	Execute(keptnHandle IKeptn, ce interface{}, context Context) (Context, *Error)
+	Execute(keptnHandle IKeptn, ce interface{}) (interface{}, *Error)
 
 	// GetTriggeredData is called when a new event was received. It is expected that this method returns a pointer to
 	// a struct value of the .triggered event data the service is supposed to process.
@@ -121,16 +117,16 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 		}
 		k.send(k.createStartedEventForTriggeredEvent(event))
 
-		newContext, err := handler.TaskHandler.Execute(k, data, handler.Context)
+		result, err := handler.TaskHandler.Execute(k, data)
 		if err != nil {
 			log.Errorf("error during task execution %v", err.Err)
-			k.send(k.createErrorFinishedEventForTriggeredEvent(event, newContext.FinishedData, err))
+			k.send(k.createErrorFinishedEventForTriggeredEvent(event, result, err))
 			return
 		}
-		if newContext.FinishedData == nil {
+		if result == nil {
 			log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
 		} else {
-			k.send(k.createFinishedEventForTriggeredEvent(event, newContext.FinishedData))
+			k.send(k.createFinishedEventForTriggeredEvent(event, result))
 		}
 	}
 }

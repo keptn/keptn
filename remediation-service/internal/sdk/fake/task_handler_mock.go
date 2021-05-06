@@ -18,7 +18,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 //
 // 		// make and configure a mocked sdk.TaskHandler
 // 		mockedTaskHandler := &TaskHandlerMock{
-// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
+// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error) {
 // 				panic("mock out the Execute method")
 // 			},
 // 			GetTriggeredDataFunc: func() interface{} {
@@ -32,7 +32,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 // 	}
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error)
+	ExecuteFunc func(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error)
 
 	// GetTriggeredDataFunc mocks the GetTriggeredData method.
 	GetTriggeredDataFunc func() interface{}
@@ -45,8 +45,6 @@ type TaskHandlerMock struct {
 			KeptnHandle sdk.IKeptn
 			// Ce is the ce argument value.
 			Ce interface{}
-			// Context is the context argument value.
-			Context sdk.Context
 		}
 		// GetTriggeredData holds details about calls to the GetTriggeredData method.
 		GetTriggeredData []struct {
@@ -57,23 +55,21 @@ type TaskHandlerMock struct {
 }
 
 // Execute calls ExecuteFunc.
-func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}, context sdk.Context) (sdk.Context, *sdk.Error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but TaskHandler.Execute was just called")
 	}
 	callInfo := struct {
 		KeptnHandle sdk.IKeptn
 		Ce          interface{}
-		Context     sdk.Context
 	}{
 		KeptnHandle: keptnHandle,
 		Ce:          ce,
-		Context:     context,
 	}
 	mock.lockExecute.Lock()
 	mock.calls.Execute = append(mock.calls.Execute, callInfo)
 	mock.lockExecute.Unlock()
-	return mock.ExecuteFunc(keptnHandle, ce, context)
+	return mock.ExecuteFunc(keptnHandle, ce)
 }
 
 // ExecuteCalls gets all the calls that were made to Execute.
@@ -82,12 +78,10 @@ func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}, con
 func (mock *TaskHandlerMock) ExecuteCalls() []struct {
 	KeptnHandle sdk.IKeptn
 	Ce          interface{}
-	Context     sdk.Context
 } {
 	var calls []struct {
 		KeptnHandle sdk.IKeptn
 		Ce          interface{}
-		Context     sdk.Context
 	}
 	mock.lockExecute.RLock()
 	calls = mock.calls.Execute
