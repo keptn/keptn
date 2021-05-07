@@ -16,6 +16,7 @@ type generateKeptnServiceStruct struct {
 
 var generateKeptnService generateKeptnServiceStruct
 var serviceTemplateRepoUrl = "https://github.com/keptn-sandbox/keptn-service-template-go"
+var serviceTemplateRefUrl = "https://api.github.com/repos/keptn-sandbox/keptn-service-template-go/git/refs/tags"
 
 var generateKeptnServiceCmd = &cobra.Command{
 	Use:          "keptn-service",
@@ -30,34 +31,37 @@ var generateKeptnServiceCmd = &cobra.Command{
 
 func generateServiceTemplate(generateKeptnService generateKeptnServiceStruct) error {
 	var err error
+	keptnVersion, err := getInstalledKeptnVersion()
+	if err != nil {
+		return err
+	}
+	refTag, err := keptnUtils.GetGitHubRefs(serviceTemplateRefUrl, keptnVersion)
+
 	fmt.Printf("Cloning the template\n")
-	err = keptnUtils.CloneGitHubUrl(*generateKeptnService.Service, serviceTemplateRepoUrl)
-	if err != nil{
+	err = keptnUtils.CloneGitHubUrl(*generateKeptnService.Service, serviceTemplateRepoUrl, refTag)
+	if err != nil {
 		return err
 	}
 	fmt.Printf("Replacing Image name to: %s\n", *generateKeptnService.Image)
 	err = replaceImageFiles(*generateKeptnService.Image, *generateKeptnService.Service)
 
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
 	fmt.Printf("Creating your service named: %s\n", *generateKeptnService.Service)
 	err = replaceServiceName(*generateKeptnService.Service)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-
-
 	return nil
 }
-
 
 func replaceImageFiles(imageName string, serviceName string) error {
 	var err error
 	filePatterns := []string{"*"}
-	err = filepath.Walk(serviceName, fileUtils.RecursiveRefactor("keptnsandbox/keptn-service-template-go",imageName,filePatterns))
-	if err != nil{
+	err = filepath.Walk(serviceName, fileUtils.RecursiveRefactor("keptnsandbox/keptn-service-template-go", imageName, filePatterns))
+	if err != nil {
 		return err
 	}
 	return nil
@@ -65,8 +69,8 @@ func replaceImageFiles(imageName string, serviceName string) error {
 
 func replaceServiceName(serviceName string) error {
 	filePatterns := []string{"*"}
-	err := filepath.Walk(serviceName, fileUtils.RecursiveRefactor("keptn-service-template-go",serviceName,filePatterns))
-	if err != nil{
+	err := filepath.Walk(serviceName, fileUtils.RecursiveRefactor("keptn-service-template-go", serviceName, filePatterns))
+	if err != nil {
 		return err
 	}
 	return nil
