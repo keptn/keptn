@@ -23,6 +23,7 @@ apimachinery
 apimodels
 apisecret
 apiserver
+APIURL
 apiutils
 apk
 Appk
@@ -346,6 +347,7 @@ IHelper
 IKeptn
 img
 IMPL
+imroc
 INamespace
 inferrable
 Infof
@@ -694,6 +696,7 @@ selfservice
 semver
 sequencehooks
 sequencestate
+sequencestaterepo
 serr
 serrors
 serviceaccount
@@ -703,6 +706,7 @@ servicename
 servicenow
 servicetype
 serviceutils
+Setenv
 shellcheck
 shellscripts
 shellwords
@@ -742,7 +746,6 @@ stagemanager
 stakeholders
 standalone
 startedat
-staterepo
 stdduration
 Stderr
 stdin
