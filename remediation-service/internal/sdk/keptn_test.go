@@ -33,7 +33,7 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 		return nil
 	}
 
-	taskRegistry := sdk.TaskRegistry{
+	taskRegistry := &sdk.TaskRegistry{
 		Entries: taskEntries,
 	}
 

@@ -75,7 +75,7 @@ type Keptn struct {
 	EventReceiver   EventReceiver
 	ResourceHandler ResourceHandler
 	Source          string
-	TaskRegistry    TaskRegistry
+	TaskRegistry    *TaskRegistry
 }
 
 // NewKeptn creates a new Keptn
@@ -106,27 +106,37 @@ func (k *Keptn) GetResourceHandler() ResourceHandler {
 }
 
 func (k *Keptn) GetTaskRegistry() *TaskRegistry {
-	return &k.TaskRegistry
+	return k.TaskRegistry
 }
 
 func (k *Keptn) gotEvent(event cloudevents.Event) {
 	if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
 		data := handler.TaskHandler.GetTriggeredData()
 		if err := event.DataAs(&data); err != nil {
-			k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed}))
+			log.Errorf("error during decoding of .triggered event: %v", err)
+			if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
+				log.Errorf("unable to send .finished event: %v", err)
+				return
+			}
 		}
-		k.send(k.createStartedEventForTriggeredEvent(event))
+		if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
+			log.Errorf("unable to send .started event: %v", err)
+			return
+		}
 
 		result, err := handler.TaskHandler.Execute(k, data)
 		if err != nil {
 			log.Errorf("error during task execution %v", err.Err)
-			k.send(k.createErrorFinishedEventForTriggeredEvent(event, result, err))
+			if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, result, err)); err != nil {
+				log.Errorf("unable to send .finished event: %v", err)
+				return
+			}
 			return
 		}
 		if result == nil {
 			log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
-		} else {
-			k.send(k.createFinishedEventForTriggeredEvent(event, result))
+		} else if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
+			log.Errorf("unable to send .finished event: %v", err)
 		}
 	}
 }

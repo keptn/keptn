@@ -7,11 +7,12 @@ import (
 )
 
 const getActionTriggeredEventType = "sh.keptn.event.get-action.triggered"
+const serviceName = "remediation-service"
 
 func main() {
 	keptn := sdk.NewKeptn(
 		sdk.GetHTTPClientFromEnv(),
-		"remediation-service",
+		serviceName,
 		sdk.WithHandler(handler.NewGetActionEventHandler(), getActionTriggeredEventType),
 	)
 	log.Fatal(keptn.Start())

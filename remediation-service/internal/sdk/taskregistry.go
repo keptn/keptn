@@ -11,8 +11,8 @@ type TaskEntry struct {
 	TaskHandler TaskHandler
 }
 
-func NewTasksMap() TaskRegistry {
-	return TaskRegistry{
+func NewTasksMap() *TaskRegistry {
+	return &TaskRegistry{
 		Entries: make(map[string]TaskEntry),
 	}
 }

@@ -25,7 +25,7 @@ func newGetActionTriggeredEvent(filename string) cloudevents.Event {
 	return keptnv2.ToCloudEvent(event)
 }
 
-func Test_Receiving_GetActionTriggeredEvent_RemedöiationFromServiceLevel(t *testing.T) {
+func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 
 	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler(handler.NewGetActionEventHandler(), "sh.keptn.event.get-action.triggered"))
 	fakeKeptn.Start()
