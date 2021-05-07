@@ -13,7 +13,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"net/url"
 	"time"
 )
 
@@ -314,12 +313,17 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 		log.Infof("Task sequence related to eventID %s: %s.%s", event.Triggeredid, eventToSequence.Stage, eventToSequence.TaskSequenceName)
 		log.Info("Trying to fetch shipyard and get next task")
-		shipyard, err := common.GetShipyard(eventScope.Project)
+		project, err := sc.projectRepo.GetProject(eventScope.Project)
 		if err != nil {
-			msg := "Could not retrieve shipyard of project " + eventScope.Project + ": " + err.Error()
-			log.Error(msg)
-			return errors.New(msg)
+			log.Errorf("could not load project: %s", err.Error())
+			return err
 		}
+		shipyard, err := common.UnmarshalShipyard(project.Shipyard)
+		if err != nil {
+			log.Errorf("could not decode shipyard file: %s", err.Error())
+			return err
+		}
+
 		sequence, err := sc.getTaskSequenceInStage(eventToSequence.Stage, eventToSequence.TaskSequenceName, shipyard)
 		if err != nil {
 			msg := "No task eventToSequence " + eventToSequence.Stage + "." + eventToSequence.TaskSequenceName + " found in shipyard: " + err.Error()
@@ -620,20 +624,13 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 		mergedPayload = common.Merge(eventPayload, tmp)
 	}
 
-	source, _ := url.Parse("shipyard-controller")
 	eventType := eventScope.Stage + "." + taskSequenceName
 
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
-	event.SetTime(time.Now().UTC())
-	event.SetType(keptnv2.GetTriggeredEventType(eventType))
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", eventScope.KeptnContext)
+	var event cloudevents.Event
 	if mergedPayload != nil {
-		event.SetData(cloudevents.ApplicationJSON, mergedPayload)
+		event = common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), mergedPayload)
 	} else {
-		event.SetData(cloudevents.ApplicationJSON, eventPayload)
+		event = common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), mergedPayload)
 	}
 
 	toEvent, err := models.ConvertToEvent(event)
@@ -648,16 +645,10 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
-	source, _ := url.Parse("shipyard-controller")
 	eventType := eventScope.Stage + "." + taskSequenceName
 
-	event := cloudevents.NewEvent()
-	event.SetType(keptnv2.GetFinishedEventType(eventType))
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", eventScope.KeptnContext)
-	event.SetExtension("triggeredid", triggeredID)
-	event.SetData(cloudevents.ApplicationJSON, eventScope.EventData)
+	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetFinishedEventType(eventType), eventScope.EventData)
+	event.SetID(uuid.NewString())
 
 	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event})
 }

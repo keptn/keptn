@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -114,15 +115,17 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 		})
 	}
 
-	err := eh.ShipyardController.HandleIncomingEvent(*event)
-	if err != nil {
-		if err == errNoMatchingEvent {
-			SetBadRequestErrorResponse(err, c)
-		} else {
-			SetInternalServerErrorResponse(err, c)
+	go func() {
+		err := eh.ShipyardController.HandleIncomingEvent(*event)
+		if err != nil {
+			if err == errNoMatchingEvent {
+				log.Infof("no matching event found for event %s", event.ID)
+			} else {
+				log.Errorf("error processing request: %s", err.Error())
+			}
+			return
 		}
-		return
-	}
+	}()
 	c.Status(http.StatusOK)
 
 }

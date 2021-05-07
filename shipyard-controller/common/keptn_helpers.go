@@ -136,6 +136,7 @@ func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload
 	event.SetType(eventType)
 	event.SetSource(source.String())
 	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetID(uuid.NewString())
 	if keptnContext == "" {
 		event.SetExtension("shkeptncontext", uuid.New().String())
 	} else {

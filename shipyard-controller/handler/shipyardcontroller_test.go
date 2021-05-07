@@ -2001,7 +2001,14 @@ func getTestShipyardController() *shipyardController {
 	taskSequenceCollection := []models.TaskSequenceEvent{}
 
 	em := &shipyardController{
-		projectRepo: nil,
+		projectRepo: &db_mock.ProjectRepoMock{
+			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+				return &models.ExpandedProject{
+					ProjectName: "test-project",
+					Shipyard:    testShipyardFile,
+				}, nil
+			},
+		},
 		eventRepo: &db_mock.EventRepoMock{
 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 				if status[0] == common.TriggeredEvent {
