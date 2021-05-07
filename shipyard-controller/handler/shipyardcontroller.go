@@ -7,7 +7,6 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
-	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -724,7 +723,6 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 	eventType := eventScope.Stage + "." + taskSequenceName
 
 	event := common.CreateEventWithPayload(eventScope.KeptnContext, triggeredID, keptnv2.GetFinishedEventType(eventType), eventScope.EventData)
-	event.SetID(uuid.NewString())
 
 	if toEvent, err := models.ConvertToEvent(event); err == nil {
 		sc.onSubSequenceFinished(*toEvent)
@@ -762,7 +760,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 	eventPayload["message"] = ""
 
 	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
-	event.SetID(uuid.NewString())
 
 	storeEvent := &models.Event{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {
