@@ -346,7 +346,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	states := &scmodels.SequenceStates{}
 
-	resp, err := ApiGETRequest("/controlPlane/v1/state/" + projectName)
+	resp, err := ApiGETRequest("/controlPlane/v1/sequence/" + projectName)
 	err = resp.ToJSON(states)
 
 	return states, resp, err
