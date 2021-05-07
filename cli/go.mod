@@ -24,11 +24,10 @@ require (
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.5.4
 	k8s.io/api v0.20.4
-	k8s.io/apimachinery v0.20.4
+	k8s.io/apimachinery v0.21.0
 	k8s.io/cli-runtime v0.20.4
 	k8s.io/client-go v0.20.4
 	k8s.io/kubectl v0.20.4
-	rsc.io/letsencrypt v0.0.3 // indirect
 )
 
 // required as per https://github.com/helm/helm/issues/9354
