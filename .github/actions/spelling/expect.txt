@@ -23,6 +23,7 @@ apimachinery
 apimodels
 apisecret
 apiserver
+APIURL
 apiutils
 apk
 Appk
@@ -346,6 +347,7 @@ IHelper
 IKeptn
 img
 IMPL
+imroc
 INamespace
 inferrable
 Infof
@@ -359,12 +361,15 @@ IProject
 iptables
 IRemediation
 ISecret
+ISequence
 IService
 IShipyard
 issuecomment
 istage
+IState
 istio
 istioctl
+ISub
 itf
 Itoa
 IUser
@@ -689,6 +694,9 @@ selfmon
 selfmonitoring
 selfservice
 semver
+sequencehooks
+sequencestate
+sequencestaterepo
 serr
 serrors
 serviceaccount
@@ -698,6 +706,7 @@ servicename
 servicenow
 servicetype
 serviceutils
+Setenv
 shellcheck
 shellscripts
 shellwords
@@ -718,6 +727,7 @@ slackbot
 sli
 slo
 Smode
+smv
 sni
 sockshop
 sockshot

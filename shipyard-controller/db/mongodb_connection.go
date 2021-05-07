@@ -10,17 +10,24 @@ import (
 	"time"
 )
 
-var mongoDBHost = os.Getenv("MONGODB_HOST")
-var databaseName = os.Getenv("MONGO_DB_NAME")
-var mongoDBUser = os.Getenv("MONGODB_USER")
-var mongoDBPassword = os.Getenv("MONGODB_PASSWORD")
 var mutex = &sync.Mutex{}
-
-var mongoDBConnection = fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
 
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
 	Client *mongo.Client
+}
+
+func GetMongoDBConnectionString() string {
+	mongoDBHost := os.Getenv("MONGODB_HOST")
+	databaseName := os.Getenv("MONGO_DB_NAME")
+	mongoDBUser := os.Getenv("MONGODB_USER")
+	mongoDBPassword := os.Getenv("MONGODB_PASSWORD")
+
+	return fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, databaseName)
+}
+
+func getDatabaseName() string {
+	return os.Getenv("MONGO_DB_NAME")
 }
 
 // EnsureDBConnection makes sure a connection to the mongodb is established
@@ -43,7 +50,7 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
 	var err error
-	m.Client, err = mongo.NewClient(options.Client().ApplyURI(mongoDBConnection))
+	m.Client, err = mongo.NewClient(options.Client().ApplyURI(GetMongoDBConnectionString()))
 	if err != nil {
 		err := fmt.Errorf("failed to create mongo client: %v", err)
 		return err

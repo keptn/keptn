@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
+	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -109,6 +110,18 @@ func main() {
 	evaluationHandler := handler.NewEvaluationHandler(evaluationManager)
 	evaluationController := controller.NewEvaluationController(evaluationHandler)
 	evaluationController.Inject(apiV1)
+
+	stateHandler := handler.NewStateHandler(&db.MongoDBStateRepo{})
+	stateController := controller.NewStateController(stateHandler)
+	stateController.Inject(apiV1)
+
+	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(&db.MongoDBStateRepo{})
+	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
+	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
