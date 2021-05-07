@@ -354,10 +354,17 @@ func Test_validateServiceName(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name:          "Invalid Service name",
-			projectName:   "project-honk",
+			name:          "Valid Service name (fits just)",
+			projectName:   "project-2",
 			stageName:     "production",
-			serviceName:   "my-honk-service-invalid",
+			serviceName:   "very-very-very-super-super-long-honk-service",
+			expectedError: false,
+		},
+		{
+			name:          "Invalid Service name (too long)",
+			projectName:   "project-2",
+			stageName:     "production",
+			serviceName:   "very-very-very-super-super-long-honk-service1",
 			expectedError: true,
 		},
 	}

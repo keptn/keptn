@@ -12,6 +12,10 @@ import (
 	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
+const (
+	serviceNameMaxLen = 53
+)
+
 // GetServices returns all services contained in the Helm manifest
 func GetServices(helmManifest string) []*corev1.Service {
 
@@ -57,7 +61,7 @@ func GetDeployments(helmManifest string) []*appsv1.Deployment {
 	return deployments
 }
 
-// GetChartName returns the name of the chart
+// GetChartName returns the name of the chart, e.g., ${SERVICE}[-generated]
 func GetChartName(service string, generated bool) string {
 	suffix := ""
 	if generated {
@@ -66,13 +70,40 @@ func GetChartName(service string, generated bool) string {
 	return service + suffix
 }
 
-// GetReleaseName returns the name of the Helm release
+// GetReleaseName returns the name of the Helm release, e.g., ${PROJECT}-${STAGE}-${SERVICE}[-generated]
 func GetReleaseName(project string, stage string, service string, generated bool) string {
 	suffix := ""
 	if generated {
 		suffix = "-generated"
 	}
-	return project + "-" + stage + "-" + service + suffix
+
+	proposedReleaseName := project + "-" + stage + "-" + service + suffix
+	// ensure release name is less than 53 characters
+	if len(proposedReleaseName) >= serviceNameMaxLen {
+		// remove project name to limit the release name
+		proposedReleaseName = stage + "-" + service + suffix
+
+		// check again
+		if len(proposedReleaseName) >= serviceNameMaxLen {
+			// We can also remove the stage name
+			proposedReleaseName = service + suffix
+
+			// check again
+			if len(proposedReleaseName) >= serviceNameMaxLen {
+				// We can also remove the stage name
+				proposedReleaseName = service + suffix
+
+				// check again
+				if len(proposedReleaseName) >= serviceNameMaxLen {
+					// Note: This should really not be the case, as it can lead to ambiguous release names
+					// now we are in trouble - removing characters from right side of service name
+					proposedReleaseName = service[:serviceNameMaxLen-len(suffix)-1] + suffix
+				}
+			}
+		}
+	}
+
+	return proposedReleaseName
 }
 
 // DoesChartExist checks if the GIT repo contains the specified chart

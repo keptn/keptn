@@ -94,6 +94,7 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 		return sm.logAndReturnError(fmt.Sprintf("could not get stages of project %s: %s", projectName, err.Error()))
 	}
 
+	// ToDo: Remove the check for service name - or at least enhance the allowed number of characters
 	for _, stage := range stages {
 		log.Infof("Validating service %s", *params.ServiceName)
 		if err := validateServiceName(projectName, stage.StageName, *params.ServiceName); err != nil {
@@ -148,8 +149,12 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 	return nil
 }
 
+// validateServiceName validates that the service name is less than 43 characters (this is a requirement of helm-service)
 func validateServiceName(projectName, stage, serviceName string) error {
-	allowedLength := serviceNameMaxLen - len(projectName) - len(stage) - len("generated")
+	// helm-service creates release names that have the service name and the string -generated in them
+	// this means that we need to ensure in here that service names are not too long
+	allowedLength := serviceNameMaxLen - len("generated") // = 43
+
 	if len(serviceName) > allowedLength {
 		return fmt.Errorf("service name needs to be less than %d characters", allowedLength)
 	}
