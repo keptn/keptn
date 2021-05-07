@@ -28,14 +28,6 @@ type Error struct {
 	Err        error
 }
 
-type Context struct {
-	FinishedData interface{}
-}
-
-func (c *Context) SetFinishedData(data interface{}) {
-	c.FinishedData = data
-}
-
 //go:generate moq  -pkg fake -out ./fake/task_handler_mock.go . TaskHandler
 type TaskHandler interface {
 	// Execute is called whenever the actual business-logic of the service shall be executed.
