@@ -196,6 +196,70 @@ definitions:
         description: Type of the event
         type: string
     type: object
+  models.SequenceState:
+    properties:
+      name:
+        type: string
+      project:
+        type: string
+      service:
+        type: string
+      shkeptncontext:
+        type: string
+      stages:
+        items:
+          $ref: '#/definitions/models.SequenceStateStage'
+        type: array
+      state:
+        type: string
+      time:
+        type: string
+    type: object
+  models.SequenceStateEvaluation:
+    properties:
+      result:
+        type: string
+      score:
+        type: number
+    type: object
+  models.SequenceStateEvent:
+    properties:
+      id:
+        type: string
+      time:
+        type: string
+      type:
+        type: string
+    type: object
+  models.SequenceStateStage:
+    properties:
+      image:
+        type: string
+      latestEvaluation:
+        $ref: '#/definitions/models.SequenceStateEvaluation'
+      latestEvent:
+        $ref: '#/definitions/models.SequenceStateEvent'
+      latestFailedEvent:
+        $ref: '#/definitions/models.SequenceStateEvent'
+      name:
+        type: string
+    type: object
+  models.SequenceStates:
+    properties:
+      nextPageKey:
+        description: Pointer to next page
+        type: integer
+      pageSize:
+        description: Size of returned page
+        type: integer
+      states:
+        items:
+          $ref: '#/definitions/models.SequenceState'
+        type: array
+      totalCount:
+        description: Total number of events
+        type: integer
+    type: object
   models.Stages:
     properties:
       nextPageKey:
@@ -433,7 +497,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: ok
           schema:
             $ref: '#/definitions/operations.CreateProjectResponse'
@@ -826,6 +890,44 @@ paths:
       summary: Trigger a new evaluation
       tags:
       - Evaluation
+  /state/{project}:
+    get:
+      consumes:
+      - application/json
+      description: Get task sequence states
+      parameters:
+      - description: Project
+        in: path
+        name: project
+        type: string
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.SequenceStates'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get task sequence states
+      tags:
+      - State
 securityDefinitions:
   ApiKeyAuth:
     in: header

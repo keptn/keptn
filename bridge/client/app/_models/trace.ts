@@ -329,8 +329,8 @@ class Trace {
     return this.data.deployment?.deploymentURIsPublic?.find(e => true);
   }
 
-  findTrace(comp) {
-    if(comp(this))
+  findTrace(comp: <T = Trace>(args: Trace) => any): Trace {
+    if (comp(this))
       return this;
     else
       return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);

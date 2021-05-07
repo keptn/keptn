@@ -39,6 +39,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   set project(project: Project) {
     if (this._project !== project) {
       this._project = project;
+      this.selectedStage = null;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -94,9 +95,9 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   }
 
   getServiceLink(service) {
-    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage]
+    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
   }
-    
+
   public filterServices(services: Service[]): Service[] {
     return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
   }

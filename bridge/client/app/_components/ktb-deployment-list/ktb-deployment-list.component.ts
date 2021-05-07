@@ -64,16 +64,18 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-
         this.dataService.getProject(params.projectName)
           .subscribe(project => {
             this.projectName = project.projectName;
             this.gitRemoteURI = project.gitRemoteURI;
             this.service.deployments = project.getDeploymentsOfService(this.service.serviceName);
-            if (params.shkeptncontext) {
+            if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
               const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
               if (paramDeployment) {
                 this.selectDeployment(paramDeployment, !params.stage);
+              } else {
+                const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', params.serviceName]);
+                this.location.go(routeUrl.toString());
               }
             }
             this.minPageSize = this.service.deployments.length;

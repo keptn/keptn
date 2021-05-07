@@ -17,6 +17,7 @@
     "axios": "^0.21.1",
     "express-session": "^1.17.1",
     "memorystore": "^1.6.6",
-    "crypto-random-string": "^3.3.1"
+    "crypto-random-string": "^3.3.1",
+    "pug": "^3.0.2"
   }
 }
