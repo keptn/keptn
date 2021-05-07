@@ -1,8 +1,8 @@
 import {NgModule} from '@angular/core';
 import {Routes, RouterModule} from '@angular/router';
-import {DashboardComponent} from "./dashboard/dashboard.component";
-import {ProjectBoardComponent} from "./project-board/project-board.component";
-import {EvaluationBoardComponent} from "./evaluation-board/evaluation-board.component";
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {ProjectBoardComponent} from './project-board/project-board.component';
+import {EvaluationBoardComponent} from './evaluation-board/evaluation-board.component';
 import {ForwarderGuard} from './_forwarder/forwarder_guard';
 
 

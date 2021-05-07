@@ -16,7 +16,7 @@
               [series]="_heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
-    <dt-chart fxFlex="99%" *ngIf="showChart && _comparisonView == 'chart'"
+    <dt-chart *ngIf="showChart && _comparisonView == 'chart'"
               [options]="_chartOptions"
               [series]="_chartSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
