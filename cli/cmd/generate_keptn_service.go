@@ -5,6 +5,7 @@ import (
 	fileUtils "github.com/keptn/keptn/cli/pkg/file"
 	keptnUtils "github.com/keptn/keptn/cli/pkg/git"
 	"github.com/spf13/cobra"
+	"os"
 	"path/filepath"
 )
 
@@ -51,6 +52,18 @@ func generateServiceTemplate(generateKeptnService generateKeptnServiceStruct) er
 
 	fmt.Printf("Creating your service named: %s\n", *generateKeptnService.Service)
 	err = replaceServiceName(*generateKeptnService.Service)
+	if err != nil {
+		return err
+	}
+	err = removeGeneratedGitFolder(*generateKeptnService.Service)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func removeGeneratedGitFolder(serviceName string) error{
+	err := os.RemoveAll(serviceName+"/.git")
 	if err != nil {
 		return err
 	}
