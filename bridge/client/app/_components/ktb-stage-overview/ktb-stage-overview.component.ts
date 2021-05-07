@@ -27,6 +27,7 @@ export class KtbStageOverviewComponent implements OnInit {
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: any[];
   private filteredServices: string[] = [];
+  private globalFilter: {[projectName: string]: {services: string[]}};
 
   @Output() selectedStageChange: EventEmitter<any> = new EventEmitter();
   @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
@@ -39,7 +40,7 @@ export class KtbStageOverviewComponent implements OnInit {
   set project(project: Project) {
     if (this._project !== project) {
       this._project = project;
-      this._changeDetectorRef.markForCheck();
+      this.setFilter();
     }
   }
 
@@ -47,7 +48,6 @@ export class KtbStageOverviewComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.setFilter();
   }
 
   private setFilter(): void {
@@ -63,7 +63,9 @@ export class KtbStageOverviewComponent implements OnInit {
         }
       ]
     };
-    this.filteredServices = this.apiService.environmentFilter.filter(service => this.project.services.some(pService => pService.serviceName === service));
+    this.globalFilter = this.apiService.environmentFilter;
+    const services = this.globalFilter[this.project.projectName]?.services || [];
+    this.filteredServices = services.filter(service => this.project.services.some(pService => pService.serviceName === service));
     this.filterChange.emit(this.filteredServices);
     this.filter = [
       ...this.filteredServices.map(service => {
@@ -80,7 +82,9 @@ export class KtbStageOverviewComponent implements OnInit {
   }
 
   public filterChanged(event: any) {
-    this.apiService.environmentFilter = this.filteredServices = this.getServicesOfFilter(event);
+    this.filteredServices = this.getServicesOfFilter(event);
+    this.globalFilter[this.project.projectName] = {services: this.filteredServices};
+    this.apiService.environmentFilter = this.globalFilter;
     this.filterChange.emit(this.filteredServices);
     this._changeDetectorRef.markForCheck();
   }
