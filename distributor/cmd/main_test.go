@@ -448,7 +448,7 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 			},
 			eventSourceReturnedPayload: keptnmodels.Events{
 				// incoming events (topic: my-topic)
-				Events: cloudEventsToSend,
+				Events:      cloudEventsToSend,
 				NextPageKey: "",
 				PageSize:    3,
 				TotalCount:  3,
@@ -461,6 +461,7 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 		recipientSleepTimeSeconds = tt.recipientSleepTimeSeconds
 		recipientReceivedCloudEvents = 0
 		t.Run(tt.name, func(t *testing.T) {
+			setupCEClient()
 			// poll events
 			pollEventsForTopic(tt.args.endpoint, tt.args.token, tt.args.topic)
 
@@ -493,7 +494,7 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 					return true
 				}
 				return false
-			}, time.Second * time.Duration(tt.recipientSleepTimeSeconds), 100*time.Millisecond)
+			}, time.Second*time.Duration(tt.recipientSleepTimeSeconds), 100*time.Millisecond)
 
 			// wait a little bit longer, and verify that it is still only 3 CloudEvents
 			time.Sleep(time.Second * time.Duration(tt.recipientSleepTimeSeconds) * 2)
