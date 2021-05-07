@@ -19,7 +19,7 @@ type MongoDBStateRepo struct {
 	DbConnection MongoDBConnection
 }
 
-func (mdbrepo *MongoDBStateRepo) CreateState(state models.SequenceState) error {
+func (mdbrepo *MongoDBStateRepo) CreateSequenceState(state models.SequenceState) error {
 
 	if state.Project == "" {
 		return errors.New("project must be set")
@@ -51,7 +51,7 @@ func (mdbrepo *MongoDBStateRepo) CreateState(state models.SequenceState) error {
 	return nil
 }
 
-func (mdbrepo *MongoDBStateRepo) FindStates(filter models.StateFilter) (*models.SequenceStates, error) {
+func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (*models.SequenceStates, error) {
 	if filter.Project == "" {
 		return nil, errors.New("project must be set")
 	}
@@ -120,7 +120,7 @@ func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bso
 	return searchOptions
 }
 
-func (mdbrepo *MongoDBStateRepo) UpdateState(state models.SequenceState) error {
+func (mdbrepo *MongoDBStateRepo) UpdateSequenceState(state models.SequenceState) error {
 	if state.Project == "" {
 		return errors.New("project must be set")
 	}
@@ -145,7 +145,7 @@ func (mdbrepo *MongoDBStateRepo) UpdateState(state models.SequenceState) error {
 	return nil
 }
 
-func (mdbrepo *MongoDBStateRepo) DeleteStates(filter models.StateFilter) error {
+func (mdbrepo *MongoDBStateRepo) DeleteSequenceStates(filter models.StateFilter) error {
 	if filter.Project == "" {
 		return errors.New("project must be set")
 	}

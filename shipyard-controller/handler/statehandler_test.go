@@ -15,7 +15,7 @@ import (
 
 func TestStateHandler_GetState(t *testing.T) {
 	type fields struct {
-		StateRepo *db_mock.StateRepoMock
+		StateRepo *db_mock.SequenceStateRepoMock
 	}
 	tests := []struct {
 		name       string
@@ -26,8 +26,8 @@ func TestStateHandler_GetState(t *testing.T) {
 		{
 			name: "state repo returns states",
 			fields: fields{
-				StateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				StateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -53,8 +53,8 @@ func TestStateHandler_GetState(t *testing.T) {
 		{
 			name: "state repo returns error",
 			fields: fields{
-				StateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				StateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -70,14 +70,14 @@ func TestStateHandler_GetState(t *testing.T) {
 
 			router := gin.Default()
 			router.GET("/state/:project", func(c *gin.Context) {
-				sh.GetState(c)
+				sh.GetSequenceState(c)
 			})
 			w := performRequest(router, tt.request)
 
 			require.Equal(t, tt.wantStatus, w.Code)
 
-			require.Equal(t, 1, len(tt.fields.StateRepo.FindStatesCalls()))
-			require.Equal(t, "my-project", tt.fields.StateRepo.FindStatesCalls()[0].Filter.Project)
+			require.Equal(t, 1, len(tt.fields.StateRepo.FindSequenceStatesCalls()))
+			require.Equal(t, "my-project", tt.fields.StateRepo.FindSequenceStatesCalls()[0].Filter.Project)
 		})
 	}
 }

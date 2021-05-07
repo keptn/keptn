@@ -14,7 +14,7 @@ import (
 )
 
 type SequenceStateMVTestFields struct {
-	SequenceStateRepo *db_mock.StateRepoMock
+	SequenceStateRepo *db_mock.SequenceStateRepoMock
 }
 
 func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
@@ -31,8 +31,8 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 		{
 			name: "finish sequence",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -46,7 +46,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -66,8 +66,8 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 		{
 			name: "invalid event scope - do not update",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -81,7 +81,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -97,11 +97,11 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 		{
 			name: "cannot find sequence - do not update",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return nil, errors.New("oops")
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -127,10 +127,10 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 			smv.OnSequenceFinished(tt.args.event)
 
 			if tt.expectUpdateToBeCalled {
-				require.NotEmpty(t, tt.fields.SequenceStateRepo.UpdateStateCalls())
-				require.Equal(t, "finished", tt.fields.SequenceStateRepo.UpdateStateCalls()[0].State.State)
+				require.NotEmpty(t, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls())
+				require.Equal(t, "finished", tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0].State.State)
 			} else {
-				require.Empty(t, tt.fields.SequenceStateRepo.UpdateStateCalls())
+				require.Empty(t, tt.fields.SequenceStateRepo.UpdateSequenceStateCalls())
 			}
 		})
 	}
@@ -151,8 +151,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 		{
 			name: "update evaluation",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -166,7 +166,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -191,8 +191,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 		{
 			name: "failed task",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -206,7 +206,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -238,8 +238,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 			smv.OnSequenceTaskFinished(event)
 
 			if tt.expectUpdateStateToBeCalled {
-				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateStateCalls()))
-				call := tt.fields.SequenceStateRepo.UpdateStateCalls()[0]
+				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
+				call := tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0]
 				require.Equal(t, tt.eventData.GetProject(), call.State.Project)
 				require.Equal(t, tt.eventData.GetService(), call.State.Service)
 				require.Equal(t, tt.keptnContext, call.State.Shkeptncontext)
@@ -258,7 +258,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 				}
 
 			} else {
-				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.UpdateStateCalls()))
+				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
 			}
 
 		})
@@ -302,8 +302,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 		{
 			name: "update sequence state - insert new stage",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -317,7 +317,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -333,8 +333,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 		{
 			name: "update sequence state with existing stage",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -356,7 +356,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 							},
 						}, nil
 					},
-					UpdateStateFunc: func(state models.SequenceState) error {
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -372,7 +372,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 		{
 			name: "invalid event scope",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{},
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{},
 			},
 			expectUpdateStateToBeCalled: false,
 			project:                     "",
@@ -385,8 +385,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 		{
 			name: "find state returns error - do not call update",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					FindStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -430,8 +430,8 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 			smv.OnSequenceTaskTriggered(event)
 
 			if tt.expectUpdateStateToBeCalled {
-				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateStateCalls()))
-				call := tt.fields.SequenceStateRepo.UpdateStateCalls()[0]
+				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
+				call := tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0]
 				require.Equal(t, tt.project, call.State.Project)
 				require.Equal(t, tt.service, call.State.Service)
 				require.Equal(t, tt.keptnContext, call.State.Shkeptncontext)
@@ -445,7 +445,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 				}
 
 			} else {
-				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.UpdateStateCalls()))
+				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
 			}
 		})
 	}
@@ -466,8 +466,8 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		{
 			name: "create a new sequence state",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					CreateStateFunc: func(state models.SequenceState) error {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					CreateSequenceStateFunc: func(state models.SequenceState) error {
 						return nil
 					},
 				},
@@ -482,7 +482,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		{
 			name: "no project available",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{},
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{},
 			},
 			expectCreateStateToBeCalled: false,
 			project:                     "",
@@ -494,7 +494,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		{
 			name: "wrong event type",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{},
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{},
 			},
 			expectCreateStateToBeCalled: false,
 			project:                     "",
@@ -506,8 +506,8 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		{
 			name: "state already exists",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					CreateStateFunc: func(state models.SequenceState) error {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					CreateSequenceStateFunc: func(state models.SequenceState) error {
 						return db.ErrStateAlreadyExists
 					},
 				},
@@ -522,8 +522,8 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		{
 			name: "create state returns an error",
 			fields: SequenceStateMVTestFields{
-				SequenceStateRepo: &db_mock.StateRepoMock{
-					CreateStateFunc: func(state models.SequenceState) error {
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					CreateSequenceStateFunc: func(state models.SequenceState) error {
 						return errors.New("oops")
 					},
 				},
@@ -552,8 +552,8 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 
 			smv.OnSequenceTriggered(event)
 			if tt.expectCreateStateToBeCalled {
-				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.CreateStateCalls()))
-				call := tt.fields.SequenceStateRepo.CreateStateCalls()[0]
+				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.CreateSequenceStateCalls()))
+				call := tt.fields.SequenceStateRepo.CreateSequenceStateCalls()[0]
 				require.Equal(t, tt.project, call.State.Project)
 				require.Equal(t, tt.service, call.State.Service)
 				require.Equal(t, tt.sequenceName, call.State.Name)
@@ -561,7 +561,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 				require.Equal(t, "triggered", call.State.State)
 
 			} else {
-				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.CreateStateCalls()))
+				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.CreateSequenceStateCalls()))
 			}
 		})
 	}

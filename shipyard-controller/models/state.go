@@ -1,6 +1,6 @@
 package models
 
-type GetStateParams struct {
+type GetSequenceStateParams struct {
 	/*Pointer to the next set of items
 	  In: query
 	*/
@@ -19,7 +19,7 @@ type GetStateParams struct {
 }
 
 type StateFilter struct {
-	GetStateParams
+	GetSequenceStateParams
 	Shkeptncontext string
 	Name           string
 }

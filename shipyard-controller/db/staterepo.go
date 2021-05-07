@@ -2,10 +2,10 @@ package db
 
 import "github.com/keptn/keptn/shipyard-controller/models"
 
-//go:generate moq --skip-ensure -pkg db_mock -out ./mock/staterepo_mock.go . StateRepo
-type StateRepo interface {
-	CreateState(state models.SequenceState) error
-	FindStates(filter models.StateFilter) (*models.SequenceStates, error)
-	UpdateState(state models.SequenceState) error
-	DeleteStates(filter models.StateFilter) error
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/sequencestaterepo_mock.go . SequenceStateRepo
+type SequenceStateRepo interface {
+	CreateSequenceState(state models.SequenceState) error
+	FindSequenceStates(filter models.StateFilter) (*models.SequenceStates, error)
+	UpdateSequenceState(state models.SequenceState) error
+	DeleteSequenceStates(filter models.StateFilter) error
 }

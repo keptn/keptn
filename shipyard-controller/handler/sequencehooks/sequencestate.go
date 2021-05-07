@@ -14,10 +14,10 @@ const sequenceTriggeredState = "triggered"
 const sequenceFinished = "finished"
 
 type SequenceStateMaterializedView struct {
-	SequenceStateRepo db.StateRepo
+	SequenceStateRepo db.SequenceStateRepo
 }
 
-func NewSequenceStateMaterializedView(stateRepo db.StateRepo) *SequenceStateMaterializedView {
+func NewSequenceStateMaterializedView(stateRepo db.SequenceStateRepo) *SequenceStateMaterializedView {
 	return &SequenceStateMaterializedView{SequenceStateRepo: stateRepo}
 }
 
@@ -43,7 +43,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		State:          sequenceTriggeredState,
 		Stages:         []models.SequenceStateStage{},
 	}
-	if err := smv.SequenceStateRepo.CreateState(state); err != nil {
+	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
 		if err == db.ErrStateAlreadyExists {
 			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)
 		} else {
@@ -66,7 +66,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.E
 		}
 	}
 
-	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
+	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
 }
@@ -78,7 +78,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Eve
 		return
 	}
 
-	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
+	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
 }
@@ -96,7 +96,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 			return
 		}
 	}
-	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
+	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
 }
@@ -108,7 +108,7 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 		return
 	}
 
-	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
+	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
 }
@@ -120,8 +120,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 		return
 	}
 
-	states, err := smv.SequenceStateRepo.FindStates(models.StateFilter{
-		GetStateParams: models.GetStateParams{
+	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: eventScope.Project,
 		},
 		Shkeptncontext: eventScope.KeptnContext,
@@ -134,7 +134,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 	state := states.States[0]
 
 	state.State = sequenceFinished
-	if err := smv.SequenceStateRepo.UpdateState(state); err != nil {
+	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
 }
@@ -185,8 +185,8 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		return models.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())
 	}
 
-	states, err := smv.SequenceStateRepo.FindStates(models.StateFilter{
-		GetStateParams: models.GetStateParams{
+	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: eventScope.Project,
 		},
 		Shkeptncontext: eventScope.KeptnContext,

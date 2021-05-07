@@ -9,21 +9,21 @@ import (
 )
 
 type IStateHandler interface {
-	GetState(context *gin.Context)
+	GetSequenceState(context *gin.Context)
 }
 
 type StateHandler struct {
-	StateRepo db.StateRepo
+	StateRepo db.SequenceStateRepo
 }
 
-func NewStateHandler(stateRepo db.StateRepo) *StateHandler {
+func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
 	return &StateHandler{StateRepo: stateRepo}
 }
 
 // GetState godoc
-// @Summary Get task sequence states
-// @Description Get task sequence states
-// @Tags State
+// @Summary Get task sequence execution states
+// @Description Get task sequence execution states
+// @Tags Sequence
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
@@ -33,10 +33,10 @@ func NewStateHandler(stateRepo db.StateRepo) *StateHandler {
 // @Success 200 {object} models.SequenceStates	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /state/{project} [get]
-func (sh *StateHandler) GetState(c *gin.Context) {
+// @Router /sequence/{project} [get]
+func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
-	params := &models.GetStateParams{}
+	params := &models.GetSequenceStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
@@ -45,8 +45,8 @@ func (sh *StateHandler) GetState(c *gin.Context) {
 	}
 	params.Project = projectName
 
-	states, err := sh.StateRepo.FindStates(models.StateFilter{
-		GetStateParams: *params,
+	states, err := sh.StateRepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: *params,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Error{

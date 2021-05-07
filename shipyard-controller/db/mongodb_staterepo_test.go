@@ -75,11 +75,11 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 		Stages:         nil,
 	}
 
-	err := mdbrepo.CreateState(state)
+	err := mdbrepo.CreateSequenceState(state)
 	require.Nil(t, err)
 
-	states, err := mdbrepo.FindStates(models.StateFilter{
-		GetStateParams: models.GetStateParams{
+	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: "my-project",
 		},
 		Name:           "my-sequence",
@@ -92,17 +92,17 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	require.Equal(t, state, states.States[0])
 
 	// try to insert it again
-	err = mdbrepo.CreateState(state)
+	err = mdbrepo.CreateSequenceState(state)
 	require.NotNil(t, err)
 
 	// update the state
 	state.State = "finished"
-	err = mdbrepo.UpdateState(state)
+	err = mdbrepo.UpdateSequenceState(state)
 	require.Nil(t, err)
 
 	// fetch the state again
-	states, err = mdbrepo.FindStates(models.StateFilter{
-		GetStateParams: models.GetStateParams{
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: "my-project",
 		},
 		Shkeptncontext: "my-context",
@@ -115,16 +115,16 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	require.Equal(t, "finished", states.States[0].State)
 
 	// delete the state
-	err = mdbrepo.DeleteStates(models.StateFilter{
-		GetStateParams: models.GetStateParams{
+	err = mdbrepo.DeleteSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: state.Project,
 		},
 		Shkeptncontext: state.Shkeptncontext,
 	})
 	require.Nil(t, err)
 
-	states, err = mdbrepo.FindStates(models.StateFilter{
-		GetStateParams: models.GetStateParams{
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: "my-project",
 		},
 		Shkeptncontext: "my-context",
@@ -152,29 +152,29 @@ func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
 		Stages:         nil,
 	}
 
-	err := mdbrepo.CreateState(invalidState)
+	err := mdbrepo.CreateSequenceState(invalidState)
 	require.NotNil(t, err)
 
-	err = mdbrepo.UpdateState(invalidState)
+	err = mdbrepo.UpdateSequenceState(invalidState)
 	require.NotNil(t, err)
 
 	// project set, but not context
 	invalidState.Project = "my-project"
 	invalidState.Shkeptncontext = ""
 
-	err = mdbrepo.CreateState(invalidState)
+	err = mdbrepo.CreateSequenceState(invalidState)
 	require.NotNil(t, err)
 
-	err = mdbrepo.UpdateState(invalidState)
+	err = mdbrepo.UpdateSequenceState(invalidState)
 	require.NotNil(t, err)
 
 	// context and project set, but not name
 	invalidState.Shkeptncontext = "my-context"
 	invalidState.Name = ""
 
-	err = mdbrepo.CreateState(invalidState)
+	err = mdbrepo.CreateSequenceState(invalidState)
 	require.NotNil(t, err)
 
-	err = mdbrepo.UpdateState(invalidState)
+	err = mdbrepo.UpdateSequenceState(invalidState)
 	require.NotNil(t, err)
 }

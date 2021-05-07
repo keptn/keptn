@@ -6,13 +6,13 @@ import (
 )
 
 type StateController struct {
-	StateHandler handler.IStateHandler
+	SequenceStateHandler handler.IStateHandler
 }
 
-func NewStateController(stateHandler handler.IStateHandler) Controller {
-	return &StateController{StateHandler: stateHandler}
+func NewStateController(sequenceStateHandler handler.IStateHandler) Controller {
+	return &StateController{SequenceStateHandler: sequenceStateHandler}
 }
 
 func (controller StateController) Inject(apiGroup *gin.RouterGroup) {
-	apiGroup.GET("/state/:project", controller.StateHandler.GetState)
+	apiGroup.GET("/sequence/:project", controller.SequenceStateHandler.GetSequenceState)
 }
