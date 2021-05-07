@@ -1,0 +1,20 @@
+html
+  include common.pug
+
+  head
+    link(rel="stylesheet", href="static/error.v1.css")
+    title= title
+  body
+    div.container
+
+      div.image
+        img(src="static/logo.png", alt="Logo")
+
+      div.text
+        h2= title
+        p #{message}
+
+        if location
+          div.location
+            - var linkText = locationMessage ? locationMessage : 'Retry'
+            a(href= location ) #{linkText}

@@ -1,0 +1,10 @@
+head
+  base(href='/' id="base-href")
+  script.
+    function getBridgeBaseHref(origin, path) {
+      if (path.indexOf('/bridge') != -1)
+        return [origin, path.substring(0, path.indexOf('/bridge')), '/bridge/'].join('');
+      else
+        return origin;
+    }
+    document.getElementById("base-href").href = getBridgeBaseHref(window.location.origin, window.location.pathname);

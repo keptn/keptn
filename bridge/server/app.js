@@ -30,8 +30,15 @@ if(!integrationsPageLink) {
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
 
 module.exports = (async function (){
-  // host static files (angular app)
+  // server static files - Images & CSS
+  app.use('/static', express.static(path.join(__dirname, 'views/static'), {maxAge: oneWeek}));
+
+  // UI static files - Angular application
   app.use(express.static(path.join(__dirname, '../dist'), {maxAge: oneWeek}));
+
+  // Server views based on Pug
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'pug');
 
   // add some middlewares
   app.use(logger('dev'));
