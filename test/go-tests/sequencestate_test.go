@@ -52,7 +52,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	source := "golang-test"
 
-	uniform := []string{"helm-service"}
+	uniform := []string{"helm-service", "lighthouse-service"}
 
 	// scale down the services that are usually involved in the sequence defined in the shipyard above.
 	// this way we can control the events sent during this sequence and check whether the state is updated appropriately
@@ -351,4 +351,3 @@ func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 
 	return states, resp, err
 }
-
