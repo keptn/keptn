@@ -348,22 +348,16 @@ func Test_validateServiceName(t *testing.T) {
 	}{
 		{
 			name:          "Valid Service name",
-			projectName:   "project-1",
-			stageName:     "testing",
 			serviceName:   "my-service",
 			expectedError: false,
 		},
 		{
 			name:          "Valid Service name (fits just)",
-			projectName:   "project-2",
-			stageName:     "production",
 			serviceName:   "very-very-very-super-super-long-honk-service",
 			expectedError: false,
 		},
 		{
 			name:          "Invalid Service name (too long)",
-			projectName:   "project-2",
-			stageName:     "production",
 			serviceName:   "very-very-very-super-super-long-honk-service1",
 			expectedError: true,
 		},
@@ -372,7 +366,7 @@ func Test_validateServiceName(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			err := validateServiceName(tc.projectName, tc.stageName, tc.serviceName)
+			err := validateServiceName(tc.serviceName)
 			if tc.expectedError {
 				require.Error(t, err)
 			} else {
