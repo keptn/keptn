@@ -19,7 +19,7 @@ require (
 	github.com/keptn/kubernetes-utils v0.8.2-0.20210506073412-a06581ae8a26
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
-	github.com/otiai10/copy v1.4.2
+	github.com/otiai10/copy v1.6.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
