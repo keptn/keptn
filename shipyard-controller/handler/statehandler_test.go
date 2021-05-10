@@ -3,6 +3,7 @@ package handler_test
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -28,13 +29,17 @@ func TestStateHandler_GetState(t *testing.T) {
 			fields: fields{
 				StateRepo: &db_mock.SequenceStateRepoMock{
 					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						require.Equal(t, "sequenceName", filter.Name)
+						require.Equal(t, "sequenceState", filter.State)
+						require.Equal(t, "2021-05-10T09:51:00.000Z", filter.FromTime)
+						require.Equal(t, "2021-05-10T09:50:00.000Z", filter.BeforeTime)
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
 									Name:           "delivery",
 									Service:        "my-service",
 									Project:        "my-project",
-									Time:           time.Now().String(),
+									Time:           timeutils.GetKeptnTimeStamp(time.Now()),
 									Shkeptncontext: "my-context",
 									State:          "triggered",
 									Stages:         nil,
@@ -47,7 +52,7 @@ func TestStateHandler_GetState(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/state/my-project", nil),
+			request:    httptest.NewRequest("GET", "/state/my-project?name=sequenceName&state=sequenceState&fromTime=2021-05-10T09:51:00.000Z&beforeTime=2021-05-10T09:50:00.000Z", nil),
 			wantStatus: http.StatusOK,
 		},
 		{
@@ -65,7 +70,6 @@ func TestStateHandler_GetState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			sh := handler.NewStateHandler(tt.fields.StateRepo)
 
 			router := gin.Default()

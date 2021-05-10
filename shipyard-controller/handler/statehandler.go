@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
@@ -42,10 +41,8 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
 	params := &models.GetSequenceStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: common.Stringp("Invalid request format"),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
 	}
 	params.Project = projectName
 
@@ -53,9 +50,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 		GetSequenceStateParams: *params,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Message: common.Stringp(err.Error()),
-		})
+		SetInternalServerErrorResponse(err, c, "Unable to query sequence state repository")
 		return
 	}
 
