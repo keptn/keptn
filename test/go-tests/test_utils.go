@@ -4,10 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/kubernetes-utils/pkg"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -23,6 +27,54 @@ type APIEventSender struct {
 func (sender *APIEventSender) SendEvent(event v2.Event) error {
 	_, err := ApiPOSTRequest("/v1/event", event)
 	return err
+}
+
+func EnsureProjectExists(projectName, shipyardFilePath string) error {
+	resp, err := ApiGETRequest("/controlPlane/v1/project/" + projectName)
+	if err != nil {
+		return err
+	}
+
+	if resp.Response().StatusCode != http.StatusNotFound {
+		// delete project if it exists
+		_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+		return err
+	}
+
+	_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, shipyardFilePath))
+
+	return err
+}
+
+func TriggerSequence(projectName, serviceName, stageName, sequenceName string, eventData keptncommon.EventProperties) (string, error) {
+	source := "golang-test"
+	eventType := keptnv2.GetTriggeredEventType(sequenceName)
+	if eventData == nil {
+		eventData = &keptnv2.EventData{}
+	}
+	eventData.SetProject(projectName)
+	eventData.SetService(serviceName)
+	eventData.SetStage(stageName)
+
+	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
+		Contenttype:        "application/json",
+		Data:               eventData,
+		ID:                 uuid.NewString(),
+		Shkeptnspecversion: KeptnSpecVersion,
+		Source:             &source,
+		Specversion:        "1.0",
+		Type:               &eventType,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	context := &models.EventContext{}
+	err = resp.ToJSON(context)
+	if err != nil {
+		return "", err
+	}
+	return *context.KeptnContext, nil
 }
 
 func ApiGETRequest(path string) (*req.Resp, error) {
@@ -147,4 +199,3 @@ func IsEqual(t *testing.T, property string, expected, actual interface{}) bool {
 	}
 	return true
 }
-
