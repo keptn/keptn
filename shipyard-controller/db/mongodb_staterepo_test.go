@@ -76,7 +76,6 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 		Time:           "2021-05-10T10:15:00.000Z",
 		Shkeptncontext: "my-context",
 		State:          "triggered",
-		Stages:         nil,
 	}
 
 	state2 := models.SequenceState{
@@ -86,13 +85,24 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 		Time:           "2021-05-10T10:00:00.000Z",
 		Shkeptncontext: "my-context2",
 		State:          "finished",
-		Stages:         nil,
+	}
+
+	state3 := models.SequenceState{
+		Name:           "my-sequence3",
+		Service:        "my-service",
+		Project:        "my-project",
+		Time:           "2021-05-10T09:50:00.000Z",
+		Shkeptncontext: "my-context3",
+		State:          "triggered",
 	}
 
 	err := mdbrepo.CreateSequenceState(state)
 	require.Nil(t, err)
 
 	err = mdbrepo.CreateSequenceState(state2)
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateSequenceState(state3)
 	require.Nil(t, err)
 
 	// Find by project name
@@ -103,10 +113,11 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	})
 
 	require.Nil(t, err)
-	require.Equal(t, int64(2), states.TotalCount)
-	require.Equal(t, 2, len(states.States))
+	require.Equal(t, int64(3), states.TotalCount)
+	require.Equal(t, 3, len(states.States))
 	require.Equal(t, state, states.States[0])
 	require.Equal(t, state2, states.States[1])
+	require.Equal(t, state3, states.States[2])
 
 	// Find by project and sequence name
 	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
@@ -151,6 +162,20 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project:    "my-project",
+			BeforeTime: "2021-05-10T10:00:00.000Z",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state3, states.States[0])
+
+	// Find by project and before and from time
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:    "my-project",
+			FromTime:   "2021-05-10T09:51:00.000Z",
 			BeforeTime: "2021-05-10T10:14:59.000Z",
 		},
 	})
