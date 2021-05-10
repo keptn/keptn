@@ -27,9 +27,13 @@ func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     path    string     false        "Project"
-// @Param	pageSize			query		int			false	"The number of items to return"
-// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
+// @Param   project     		path    string  false   "The project name"
+// @Param   name				query	string	false	"The name of the sequence"
+// @Param	state				query 	string 	false	"The state of the sequence (e.g., triggered, finished,...)"
+// @Param	fromTime			query	string	false	"The from time stamp for fetching sequence states"
+// @Param 	beforeTime			query	string	false	"The before time stamp for fetching sequence states"
+// @Param	pageSize			query	int		false	"The number of items to return"
+// @Param   nextPageKey     	query   string  false	"Pointer to the next set of items"
 // @Success 200 {object} models.SequenceStates	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
