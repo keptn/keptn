@@ -100,6 +100,7 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	var res bool
 	healthCheckWorkload, err = getWorkload(jmeterconf, TestStrategy_HealthCheck)
 	if healthCheckWorkload != nil {
+		// do a basic health check, verifying whether the endpoint is available or not
 		err := checkEndpointAvailable(5*time.Second, serviceUrl)
 		if err != nil {
 			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", serviceUrl, err.Error())

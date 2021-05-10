@@ -21,6 +21,14 @@ function debuglogs() {
   kubectl get deployments -n "$PROJECT-prod-a" -owide
   kubectl get deployments -n "$PROJECT-prod-b" -owide
   echo "::endgroup::"
+  echo "::group::CloudEvents Carts DB"
+  echo "Show CloudEvents for service carts-db"
+  keptn get event --project="$PROJECT" --service=carts-db
+  echo "::endgroup::"
+  echo "::group::CloudEvents Carts"
+  echo "Show CloudEvents for service carts"
+  keptn get event --project="$PROJECT" --service=carts
+  echo "::endgroup::"
 }
 trap debuglogs EXIT SIGINT
 
