@@ -38,7 +38,9 @@ func EnsureProjectExists(projectName, shipyardFilePath string) error {
 	if resp.Response().StatusCode != http.StatusNotFound {
 		// delete project if it exists
 		_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, shipyardFilePath))
@@ -48,7 +50,7 @@ func EnsureProjectExists(projectName, shipyardFilePath string) error {
 
 func TriggerSequence(projectName, serviceName, stageName, sequenceName string, eventData keptncommon.EventProperties) (string, error) {
 	source := "golang-test"
-	eventType := keptnv2.GetTriggeredEventType(sequenceName)
+	eventType := keptnv2.GetTriggeredEventType(stageName + "." + sequenceName)
 	if eventData == nil {
 		eventData = &keptnv2.EventData{}
 	}

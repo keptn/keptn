@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
@@ -21,20 +22,20 @@ spec:
         - name: "delivery"
           triggeredOn:
             - event: "dev.delivery.finished"
-			  selector:
-				match:
-				  mytask.result: fail
+              selector:
+                match:
+                  mytask.result: "fail"
           tasks:
             - name: "mytask"
-            - name: "evaluation"`
+            - name: "othertask"`
 
-func Test_SequenceTriggerIntegrationTest(t *testing.T) {
+func Test_SequenceLoopIntegrationTest(t *testing.T) {
 	PrepareEnvVars()
 	projectName := "sequence-loop"
 	serviceName := "my-service"
 	stageName := "dev"
 	sequenceName := "delivery"
-	shipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	shipyardFilePath, err := CreateTmpShipyardFile(sequenceTriggerShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
@@ -43,6 +44,11 @@ func Test_SequenceTriggerIntegrationTest(t *testing.T) {
 	// check if the project is already available - if not, delete it before creating it again
 	err = EnsureProjectExists(projectName, shipyardFilePath)
 	require.Nil(t, err)
+
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
 
 	keptnContextID, err := TriggerSequence(projectName, serviceName, stageName, sequenceName, nil)
 	require.Nil(t, err)
@@ -114,13 +120,13 @@ func Test_SequenceTriggerIntegrationTest(t *testing.T) {
 			return false
 		}
 		state := states.States[0]
-		if state.Project != projectName {
+		if !IsEqual(t, "state.Project", state.Project, projectName) {
 			return false
 		}
-		if state.Shkeptncontext != keptnContextID {
+		if !IsEqual(t, "state.Shkeptnkontext", state.Shkeptncontext, keptnContextID) {
 			return false
 		}
-		if state.State != "triggered" {
+		if !IsEqual(t, "state.State", state.State, "triggered") {
 			return false
 		}
 
@@ -182,6 +188,99 @@ func Test_SequenceTriggerIntegrationTest(t *testing.T) {
 		}
 
 		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType("mytask"), stage.LatestEvent.Type) {
+			return false
+		}
+
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+	// get mytask.triggered event of second iteration
+	myTaskTriggeredEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, err)
+	require.NotNil(t, myTaskTriggeredEvent)
+
+	cloudEvent = keptnv2.ToCloudEvent(*myTaskTriggeredEvent)
+
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	// send .started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// send .finished event with result = pass
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Result: keptnv2.ResultPass,
+	}, source)
+	require.Nil(t, err)
+
+	// verify state -> now the next task should have been triggered again
+	require.Eventually(t, func() bool {
+		states, _, err := getState(projectName)
+		if err != nil {
+			return false
+		}
+		stage := states.States[0].Stages[0]
+
+		if !IsEqual(t, "stage.Name", stageName, stage.Name) {
+			return false
+		}
+
+		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType("othertask"), stage.LatestEvent.Type) {
+			return false
+		}
+
+		return true
+	}, 10*time.Second, 2*time.Second)
+
+	// get othertask.triggered event of second iteration
+	otherTaskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("othertask"))
+	require.Nil(t, err)
+	require.NotNil(t, otherTaskTriggeredEvent)
+
+	cloudEvent = keptnv2.ToCloudEvent(*otherTaskTriggeredEvent)
+
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	// send .started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// send .finished event with result = fail
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Result: keptnv2.ResultFailed,
+	}, source)
+	require.Nil(t, err)
+
+	// verify state -> now the sequence should be finished and not re-triggered again
+	require.Eventually(t, func() bool {
+		states, resp, err := getState(projectName)
+		if err != nil {
+			return false
+		}
+		if !IsEqual(t, "resp.Response().StatusCode", http.StatusOK, resp.Response().StatusCode) {
+			return false
+		}
+		state := states.States[0]
+
+		if !IsEqual(t, "state.State", "finished", state.State) {
+			return false
+		}
+
+		if !IsEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+			return false
+		}
+
+		stage := state.Stages[0]
+
+		if !IsEqual(t, "stage.Name", stageName, stage.Name) {
+			return false
+		}
+
+		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetFinishedEventType("dev.delivery"), stage.LatestEvent.Type) {
 			return false
 		}
 
