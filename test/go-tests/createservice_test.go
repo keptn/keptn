@@ -38,7 +38,7 @@ spec:
 "`
 
 
-func Test_createServiceWithTooLongName(t *testing.T) {
+func Test_CreateServiceWithTooLongName(t *testing.T) {
 	PrepareEnvVars()
 	projectName := "my-super-long-project"
 	serviceName := "my-very-very-very-very-very-super-long-service-name"
@@ -68,7 +68,7 @@ func Test_createServiceWithTooLongName(t *testing.T) {
 }
 
 
-func Test_createServiceWithLongName(t *testing.T) {
+func Test_CreateServiceWithLongName(t *testing.T) {
 	PrepareEnvVars()
 	projectName := "my-super-long-project"
 	serviceName := "my-very-very-very-super-long-service-name"

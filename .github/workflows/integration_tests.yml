@@ -425,6 +425,17 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run SequenceStateIntegrationTest
 
+      - name: Test Create Service
+        id: test_create_service
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: |
+          cd test/go-tests
+          go test -run CreateServiceWithTooLongName
+          go test -run CreateServiceWithLongName
+
       - name: Test Delayed Tasks
         id: test_delayed_tasks
         timeout-minutes: 5
