@@ -24,7 +24,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 		expectStatusCode int
 	}{
 		{
-			name: "return 200 to indicate the event has been received - also in case of an error",
+			name: "return 500 in case of an error",
 			fields: fields{
 				ShipyardController: &fake.ShipyardController{
 					HandleIncomingEventFunc: func(event models.Event) error {
@@ -33,7 +33,7 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 				},
 			},
 			payload:          []byte(`{"specversion": "1.0"}`),
-			expectStatusCode: http.StatusOK,
+			expectStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "return 400 on invalid event payload",

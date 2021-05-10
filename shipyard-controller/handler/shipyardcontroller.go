@@ -24,7 +24,7 @@ var shipyardControllerInstance *shipyardController
 type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
-	HandleIncomingEvent(event models.Event) error
+	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
 }
 
 type shipyardController struct {
@@ -118,7 +118,7 @@ func (sc *shipyardController) onSequenceFinished(event models.Event) {
 	}
 }
 
-func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
+func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event.Data, eventData)
 	if err != nil {
@@ -146,16 +146,43 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 	if err != nil {
 		return err
 	}
+	done := make(chan error, 0)
 	switch statusType {
 	case string(common.TriggeredEvent):
-		return sc.handleTriggeredEvent(event)
+		go func() {
+			var err error
+			err = sc.handleTriggeredEvent(event)
+			if err != nil {
+				log.Error(err)
+			}
+			done <- err
+		}()
 	case string(common.StartedEvent):
-		return sc.handleStartedEvent(event)
+		go func() {
+			var err error
+			err = sc.handleStartedEvent(event)
+			if err != nil {
+				log.Error(err)
+			}
+			done <- err
+		}()
 	case string(common.FinishedEvent):
-		return sc.handleFinishedEvent(event)
+		go func() {
+			var err error
+			err = sc.handleFinishedEvent(event)
+			if err != nil {
+				log.Error(err)
+			}
+			done <- err
+		}()
 	default:
 		return nil
 	}
+	if waitForCompletion {
+		err := <-done
+		return err
+	}
+	return nil
 }
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
@@ -220,6 +247,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return err
 	}
 
+	// fetching cached shipyard file from project repo (materialized view)
 	shipyard, err := common.GetShipyard(eventScope.Project)
 	if err != nil {
 		msg := "could not retrieve shipyard: " + err.Error()

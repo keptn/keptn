@@ -539,7 +539,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
 	sequenceTriggeredEvent := getArtifactDeliveryTriggeredEvent()
-	err := sc.HandleIncomingEvent(sequenceTriggeredEvent)
+	err := sc.HandleIncomingEvent(sequenceTriggeredEvent, true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -758,7 +758,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -831,7 +831,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -908,7 +908,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1031,7 +1031,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1112,7 +1112,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1196,7 +1196,7 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1229,7 +1229,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
@@ -1262,12 +1262,15 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent())
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
 	if err != nil {
 		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
 		return
 	}
 
+	require.Eventually(t, func() bool {
+		return len(mockDispatcher.AddCalls()) == 1
+	}, 10*time.Second, 1*time.Second)
 	require.Equal(t, 1, len(mockDispatcher.AddCalls()))
 	verifyEvent := mockDispatcher.AddCalls()[0].Event
 	require.Equal(t, keptnv2.GetFinishedEventType("dev.artifact-delivery"), verifyEvent.Event.Type())
@@ -1293,7 +1296,7 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 	}
 	// STEP 1
 	// send dev.artifact-delivery.triggered event
-	err := sc.HandleIncomingEvent(event)
+	err := sc.HandleIncomingEvent(event, true)
 
 	assert.NotNil(t, err)
 
@@ -1830,11 +1833,11 @@ func getReleaseTaskFinishedEvent(stage string, triggeredID string) models.Event 
 }
 
 func sendFinishedEvent(sc *shipyardController, finishedEvent models.Event) error {
-	return sc.HandleIncomingEvent(finishedEvent)
+	return sc.HandleIncomingEvent(finishedEvent, true)
 }
 
 func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) (string, bool) {
-	err := sc.HandleIncomingEvent(finishedEvent)
+	err := sc.HandleIncomingEvent(finishedEvent, true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
 		return "", true
@@ -1886,7 +1889,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 }
 
 func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextStage string) bool {
-	err := sc.HandleIncomingEvent(finishedEvent)
+	err := sc.HandleIncomingEvent(finishedEvent, true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
 		return true
@@ -1924,7 +1927,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 }
 
 func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) bool {
-	err := sc.HandleIncomingEvent(finishedEvent)
+	err := sc.HandleIncomingEvent(finishedEvent, true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s) returned %v", *finishedEvent.Type, err)
 		return true
@@ -1979,7 +1982,7 @@ func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, fin
 }
 
 func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName string, triggeredID string, stage string, fromSource string) bool {
-	err := sc.HandleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource))
+	err := sc.HandleIncomingEvent(getStartedEvent(stage, triggeredID, taskName, fromSource), true)
 	if err != nil {
 		t.Errorf("STEP failed: HandleIncomingEvent(%s.started) returned %v", taskName, err)
 		return true

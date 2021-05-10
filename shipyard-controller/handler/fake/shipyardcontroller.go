@@ -19,6 +19,6 @@ func (s *ShipyardController) GetTriggeredEventsOfProject(project string, filter 
 	return s.GetTriggeredEventsOfProjectFunc(project, filter)
 }
 
-func (s *ShipyardController) HandleIncomingEvent(event models.Event) error {
+func (s *ShipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
 	return s.HandleIncomingEventFunc(event)
 }
