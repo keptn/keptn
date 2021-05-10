@@ -20,7 +20,6 @@ type MongoDBStateRepo struct {
 }
 
 func (mdbrepo *MongoDBStateRepo) CreateSequenceState(state models.SequenceState) error {
-
 	if state.Project == "" {
 		return errors.New("project must be set")
 	}
@@ -117,6 +116,30 @@ func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bso
 	if filter.Name != "" {
 		searchOptions["name"] = filter.Name
 	}
+
+	if filter.State != "" {
+		searchOptions["state"] = filter.State
+	}
+
+	if filter.FromTime != "" {
+		if filter.BeforeTime == "" {
+			searchOptions["time"] = bson.M{
+				"$gt": filter.FromTime,
+			}
+		} else {
+			searchOptions["$and"] = []bson.M{
+				{"time": bson.M{"$gt": filter.FromTime}},
+				{"time": bson.M{"$lt": filter.BeforeTime}},
+			}
+		}
+	}
+
+	if filter.FromTime == "" && filter.BeforeTime != "" {
+		searchOptions["time"] = bson.M{
+			"$lt": filter.BeforeTime,
+		}
+	}
+
 	return searchOptions
 }
 

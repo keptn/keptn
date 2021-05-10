@@ -16,12 +16,31 @@ type GetSequenceStateParams struct {
 	  In: query
 	*/
 	Project string `form:"project" json:"project"`
+
+	/*Sequence name
+	  In: query
+	*/
+	Name string `form:"name" json:"name"`
+
+	/*Sequence status
+	  In: query
+	*/
+	State string `form:"state" json:"state"`
+
+	/*From time to fetch sequence states
+	  In: query
+	*/
+	FromTime string `form:"fromTime" json:"fromTime"`
+
+	/*Before time to fetch sequence states
+	  In: query
+	*/
+	BeforeTime string `form:"beforeTime" json:"beforeTime"`
 }
 
 type StateFilter struct {
 	GetSequenceStateParams
 	Shkeptncontext string
-	Name           string
 }
 
 type SequenceStateEvaluation struct {
