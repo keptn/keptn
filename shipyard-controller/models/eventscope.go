@@ -34,5 +34,8 @@ func NewEventScope(event Event) (*EventScope, error) {
 	if data.Service == "" {
 		return nil, errors.New("event does not contain a service")
 	}
+	if event.Type == nil {
+		return nil, errors.New("event does not contain a type")
+	}
 	return &EventScope{EventData: *data, KeptnContext: event.Shkeptncontext, EventType: *event.Type}, nil
 }

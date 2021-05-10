@@ -225,10 +225,10 @@ func Test_getEventScope(t *testing.T) {
 					Specversion:    "",
 					Time:           "",
 					Triggeredid:    "",
-					Type:           nil,
+					Type:           common.Stringp("my-type"),
 				},
 			},
-			want:    &models.EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}},
+			want:    &models.EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type"},
 			wantErr: false,
 		},
 		{

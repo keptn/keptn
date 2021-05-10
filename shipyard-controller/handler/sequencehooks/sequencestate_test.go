@@ -59,6 +59,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 						Service: "my-service",
 					},
 					Shkeptncontext: "my-context",
+					Type:           common.Stringp("my-type"),
 				},
 			},
 			expectUpdateToBeCalled: true,
