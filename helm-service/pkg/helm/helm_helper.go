@@ -78,30 +78,33 @@ func GetReleaseName(project string, stage string, service string, generated bool
 	}
 
 	proposedReleaseName := project + "-" + stage + "-" + service + suffix
-	// ensure release name is less than 53 characters
-	if len(proposedReleaseName) >= serviceNameMaxLen {
-		// remove project name to limit the release name
-		proposedReleaseName = stage + "-" + service + suffix
 
-		// check again
-		if len(proposedReleaseName) >= serviceNameMaxLen {
-			// We can also remove the stage name
-			proposedReleaseName = service + suffix
-
-			// check again
-			if len(proposedReleaseName) >= serviceNameMaxLen {
-				// We can also remove the stage name
-				proposedReleaseName = service + suffix
-
-				// check again
-				if len(proposedReleaseName) >= serviceNameMaxLen {
-					// Note: This should really not be the case, as it can lead to ambiguous release names
-					// now we are in trouble - removing characters from right side of service name
-					proposedReleaseName = service[:serviceNameMaxLen-len(suffix)-1] + suffix
-				}
-			}
-		}
+	// check if it fits
+	if len(proposedReleaseName) < serviceNameMaxLen {
+		return proposedReleaseName
 	}
+
+	// alternative 1: remove project name
+	proposedReleaseName = stage + "-" + service + suffix
+
+	// check if it fits
+	if len(proposedReleaseName) < serviceNameMaxLen {
+		return proposedReleaseName
+	}
+
+	// alternative 2: also remove the stage name
+	proposedReleaseName = service + suffix
+
+	// check if it fits
+	if len(proposedReleaseName) < serviceNameMaxLen {
+		return proposedReleaseName
+	}
+
+	// It still doesn't fit ... We should really not get here, but it's an edge case.
+	// Our last chance is to remove characters from right side of service name
+	// Note: this can lead to ambiguous release names
+
+	proposedReleaseName = service[:serviceNameMaxLen-len(suffix)-1] + suffix
 
 	return proposedReleaseName
 }
