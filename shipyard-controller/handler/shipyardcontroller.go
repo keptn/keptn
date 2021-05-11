@@ -7,14 +7,12 @@ import (
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
-	"github.com/google/uuid"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"net/url"
 	"time"
 )
 
@@ -26,7 +24,7 @@ var shipyardControllerInstance *shipyardController
 type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
-	HandleIncomingEvent(event models.Event) error
+	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
 }
 
 type shipyardController struct {
@@ -120,7 +118,7 @@ func (sc *shipyardController) onSequenceFinished(event models.Event) {
 	}
 }
 
-func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
+func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event.Data, eventData)
 	if err != nil {
@@ -148,16 +146,43 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event) error {
 	if err != nil {
 		return err
 	}
+	done := make(chan error, 0)
 	switch statusType {
 	case string(common.TriggeredEvent):
-		return sc.handleTriggeredEvent(event)
+		go func() {
+			var err error
+			err = sc.handleTriggeredEvent(event)
+			if err != nil {
+				log.Error(err)
+			}
+			done <- err
+		}()
 	case string(common.StartedEvent):
-		return sc.handleStartedEvent(event)
+		go func() {
+			var err error
+			err = sc.handleStartedEvent(event)
+			if err != nil {
+				log.Error(err)
+			}
+			done <- err
+		}()
 	case string(common.FinishedEvent):
-		return sc.handleFinishedEvent(event)
+		go func() {
+			var err error
+			err = sc.handleFinishedEvent(event)
+			if err != nil {
+				log.Error(err)
+			}
+			done <- err
+		}()
 	default:
 		return nil
 	}
+	if waitForCompletion {
+		err := <-done
+		return err
+	}
+	return nil
 }
 
 func (sc *shipyardController) handleStartedEvent(event models.Event) error {
@@ -222,6 +247,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return err
 	}
 
+	// fetching cached shipyard file from project repo (materialized view)
 	shipyard, err := common.GetShipyard(eventScope.Project)
 	if err != nil {
 		msg := "could not retrieve shipyard: " + err.Error()
@@ -384,12 +410,17 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 		}
 		log.Infof("Task sequence related to eventID %s: %s.%s", event.Triggeredid, eventToSequence.Stage, eventToSequence.TaskSequenceName)
 		log.Info("Trying to fetch shipyard and get next task")
-		shipyard, err := common.GetShipyard(eventScope.Project)
+		project, err := sc.projectRepo.GetProject(eventScope.Project)
 		if err != nil {
-			msg := "Could not retrieve shipyard of project " + eventScope.Project + ": " + err.Error()
-			log.Error(msg)
-			return errors.New(msg)
+			log.Errorf("could not load project: %s", err.Error())
+			return err
 		}
+		shipyard, err := common.UnmarshalShipyard(project.Shipyard)
+		if err != nil {
+			log.Errorf("could not decode shipyard file: %s", err.Error())
+			return err
+		}
+
 		sequence, err := sc.getTaskSequenceInStage(eventToSequence.Stage, eventToSequence.TaskSequenceName, shipyard)
 		if err != nil {
 			msg := "No task eventToSequence " + eventToSequence.Stage + "." + eventToSequence.TaskSequenceName + " found in shipyard: " + err.Error()
@@ -696,20 +727,13 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 		mergedPayload = common.Merge(eventPayload, tmp)
 	}
 
-	source, _ := url.Parse("shipyard-controller")
 	eventType := eventScope.Stage + "." + taskSequenceName
 
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
-	event.SetTime(time.Now().UTC())
-	event.SetType(keptnv2.GetTriggeredEventType(eventType))
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", eventScope.KeptnContext)
+	var event cloudevents.Event
 	if mergedPayload != nil {
-		event.SetData(cloudevents.ApplicationJSON, mergedPayload)
+		event = common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), mergedPayload)
 	} else {
-		event.SetData(cloudevents.ApplicationJSON, eventPayload)
+		event = common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), inputEvent)
 	}
 
 	toEvent, err := models.ConvertToEvent(event)
@@ -724,17 +748,9 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
-	source, _ := url.Parse("shipyard-controller")
 	eventType := eventScope.Stage + "." + taskSequenceName
 
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.NewString())
-	event.SetType(keptnv2.GetFinishedEventType(eventType))
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", eventScope.KeptnContext)
-	event.SetExtension("triggeredid", triggeredID)
-	event.SetData(cloudevents.ApplicationJSON, eventScope.EventData)
+	event := common.CreateEventWithPayload(eventScope.KeptnContext, triggeredID, keptnv2.GetFinishedEventType(eventType), eventScope.EventData)
 
 	if toEvent, err := models.ConvertToEvent(event); err == nil {
 		sc.onSubSequenceFinished(*toEvent)
@@ -772,7 +788,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 	eventPayload["message"] = ""
 
 	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
-	event.SetID(uuid.NewString())
 
 	storeEvent := &models.Event{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {

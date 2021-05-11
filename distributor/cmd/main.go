@@ -72,6 +72,8 @@ var pubSubConnections map[string]*cenats.Sender
 
 var env envConfig
 
+var ceClient cloudevents.Client
+
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
 	"/configuration-service": "configuration-service:8080",
@@ -111,6 +113,8 @@ func _main(env envConfig) int {
 
 func startEventReceiver(waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
+
+	setupCEClient()
 
 	switch getPubSubConnectionType() {
 	case connectionTypeNATS:
@@ -450,7 +454,7 @@ func pollEventsForTopic(endpoint string, token string, topic string) {
 	logger.Infof("Received %d new .triggered events", len(events))
 
 	// iterate over all events, discard the event if it has already been sent
-	for index, _ := range events {
+	for index := range events {
 		event := *events[index]
 		logger.Infof("Check if event %s has already been sent", event.ID)
 
@@ -616,17 +620,19 @@ func createNATSClientConnection() {
 	}
 }
 
-func createRecipientConnection() cloudevents.Client {
-	p, err := cloudevents.NewHTTP()
-	if err != nil {
-		log.Fatalf("failed to create protocol: %s", err.Error())
-	}
+func setupCEClient() {
+	if ceClient == nil {
+		p, err := cloudevents.NewHTTP()
+		if err != nil {
+			log.Fatalf("failed to create protocol: %s", err.Error())
+		}
 
-	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
-	if err != nil {
-		log.Fatalf("failed to create client, %v", err)
+		c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
+		if err != nil {
+			log.Fatalf("failed to create client, %v", err)
+		}
+		ceClient = c
 	}
-	return c
 }
 
 func handleMessage(m *nats.Msg) {
@@ -690,16 +696,17 @@ func contains(s []string, str string) bool {
 }
 
 func sendEvent(event cloudevents.Event) error {
-	client := createRecipientConnection()
-
 	if !matchesFilter(event) {
 		// Do not send cloud event if it does not match the filter
 		return nil
 	}
 
-	ctx := cloudevents.ContextWithTarget(context.Background(), getPubSubRecipientURL())
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	ctx = cloudevents.ContextWithTarget(ctx, getPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
-	if result := client.Send(ctx, event); cloudevents.IsUndelivered(result) {
+	defer cancel()
+
+	if result := ceClient.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		fmt.Printf("failed to send: %s\n", result.Error())
 		return errors.New(result.Error())
 	}

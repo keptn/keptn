@@ -114,13 +114,9 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 		})
 	}
 
-	err := eh.ShipyardController.HandleIncomingEvent(*event)
+	err := eh.ShipyardController.HandleIncomingEvent(*event, false)
 	if err != nil {
-		if err == errNoMatchingEvent {
-			SetBadRequestErrorResponse(err, c)
-		} else {
-			SetInternalServerErrorResponse(err, c)
-		}
+		SetInternalServerErrorResponse(err, c)
 		return
 	}
 	c.Status(http.StatusOK)
