@@ -517,7 +517,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *models.EventScope,
 			return err
 		}
 
-		return sc.triggerNextTaskSequences(eventScope, taskSequence, shipyard, eventHistory, inputEvent)
+		return sc.triggerNextTaskSequences(eventScope, taskSequence, shipyard, eventHistory, inputEvent, previousTask)
 	}
 	return sc.sendTaskTriggeredEvent(eventScope, taskSequence.Name, *task, eventHistory)
 }
@@ -551,8 +551,8 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope *models.Ev
 	return inputEvent, eventHistory, nil
 }
 
-func (sc *shipyardController) triggerNextTaskSequences(eventScope *models.EventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, eventHistory []interface{}, inputEvent *models.Event) error {
-	nextSequences := getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard)
+func (sc *shipyardController) triggerNextTaskSequences(eventScope *models.EventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, eventHistory []interface{}, inputEvent *models.Event, previousTask string) error {
+	nextSequences := getTaskSequencesByTrigger(eventScope, completedSequence.Name, shipyard, previousTask)
 
 	if len(nextSequences) == 0 {
 		sc.onSequenceFinished(*inputEvent)
@@ -613,8 +613,9 @@ func (sc *shipyardController) completeTaskSequence(eventScope *models.EventScope
 	return sc.sendTaskSequenceFinishedEvent(eventScope, taskSequenceName, triggeredID)
 }
 
-func getTaskSequencesByTrigger(eventScope *models.EventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard) []NextTaskSequence {
+func getTaskSequencesByTrigger(eventScope *models.EventScope, completedTaskSequence string, shipyard *keptnv2.Shipyard, previousTask string) []NextTaskSequence {
 	var result []NextTaskSequence
+
 	for _, stage := range shipyard.Spec.Stages {
 		for tsIndex, taskSequence := range stage.Sequences {
 			for _, trigger := range taskSequence.TriggeredOn {
@@ -628,6 +629,8 @@ func getTaskSequencesByTrigger(eventScope *models.EventScope, completedTaskSeque
 					} else {
 						// if a selector is there, compare the 'result' property
 						if string(eventScope.Result) == trigger.Selector.Match["result"] {
+							appendSequence = true
+						} else if string(eventScope.Result) == trigger.Selector.Match[previousTask+".result"] {
 							appendSequence = true
 						}
 					}

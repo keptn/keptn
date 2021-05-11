@@ -225,10 +225,10 @@ func Test_getEventScope(t *testing.T) {
 					Specversion:    "",
 					Time:           "",
 					Triggeredid:    "",
-					Type:           nil,
+					Type:           common.Stringp("my-type"),
 				},
 			},
-			want:    &models.EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}},
+			want:    &models.EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type"},
 			wantErr: false,
 		},
 		{
@@ -1442,6 +1442,7 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 		eventScope            *models.EventScope
 		completedTaskSequence string
 		shipyard              *keptnv2.Shipyard
+		previousTask          string
 	}
 	tests := []struct {
 		name string
@@ -1635,10 +1636,117 @@ func Test_getTaskSequencesByTrigger(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "get sequence triggered by result=fail of specific task",
+			args: args{
+				eventScope: &models.EventScope{EventData: keptnv2.EventData{
+					Result: keptnv2.ResultFailed,
+					Stage:  "dev",
+				}},
+				completedTaskSequence: "artifact-delivery",
+				previousTask:          "evaluation",
+				shipyard: &keptnv2.Shipyard{
+					ApiVersion: shipyardVersion,
+					Kind:       "shipyard",
+					Metadata:   keptnv2.Metadata{},
+					Spec: keptnv2.ShipyardSpec{
+						Stages: []keptnv2.Stage{
+							{
+								Name: "dev",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name:        "artifact-delivery",
+										TriggeredOn: nil,
+										Tasks:       nil,
+									},
+								},
+							},
+							{
+								Name: "hardening",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name: "artifact-delivery-2",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event: "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{
+													Match: map[string]string{
+														"evaluation.result": string(keptnv2.ResultFailed),
+													},
+												},
+											},
+										},
+										Tasks: nil,
+									},
+								},
+							},
+							{
+								Name: "production",
+								Sequences: []keptnv2.Sequence{
+									{
+										Name: "artifact-delivery",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event:    "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{},
+											},
+										},
+										Tasks: nil,
+									},
+									{
+										Name: "artifact-delivery-2",
+										TriggeredOn: []keptnv2.Trigger{
+											{
+												Event: "dev.artifact-delivery.finished",
+												Selector: keptnv2.Selector{
+													Match: map[string]string{
+														"deployment.result": string(keptnv2.ResultFailed),
+													},
+												},
+											},
+										},
+										Tasks: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []NextTaskSequence{
+				{
+					Sequence: keptnv2.Sequence{
+						Name: "artifact-delivery-2",
+						TriggeredOn: []keptnv2.Trigger{
+							{
+								Event: "dev.artifact-delivery.finished",
+								Selector: keptnv2.Selector{
+									Match: map[string]string{
+										"evaluation.result": string(keptnv2.ResultFailed),
+									},
+								},
+							},
+						},
+						Tasks: nil,
+					},
+					StageName: "hardening",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getTaskSequencesByTrigger(tt.args.eventScope, tt.args.completedTaskSequence, tt.args.shipyard); !reflect.DeepEqual(got, tt.want) {
+			if got := getTaskSequencesByTrigger(tt.args.eventScope, tt.args.completedTaskSequence, tt.args.shipyard, tt.args.previousTask); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getTaskSequencesByTrigger() = %v, want %v", got, tt.want)
 			}
 		})

@@ -124,42 +124,42 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		if err != nil {
 			return false
 		}
-		if !IsEqual(t, "resp.Response().StatusCode", http.StatusOK, resp.Response().StatusCode) {
+		if !IsEqual(t, http.StatusOK, resp.Response().StatusCode, "resp.Response().StatusCode") {
 			return false
 		}
-		if !IsEqual(t, "states.TotalCount", int64(1), states.TotalCount) {
+		if !IsEqual(t, int64(1), states.TotalCount, "states.TotalCount") {
 			return false
 		}
-		if !IsEqual(t, "len(states.States)", 1, len(states.States)) {
+		if !IsEqual(t, 1, len(states.States), "len(states.States)") {
 			return false
 		}
 
 		state := states.States[0]
 
-		if !IsEqual(t, "state.Project", projectName, state.Project) {
+		if !IsEqual(t, projectName, state.Project, "state.Project") {
 			return false
 		}
-		if !IsEqual(t, "state.Shkeptncontext", *context.KeptnContext, state.Shkeptncontext) {
+		if !IsEqual(t, *context.KeptnContext, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "state.State", "triggered", state.State) {
+		if !IsEqual(t, "triggered", state.State, "state.State") {
 			return false
 		}
 
-		if !IsEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		stage := state.Stages[0]
 
-		if !IsEqual(t, "stage.Name", "dev", stage.Name) {
+		if !IsEqual(t, "dev", stage.Name, "stage.Name") {
 			return false
 		}
-		if !IsEqual(t, "stage.Image", "carts:test", stage.Image) {
+		if !IsEqual(t, "carts:test", stage.Image, "stage.Image") {
 			return false
 		}
 
-		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 
@@ -222,13 +222,13 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		}
 		state := states.States[0]
 
-		if !IsEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		stage := state.Stages[0]
 
-		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), stage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 
@@ -269,27 +269,27 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		}
 		state := states.States[0]
 
-		if !IsEqual(t, "state.State", "triggered", state.State) {
+		if !IsEqual(t, "triggered", state.State, "state.State") {
 			return false
 		}
 
-		if !IsEqual(t, "len(state.Stages)", 2, len(state.Stages)) {
+		if !IsEqual(t, 2, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		devStage := state.Stages[0]
 
-		if !IsEqual(t, "devStage.LatestEvaluation.Score", 100.0, devStage.LatestEvaluation.Score) {
+		if !IsEqual(t, 100.0, devStage.LatestEvaluation.Score, "devStage.LatestEvaluation.Score") {
 			return false
 		}
 
-		if !IsEqual(t, "devStage.LatestEvent.Type", keptnv2.GetFinishedEventType("dev.delivery"), devStage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetFinishedEventType("dev.delivery"), devStage.LatestEvent.Type, "devStage.LatestEvent.Type") {
 			return false
 		}
 
 		stagingStage := state.Stages[1]
 
-		if !IsEqual(t, "stagingStage.LatestEvent.Type", keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stagingStage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), stagingStage.LatestEvent.Type, "stagingStage.LatestEvent.Type") {
 			return false
 		}
 
@@ -325,17 +325,17 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		}
 		state := states.States[0]
 
-		if !IsEqual(t, "state.State", "finished", state.State) {
+		if !IsEqual(t, "finished", state.State, "state.State") {
 			return false
 		}
 
-		if !IsEqual(t, "len(state.Stages)", 2, len(state.Stages)) {
+		if !IsEqual(t, 2, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		stagingStage := state.Stages[1]
 
-		if !IsEqual(t, "stagingStage.LatestEvent.Type", keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type, "stagingStage.LatestEvent.Type") {
 			return false
 		}
 
