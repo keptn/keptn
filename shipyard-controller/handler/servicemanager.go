@@ -89,17 +89,19 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*mode
 func (sm *serviceManager) CreateService(projectName string, params *operations.CreateServiceParams) error {
 	log.Infof("Received request to create service %s in project %s", *params.ServiceName, projectName)
 
+	// check service name length
+	log.Infof("Validating service %s", *params.ServiceName)
+	if err := validateServiceName(*params.ServiceName); err != nil {
+		return sm.logAndReturnError(fmt.Sprintf("could not create service %s for project %s: %s", *params.ServiceName, projectName, err.Error()))
+	}
+
 	stages, err := sm.GetAllStages(projectName)
 	if err != nil {
 		return sm.logAndReturnError(fmt.Sprintf("could not get stages of project %s: %s", projectName, err.Error()))
 	}
 
-	for _, stage := range stages {
-		log.Infof("Validating service %s", *params.ServiceName)
-		if err := validateServiceName(projectName, stage.StageName, *params.ServiceName); err != nil {
-			return sm.logAndReturnError(fmt.Sprintf("could not create service %s in stage %s of project %s: %s", *params.ServiceName, stage.StageName, projectName, err.Error()))
-		}
-	}
+
+
 
 	for _, stage := range stages {
 		log.Infof("Checking if service %s already exists in project %s", *params.ServiceName, projectName)
@@ -148,8 +150,12 @@ func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
 	return nil
 }
 
-func validateServiceName(projectName, stage, serviceName string) error {
-	allowedLength := serviceNameMaxLen - len(projectName) - len(stage) - len("generated")
+// validateServiceName validates that the service name is less than 43 characters (this is a requirement of helm-service)
+func validateServiceName(serviceName string) error {
+	// helm-service creates release names that have the service name and the string -generated in them
+	// this means that we need to ensure in here that service names are not too long
+	allowedLength := serviceNameMaxLen - len("generated") // = 43
+
 	if len(serviceName) > allowedLength {
 		return fmt.Errorf("service name needs to be less than %d characters", allowedLength)
 	}
