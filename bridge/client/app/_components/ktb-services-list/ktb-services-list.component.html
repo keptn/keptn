@@ -24,7 +24,7 @@
                 <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
               </button>
             </ng-template>
-            <p class="m-0" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" [textContent]="currentSequence.getLabel()"></p>
+            <a class="m-0" [routerLink]="getSequenceLink(currentSequence, row)" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" [textContent]="currentSequence.getLabel()"></a>
           </div>
           <p class="m-0" *ngIf="!row.roots">-</p>
         </dt-cell>

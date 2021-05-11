@@ -14,6 +14,7 @@ import {Service} from "../../_models/service";
 import {DateUtil} from "../../_utils/date.utils";
 import {DataService} from "../../_services/data.service";
 import {takeUntil} from "rxjs/operators";
+import {Root} from "../../_models/root";
 
 const DEFAULT_PAGE_SIZE = 3;
 
@@ -96,6 +97,10 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   getServiceLink(service: Service) {
     return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage]
+  }
+
+  getSequenceLink(sequence: Root, service: Service) {
+    return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 
   ngOnDestroy(): void {
