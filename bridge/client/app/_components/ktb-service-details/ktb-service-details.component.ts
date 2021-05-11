@@ -15,8 +15,8 @@ import {Subject} from 'rxjs';
 export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   private _deployment: Deployment;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
-  private projectName: string;
 
+  public projectName: string;
   public selectedStage: string;
 
   get deployment() {
