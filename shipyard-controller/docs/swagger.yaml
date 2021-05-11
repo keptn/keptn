@@ -890,15 +890,31 @@ paths:
       summary: Trigger a new evaluation
       tags:
       - Evaluation
-  /state/{project}:
+  /sequence/{project}:
     get:
       consumes:
       - application/json
-      description: Get task sequence states
+      description: Get task sequence execution states
       parameters:
-      - description: Project
+      - description: The project name
         in: path
         name: project
+        type: string
+      - description: The name of the sequence
+        in: query
+        name: name
+        type: string
+      - description: The state of the sequence (e.g., triggered, finished,...)
+        in: query
+        name: state
+        type: string
+      - description: The from time stamp for fetching sequence states
+        in: query
+        name: fromTime
+        type: string
+      - description: The before time stamp for fetching sequence states
+        in: query
+        name: beforeTime
         type: string
       - description: The number of items to return
         in: query
@@ -925,9 +941,9 @@ paths:
             $ref: '#/definitions/models.Error'
       security:
       - ApiKeyAuth: []
-      summary: Get task sequence states
+      summary: Get task sequence execution states
       tags:
-      - State
+      - Sequence
 securityDefinitions:
   ApiKeyAuth:
     in: header

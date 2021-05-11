@@ -2,6 +2,8 @@ package db_test
 
 import (
 	"context"
+	"fmt"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/ory/dockertest/v3"
@@ -11,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
 	"testing"
+	"time"
 )
 
 func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
@@ -57,6 +60,133 @@ func shutDownLocalMongoDB(pool *dockertest.Pool, resource *dockertest.Resource) 
 	}
 }
 
+func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
+	fmt.Println(timeutils.GetKeptnTimeStamp(time.Now()))
+	pool, dbResource := setupLocalMongoDB()
+	defer shutDownLocalMongoDB(pool, dbResource)
+
+	mdbrepo := &db.MongoDBStateRepo{
+		DbConnection: db.MongoDBConnection{},
+	}
+
+	state := models.SequenceState{
+		Name:           "my-sequence",
+		Service:        "my-service",
+		Project:        "my-project",
+		Time:           "2021-05-10T10:15:00.000Z",
+		Shkeptncontext: "my-context",
+		State:          "triggered",
+	}
+
+	state2 := models.SequenceState{
+		Name:           "my-sequence2",
+		Service:        "my-service",
+		Project:        "my-project",
+		Time:           "2021-05-10T10:00:00.000Z",
+		Shkeptncontext: "my-context2",
+		State:          "finished",
+	}
+
+	state3 := models.SequenceState{
+		Name:           "my-sequence3",
+		Service:        "my-service",
+		Project:        "my-project",
+		Time:           "2021-05-10T09:50:00.000Z",
+		Shkeptncontext: "my-context3",
+		State:          "triggered",
+	}
+
+	err := mdbrepo.CreateSequenceState(state)
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateSequenceState(state2)
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateSequenceState(state3)
+	require.Nil(t, err)
+
+	// Find by project name
+	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: "my-project",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(3), states.TotalCount)
+	require.Equal(t, 3, len(states.States))
+	require.Equal(t, state, states.States[0])
+	require.Equal(t, state2, states.States[1])
+	require.Equal(t, state3, states.States[2])
+
+	// Find by project and sequence name
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: "my-project",
+			Name:    "my-sequence",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state, states.States[0])
+
+	// Find by project and sequence state
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: "my-project",
+			State:   "finished",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state2, states.States[0])
+
+	// Find by project and from time
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:  "my-project",
+			FromTime: "2021-05-10T10:14:59.000Z",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state, states.States[0])
+
+	// Find by project and before time
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:    "my-project",
+			BeforeTime: "2021-05-10T10:00:00.000Z",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state3, states.States[0])
+
+	// Find by project and before and from time
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:    "my-project",
+			FromTime:   "2021-05-10T09:51:00.000Z",
+			BeforeTime: "2021-05-10T10:14:59.000Z",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state2, states.States[0])
+
+}
+
 func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	pool, dbResource := setupLocalMongoDB()
 	defer shutDownLocalMongoDB(pool, dbResource)
@@ -82,7 +212,6 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: "my-project",
 		},
-		Name:           "my-sequence",
 		Shkeptncontext: "my-context",
 	})
 

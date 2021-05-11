@@ -824,14 +824,14 @@
                 }
             }
         },
-        "/state/{project}": {
+        "/sequence/{project}": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get task sequence states",
+                "description": "Get task sequence execution states",
                 "consumes": [
                     "application/json"
                 ],
@@ -839,15 +839,39 @@
                     "application/json"
                 ],
                 "tags": [
-                    "State"
+                    "Sequence"
                 ],
-                "summary": "Get task sequence states",
+                "summary": "Get task sequence execution states",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Project",
+                        "description": "The project name",
                         "name": "project",
                         "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The name of the sequence",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The state of the sequence (e.g., triggered, finished,...)",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The from time stamp for fetching sequence states",
+                        "name": "fromTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The before time stamp for fetching sequence states",
+                        "name": "beforeTime",
+                        "in": "query"
                     },
                     {
                         "type": "integer",

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
@@ -27,9 +26,13 @@ func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     path    string     false        "Project"
-// @Param	pageSize			query		int			false	"The number of items to return"
-// @Param   nextPageKey     	query    	string     	false	"Pointer to the next set of items"
+// @Param   project     		path    string  false   "The project name"
+// @Param   name				query	string	false	"The name of the sequence"
+// @Param	state				query 	string 	false	"The state of the sequence (e.g., triggered, finished,...)"
+// @Param	fromTime			query	string	false	"The from time stamp for fetching sequence states"
+// @Param 	beforeTime			query	string	false	"The before time stamp for fetching sequence states"
+// @Param	pageSize			query	int		false	"The number of items to return"
+// @Param   nextPageKey     	query   string  false	"Pointer to the next set of items"
 // @Success 200 {object} models.SequenceStates	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
@@ -38,10 +41,8 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	projectName := c.Param("project")
 	params := &models.GetSequenceStateParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		c.JSON(http.StatusBadRequest, models.Error{
-			Code:    400,
-			Message: common.Stringp("Invalid request format"),
-		})
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
 	}
 	params.Project = projectName
 
@@ -49,9 +50,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 		GetSequenceStateParams: *params,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.Error{
-			Message: common.Stringp(err.Error()),
-		})
+		SetInternalServerErrorResponse(err, c, "Unable to query sequence state repository")
 		return
 	}
 
