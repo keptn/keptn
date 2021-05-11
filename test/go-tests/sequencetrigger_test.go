@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const sequenceTriggerShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
+const sequenceTriggerShipyard = `apiVersion: "spec.keptn.sh/0.2.2"
 kind: "Shipyard"
 metadata:
   name: "shipyard-sockshop"
@@ -29,8 +29,13 @@ spec:
             - name: "mytask"
             - name: "othertask"`
 
-func Test_SequenceLoopIntegrationTest(t *testing.T) {
+func TestMain(m *testing.M) {
 	PrepareEnvVars()
+	code := m.Run()
+	os.Exit(code)
+}
+
+func Test_SequenceLoopIntegrationTest(t *testing.T) {
 	projectName := "sequence-loop"
 	serviceName := "my-service"
 	stageName := "dev"
@@ -42,7 +47,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 	source := "golang-test"
 
 	// check if the project is already available - if not, delete it before creating it again
-	err = EnsureProjectExists(projectName, shipyardFilePath)
+	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
@@ -60,35 +65,35 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if err != nil {
 			return false
 		}
-		if !IsEqual(t, "resp.Response().StatusCode", http.StatusOK, resp.Response().StatusCode) {
+		if !IsEqual(t, http.StatusOK, resp.Response().StatusCode, "resp.Response().StatusCode") {
 			return false
 		}
-		if !IsEqual(t, "states.TotalCount", int64(1), states.TotalCount) {
+		if !IsEqual(t, int64(1), states.TotalCount, "states.TotalCount") {
 			return false
 		}
-		if !IsEqual(t, "len(states.States)", 1, len(states.States)) {
+		if !IsEqual(t, 1, len(states.States), "len(states.States)") {
 			return false
 		}
 
 		state := states.States[0]
 
-		if !IsEqual(t, "state.Project", projectName, state.Project) {
+		if !IsEqual(t, projectName, state.Project, "state.Project") {
 			return false
 		}
-		if !IsEqual(t, "state.Shkeptncontext", keptnContextID, state.Shkeptncontext) {
+		if !IsEqual(t, keptnContextID, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "state.State", "triggered", state.State) {
+		if !IsEqual(t, "triggered", state.State, "state.State") {
 			return false
 		}
 
-		if !IsEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		stage := state.Stages[0]
 
-		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType("mytask"), stage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("mytask"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 
@@ -120,13 +125,13 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 			return false
 		}
 		state := states.States[0]
-		if !IsEqual(t, "state.Project", state.Project, projectName) {
+		if !IsEqual(t, state.Project, projectName, "state.Project") {
 			return false
 		}
-		if !IsEqual(t, "state.Shkeptnkontext", state.Shkeptncontext, keptnContextID) {
+		if !IsEqual(t, state.Shkeptncontext, keptnContextID, "state.Shkeptnkontext") {
 			return false
 		}
-		if !IsEqual(t, "state.State", state.State, "triggered") {
+		if !IsEqual(t, state.State, "triggered", "state.State") {
 			return false
 		}
 
@@ -155,39 +160,39 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if err != nil {
 			return false
 		}
-		if !IsEqual(t, "resp.Response().StatusCode", http.StatusOK, resp.Response().StatusCode) {
+		if !IsEqual(t, http.StatusOK, resp.Response().StatusCode, "resp.Response().StatusCode") {
 			return false
 		}
-		if !IsEqual(t, "states.TotalCount", int64(1), states.TotalCount) {
+		if !IsEqual(t, int64(1), states.TotalCount, "states.TotalCount") {
 			return false
 		}
-		if !IsEqual(t, "len(states.States)", 1, len(states.States)) {
+		if !IsEqual(t, 1, len(states.States), "len(states.States)") {
 			return false
 		}
 
 		state := states.States[0]
 
-		if !IsEqual(t, "state.Project", projectName, state.Project) {
+		if !IsEqual(t, projectName, state.Project, "state.Project") {
 			return false
 		}
-		if !IsEqual(t, "state.Shkeptncontext", keptnContextID, state.Shkeptncontext) {
+		if !IsEqual(t, keptnContextID, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "state.State", "triggered", state.State) {
+		if !IsEqual(t, "triggered", state.State, "state.State") {
 			return false
 		}
 
-		if !IsEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		stage := state.Stages[0]
 
-		if !IsEqual(t, "stage.Name", stageName, stage.Name) {
+		if !IsEqual(t, stageName, stage.Name, "stage.Name") {
 			return false
 		}
 
-		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType("mytask"), stage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("mytask"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 
@@ -223,11 +228,11 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		}
 		stage := states.States[0].Stages[0]
 
-		if !IsEqual(t, "stage.Name", stageName, stage.Name) {
+		if !IsEqual(t, stageName, stage.Name, "stage.Name") {
 			return false
 		}
 
-		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetTriggeredEventType("othertask"), stage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetTriggeredEventType("othertask"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 
@@ -261,26 +266,26 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if err != nil {
 			return false
 		}
-		if !IsEqual(t, "resp.Response().StatusCode", http.StatusOK, resp.Response().StatusCode) {
+		if !IsEqual(t, http.StatusOK, resp.Response().StatusCode, "resp.Response().StatusCode") {
 			return false
 		}
 		state := states.States[0]
 
-		if !IsEqual(t, "state.State", "finished", state.State) {
+		if !IsEqual(t, "finished", state.State, "state.State") {
 			return false
 		}
 
-		if !IsEqual(t, "len(state.Stages)", 1, len(state.Stages)) {
+		if !IsEqual(t, 1, len(state.Stages), "len(state.Stages)") {
 			return false
 		}
 
 		stage := state.Stages[0]
 
-		if !IsEqual(t, "stage.Name", stageName, stage.Name) {
+		if !IsEqual(t, stageName, stage.Name, "stage.Name") {
 			return false
 		}
 
-		if !IsEqual(t, "stage.LatestEvent.Type", keptnv2.GetFinishedEventType("dev.delivery"), stage.LatestEvent.Type) {
+		if !IsEqual(t, keptnv2.GetFinishedEventType("dev.delivery"), stage.LatestEvent.Type, "stage.LatestEvent.Type") {
 			return false
 		}
 

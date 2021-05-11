@@ -2,6 +2,8 @@ package common
 
 import (
 	"errors"
+	"fmt"
+	"github.com/Masterminds/semver/v3"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/ghodss/yaml"
 	"github.com/google/uuid"
@@ -10,11 +12,15 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/url"
 	"os"
+	"strings"
 )
 
 const defaultKeptnNamespace = "keptn"
 
 const keptnSpecVersionEnvVar = "KEPTN_SPEC_VERSION"
+
+const shipyardVersionPrefix = "spec.keptn.sh/"
+const shipyardSpecVersionPrefix = "0.2"
 
 // GetKeptnNamespace godoc
 func GetKeptnNamespace() string {
@@ -57,8 +63,23 @@ func UnmarshalShipyard(shipyardString string) (*keptnv2.Shipyard, error) {
 
 // ValidateShipyardVersion godoc
 func ValidateShipyardVersion(shipyard *keptnv2.Shipyard) error {
-	if shipyard.ApiVersion != "0.2.0" && shipyard.ApiVersion != "spec.keptn.sh/0.2.0" {
-		return errors.New("Invalid shipyard APIVersion " + shipyard.ApiVersion)
+	shipyardVersionConstraint := ">= " + shipyardSpecVersionPrefix
+	c, err := semver.NewConstraint(shipyardVersionConstraint)
+	if err != nil {
+		// Handle constraint not being parsable.
+		return fmt.Errorf("could not initialize shipyard version constraint: %s", err.Error())
+	}
+
+	apiVersion := strings.TrimPrefix(shipyard.ApiVersion, shipyardVersionPrefix)
+
+	v, err := semver.NewVersion(apiVersion)
+	if err != nil {
+		// Handle version not being parsable.
+		return fmt.Errorf("could not parse shipyard version: %s", err.Error())
+	}
+	// Check if the version meets the constraints. The a variable will be true.
+	if !c.Check(v) {
+		return fmt.Errorf("Invalid shipyard APIVersion %s. Expected %s"+shipyard.ApiVersion, shipyardVersionConstraint)
 	}
 	return nil
 }

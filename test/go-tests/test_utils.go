@@ -29,17 +29,21 @@ func (sender *APIEventSender) SendEvent(event v2.Event) error {
 	return err
 }
 
-func EnsureProjectExists(projectName, shipyardFilePath string) error {
+func CreateProject(projectName, shipyardFilePath string, recreateIfAlreadyThere bool) error {
 	resp, err := ApiGETRequest("/controlPlane/v1/project/" + projectName)
 	if err != nil {
 		return err
 	}
 
 	if resp.Response().StatusCode != http.StatusNotFound {
-		// delete project if it exists
-		_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
-		if err != nil {
-			return err
+		if recreateIfAlreadyThere {
+			// delete project if it exists
+			_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
+			if err != nil {
+				return err
+			}
+		} else {
+			return errors.New("project already exists")
 		}
 	}
 
@@ -194,7 +198,7 @@ func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*
 	return nil, nil
 }
 
-func IsEqual(t *testing.T, property string, expected, actual interface{}) bool {
+func IsEqual(t *testing.T, expected, actual interface{}, property string) bool {
 	if expected != actual {
 		t.Logf("%s: expected %v, got %v", property, expected, actual)
 		return false
