@@ -222,6 +222,16 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.D
 		h.getKeptnHandler().Logger.Info("Using deployment URIs from deployment.triggered event")
 		localURIs = inEventData.Deployment.DeploymentURIsLocal
 		publicURIs = inEventData.Deployment.DeploymentURIsPublic
+	} else if deploymentStrategy == keptnevents.UserManaged {
+		endpoints, err := h.getUserManagedEndpoints(inEventData.EventData)
+		if err != nil {
+			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
+		}
+		if endpoints != nil {
+			localURIs = endpoints.DeploymentURIsLocal
+			publicURIs = endpoints.DeploymentURIsPublic
+		}
+
 	} else {
 		h.getKeptnHandler().Logger.Info("No deployment URIs defined in deployment.finished event")
 	}

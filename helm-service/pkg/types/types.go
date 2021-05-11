@@ -36,6 +36,11 @@ type IChartStorer interface {
 	Store(storeChartOpts keptnutils.StoreChartOptions) (string, error)
 }
 
+// IResourceHandler defines operations to retrieve keptn resources
+type IResourceHandler interface {
+	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
+}
+
 // IChartPackager defines the operation to package a helm chart
 type IChartPackager interface {
 	Package(ch *chart.Chart) ([]byte, error)
