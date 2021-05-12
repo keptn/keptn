@@ -154,13 +154,18 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 
 	err = keptnv2.EventDataAs(*deploymentFinishedEvent, deploymentFinishedEventData)
 
+	t.Log("Verifying if deploymentURIsLocal and deploymentURIsPublic have been set properly")
 	// if no custom deployment URIs have been defined, they should also be nil in the deployment.finished event
 	require.Nil(t, err)
 	require.Equal(t, []string{publicURL}, deploymentFinishedEventData.Deployment.DeploymentURIsPublic)
 	require.Equal(t, []string{"http://my-local-url:80"}, deploymentFinishedEventData.Deployment.DeploymentURIsLocal)
 
+	t.Log("deploymentURIsLocal and deploymentURIsPublic have been set properly")
+
 	// check if the service has been deployed (i.e. is reachable)
+	t.Log("Checking reachability of service")
 	resp, err := req.Get(publicURL)
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	t.Log("Service is reachable")
 }
