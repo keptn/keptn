@@ -55,39 +55,57 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	// make sure the namespace from a previous test run has been deleted properly
 	exists, err := keptnkubeutils.ExistsNamespace(false, projectName+"-dev")
 	if exists {
+		t.Logf("Deleting namespace %s-dev from previous test execution", projectName)
 		clientset, err := keptnkubeutils.GetClientset(false)
 		require.Nil(t, err)
 		err = clientset.CoreV1().Namespaces().Delete(context.TODO(), projectName+"-dev", v1.DeleteOptions{})
 		require.Nil(t, err)
 	}
 
+	require.Eventually(t, func() bool {
+		t.Logf("Checking if namespace %s-dev is still there", projectName)
+		exists, err := keptnkubeutils.ExistsNamespace(false, projectName+"-dev")
+		if err != nil || exists {
+			t.Logf("Namespace %s-dev is still there", projectName)
+			return false
+		}
+		t.Logf("Namespace %s-dev has been removed - proceeding with test execution", projectName)
+		return true
+	}, 60*time.Second, 5*time.Second)
+
 	// check if the project is already available - if not, delete it before creating it again
 	err = CreateProject(projectName, shipyardFilePath, true)
 	require.Nil(t, err)
 
 	// create the service
+	t.Logf("Creating service %s in project %s", serviceName, projectName)
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
 	// upload the service's helm chart
+	t.Logf("Uploading the helm chart of service %s in project %s", serviceName, projectName)
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --service=%s --project=%s --all-stages --resource=./chart.tgz --resourceUri=helm/%s.tgz", serviceName, projectName, serviceName))
 	require.Nil(t, err)
 
 	// trigger the sequence without defining custom endpoints first
+	t.Logf("Triggering the first delivery sequence without providing custom endpoints")
 	keptnContextID, err := TriggerSequence(projectName, serviceName, stageName, sequenceName, nil)
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContextID)
 
 	// wait until we get a deployment.finished event
 	var deploymentFinishedEvent *models.KeptnContextExtendedCE
+	t.Log("Waiting for deployment to complete")
 	require.Eventually(t, func() bool {
 		deploymentFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName))
 		if err != nil || deploymentFinishedEvent == nil {
+			t.Log("Deployment has not been completed yet... Waiting a couple of seconds before checking again")
 			return false
 		}
 		return true
-	}, 60*time.Second, 2*time.Second)
+	}, 60*time.Second, 5*time.Second)
+	t.Log("Deployment has been completed")
 
 	deploymentFinishedEventData := &keptnv2.DeploymentFinishedEventData{}
 	err = keptnv2.EventDataAs(*deploymentFinishedEvent, deploymentFinishedEventData)
@@ -111,23 +129,28 @@ func Test_CustomUserManagedEndpointsTest(t *testing.T) {
 	defer os.Remove(endpointsFilePath)
 
 	// now, let's add an endpoints.yaml file to our service
+	t.Log("Adding endpoints.yaml to our service")
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=helm/endpoints.yaml --all-stages", projectName, serviceName, endpointsFilePath))
 
 	require.Nil(t, err)
 
 	// trigger the sequence again
+	t.Logf("Triggering the delivery sequence again - this time with custom endpoints")
 	keptnContextID, err = TriggerSequence(projectName, serviceName, stageName, sequenceName, nil)
 	require.Nil(t, err)
 	require.NotEmpty(t, keptnContextID)
 
 	// wait until we get a deployment.finished event
+	t.Log("Waiting for deployment to complete")
 	require.Eventually(t, func() bool {
 		deploymentFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName))
 		if err != nil || deploymentFinishedEvent == nil {
+			t.Log("Deployment has not been completed yet... Waiting a couple of seconds before checking again")
 			return false
 		}
 		return true
-	}, 60*time.Second, 2*time.Second)
+	}, 60*time.Second, 5*time.Second)
+	t.Log("Deployment has been completed")
 
 	err = keptnv2.EventDataAs(*deploymentFinishedEvent, deploymentFinishedEventData)
 
