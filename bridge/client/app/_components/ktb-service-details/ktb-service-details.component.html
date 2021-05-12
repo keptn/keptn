@@ -18,15 +18,20 @@
     </dt-info-group>
     <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
 
+    <div class="mt-2" [class]="{'animation-pulse': selectedStage}" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApproval(selectedStage)">
+      <ktb-event-item [event]="deployment.sequence.getPendingApproval(selectedStage)">
+        <ktb-event-item-detail>
+          <a [routerLink]="['/', 'project', projectName, 'sequence', deployment.sequence.shkeptncontext, 'stage', selectedStage]">View sequence execution</a>
+        </ktb-event-item-detail>
+      </ktb-event-item>
+    </div>
+
     <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence.getEvaluation(selectedStage) as evaluationEvent">
       <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">
         <ktb-event-item-detail>
           <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
         </ktb-event-item-detail>
       </ktb-event-item>
-    </div>
-    <div class="mt-2" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApproval(selectedStage)">
-      <ktb-event-item [event]="deployment.sequence.getPendingApproval(selectedStage)"></ktb-event-item>
     </div>
   </ng-template>
 </ng-container>

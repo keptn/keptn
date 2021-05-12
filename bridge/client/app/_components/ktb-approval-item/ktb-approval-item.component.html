@@ -6,10 +6,20 @@
       <ktb-evaluation-details [evaluationData]="evaluation" [showChart]="false"></ktb-evaluation-details>
     </ng-template>
   </dt-tag-list>
-  <button dt-icon-button (click)="approveDeployment(_event)" variant="nested" aria-label="Approve">
-    <dt-icon class="success" name="checkmark"></dt-icon>
-  </button>
-  <button dt-icon-button (click)="declineDeployment(_event)" variant="nested" aria-label="Decline">
-    <dt-icon class="error" name="abort"></dt-icon>
-  </button>
+  <div class="ml-2">
+    <ng-container *ngIf="approvalResult === null">
+      <button dt-icon-button (click)="handleApproval(_event, true)" variant="nested" aria-label="Approve">
+        <dt-icon class="success" name="checkmark"></dt-icon>
+      </button>
+      <button dt-icon-button (click)="handleApproval(_event, false)" variant="nested" aria-label="Decline">
+        <dt-icon class="error" name="abort"></dt-icon>
+      </button>
+    </ng-container>
+    <ng-container *ngIf="approvalResult !== null">
+      <span class="approval-result">
+        <dt-icon *ngIf="approvalResult" class="event-icon success" name="checkmark"></dt-icon>
+        <dt-icon *ngIf="!approvalResult" class="event-icon error" name="abort"></dt-icon>
+      </span>
+    </ng-container>
+  </div>
 </div>

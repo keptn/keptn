@@ -1,2 +1,11 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
+
+.approval-result {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  padding-top: 6px;
+  padding-left: 6px;
+  vertical-align: top;
+}
