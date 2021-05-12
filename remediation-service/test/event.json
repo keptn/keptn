@@ -10,7 +10,7 @@
     "project": "sockshop",
     "service": "carts-db",
     "stage": "dev",
-    "problemDetails": {
+    "problem": {
       "problemTitle": "Response time degradation",
       "rootCause": "problemType1"
     },

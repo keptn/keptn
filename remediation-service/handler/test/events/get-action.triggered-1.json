@@ -10,7 +10,7 @@
     "project": "myproject",
     "service": "myservice",
     "stage": "mystage",
-    "problemDetails": {
+    "problem": {
       "problemTitle": "Response time degradation",
       "rootCause": "Response time degradation"
     },
