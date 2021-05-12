@@ -12,6 +12,7 @@ import (
 type EventScope struct {
 	v0_2_0.EventData `bson:",inline"`
 	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
+	EventType        string `json:"eventType" bson:"eventType"`
 }
 
 func NewEventScope(event Event) (*EventScope, error) {
@@ -33,5 +34,8 @@ func NewEventScope(event Event) (*EventScope, error) {
 	if data.Service == "" {
 		return nil, errors.New("event does not contain a service")
 	}
-	return &EventScope{*data, event.Shkeptncontext}, nil
+	if event.Type == nil {
+		return nil, errors.New("event does not contain a type")
+	}
+	return &EventScope{EventData: *data, KeptnContext: event.Shkeptncontext, EventType: *event.Type}, nil
 }

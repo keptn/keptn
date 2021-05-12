@@ -65,7 +65,7 @@ jobs:
           fi
 
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
@@ -307,7 +307,7 @@ jobs:
         with:
           go-version: ^1.16
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Load CI Environment from .ci_env
         id: load_ci_env
@@ -425,7 +425,7 @@ jobs:
         with:
           node-version: 12.x
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       - uses: actions/cache@v2.1.5
         with:
           path: ~/.npm
@@ -469,7 +469,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       # cache go modules
       - uses: actions/cache@v2.1.5
@@ -524,7 +524,7 @@ jobs:
         with:
           go-version: "1.16.x"
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       # cache go modules
       - uses: actions/cache@v2.1.5
         with:
@@ -592,7 +592,7 @@ jobs:
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Load CI Environment from .ci_env
         id: load_ci_env
@@ -632,7 +632,7 @@ jobs:
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Load CI Environment from .ci_env
         id: load_ci_env
@@ -805,7 +805,7 @@ jobs:
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v2.1.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           path: docker_build_report_final.txt

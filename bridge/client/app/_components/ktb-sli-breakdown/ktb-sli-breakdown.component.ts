@@ -31,9 +31,9 @@ export class KtbSliBreakdownComponent implements OnInit {
   set indicatorResults(indicatorResults: any) {
     if (this._indicatorResults !== indicatorResults) {
       this._indicatorResults = indicatorResults;
-      this._indicatorResultsFail = indicatorResults.filter(i => i.status === 'fail');
-      this._indicatorResultsWarning = indicatorResults.filter(i => i.status === 'warning');
-      this._indicatorResultsPass = indicatorResults.filter(i => i.status !== 'fail' && i.status !== 'warning');
+      this._indicatorResultsFail = indicatorResults.filter(i => i.status === 'fail').sort(this.sortIndicatorResult);
+      this._indicatorResultsWarning = indicatorResults.filter(i => i.status === 'warning').sort(this.sortIndicatorResult);
+      this._indicatorResultsPass = indicatorResults.filter(i => i.status !== 'fail' && i.status !== 'warning').sort(this.sortIndicatorResult);
       this.updateDataSource();
       this._changeDetectorRef.markForCheck();
     }
@@ -111,6 +111,10 @@ export class KtbSliBreakdownComponent implements OnInit {
         success: indicatorResult.value.success
       };
     });
+  }
+
+  private sortIndicatorResult(resultA: any, resultB: any) {
+    return (resultA.displayName || resultA.value.metric).localeCompare(resultB.displayName || resultB.value.metric);
   }
 
   private round(value: number, places: number): number {

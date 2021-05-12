@@ -30,8 +30,26 @@ if(!integrationsPageLink) {
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
 
 module.exports = (async function (){
-  // host static files (angular app)
-  app.use(express.static(path.join(__dirname, '../dist'), {maxAge: oneWeek}));
+  // server static files - Images & CSS
+  app.use('/static', express.static(path.join(__dirname, 'views/static'), {maxAge: oneWeek}));
+
+  // UI static files - Angular application
+  app.use(express.static(path.join(__dirname, '../dist'), {
+    maxAge: oneWeek, // cache files for one week
+    etag: true, // Just being explicit about the default.
+    lastModified: true,  // Just being explicit about the default.
+    setHeaders: (res, path) => {
+      // however, do not cache .html files (e.g., index.html)
+      if (path.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    },
+  })
+  );
+
+  // Server views based on Pug
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'pug');
 
   // add some middlewares
   app.use(logger('dev'));
@@ -95,7 +113,7 @@ module.exports = (async function (){
 // fallback: go to index.html
   app.use((req, res, next) => {
     console.error("Not found: " + req.url);
-    res.sendFile(path.join(`${__dirname}/../dist/index.html`));
+    res.sendFile(path.join(`${__dirname}/../dist/index.html`), {maxAge: 0});
   });
 
 // error handler

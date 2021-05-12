@@ -104,3 +104,45 @@ func TestGetDeployments(t *testing.T) {
 	deployments := GetDeployments(helmManifestResource)
 	assert.Equal(t, 1, len(deployments))
 }
+
+func TestGetReleaseName(t *testing.T) {
+	var tests = []struct {
+		project   string
+		stage     string
+		service   string
+		generated bool
+		out       string
+	}{
+		// legacy support: make sure helm chart release name looks the same way as before
+		{"sockshop", "dev", "carts", false, "sockshop-dev-carts"},
+		{"sockshop", "dev", "carts", true, "sockshop-dev-carts-generated"},
+		{"sockshop", "dev", "carts-db", false, "sockshop-dev-carts-db"},
+		{"sockshop", "dev", "carts-db", true, "sockshop-dev-carts-db-generated"},
+
+		// now make project and stage name much longer, such that adding -generated would result in a name >= 53 chars
+		{"sockshop-enhanced-version", "development", "carts", false, "sockshop-enhanced-version-development-carts"},
+		{"sockshop-enhanced-version", "development", "carts", true, "development-carts-generated"},
+
+		// In addition, use a very long service name, such that neither project nor stage name can be used
+		{"sockshop-enhanced-version", "development", "my-carts-service-is-the-best", false, "development-my-carts-service-is-the-best"},
+		{"sockshop-enhanced-version", "development", "my-carts-service-is-the-best", true, "development-my-carts-service-is-the-best-generated"},
+
+		// finally, test the case where the service name itself is so big that it needs to be sliced to fit the -generated suffix
+		// Note: this should really never be the case, but we will cover it anyway, just to be safe
+		{"sockshop", "dev", "this-is-my-very-very-very-very-very-long-servicename", false, "this-is-my-very-very-very-very-very-long-servicename"},
+		{"sockshop", "dev", "this-is-my-very-very-very-very-very-long-servicename", true, "this-is-my-very-very-very-very-very-long-s-generated"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.out, func(t *testing.T) {
+			s := GetReleaseName(tt.project, tt.stage, tt.service, tt.generated)
+			if s != tt.out {
+				t.Errorf("got %q, want %q", s, tt.out)
+			}
+			// also, verify that s is <= 53 characters (just to be sure)
+			if len(s) >= 53 {
+				t.Errorf("len(%q) >= 53, but should be < 53", s)
+			}
+		})
+	}
+}

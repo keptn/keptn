@@ -39,12 +39,13 @@ export class ApiService {
     return this._baseUrl;
   }
 
-  public get environmentFilter(): string[] {
-    return JSON.parse(localStorage.getItem(this.ENVIRONMENT_FILTER_COOKIE)) || [];
+  public get environmentFilter(): {[projectName: string]: {services: string[]}} {
+    const filter = JSON.parse(localStorage.getItem(this.ENVIRONMENT_FILTER_COOKIE)) || {};
+    return filter instanceof Array ? {} : filter; // old format was an array
   }
 
-  public set environmentFilter(services: string[]) {
-    localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(services));
+  public set environmentFilter(filter: {[projectName: string]: {services: string[]}}) {
+    localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(filter));
   }
 
   public getKeptnInfo(): Observable<any> {

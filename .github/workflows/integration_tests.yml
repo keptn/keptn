@@ -87,7 +87,7 @@ jobs:
       ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
     steps:
       - name: Check out code.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Create downloads folder
         run: mkdir ~/downloads
@@ -388,27 +388,6 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
-      - name: Install Remote Execution Plane
-        id: install_remote_execution_plane
-        if: env.REMOTE_EXECUTION_PLANE == 'true'
-        timeout-minutes: 5
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
-        run: |
-          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
-          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
-
-          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-
-          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
-
-          helm test jmeter-service -n keptn-jmeter-service
-          helm test helm-service -n keptn-helm-service
-
       - name: Test Linking Stages
         id: test_linking_stages
         timeout-minutes: 5
@@ -416,6 +395,22 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: test/test_linking_stages.sh
+
+      - name: Test Sequence States
+        id: test_sequence_states
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceStateIntegrationTest
+
+      - name: Test Sequence Loop
+        id: test_sequence_loop
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest
 
       - name: Test Delayed Tasks
         id: test_delayed_tasks
@@ -469,6 +464,27 @@ jobs:
           PROJECT: "musicshop"
           DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
         run: test/test_delivery_assistant.sh
+
+      - name: Install Remote Execution Plane
+        id: install_remote_execution_plane
+        if: env.REMOTE_EXECUTION_PLANE == 'true'
+        timeout-minutes: 5
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+        run: |
+          KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+          kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
+          kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+
+          KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+
+          helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+          helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+
+          helm test jmeter-service -n keptn-jmeter-service
+          helm test helm-service -n keptn-helm-service
 
       - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
@@ -598,7 +614,7 @@ jobs:
           TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload test report as an artifact
@@ -628,7 +644,7 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Debug - Output Branch
         run: echo $BRANCH
@@ -649,8 +665,8 @@ jobs:
         run: |
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   |   Quality Gates Standalone  |  Quality Gates Backwards Compat. | Self Healing  |  Delivery Assistant  | Continuous Delivery | Continuous Delivery (Remote Exec) |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | --------------------------- | ---------------------------------|-------------- | -------------------- | ------------------- | ------------------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   | Sequence States   | Sequence Loop   |  Quality Gates Standalone  |  Quality Gates Backwards Compat. | Self Healing  |  Delivery Assistant  | Continuous Delivery | Continuous Delivery (Remote Exec) |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ----------------- | --------------- |--------------------------- | ---------------------------------|-------------- | -------------------- | ------------------- | ------------------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
@@ -912,7 +928,7 @@ jobs:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'

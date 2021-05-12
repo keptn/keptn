@@ -17,19 +17,18 @@ const LOGOUT_URL = 'logout_path';
 const prefixPath = process.env.PREFIX_PATH;
 
 /**
- * Bridge root redirection. The exact path depends on deployment & PREFIX_PATH value
+ * Build the root path. The exact path depends on the deployment & PREFIX_PATH value
  *
- * If PREFIX_PATH is defined, redirect to <PREFIX_PATH>/bridge. Otherwise, redirect to root.
+ * If PREFIX_PATH is defined, root location is set to <PREFIX_PATH>/bridge. Otherwise, root is set to / .
  *
- * Redirection to root will either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
+ * Redirection to / will be either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
  * */
-function redirectToRoot(resp) {
+function getRootLocation() {
   if (prefixPath !== undefined) {
-    return resp.redirect(`${prefixPath}/bridge`);
+    return `${prefixPath}/bridge`;
   }
 
-  return resp.redirect('/');
-
+  return '/';
 }
 
 module.exports = (async () => {
@@ -85,12 +84,22 @@ module.exports = (async () => {
       })
     } catch (err) {
       console.log(`Error while handling the login request. Cause : ${err.message}`);
-      return res.status(500).send({error: 'Internal error while handling login request.'});
+      return res.render('error',
+        {
+          title: 'Internal error',
+          message: 'Error while handling the login request.',
+          location: getRootLocation()
+        });
     }
 
 
     if (!authResponse.data.hasOwnProperty(AUTH_URL)) {
-      throw 'OAuth service discovery must contain the authorization endpoint.';
+      return res.render('error',
+        {
+          title: 'Invalid state',
+          message: 'Failure to obtain login details.',
+          location: getRootLocation()
+        });
     }
 
     res.redirect(authResponse.data[AUTH_URL]);
@@ -105,7 +114,7 @@ module.exports = (async () => {
     const state = req.query.state;
 
     if (authCode === undefined || state === undefined) {
-      return redirectToRoot(res);
+      return res.redirect(getRootLocation());
     }
 
     let tokensPayload = {
@@ -129,21 +138,28 @@ module.exports = (async () => {
 
       if (err.response !== undefined && err.response.status === 403) {
         let response = {
-          error: 'Permission denied.'
+          title: 'Permission denied',
         };
 
         if (err.response.data.hasOwnProperty('message')) {
-          response['message'] = err.response.data['message'];
+          response.message = err.response.data['message'];
+        } else {
+          response.message = 'User is not allowed access the instance.';
         }
 
-        return res.status(403).send(response);
+        return res.render('error', response);
       } else {
-        return res.status(500).send({error: 'Error while handling the redirect.'});
+        return res.render('error',
+          {
+            title: 'Internal error',
+            message: 'Error while handling the redirect. Please retry and check whether the problem exists.',
+            location: getRootLocation()
+          });
       }
     }
 
     sessionAuthentication(req, tokenDecision.data[USER], tokenDecision.data[LOGOUT_HINT]);
-    return redirectToRoot(res);
+    return res.redirect(getRootLocation());
   });
 
   /**
@@ -152,12 +168,12 @@ module.exports = (async () => {
   router.get('/logout', async (req, res) => {
     if (!isAuthenticated(req)) {
       // Session is not authenticated, redirect to root
-      return redirectToRoot(res);
+      return res.redirect(getRootLocation());
     }
 
     if (!logoutEndpoint) {
       removeSession(req);
-      return redirectToRoot(res);
+      return res.redirect(getRootLocation());
     }
 
     const hint = getLogoutHint(req);
@@ -178,18 +194,27 @@ module.exports = (async () => {
       });
     } catch (err) {
       console.log(`Error while handling the RP logout. Cause : ${err.message}`);
-      return res.status(500).send({
-        error: 'Logout was successfully handled.' +
-          ' However, there was an error while redirecting you to the correct endpoint.'
-      });
+
+      return res.render('error',
+        {
+          title: 'Internal error',
+          message: 'Logout was successfully handled.' +
+            ' However, there was an error while redirecting you to the correct endpoint.',
+          location : getRootLocation(),
+          locationMessage: 'Home'
+        });
     }
 
     if (!logoutResponse.data.hasOwnProperty(LOGOUT_URL)) {
       console.log('Invalid response from rp_logout.');
-      return res.status(500).send({
-        error: 'Logout was successfully handled.' +
-          ' However, there was an error while redirecting you to the correct endpoint.'
-      });
+      return res.render('error',
+        {
+          title: 'Internal error',
+          message: 'Logout was successfully handled.' +
+            ' However, there was an error while redirecting you to the correct endpoint.',
+          location : getRootLocation(),
+          locationMessage: 'Home'
+        });
     }
 
     return res.redirect(logoutResponse.data[LOGOUT_URL]);

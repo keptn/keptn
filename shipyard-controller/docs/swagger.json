@@ -267,7 +267,7 @@
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "ok",
                         "schema": {
                             "$ref": "#/definitions/operations.CreateProjectResponse"
@@ -823,6 +823,90 @@
                     }
                 }
             }
+        },
+        "/sequence/{project}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get task sequence execution states",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sequence"
+                ],
+                "summary": "Get task sequence execution states",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The project name",
+                        "name": "project",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The name of the sequence",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The state of the sequence (e.g., triggered, finished,...)",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The from time stamp for fetching sequence states",
+                        "name": "fromTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The before time stamp for fetching sequence states",
+                        "name": "beforeTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.SequenceStates"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1086,6 +1170,103 @@
                 "type": {
                     "description": "Type of the event",
                     "type": "string"
+                }
+            }
+        },
+        "models.SequenceState": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "type": "string"
+                },
+                "stages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SequenceStateStage"
+                    }
+                },
+                "state": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SequenceStateEvaluation": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.SequenceStateEvent": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SequenceStateStage": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "string"
+                },
+                "latestEvaluation": {
+                    "$ref": "#/definitions/models.SequenceStateEvaluation"
+                },
+                "latestEvent": {
+                    "$ref": "#/definitions/models.SequenceStateEvent"
+                },
+                "latestFailedEvent": {
+                    "$ref": "#/definitions/models.SequenceStateEvent"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SequenceStates": {
+            "type": "object",
+            "properties": {
+                "nextPageKey": {
+                    "description": "Pointer to next page",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "Size of returned page",
+                    "type": "integer"
+                },
+                "states": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SequenceState"
+                    }
+                },
+                "totalCount": {
+                    "description": "Total number of events",
+                    "type": "integer"
                 }
             }
         },

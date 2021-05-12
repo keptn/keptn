@@ -159,7 +159,7 @@ func (m *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) err
 }
 
 func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
-	projectCollection := m.DbConnection.Client.Database(databaseName).Collection(projectsCollectionName)
+	projectCollection := m.DbConnection.Client.Database(getDatabaseName()).Collection(projectsCollectionName)
 	return projectCollection
 }
 

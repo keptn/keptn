@@ -11,7 +11,7 @@ jobs:
           go-version: 1.16
         id: go
       - name: Check out code.
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2.3.4
       - name: Install golangci-lint
         run: |
           # binary will be $(go env GOPATH)/bin/golangci-lint
@@ -22,5 +22,6 @@ jobs:
       - name: Run reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GO111MODULE: "off" # required for golangci-lint - see https://github.com/keptn/keptn/issues/4000 / https://github.com/golangci/golangci-lint/issues/1833
         run: |
           reviewdog -reporter=github-pr-review

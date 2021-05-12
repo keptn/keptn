@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
 import { Trace } from '../../_models/trace';
 import {Observable} from "rxjs";
 import {Project} from "../../_models/project";
@@ -15,6 +15,7 @@ export class KtbApprovalItemComponent {
 
   public project$: Observable<Project>;
   public _event: Trace;
+  public approvalResult: boolean = null;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
@@ -40,12 +41,9 @@ export class KtbApprovalItemComponent {
     );
   }
 
-  approveDeployment(approval) {
-    this.dataService.sendApprovalEvent(approval, true);
-  }
-
-  declineDeployment(approval) {
-    this.dataService.sendApprovalEvent(approval, false);
+  handleApproval(approval, result) {
+    this.dataService.sendApprovalEvent(approval, result);
+    this.approvalResult = result;
   }
 
 }
