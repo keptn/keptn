@@ -6,8 +6,11 @@
     </a>
     <p class="m-2">/</p>
     <p class="m-0">
+      <!-- Show projects picker -->
       <dt-select id="projectSelect" placeholder="Choose project" aria-label="Choose project" [value]="(project | async)?.projectName">
-        <dt-option *ngFor="let project of projects | async" [routerLink]="['/project', project.projectName]" [value]="project.projectName" [textContent]="project.projectName"></dt-option>
+        <dt-option *ngFor="let project of projects | async"
+                   [routerLink]="getRouterLink(project.projectName)"
+                   [value]="project.projectName" [textContent]="project.projectName"></dt-option>
       </dt-select>
     </p>
   </dt-top-bar-navigation-item>

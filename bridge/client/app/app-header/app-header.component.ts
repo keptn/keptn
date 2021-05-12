@@ -1,14 +1,15 @@
 import semver from 'semver';
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Router, RoutesRecognized} from '@angular/router';
-import {Observable, Subject} from 'rxjs';
-import {filter, map, takeUntil} from 'rxjs/operators';
+import {ActivatedRoute, NavigationEnd, Router, RoutesRecognized} from '@angular/router';
+import {Observable, Subject, timer} from 'rxjs';
+import {filter, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
 
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
 import {NotificationsService} from '../_services/notifications.service';
 import {NotificationType} from '../_models/notification';
+import {Trace} from '../_models/trace';
 
 @Component({
   selector: 'app-header',
@@ -21,6 +22,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
+  public projectBoardView = '';
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
@@ -42,6 +44,14 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
               return p.projectName === projectName;
             }))
           );
+        } else if (event instanceof NavigationEnd) {
+          // catch url change and update projectBoardView for the project picker
+          const pieces = event.url.split('/');
+          if (pieces.length > 3 && pieces[1] === 'project') {
+            this.projectBoardView = pieces[3];
+          } else {
+            this.projectBoardView = ''; // environment screen
+          }
         }
       });
 
@@ -60,6 +70,16 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
             keptnInfo.availableVersions.cli);
         }
       });
+  }
+
+  // Returns a string array that allows routing to the project board view
+  getRouterLink(projectName: string): string[] {
+    if (this.projectBoardView === '') {
+      // unfortunately it is not possible to route directly to the environment screen (default screen)
+      return ['/project', projectName];
+    }
+
+    return ['/project', projectName, this.projectBoardView];
   }
 
   doVersionCheck(bridgeVersion, cliVersion, availableBridgeVersions, availableCliVersions): boolean {
