@@ -16,7 +16,7 @@ jobs:
         run: |
           # binary will be $(go env GOPATH)/bin/golangci-lint
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.39.0
-      - uses: reviewdog/action-setup@v1
+      - uses: reviewdog/action-setup@v1.0.3
         with:
           reviewdog_version: latest
       - name: Run reviewdog
