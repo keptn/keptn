@@ -472,7 +472,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest
+        run: cd test/go-tests && go test -run CustomUserManagedEndpointsTest -v
 
       - name: Install Remote Execution Plane
         id: install_remote_execution_plane
