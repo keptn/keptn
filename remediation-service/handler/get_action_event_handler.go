@@ -33,7 +33,7 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, ce interface{}) (interface
 	}
 
 	// determine next action
-	action, err := GetNextAction(remediation, data.ProblemDetails, data.ActionIndex)
+	action, err := GetNextAction(remediation, data.Problem, data.ActionIndex)
 	if err != nil {
 		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "unable to get next action from remediation.yaml"}
 	}
