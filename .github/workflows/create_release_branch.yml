@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
