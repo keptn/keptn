@@ -84,10 +84,10 @@ type getUserManagedEndpointsData struct {
 }
 
 func (h *MockedHandler) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+	h.userManagedEndpointsInvocations = append(h.userManagedEndpointsInvocations, getUserManagedEndpointsData{event})
 	if h.options.GetUserManagedEndpointsBehavior != nil {
 		return h.options.GetUserManagedEndpointsBehavior(event)
 	}
-	h.userManagedEndpointsInvocations = append(h.userManagedEndpointsInvocations, getUserManagedEndpointsData{event})
 	return nil, nil
 }
 
