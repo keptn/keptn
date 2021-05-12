@@ -1,8 +1,16 @@
 @import '~@dynatrace/barista-components/style/main';
 
+.ktb-stage-overview {
+  box-shadow: -10px 0 20px #f4f4f4 inset;
+  border-right: 1px solid #f4f4f4;
+}
 
-.stage-overview {
+.stage-list {
+  overflow: auto;
 
+  .stage-group:last-child {
+    padding-right: 10px;
+  }
 }
 
 .stage-state {

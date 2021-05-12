@@ -115,6 +115,10 @@ export class Project {
     return this.getDeploymentsOfService(serviceName).length !== 0;
   }
 
+  public getStages(parentStage: string): Stage[] {
+    return this.stages.filter(s => (parentStage && s.parentStages && s.parentStages.includes(parentStage)) || (!parentStage && !s.parentStages));
+  }
+
   static fromJSON(data: any) {
     return Object.assign(new this, data);
   }
