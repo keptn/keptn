@@ -18,11 +18,11 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 //
 // 		// make and configure a mocked sdk.TaskHandler
 // 		mockedTaskHandler := &TaskHandlerMock{
-// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error) {
+// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
 // 				panic("mock out the Execute method")
 // 			},
-// 			GetTriggeredDataFunc: func() interface{} {
-// 				panic("mock out the GetTriggeredData method")
+// 			InitDataFunc: func() interface{} {
+// 				panic("mock out the InitData method")
 // 			},
 // 		}
 //
@@ -32,10 +32,10 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 // 	}
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error)
+	ExecuteFunc func(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error)
 
-	// GetTriggeredDataFunc mocks the GetTriggeredData method.
-	GetTriggeredDataFunc func() interface{}
+	// InitDataFunc mocks the InitData method.
+	InitDataFunc func() interface{}
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -43,33 +43,33 @@ type TaskHandlerMock struct {
 		Execute []struct {
 			// KeptnHandle is the keptnHandle argument value.
 			KeptnHandle sdk.IKeptn
-			// Ce is the ce argument value.
-			Ce interface{}
+			// Data is the data argument value.
+			Data interface{}
 		}
-		// GetTriggeredData holds details about calls to the GetTriggeredData method.
-		GetTriggeredData []struct {
+		// InitData holds details about calls to the InitData method.
+		InitData []struct {
 		}
 	}
-	lockExecute          sync.RWMutex
-	lockGetTriggeredData sync.RWMutex
+	lockExecute  sync.RWMutex
+	lockInitData sync.RWMutex
 }
 
 // Execute calls ExecuteFunc.
-func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but TaskHandler.Execute was just called")
 	}
 	callInfo := struct {
 		KeptnHandle sdk.IKeptn
-		Ce          interface{}
+		Data        interface{}
 	}{
 		KeptnHandle: keptnHandle,
-		Ce:          ce,
+		Data:        data,
 	}
 	mock.lockExecute.Lock()
 	mock.calls.Execute = append(mock.calls.Execute, callInfo)
 	mock.lockExecute.Unlock()
-	return mock.ExecuteFunc(keptnHandle, ce)
+	return mock.ExecuteFunc(keptnHandle, data)
 }
 
 // ExecuteCalls gets all the calls that were made to Execute.
@@ -77,11 +77,11 @@ func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, ce interface{}) (in
 //     len(mockedTaskHandler.ExecuteCalls())
 func (mock *TaskHandlerMock) ExecuteCalls() []struct {
 	KeptnHandle sdk.IKeptn
-	Ce          interface{}
+	Data        interface{}
 } {
 	var calls []struct {
 		KeptnHandle sdk.IKeptn
-		Ce          interface{}
+		Data        interface{}
 	}
 	mock.lockExecute.RLock()
 	calls = mock.calls.Execute
@@ -89,28 +89,28 @@ func (mock *TaskHandlerMock) ExecuteCalls() []struct {
 	return calls
 }
 
-// GetTriggeredData calls GetTriggeredDataFunc.
-func (mock *TaskHandlerMock) GetTriggeredData() interface{} {
-	if mock.GetTriggeredDataFunc == nil {
-		panic("TaskHandlerMock.GetTriggeredDataFunc: method is nil but TaskHandler.GetTriggeredData was just called")
+// InitData calls InitDataFunc.
+func (mock *TaskHandlerMock) InitData() interface{} {
+	if mock.InitDataFunc == nil {
+		panic("TaskHandlerMock.InitDataFunc: method is nil but TaskHandler.InitData was just called")
 	}
 	callInfo := struct {
 	}{}
-	mock.lockGetTriggeredData.Lock()
-	mock.calls.GetTriggeredData = append(mock.calls.GetTriggeredData, callInfo)
-	mock.lockGetTriggeredData.Unlock()
-	return mock.GetTriggeredDataFunc()
+	mock.lockInitData.Lock()
+	mock.calls.InitData = append(mock.calls.InitData, callInfo)
+	mock.lockInitData.Unlock()
+	return mock.InitDataFunc()
 }
 
-// GetTriggeredDataCalls gets all the calls that were made to GetTriggeredData.
+// InitDataCalls gets all the calls that were made to InitData.
 // Check the length with:
-//     len(mockedTaskHandler.GetTriggeredDataCalls())
-func (mock *TaskHandlerMock) GetTriggeredDataCalls() []struct {
+//     len(mockedTaskHandler.InitDataCalls())
+func (mock *TaskHandlerMock) InitDataCalls() []struct {
 } {
 	var calls []struct {
 	}
-	mock.lockGetTriggeredData.RLock()
-	calls = mock.calls.GetTriggeredData
-	mock.lockGetTriggeredData.RUnlock()
+	mock.lockInitData.RLock()
+	calls = mock.calls.InitData
+	mock.lockInitData.RUnlock()
 	return calls
 }

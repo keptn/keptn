@@ -11,12 +11,11 @@ import (
 )
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
-
 	taskHandler := &fake.TaskHandlerMock{}
 	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error) {
 		return FakeTaskData{}, nil
 	}
-	taskHandler.GetTriggeredDataFunc = func() interface{} {
+	taskHandler.InitDataFunc = func() interface{} {
 		return FakeTaskData{}
 	}
 

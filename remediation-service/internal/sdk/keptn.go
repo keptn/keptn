@@ -35,17 +35,17 @@ type TaskHandler interface {
 	//
 	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
 	// or nil, if there was no error during execution.
-	Execute(keptnHandle IKeptn, ce interface{}) (interface{}, *Error)
+	Execute(keptnHandle IKeptn, data interface{}) (interface{}, *Error)
 
-	// GetTriggeredData is called when a new event was received. It is expected that this method returns a pointer to
-	// a struct value of the .triggered event data the service is supposed to process.
-	GetTriggeredData() interface{}
+	// InitData is called when a new event was received. It is expected that this method returns a pointer to
+	// a struct value of the event data the service is supposed to process.
+	InitData() interface{}
 }
 
 type KeptnOption func(IKeptn)
 
 // WithHandler registers a handler which is responsible for processing a .triggered event
-func WithHandler(handler TaskHandler, eventType string) KeptnOption {
+func WithHandler(eventType string, handler TaskHandler) KeptnOption {
 	return func(k IKeptn) {
 		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler})
 	}
@@ -72,7 +72,6 @@ type Keptn struct {
 
 // NewKeptn creates a new Keptn
 func NewKeptn(ceClient cloudevents.Client, source string, opts ...KeptnOption) *Keptn {
-
 	keptn := &Keptn{
 		EventSender:     &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: ceClient},
 		EventReceiver:   ceClient,
@@ -103,7 +102,7 @@ func (k *Keptn) GetTaskRegistry() *TaskRegistry {
 
 func (k *Keptn) gotEvent(event cloudevents.Event) {
 	if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
-		data := handler.TaskHandler.GetTriggeredData()
+		data := handler.TaskHandler.InitData()
 		if err := event.DataAs(&data); err != nil {
 			log.Errorf("error during decoding of .triggered event: %v", err)
 			if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
@@ -116,6 +115,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 			return
 		}
 
+		//TODO: call in sep. go routine
 		result, err := handler.TaskHandler.Execute(k, data)
 		if err != nil {
 			log.Errorf("error during task execution %v", err.Err)
@@ -142,7 +142,6 @@ func (k *Keptn) send(event cloudevents.Event) error {
 }
 
 func (k *Keptn) createStartedEventForTriggeredEvent(triggeredEvent cloudevents.Event) cloudevents.Event {
-
 	startedEventType := strings.TrimSuffix(triggeredEvent.Type(), ".triggered") + ".started"
 	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
 	eventData := keptnv2.EventData{}
@@ -180,11 +179,9 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 	c.SetSource(k.Source)
 	c.SetData(cloudevents.ApplicationJSON, genericEvent)
 	return c
-
 }
 
 func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
-
 	commonEventData := keptnv2.EventData{}
 	if eventData == nil {
 		triggeredEvent.DataAs(&commonEventData)

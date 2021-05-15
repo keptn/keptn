@@ -10,10 +10,9 @@ const getActionTriggeredEventType = "sh.keptn.event.get-action.triggered"
 const serviceName = "remediation-service"
 
 func main() {
-	keptn := sdk.NewKeptn(
+	log.Fatal(sdk.NewKeptn(
 		sdk.GetHTTPClientFromEnv(),
 		serviceName,
-		sdk.WithHandler(handler.NewGetActionEventHandler(), getActionTriggeredEventType),
-	)
-	log.Fatal(keptn.Start())
+		sdk.WithHandler(getActionTriggeredEventType, handler.NewGetActionEventHandler()),
+	).Start())
 }
