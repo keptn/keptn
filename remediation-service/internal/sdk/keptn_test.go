@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/remediation-service/internal/sdk/fake"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
@@ -45,9 +46,18 @@ func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T
 	keptn.Start()
 	eventReceiver.NewEvent(newTestTaskTriggeredEvent())
 
-	require.Equal(t, 2, len(eventSender.SendEventCalls()))
-	require.Equal(t, "sh.keptn.event.faketask.started", eventSender.SendEventCalls()[0].EventMoqParam.Type())
-	require.Equal(t, "sh.keptn.event.faketask.finished", eventSender.SendEventCalls()[1].EventMoqParam.Type())
+	require.Eventuallyf(t, func() bool {
+		return len(eventSender.SendEventCalls()) == 2
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+
+	require.Eventuallyf(t, func() bool {
+		return eventSender.SendEventCalls()[0].EventMoqParam.Type() == "sh.keptn.event.faketask.started"
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+
+	require.Eventuallyf(t, func() bool {
+		return eventSender.SendEventCalls()[1].EventMoqParam.Type() == "sh.keptn.event.faketask.finished"
+	}, time.Second, 10*time.Millisecond, "error message %s", "formatted")
+
 }
 
 func newTestTaskTriggeredEvent() cloudevents.Event {

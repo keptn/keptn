@@ -35,7 +35,6 @@ func (f *FakeKeptn) GetEventSender() *TestSender {
 }
 
 func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
-
 	eventReceiver := &TestReceiver{}
 	eventSender := &TestSender{}
 	resourceHandler := &TestResourceHandler{}
@@ -47,6 +46,7 @@ func NewFakeKeptn(source string, opts ...sdk.KeptnOption) *FakeKeptn {
 			ResourceHandler: resourceHandler,
 			Source:          source,
 			TaskRegistry:    sdk.NewTasksMap(),
+			SyncProcessing:  true,
 		},
 	}
 	for _, opt := range opts {
