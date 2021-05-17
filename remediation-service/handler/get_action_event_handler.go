@@ -76,7 +76,7 @@ func ParseRemediationResource(resource *models.Resource) (*v0_1_4.Remediation, e
 }
 
 // GetNextAction contains the logic to determine, what will be the next remediation action according to the remediation.yaml file
-// It searches for a problem type matching the root cause of the problem. If no problem type is found a problemtype matching the problem title
+// It searches for a problem type matching the root cause of the problem. If no problem type is found a problem type matching the problem title
 // will be searched as a fallback. If still no problem type is found it will return an error.
 
 // The actionIndex parameter specifies which action to take if a problem type was found.

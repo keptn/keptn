@@ -11,7 +11,6 @@ const serviceName = "remediation-service"
 
 func main() {
 	log.Fatal(sdk.NewKeptn(
-		sdk.GetHTTPClientFromEnv(),
 		serviceName,
 		sdk.WithHandler(getActionTriggeredEventType, handler.NewGetActionEventHandler()),
 	).Start())

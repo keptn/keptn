@@ -72,13 +72,16 @@ type Keptn struct {
 }
 
 // NewKeptn creates a new Keptn
-func NewKeptn(ceClient cloudevents.Client, source string, opts ...KeptnOption) *Keptn {
+func NewKeptn(source string, opts ...KeptnOption) *Keptn {
+	client := NewHTTPClientFromEnv()
+	resourceHandler := NewResourceHandlerFromEnv()
+	taskRegistry := NewTasksMap()
 	keptn := &Keptn{
-		EventSender:     &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: ceClient},
-		EventReceiver:   ceClient,
+		EventSender:     &keptnv2.HTTPEventSender{EventsEndpoint: DefaultHTTPEventEndpoint, Client: client},
+		EventReceiver:   client,
 		Source:          source,
-		TaskRegistry:    NewTasksMap(),
-		ResourceHandler: api.NewResourceHandler(ConfigurationServiceURL),
+		TaskRegistry:    taskRegistry,
+		ResourceHandler: resourceHandler,
 		SyncProcessing:  false,
 	}
 	for _, opt := range opts {
