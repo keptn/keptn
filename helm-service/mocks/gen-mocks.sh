@@ -15,4 +15,5 @@ mockgen -package mocks -destination=./mock_project_operator.go github.com/keptn/
 mockgen -package mocks -destination=./mock_stages_handler.go  github.com/keptn/keptn/helm-service/pkg/types IStagesHandler
 mockgen -package mocks -destination=./mock_mesh.go github.com/keptn/keptn/helm-service/pkg/mesh Mesh
 mockgen -package mocks -destination=./mock_service_handler.go github.com/keptn/keptn/helm-service/pkg/types IServiceHandler
+mockgen -package mocks -destination=./mock_resource_handler.go github.com/keptn/keptn/helm-service/pkg/types IResourceHandler
 mockgen -package mocks -destination=./mock_onboarder.go github.com/keptn/keptn/helm-service/controller Onboarder

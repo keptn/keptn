@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"fmt"
+	"github.com/ghodss/yaml"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -51,6 +54,26 @@ func (h *HandlerBase) getUserChart(e keptnv2.EventData) (*chart.Chart, string, e
 	helmChartName := helm.GetChartName(e.Service, false)
 	// Read chart
 	return keptnutils.GetChart(e.Project, e.Service, e.Stage, helmChartName, h.configServiceURL)
+}
+
+func (h *HandlerBase) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+	endpointsResource, err := h.getKeptnHandler().ResourceHandler.GetServiceResource(event.Project, event.Stage, event.Service, "helm/endpoints.yaml")
+	if err != nil {
+		// do not fail if the resource is not available
+		if err == keptnapi.ResourceNotFoundError {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Could not fetch endpoints resource: %s", err.Error())
+	}
+	if endpointsResource == nil {
+		return nil, nil
+	}
+	endpoints := &keptnv2.Endpoints{}
+	err = yaml.Unmarshal([]byte(endpointsResource.ResourceContent), endpoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse endpoints.yaml: %s", err.Error())
+	}
+	return endpoints, nil
 }
 
 func (h *HandlerBase) existsGeneratedChart(e keptnv2.EventData) (bool, error) {

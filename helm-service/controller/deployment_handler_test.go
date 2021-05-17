@@ -206,6 +206,141 @@ func TestHandleEventWithNoConfigurationChangeAndDirectDeploymentStrategy(t *test
 	assert.Equal(t, keptn.Direct, mockedBaseHandler.upgradeChartInvocations[1].strategy)
 }
 
+func TestHandleEventWithDeploymentURLResourceAndUserManagedDeploymentStrategy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "", func(options *MockedHandlerOptions) {
+		options.GetUserManagedEndpointsBehavior = func(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+			return &keptnv2.Endpoints{
+				DeploymentURIsLocal:  []string{"https://my-local-url"},
+				DeploymentURIsPublic: []string{"https://myurl"},
+			}, nil
+		}
+	})
+	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
+	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
+
+	deploymentHandler := DeploymentHandler{
+		Handler:               mockedBaseHandler,
+		mesh:                  mocks.NewMockMesh(ctrl),
+		generatedChartHandler: mockedChartGenerator,
+		onboarder:             mockedOnboarder,
+	}
+
+	deploymentTriggeredEventData := keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "production",
+			Service: "my-service",
+		},
+		ConfigurationChange: keptnv2.ConfigurationChange{},
+		Deployment: keptnv2.DeploymentTriggeredData{
+			DeploymentStrategy: keptn.UserManaged.String(),
+		},
+	}
+
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	deploymentHandler.HandleEvent(ce)
+
+	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
+	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
+	expectedDeploymentFinishedEvent.SetSource("helm-service")
+	expectedDeploymentFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedDeploymentFinishedEvent.SetExtension("triggeredid", "")
+	expectedDeploymentFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedDeploymentFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "production",
+			Service: "my-service",
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+			Message: "Successfully deployed",
+		},
+		Deployment: keptnv2.DeploymentFinishedData{
+			DeploymentStrategy:   "user_managed",
+			DeploymentURIsLocal:  []string{"https://my-local-url"},
+			DeploymentURIsPublic: []string{"https://myurl"},
+			DeploymentNames:      []string{"user-managed"},
+			GitCommit:            "USER_CHART_GIT_ID",
+		},
+	})
+
+	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
+	assert.Equal(t, expectedDeploymentFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
+	require.Equal(t, 2, len(mockedBaseHandler.upgradeChartInvocations))
+	assert.Equal(t, "carts", mockedBaseHandler.upgradeChartInvocations[0].ch.Metadata.Name)
+	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[0].event)
+	assert.Equal(t, keptn.UserManaged, mockedBaseHandler.upgradeChartInvocations[0].strategy)
+}
+
+func TestHandleEventWithoutDeploymentURLAndUserManagedDeploymentStrategy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockedBaseHandler := NewMockedHandler(createKeptn(), "", func(options *MockedHandlerOptions) {
+		options.GetUserManagedEndpointsBehavior = func(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+			return nil, nil
+		}
+	})
+	mockedOnboarder := mocks.NewMockOnboarder(ctrl)
+	mockedChartGenerator := mocks.NewMockChartGenerator(ctrl)
+
+	deploymentHandler := DeploymentHandler{
+		Handler:               mockedBaseHandler,
+		mesh:                  mocks.NewMockMesh(ctrl),
+		generatedChartHandler: mockedChartGenerator,
+		onboarder:             mockedOnboarder,
+	}
+
+	deploymentTriggeredEventData := keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "production",
+			Service: "my-service",
+		},
+		ConfigurationChange: keptnv2.ConfigurationChange{},
+		Deployment: keptnv2.DeploymentTriggeredData{
+			DeploymentStrategy: keptn.UserManaged.String(),
+		},
+	}
+
+	ce := cloudevents.NewEvent()
+	_ = ce.SetData(cloudevents.ApplicationJSON, deploymentTriggeredEventData)
+	deploymentHandler.HandleEvent(ce)
+
+	expectedDeploymentFinishedEvent := cloudevents.NewEvent()
+	expectedDeploymentFinishedEvent.SetType("sh.keptn.event.deployment.finished")
+	expectedDeploymentFinishedEvent.SetSource("helm-service")
+	expectedDeploymentFinishedEvent.SetDataContentType(cloudevents.ApplicationJSON)
+	expectedDeploymentFinishedEvent.SetExtension("triggeredid", "")
+	expectedDeploymentFinishedEvent.SetExtension("shkeptncontext", "")
+	expectedDeploymentFinishedEvent.SetData(cloudevents.ApplicationJSON, keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "production",
+			Service: "my-service",
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+			Message: "Successfully deployed",
+		},
+		Deployment: keptnv2.DeploymentFinishedData{
+			DeploymentStrategy: "user_managed",
+			DeploymentNames:    []string{"user-managed"},
+			GitCommit:          "USER_CHART_GIT_ID",
+		},
+	})
+
+	require.Equal(t, 2, len(mockedBaseHandler.sentCloudEvents))
+	assert.Equal(t, expectedDeploymentFinishedEvent, mockedBaseHandler.sentCloudEvents[1])
+	require.Equal(t, 2, len(mockedBaseHandler.upgradeChartInvocations))
+	assert.Equal(t, "carts", mockedBaseHandler.upgradeChartInvocations[0].ch.Metadata.Name)
+	assert.Equal(t, deploymentTriggeredEventData.EventData, mockedBaseHandler.upgradeChartInvocations[0].event)
+	assert.Equal(t, keptn.UserManaged, mockedBaseHandler.upgradeChartInvocations[0].strategy)
+}
+
 func Test_getPortOfService(t *testing.T) {
 	type args struct {
 		service *corev1.Service

@@ -361,6 +361,7 @@ ipaddress
 IProject
 iptables
 IRemediation
+IResource
 ISecret
 ISequence
 IService
@@ -696,7 +697,6 @@ selfmonitoring
 selfservice
 semver
 sequencehooks
-sequencestate
 sequencestaterepo
 serr
 serrors

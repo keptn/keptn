@@ -158,11 +158,15 @@ func ScaleUpUniform(deployments []string) error {
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
-	file, err := ioutil.TempFile(".", "shipyard-*.yaml")
+	return CreateTmpFile("shipyard-*.yaml", shipyardContent)
+}
+
+func CreateTmpFile(fileNamePattern, fileContent string) (string, error) {
+	file, err := ioutil.TempFile(".", fileNamePattern)
 	if err != nil {
 		return "", err
 	}
-	if err := ioutil.WriteFile(file.Name(), []byte(shipyardContent), os.ModeAppend); err != nil {
+	if err := ioutil.WriteFile(file.Name(), []byte(fileContent), os.ModeAppend); err != nil {
 		os.Remove(file.Name())
 		return "", err
 	}
