@@ -38,7 +38,7 @@ import { DtTagModule } from '@dynatrace/barista-components/tag';
 import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-navigation';
 import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-clipboard';
 import { DtToggleButtonGroupModule } from '@dynatrace/barista-components/toggle-button-group';
-import { DtQuickFilterModule } from '@dynatrace/barista-components/experimental/quick-filter';
+import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter';
 
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
