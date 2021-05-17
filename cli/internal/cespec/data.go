@@ -230,34 +230,28 @@ var releaseFinishedEventData = keptnv2.ReleaseFinishedEventData{
 	},
 }
 
-var remediationTriggeredEventData = keptnv2.RemediationTriggeredEventData{
+var getActionTriggeredEventData = keptnv2.GetActionTriggeredEventData{
 	EventData: commonEventData,
 	Problem: keptnv2.ProblemDetails{
-		State:          "OPEN",
-		ProblemID:      "ab81-941c-f198",
-		ProblemTitle:   "Response time degradation",
-		ProblemDetails: json.RawMessage{},
-		PID:            "P23",
-		ProblemURL:     "https://.../#problems/problemdetails;pid=93a5-3fas-a09d-8ckf",
-		ImpactedEntity: "carts-primary",
-		Tags:           "a-tags",
+		ProblemTitle: "Response time degradation",
+		RootCause:    "Problem root cause",
 	},
+	ActionIndex: 0,
 }
 
-var remediationStartedEventData = keptnv2.RemediationStartedEventData{
+var getActionStartedEventData = keptnv2.GetActionStartedEventData{
 	EventData: commonEventData,
 }
 
-var remediationStatusChangedEventData = keptnv2.RemediationStatusChangedEventData{
+var getActionFinishedEventData = keptnv2.GetActionFinishedEventData{
 	EventData: commonEventData,
-	Remediation: keptnv2.Remediation{
-		ActionIndex: 1,
-		ActionName:  "trigger-runbook",
+	Action: keptnv2.ActionInfo{
+		Name:        "Feature toggling",
+		Action:      "toggle-feature",
+		Description: "Toggles a feature flag",
+		Value:       map[string]string{"EnableItemCache": "on"},
 	},
-}
-
-var remediationFinishedEventData = keptnv2.RemediationFinishedEventData{
-	EventData: commonEventData,
+	ActionIndex: 1,
 }
 
 var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
@@ -269,14 +263,8 @@ var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
 		Value:       map[string]string{"EnableItemCache": "on"},
 	},
 	Problem: keptnv2.ProblemDetails{
-		State:          "OPEN",
-		ProblemID:      "762",
-		ProblemTitle:   "cpu_usage_sockshop_carts",
-		ProblemDetails: json.RawMessage{},
-		PID:            "93a5-3fas-a09d-8ckf",
-		ProblemURL:     "http://problem.url.com",
-		ImpactedEntity: "carts-primary",
-		Tags:           "a-tags",
+		ProblemTitle: "cpu_usage_sockshop_carts",
+		RootCause:    "problem root cause",
 	},
 }
 
