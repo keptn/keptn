@@ -64,6 +64,7 @@ keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --
 
 func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 	const userFriendlyDateLayout = "2006-01-02T15:04:05"
+
 	endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 	if err != nil {
 		return errors.New(authErrorMsg)
@@ -83,7 +84,11 @@ func doTriggerEvaluation(triggerEvaluationData triggerEvaluationStruct) error {
 	}
 
 	endDatePoint := ""
-	if triggerEvaluationData.End != nil {
+	if isStringFlagSet(triggerEvaluationData.End) {
+		// ensure --end and --timeframe are not used together
+		if isStringFlagSet(triggerEvaluationData.Timeframe) {
+			return errors.New("You can not use --end together with --timeframe")
+		}
 		endDatePoint = *triggerEvaluationData.End
 	}
 

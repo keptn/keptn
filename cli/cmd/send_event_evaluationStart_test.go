@@ -33,24 +33,6 @@ func TestEvaluationStart(t *testing.T) {
 	}
 }
 
-func TestEvaluationStartWrongFormat(t *testing.T) {
-
-	credentialmanager.MockAuthCreds = true
-	checkEndPointStatusMock = true
-
-	*evaluationStart.Timeframe = ""
-	*evaluationStart.Start = ""
-	*evaluationStart.End = ""
-
-	cmd := fmt.Sprintf("send event start-evaluation --project=%s --stage=%s --service=%s "+
-		"--timeframe=%s --mock", "sockshop", "hardening", "carts", "5h")
-	_, err := executeActionCommandC(cmd)
-
-	if err == nil {
-		t.Error("An error occurred: expect an error due to wrong time frame format")
-	}
-}
-
 func TestEvaluationStartTimeSpecified(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
@@ -105,7 +87,7 @@ func TestEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 		t.Error("An error occurred: expect an error due to too many parameters (start, end and timeframe) used at the same time")
 	}
 
-	assert.EqualValues(t, "Start and end time of evaluation time frame not set: You can not use --end together with --timeframe", err.Error())
+	assert.EqualValues(t, "You can not use --end together with --timeframe", err.Error())
 }
 
 func TestEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
