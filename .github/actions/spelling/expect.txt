@@ -201,6 +201,7 @@ entrypoint
 enum
 envconfig
 envoyproxy
+eofline
 epochconverter
 eql
 ermin
@@ -550,6 +551,7 @@ Nop
 noreferrer
 noreply
 noscript
+nospace
 Noto
 nowrap
 npm
@@ -569,6 +571,7 @@ onboarding
 onboards
 onclick
 oneof
+onespace
 openapi
 openapierrors
 openjdk
@@ -599,6 +602,7 @@ png
 poddescriptions
 podlogs
 polyfills
+postcss
 powershell
 pprove
 prebuilt
@@ -807,6 +811,7 @@ tslib
 tslint
 TSN
 ttl
+typedef
 typeof
 tzdata
 uarr
