@@ -144,7 +144,7 @@ func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, en
 }
 
 func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, string, error) {
-	if e.Evaluation.Start != "" && e.Evaluation.End != "" {
+	if (e.Evaluation.Start != "" && e.Evaluation.End != "") || (e.Evaluation.Timeframe != "") {
 		params := timeutils.GetStartEndTimeParams{
 			StartDate: e.Evaluation.Start,
 			EndDate:   e.Evaluation.End,
