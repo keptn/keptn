@@ -32,7 +32,7 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3.11
+FROM alpine:3.13
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 
@@ -43,6 +43,11 @@ EXPOSE 8080
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all
+
+# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
+#travis-uncomment ADD MANIFEST /
+#travis-uncomment COPY entrypoint.sh /
+#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 RUN adduser -D nonroot -u 65532
 USER nonroot
