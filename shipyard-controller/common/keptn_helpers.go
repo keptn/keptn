@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 const defaultKeptnNamespace = "keptn"
@@ -169,6 +170,7 @@ func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload
 	if specVersion := GetKeptnSpecVersion(); specVersion != "" {
 		event.SetExtension("shkeptnspecversion", specVersion)
 	}
+	event.SetTime(time.Now().UTC())
 	event.SetData(cloudevents.ApplicationJSON, payload)
 	return event
 }
