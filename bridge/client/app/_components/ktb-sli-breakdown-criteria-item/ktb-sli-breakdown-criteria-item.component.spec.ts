@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbSliBreakdownCriteriaItemComponent } from './ktb-sli-breakdown-criteria-item.component';
 import {AppModule} from "../../app.module";
@@ -9,7 +9,7 @@ describe('KtbSliBreakdownCriteriaItemComponent', () => {
   let component: KtbSliBreakdownCriteriaItemComponent;
   let fixture: ComponentFixture<KtbSliBreakdownCriteriaItemComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [

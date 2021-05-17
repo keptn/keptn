@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbHttpLoadingBarComponent } from './ktb-http-loading-bar.component';
 import {HttpClientTestingModule} from "@angular/common/http/testing";
@@ -9,7 +9,7 @@ describe('HttpLoadingBarComponent', () => {
   let component: KtbHttpLoadingBarComponent;
   let fixture: ComponentFixture<KtbHttpLoadingBarComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [

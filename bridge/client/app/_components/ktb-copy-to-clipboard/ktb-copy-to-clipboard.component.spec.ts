@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import {KtbCopyToClipboardComponent} from './ktb-copy-to-clipboard.component';
 import {AppModule} from '../../app.module';
@@ -8,7 +8,7 @@ describe('KtbExpandableTileComponent', () => {
   let component: KtbCopyToClipboardComponent;
   let fixture: ComponentFixture<KtbCopyToClipboardComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [

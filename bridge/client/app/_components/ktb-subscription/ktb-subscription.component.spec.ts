@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbSubscriptionComponent } from './ktb-subscription.component';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
@@ -9,7 +9,7 @@ describe('KtbSubscriptionComponent', () => {
   let component: KtbSubscriptionComponent;
   let fixture: ComponentFixture<KtbSubscriptionComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [

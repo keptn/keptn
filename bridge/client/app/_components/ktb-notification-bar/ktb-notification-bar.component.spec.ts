@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import {KtbNotificationBarComponent} from './ktb-notification-bar.component';
 import {Component} from "@angular/core";
@@ -15,7 +15,7 @@ describe('KtbNotificationBarComponent', () => {
   let component: SimpleKtbNotificationBarComponent;
   let fixture: ComponentFixture<SimpleKtbNotificationBarComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
         SimpleKtbNotificationBarComponent,

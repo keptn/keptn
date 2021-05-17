@@ -1,13 +1,4 @@
-import {
-  TestBed,
-  async,
-  ComponentFixture,
-  fakeAsync,
-  tick,
-  discardPeriodicTasks,
-  flush,
-  flushMicrotasks
-} from '@angular/core/testing';
+import { TestBed, ComponentFixture, fakeAsync, tick, discardPeriodicTasks, flush, flushMicrotasks, waitForAsync } from '@angular/core/testing';
 import {AppComponent} from './app.component';
 import {By} from "@angular/platform-browser";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
@@ -26,7 +17,7 @@ describe('AppComponent', () => {
   let mockDataService: DataServiceMock;
   let fixture: ComponentFixture<AppComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [
@@ -75,7 +66,7 @@ describe('AppComponent', () => {
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
   }));
 
-  it('should set base href correctly', async(() => {
+  it('should set base href correctly', waitForAsync(() => {
     fixture.detectChanges();
 
     // NOTE: function used in index.html, this is a duplicate only for testing

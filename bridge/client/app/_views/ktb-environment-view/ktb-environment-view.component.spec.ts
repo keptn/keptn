@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbEnvironmentViewComponent } from './ktb-environment-view.component';
 import {AppModule} from '../../app.module';
@@ -8,7 +8,7 @@ describe('KtbEnvironmentViewComponent', () => {
   let component: KtbEnvironmentViewComponent;
   let fixture: ComponentFixture<KtbEnvironmentViewComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ KtbEnvironmentViewComponent ],
       imports: [

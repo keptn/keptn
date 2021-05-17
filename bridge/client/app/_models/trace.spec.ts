@@ -1,9 +1,9 @@
 import {Trace} from './trace';
-import {async} from "@angular/core/testing";
+import { waitForAsync } from "@angular/core/testing";
 
 describe('Trace', () => {
 
-  it('should create instances from json', async(() => {
+  it('should create instances from json', waitForAsync(() => {
     let rootTraces: Trace[] = [
       {
       "contenttype": "application/json",
