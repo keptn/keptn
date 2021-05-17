@@ -21,6 +21,7 @@ type MockedHandler struct {
 	handledErrorEvents                  []interface{}
 	upgradeChartInvocations             []upgradeChartData
 	upgradeChartWithReplicasInvocations []upgradeChartWithReplicaData
+	userManagedEndpointsInvocations     []getUserManagedEndpointsData
 }
 
 // MockedHandlerOption function is used to configure the mock
@@ -28,7 +29,8 @@ type MockedHandlerOption func(*MockedHandlerOptions)
 
 // MockedHandlerOptions contains configuration items for the mock
 type MockedHandlerOptions struct {
-	SendEventBehavior func(eventType string) bool
+	SendEventBehavior               func(eventType string) bool
+	GetUserManagedEndpointsBehavior func(event keptnv2.EventData) (*keptnv2.Endpoints, error)
 }
 
 func sendingEventSucceeds(eventType string) bool {
@@ -75,6 +77,18 @@ func (h *MockedHandler) getGeneratedChart(e keptnv2.EventData) (*chart.Chart, st
 func (h *MockedHandler) getUserChart(e keptnv2.EventData) (*chart.Chart, string, error) {
 	ch := helm.GetTestUserChart()
 	return &ch, "USER_CHART_GIT_ID", nil
+}
+
+type getUserManagedEndpointsData struct {
+	event keptnv2.EventData
+}
+
+func (h *MockedHandler) getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error) {
+	h.userManagedEndpointsInvocations = append(h.userManagedEndpointsInvocations, getUserManagedEndpointsData{event})
+	if h.options.GetUserManagedEndpointsBehavior != nil {
+		return h.options.GetUserManagedEndpointsBehavior(event)
+	}
+	return nil, nil
 }
 
 func (h *MockedHandler) existsGeneratedChart(e keptnv2.EventData) (bool, error) {

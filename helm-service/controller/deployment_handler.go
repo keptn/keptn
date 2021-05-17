@@ -218,13 +218,25 @@ func (h *DeploymentHandler) getFinishedEventDataForSuccess(inEventData keptnv2.D
 		if err != nil {
 			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
 		}
-	} else if len(inEventData.Deployment.DeploymentURIsLocal) > 0 || len(inEventData.Deployment.DeploymentURIsPublic) > 0 {
-		h.getKeptnHandler().Logger.Info("Using deployment URIs from deployment.triggered event")
-		localURIs = inEventData.Deployment.DeploymentURIsLocal
-		publicURIs = inEventData.Deployment.DeploymentURIsPublic
-	} else {
-		h.getKeptnHandler().Logger.Info("No deployment URIs defined in deployment.finished event")
+	} else if deploymentStrategy == keptnevents.UserManaged {
+		endpoints, err := h.getUserManagedEndpoints(inEventData.EventData)
+		if err != nil {
+			return nil, fmt.Errorf("Could not determine deployment URIs: %s", err.Error())
+		}
+		if endpoints != nil {
+			localURIs = endpoints.DeploymentURIsLocal
+			publicURIs = endpoints.DeploymentURIsPublic
+		}
 	}
+
+	// fallback: use URIs from the deployment.triggered event
+	if localURIs == nil && len(inEventData.Deployment.DeploymentURIsLocal) > 0 {
+		localURIs = inEventData.Deployment.DeploymentURIsLocal
+	}
+	if publicURIs == nil && len(inEventData.Deployment.DeploymentURIsPublic) > 0 {
+		publicURIs = inEventData.Deployment.DeploymentURIsPublic
+	}
+
 	return &keptnv2.DeploymentFinishedEventData{
 		EventData: inEventData.EventData,
 		Deployment: keptnv2.DeploymentFinishedData{

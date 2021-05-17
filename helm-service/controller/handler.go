@@ -22,4 +22,5 @@ type Handler interface {
 		strategy keptnevents.DeploymentStrategy) error
 	upgradeChartWithReplicas(ch *chart.Chart, event keptnv2.EventData,
 		strategy keptnevents.DeploymentStrategy, replicas int) error
+	getUserManagedEndpoints(event keptnv2.EventData) (*keptnv2.Endpoints, error)
 }
