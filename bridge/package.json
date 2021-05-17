@@ -94,6 +94,7 @@
     "typescript": "^4.1.5"
   },
   "resolutions": {
-    "minimist": "1.2.5"
+    "minimist": "1.2.5",
+    "postcss": "8.2.15"
   }
 }
