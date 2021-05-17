@@ -1,4 +1,4 @@
-apiVersion: "spec.keptn.sh/0.2.0"
+apiVersion: "spec.keptn.sh/0.2.2"
 kind: "Shipyard"
 metadata:
   name: "shipyard-sockshop"
@@ -31,8 +31,16 @@ spec:
                   result: "fail"
           tasks:
             - name: "rollback"
+
         - name: "remediation"
+          triggeredOn:
+            - event: "production.remediation.finished"
+              selector:
+                match:
+                  evaluation.result: "fail"
           tasks:
-            - name: "remediation"
+            - name: "get-action"
+            - name: "action"
             - name: "evaluation"
+              triggeredAfter: "1m"
 

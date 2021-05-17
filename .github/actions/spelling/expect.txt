@@ -10,8 +10,6 @@ agrabner
 agrimmer
 AKS
 alecthomas
-alertmanager
-alertname
 amd
 andi
 andreas
@@ -51,15 +49,14 @@ backports
 bak
 barista
 basiccheck
+baz
 benbjohnson
 bestpractices
 Bitbucket
-blacklistip
 blog
 bookinfo
 bookratings
 boop
-bqw
 bracebin
 braeuer
 bridgesecret
@@ -92,7 +89,6 @@ CHACHA
 charset
 chartutil
 checkbox
-checkip
 chmod
 chown
 ciphersuite
@@ -120,10 +116,8 @@ compat
 concat
 config
 configmap
-configmodels
 configservice
 configurationchanger
-configurationserviceconnection
 configurationstore
 configurator
 configuremonitoring
@@ -241,7 +235,6 @@ Fairwinds
 Fatalf
 Fatalln
 favicon
-fcbb
 featuretoggle
 filepath
 filesystem
@@ -338,6 +331,7 @@ hyperv
 IChart
 ico
 IConfiguration
+IDCE
 IDOK
 IDQ
 IDURL
@@ -456,8 +450,6 @@ linkmode
 linting
 linux
 linuxunix
-listchecker
-listentry
 loadbalancer
 loadgen
 localhost
@@ -525,6 +517,7 @@ myproject
 myredissrv
 myremediationlink
 myservice
+mystage
 myuser
 myvalue
 namespace
@@ -615,6 +608,7 @@ printf
 Println
 prj
 problemdetails
+problemtype
 productpage
 PROJ
 projectes
@@ -732,7 +726,6 @@ smv
 sni
 sockshop
 sockshot
-sourceip
 specversion
 spf
 Sprintf
