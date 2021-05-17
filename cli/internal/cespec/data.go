@@ -150,8 +150,9 @@ var evaluationTriggeredEventData = keptnv2.EvaluationTriggeredEventData{
 		End:   "2019-10-20T07:57:27.152330783Z",
 	},
 	Evaluation: keptnv2.Evaluation{
-		Start: "2019-10-20T07:57:27.152330783Z",
-		End:   "2019-10-20T08:57:27.152330783Z",
+		Start:     "2019-10-20T07:57:27.152330783Z",
+		End:       "2019-10-20T08:57:27.152330783Z",
+		Timeframe: "10m",
 	},
 	Deployment: keptnv2.Deployment{
 		DeploymentNames: []string{"deployment-1"},
@@ -233,14 +234,8 @@ var releaseFinishedEventData = keptnv2.ReleaseFinishedEventData{
 var remediationTriggeredEventData = keptnv2.RemediationTriggeredEventData{
 	EventData: commonEventData,
 	Problem: keptnv2.ProblemDetails{
-		State:          "OPEN",
-		ProblemID:      "ab81-941c-f198",
-		ProblemTitle:   "Response time degradation",
-		ProblemDetails: json.RawMessage{},
-		PID:            "P23",
-		ProblemURL:     "https://.../#problems/problemdetails;pid=93a5-3fas-a09d-8ckf",
-		ImpactedEntity: "carts-primary",
-		Tags:           "a-tags",
+		ProblemTitle: "Response time degradation",
+		RootCause:    "Response time degradation",
 	},
 }
 
@@ -269,14 +264,8 @@ var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
 		Value:       map[string]string{"EnableItemCache": "on"},
 	},
 	Problem: keptnv2.ProblemDetails{
-		State:          "OPEN",
-		ProblemID:      "762",
-		ProblemTitle:   "cpu_usage_sockshop_carts",
-		ProblemDetails: json.RawMessage{},
-		PID:            "93a5-3fas-a09d-8ckf",
-		ProblemURL:     "http://problem.url.com",
-		ImpactedEntity: "carts-primary",
-		Tags:           "a-tags",
+		ProblemTitle: "cpu_usage_sockshop_carts",
+		RootCause:    "cpu_usage_sockshop_carts",
 	},
 }
 
