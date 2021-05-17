@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -41,7 +42,9 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 
 	searchOptions := getSearchOptions(filter)
 
-	cur, err := collection.Find(ctx, searchOptions)
+	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
+
+	cur, err := collection.Find(ctx, searchOptions, sortOptions)
 	if err != nil && err == mongo.ErrNoDocuments {
 		return nil, ErrNoEventFound
 	} else if err != nil {
