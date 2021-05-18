@@ -180,7 +180,7 @@ keptn_context_id=$(send_event_json ./test/assets/self_healing_remediation_trigge
 
 sleep 10
 
-response=$(get_keptn_event "$PROJECT" "$keptn_context_id" sh.keptn.event.production.remediation.finished "$KEPTN_ENDPOINT" "$KEPTN_API_TOKEN")
+response=$(get_event_with_retry sh.keptn.event.production.remediation.finished "$keptn_context_id" "$PROJECT")
 # print the response
 echo "$response" | jq .
 
