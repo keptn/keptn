@@ -165,11 +165,10 @@ func Generate(outputDir string) {
 	createSection(md, "Release Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.ReleaseTaskName), releaseStatusChangedEventData)
 	createSection(md, "Release Finished", keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), releaseFinishedEventData)
 
-	createSectionTitle(md, "Remediation")
-	createSection(md, "Remediation Triggered", keptnv2.GetTriggeredEventType(keptnv2.RemediationTaskName), remediationTriggeredEventData)
-	createSection(md, "Remediation Started", keptnv2.GetStartedEventType(keptnv2.RemediationTaskName), remediationStartedEventData)
-	createSection(md, "Remediation Status Changed", keptnv2.GetStatusChangedEventType(keptnv2.RemediationTaskName), remediationStatusChangedEventData)
-	createSection(md, "Remediation Finished", keptnv2.GetFinishedEventType(keptnv2.RemediationTaskName), remediationFinishedEventData)
+	createSectionTitle(md, "Get Action")
+	createSection(md, "Get Action Triggered", keptnv2.GetTriggeredEventType(keptnv2.GetActionTaskName), getActionTriggeredEventData)
+	createSection(md, "Get Action Started", keptnv2.GetStartedEventType(keptnv2.GetActionTaskName), getActionStartedEventData)
+	createSection(md, "Get Action Finished", keptnv2.GetFinishedEventType(keptnv2.GetActionTaskName), getActionFinishedEventData)
 
 	createSectionTitle(md, "Action")
 	createSection(md, "Action Triggered", keptnv2.GetTriggeredEventType(keptnv2.ActionTaskName), actionTriggeredEventData)
@@ -185,7 +184,7 @@ func Generate(outputDir string) {
 	createSection(md, "Configure Monitoring", keptn.ConfigureMonitoringEventType, configureMonitoringEventData)
 
 	createSectionTitle(md, "Problem")
-	createSection(md, "Problem Open", keptn.ProblemOpenEventType, problemOpenEventData)
+	createSection(md, "Problem", keptn.ProblemEventType, problemOpenEventData)
 	fmt.Println(md.String())
 
 	file, err := os.Create(outputDir + "/" + "cloudevents.md")
