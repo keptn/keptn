@@ -118,6 +118,9 @@ func (e *EventDispatcher) dispatchEvents() {
 			continue
 		}
 
+		// set the time of the cloud event to the current time since it is being sent now
+		ce.SetTime(e.theClock.Now().UTC())
+
 		if err := e.eventSender.SendEvent(*ce); err != nil {
 			log.Errorf("could not send CloudEvent: %s", err.Error())
 			continue
