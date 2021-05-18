@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbKeptnServicesListComponent } from './ktb-keptn-services-list.component';
 import {AppModule} from "../../app.module";
@@ -9,7 +9,7 @@ describe('KtbKeptnServicesListComponent', () => {
   let component: KtbKeptnServicesListComponent;
   let fixture: ComponentFixture<KtbKeptnServicesListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [

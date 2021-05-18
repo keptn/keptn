@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbUniformViewComponent } from './ktb-uniform-view.component';
 import {AppModule} from '../../app.module';
@@ -8,7 +8,7 @@ describe('KtbUniformViewComponent', () => {
   let component: KtbUniformViewComponent;
   let fixture: ComponentFixture<KtbUniformViewComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ KtbUniformViewComponent ],
       imports: [

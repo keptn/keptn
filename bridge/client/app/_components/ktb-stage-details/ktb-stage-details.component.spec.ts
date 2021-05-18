@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbStageDetailsComponent } from './ktb-stage-details.component';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
@@ -9,7 +9,7 @@ describe('KtbStageDetailsComponent', () => {
   let component: KtbStageDetailsComponent;
   let fixture: ComponentFixture<KtbStageDetailsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [

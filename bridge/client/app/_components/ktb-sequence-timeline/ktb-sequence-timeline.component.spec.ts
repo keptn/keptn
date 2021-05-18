@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbSequenceTimelineComponent } from './ktb-sequence-timeline.component';
 import {RouterTestingModule} from '@angular/router/testing';
@@ -10,7 +10,7 @@ describe('KtbSequenceTimelineComponent', () => {
   let component: KtbSequenceTimelineComponent;
   let fixture: ComponentFixture<KtbSequenceTimelineComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [
