@@ -28,7 +28,6 @@ require (
 	k8s.io/cli-runtime v0.20.4
 	k8s.io/client-go v0.20.4
 	k8s.io/kubectl v0.20.4
-	rsc.io/letsencrypt v0.0.3 // indirect
 )
 
 // required as per https://github.com/helm/helm/issues/9354

@@ -231,28 +231,28 @@ var releaseFinishedEventData = keptnv2.ReleaseFinishedEventData{
 	},
 }
 
-var remediationTriggeredEventData = keptnv2.RemediationTriggeredEventData{
+var getActionTriggeredEventData = keptnv2.GetActionTriggeredEventData{
 	EventData: commonEventData,
 	Problem: keptnv2.ProblemDetails{
 		ProblemTitle: "Response time degradation",
-		RootCause:    "Response time degradation",
+		RootCause:    "Problem root cause",
 	},
+	ActionIndex: 0,
 }
 
-var remediationStartedEventData = keptnv2.RemediationStartedEventData{
+var getActionStartedEventData = keptnv2.GetActionStartedEventData{
 	EventData: commonEventData,
 }
 
-var remediationStatusChangedEventData = keptnv2.RemediationStatusChangedEventData{
+var getActionFinishedEventData = keptnv2.GetActionFinishedEventData{
 	EventData: commonEventData,
-	Remediation: keptnv2.Remediation{
-		ActionIndex: 1,
-		ActionName:  "trigger-runbook",
+	Action: keptnv2.ActionInfo{
+		Name:        "Feature toggling",
+		Action:      "toggle-feature",
+		Description: "Toggles a feature flag",
+		Value:       map[string]string{"EnableItemCache": "on"},
 	},
-}
-
-var remediationFinishedEventData = keptnv2.RemediationFinishedEventData{
-	EventData: commonEventData,
+	ActionIndex: 1,
 }
 
 var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
@@ -265,7 +265,7 @@ var actionTriggeredEventData = keptnv2.ActionTriggeredEventData{
 	},
 	Problem: keptnv2.ProblemDetails{
 		ProblemTitle: "cpu_usage_sockshop_carts",
-		RootCause:    "cpu_usage_sockshop_carts",
+		RootCause:    "problem root cause",
 	},
 }
 
