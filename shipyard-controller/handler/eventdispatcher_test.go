@@ -149,6 +149,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	clock.Add(1 * time.Second)
 	require.Equal(t, 3, len(eventSender.SentEvents))
+	require.WithinDuration(t, clock.Now().UTC(), eventSender.SentEvents[0].Time(), time.Second)
 	require.Equal(t, 3, len(eventQueueRepo.DeleteQueuedEventCalls()))
 }
 
