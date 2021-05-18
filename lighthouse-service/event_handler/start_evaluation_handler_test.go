@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -319,77 +321,94 @@ func Test_getEvaluationTimestamps(t *testing.T) {
 		e *keptnv2.EvaluationTriggeredEventData
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		want1   string
-		wantErr bool
+		name      string
+		args      args
+		wantStart string
+		wantEnd   string
+		wantErr   bool
 	}{
 		{
 			name: "get evaluation timestamps",
 			args: args{
 				e: &keptnv2.EvaluationTriggeredEventData{
-					Test: struct {
-						Start string `json:"start"`
-						End   string `json:"end"`
-					}{
-						Start: "test-start",
-						End:   "test-end",
+					Test: keptnv2.Test{
+						Start: "2006-01-02T15:04:05.000Z",
+						End:   "2006-01-02T15:05:05.000Z",
 					},
-					Evaluation: struct {
-						Start string `json:"start"`
-						End   string `json:"end"`
-					}{
-						Start: "evaluation-start",
-						End:   "evaluation-end",
+					Evaluation: keptnv2.Evaluation{
+						Start: "2006-01-02T15:14:04.000Z",
+						End:   "2006-01-02T15:15:05.000Z",
 					},
 				},
 			},
-			want:    "evaluation-start",
-			want1:   "evaluation-end",
-			wantErr: false,
+			wantStart: "2006-01-02T15:14:04.000Z",
+			wantEnd:   "2006-01-02T15:15:05.000Z",
+			wantErr:   false,
+		},
+		{
+			name: "get evaluation timestamp from timeframe",
+			args: args{
+				e: &keptnv2.EvaluationTriggeredEventData{
+					Evaluation: keptnv2.Evaluation{
+						Timeframe: "10m",
+					},
+				},
+			},
+			wantStart: timeutils.GetKeptnTimeStamp(time.Now().UTC().Add(-10 * time.Minute).Round(time.Minute)),
+			wantEnd:   timeutils.GetKeptnTimeStamp(time.Now().UTC().Round(time.Minute)),
+			wantErr:   false,
 		},
 		{
 			name: "fallback to test timestamps",
 			args: args{
 				e: &keptnv2.EvaluationTriggeredEventData{
-					Test: struct {
-						Start string `json:"start"`
-						End   string `json:"end"`
-					}{
-						Start: "test-start",
-						End:   "test-end",
+					Test: keptnv2.Test{
+						Start: "2006-01-02T15:04:05.000Z",
+						End:   "2006-01-02T15:05:05.000Z",
 					},
 				},
 			},
-			want:    "test-start",
-			want1:   "test-end",
-			wantErr: false,
+			wantStart: "2006-01-02T15:04:05.000Z",
+			wantEnd:   "2006-01-02T15:05:05.000Z",
+			wantErr:   false,
 		},
 		{
 			name: "no timestamps provided",
 			args: args{
 				e: &keptnv2.EvaluationTriggeredEventData{},
 			},
-			want:    "",
-			want1:   "",
-			wantErr: true,
+			wantStart: "",
+			wantEnd:   "",
+			wantErr:   true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := getEvaluationTimestamps(tt.args.e)
+			gotStart, gotEnd, err := getEvaluationTimestamps(tt.args.e)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getEvaluationTimestamps() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("getEvaluationTimestamps() got = %v, want %v", got, tt.want)
+			if tt.wantErr {
+				require.NotNil(t, err)
+				require.Empty(t, gotStart)
+				require.Empty(t, gotEnd)
+				return
 			}
-			if got1 != tt.want1 {
-				t.Errorf("getEvaluationTimestamps() got1 = %v, want %v", got1, tt.want1)
-			}
+
+			timeFormat := "2006-01-02T15:05:05.000Z"
+			gotParsedStart, err := time.Parse(timeFormat, gotStart)
+			require.Nil(t, err)
+
+			gotParsedEnd, err := time.Parse(timeFormat, gotEnd)
+			require.Nil(t, err)
+
+			wantParsedStart, _ := time.Parse(timeFormat, tt.wantStart)
+			wantParsedEnd, _ := time.Parse(timeFormat, tt.wantEnd)
+
+			require.WithinDuration(t, wantParsedStart, gotParsedStart, time.Minute)
+			require.WithinDuration(t, wantParsedEnd, gotParsedEnd, time.Minute)
 		})
 	}
 }

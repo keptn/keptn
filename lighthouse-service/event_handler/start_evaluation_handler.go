@@ -3,6 +3,7 @@ package event_handler
 import (
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"net/url"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -143,8 +144,17 @@ func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, en
 }
 
 func getEvaluationTimestamps(e *keptnv2.EvaluationTriggeredEventData) (string, string, error) {
-	if e.Evaluation.Start != "" && e.Evaluation.End != "" {
-		return e.Evaluation.Start, e.Evaluation.End, nil
+	if (e.Evaluation.Start != "" && e.Evaluation.End != "") || (e.Evaluation.Timeframe != "") {
+		params := timeutils.GetStartEndTimeParams{
+			StartDate: e.Evaluation.Start,
+			EndDate:   e.Evaluation.End,
+			Timeframe: e.Evaluation.Timeframe,
+		}
+		start, end, err := timeutils.GetStartEndTime(params)
+		if err != nil {
+			return "", "", err
+		}
+		return timeutils.GetKeptnTimeStamp(*start), timeutils.GetKeptnTimeStamp(*end), nil
 	} else if e.Test.Start != "" && e.Test.End != "" {
 		return e.Test.Start, e.Test.End, nil
 	}

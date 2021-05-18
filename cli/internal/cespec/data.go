@@ -150,8 +150,9 @@ var evaluationTriggeredEventData = keptnv2.EvaluationTriggeredEventData{
 		End:   "2019-10-20T07:57:27.152330783Z",
 	},
 	Evaluation: keptnv2.Evaluation{
-		Start: "2019-10-20T07:57:27.152330783Z",
-		End:   "2019-10-20T08:57:27.152330783Z",
+		Start:     "2019-10-20T07:57:27.152330783Z",
+		End:       "2019-10-20T08:57:27.152330783Z",
+		Timeframe: "10m",
 	},
 	Deployment: keptnv2.Deployment{
 		DeploymentNames: []string{"deployment-1"},

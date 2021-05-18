@@ -1,21 +1,19 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/common/strutils"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"strconv"
-	"strings"
 	"time"
 )
 
-const dateLayout = "2006-01-02T15:04:05"
+const userFriendlyTimeFormat = "2006-01-02T15:04:05"
 
 const (
 	evaluationErrInvalidTimeframe = iota
@@ -42,7 +40,6 @@ func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI db.ServicesD
 }
 
 func (em *EvaluationManager) CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
-	// TODO: check service availability via materialized view after https://github.com/keptn/keptn/issues/2999 has been merged
 	_, err := em.ServiceAPI.GetService(project, stage, service)
 	if err != nil {
 		return nil, &models.Error{
@@ -55,11 +52,25 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 	extensions := make(map[string]interface{})
 	extensions["shkeptncontext"] = keptnContext
 
-	start, end, err := getStartEndTime(params.Start, params.End, params.Timeframe)
+	var start, end *time.Time
+	start, end, err = timeutils.GetStartEndTime(timeutils.GetStartEndTimeParams{
+		StartDate: params.Start,
+		EndDate:   params.End,
+		Timeframe: params.Timeframe,
+	})
 	if err != nil {
-		return nil, &models.Error{
-			Code:    evaluationErrInvalidTimeframe,
-			Message: strutils.Stringp(err.Error()),
+		// if we got an error, try again with other time format
+		start, end, err = timeutils.GetStartEndTime(timeutils.GetStartEndTimeParams{
+			StartDate:  params.Start,
+			EndDate:    params.End,
+			Timeframe:  params.Timeframe,
+			TimeFormat: userFriendlyTimeFormat,
+		})
+		if err != nil {
+			return nil, &models.Error{
+				Code:    evaluationErrInvalidTimeframe,
+				Message: strutils.Stringp(err.Error()),
+			}
 		}
 	}
 
@@ -72,12 +83,9 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 			Stage:   stage,
 			Labels:  params.Labels,
 		},
-		Evaluation: struct {
-			Start string `json:"start"`
-			End   string `json:"end"`
-		}{
-			Start: start.Format("2006-01-02T15:04:05.000Z"),
-			End:   end.Format("2006-01-02T15:04:05.000Z"),
+		Evaluation: keptnv2.Evaluation{
+			Start: timeutils.GetKeptnTimeStamp(*start),
+			End:   timeutils.GetKeptnTimeStamp(*end),
 		},
 	}
 
@@ -96,88 +104,4 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 	}
 
 	return eventContext, nil
-}
-
-func getStartEndTime(startDatePoint, endDatePoint, timeframe string) (*time.Time, *time.Time, error) {
-	// set default values for start and end time
-	var err error
-
-	minutes := 5 // default timeframe
-
-	// input validation
-	if startDatePoint != "" && endDatePoint == "" {
-		// if a start date is set, but no end date is set, we require the timeframe to be set
-		if timeframe == "" {
-			errMsg := "Please provide a timeframe, e.g., --timeframe=5m, or an end date using --end=..."
-
-			return nil, nil, fmt.Errorf(errMsg)
-		}
-	}
-	if endDatePoint != "" && timeframe != "" {
-		// can not use end date and timeframe at the same time
-		errMsg := "You can not use --end together with --timeframe"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-	if endDatePoint != "" && startDatePoint == "" {
-		errMsg := "start date is required when using an end date"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-
-	// parse timeframe
-	if timeframe != "" {
-		errMsg := "The time frame format is invalid. Use the format [duration]m, e.g.: 5m"
-
-		i := strings.Index(timeframe, "m")
-
-		if i > -1 {
-			minutesStr := timeframe[:i]
-			minutes, err = strconv.Atoi(minutesStr)
-			if err != nil {
-				return nil, nil, fmt.Errorf(errMsg)
-			}
-		} else {
-			return nil, nil, fmt.Errorf(errMsg)
-		}
-	}
-
-	// initialize default values for end and start time
-	end := time.Now().UTC()
-	start := time.Now().UTC().Add(-time.Duration(minutes) * time.Minute)
-
-	// Parse start date
-	if startDatePoint != "" {
-		start, err = time.Parse(dateLayout, startDatePoint)
-
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	// Parse end date
-	if endDatePoint != "" {
-		end, err = time.Parse(dateLayout, endDatePoint)
-
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	// last but not least: if a start date and a timeframe is provided, we set the end date to start date + timeframe
-	if startDatePoint != "" && endDatePoint == "" && timeframe != "" {
-		minutesOffset := time.Minute * time.Duration(minutes)
-		end = start.Add(minutesOffset)
-	}
-
-	// ensure end date is greater than start date
-	diff := end.Sub(start).Minutes()
-
-	if diff < 1 {
-		errMsg := "end date must be at least 1 minute after start date"
-
-		return nil, nil, fmt.Errorf(errMsg)
-	}
-
-	return &start, &end, nil
 }

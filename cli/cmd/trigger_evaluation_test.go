@@ -104,7 +104,7 @@ func TestTriggerEvaluationStartAndEndTimeAndTimeframeSpecified(t *testing.T) {
 		t.Error("An error occurred: expect an error due to too many parameters (start, end and timeframe) used at the same time")
 	}
 
-	assert.EqualValues(t, "Start and end time of evaluation time frame not set: You can not use --end together with --timeframe", err.Error())
+	assert.EqualValues(t, "You can not use --end together with --timeframe", err.Error())
 }
 
 func TestTriggerEvaluationStartAndEndTimeWrongOrder(t *testing.T) {
