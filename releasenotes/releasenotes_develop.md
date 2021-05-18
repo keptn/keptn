@@ -8,7 +8,7 @@ Keptn 0.8.3 implements the Keptn Enhancement Proposal [#37](https://github.com/k
 
 :tada: *Customization of auto-remediation sequences*: With this release, it is possible to customize the remediation sequences, which take care of resolving an open problem for a service. Therefore, the remediation sequence can be modeled in the Shipyard for a specific stage. Besides, it is possible to let the *action provides* run on an execution plane. 
 
-  - :warning: As part of the upgrade process to Keptn 0.8.3 and for utilizing the auto-remediation feature, please manually add the following sequence to the stage that should have auto-remediation enabled and replase the [YOUR-STAGE-NAME] by the name of the stage you added it to. Without that sequence, no remediation will be triggered for an open problem! Please find here more information on how to upgrade the remediation use-case here: [Update your Shipyard for the Remediation Use-Case](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-8-2-to-0-8-3) 
+  - :warning: As part of the upgrade process to Keptn 0.8.3 and for utilizing the auto-remediation feature, please manually add the following sequence to the stage that should have auto-remediation enabled and replace the [YOUR-STAGE-NAME] by the name of the stage you added it to. Without that sequence, no remediation will be triggered for an open problem! Please find here more information on how to upgrade the remediation use-case here: [Update your Shipyard for the Remediation Use-Case](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-8-2-to-0-8-3) 
 
   ```
   - name: remediation
@@ -96,7 +96,7 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
   - Implement looping-mechanism via shipyard-controller [3683](https://github.com/keptn/keptn/issues/3683)
   - *Fixed*: Timestamps of delayed events are not set properly [4096](https://github.com/keptn/keptn/issues/4096)
   - *Fixed*: TriggeredID of `<stage>.<sequence>.finished` events not set properly [4091](https://github.com/keptn/keptn/issues/4091)
-  - *Fixed*: Response time degredation at `/v1/event` endpoint [3962](https://github.com/keptn/keptn/issues/3962)
+  - *Fixed*: Response time degradation at `/v1/event` endpoint [3962](https://github.com/keptn/keptn/issues/3962)
 
 </p>
 </details>
@@ -158,7 +158,7 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
 
   <!--TODO: final check-->
   - *Response time degradation in configuration-service* when using a Git Upstream (e.g., GitHub) [4066](https://github.com/keptn/keptn/issues/4066)
-  - *Reponse time degradation in lighthouse-service* when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
+  - *Response time degradation in lighthouse-service* when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
   - Shipyard-controller keeps sending events for tasks with the same name indefinitely [4039](https://github.com/keptn/keptn/issues/4039)
   - Selection change in heatmap does not always update SLO table - needs second click [4007](https://github.com/keptn/keptn/issues/4007)
   - Mongodb OOM crash after flooding it with events [3968](https://github.com/keptn/keptn/issues/3968)

@@ -280,6 +280,7 @@ gofmt
 gohugoio
 goland
 golang
+golangci
 golangswaggerpaths
 golint
 gomock
@@ -563,6 +564,7 @@ ojsonpath
 okm
 OLDVAL
 omitempty
+OMM
 onboarded
 onboarder
 onboarding
@@ -726,6 +728,7 @@ smv
 sni
 sockshop
 sockshot
+spamming
 specversion
 spf
 Sprintf
