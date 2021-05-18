@@ -108,6 +108,8 @@ github.com/keptn/go-utils v0.8.4-0.20210503124948-0f8579f7c1ad h1:I3AKYOh9UZaN6X
 github.com/keptn/go-utils v0.8.4-0.20210503124948-0f8579f7c1ad/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
 github.com/keptn/go-utils v0.8.4-0.20210512105152-1aa370a2328e h1:PMxZRrJG106RJQ4MeZsG960m1cNum7co5nxRh4xmA0g=
 github.com/keptn/go-utils v0.8.4-0.20210512105152-1aa370a2328e/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
+github.com/keptn/go-utils v0.8.4-0.20210518144828-23c28d61fac9 h1:Y5vWl0iZ0AV9yo4jXdL2TCiu3AxQ23XfUHev4uV5H90=
+github.com/keptn/go-utils v0.8.4-0.20210518144828-23c28d61fac9/go.mod h1:8cm/j/fPLl+qpSIDyyw5WVqT7W6W/ZlsAtMv8dLKtPU=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
