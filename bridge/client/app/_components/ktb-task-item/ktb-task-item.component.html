@@ -33,11 +33,11 @@
         </div>
       </div>
     </div>
-    <div *ngIf="_task.data.ProblemDetails">
-      <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_task.data.ProblemDetails.tagsOfAffectedEntities">
+    <div *ngIf="_task.isProblem() || _task.isRemediation()">
+      <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_task.data?.problem?.ProblemDetails?.tagsOfAffectedEntities">
         <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
         <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
-          <dt-tag *ngFor="let tag of _task.data.ProblemDetails.tagsOfAffectedEntities">
+          <dt-tag *ngFor="let tag of _task.data.problem.ProblemDetails.tagsOfAffectedEntities">
             <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
             <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
           </dt-tag>
