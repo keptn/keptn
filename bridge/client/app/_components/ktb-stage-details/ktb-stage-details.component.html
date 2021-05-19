@@ -30,7 +30,7 @@
         </div>
         <ng-container *ngFor="let service of filterServices(selectedStage.services)">
           <ktb-expandable-tile class="mt-1" [expanded]="service.getOpenApprovals().length > 0"
-                               *ngIf="!filterEventType || filterEventType == 'problem' && findProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
+                               *ngIf="!filterEventType || filterEventType == 'problem' && hasProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
             <ktb-expandable-tile-header>
               <dt-info-group>
                 <dt-info-group-title>
@@ -39,7 +39,7 @@
                     <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
                       <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
                     </ng-container>
-                    <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
+                    <ng-container *ngIf="hasProblemEvent(problemEvents, service)">
                       <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
@@ -55,8 +55,8 @@
                 </ng-template>
               </dt-info-group>
             </ktb-expandable-tile-header>
-            <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
-              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.ImpactedEntity"></span></p>
+            <ng-container *ngFor="let problemEvent of findProblemEvent(problemEvents, service)">
+              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.problem.ImpactedEntity"></span></p>
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
                 <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
                 <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName)?.getFinishedEvent() as evaluation">
@@ -66,7 +66,6 @@
                   </ng-template>
                 </dt-tag-list>
               </div>
-              <hr />
             </ng-container>
             <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">

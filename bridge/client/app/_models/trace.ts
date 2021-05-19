@@ -88,13 +88,15 @@ class Trace {
 
     evaluationHistory: Trace[];
 
-    ProblemTitle: string;
-    ImpactedEntity: string;
-    ProblemDetails: {
-      tagsOfAffectedEntities: {
-        key: string;
-        value: string;
-      }
+    problem: {
+      ProblemTitle: string;
+      ImpactedEntity: string;
+      ProblemDetails: {
+        tagsOfAffectedEntities: {
+          key: string;
+          value: string;
+        }
+      };
     };
 
     approval: {
