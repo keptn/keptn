@@ -105,7 +105,7 @@ export class KtbStageOverviewComponent implements OnInit {
   }
 
   public trackStage(index: number, stage: string[]): string {
-    return stage.toString();
+    return stage ? stage.toString() : null;
   }
 
   public selectStage($event, stage: Stage, filterType?: string) {
