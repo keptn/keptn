@@ -4,10 +4,12 @@
       <div fxFlex>
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
           <p class="m-0 mt-1 mb-1 mr-2" [textContent]="_task.time | amDateFormat:dateUtil.getTimeFormat()"></p>
-          <button *ngIf="_task.isLoading()" class="m-0 p-0" dt-button disabled variant="nested">
+          <button *ngIf="_task.isLoading() && !_task.isApproval() && !_task.getLastTrace().isApproval()" class="m-0 p-0" dt-button disabled variant="nested">
             <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
           </button>
-          <dt-icon *ngIf="!_task.isLoading()" class="event-icon" [class.error]="_task.isFaulty()" [class.success]="_task.isSuccessful()" [class.highlight]="_task.isApproval()" [name]="_task.getIcon()"></dt-icon>
+          <dt-icon *ngIf="!_task.isLoading() || _task.isApproval() || _task.getLastTrace().isApproval()" class="event-icon"
+                   [class.error]="_task.isFaulty()" [class.success]="_task.isSuccessful()" [class.highlight]="_task.isApproval() || _task.getLastTrace().isApproval()"
+                   [name]="_task.isFinished() ? _task.getIcon() : _task.getLastTrace().getIcon()"></dt-icon>
           <h4 class="m-0 mt-1 mb-1" [class.error]="_task.isFaulty()" [textContent]="_task.getLabel()"></h4>
           <ktb-evaluation-info class="ml-1" *ngIf="_task.isEvaluation() && _task.isFinished()" [evaluation]="_task" [overlayDisabled]="true"></ktb-evaluation-info>
         </div>

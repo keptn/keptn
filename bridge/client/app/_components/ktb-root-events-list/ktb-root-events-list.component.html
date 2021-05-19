@@ -8,7 +8,7 @@
       <ktb-selectable-tile-header>
         <div class="container">
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-icon *ngIf="!event.isLoading(); else showLoading" class="event-icon"
+            <dt-icon *ngIf="!event.isLoading() || event.getPendingApproval(); else showLoading" class="event-icon"
                      [name]="event.isFinished() ? event.getIcon() : event.getLastTrace().getIcon()"
                      [class.error]="event.isProblem() && event.isFaulty() && !event.isSuccessful()"
                      [class.highlight]="event.hasPendingApproval(event.getLastTrace().getStage())"></dt-icon>
