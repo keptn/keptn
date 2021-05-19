@@ -23,10 +23,10 @@ require (
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/apimachinery v0.20.4
-	k8s.io/client-go v0.20.4
+	k8s.io/apimachinery v0.21.1
+	k8s.io/client-go v0.21.1
 )
 
 // Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
