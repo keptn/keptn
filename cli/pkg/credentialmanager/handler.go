@@ -189,7 +189,6 @@ func getCurrentContextFromKubeConfig() error {
 }
 
 func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) error {
-
 	if MockAuthCreds || MockKubeConfigCheck {
 		// Do nothing
 		return nil
@@ -198,21 +197,25 @@ func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyN
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Setting keptnContext from ~/.keptn/config file
-	keptnContext = cliConfig.CurrentContext
-	if kubeConfigFile.CurrentContext != "" && keptnContext != kubeConfigFile.CurrentContext {
-		fmt.Printf("Kube context has been changed to %s\n", kubeConfigFile.CurrentContext)
-		if keptnContext != "" {
-			userConfirmation := common.NewUserInput().AskBool("Do you want to switch to the new Kube context with the Keptn running there?", &common.UserInputOptions{AssumeYes: autoApplyNewContext})
-			if !userConfirmation {
-				return nil
+
+	if cliConfig.KubeContextCheck {
+		// Setting keptnContext from ~/.keptn/config file
+		keptnContext = cliConfig.CurrentContext
+		if kubeConfigFile.CurrentContext != "" && keptnContext != kubeConfigFile.CurrentContext {
+			fmt.Printf("Kube context has been changed to %s\n", kubeConfigFile.CurrentContext)
+			if keptnContext != "" {
+				userConfirmation := common.NewUserInput().AskBool("Do you want to switch to the new Kube context with the Keptn running there?", &common.UserInputOptions{AssumeYes: autoApplyNewContext})
+				fmt.Println("Info: You can turn off the Kube context check by executing: keptn set config KubeContextCheck false")
+				if !userConfirmation {
+					return nil
+				}
 			}
-		}
-		cliConfig.CurrentContext = kubeConfigFile.CurrentContext
-		keptnContext = kubeConfigFile.CurrentContext
-		err = cliConfigManager.StoreCLIConfig(cliConfig)
-		if err != nil {
-			return err
+			cliConfig.CurrentContext = kubeConfigFile.CurrentContext
+			keptnContext = kubeConfigFile.CurrentContext
+			err = cliConfigManager.StoreCLIConfig(cliConfig)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

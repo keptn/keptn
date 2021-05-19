@@ -14,6 +14,7 @@ import (
 // CLIConfig holds infos of the CLI config
 type CLIConfig struct {
 	AutomaticVersionCheck bool       `json:"automatic_version_check"`
+	KubeContextCheck      bool       `json:"kube_context_check"`
 	LastVersionCheck      *time.Time `json:"last_version_check"`
 	CurrentContext        string     `json:"current-context"`
 }
@@ -37,18 +38,17 @@ func NewCLIConfigManager() *CLIConfigManager {
 
 // LoadCLIConfig loads the configuration from file
 func (c *CLIConfigManager) LoadCLIConfig() (CLIConfig, error) {
-
-	cliConfig := CLIConfig{AutomaticVersionCheck: true}
+	cliConfig := CLIConfig{AutomaticVersionCheck: true, KubeContextCheck: true}
 	if !fileutils.FileExists(c.CLIConfigPath) {
 		return cliConfig, nil
 	}
 
 	data, err := fileutils.ReadFile(c.CLIConfigPath)
 	if err != nil {
-		return cliConfig, fmt.Errorf("error when reading config file: %v", err)
+		return cliConfig, fmt.Errorf("error when reading config file: %w", err)
 	}
 	if err := json.Unmarshal(data, &cliConfig); err != nil {
-		return cliConfig, fmt.Errorf("error when unmarshalling config file: %v", err)
+		return cliConfig, fmt.Errorf("error when unmarshalling config file: %w", err)
 	}
 
 	return cliConfig, nil
@@ -58,10 +58,10 @@ func (c *CLIConfigManager) LoadCLIConfig() (CLIConfig, error) {
 func (c *CLIConfigManager) StoreCLIConfig(config CLIConfig) error {
 	data, err := json.Marshal(config)
 	if err != nil {
-		return fmt.Errorf("error when marshalling config file: %v", err)
+		return fmt.Errorf("error when marshalling config file: %w", err)
 	}
 	if err := ioutil.WriteFile(c.CLIConfigPath, []byte(data), 0644); err != nil {
-		return fmt.Errorf("error when writing config file: %v", err)
+		return fmt.Errorf("error when writing config file: %w", err)
 	}
 	return nil
 }

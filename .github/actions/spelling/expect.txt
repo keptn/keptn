@@ -210,7 +210,6 @@ errored
 Errorf
 errstr
 eslint
-esnext
 esource
 etag
 Eter
@@ -307,7 +306,6 @@ guiclass
 gunzip
 gws
 halem
-hammerjs
 hardcoded
 hardenings
 hashicorp
@@ -356,7 +354,6 @@ ioutil
 ipaddress
 IProject
 iptables
-IRemediation
 IResource
 ISecret
 ISequence
@@ -433,6 +430,7 @@ KTSESSION
 kube
 kubeclient
 kubeconfig
+kubecontextcheck
 kubectl
 kubernetes
 kvm
@@ -566,7 +564,6 @@ ojsonpath
 okm
 OLDVAL
 omitempty
-OOM
 onboarded
 onboarder
 onboarding
@@ -574,6 +571,7 @@ onboards
 onclick
 oneof
 onespace
+OOM
 openapi
 openapierrors
 openjdk
@@ -604,7 +602,6 @@ png
 poddescriptions
 podlogs
 polyfills
-postcss
 powershell
 pprove
 prebuilt
@@ -614,7 +611,6 @@ printf
 Println
 prj
 problemdetails
-problemtype
 productpage
 PROJ
 projectes
