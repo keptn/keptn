@@ -12,7 +12,7 @@
       <div *ngIf="_event.data.teststrategy">
         <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span></p>
       </div>
-      <div *ngIf="_event.isProblem()">
+      <div *ngIf="_event.isProblem() || _event.isRemediation()">
         <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.getProblemDetails()"></span></p>
       </div>
     </div>
