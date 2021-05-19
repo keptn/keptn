@@ -6,7 +6,7 @@ export class Root extends Trace {
   traces: Trace[] = [];
 
   isFaulty(): string {
-    return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
+    return this.findLastTrace(t => t.isSequence() && t.getEvaluation() != null)?.isFaulty() || null;
   }
 
   isStarted(): boolean {
@@ -102,7 +102,7 @@ export class Root extends Trace {
   }
 
   getEvaluation(stageName: String): Trace {
-    return this.findTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
+    return this.findLastTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
   }
 
   getDeploymentDetails(stage: string): Trace {

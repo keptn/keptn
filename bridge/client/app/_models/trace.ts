@@ -343,8 +343,8 @@ class Trace {
     return this.findTrace(t => t.isRemediationAction());
   }
 
-  getEvaluation() {
-    return this.findTrace(t => t.isEvaluation() !== null);
+  getEvaluation(stageName: String): Trace {
+    return this.findTrace(t => t.isEvaluation() !== null && t.getStage() === stageName);
   }
 
   getDeploymentUrl() {

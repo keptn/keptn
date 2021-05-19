@@ -56,10 +56,17 @@
               </dt-info-group>
             </ktb-expandable-tile-header>
             <ng-container *ngFor="let problemEvent of findProblemEvent(problemEvents, service)">
-              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.getProblemDetails()"></span></p>
-              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationSequence of problemEvent.getRemediationActions()">
-                <p class="m-0">- <span [textContent]="remediationSequence.getRemediationAction()?.getRemediationActionDetails()"></span></p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationSequence.getEvaluation()?.getFinishedEvent() as evaluation">
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
+                <p class="m-0" [textContent]="problemEvent.getProblemDetails()"></p>
+              </div>
+              <div class="small" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationSequence of problemEvent.getRemediationActions()">
+                <dt-icon class="stage-state-icon event-icon" name="process"></dt-icon>
+                <p class="m-0" [textContent]="remediationSequence.getRemediationAction()?.getRemediationActionDetails()"></p>
+                <button class="m-0 p-0 ml-1" dt-button disabled variant="nested" *ngIf="!remediationSequence.isFinished()">
+                  <dt-loading-spinner aria-label="Action is running..."></dt-loading-spinner>
+                </button>
+                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationSequence.getEvaluation(remediationSequence.getStage())?.getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #evaluationOverlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
@@ -69,7 +76,8 @@
             </ng-container>
             <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                <p class="m-0">Quality gate of <span [textContent]="failedRootEvent.getShortImageName()"></span> failed with a score of:</p>
+                <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
+                <p class="m-0">Quality gate <span *ngIf="failedRootEvent.getShortImageName()">of <span [textContent]="failedRootEvent.getShortImageName()"></span></span> failed with a score of</p>
                 <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluation(selectedStage.stageName).getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #overlay>
