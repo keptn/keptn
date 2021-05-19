@@ -56,7 +56,7 @@
               </dt-info-group>
             </ktb-expandable-tile-header>
             <ng-container *ngFor="let problemEvent of findProblemEvent(problemEvents, service)">
-              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.problem.ImpactedEntity"></span></p>
+              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.getProblemDetails()"></span></p>
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
                 <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
                 <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName)?.getFinishedEvent() as evaluation">

@@ -12,8 +12,8 @@
       <div *ngIf="_event.data.teststrategy">
         <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span></p>
       </div>
-      <div *ngIf="_event.data.ImpactedEntity">
-        <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.data.ImpactedEntity"></span></p>
+      <div *ngIf="_event.isProblem()">
+        <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.getProblemDetails()"></span></p>
       </div>
     </div>
     <div fxLayout="column" fxLayoutAlign="start end">

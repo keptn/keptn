@@ -357,6 +357,10 @@ class Trace {
     return this.type.split(".").length == 6 && this.type.includes(this.getStage());
   }
 
+  getProblemDetails() {
+    return this.data.problem?.ImpactedEntity || this.data.problem?.ProblemTitle;
+  }
+
   static fromJSON(data: any) {
     if(data instanceof Trace)
       return data;
