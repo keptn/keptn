@@ -176,3 +176,5 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
 ## Upgrade to 0.8.3
 
 - The upgrade from 0.8.x to 0.8.3 is supported by the `keptn upgrade` command. Find the documentation here: [Upgrade from Keptn 0.8.x to 0.8.3](https://keptn.sh/docs/0.8.x/operate/upgrade/#upgrade-from-keptn-0-8-2-to-0-8-3)
+
+  - :warning: Please consider adding the *remediation sequence* to a stage for enabling the auto-remediation capabilities of Keptn. The instructions you will find in the upgrade guide: *Upgrade from Keptn 0.8.x to 0.8.3*
