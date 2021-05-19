@@ -35,7 +35,7 @@ export class Service {
   }
 
   getOpenProblems(): Trace[] {
-    return this.roots?.filter(root => root.isProblem() && !root.isProblemResolvedOrClosed()) || [];
+    return this.roots?.filter(root => root.isProblem() && !root.isProblemResolvedOrClosed() || root.isRemediation() && !root.isFinished()) || [];
   }
 
   getRecentSequence(): Root {

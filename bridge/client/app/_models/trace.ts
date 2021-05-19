@@ -158,6 +158,10 @@ class Trace {
     return this.type === EventTypes.PROBLEM_DETECTED || this.type === EventTypes.PROBLEM_OPEN;
   }
 
+  public isRemediation(): boolean {
+    return this.type.endsWith(EventTypes.REMEDIATION_TRIGGERED_SUFFIX);
+  }
+
   public isProblemResolvedOrClosed(): boolean {
     if (!this.traces || this.traces.length === 0)
       return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
