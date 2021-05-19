@@ -60,6 +60,8 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 			fmt.Println("Could not retrieve bridge credentials: " + err.Error())
 			return err
 		}
+		fmt.Println("Your Keptn Bridge is available under: " + endpoint)
+		fmt.Println("\nThese are your credentials")
 		fmt.Println("user: " + creds.User)
 		fmt.Println("password: " + creds.Password)
 		return nil
