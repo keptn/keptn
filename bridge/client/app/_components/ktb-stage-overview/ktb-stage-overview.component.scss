@@ -1,5 +1,34 @@
 @import '~@dynatrace/barista-components/style/main';
 
+.ktb-stage-overview {
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 30px;
+    height: 100%;
+    right: 0;
+    top: 0;
+
+    box-shadow: -5px 0 10px #f4f4f4 inset;
+    border-right: 1px solid #f4f4f4;
+  }
+}
+
+.stage-list {
+  padding: 1rem;
+
+  .stage-group {
+    min-width: 25vw;
+  }
+
+  .stage-group:last-child {
+    padding-right: 10px;
+  }
+}
+
 .stage-state {
   border-top: 1px solid $gray-300;
   border-bottom: 1px solid $gray-300;

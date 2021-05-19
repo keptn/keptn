@@ -1,8 +1,8 @@
 <ng-container *ngIf="project$ | async as project">
-  <div class="container" fxFlex="64">
-    <ktb-stage-overview [project]="project" (selectedStageChange)="stageDetails.selectStage($event)" (filterChange)="stageDetails.filteredServices = $event"></ktb-stage-overview>
+  <div fxFlex="70" fxLayout="column">
+    <ktb-stage-overview fxFlex fxLayout="column" [project]="project" (selectedStageChange)="stageDetails.selectStage($event)" (filterChange)="stageDetails.filteredServices = $event"></ktb-stage-overview>
   </div>
-  <div class="container dark" fxFlex="36">
-    <ktb-stage-details #stageDetails [project]="project"></ktb-stage-details>
+  <div fxFlex="30" fxLayout="column">
+    <ktb-stage-details fxFlex fxLayout="column" #stageDetails [project]="project"></ktb-stage-details>
   </div>
 </ng-container>

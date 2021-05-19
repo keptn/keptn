@@ -9,6 +9,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	log "github.com/sirupsen/logrus"
+	"strings"
 
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"strconv"
@@ -57,11 +58,12 @@ func (mv *ProjectsMaterializedView) CreateProject(prj *models.ExpandedProject) e
 	if existingProject != nil {
 		return nil
 	}
-	err = mv.createProject(prj)
+
+	updatedProject, err := generateStageInfo(*prj)
 	if err != nil {
 		return err
 	}
-	return nil
+	return mv.createProject(&updatedProject)
 }
 
 // UpdatedShipyard updates the shipyard of a project
@@ -73,10 +75,62 @@ func (mv *ProjectsMaterializedView) UpdateShipyard(projectName string, shipyardC
 
 	existingProject.Shipyard = shipyardContent
 	if err := setShipyardVersion(existingProject); err != nil {
-		log.Errorf("could not update shipyard version fo project %s: %s"+projectName, err.Error())
+		log.Errorf("could not update shipyard version of project %s: %s"+projectName, err.Error())
 	}
 
-	return mv.ProjectRepo.UpdateProject(existingProject)
+	updatedProject, err := generateStageInfo(*existingProject)
+	if err != nil {
+		log.Errorf("could not update stage information of project %s: %s"+projectName, err.Error())
+	}
+
+	return mv.ProjectRepo.UpdateProject(&updatedProject)
+}
+
+func generateStageInfo(project models.ExpandedProject) (models.ExpandedProject, error) {
+	shipyard, err := common.UnmarshalShipyard(project.Shipyard)
+	if err != nil {
+		return project, err
+	}
+
+	for index := range project.Stages {
+		project.Stages[index].ParentStages = getParentStages(project.Stages[index].StageName, shipyard)
+	}
+	return project, nil
+}
+
+func getParentStages(stageName string, shipyard *keptnv2.Shipyard) []string {
+	parentStages := []string{}
+	for _, stage := range shipyard.Spec.Stages {
+		if stage.Name != stageName {
+			continue
+		}
+
+		for _, sequence := range stage.Sequences {
+			for _, trigger := range sequence.TriggeredOn {
+				// trigger events have the format <stage>.<sequenceName>.finished
+				split := strings.Split(trigger.Event, ".")
+				if len(split) == 3 {
+					newParentStageName := split[0]
+					if newParentStageName == stageName {
+						// do not add the stage itself as a parent
+						continue
+					}
+					parentStageAvailable := false
+					for _, parentStage := range parentStages {
+						if parentStage == newParentStageName {
+							parentStageAvailable = true
+							break
+						}
+					}
+					if !parentStageAvailable {
+						parentStages = append(parentStages, newParentStageName)
+					}
+				}
+			}
+		}
+		break
+	}
+	return parentStages
 }
 
 // UpdateProject updates a project
