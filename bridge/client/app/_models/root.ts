@@ -109,15 +109,9 @@ export class Root extends Trace {
     return this.findTrace(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage)?.getFinishedEvent();
   }
 
-  getRemediationActions(): Root[] {
-    // create chunks of Remediations and start new chunk at REMEDIATION_TRIGGERED event
-    return this.traces.reduce((result, trace: Trace) => {
-      if(trace.type == EventTypes.ACTION_TRIGGERED)
-        result.push(Root.fromJSON(JSON.parse(JSON.stringify(trace))));
-      else if(result.length)
-        result[result.length-1].traces = [...result[result.length-1].traces||[], trace];
-      return result;
-    }, []);
+  getRemediationActions(): Trace[] {
+    // return remediation sequences
+    return this.traces;
   }
 
   isFinished() {

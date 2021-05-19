@@ -164,6 +164,14 @@ class Trace {
     return this.type.endsWith(EventTypes.REMEDIATION_TRIGGERED_SUFFIX);
   }
 
+  public isRemediationAction(): boolean {
+    return this.type === EventTypes.ACTION_TRIGGERED;
+  }
+
+  public getRemediationActionDetails(): string {
+    return this.data.action.description || this.data.action.name;
+  }
+
   public isProblemResolvedOrClosed(): boolean {
     if (!this.traces || this.traces.length === 0)
       return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
@@ -329,6 +337,14 @@ class Trace {
 
   getFinishedEvent() {
     return this.type.endsWith('.finished') ? this : this.traces.find(t => t.type.endsWith('.finished'));
+  }
+
+  getRemediationAction() {
+    return this.findTrace(t => t.isRemediationAction());
+  }
+
+  getEvaluation() {
+    return this.findTrace(t => t.isEvaluation() !== null);
   }
 
   getDeploymentUrl() {

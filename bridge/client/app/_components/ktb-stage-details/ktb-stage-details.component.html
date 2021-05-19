@@ -57,9 +57,9 @@
             </ktb-expandable-tile-header>
             <ng-container *ngFor="let problemEvent of findProblemEvent(problemEvents, service)">
               <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.getProblemDetails()"></span></p>
-              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
-                <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName)?.getFinishedEvent() as evaluation">
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationSequence of problemEvent.getRemediationActions()">
+                <p class="m-0">- <span [textContent]="remediationSequence.getRemediationAction()?.getRemediationActionDetails()"></span></p>
+                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationSequence.getEvaluation()?.getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #evaluationOverlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
@@ -79,7 +79,6 @@
                 <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.getProject(), 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               </div>
               <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage.stageName)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
-              <hr />
             </ng-container>
             <div *ngIf="service.getOpenApprovals().length > 0; else noOutOfSyncDeployments">
               <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>
