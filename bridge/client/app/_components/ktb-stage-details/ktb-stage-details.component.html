@@ -1,4 +1,4 @@
-<div fxLayout="column" fxLayoutGap="15px">
+<div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
   <ng-container *ngIf="selectedStage">
     <ng-container *ngIf="filterRoots(project.getLatestFailedRootEvents(selectedStage)) as failedRootEvents">
       <ng-container *ngIf="filterRoots(project.getLatestProblemEvents(selectedStage)) as problemEvents">
