@@ -61,6 +61,7 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
+- Disable Kube context check [3666](https://github.com/keptn/keptn/issues/3666)
 - Remove RemediationTriggered/Started/Finished, add GetActionTriggered/Started/Finished [4084](https://github.com/keptn/keptn/issues/4084)
 
 </p>
@@ -81,6 +82,9 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
 - *helm-service/jmeter-service*:
   - Helm/JMeter charts do not honour 'remoteControlPlane.api.apiValidateTls: false' in template [3865](https://github.com/keptn/keptn/issues/3865)
   - Support custom deployment URLs for user-managed deployments [3757](https://github.com/keptn/keptn/issues/3757)
+
+- *helm-service*:
+  - *Fixed*: Helm service does not listen on sh.keptn.event.rollback.triggered events [4125](https://github.com/keptn/keptn/issues/4125)
 
 - *jmeter-service*:
   - *Fixed*: JMeter service doesn't work for regular http/https URL as it infer the default http/https port from the URL [3916](https://github.com/keptn/keptn/issues/3916)
