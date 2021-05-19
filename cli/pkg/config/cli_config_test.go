@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const testConfig = `{"automatic_version_check":true,"last_version_check":"2020-02-20T00:00:00Z","current-context":""}`
+const testConfig = `{"automatic_version_check":true,"kube_context_check":true,"last_version_check":"2020-02-20T00:00:00Z","current-context":""}`
 
 var testTime time.Time
 
@@ -19,7 +19,6 @@ func init() {
 }
 
 func TestLoadNonExistingCLIConfig(t *testing.T) {
-
 	mng := NewCLIConfigManager()
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
@@ -43,7 +42,6 @@ func TestLoadNonExistingCLIConfig(t *testing.T) {
 }
 
 func TestStoreCLIConfig(t *testing.T) {
-
 	mng := NewCLIConfigManager()
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
@@ -54,7 +52,7 @@ func TestStoreCLIConfig(t *testing.T) {
 
 	mng.CLIConfigPath = filepath.Join(tmpDir, "config")
 
-	cliConfig := CLIConfig{AutomaticVersionCheck: true, LastVersionCheck: &testTime}
+	cliConfig := CLIConfig{AutomaticVersionCheck: true, KubeContextCheck: true, LastVersionCheck: &testTime}
 
 	err = mng.StoreCLIConfig(cliConfig)
 	if err != nil {
@@ -71,7 +69,6 @@ func TestStoreCLIConfig(t *testing.T) {
 }
 
 func TestLoadCLIConfig(t *testing.T) {
-
 	mng := NewCLIConfigManager()
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
