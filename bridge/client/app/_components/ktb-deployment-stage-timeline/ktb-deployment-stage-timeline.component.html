@@ -17,7 +17,7 @@
         <dt-icon name="criticalevent" class="event-icon error timeline-icon" ></dt-icon>
       </button>
       <a *ngIf="deployment.hasStage(stage) && deployment.sequence.getDeploymentTrace(stage)?.getFinishedEvent().getDeploymentUrl() as url" [href]="url" target="_blank" class="timeline-icon link-icon">
-        <button dt-icon-button variant="nested" (click)="selectRemediation(stage, deployment.getStage(stage).remediations)" class="timeline-icon">
+        <button dt-icon-button variant="nested" class="timeline-icon">
           <dt-icon name="externallink"></dt-icon>
         </button>
       </a>
