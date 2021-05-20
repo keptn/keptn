@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 
@@ -62,16 +63,25 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 			return err
 		}
 
-		split := strings.Split(endpoint, "/api")
-		bridgeEndpoint := split[0] + "/bridge"
+		bridgeEndpoint := getBridgeURLFromAPIURL(endpoint)
 
-		fmt.Println("Your Keptn Bridge is available under: " + bridgeEndpoint)
+		if bridgeEndpoint != "" {
+			fmt.Println("Your Keptn Bridge is available under: " + bridgeEndpoint)
+		}
 		fmt.Println("\nThese are your credentials")
 		fmt.Println("user: " + creds.User)
 		fmt.Println("password: " + creds.Password)
 		return nil
 	}
 	return configureBridgeCredentials(endpoint, apiToken, configureBridgeParams)
+}
+
+func getBridgeURLFromAPIURL(endpoint string) string {
+	parsedURL, err := url.Parse(endpoint)
+	if err != nil {
+		return ""
+	}
+	return strings.Replace(parsedURL.String(), parsedURL.Path, "/bridge", 1)
 }
 
 func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBridgeAPIPayload, error) {
