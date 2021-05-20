@@ -30,7 +30,7 @@
         </div>
         <ng-container *ngFor="let service of filterServices(selectedStage.services)">
           <ktb-expandable-tile class="mt-1" [expanded]="service.getOpenApprovals().length > 0"
-                               *ngIf="!filterEventType || filterEventType == 'problem' && findProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
+                               *ngIf="!filterEventType || filterEventType == 'problem' && hasProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
             <ktb-expandable-tile-header>
               <dt-info-group>
                 <dt-info-group-title>
@@ -39,7 +39,7 @@
                     <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
                       <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
                     </ng-container>
-                    <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
+                    <ng-container *ngIf="hasProblemEvent(problemEvents, service)">
                       <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
@@ -55,22 +55,29 @@
                 </ng-template>
               </dt-info-group>
             </ktb-expandable-tile-header>
-            <ng-container *ngIf="findProblemEvent(problemEvents, service) as problemEvent">
-              <p class="m-0"><span class="bold">Problem: </span><span [textContent]="problemEvent.data.ImpactedEntity"></span></p>
-              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationAction of problemEvent.getRemediationActions()">
-                <p class="m-0">- <span [textContent]="remediationAction.data.action.description"></span></p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationAction.getEvaluation(selectedStage.stageName)?.getFinishedEvent() as evaluation">
+            <ng-container *ngFor="let problemEvent of findProblemEvent(problemEvents, service)">
+              <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+                <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
+                <p class="m-0" [textContent]="problemEvent.getProblemDetails()"></p>
+              </div>
+              <div class="small" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationSequence of problemEvent.getRemediationActions()">
+                <dt-icon class="stage-state-icon event-icon" name="process"></dt-icon>
+                <p class="m-0" [textContent]="remediationSequence.getRemediationAction()?.getRemediationActionDetails()"></p>
+                <button class="m-0 p-0 ml-1" dt-button disabled variant="nested" *ngIf="!remediationSequence.isFinished()">
+                  <dt-loading-spinner aria-label="Action is running..."></dt-loading-spinner>
+                </button>
+                <dt-tag-list aria-label="evaluation-info" *ngIf="remediationSequence.getEvaluation(remediationSequence.getStage())?.getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="evaluationOverlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #evaluationOverlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
                   </ng-template>
                 </dt-tag-list>
               </div>
-              <hr />
             </ng-container>
             <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-                <p class="m-0">Quality gate of <span [textContent]="failedRootEvent.getShortImageName()"></span> failed with a score of:</p>
+                <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
+                <p class="m-0">Quality gate <span *ngIf="failedRootEvent.getShortImageName()">of <span [textContent]="failedRootEvent.getShortImageName()"></span></span> failed with a score of</p>
                 <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluation(selectedStage.stageName).getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #overlay>
@@ -80,7 +87,6 @@
                 <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.getProject(), 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               </div>
               <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage.stageName)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
-              <hr />
             </ng-container>
             <div *ngIf="service.getOpenApprovals().length > 0; else noOutOfSyncDeployments">
               <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>

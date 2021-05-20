@@ -5,6 +5,7 @@ export const EVENT_ICONS = {
   "test": "perfromance-health",
   "evaluation": "traffic-light",
   "problem": "criticalevent",
+  "remediation": "criticalevent",
   "release": "hops",
   "approval": "unknown",
 };
