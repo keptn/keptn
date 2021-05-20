@@ -1,6 +1,5 @@
 import {Trace} from "./trace";
 import {EventTypes} from "./event-types";
-import {Stage} from "./stage";
 
 export class Root extends Trace {
   traces: Trace[] = [];

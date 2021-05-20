@@ -1,13 +1,26 @@
 import {Root} from './root';
+import {Sequence} from './sequence';
 
 export class Deployment {
   public version: string;
-  public stages: string[];
+  public stages: {stageName: string, remediations: Sequence[], config: string }[];
   public service: string;
   public shkeptncontext: string;
   public sequence: Root;
 
   static fromJSON(data: any): Deployment {
     return Object.assign(new this(), data);
+  }
+
+  public getStage(stage: string): {stageName: string, remediations: Sequence[], config: string } {
+    return this.stages.find(s => s.stageName === stage);
+  }
+
+  public hasStage(stage: string): boolean {
+    return this.stages.some(s => s.stageName === stage);
+  }
+
+  public hasRemediation(): boolean {
+    return this.stages.some(s => s.remediations.length !== 0);
   }
 }

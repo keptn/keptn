@@ -1,0 +1,42 @@
+<div fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="start center">
+  <h2>Open remediations</h2>
+  <button dt-button variant="secondary" (click)="showDialog()">
+    <dt-icon name="services"></dt-icon>
+    Show remediation config
+  </button>
+</div>
+<div fxLayout="column" fxLayoutGap="5px">
+  <div *ngFor="let remediation of stage.remediations" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="20px">
+    <div fxLayout="row" fxLayoutAlign="start center">
+      <button *ngIf="remediation.state === 'triggered', else finished" class="m-0 p-0" dt-button disabled variant="nested">
+        <dt-loading-spinner aria-label="Remediation is running..."></dt-loading-spinner>
+      </button>
+      <ng-template #finished>
+        <dt-icon name="criticalevent" [class]="remediation.isFaulty(this.stage.stageName) ? 'error' : 'success'" class="event-icon"></dt-icon>
+      </ng-template>
+      <span [textContent]="remediation.time | amDateFormat:dateUtil.getDateTimeFormat()"></span>
+    </div>
+    <div>
+      <span>Remediation for: <span class="bold" [textContent]="remediation.problemTitle"></span> {{remediation.state === 'triggered' ? 'triggered' : remediation.isFaulty(this.stage.stageName) ? 'failed' : 'succeeded' }}</span>
+    </div>
+    <div>
+      <ktb-evaluation-info [evaluationResult]="remediation.getStage(this.stage.stageName).latestEvaluation"></ktb-evaluation-info>
+    </div>
+    <div>
+      <button dt-button variant="secondary" [routerLink]="getRemediationLink(remediation)">
+        View remediation sequence
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #remediationDialog let-data>
+  <h1 mat-dialog-title>Remediation</h1>
+  <div mat-dialog-content>
+    <pre [textContent]="data"></pre>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="copyPayload(data)">Copy</button>
+    <button dt-button class="ml-2" (click)="closeDialog()">Close</button>
+  </div>
+</ng-template>

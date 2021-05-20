@@ -68,7 +68,6 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             this.projectName = project.projectName;
             this.gitRemoteURI = project.gitRemoteURI;
-            this.service.deployments = project.getDeploymentsOfService(this.service.serviceName);
             if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
               const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
               if (paramDeployment) {
@@ -90,13 +89,13 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
       });
   }
 
-  updateDataSource(count = -1): void {
+  private updateDataSource(count = -1): void {
     this.dataSource.data = count !== -1 ? this.service.deployments.slice(0, count) : this.service.deployments;
     this.pageSize = this.dataSource.data.length;
     this._changeDetectorRef.markForCheck();
   }
 
-  selectDeployment(deployment: Deployment, redirect = true): void {
+  public selectDeployment(deployment: Deployment, redirect = true): void {
     if (this.selectedDeployment !== deployment) {
       this.selectedDeployment = deployment;
 

@@ -1,13 +1,15 @@
 <dt-table [dataSource]="dataSource" interactiveRows>
   <ng-container dtColumnDef="version" dtColumnProportion="1">
-    <dt-cell *dtCellDef="let row" [textContent]="row.version || row.service">
+    <dt-cell *dtCellDef="let row">
+      <span [textContent]="row.version || row.service"></span>
+      <dt-icon *ngIf="row.hasRemediation()" name="criticalevent" class="event-icon error"></dt-icon>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="stages" dtColumnProportion="2" dtColumnAlign="number">
     <dt-cell *dtCellDef="let row">
       <dt-tag-list aria-label="fetch-info" *ngFor="let stage of row.stages">
-        <dt-tag [textContent]="stage"></dt-tag>
+        <dt-tag [textContent]="stage.stageName"></dt-tag>
       </dt-tag-list>
     </dt-cell>
   </ng-container>

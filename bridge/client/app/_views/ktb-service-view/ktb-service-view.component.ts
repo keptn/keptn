@@ -7,7 +7,7 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, timer} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
@@ -28,10 +28,11 @@ import { Deployment } from 'client/app/_models/deployment';
 export class KtbServiceViewComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-  public project$: Observable<Project>;
+  public project: Project;
   public serviceName: string;
   public selectedDeployment: Deployment;
   public isQualityGatesOnly: boolean;
+  private _remediationTimerInterval = 30 * 1000;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
 
@@ -48,9 +49,21 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         this.serviceName = params.serviceName;
 
-        this.project$ = this.dataService.getProject(params.projectName);
-        this.serviceName = params.serviceName;
-        this._changeDetectorRef.markForCheck();
+        this.dataService.getProject(params.projectName).subscribe(project => {
+          this.dataService.loadOpenRemediations(project).subscribe(() => {
+            this.project = project;
+            this.serviceName = params.serviceName;
+            this._changeDetectorRef.markForCheck();
+          });
+
+          timer(this._remediationTimerInterval, this._remediationTimerInterval)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(() => {
+              this.dataService.loadOpenRemediations(project).subscribe(() => {
+                this._changeDetectorRef.markForCheck();
+              });
+            });
+        });
       });
   }
 

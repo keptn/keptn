@@ -86,6 +86,10 @@ class Trace {
       sloFileContentParsed: string;
     };
 
+    problem?: {
+      ProblemTitle: string
+    };
+
     evaluationHistory: Trace[];
 
     ProblemTitle: string;
@@ -226,6 +230,10 @@ class Trace {
 
   getStage(): string {
     return this.data?.stage;
+  }
+
+  getProblemTitle(): string {
+    return this.data.problem?.ProblemTitle;
   }
 
   getShortType(): string {

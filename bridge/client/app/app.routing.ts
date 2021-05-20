@@ -17,6 +17,7 @@ const routes: Routes = [
   {path: 'project/:projectName/service/:serviceName', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext', component: ProjectBoardComponent},
   {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', component: ProjectBoardComponent},
+  {path: 'project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage/remediation', component: ProjectBoardComponent},
   {path: 'project/:projectName/sequence', component: ProjectBoardComponent},
   {path: 'project/:projectName/sequence/:shkeptncontext', component: ProjectBoardComponent},
   {path: 'project/:projectName/sequence/:shkeptncontext/event/:eventId', component: ProjectBoardComponent},
