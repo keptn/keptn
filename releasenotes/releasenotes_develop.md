@@ -61,6 +61,7 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
 <details><summary>CLI</summary>
 <p>
 
+- Show bridge URL when executing keptn configure bridge --output [3688](https://github.com/keptn/keptn/issues/3688)
 - Disable Kube context check [3666](https://github.com/keptn/keptn/issues/3666)
 - Remove RemediationTriggered/Started/Finished, add GetActionTriggered/Started/Finished [4084](https://github.com/keptn/keptn/issues/4084)
 
@@ -117,6 +118,7 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
   - Provide better navigation from full screen evaluation screen [3538](https://github.com/keptn/keptn/issues/3538)
   - Set Git upstream URL via Settings page [3417](https://github.com/keptn/keptn/issues/3417)
   - Service screen: Show stages the deployment went through [3713](https://github.com/keptn/keptn/issues/3713)
+  - Environment screen: Support of more advanced staging environments [3647](https://github.com/keptn/keptn/issues/3647)
   - Environment screen: Click on sequence opens Sequence screen [3887](https://github.com/keptn/keptn/issues/3887)
   - Environment screen: Click on deployment opens Service screen [3760](https://github.com/keptn/keptn/issues/3760)
   - Environment screen: Filter for Service(s) [3759](https://github.com/keptn/keptn/issues/3759)
@@ -162,7 +164,7 @@ Implemented **Keptn spec** version: [0.2.2](https://github.com/keptn/spec/tree/0
 
   <!--TODO: final check-->
   - *Response time degradation in configuration-service* when using a Git Upstream (e.g., GitHub) [4066](https://github.com/keptn/keptn/issues/4066)
-  - *Response time degradation in lighthouse-service* when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
+  - *Response time degradation in lighthouse-service* when spamming get-sli-events [4065](https://github.com/keptn/keptn/issues/4065)
   - Shipyard-controller keeps sending events for tasks with the same name indefinitely [4039](https://github.com/keptn/keptn/issues/4039)
   - Selection change in heatmap does not always update SLO table - needs second click [4007](https://github.com/keptn/keptn/issues/4007)
   - Mongodb OOM crash after flooding it with events [3968](https://github.com/keptn/keptn/issues/3968)
