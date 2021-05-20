@@ -46,6 +46,10 @@ export class Service {
     return this.getRecentSequence()?.getEvaluation(this.stage);
   }
 
+  public hasRemediations(): boolean {
+    return this.deployments.some(d => d.stages.some(s => s.remediations.length !== 0));
+  }
+
   static fromJSON(data: any) {
     return Object.assign(new this(), data);
   }

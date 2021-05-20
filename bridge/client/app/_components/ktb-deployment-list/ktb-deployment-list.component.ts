@@ -68,6 +68,11 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             this.projectName = project.projectName;
             this.gitRemoteURI = project.gitRemoteURI;
+            this.dataService._remediationsUpdated
+              .pipe(takeUntil(this.unsubscribe$))
+              .subscribe(() => {
+                this._changeDetectorRef.markForCheck();
+              });
             if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
               const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
               if (paramDeployment) {

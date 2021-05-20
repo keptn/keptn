@@ -15,10 +15,9 @@
       <ktb-expandable-tile-header>
         <dt-info-group>
           <dt-info-group-title>
-            <div fxLayout="row">
-              <div fxFlex>
-                <h2 class="m-0" [textContent]="service.serviceName"></h2>
-              </div>
+            <div fxLayout="row" fxLayoutAlign="start center">
+              <h2 class="m-0" [textContent]="service.serviceName"></h2>
+              <dt-icon *ngIf="service.hasRemediations()" name="criticalevent" class="event-icon error"></dt-icon>
             </div>
           </dt-info-group-title>
           <ng-container *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">
