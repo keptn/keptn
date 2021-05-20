@@ -29,6 +29,7 @@ export class DataService {
   protected _traces = new BehaviorSubject<Trace[]>(null);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<any>(null);
+  public _remediationsUpdated: Subject<void> = new Subject<void>();
   protected _rootsLastUpdated: Object = {};
   protected _tracesLastUpdated: Object = {};
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
@@ -156,8 +157,8 @@ export class DataService {
     });
   }
 
-  public loadOpenRemediations(project: Project): Observable<any> {
-    return this.apiService.getOpenRemediations(project.projectName).pipe(
+  public loadOpenRemediations(project: Project): void {
+    this.apiService.getOpenRemediations(project.projectName).pipe(
       map(response => response.body),
       map(sequenceResult => sequenceResult.states),
       map(sequences => {
@@ -218,7 +219,9 @@ export class DataService {
           toArray()
         )
       )
-    );
+    ).subscribe(() => {
+      this._remediationsUpdated.next();
+    });
   }
 
   public loadRoots(project: Project) {

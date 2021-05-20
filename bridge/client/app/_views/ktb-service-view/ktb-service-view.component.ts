@@ -50,18 +50,19 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
         this.serviceName = params.serviceName;
 
         this.dataService.getProject(params.projectName).subscribe(project => {
-          this.dataService.loadOpenRemediations(project).subscribe(() => {
-            this.project = project;
-            this.serviceName = params.serviceName;
-            this._changeDetectorRef.markForCheck();
-          });
+          this.project = project;
+          this.serviceName = params.serviceName;
 
-          timer(this._remediationTimerInterval, this._remediationTimerInterval)
+          this.dataService._remediationsUpdated
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe(() => {
-              this.dataService.loadOpenRemediations(project).subscribe(() => {
-                this._changeDetectorRef.markForCheck();
-              });
+              this._changeDetectorRef.markForCheck();
+          });
+
+          timer(0, this._remediationTimerInterval)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(() => {
+              this.dataService.loadOpenRemediations(project);
             });
         });
       });

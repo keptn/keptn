@@ -12,9 +12,14 @@
         [highlight]="deployment.sequence.hasPendingApproval(stage)"
         [fill]="deployment.hasStage(stage)"
         (click)="$event.stopPropagation(); selectStage(stage)"></ktb-stage-badge>
-      <dt-icon *ngIf="deployment.getStage(stage).remediations.length !== 0" name="criticalevent" class="event-icon error pointer timeline-icon" (click)="selectRemediation(stage, deployment.getStage(stage).remediations)"></dt-icon>
+
+      <button *ngIf="deployment.getStage(stage).remediations.length !== 0" dt-icon-button variant="nested" (click)="selectRemediation(stage, deployment.getStage(stage).remediations)" class="timeline-icon" [class.active]="selectedRemediations?.stage === stage">
+        <dt-icon name="criticalevent" class="event-icon error timeline-icon" ></dt-icon>
+      </button>
       <a *ngIf="deployment.hasStage(stage) && deployment.sequence.getDeploymentTrace(stage)?.getFinishedEvent().getDeploymentUrl() as url" [href]="url" target="_blank" class="timeline-icon link-icon">
-        <dt-icon name="externallink"></dt-icon>
+        <button dt-icon-button variant="nested" (click)="selectRemediation(stage, deployment.getStage(stage).remediations)" class="timeline-icon">
+          <dt-icon name="externallink"></dt-icon>
+        </button>
       </a>
     </div>
   </ng-container>

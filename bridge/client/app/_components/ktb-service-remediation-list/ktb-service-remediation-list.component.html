@@ -5,30 +5,43 @@
     Show remediation config
   </button>
 </div>
-<div fxLayout="column" fxLayoutGap="5px">
-  <div *ngFor="let remediation of stage.remediations" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="20px">
-    <div fxLayout="row" fxLayoutAlign="start center">
-      <button *ngIf="remediation.state === 'triggered', else finished" class="m-0 p-0" dt-button disabled variant="nested">
-        <dt-loading-spinner aria-label="Remediation is running..."></dt-loading-spinner>
-      </button>
-      <ng-template #finished>
-        <dt-icon name="criticalevent" [class]="remediation.isFaulty(this.stage.stageName) ? 'error' : 'success'" class="event-icon"></dt-icon>
-      </ng-template>
-      <span [textContent]="remediation.time | amDateFormat:dateUtil.getDateTimeFormat()"></span>
-    </div>
-    <div>
-      <span>Remediation for: <span class="bold" [textContent]="remediation.problemTitle"></span> {{remediation.state === 'triggered' ? 'triggered' : remediation.isFaulty(this.stage.stageName) ? 'failed' : 'succeeded' }}</span>
-    </div>
-    <div>
-      <ktb-evaluation-info [evaluationResult]="remediation.getStage(this.stage.stageName).latestEvaluation"></ktb-evaluation-info>
-    </div>
-    <div>
-      <button dt-button variant="secondary" [routerLink]="getRemediationLink(remediation)">
+<dt-table [dataSource]="dataSource">
+  <ng-container dtColumnDef="date" dtColumnProportion="2">
+    <dt-cell *dtCellDef="let row">
+      <div fxLayout="row" fxLayoutAlign="start center">
+        <button *ngIf="row.state === 'triggered', else finished" class="m-0 p-0" dt-button disabled variant="nested">
+          <dt-loading-spinner aria-label="Remediation is running..."></dt-loading-spinner>
+        </button>
+        <ng-template #finished>
+          <dt-icon name="criticalevent" [class]="row.isFaulty(this.stage.stageName) ? 'error' : 'success'" class="event-icon"></dt-icon>
+        </ng-template>
+        <span [textContent]="row.time | amDateFormat:dateUtil.getDateTimeFormat()"></span>
+      </div>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="remediation" dtColumnProportion="4">
+    <dt-cell *dtCellDef="let row">
+      <span>Remediation for: <span class="bold" [textContent]="row.problemTitle"></span> {{row.state === 'triggered' ? 'triggered' : row.isFaulty(this.stage.stageName) ? 'failed' : 'succeeded' }}</span>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="evaluationResult" dtColumnProportion="1">
+    <dt-cell *dtCellDef="let row">
+      <ktb-evaluation-info [evaluationResult]="row.getStage(this.stage.stageName).latestEvaluation"></ktb-evaluation-info>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="action" dtColumnProportion="2" dtColumnAlign="number">
+    <dt-cell *dtCellDef="let row">
+      <button dt-button variant="secondary" class="table-button" [routerLink]="getRemediationLink(row)">
         View remediation sequence
       </button>
-    </div>
-  </div>
-</div>
+    </dt-cell>
+  </ng-container>
+
+  <dt-row *dtRowDef="let row; columns: ['date', 'remediation', 'evaluationResult', 'action']"></dt-row>
+</dt-table>
 
 <ng-template #remediationDialog let-data>
   <h1 mat-dialog-title>Remediation</h1>
