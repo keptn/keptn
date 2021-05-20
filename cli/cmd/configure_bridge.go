@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
@@ -60,7 +61,9 @@ func configureBridge(endpoint string, apiToken string, configureBridgeParams *co
 			fmt.Println("Could not retrieve bridge credentials: " + err.Error())
 			return err
 		}
-		fmt.Println("Your Keptn Bridge is available under: " + endpoint)
+		split := strings.Split(endpoint, "/api")
+		bridgeEndpoint := split[0] + "/bridge"
+		fmt.Println("Your Keptn Bridge is available under: " + bridgeEndpoint)
 		fmt.Println("\nThese are your credentials")
 		fmt.Println("user: " + creds.User)
 		fmt.Println("password: " + creds.Password)
