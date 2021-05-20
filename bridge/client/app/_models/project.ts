@@ -118,6 +118,18 @@ export class Project {
     return lastService;
   }
 
+  public getStages(parent: string[]): Stage[] {
+    return this.stages.filter(s => (parent && s.parentStages && s.parentStages.every((element, i) => element == parent[i])) || (!parent && !s.parentStages));
+  }
+
+  public getParentStages(): string[] {
+    return this.stages.reduce((stages, stage) => {
+      if(stage.parentStages && !stages.find(parent => parent && parent.every((element, i) => element == stage.parentStages[i])))
+        stages.push(stage.parentStages);
+      return stages;
+    }, [null]);
+  }
+
   static fromJSON(data: any) {
     const project = Object.assign(new this(), data);
     project.setDeployments();

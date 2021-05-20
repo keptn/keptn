@@ -45,16 +45,23 @@ var setConfigCmd = &cobra.Command{
 		case "automaticversioncheck":
 			val, err := strconv.ParseBool(args[1])
 			if err != nil {
-				return fmt.Errorf("error when parsing value %v", err)
+				return fmt.Errorf("error when parsing value %w", err)
 			}
 			cliConfig.AutomaticVersionCheck = val
 			newConfig = true
 		case "lastversioncheck":
 			val, err := time.Parse("RFC3339", args[1])
 			if err != nil {
-				return fmt.Errorf("error when parsing value %v", err)
+				return fmt.Errorf("error when parsing value %w", err)
 			}
 			cliConfig.LastVersionCheck = &val
+			newConfig = true
+		case "kubecontextcheck":
+			val, err := strconv.ParseBool(args[1])
+			if err != nil {
+				return fmt.Errorf("error when parsing value %w", err)
+			}
+			cliConfig.KubeContextCheck = val
 			newConfig = true
 		default:
 			return fmt.Errorf("Unsupported key %s", args[0])

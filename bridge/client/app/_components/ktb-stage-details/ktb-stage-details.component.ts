@@ -86,8 +86,12 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  findProblemEvent(problemEvents: Root[], service: Service): Root {
-    return problemEvents.find(root => root?.data.service === service.serviceName);
+  hasProblemEvent(problemEvents: Root[], service: Service): boolean {
+    return problemEvents.filter(root => root?.data.service === service.serviceName).length > 0;
+  }
+
+  findProblemEvent(problemEvents: Root[], service: Service): Root[] {
+    return problemEvents.filter(root => root?.data.service === service.serviceName);
   }
 
   findFailedRootEvent(failedRootEvents: Root[], service: Service): Root {

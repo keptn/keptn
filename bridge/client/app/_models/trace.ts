@@ -92,13 +92,15 @@ class Trace {
 
     evaluationHistory: Trace[];
 
-    ProblemTitle: string;
-    ImpactedEntity: string;
-    ProblemDetails: {
-      tagsOfAffectedEntities: {
-        key: string;
-        value: string;
-      }
+    problem: {
+      ProblemTitle: string;
+      ImpactedEntity: string;
+      ProblemDetails: {
+        tagsOfAffectedEntities: {
+          key: string;
+          value: string;
+        }
+      };
     };
 
     approval: {
@@ -160,6 +162,18 @@ class Trace {
 
   public isProblem(): boolean {
     return this.type === EventTypes.PROBLEM_DETECTED || this.type === EventTypes.PROBLEM_OPEN;
+  }
+
+  public isRemediation(): boolean {
+    return this.type.endsWith(EventTypes.REMEDIATION_TRIGGERED_SUFFIX);
+  }
+
+  public isRemediationAction(): boolean {
+    return this.type === EventTypes.ACTION_TRIGGERED;
+  }
+
+  public getRemediationActionDetails(): string {
+    return this.data.action.description || this.data.action.name;
   }
 
   public isProblemResolvedOrClosed(): boolean {
@@ -333,6 +347,14 @@ class Trace {
     return this.type.endsWith('.finished') ? this : this.traces.find(t => t.type.endsWith('.finished'));
   }
 
+  getRemediationAction() {
+    return this.findTrace(t => t.isRemediationAction());
+  }
+
+  getEvaluation(stageName: String): Trace {
+    return this.findTrace(t => t.isEvaluation() !== null && t.getStage() === stageName);
+  }
+
   getDeploymentUrl() {
     return this.data.deployment?.deploymentURIsPublic?.find(e => true);
   }
@@ -357,6 +379,10 @@ class Trace {
 
   isSequence() {
     return this.type.split(".").length == 6 && this.type.includes(this.getStage());
+  }
+
+  getProblemDetails() {
+    return this.data.problem?.ImpactedEntity || this.data.problem?.ProblemTitle;
   }
 
   static fromJSON(data: any) {

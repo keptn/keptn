@@ -12,8 +12,8 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.4-0.20210518063017-f63f77f4c41e
-	github.com/keptn/kubernetes-utils v0.8.2-0.20210506073412-a06581ae8a26
+	github.com/keptn/go-utils v0.8.4
+	github.com/keptn/kubernetes-utils v0.8.2
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.1

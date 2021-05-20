@@ -5,7 +5,7 @@ export class Root extends Trace {
   traces: Trace[] = [];
 
   isFaulty(): string {
-    return this.traces.reduce((result: string, trace: Trace) => trace.isFaulty() ? trace.data.stage : result, null);
+    return this.findLastTrace(t => t.isSequence() && t.getEvaluation() != null)?.isFaulty() || null;
   }
 
   isStarted(): boolean {
@@ -101,22 +101,16 @@ export class Root extends Trace {
   }
 
   getEvaluation(stageName: String): Trace {
-    return this.findTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
+    return this.findLastTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
   }
 
   getDeploymentDetails(stage: string): Trace {
     return this.findTrace(t => t.type == EventTypes.DEPLOYMENT_TRIGGERED && t.data.stage == stage)?.getFinishedEvent();
   }
 
-  getRemediationActions(): Root[] {
-    // create chunks of Remediations and start new chunk at REMEDIATION_TRIGGERED event
-    return this.traces.reduce((result, trace: Trace) => {
-      if(trace.type == EventTypes.ACTION_TRIGGERED)
-        result.push(Root.fromJSON(JSON.parse(JSON.stringify(trace))));
-      else if(result.length)
-        result[result.length-1].traces = [...result[result.length-1].traces||[], trace];
-      return result;
-    }, []);
+  getRemediationActions(): Trace[] {
+    // return remediation sequences
+    return this.traces;
   }
 
   isFinished() {

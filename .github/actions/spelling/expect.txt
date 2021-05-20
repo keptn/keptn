@@ -210,7 +210,6 @@ errored
 Errorf
 errstr
 eslint
-esnext
 esource
 etag
 Eter
@@ -281,6 +280,7 @@ gofmt
 gohugoio
 goland
 golang
+golangci
 golangswaggerpaths
 golint
 gomock
@@ -306,7 +306,6 @@ guiclass
 gunzip
 gws
 halem
-hammerjs
 hardcoded
 hardenings
 hashicorp
@@ -355,7 +354,6 @@ ioutil
 ipaddress
 IProject
 iptables
-IRemediation
 IResource
 ISecret
 ISequence
@@ -432,6 +430,7 @@ KTSESSION
 kube
 kubeclient
 kubeconfig
+kubecontextcheck
 kubectl
 kubernetes
 kvm
@@ -572,6 +571,7 @@ onboards
 onclick
 oneof
 onespace
+OOM
 openapi
 openapierrors
 openjdk
@@ -602,7 +602,6 @@ png
 poddescriptions
 podlogs
 polyfills
-postcss
 powershell
 pprove
 prebuilt
@@ -612,7 +611,6 @@ printf
 Println
 prj
 problemdetails
-problemtype
 productpage
 PROJ
 projectes
@@ -730,6 +728,7 @@ smv
 sni
 sockshop
 sockshot
+spamming
 specversion
 spf
 Sprintf

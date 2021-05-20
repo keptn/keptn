@@ -12,8 +12,8 @@
       <div *ngIf="_event.data.teststrategy">
         <p class="m-0 nobreak"><span class="bold">Test strategy: </span><span [textContent]="_event.data.teststrategy"></span></p>
       </div>
-      <div *ngIf="_event.data.ImpactedEntity">
-        <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.data.ImpactedEntity"></span></p>
+      <div *ngIf="_event.isProblem() || _event.isRemediation()">
+        <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.getProblemDetails()"></span></p>
       </div>
     </div>
     <div fxLayout="column" fxLayoutAlign="start end">
@@ -24,11 +24,11 @@
       </div>
     </div>
   </div>
-  <div *ngIf="_event.data.ProblemDetails">
-    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.ProblemDetails.tagsOfAffectedEntities">
+  <div *ngIf="_event.data.problem.ProblemDetails">
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.problem.ProblemDetails.tagsOfAffectedEntities">
       <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
       <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
-        <dt-tag *ngFor="let tag of _event.data.ProblemDetails.tagsOfAffectedEntities">
+        <dt-tag *ngFor="let tag of _event.data.problem.ProblemDetails.tagsOfAffectedEntities">
           <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
           <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
         </dt-tag>
