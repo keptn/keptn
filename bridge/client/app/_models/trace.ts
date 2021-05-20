@@ -86,10 +86,6 @@ class Trace {
       sloFileContentParsed: string;
     };
 
-    problem?: {
-      ProblemTitle: string
-    };
-
     evaluationHistory: Trace[];
 
     problem: {
