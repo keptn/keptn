@@ -24,6 +24,7 @@ export enum EventTypes {
   REMEDIATION_TRIGGERED_SUFFIX = 'remediation.triggered',
   REMEDIATION_TRIGGERED = 'sh.keptn.event.remediation.triggered',
   REMEDIATION_STATUS_CHANGED = 'sh.keptn.event.remediation.status.changed',
+  REMEDIATION_FINISHED_SUFFIX = 'remediation.finished',
   REMEDIATION_FINISHED = 'sh.keptn.event.remediation.finished',
   ACTION_TRIGGERED = 'sh.keptn.event.action.triggered',
   ACTION_STARTED = 'sh.keptn.event.action.started',
