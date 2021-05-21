@@ -34,21 +34,30 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 	}
 	startedEvent.EventData.Status = keptnv2.StatusSucceeded
 
+	// send evaluation.started event
 	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, startedEvent)
 	if err != nil {
 		eh.KeptnHandler.Logger.Error("Could not send evaluation.started event: " + err.Error())
 		return err
 	}
 
+	// try to parse timestamps
 	evaluationStartTimestamp, evaluationEndTimestamp, err := getEvaluationTimestamps(e)
 	if err != nil {
 		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, err.Error())
 	}
 
-	// get SLO file
+	go eh.sendGetSliCloudEvent(keptnContext, e, evaluationStartTimestamp, evaluationEndTimestamp)
+
+	return nil
+}
+
+// fetch SLO and send the internal get-sli event
+func (eh *StartEvaluationHandler) sendGetSliCloudEvent(keptnContext string, e *keptnv2.EvaluationTriggeredEventData, evaluationStartTimestamp string, evaluationEndTimestamp string) error {
 	indicators := []string{}
 	var filters = []*keptnv2.SLIFilter{}
-	// get SLO file
+
+	// collect objectives from SLO file
 	objectives, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service)
 	if err == nil && objectives != nil {
 		eh.KeptnHandler.Logger.Info("SLO file found")
@@ -82,12 +91,14 @@ func (eh *StartEvaluationHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
 
-	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus')
+	// get the SLI provider that has been configured for the project (e.g. 'dynatrace' or 'prometheus') from the respective configmap
 	var sliProvider string
 	sliProvider, err = eh.SLIProviderConfig.GetSLIProvider(e.Project)
 	if err != nil {
+		// no provider found - fallback to default SLI provider
 		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
 		if err != nil {
+			// no default SLI provider configured
 			eh.KeptnHandler.Logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
 			evaluationDetails := keptnv2.EvaluationDetails{
 				IndicatorResults: nil,
