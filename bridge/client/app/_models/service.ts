@@ -35,7 +35,8 @@ export class Service {
   }
 
   getOpenProblems(): Trace[] {
-    return this.roots?.filter(root => root.isProblem() && !root.isProblemResolvedOrClosed() || root.isRemediation() && !root.isFinished()) || [];
+    // show running remediation or last faulty remediation
+    return this.roots?.filter((root, index) => root.isRemediation() && (!root.isFinished() || root.isFaulty() && index == 0)) || [];
   }
 
   getRecentSequence(): Root {
