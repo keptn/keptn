@@ -6,9 +6,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.3.1
-	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.7.1
 	github.com/go-test/deep v1.0.5
 	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v1.0.1
