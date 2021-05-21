@@ -21,9 +21,9 @@ Keptn 0.8.3 implements the Keptn Enhancement Proposal [#37](https://github.com/k
     - name: get-action 
     - name: action
     - name: evaluation
-      triggeredAfter: "10m"
+      triggeredAfter: "15m"
       properties:
-        timeframe: "10m"
+        timeframe: "15m"
   ```
 
 :star: *Length of service name increased to 43 characters*: The limitation of the service name length has been loosened to allow a length of 43 characters.
