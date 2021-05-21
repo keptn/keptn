@@ -5,8 +5,7 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.1.0
-	github.com/cloudevents/sdk-go/v2 v2.3.1
-	github.com/coreos/go-semver v0.3.0
+	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-test/deep v1.0.5
