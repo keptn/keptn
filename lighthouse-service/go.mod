@@ -12,7 +12,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.4
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/nats-io/nats-server/v2 v2.2.4
+	github.com/nats-io/nats-server/v2 v2.2.5
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/appengine v1.6.5 // indirect
 	k8s.io/api v0.17.2
