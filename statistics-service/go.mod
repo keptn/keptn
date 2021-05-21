@@ -16,7 +16,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.6.7
 	github.com/ugorji/go v1.1.8 // indirect
-	go.mongodb.org/mongo-driver v1.4.6
+	go.mongodb.org/mongo-driver v1.5.2
 	golang.org/x/tools v0.0.0-20200915201639-f4cefd1cb5ba // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )
