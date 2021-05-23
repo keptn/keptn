@@ -492,7 +492,7 @@ func writeIngresses(namespace, dir string) {
 func writePodDescriptions(namespace, dir string) {
 	fmt.Println("Retrieving pod descriptions in " + namespace)
 	res, err := keptnutils.ExecuteCommand("kubectl",
-		[]string{"get", "pods", "--template", "{{range .items}}{{.metadata.name}}{{'\n'}}{{end}}", "-n", namespace})
+		[]string{"get", "pods", "--template", `{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}`, "-n", namespace})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err),
 			filepath.Join(dir, "poddescriptions.txt"))
@@ -508,7 +508,7 @@ func writePodDescriptions(namespace, dir string) {
 func writeDeploymentDescriptions(namespace, dir string) {
 	fmt.Println("Retrieving deployment descriptions in " + namespace)
 	res, err := keptnutils.ExecuteCommand("kubectl",
-		[]string{"get", "deployments", "--template", "{{range .items}}{{.metadata.name}}{{'\n'}}{{end}}", "-n", namespace})
+		[]string{"get", "deployments", "--template", `{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}`, "-n", namespace})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err),
 			filepath.Join(dir, "deploymentdescriptions.txt"))
@@ -524,7 +524,7 @@ func writeDeploymentDescriptions(namespace, dir string) {
 func writePodLogs(namespace, dir string) {
 	fmt.Println("Retrieving pod logs in " + namespace)
 	res, err := keptnutils.ExecuteCommand("kubectl",
-		[]string{"get", "pods", "--template", "{{range .items}}{{.metadata.name}}{{'\n'}}{{end}}", "-n", namespace})
+		[]string{"get", "pods", "--template", `{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}`, "-n", namespace})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err),
 			filepath.Join(dir, "podlogs.txt"))
