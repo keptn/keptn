@@ -176,7 +176,7 @@ func TestGetEventHandlerFunc(t *testing.T) {
 						ID:             "",
 						Source:         stringp(""),
 						Specversion:    "",
-						Time:           strfmt.DateTime{},
+						Time:           "",
 						Type:           stringp(""),
 						Shkeptncontext: "",
 					},
