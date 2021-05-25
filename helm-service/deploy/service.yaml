@@ -74,7 +74,13 @@ spec:
           httpGet:
             path: /health
             port: 10999
-          initialDelaySeconds: 5
+          initialDelaySeconds: 0
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 0
           periodSeconds: 5
         imagePullPolicy: Always
         ports:
