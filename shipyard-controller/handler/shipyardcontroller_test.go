@@ -90,6 +90,25 @@ spec:
       - name: remediation
       - name: evaluation`
 
+const testShipyardResourceWithDuplicateTasks = `{
+      "resourceContent": "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMgpraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgLSBuYW1lOiBkZXBsb3ltZW50CiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg==",
+      "resourceURI": "shipyard.yaml"
+    }`
+
+const testShipyardFileWithDuplicateTasks = `apiVersion: spec.keptn.sh/0.2.2
+kind: Shipyard
+metadata:
+  name: test-shipyard
+spec:
+  stages:
+  - name: dev
+    sequences:
+    - name: artifact-delivery
+      tasks:
+      - name: deployment
+      - name: deployment
+      - name: evaluation`
+
 func Test_eventManager_GetAllTriggeredEvents(t *testing.T) {
 	type fields struct {
 		projectRepo        db.ProjectRepo
@@ -525,7 +544,7 @@ func Test_eventManager_getEvents(t *testing.T) {
 func Test_shipyardController_Scenario1(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -745,7 +764,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 func Test_shipyardController_Scenario2(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 
@@ -818,7 +837,7 @@ func Test_shipyardController_Scenario2(t *testing.T) {
 func Test_shipyardController_Scenario3(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
@@ -895,7 +914,7 @@ func Test_shipyardController_Scenario3(t *testing.T) {
 func Test_shipyardController_Scenario4(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
@@ -1018,7 +1037,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 // Scenario 4a: Handling multiple finished events, one has result==failed, ==> task sequence is stopped
 func Test_shipyardController_Scenario4a(t *testing.T) {
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
@@ -1099,7 +1118,7 @@ func Test_shipyardController_Scenario4a(t *testing.T) {
 func Test_shipyardController_TriggerOnFail(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFile)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockCS := fake.NewConfigurationService(testShipyardResource)
 	defer mockCS.Close()
@@ -1185,7 +1204,7 @@ func Test_shipyardController_TriggerOnFail(t *testing.T) {
 func Test_shipyardController_Scenario5(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller Scenario 5 with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
 	defer mockCS.Close()
@@ -1208,11 +1227,76 @@ func Test_shipyardController_Scenario5(t *testing.T) {
 
 }
 
+func Test_shipyardController_DuplicateTask(t *testing.T) {
+
+	t.Logf("Executing Shipyard Controller Scenario 6 (duplicate tasks) with shipyard file %s", testShipyardFileWithDuplicateTasks)
+	sc := getTestShipyardController(testShipyardFileWithDuplicateTasks)
+
+	mockCS := fake.NewConfigurationService(testShipyardResourceWithDuplicateTasks)
+	defer mockCS.Close()
+
+	_ = os.Setenv("CONFIGURATION_SERVICE", mockCS.URL)
+
+	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
+
+	// STEP 1
+	// send dev.artifact-delivery.triggered event
+	err := sc.HandleIncomingEvent(getArtifactDeliveryTriggeredEvent(), true)
+	if err != nil {
+		t.Errorf("STEP 1 failed: HandleIncomingEvent(dev.artifact-delivery.triggered) returned %v", err)
+		return
+	}
+
+	require.Equal(t, 1, len(mockDispatcher.AddCalls()))
+	triggeredEvent := mockDispatcher.AddCalls()[0].Event
+	triggeredKeptnEvent, err := keptnv2.ToKeptnEvent(triggeredEvent.Event)
+	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), *triggeredKeptnEvent.Type)
+
+	// STEP 2
+	// send deployment.started event
+	done := sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredKeptnEvent.ID, "dev", "test-source")
+	if done {
+		return
+	}
+
+	// STEP 3
+	// send deployment.finished event
+	triggeredID, done := sendAndVerifyFinishedEvent(
+		t,
+		sc,
+		getDeploymentFinishedEvent("dev", triggeredKeptnEvent.ID, "test-source", keptnv2.ResultPass),
+		keptnv2.DeploymentTaskName,
+		keptnv2.DeploymentTaskName,
+		"",
+	)
+	if done {
+		return
+	}
+
+	// STEP 4
+	// send deployment.started event (for the second deployment task)
+	done = sendAndVerifyStartedEvent(t, sc, keptnv2.DeploymentTaskName, triggeredID, "dev", "test-source")
+	if done {
+		return
+	}
+
+	// STEP 5
+	// send deployment.finished event for the second deployment task -> now we want an evaluation.triggered event as the next task
+	triggeredID, done = sendAndVerifyFinishedEvent(
+		t,
+		sc,
+		getDeploymentFinishedEvent("dev", triggeredID, "test-source", keptnv2.ResultPass),
+		keptnv2.DeploymentTaskName,
+		keptnv2.EvaluationTaskName,
+		"",
+	)
+}
+
 // Updating shipyard content fails -> event handling should still happen
 func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
 
@@ -1245,7 +1329,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
 
@@ -1280,7 +1364,7 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *testing.T) {
 
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
-	sc := getTestShipyardController()
+	sc := getTestShipyardController("")
 
 	mockCS := fake.NewConfigurationService(testShipyardResourceWithInvalidVersion)
 	defer mockCS.Close()
@@ -1960,12 +2044,12 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 		Type:    keptnv2.GetTriggeredEventType(eventType),
 		Stage:   &scope.Stage,
 		Service: common.Stringp("carts"),
+		ID:      &scope.TriggeredID,
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done := fake.ShouldNotContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(eventType), scope.Stage)
-	if done {
-		return "", true
-	}
+	require.NotContains(t, triggeredEvents, models.Event{
+		ID: scope.TriggeredID,
+	})
 
 	// check triggeredEvent collection -> should contain <nextEventType>.triggered event
 	triggeredEvents, _ = sc.eventRepo.GetEvents("test-project", common.EventFilter{
@@ -1976,7 +2060,7 @@ func sendAndVerifyFinishedEvent(t *testing.T, sc *shipyardController, finishedEv
 	}, common.TriggeredEvent)
 
 	triggeredID := triggeredEvents[0].ID
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
+	done := fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(nextEventType), nextStage, nil)
 	if done {
 		return "", true
 	}
@@ -2105,18 +2189,21 @@ func sendAndVerifyStartedEvent(t *testing.T, sc *shipyardController, taskName st
 	return fake.ShouldContainEvent(t, startedEvents, keptnv2.GetStartedEventType(taskName), stage, nil)
 }
 
-func getTestShipyardController() *shipyardController {
+func getTestShipyardController(shipyardContent string) *shipyardController {
 	triggeredEventsCollection := []models.Event{}
 	startedEventsCollection := []models.Event{}
 	finishedEventsCollection := []models.Event{}
 	taskSequenceCollection := []models.TaskSequenceEvent{}
 
+	if shipyardContent == "" {
+		shipyardContent = testShipyardFile
+	}
 	em := &shipyardController{
 		projectRepo: &db_mock.ProjectRepoMock{
 			GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
 				return &models.ExpandedProject{
 					ProjectName: "test-project",
-					Shipyard:    testShipyardFile,
+					Shipyard:    shipyardContent,
 				}, nil
 			},
 		},
