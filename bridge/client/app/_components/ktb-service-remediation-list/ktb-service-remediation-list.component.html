@@ -1,4 +1,4 @@
-<div fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="start center">
+<div fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="space-between center">
   <h2>Open remediations</h2>
   <button dt-button variant="secondary" (click)="showDialog()">
     <dt-icon name="services"></dt-icon>
@@ -22,7 +22,7 @@
 
   <ng-container dtColumnDef="remediation" dtColumnProportion="4">
     <dt-cell *dtCellDef="let row">
-      <span>Remediation for: <span class="bold" [textContent]="row.problemTitle"></span> {{row.state === 'triggered' ? 'triggered' : row.isFaulty(this.stage.stageName) ? 'failed' : 'succeeded' }}</span>
+      <span>Remediation for: <span class="bold" [textContent]="row.problemTitle"></span></span>
     </dt-cell>
   </ng-container>
 

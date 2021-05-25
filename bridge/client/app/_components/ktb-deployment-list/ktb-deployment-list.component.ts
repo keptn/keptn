@@ -113,6 +113,13 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     }
   }
 
+  public selectStage(deployment: Deployment, stageName: string, $event) {
+    $event.stopPropagation();
+    this.selectDeployment(deployment, false);
+    this.router.navigate(['/', 'project', this.projectName, 'service', this.service.serviceName, 'context', deployment.shkeptncontext, 'stage', stageName]);
+    this._changeDetectorRef.markForCheck();
+  }
+
   loadVersions(): void {
     if (this.pageSize === this.minPageSize) {
       if (this.service.allDeploymentsLoaded) {

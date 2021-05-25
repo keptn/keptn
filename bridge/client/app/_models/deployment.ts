@@ -20,7 +20,7 @@ export class Deployment {
     return this.stages.some(s => s.stageName === stage);
   }
 
-  public hasRemediation(): boolean {
-    return this.stages.some(s => s.remediations.length !== 0);
+  public hasRemediation(stageName?: string): boolean {
+    return stageName ? this.getStage(stageName)?.remediations.length > 0 : this.stages.some(s => s.remediations.length !== 0);
   }
 }
