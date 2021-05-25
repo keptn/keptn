@@ -70,3 +70,13 @@ livenessProbe:
   initialDelaySeconds: 45
   periodSeconds: 5
 {{- end }}
+
+{{- define "control-plane.readinessProbe" -}}
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 10999
+  initialDelaySeconds: 45
+  periodSeconds: 5
+{{- end }}
+

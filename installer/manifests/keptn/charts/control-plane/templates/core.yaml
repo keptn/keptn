@@ -79,6 +79,7 @@ spec:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -115,6 +116,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -300,6 +302,7 @@ spec:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIGURATION_SERVICE
@@ -343,6 +346,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -442,6 +446,7 @@ spec:
         - name: secret-service
           image: {{ .Values.secretService.image.repository }}:{{ .Values.secretService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAMESPACE
@@ -563,6 +568,7 @@ spec:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
@@ -660,6 +666,7 @@ spec:
         - name: statistics-service
           image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: AGGREGATION_INTERVAL_SECONDS
@@ -697,6 +704,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -773,6 +781,7 @@ spec:
         - name: approval-service
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -796,6 +805,7 @@ spec:
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
