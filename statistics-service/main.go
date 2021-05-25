@@ -1,6 +1,7 @@
 package main
 
 import (
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -43,5 +44,6 @@ func main() {
 
 	router.Static("/swagger-ui", "./swagger-ui")
 
+	go keptnapi.RunHealthEndpoint("10999")
 	router.Run()
 }

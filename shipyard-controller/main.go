@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -124,6 +125,8 @@ func main() {
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
+
+	go keptnapi.RunHealthEndpoint("10999")
 	engine.Run()
 }
 

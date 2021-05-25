@@ -72,8 +72,8 @@ spec:
           allowPrivilegeEscalation: false
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-        {{- include "control-plane.livenessProbe" . | nindent 8 }}
-        {{- include "control-plane.readinessProbe" . | nindent 8 }}
+        {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
+        {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 8080

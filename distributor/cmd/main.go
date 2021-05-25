@@ -94,7 +94,7 @@ func main() {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 	os.Exit(_main(env))
 }
 

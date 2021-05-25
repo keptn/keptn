@@ -67,7 +67,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: 10999
-  initialDelaySeconds: 0
+  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
   periodSeconds: 5
 {{- end }}
 
@@ -76,7 +76,24 @@ readinessProbe:
   httpGet:
     path: /health
     port: 10999
-  initialDelaySeconds: 0
+  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
   periodSeconds: 5
 {{- end }}
 
+{{- define "control-plane.dist.livenessProbe" -}}
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 10998
+  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
+  periodSeconds: 5
+{{- end }}
+
+{{- define "control-plane.dist.readinessProbe" -}}
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 10998
+  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
+  periodSeconds: 5
+{{- end }}
