@@ -72,6 +72,7 @@ func TestPrintEventWatcher(t *testing.T) {
     "data": null,
     "id": "ID1",
     "source": null,
+    "time": "0001-01-01T00:00:00Z",
     "type": null
 }`
 

@@ -10,7 +10,7 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210525095044-7ff1dfe983be
+	github.com/keptn/go-utils v0.8.5-0.20210525115156-b26a133bc0de
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nats-io/nats-server/v2 v2.2.4
 	github.com/stretchr/testify v1.7.0
