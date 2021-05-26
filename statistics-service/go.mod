@@ -10,13 +10,18 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
 	github.com/go-test/deep v1.0.7
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.4
+	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
+	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
+	github.com/onsi/ginkgo v1.10.2 // indirect
+	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.6.7
 	github.com/ugorji/go v1.1.8 // indirect
 	go.mongodb.org/mongo-driver v1.4.6
+	go.opencensus.io v0.22.0 // indirect
 	golang.org/x/tools v0.0.0-20200915201639-f4cefd1cb5ba // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )
