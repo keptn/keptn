@@ -88,7 +88,7 @@ func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformPara
 	if params.Name != "" {
 		searchOptions["name"] = params.Name
 	}
-	// filtering per project is not supported yet - currently we have the same uniform for all projects within Keptn
+	// TODO: filter by project using $elemMatch on integration.Subscriptions
 	return searchOptions
 }
 

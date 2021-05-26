@@ -25,17 +25,46 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 	}
 
+	integration2 := models.Integration{
+		ID:   "my-integration-id-2",
+		Name: "my-integration2",
+		MetaData: models.MetaData{
+			DeploymentName: "my-integration2",
+		},
+		Subscriptions: []models.Subscription{
+			{
+				Name:   "sh.keptn.event.deployment.triggered",
+				Status: "active",
+				Filter: models.SubscriptionFilter{
+					Project: "my-project",
+				},
+			},
+		},
+	}
+
 	mdbrepo := MongoDBUniformRepo{
 		MongoDBConnection{},
 	}
 
-	// insert a new integration entity
+	// insert our integration entities
 	err := mdbrepo.CreateOrUpdateUniformIntegration(integration1)
-
 	require.Nil(t, err)
 
-	// check if we can query the newly created entity
-	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformParams{
+	err = mdbrepo.CreateOrUpdateUniformIntegration(integration2)
+	require.Nil(t, err)
+
+	// check if we can query the newly created entities
+
+	// first, without any filter
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformParams{})
+
+	require.Nil(t, err)
+	require.Len(t, integrations, 2)
+	require.EqualValues(t, integration1, integrations[0])
+	require.EqualValues(t, integration2, integrations[1])
+
+	// now, let's filter by id
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformParams{
 		ID: "my-integration-id-1",
 	})
 
@@ -43,7 +72,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Len(t, integrations, 1)
 	require.EqualValues(t, integration1, integrations[0])
 
-	// update the entity
+	// update the first entity
 	integration1.MetaData.Hostname = "my-host-name"
 
 	err = mdbrepo.CreateOrUpdateUniformIntegration(integration1)
@@ -51,7 +80,6 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	// retrieve it again
-	// check if we can query the newly created entity
 	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformParams{
 		ID: "my-integration-id-1",
 	})

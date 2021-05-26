@@ -7,9 +7,11 @@ import (
 )
 
 type GetUniformParams struct {
-	Name   string             `json:"name"`
-	ID     string             `json:"id"`
-	Filter SubscriptionFilter `json:"filter"`
+	Name    string `form:"name" json:"name"`
+	ID      string `form:"id" json:"id"`
+	Project string `form:"project" json:"project"`
+	Stage   string `form:"stage" json:"stage"`
+	Service string `form:"service" json:"service"`
 }
 
 // TODO: delete this and use structs defined in go-utils
