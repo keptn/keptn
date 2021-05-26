@@ -61,6 +61,13 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
 
+	go eh.processGetSliFinishedEvent(shkeptncontext, e)
+
+	return nil
+}
+
+func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
+
 	triggeredEvents, err2 := eh.EventStore.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
 		Stage:        e.Stage,
