@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
 	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/stretchr/testify/assert"
@@ -3054,8 +3056,19 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 
 			sender := tt.fields.KeptnHandler.EventSender.(*keptnfake.EventSender)
 
-			assert.Equal(t, len(sender.SentEvents), len(tt.wantEvents))
+			// wait for all events to be sent
+			require.Eventually(t,
+				func() bool {
+					if len(sender.SentEvents) != len(tt.wantEvents) {
+						return false
+					}
 
+					return true
+				},
+				time.Second * 20, time.Second * 1,
+			)
+
+			// evaluate which events have been sent
 			for index, event := range sender.SentEvents {
 				evaluationFinishedEvent := &keptnv2.EvaluationFinishedEventData{}
 				if err := event.DataAs(evaluationFinishedEvent); err != nil {

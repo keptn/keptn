@@ -97,7 +97,7 @@ export class Project {
         }
       }
     });
-    return deployments.sort((a, b) => a.version && b.version && semver.gt(a.version, b.version) ? -1 : 1);
+    return deployments.sort((a, b) => a.version && b.version && semver.valid(a.version) != null && semver.valid(b.version) != null && semver.gt(a.version, b.version, true) ? -1 : 1);
   }
 
   public getLatestDeployment(serviceName: string): Service {
