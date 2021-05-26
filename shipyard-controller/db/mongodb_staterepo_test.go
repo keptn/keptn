@@ -60,10 +60,15 @@ func shutDownLocalMongoDB(pool *dockertest.Pool, resource *dockertest.Resource) 
 	}
 }
 
+func TestMain(m *testing.M) {
+	pool, dbResource := setupLocalMongoDB()
+	code := m.Run()
+	shutDownLocalMongoDB(pool, dbResource)
+	os.Exit(code)
+}
+
 func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	fmt.Println(timeutils.GetKeptnTimeStamp(time.Now()))
-	pool, dbResource := setupLocalMongoDB()
-	defer shutDownLocalMongoDB(pool, dbResource)
 
 	mdbrepo := &db.MongoDBStateRepo{
 		DbConnection: db.MongoDBConnection{},
