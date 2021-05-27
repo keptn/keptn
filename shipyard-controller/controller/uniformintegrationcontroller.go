@@ -14,7 +14,7 @@ func NewUniformIntegrationController(uniformIntegrationHandler handler.IUniformI
 }
 
 func (controller UniformIntegrationController) Inject(apiGroup *gin.RouterGroup) {
-	apiGroup.POST("/uniform/registration", controller.UniformIntegrationHandler.Register)
 	apiGroup.GET("/uniform/registration", controller.UniformIntegrationHandler.GetRegistrations)
+	apiGroup.POST("/uniform/registration", controller.UniformIntegrationHandler.Register)
 	apiGroup.DELETE("/uniform/registration/:id", controller.UniformIntegrationHandler.Unregister)
 }

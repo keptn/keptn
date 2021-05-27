@@ -14,6 +14,11 @@ type GetUniformIntegrationParams struct {
 	Service string `form:"service" json:"service"`
 }
 
+type RegisterResponse struct {
+	ID string `json:"id"`
+}
+type UnregisterResponse struct{}
+
 // TODO: delete this and use structs defined in go-utils
 
 type Integration struct {

@@ -34,5 +34,5 @@ func (uim *UniformIntegrationManager) Unregister(id string) error {
 }
 
 func (uim *UniformIntegrationManager) GetRegistrations(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
-	return uim.GetRegistrations(params)
+	return uim.repo.GetUniformIntegrations(params)
 }

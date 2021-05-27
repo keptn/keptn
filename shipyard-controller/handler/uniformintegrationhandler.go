@@ -60,7 +60,9 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, &models.RegisterResponse{
+		ID: integration.ID,
+	})
 }
 
 // DeleteRegistration Unregisters a uniform integration
@@ -82,7 +84,7 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, &models.UnregisterResponse{})
 }
 
 // GetRegistrations Retrieves uniform integrations matching the provided filter

@@ -27,17 +27,20 @@ func Test_UniformRegistration(t *testing.T) {
 
 	// register the integration at the shipyard controller
 	resp, err := ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
-
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
+	registrationResponse := &models.RegisterResponse{}
+	err = resp.ToJSON(registrationResponse)
+	require.Nil(t, err)
+
 	// retrieve the integration
-	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=my-uniform-id")
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
 
 	integrations := []models.Integration{}
 	require.Nil(t, err)
 
-	err = resp.ToJSON(integrations)
+	err = resp.ToJSON(&integrations)
 	require.Nil(t, err)
 	require.NotEmpty(t, integrations)
 	require.Len(t, integrations, 1)
