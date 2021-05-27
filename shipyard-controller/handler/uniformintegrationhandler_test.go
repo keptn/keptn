@@ -81,9 +81,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		MetaData: models.MetaData{
 			DistributorVersion: "0.8.3",
 		},
-		Subscriptions: []models.Subscription{
-			{
-				Name: "sh.keptn.event.test.triggered",
+		Subscription: models.Subscription{
+			Topics: []string{
+				"sh.keptn.event.test.triggered",
 			},
 		},
 	}

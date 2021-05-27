@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,7 +29,21 @@ func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
 	}
 	var mongoClient *mongo.Client
 	// pulls an image, creates a container based on it and runs it
-	resource, err := pool.Run("docker.io/centos/mongodb-36-centos7", "1", []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password"})
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "docker.io/centos/mongodb-36-centos7",
+		Tag:        "1",
+		Env:        []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password"},
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"27017/tcp": {{HostPort: "27017"}}, // this makes the container reachable via localhost:27017 instead of always using a random port
+		},
+	}, func(config *docker.HostConfig) {
+		// set AutoRemove to true so that stopped container goes away by itself
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{
+			Name: "no",
+		}
+	})
+
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}

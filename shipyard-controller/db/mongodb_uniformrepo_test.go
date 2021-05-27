@@ -14,13 +14,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		MetaData: models.MetaData{
 			DeploymentName: "my-integration",
 		},
-		Subscriptions: []models.Subscription{
-			{
-				Name:   "sh.keptn.event.test.triggered",
-				Status: "active",
-				Filter: models.SubscriptionFilter{
-					Project: "my-project",
-				},
+		Subscription: models.Subscription{
+			Topics: []string{"sh.keptn.event.test.triggered"},
+			Status: "active",
+			Filter: models.SubscriptionFilter{
+				Project: "my-project",
 			},
 		},
 	}
@@ -31,13 +29,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		MetaData: models.MetaData{
 			DeploymentName: "my-integration2",
 		},
-		Subscriptions: []models.Subscription{
-			{
-				Name:   "sh.keptn.event.deployment.triggered",
-				Status: "active",
-				Filter: models.SubscriptionFilter{
-					Project: "my-project-2",
-				},
+		Subscription: models.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: models.SubscriptionFilter{
+				Project: "my-project-2",
 			},
 		},
 	}

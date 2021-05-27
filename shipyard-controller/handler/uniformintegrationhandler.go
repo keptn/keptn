@@ -28,7 +28,7 @@ func NewUniformIntegrationHandler(im IUniformIntegrationManager) *UniformIntegra
 // @Accept json
 // @Produce json
 // @Param integration body models.Integration true "Integration"
-// @Success 200 {string} "ok"
+// @Success 200
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration [post]
@@ -55,7 +55,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "id"
-// @Success 200 {string} "ok"
+// @Success 200
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration/{id} [delete]
@@ -77,7 +77,7 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id query string false "id"
-// @Success 200 {string} "ok"
+// @Success 200 {object} []models.Integration "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration [get]

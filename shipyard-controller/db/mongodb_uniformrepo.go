@@ -88,21 +88,17 @@ func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformInte
 	if params.Name != "" {
 		searchOptions["name"] = params.Name
 	}
-	if params.Project != "" || params.Stage != "" || params.Service != "" {
-		elemMatch := bson.M{}
-		if params.Project != "" {
-			elemMatch["filter.project"] = params.Project
-		}
-		if params.Stage != "" {
-			elemMatch["filter.stage"] = params.Stage
-		}
-		if params.Service != "" {
-			elemMatch["filter.service"] = params.Service
-		}
-		searchOptions["subscriptions"] = bson.M{
-			"$elemMatch": elemMatch,
-		}
+
+	if params.Project != "" {
+		searchOptions["subscription.filter.project"] = params.Project
 	}
+	if params.Stage != "" {
+		searchOptions["subscription.filter.stage"] = params.Stage
+	}
+	if params.Service != "" {
+		searchOptions["subscription.filter.service"] = params.Service
+	}
+
 	return searchOptions
 }
 

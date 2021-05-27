@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
+
+var ErrSubscriptionMissing = errors.New("integration must have at least one subscription")
 
 //go:generate moq --skip-ensure -pkg fake -out ./fake/uniformintegrationmanager.go . IUniformIntegrationManager
 type IUniformIntegrationManager interface {
@@ -23,6 +26,21 @@ func NewUniformIntegrationManager(repo db.UniformRepo) *UniformIntegrationManage
 }
 
 func (uim *UniformIntegrationManager) Register(integration models.Integration) error {
+	integrationID := models.IntegrationID{
+		Name:      integration.Name,
+		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
+		Project:   integration.Subscription.Filter.Project,
+		Stage:     integration.Subscription.Filter.Stage,
+		Service:   integration.Subscription.Filter.Service,
+	}
+
+	hash, err := integrationID.Hash()
+	if err != nil {
+		return err
+	}
+
+	integration.ID = hash
+
 	return uim.repo.CreateOrUpdateUniformIntegration(integration)
 }
 
