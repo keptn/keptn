@@ -7,7 +7,7 @@ import (
 	"github.com/keptn/keptn/cli/pkg/common"
 	"github.com/keptn/keptn/cli/pkg/config"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"log"
 	"net/url"
 	"os"

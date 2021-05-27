@@ -12,7 +12,7 @@ import (
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type serviceMetadata struct {

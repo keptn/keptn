@@ -127,7 +127,7 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	}
 
 	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-		return []models.Event{{ID: *filter.ID, Specversion: "1.0"}}, nil
+		return []models.Event{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source")}}, nil
 	}
 
 	dispatcher := EventDispatcher{
@@ -207,7 +207,7 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		if *filter.ID == event2.ID {
 			return nil, fmt.Errorf("error")
 		}
-		return []models.Event{{ID: *filter.ID, Specversion: "1.0"}}, nil
+		return []models.Event{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source")}}, nil
 	}
 
 	dispatcher := EventDispatcher{

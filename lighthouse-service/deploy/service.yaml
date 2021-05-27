@@ -53,7 +53,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
         - name: distributor
-          image: keptn/distributor:0.8.0
+          image: keptn/distributor:0.8.3
           ports:
             - containerPort: 8080
           resources:

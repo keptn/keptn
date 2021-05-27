@@ -27,11 +27,6 @@ type configureBridgeAPIPayload struct {
 	Password string `json:"password"`
 }
 
-type exposeBridgeAPIErrorResponse struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
 var configureBridgeParams *configureBridgeCmdParams
 
 var bridgeCmd = &cobra.Command{
@@ -57,17 +52,15 @@ var bridgeCmd = &cobra.Command{
 
 func configureBridge(endpoint string, apiToken string, configureBridgeParams *configureBridgeCmdParams) error {
 	if configureBridgeParams.Read != nil && *configureBridgeParams.Read {
-		creds, err := retrieveBridgeCredentials(endpoint, apiToken)
-		if err != nil {
-			fmt.Println("Could not retrieve bridge credentials: " + err.Error())
-			return err
-		}
-
 		bridgeEndpoint := getBridgeURLFromAPIURL(endpoint)
-
 		if bridgeEndpoint != "" {
 			fmt.Println("Your Keptn Bridge is available under: " + bridgeEndpoint)
 		}
+		creds, err := retrieveBridgeCredentials(endpoint, apiToken)
+		if err != nil {
+			return err
+		}
+
 		fmt.Println("\nThese are your credentials")
 		fmt.Println("user: " + creds.User)
 		fmt.Println("password: " + creds.Password)
@@ -87,10 +80,13 @@ func getBridgeURLFromAPIURL(endpoint string) string {
 func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBridgeAPIPayload, error) {
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
 		},
 	}
 	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("x-token", apiToken)
 	req.Header.Add("content-type", "application/json")
 
@@ -101,16 +97,17 @@ func retrieveBridgeCredentials(endpoint string, apiToken string) (*configureBrid
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, errors.New("Received not successful response: " + string(body))
 	}
 
 	res := &configureBridgeAPIPayload{}
-	json.Unmarshal(body, res)
-
-	if err != nil {
-		return nil, errors.New("Could not decode bridge credentials: " + err.Error())
+	if err := json.Unmarshal(body, res); err != nil {
+		return nil, err
 	}
 	return res, nil
 }
@@ -128,11 +125,14 @@ func configureBridgeCredentials(endpoint string, apiToken string, configureBridg
 	}
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
 		},
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader([]byte(payload)))
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
 	req.Header.Add("x-token", apiToken)
 	req.Header.Add("content-type", "application/json")
 

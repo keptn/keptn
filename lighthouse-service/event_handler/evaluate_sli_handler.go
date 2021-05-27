@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
 	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v3"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -60,6 +60,13 @@ func (eh *EvaluateSLIHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Error(msg)
 		return sendErroredFinishedEventWithMessage(shkeptncontext, "", msg, "", eh.KeptnHandler, e)
 	}
+
+	go eh.processGetSliFinishedEvent(shkeptncontext, e)
+
+	return nil
+}
+
+func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, e *keptnv2.GetSLIFinishedEventData) error {
 
 	triggeredEvents, err2 := eh.EventStore.GetEvents(&keptnapi.EventFilter{
 		Project:      e.Project,
