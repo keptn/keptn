@@ -12,7 +12,7 @@ import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} fr
 import {isObject} from '@dynatrace/barista-components/core';
 
 import {Observable, Subject, Subscription, timer} from 'rxjs';
-import {filter, take, takeUntil} from 'rxjs/operators';
+import {filter, take, takeUntil, tap} from 'rxjs/operators';
 
 import * as moment from 'moment';
 
@@ -71,10 +71,14 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   private sequenceFilters = {};
   private project: Project;
 
+  private unfinishedRoots: Root[];
+
   private _tracesTimerInterval = 10;
   private _tracesTimer: Subscription = Subscription.EMPTY;
+  private _rootsTimer: Subscription = Subscription.EMPTY;
 
   public project$: Observable<Project>;
+  public roots$: Observable<Root[]>;
   public currentSequence: Root;
   public selectedStage: String;
 
@@ -91,6 +95,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
+
         this.project$ = this.dataService.getProject(params.projectName);
         this.project$
           .pipe(
@@ -104,31 +109,45 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
             this.project = project;
             this.updateFilterDataSource(project);
 
+            this.dataService.loadRoots(project);
+
+            this._rootsTimer = timer(0, this._tracesTimerInterval*1000)
+              .pipe(takeUntil(this.unsubscribe$))
+              .subscribe(() => {
+                // This triggers the subscription for roots$
+                this.unfinishedRoots?.forEach(root => {
+                  this.loadTraces(root);
+                })
+              });
+
             this._changeDetectorRef.markForCheck();
           });
 
-        this.dataService.roots
+        this.roots$ = this.dataService.roots
           .pipe(
             takeUntil(this.unsubscribe$),
-            filter(roots => !!roots)
-          )
-          .subscribe(roots => {
-            if (!this.currentSequence && roots && params.shkeptncontext) {
-              const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
-              let stage = params.eventId ? root.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
-              let eventId = params.eventId;
-              if (root) {
-                this.selectSequence({ root, stage, eventId });
-              } else {
-                this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+            filter(roots => !!roots),
+            tap(roots => {
+              if (!this.currentSequence && roots && params.shkeptncontext) {
+                const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
+                let stage = params.eventId ? root?.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
+                let eventId = params.eventId;
+                if (root) {
+                  this.selectSequence({ root, stage, eventId });
+                } else {
+                  this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+                }
               }
-            }
-            if (roots) {
-              this.updateFilterSequence(roots);
-              this._filterDataSource.data = this.filterFieldData;
-            }
-            this._changeDetectorRef.markForCheck();
-          });
+              if (roots) {
+                this.updateFilterSequence(roots);
+                this._filterDataSource.data = this.filterFieldData;
+                // Set unfinished roots so that the traces for updates can be loaded
+                // Also ignore currently selected root, as this is getting already polled
+                this.unfinishedRoots = roots.filter(root => !!root && root.traces.some(r => r.finished !== undefined && !r.finished)).filter(root => this.currentSequence !== root);
+              }
+              this._changeDetectorRef.markForCheck();
+            })
+          );
       });
   }
 
@@ -233,5 +252,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this._tracesTimer.unsubscribe();
+    this._rootsTimer.unsubscribe();
   }
 }
