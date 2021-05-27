@@ -191,8 +191,6 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 }
 
 func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
-	pool, dbResource := setupLocalMongoDB()
-	defer shutDownLocalMongoDB(pool, dbResource)
 
 	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
@@ -206,7 +204,16 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 		Stages:         nil,
 	}
 
-	err := mdbrepo.CreateSequenceState(state)
+	// first, delete any entries that might have been inserted previously
+	err := mdbrepo.DeleteSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: "my-project",
+		},
+		Shkeptncontext: "my-context",
+	})
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateSequenceState(state)
 	require.Nil(t, err)
 
 	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
@@ -265,8 +272,6 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 }
 
 func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
-	pool, dbResource := setupLocalMongoDB()
-	defer shutDownLocalMongoDB(pool, dbResource)
 
 	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
