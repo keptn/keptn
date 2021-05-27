@@ -40,6 +40,22 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		return
 	}
 
+	integrationID := models.IntegrationID{
+		Name:      integration.Name,
+		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
+		Project:   integration.Subscription.Filter.Project,
+		Stage:     integration.Subscription.Filter.Stage,
+		Service:   integration.Subscription.Filter.Service,
+	}
+
+	hash, err := integrationID.Hash()
+	if err != nil {
+		SetBadRequestErrorResponse(err, c)
+		return
+	}
+
+	integration.ID = hash
+
 	if err := rh.integrationManager.Register(*integration); err != nil {
 		SetInternalServerErrorResponse(err, c)
 		return

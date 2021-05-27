@@ -75,7 +75,24 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 
 func TestUniformIntegrationHandler_Register(t *testing.T) {
 
-	myIntegration := &models.Integration{
+	myValidIntegration := &models.Integration{
+		ID:   "my-id",
+		Name: "my-name",
+		MetaData: models.MetaData{
+			DistributorVersion: "0.8.3",
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscription: models.Subscription{
+			Topics: []string{
+				"sh.keptn.event.test.triggered",
+			},
+		},
+	}
+	validPayload, _ := json.Marshal(myValidIntegration)
+
+	myInvalidIntegration := &models.Integration{
 		ID:   "my-id",
 		Name: "my-name",
 		MetaData: models.MetaData{
@@ -87,8 +104,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			},
 		},
 	}
-
-	payload, _ := json.Marshal(myIntegration)
+	invalidPayload, _ := json.Marshal(myInvalidIntegration)
 
 	type fields struct {
 		integrationManager *fake.IUniformIntegrationManagerMock
@@ -109,9 +125,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 					},
 				},
 			},
-			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(payload)),
+			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
 			wantStatus:      http.StatusOK,
-			wantIntegration: myIntegration,
+			wantIntegration: myValidIntegration,
 		},
 		{
 			name: "create registration fails",
@@ -122,11 +138,11 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(payload)),
+			request:    httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name: "invalid payload",
+			name: "invalid validPayload",
 			fields: fields{
 				integrationManager: &fake.IUniformIntegrationManagerMock{
 					RegisterFunc: func(integration models.Integration) error {
@@ -135,6 +151,18 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				},
 			},
 			request:    httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer([]byte("invalid"))),
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "invalid validPayload - kubernetes namespace missing",
+			fields: fields{
+				integrationManager: &fake.IUniformIntegrationManagerMock{
+					RegisterFunc: func(integration models.Integration) error {
+						return errors.New("oops")
+					},
+				},
+			},
+			request:    httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(invalidPayload)),
 			wantStatus: http.StatusBadRequest,
 		},
 	}
@@ -152,7 +180,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 
 			if tt.wantIntegration != nil {
 				require.NotEmpty(t, tt.fields.integrationManager.RegisterCalls())
-				require.EqualValues(t, *tt.wantIntegration, tt.fields.integrationManager.RegisterCalls()[0].Integration)
+				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.RegisterCalls()[0].Integration.Name)
+				require.Equal(t, tt.wantIntegration.MetaData, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData)
+				require.Equal(t, tt.wantIntegration.Subscription, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscription)
 			}
 		})
 	}

@@ -16,6 +16,9 @@ func Test_UniformRegistration(t *testing.T) {
 			DeploymentName:     "my-uniform-service",
 			DistributorVersion: "0.8.3",
 			Status:             "active",
+			KubernetesMetaData: models.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
 		},
 		Subscription: models.Subscription{
 			Topics: []string{keptnv2.GetTriggeredEventType(keptnv2.TestTaskName)},
