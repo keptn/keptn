@@ -44,6 +44,6 @@ func main() {
 
 	router.Static("/swagger-ui", "./swagger-ui")
 
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 	router.Run()
 }

@@ -66,7 +66,7 @@ Create the name of the service account to use
 livenessProbe:
   httpGet:
     path: /health
-    port: 10999
+    port: {{.port | default 10998}}
   initialDelaySeconds: {{.initialDelaySeconds | default 0}}
   periodSeconds: 5
 {{- end }}
@@ -75,8 +75,8 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /health
-    port: 10999
-  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
+    port: {{.port | default 10998}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
   periodSeconds: 5
 {{- end }}
 
@@ -84,7 +84,7 @@ readinessProbe:
 livenessProbe:
   httpGet:
     path: /health
-    port: 10998
+    port: {{.port | default 10999}}
   initialDelaySeconds: {{.initialDelaySeconds | default 0}}
   periodSeconds: 5
 {{- end }}
@@ -93,7 +93,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /health
-    port: 10998
-  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
+    port: {{.port | default 10999}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
   periodSeconds: 5
 {{- end }}

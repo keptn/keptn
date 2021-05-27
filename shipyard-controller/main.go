@@ -88,6 +88,8 @@ func main() {
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
+	apiHealth := engine.Group("")
+
 	projectService := handler.NewProjectHandler(projectManager, eventSender)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
@@ -116,6 +118,10 @@ func main() {
 	stateController := controller.NewStateController(stateHandler)
 	stateController.Inject(apiV1)
 
+	healthHandler := handler.NewHealthHandler()
+	healthController := controller.NewHealthController(healthHandler)
+	healthController.Inject(apiHealth)
+
 	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(&db.MongoDBStateRepo{})
 	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
@@ -126,7 +132,7 @@ func main() {
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 	engine.Run()
 }
 

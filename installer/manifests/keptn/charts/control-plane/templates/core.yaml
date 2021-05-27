@@ -301,8 +301,8 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          {{- include "control-plane.livenessProbe" (dict "port" 8080) | nindent 10 }}
+          {{- include "control-plane.readinessProbe" (dict "port" 8080) | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIGURATION_SERVICE

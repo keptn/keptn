@@ -49,7 +49,7 @@ func main() {
 	secretController := controller.NewSecretController(handler.NewSecretHandler(secretsBackend))
 	secretController.Inject(apiV1)
 
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	err := engine.Run()
