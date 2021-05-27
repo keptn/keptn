@@ -70,9 +70,7 @@ func TestMain(m *testing.M) {
 func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	fmt.Println(timeutils.GetKeptnTimeStamp(time.Now()))
 
-	mdbrepo := &db.MongoDBStateRepo{
-		DbConnection: db.MongoDBConnection{},
-	}
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	state := models.SequenceState{
 		Name:           "my-sequence",
@@ -196,9 +194,7 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	pool, dbResource := setupLocalMongoDB()
 	defer shutDownLocalMongoDB(pool, dbResource)
 
-	mdbrepo := &db.MongoDBStateRepo{
-		DbConnection: db.MongoDBConnection{},
-	}
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	state := models.SequenceState{
 		Name:           "my-sequence",
@@ -272,9 +268,7 @@ func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
 	pool, dbResource := setupLocalMongoDB()
 	defer shutDownLocalMongoDB(pool, dbResource)
 
-	mdbrepo := &db.MongoDBStateRepo{
-		DbConnection: db.MongoDBConnection{},
-	}
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	// create a state without a project
 	invalidState := models.SequenceState{

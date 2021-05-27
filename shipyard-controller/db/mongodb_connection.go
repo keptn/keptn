@@ -12,9 +12,18 @@ import (
 
 var mutex = &sync.Mutex{}
 
+var mongoDBConnectionInstance *MongoDBConnection
+
 // MongoDBConnection takes care of establishing a connection to the mongodb
 type MongoDBConnection struct {
 	Client *mongo.Client
+}
+
+func GetMongoDBConnectionInstance() *MongoDBConnection {
+	if mongoDBConnectionInstance == nil {
+		mongoDBConnectionInstance = &MongoDBConnection{}
+	}
+	return mongoDBConnectionInstance
 }
 
 func GetMongoDBConnectionString() string {

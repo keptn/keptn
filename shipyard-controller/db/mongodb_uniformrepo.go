@@ -13,14 +13,14 @@ import (
 const uniformCollectionName = "keptnUniform"
 
 type MongoDBUniformRepo struct {
-	DbConnection MongoDBConnection
+	DbConnection *MongoDBConnection
 }
 
-func NewMongoDBUniformRepo(dbConnection MongoDBConnection) MongoDBUniformRepo {
-	return MongoDBUniformRepo{DbConnection: dbConnection}
+func NewMongoDBUniformRepo(dbConnection *MongoDBConnection) *MongoDBUniformRepo {
+	return &MongoDBUniformRepo{DbConnection: dbConnection}
 }
 
-func (mdbrepo *MongoDBUniformRepo) GetUniformIntegrations(params models.GetUniformParams) ([]models.Integration, error) {
+func (mdbrepo *MongoDBUniformRepo) GetUniformIntegrations(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 	return nil
 }
 
-func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformParams) bson.M {
+func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformIntegrationParams) bson.M {
 	searchOptions := bson.M{}
 
 	if params.ID != "" {
@@ -88,7 +88,21 @@ func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformPara
 	if params.Name != "" {
 		searchOptions["name"] = params.Name
 	}
-	// TODO: filter by project using $elemMatch on integration.Subscriptions
+	if params.Project != "" || params.Stage != "" || params.Service != "" {
+		elemMatch := bson.M{}
+		if params.Project != "" {
+			elemMatch["filter.project"] = params.Project
+		}
+		if params.Stage != "" {
+			elemMatch["filter.stage"] = params.Stage
+		}
+		if params.Service != "" {
+			elemMatch["filter.service"] = params.Service
+		}
+		searchOptions["subscriptions"] = bson.M{
+			"$elemMatch": elemMatch,
+		}
+	}
 	return searchOptions
 }
 

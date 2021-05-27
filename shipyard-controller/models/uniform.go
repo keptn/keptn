@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-type GetUniformParams struct {
+type GetUniformIntegrationParams struct {
 	Name    string `form:"name" json:"name"`
 	ID      string `form:"id" json:"id"`
 	Project string `form:"project" json:"project"`
