@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/keptn/keptn/cli/pkg/common"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +19,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keptn/keptn/cli/pkg/exechelper"
+	"github.com/keptn/keptn/cli/pkg/common"
+
 	"github.com/keptn/keptn/cli/pkg/platform"
 
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -220,7 +220,7 @@ keptn generate support-archive --dir=/some/directory`,
 }
 
 func isConfiguredIngressGatewayAvailable(keptnNamespace string) *errorableBoolResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm -n "+keptnNamespace+" ingress-config -ojsonpath='{.data.ingress_gateway}'")
+	res, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "cm", "-n", keptnNamespace, "ingress-config", "-o", "jsonpath='{.data.ingress_gateway}'"})
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -241,7 +241,7 @@ func isConfiguredIngressGatewayAvailable(keptnNamespace string) *errorableBoolRe
 		gatewayNamespace = "keptn"
 	}
 
-	res, err = exechelper.ExecuteCommand("kubectl", "get gateway -n "+gatewayNamespace+" "+gatewayName)
+	res, err = keptnutils.ExecuteCommand("kubectl", []string{"get", "gateway", "-n", gatewayNamespace, gatewayName})
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -249,17 +249,17 @@ func isConfiguredIngressGatewayAvailable(keptnNamespace string) *errorableBoolRe
 }
 
 func writeIstioIngressGateways(dir string) {
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get gateway --all-namespaces -oyaml")),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "gateway", "--all-namespaces", "-o", "yaml"})),
 		filepath.Join(dir, "ingress-gateways.txt"))
 }
 
 func writeClusterNodes(dir string) {
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get nodes -owide")),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "nodes", "-o", "wide"})),
 		filepath.Join(dir, "nodes.txt"))
 }
 
 func writeLoadBalancerServices(dir string) {
-	res, err := exechelper.ExecuteCommand("kubectl", "get svc --all-namespaces -owide")
+	res, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "svc", "--all-namespaces", "-o", "wide"})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err), "loadbalancer-services.txt")
 	}
@@ -280,8 +280,8 @@ func writeLoadBalancerServices(dir string) {
 
 func isIstioSystemInstalled() *errorableBoolResult {
 	fmt.Println("Checking availability of istio-system namespace")
-	_, err := exechelper.ExecuteCommand("kubectl",
-		`get namespace istio-system`)
+	_, err := keptnutils.ExecuteCommand("kubectl",
+		[]string{"get", "namespace", "istio-system"})
 	if err != nil {
 		return newErrorableBoolResult(false, err)
 	}
@@ -395,18 +395,18 @@ func getKubeContextPointsToKeptnCluster(keptnNamespace string) *errorableBoolRes
 
 func getKubectlVersion() *errorableStringResult {
 	fmt.Println("Retrieving kubectl version")
-	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "version"))
+	return newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"version"}))
 }
 
 func getIngressHostnameSuffix(keptnNamespace string) *errorableStringResult {
 	fmt.Println("Retrieving Keptn domain")
-	return newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
-		keptnNamespace+" -ojsonpath='{.data.ingress_hostname_suffix}'"))
+	return newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+		keptnNamespace, "-o", "jsonpath='{.data.ingress_hostname_suffix}'"}))
 }
 
 func getIngressPort(keptnNamespace string) *errorableStringResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
-		keptnNamespace+" -ojsonpath='{.data.ingress_port}'")
+	res, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+		keptnNamespace, "-o", "jsonpath='{.data.ingress_port}'"})
 	if err != nil {
 		return newErrorableStringResult("", err)
 	}
@@ -417,8 +417,8 @@ func getIngressPort(keptnNamespace string) *errorableStringResult {
 }
 
 func getIngressProtocol(keptnNamespace string) *errorableStringResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
-		keptnNamespace+" -ojsonpath='{.data.ingress_protocol}'")
+	res, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+		keptnNamespace, "-o", "jsonpath='{.data.ingress_protocol}'"})
 	if err != nil {
 		return newErrorableStringResult("", err)
 	}
@@ -429,8 +429,8 @@ func getIngressProtocol(keptnNamespace string) *errorableStringResult {
 }
 
 func getIngressGateway(keptnNamespace string) *errorableStringResult {
-	res, err := exechelper.ExecuteCommand("kubectl", "get cm ingress-config -n "+
-		keptnNamespace+" -ojsonpath='{.data.ingress_gateway}'")
+	res, err := keptnutils.ExecuteCommand("kubectl", []string{"get", "cm", "ingress-config", "-n",
+		keptnNamespace, "-o", "jsonpath='{.data.ingress_gateway}'"})
 	if err != nil {
 		return newErrorableStringResult("", err)
 	}
@@ -442,96 +442,96 @@ func getIngressGateway(keptnNamespace string) *errorableStringResult {
 
 func writeNamespaces(dir string) {
 	fmt.Println("Retrieving namespaces")
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get namespaces")),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "namespaces"})),
 		filepath.Join(dir, "namespaces.txt"))
 }
 
 func writeConfigMaps(namespace, dir string) {
 	fmt.Println("Retrieving list of config maps in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get cm -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "cm", "-n", namespace})),
 		filepath.Join(dir, "configmap.txt"))
 }
 
 func writeSecrets(namespace, dir string) {
 	fmt.Println("Retrieving list of secrets in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get secrets -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "secrets", "-n", namespace})),
 		filepath.Join(dir, "secrets.txt"))
 }
 
 func writeDeployments(namespace, dir string) {
 	fmt.Println("Retrieving list of deployments in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get deployments -owide -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "deployments", "-o", "wide", "-n", namespace})),
 		filepath.Join(dir, "deployments.txt"))
 }
 
 func writePods(namespace, dir string) {
 	fmt.Println("Retrieving list of pods in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get pods -owide  -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "pods", "-o", "wide", "-n", namespace})),
 		filepath.Join(dir, "pods.txt"))
 }
 
 func writeServices(namespace, dir string) {
 	fmt.Println("Retrieving list of services in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get services -owide -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "services", "-o", "wide", "-n", namespace})),
 		filepath.Join(dir, "services.txt"))
 }
 
 func writeVirtualServices(namespace, dir string) {
 	fmt.Println("Retrieving list of virtual services in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get vs -owide -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "vs", "-o", "wide", "-n", namespace})),
 		filepath.Join(dir, "virtualservices.txt"))
 
 }
 
 func writeIngresses(namespace, dir string) {
 	fmt.Println("Retrieving list of ingresses in " + namespace)
-	writeErrorableStringResult(newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "get ingress -owide -n "+namespace)),
+	writeErrorableStringResult(newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"get", "ingress", "-o", "wide", "-n", namespace})),
 		filepath.Join(dir, "ingresses.txt"))
 }
 
 func writePodDescriptions(namespace, dir string) {
 	fmt.Println("Retrieving pod descriptions in " + namespace)
-	res, err := exechelper.ExecuteCommand("kubectl",
-		`get pods --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' -n `+namespace)
+	res, err := keptnutils.ExecuteCommand("kubectl",
+		[]string{"get", "pods", "--template", `{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}`, "-n", namespace})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err),
 			filepath.Join(dir, "poddescriptions.txt"))
 		return
 	}
 	for _, pod := range strings.Split(strings.TrimSpace(res), "\n") {
-		res := newErrorableStringResult(exechelper.ExecuteCommand("kubectl",
-			"describe pod "+pod+" -n "+namespace))
+		res := newErrorableStringResult(keptnutils.ExecuteCommand("kubectl",
+			[]string{"describe", "pod", pod, "-n", namespace}))
 		writeErrorableStringResult(res, filepath.Join(dir, pod+"_description.txt"))
 	}
 }
 
 func writeDeploymentDescriptions(namespace, dir string) {
 	fmt.Println("Retrieving deployment descriptions in " + namespace)
-	res, err := exechelper.ExecuteCommand("kubectl",
-		`get deployments --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' -n `+namespace)
+	res, err := keptnutils.ExecuteCommand("kubectl",
+		[]string{"get", "deployments", "--template", `{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}`, "-n", namespace})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err),
 			filepath.Join(dir, "deploymentdescriptions.txt"))
 		return
 	}
 	for _, deployment := range strings.Split(strings.TrimSpace(res), "\n") {
-		res := newErrorableStringResult(exechelper.ExecuteCommand("kubectl",
-			"describe deployment "+deployment+" -n "+namespace))
+		res := newErrorableStringResult(keptnutils.ExecuteCommand("kubectl",
+			[]string{"describe", "deployment", deployment, "-n", namespace}))
 		writeErrorableStringResult(res, filepath.Join(dir, deployment+"_description.txt"))
 	}
 }
 
 func writePodLogs(namespace, dir string) {
 	fmt.Println("Retrieving pod logs in " + namespace)
-	res, err := exechelper.ExecuteCommand("kubectl",
-		`get pods --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' -n `+namespace)
+	res, err := keptnutils.ExecuteCommand("kubectl",
+		[]string{"get", "pods", "--template", `{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}`, "-n", namespace})
 	if err != nil {
 		writeErrorableStringResult(newErrorableStringResult("", err),
 			filepath.Join(dir, "podlogs.txt"))
 		return
 	}
 	for _, pod := range strings.Split(strings.TrimSpace(res), "\n") {
-		res := newErrorableStringResult(exechelper.ExecuteCommand("kubectl", "logs "+pod+" --all-containers=true -n "+namespace))
+		res := newErrorableStringResult(keptnutils.ExecuteCommand("kubectl", []string{"logs", pod, "--all-containers=true", "-n", namespace}))
 		writeErrorableStringResult(res, filepath.Join(dir, pod+"_log.txt"))
 	}
 }
