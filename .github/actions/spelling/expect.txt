@@ -227,7 +227,6 @@ eventsender
 eventtype
 Evts
 exe
-exechelper
 expr
 expressjs
 externallink
@@ -339,6 +338,7 @@ IDURL
 idx
 IEvaluation
 IEvent
+IHealth
 IHelper
 IKeptn
 img
@@ -468,7 +468,6 @@ mapfile
 mapstructure
 marcredhat
 matryer
-mattn
 mcs
 mdbrepo
 meb
@@ -708,7 +707,6 @@ serviceutils
 Setenv
 shellcheck
 shellscripts
-shellwords
 shipyardversion
 shirtshop
 shkeptncontext
