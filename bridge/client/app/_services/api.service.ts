@@ -147,7 +147,7 @@ export class ApiService {
     const url = `${this._baseUrl}/controlPlane/v1/sequence/${projectName}`;
     const params: any = {};
     if (sequenceName) {
-      params.sequenceName = sequenceName;
+      params.name = sequenceName;
     }
     if (state) {
       params.state = state;
