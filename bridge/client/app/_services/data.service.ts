@@ -134,21 +134,26 @@ export class DataService {
     this.loadKeptnInfo();
   }
 
+  public loadProject(projectName: string) {
+    this.apiService.getProject(projectName)
+      .pipe(
+        map(project => Project.fromJSON(project))
+      ).subscribe((project: Project) => {
+        const projects = this._projects.getValue();
+        const existingProject = projects.find(p => p.projectName === project.projectName);
+        if (existingProject){
+          Object.assign(existingProject, project);
+          this._projects.next(projects);
+        }
+    });
+  }
+
   public loadProjects() {
     this.apiService.getProjects(this._keptnInfo.getValue().bridgeInfo.projectsPageSize||50)
       .pipe(
         map(result => result.projects),
         map(projects =>
-          projects.map(project => {
-            project.stages = project.stages.map(stage => {
-              stage.services = stage.services.map(service => {
-                service.stage = stage.stageName;
-                return Service.fromJSON(service);
-              });
-              return Stage.fromJSON(stage);
-            });
-            return Project.fromJSON(project);
-          })
+          projects.map(project => Project.fromJSON(project))
         )
       ).subscribe((projects: Project[]) => {
       this._projects.next(projects);

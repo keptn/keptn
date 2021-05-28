@@ -132,6 +132,13 @@ export class Project {
 
   static fromJSON(data: any) {
     const project = Object.assign(new this(), data);
+    project.stages = project.stages.map(stage => {
+      stage.services = stage.services.map(service => {
+        service.stage = stage.stageName;
+        return Service.fromJSON(service);
+      });
+      return Stage.fromJSON(stage);
+    });
     project.setDeployments();
     return project;
   }

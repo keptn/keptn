@@ -7,9 +7,12 @@ export class Deployment {
   public service: string;
   public shkeptncontext: string;
   public sequence: Root;
+  public name: string;
 
   static fromJSON(data: any): Deployment {
-    return Object.assign(new this(), data);
+    const deployment = Object.assign(new this(), data);
+    deployment.name = deployment.version || deployment.service;
+    return deployment;
   }
 
   public getStage(stage: string): {stageName: string, remediations: Sequence[], config: string } {
