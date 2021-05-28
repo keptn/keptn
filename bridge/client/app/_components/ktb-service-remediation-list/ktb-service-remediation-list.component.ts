@@ -17,6 +17,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
 import {DataService} from '../../_services/data.service';
+import {DeploymentStage} from '../../_models/deployment-stage';
 
 @Component({
   selector: 'ktb-service-remediation-list',
@@ -25,15 +26,17 @@ import {DataService} from '../../_services/data.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbServiceRemediationListComponent implements OnInit, OnDestroy {
-  private _stage: {stageName: string, remediations: Sequence[], config: string };
+  private _stage: DeploymentStage;
   @Input()
-  set stage(stage: {stageName: string, remediations: Sequence[], config: string }) {
+  set stage(stage: DeploymentStage) {
     this._stage = stage;
     this.updateDataSource();
   }
-  get stage(): {stageName: string, remediations: Sequence[], config: string } {
+  get stage(): DeploymentStage {
     return this._stage;
   }
+
+  @Input() shkeptncontext: string;
 
   @ViewChild('remediationDialog')
   public remediationDialog: TemplateRef<any>;
@@ -49,8 +52,10 @@ export class KtbServiceRemediationListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
         this.projectName = params.projectName;
-        this.dataService._remediationsUpdated.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-          this.updateDataSource();
+        this.dataService.changedDeployments.pipe(takeUntil(this.unsubscribe$)).subscribe((deployments) => {
+          if (deployments.some(d => d.shkeptncontext === this.shkeptncontext && d.hasStage(this.stage.stageName))) {
+            this.updateDataSource();
+          }
         });
       });
   }

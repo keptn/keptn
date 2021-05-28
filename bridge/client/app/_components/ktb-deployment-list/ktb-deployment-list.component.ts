@@ -60,13 +60,15 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   constructor(public _changeDetectorRef: ChangeDetectorRef, private route: ActivatedRoute, private dataService: DataService, private router: Router, private location: Location) { }
 
   ngOnInit(): void {
-    this.dataService._remediationsUpdated
+    this.dataService.changedDeployments
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        this._changeDetectorRef.markForCheck();
+      .subscribe((deployments) => {
+        if (deployments.some(d => d.service === this.service.serviceName)) {
+          this._changeDetectorRef.markForCheck();
+        }
       });
 
-    const params$ =this.route.params
+    const params$ = this.route.params
       .pipe(takeUntil(this.unsubscribe$));
 
     const project$ = params$.pipe(

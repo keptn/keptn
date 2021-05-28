@@ -6,6 +6,7 @@ import {Root} from "./root";
 import { Deployment } from './deployment';
 import {EventTypes} from "./event-types";
 import * as moment from 'moment';
+import {DeploymentStage} from './deployment-stage';
 
 export class Project {
   projectName: string;
@@ -89,7 +90,7 @@ export class Project {
       if (service?.deploymentContext) {
         const image = service.getImageVersion();
         const deployment = deployments.find(dp => dp.version === image && dp.shkeptncontext === service.deploymentContext);
-        const stageDetails = {stageName: stage.stageName, config: null, remediations: []};
+        const stageDetails = new DeploymentStage(stage.stageName);
         if (deployment) {
           deployment.stages.push(stageDetails);
         } else {

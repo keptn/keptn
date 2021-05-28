@@ -1,9 +1,9 @@
 import {Root} from './root';
-import {Sequence} from './sequence';
+import {DeploymentStage} from './deployment-stage';
 
 export class Deployment {
   public version: string;
-  public stages: {stageName: string, remediations: Sequence[], config: string }[];
+  public stages: DeploymentStage[];
   public service: string;
   public shkeptncontext: string;
   public sequence: Root;
@@ -15,7 +15,7 @@ export class Deployment {
     return deployment;
   }
 
-  public getStage(stage: string): {stageName: string, remediations: Sequence[], config: string } {
+  public getStage(stage: string): DeploymentStage {
     return this.stages.find(s => s.stageName === stage);
   }
 

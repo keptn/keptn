@@ -44,7 +44,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.markForCheck();
       });
 
-    this.dataService._remediationsUpdated
+    this.dataService.changedDeployments
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this._changeDetectorRef.markForCheck();
