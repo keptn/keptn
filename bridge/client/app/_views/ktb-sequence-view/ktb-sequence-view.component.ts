@@ -116,7 +116,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               .subscribe(() => {
                 // This triggers the subscription for roots$
                 this.unfinishedRoots?.forEach(root => {
-                  this.loadTraces(root);
+                  this.dataService.loadTraces(root);
                 })
               });
 
