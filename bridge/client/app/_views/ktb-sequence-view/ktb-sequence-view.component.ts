@@ -143,7 +143,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
                 this._filterDataSource.data = this.filterFieldData;
                 // Set unfinished roots so that the traces for updates can be loaded
                 // Also ignore currently selected root, as this is getting already polled
-                this.unfinishedRoots = roots.filter(root => !!root && root.traces.some(r => r.finished !== undefined && !r.finished)).filter(root => this.currentSequence !== root);
+                this.unfinishedRoots = roots.filter(root => root && !root.isFinished() && root !== this.currentSequence);
               }
               this._changeDetectorRef.markForCheck();
             })
