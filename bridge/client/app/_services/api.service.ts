@@ -18,6 +18,7 @@ import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
 import * as moment from 'moment';
 import {SequenceResult} from '../_models/sequence-result';
+import {Project} from '../_models/project';
 
 @Injectable({
   providedIn: 'root'
@@ -93,6 +94,12 @@ export class ApiService {
     } else {
       return of(null);
     }
+  }
+
+  public getProject(projectName: string): Observable<Project> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}?disableUpstreamSync=true`;
+    return this.http
+      .get<Project>(url);
   }
 
   public getProjects(pageSize?: number): Observable<ProjectResult> {

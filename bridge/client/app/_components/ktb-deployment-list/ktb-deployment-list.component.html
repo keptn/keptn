@@ -1,7 +1,7 @@
 <dt-table [dataSource]="dataSource" interactiveRows>
   <ng-container dtColumnDef="version" dtColumnProportion="1">
     <dt-cell *dtCellDef="let row">
-      <span [textContent]="row.version || row.service"></span>
+      <span [textContent]="row.name"></span>
     </dt-cell>
   </ng-container>
 
@@ -18,5 +18,5 @@
     </dt-cell>
   </ng-container>
 
-  <dt-row *dtRowDef="let row; columns: ['version', 'stages']" (click)="selectDeployment(row)" [class.active]="selectedDeployment === row"></dt-row>
+  <dt-row *dtRowDef="let row; columns: ['version', 'stages']" (click)="selectDeployment(row)" [class.active]="selectedDeployment?.shkeptncontext === row.shkeptncontext"></dt-row>
 </dt-table>

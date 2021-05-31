@@ -50,13 +50,15 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   }
 
   private loadSequence(selectLast: boolean) {
-    this.dataService.getRoot(this.projectName, this.deployment.shkeptncontext).subscribe(sequence => {
-      this.deployment.sequence = sequence;
-      if (selectLast || !this.selectedStage) {
-        this.selectLastStage();
-      }
-      this._changeDetectorRef.markForCheck();
-    });
+    if (this.deployment) {
+      this.dataService.getRoot(this.projectName, this.deployment.shkeptncontext).subscribe(sequence => {
+        this.deployment.sequence = sequence;
+        if (selectLast || !this.selectedStage) {
+          this.selectLastStage();
+        }
+        this._changeDetectorRef.markForCheck();
+      });
+    }
   }
 
   private selectLastStage() {

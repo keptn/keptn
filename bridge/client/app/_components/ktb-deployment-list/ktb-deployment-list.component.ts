@@ -9,9 +9,9 @@ import {
   Output
 } from '@angular/core';
 import {Service} from '../../_models/service';
-import {takeUntil} from 'rxjs/operators';
+import {switchMap, takeUntil} from 'rxjs/operators';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subject} from 'rxjs';
+import {combineLatest, Subject} from 'rxjs';
 import {DataService} from '../../_services/data.service';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
 import {Deployment} from '../../_models/deployment';
@@ -32,7 +32,6 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   public pageSize: number;
   public minPageSize: number;
   public loading = false;
-  public gitRemoteURI: string;
 
   @Output() selectedDeploymentChange: EventEmitter<Deployment> = new EventEmitter();
 
@@ -61,37 +60,48 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   constructor(public _changeDetectorRef: ChangeDetectorRef, private route: ActivatedRoute, private dataService: DataService, private router: Router, private location: Location) { }
 
   ngOnInit(): void {
-    this.route.params
+    this.dataService.changedDeployments
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.dataService.getProject(params.projectName)
-          .subscribe(project => {
-            this.projectName = project.projectName;
-            this.gitRemoteURI = project.gitRemoteURI;
-            this.dataService._remediationsUpdated
-              .pipe(takeUntil(this.unsubscribe$))
-              .subscribe(() => {
-                this._changeDetectorRef.markForCheck();
-              });
-            if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
-              const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
-              if (paramDeployment) {
-                this.selectDeployment(paramDeployment, !params.stage);
-              } else {
-                const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', params.serviceName]);
-                this.location.go(routeUrl.toString());
-              }
-            }
-            this.minPageSize = this.service.deployments.length;
-            this.updateDataSource();
-          });
-
-        this.dataService.roots
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(() => {
-            this._changeDetectorRef.markForCheck();
-          });
+      .subscribe((deployments) => {
+        if (deployments.some(d => d.service === this.service.serviceName)) {
+          this._changeDetectorRef.markForCheck();
+        }
       });
+
+    const params$ = this.route.params
+      .pipe(takeUntil(this.unsubscribe$));
+
+    const project$ = params$.pipe(
+      switchMap(params => this.dataService.getProject(params.projectName)),
+      takeUntil(this.unsubscribe$)
+    );
+
+    combineLatest([params$, project$]).subscribe(([params, project]) => {
+      this.projectName = project.projectName;
+      if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
+        const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
+        const changedDeployment = this.selectedDeployment && this.service.deployments.filter(deployment => deployment.name === this.selectedDeployment.name); // the context of a deployment may change
+
+        if (paramDeployment) {
+          this.selectDeployment(paramDeployment, !params.stage);
+        } else if (changedDeployment?.length > 0) {
+          let deployment;
+          if (changedDeployment.length === 1) {
+            deployment = changedDeployment[0];
+          } else {
+            deployment = changedDeployment.find(d => d.stages.some(s => this.selectedDeployment.stages.some(sd => s.stageName === sd.stageName)));
+          }
+          if (deployment) {
+            this.selectDeployment(deployment, true);
+          }
+        } else {
+          const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', params.serviceName]);
+          this.location.go(routeUrl.toString());
+        }
+      }
+      this.minPageSize = this.service.deployments.length;
+      this.updateDataSource();
+    });
   }
 
   private updateDataSource(count = -1): void {
@@ -101,7 +111,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   }
 
   public selectDeployment(deployment: Deployment, redirect = true): void {
-    if (this.selectedDeployment !== deployment) {
+    if (this.selectedDeployment?.shkeptncontext !== deployment.shkeptncontext) {
       this.selectedDeployment = deployment;
 
       if (redirect) {

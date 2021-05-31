@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {catchError, map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
+import {catchError, filter, map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -29,7 +29,7 @@ export class DataService {
   protected _traces = new BehaviorSubject<Trace[]>(null);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<any>(null);
-  public _remediationsUpdated: Subject<void> = new Subject<void>();
+  protected _changedDeployments = new BehaviorSubject<Deployment[]>([]);
   protected _rootsLastUpdated: Object = {};
   protected _tracesLastUpdated: Object = {};
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
@@ -73,6 +73,10 @@ export class DataService {
 
   get evaluationResults(): Observable<any> {
     return this._evaluationResults;
+  }
+
+  get changedDeployments(): Observable<Deployment[]> {
+    return this._changedDeployments.asObservable();
   }
 
   public getProject(projectName): Observable<Project> {
@@ -134,21 +138,26 @@ export class DataService {
     this.loadKeptnInfo();
   }
 
+  public loadProject(projectName: string) {
+    this.apiService.getProject(projectName)
+      .pipe(
+        map(project => Project.fromJSON(project))
+      ).subscribe((project: Project) => {
+        const projects = this._projects.getValue();
+        const existingProject = projects.find(p => p.projectName === project.projectName);
+        if (existingProject){
+          Object.assign(existingProject, project);
+          this._projects.next(projects);
+        }
+    });
+  }
+
   public loadProjects() {
     this.apiService.getProjects(this._keptnInfo.getValue().bridgeInfo.projectsPageSize||50)
       .pipe(
         map(result => result.projects),
         map(projects =>
-          projects.map(project => {
-            project.stages = project.stages.map(stage => {
-              stage.services = stage.services.map(service => {
-                service.stage = stage.stageName;
-                return Service.fromJSON(service);
-              });
-              return Stage.fromJSON(stage);
-            });
-            return Project.fromJSON(project);
-          })
+          projects.map(project => Project.fromJSON(project))
         )
       ).subscribe((projects: Project[]) => {
       this._projects.next(projects);
@@ -162,19 +171,26 @@ export class DataService {
       map(response => response.body),
       map(sequenceResult => sequenceResult.states),
       map(sequences => {
+        const changedDeployments: Deployment[] = [];
         // remove finished remediations
         for (const service of project.getServices()){
           for (const deployment of service.deployments) {
             for (const stage of deployment.stages) {
-              stage.remediations = stage.remediations.filter(r => sequences.some(s => s.shkeptncontext === r.shkeptncontext));
+              const filteredRemediations = stage.remediations.filter(r => sequences.some(s => s.shkeptncontext === r.shkeptncontext));
+              if (filteredRemediations.length !== stage.remediations.length) {
+                if(!changedDeployments.some(d => d.shkeptncontext === deployment.shkeptncontext)) {
+                  changedDeployments.push(deployment);
+                }
+                stage.remediations = filteredRemediations;
+              }
             }
           }
         }
-        return sequences;
+        return [sequences, changedDeployments];
       }),
-      mergeMap((sequences) =>
+      mergeMap(([sequences, changedDeployments]) =>
         from(sequences).pipe(
-          mergeMap((sequence) => {
+          mergeMap((sequence: Sequence) => {
             const service = project.getService(sequence.service);
             const sequenceStage = sequence.stages[0].name;
             let result = of(null);
@@ -210,17 +226,27 @@ export class DataService {
                       })
                     );
                   }
-                  result = forkJoin([_root, _resourceContent]);
+                  result = forkJoin([_root, _resourceContent]).pipe(switchMap(() => of(deployment)));
                 }
               }
             }
             return result;
           }),
-          toArray()
+          toArray(),
+          filter(deployment => !!deployment),
+          map((newChangedDeployments: Deployment[]) => {
+            const deployments = changedDeployments as Deployment[];
+            for (const deployment of newChangedDeployments) {
+              if (!deployments.some(d => d.shkeptncontext === deployment.shkeptncontext)) {
+                deployments.push(deployment);
+              }
+            }
+            return deployments;
+          })
         )
       )
-    ).subscribe(() => {
-      this._remediationsUpdated.next();
+    ).subscribe((deployments: Deployment[]) => {
+      this._changedDeployments.next(deployments);
     });
   }
 
