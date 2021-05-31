@@ -199,7 +199,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         if (results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
           this.evaluationData.data.evaluationHistory = [...results.traces || [], ...this.evaluationData.data.evaluationHistory || []].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
           this.updateChartData(this.evaluationData.data.evaluationHistory);
-          this._changeDetectorRef.markForCheck();
         } else if (results.type == "invalidateEvaluation" &&
           this.evaluationData.data.project == results.triggerEvent.data.project &&
           this.evaluationData.data.service == results.triggerEvent.data.service &&
@@ -207,7 +206,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
           this._selectedEvaluationData = null;
           this.updateChartData(this.evaluationData.data.evaluationHistory);
-          this._changeDetectorRef.markForCheck();
         }
       });
   }
@@ -368,7 +366,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._chartSeries = chartSeries;
     }
     this.highlightHeatmap();
-    this._changeDetectorRef.markForCheck();
+    this._changeDetectorRef.detectChanges();
   }
 
   private getLastDisplayName(evaluationHistory, metric): string {
@@ -471,7 +469,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       }
     }
     this.heatmapChart?._update();
-    this._changeDetectorRef.markForCheck();
+    this._changeDetectorRef.detectChanges();
   }
 
   showSloDialog() {
