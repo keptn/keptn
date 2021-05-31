@@ -5,7 +5,14 @@ export class Root extends Trace {
   traces: Trace[] = [];
 
   isFaulty(): string {
-    return this.findLastTrace(t => t.isSequence() && t.getEvaluation() != null)?.isFaulty() || null;
+    // a Sequence is faulty, if there is a sequence that is faulty, but no other sequence that is successful on the same stage
+    let result: string = null;
+    this.getStages().forEach(stage => {
+      let stageTraces = this.traces.filter(t => t.getStage() == stage);
+      if(stageTraces.some(t => t.isFaulty() != null) && !stageTraces.some(t => t.isSuccessful() != null))
+        result = stage;
+    });
+    return result;
   }
 
   isStarted(): boolean {

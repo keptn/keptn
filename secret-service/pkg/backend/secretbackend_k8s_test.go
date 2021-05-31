@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/secret-service/pkg/common"
@@ -45,14 +46,14 @@ func TestCreateSecrets(t *testing.T) {
 	err := backend.CreateSecret(secret)
 	assert.Nil(t, err)
 
-	k8sSecret, err := kubernetes.CoreV1().Secrets(FakeNamespaceProvider()()).Get("my-secret", metav1.GetOptions{})
+	k8sSecret, err := kubernetes.CoreV1().Secrets(FakeNamespaceProvider()()).Get(context.TODO(), "my-secret", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, k8sSecret)
 	assert.Equal(t, "my-secret", k8sSecret.Name)
 	assert.Equal(t, map[string]string(secret.Data), k8sSecret.StringData)
 	assert.Equal(t, FakeNamespaceProvider()(), k8sSecret.Namespace)
 
-	k8sRole1, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get("my-scope-read-secrets", metav1.GetOptions{})
+	k8sRole1, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-read-secrets", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, k8sRole1)
 	assert.Equal(t, k8sRole1.Rules[0].Resources[0], "secrets")
@@ -60,7 +61,7 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, k8sRole1.Rules[0].Verbs, []string{"read"})
 	assert.Equal(t, k8sRole1.Rules[0].APIGroups, []string{""}) // at least on api group must be present
 
-	k8sRole2, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get("my-scope-manage-secrets", metav1.GetOptions{})
+	k8sRole2, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-manage-secrets", metav1.GetOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, k8sRole2)
 	assert.Equal(t, k8sRole2.Rules[0].Resources[0], "secrets")
@@ -72,9 +73,9 @@ func TestCreateSecrets(t *testing.T) {
 	err = backend.CreateSecret(nextSecret)
 	assert.Nil(t, err)
 
-	k8sRole1, err = kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get("my-scope-read-secrets", metav1.GetOptions{})
+	k8sRole1, err = kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-read-secrets", metav1.GetOptions{})
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole1.Rules[0].ResourceNames)
-	k8sRole2, err = kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get("my-scope-manage-secrets", metav1.GetOptions{})
+	k8sRole2, err = kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-manage-secrets", metav1.GetOptions{})
 	assert.Equal(t, []string{"my-secret", "my-secret-2"}, k8sRole2.Rules[0].ResourceNames)
 
 }

@@ -1,8 +1,8 @@
 <div fxLayout="column" fxLayoutGap="5px">
   <div *ngFor="let event of _events;trackBy: identifyEvent">
     <ktb-selectable-tile (click)="selectEvent(event)"
-                         [error]="event.isFaulty() && (!event.isProblem() || event.isFaulty() != event.isSuccessful())"
-                         [success]="!event.isFaulty() && event.isFinished()"
+                         [error]="event.isFinished() && event.isFaulty()"
+                         [success]="event.isFinished() && !event.isFaulty()"
                          [highlight]="!!event.getPendingApproval()" [selected]="_selectedEvent == event"
                          *ngIf="event">
       <ktb-selectable-tile-header>

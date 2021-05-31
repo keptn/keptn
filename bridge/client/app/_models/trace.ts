@@ -119,7 +119,8 @@ class Trace {
     if(this.data) {
       if(this.isFailed() ||
         (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
-        this.traces.some(t => t.isFailed() || (t.isProblem() && !t.isProblemResolvedOrClosed()))) {
+        (this.isRemediation() && !this.isSuccessfulRemediation()) ||
+        this.traces.some(t => t.isFaulty() != null)) {
         result = this.data.stage;
       }
     }
@@ -180,7 +181,10 @@ class Trace {
   }
 
   public isSuccessfulRemediation(): boolean {
-    return this.type === EventTypes.REMEDIATION_FINISHED && this.data.result == ResultTypes.PASSED;
+    if (!this.traces || this.traces.length === 0)
+      return this.type.endsWith(EventTypes.REMEDIATION_FINISHED_SUFFIX) && this.data.result !== ResultTypes.FAILED;
+    else
+      return this.traces.some(t => t.isSuccessfulRemediation());
   }
 
   public isApproval(): string {

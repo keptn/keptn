@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
@@ -176,7 +177,7 @@ func TestGetEventHandlerFunc(t *testing.T) {
 						ID:             "",
 						Source:         stringp(""),
 						Specversion:    "",
-						Time:           strfmt.DateTime{},
+						Time:           time.Time{},
 						Type:           stringp(""),
 						Shkeptncontext: "",
 					},

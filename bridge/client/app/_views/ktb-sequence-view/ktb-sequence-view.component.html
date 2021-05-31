@@ -1,8 +1,8 @@
-<div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="project$ | async as project">
+<div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="roots$ | async as roots">
   <div fxFlex fxLayout="column" fxLayoutGap="15px">
     <dt-quick-filter [dataSource]="_filterDataSource" [filters]="_seqFilters" (filterChanges)="filtersChanged($event)" aria-label="Filter By Input value" label="Filter by" clearAllLabel="Clear all" fxFlex>
       <div class="container" fxFlex fxLayout="column">
-        <ktb-root-events-list [events]="getFilteredSequences(project.sequences)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)" fxFlex></ktb-root-events-list>
+        <ktb-root-events-list [events]="getFilteredSequences(roots)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)" fxFlex></ktb-root-events-list>
         <div class="mb-3"></div>
       </div>
     </dt-quick-filter>
