@@ -1,7 +1,7 @@
 package main
 
 import (
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +33,7 @@ func main() {
 
 	if os.Getenv("GIN_MODE") == "release" {
 		docs.SwaggerInfo.Version = os.Getenv("version")
-		docs.SwaggerInfo.BasePath = "/api/statistics-service/v1"
+		docs.SwaggerInfo.BasePath = "r/api/statistics-service/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
@@ -44,6 +44,8 @@ func main() {
 
 	router.Static("/swagger-ui", "./swagger-ui")
 
-	go keptnapi.RunHealthEndpoint("10998")
+	apiHealth := router.Group("")
+	apiHealth.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
+
 	router.Run()
 }
