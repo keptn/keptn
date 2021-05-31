@@ -14,12 +14,16 @@ import (
 const projectsCollectionName = "keptnProjectsMV"
 
 type MongoDBProjectsRepo struct {
-	DbConnection MongoDBConnection
+	DBConnection *MongoDBConnection
+}
+
+func NewMongoDBProjectsRepo(dbConnection *MongoDBConnection) *MongoDBProjectsRepo {
+	return &MongoDBProjectsRepo{DBConnection: dbConnection}
 }
 
 func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, error) {
 	result := []*models.ExpandedProject{}
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +50,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*models.ExpandedProject, er
 }
 
 func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.ExpandedProject, error) {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +72,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*models.Expa
 }
 
 func (m *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) error {
-	err := m.DbConnection.EnsureDBConnection()
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -86,7 +90,7 @@ func (m *MongoDBProjectsRepo) CreateProject(project *models.ExpandedProject) err
 }
 
 func (m *MongoDBProjectsRepo) UpdateProject(project *models.ExpandedProject) error {
-	err := m.DbConnection.EnsureDBConnection()
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -123,7 +127,7 @@ func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri stri
 }
 
 func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
-	err := m.DbConnection.EnsureDBConnection()
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -141,7 +145,7 @@ func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
 }
 
 func (m *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) error {
-	err := m.DbConnection.EnsureDBConnection()
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -159,7 +163,7 @@ func (m *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) err
 }
 
 func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
-	projectCollection := m.DbConnection.Client.Database(getDatabaseName()).Collection(projectsCollectionName)
+	projectCollection := m.DBConnection.Client.Database(getDatabaseName()).Collection(projectsCollectionName)
 	return projectCollection
 }
 

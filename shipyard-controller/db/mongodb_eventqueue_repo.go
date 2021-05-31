@@ -16,7 +16,11 @@ const eventQueueCollectionName = "shipyard-controller-event-queue"
 
 // MongoDBEventQueueRepo retrieves and stores events in a mongodb collection
 type MongoDBEventQueueRepo struct {
-	DBConnection MongoDBConnection
+	DBConnection *MongoDBConnection
+}
+
+func NewMongoDBEventQueueRepo(dbConnection *MongoDBConnection) *MongoDBEventQueueRepo {
+	return &MongoDBEventQueueRepo{DBConnection: dbConnection}
 }
 
 // GetQueuedEvents gets all queued events that should be sent next

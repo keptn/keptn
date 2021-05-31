@@ -83,16 +83,37 @@ func TriggerSequence(projectName, serviceName, stageName, sequenceName string, e
 	return *context.KeptnContext, nil
 }
 
+func ApiDELETERequest(path string) (*req.Resp, error) {
+	apiToken, keptnAPIURL, err := GetApiCredentials()
+	if err != nil {
+		return nil, err
+	}
+
+	authHeader := getAuthHeader(apiToken)
+
+	r, err := req.Delete(keptnAPIURL+path, authHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+func getAuthHeader(apiToken string) req.Header {
+	authHeader := req.Header{
+		"Accept":  "application/json",
+		"x-token": apiToken,
+	}
+	return authHeader
+}
+
 func ApiGETRequest(path string) (*req.Resp, error) {
 	apiToken, keptnAPIURL, err := GetApiCredentials()
 	if err != nil {
 		return nil, err
 	}
 
-	authHeader := req.Header{
-		"Accept":  "application/json",
-		"x-token": apiToken,
-	}
+	authHeader := getAuthHeader(apiToken)
 
 	r, err := req.Get(keptnAPIURL+path, authHeader)
 	if err != nil {
@@ -108,10 +129,7 @@ func ApiPOSTRequest(path string, payload interface{}) (*req.Resp, error) {
 		return nil, err
 	}
 
-	authHeader := req.Header{
-		"Accept":  "application/json",
-		"x-token": apiToken,
-	}
+	authHeader := getAuthHeader(apiToken)
 
 	r, err := req.Post(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
 	if err != nil {

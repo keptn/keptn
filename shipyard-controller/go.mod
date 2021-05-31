@@ -6,12 +6,12 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.7.2
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.5
 	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
+	github.com/keptn/go-utils v0.8.5-0.20210531064227-ecdd3cbbb723
 	github.com/ory/dockertest/v3 v3.6.5
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0

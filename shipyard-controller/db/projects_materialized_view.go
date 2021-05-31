@@ -45,7 +45,7 @@ type ProjectsMaterializedView struct {
 func GetProjectsMaterializedView() *ProjectsMaterializedView {
 	if instance == nil {
 		instance = &ProjectsMaterializedView{
-			ProjectRepo:     &MongoDBProjectsRepo{},
+			ProjectRepo:     NewMongoDBProjectsRepo(GetMongoDBConnectionInstance()),
 			EventsRetriever: nil, //TODO
 		}
 	}

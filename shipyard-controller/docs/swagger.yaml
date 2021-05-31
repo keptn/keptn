@@ -169,6 +169,11 @@ definitions:
       lastEventContext:
         $ref: '#/definitions/models.EventContext'
         description: last event context
+      parentStages:
+        description: Parent Stages
+        items:
+          type: string
+        type: array
       services:
         description: services
         items:
@@ -176,6 +181,43 @@ definitions:
         type: array
       stageName:
         description: Stage name
+        type: string
+    type: object
+  models.Integration:
+    properties:
+      id:
+        type: string
+      metadata:
+        $ref: '#/definitions/models.MetaData'
+      name:
+        type: string
+      subscription:
+        $ref: '#/definitions/models.Subscription'
+    type: object
+  models.KubernetesMetaData:
+    properties:
+      deploymentname:
+        type: string
+      namespace:
+        type: string
+      podname:
+        type: string
+    type: object
+  models.MetaData:
+    properties:
+      deplyomentname:
+        type: string
+      distributorversion:
+        type: string
+      hostname:
+        type: string
+      integrationversion:
+        type: string
+      kubernetesmetadata:
+        $ref: '#/definitions/models.KubernetesMetaData'
+      location:
+        type: string
+      status:
         type: string
     type: object
   models.Remediation:
@@ -276,6 +318,26 @@ definitions:
       totalCount:
         description: Total number of stages
         type: number
+    type: object
+  models.Subscription:
+    properties:
+      filter:
+        $ref: '#/definitions/models.SubscriptionFilter'
+      status:
+        type: string
+      topics:
+        items:
+          type: string
+        type: array
+    type: object
+  models.SubscriptionFilter:
+    properties:
+      project:
+        type: string
+      service:
+        type: string
+      stage:
+        type: string
     type: object
   operations.CreateEvaluationParams:
     properties:
@@ -944,6 +1006,96 @@ paths:
       summary: Get task sequence execution states
       tags:
       - Sequence
+  /uniform/registration:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve uniform integrations
+      parameters:
+      - description: id
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/models.Integration'
+            type: array
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve uniform integrations
+      tags:
+      - Uniform
+    post:
+      consumes:
+      - application/json
+      description: Register a uniform integration
+      parameters:
+      - description: Integration
+        in: body
+        name: integration
+        required: true
+        schema:
+          $ref: '#/definitions/models.Integration'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Register a uniform integration
+      tags:
+      - Uniform
+  /uniform/registration/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Unregister a uniform integration
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Unregister a uniform integration
+      tags:
+      - Uniform
 securityDefinitions:
   ApiKeyAuth:
     in: header
