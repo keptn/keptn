@@ -12,6 +12,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"strconv"
@@ -46,6 +47,10 @@ func main() {
 		docs.SwaggerInfo.Version = osutils.GetOSEnv("version")
 		docs.SwaggerInfo.BasePath = "/api/shipyard-controller/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
+
+		// disable GIN request logging in release mode
+		gin.SetMode("release")
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -35,6 +36,10 @@ func main() {
 		docs.SwaggerInfo.Version = os.Getenv("version")
 		docs.SwaggerInfo.BasePath = "r/api/statistics-service/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
+
+		// disable GIN request logging in release mode
+		gin.SetMode("release")
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	apiV1 := router.Group("/v1")
