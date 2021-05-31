@@ -1,4 +1,4 @@
-<ng-container *ngIf="deployment">
+<ng-container *ngIf="deployment" uitestid="keptn-service-details-deployment">
   <dt-loading-distractor *ngIf="!deployment.sequence, else details">Loading …</dt-loading-distractor>
   <ng-template #details>
     <dt-info-group class="mb-2">
@@ -6,7 +6,7 @@
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
           <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center" class="service-title">
             <span class="bold" [textContent]="deployment.sequence.getShortImageName() || deployment.service"></span>&nbsp;
-            <dt-tag-list aria-label="deployment-labels">
+            <dt-tag-list aria-label="deployment-labels" uitestid="keptn-service-details-deployment-tags">
               <dt-tag *ngFor="let label of (deployment.sequence.getLastTrace()?.getFinishedEvent()?.data.labels || deployment.sequence.data.labels) | keyvalue">
                 <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
                 <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
@@ -19,7 +19,7 @@
     <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
     <ktb-service-remediation-list *ngIf="deployment?.getStage(this.selectedStage)?.remediations.length > 0" [shkeptncontext]="deployment.shkeptncontext" [stage]="deployment.getStage(selectedStage)"></ktb-service-remediation-list>
     <ng-container>
-      <div fxLayout="row" class="mt-3">
+      <div fxLayout="row" class="mt-3" uitestid="keptn-services-details-jumpToSequence">
         <a [routerLink]="['/', 'project', projectName, 'sequence', deployment.sequence.shkeptncontext, 'stage', selectedStage]">
           <button dt-button variant="secondary">View sequence execution</button>
         </a>

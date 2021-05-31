@@ -16,16 +16,16 @@
         <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="_event.getProblemDetails()"></span></p>
       </div>
     </div>
-    <div fxLayout="column" fxLayoutAlign="start end">
+    <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-event-item-contextButtons">
       <div fxLayout="row" fxLayoutAlign="start start">
         <p *ngIf="showTime" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
-        <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
-        <button dt-icon-button variant="nested" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
+        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-payload" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
       </div>
     </div>
   </div>
   <div *ngIf="_event.data.problem?.ProblemDetails">
-    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.problem.ProblemDetails.tagsOfAffectedEntities">
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.problem.ProblemDetails.tagsOfAffectedEntities" uitestid="keptn-event-item-tags">
       <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
       <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
         <dt-tag *ngFor="let tag of _event.data.problem.ProblemDetails.tagsOfAffectedEntities">
@@ -35,7 +35,7 @@
       </dt-tag-list>
     </div>
   </div>
-  <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()">
+  <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()" uitestid="keptn-event-item-labels">
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">
@@ -46,7 +46,7 @@
       </dt-tag-list>
     </div>
   </div>
-  <div *ngIf="_event.isApproval() && _event.isApprovalPending()">
+  <div *ngIf="_event.isApproval() && _event.isApprovalPending()" uitestid="keptn-event-item-approval">
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
