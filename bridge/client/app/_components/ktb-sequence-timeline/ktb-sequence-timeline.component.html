@@ -2,7 +2,7 @@
   <div class="ktb-sequence-timeline-container">
     <div class="timeline"></div>
     <div fxLayout="row" fxLayoutAlign="space-between">
-      <div class="text-center pointer stage-transition" [class.focused]="stage === selectedStage" *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
+      <div class="text-center pointer stage-item" [class.focused]="stage === selectedStage" *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
         <div class="stage-info">
           <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(stage).isLoading(); else showLoading" class="event-icon"
                    [name]="currentSequence.getFirstTraceOfStage(stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"

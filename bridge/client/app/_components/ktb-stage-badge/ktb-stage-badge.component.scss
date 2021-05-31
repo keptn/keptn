@@ -48,11 +48,10 @@
   }
 }
 
-.stage-transition {
+.timeline-item {
   font-size: $default-font-size;
-  transition: font-size $transition-time, font-weight $transition-time;
-  &.focused {
-    font-size: $default-font-size + 2px;
-    font-weight: bold;
-  }
+}
+
+.timeline-item:hover, .focused {
+  color: $focused-stage-color;
 }

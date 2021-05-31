@@ -27,12 +27,8 @@
     }
   }
 
-  .stage-transition {
-    transition: font-size $transition-time, font-weight $transition-time;
-    &.focused {
-      font-size: $default-font-size + 2px;
-      font-weight: bold;
-    }
+  .focused, .stage-item:hover {
+    color: $focused-stage-color;
   }
 }
 
