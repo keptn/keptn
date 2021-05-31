@@ -47,4 +47,20 @@ func Test_UniformRegistration(t *testing.T) {
 	require.Equal(t, uniformIntegration.Name, integrations[0].Name)
 	require.Equal(t, uniformIntegration.MetaData, integrations[0].MetaData)
 	require.Equal(t, uniformIntegration.Subscription, integrations[0].Subscription)
+
+	// delete the integration
+	resp, err = ApiDELETERequest("/controlPlan/v1/uniform/registration/" + registrationResponse.ID)
+
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().Status)
+
+	// try to retrieve the integration again - should not be available anymore
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+
+	integrations = []models.Integration{}
+	require.Nil(t, err)
+
+	err = resp.ToJSON(&integrations)
+	require.Nil(t, err)
+	require.Empty(t, integrations)
 }
