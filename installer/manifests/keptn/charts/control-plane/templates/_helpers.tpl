@@ -67,7 +67,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: {{.port | default 10998}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
   periodSeconds: 5
 {{- end }}
 
@@ -85,7 +85,7 @@ livenessProbe:
   httpGet:
     path: /health
     port: {{.port | default 10999}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 0}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
   periodSeconds: 5
 {{- end }}
 

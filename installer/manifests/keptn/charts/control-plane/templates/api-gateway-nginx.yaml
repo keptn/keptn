@@ -305,7 +305,7 @@ spec:
             httpGet:
               path: /nginx-health
               port: 8080
-            initialDelaySeconds: 0
+            initialDelaySeconds: 15
             periodSeconds: 10
           readinessProbe:
             httpGet:
