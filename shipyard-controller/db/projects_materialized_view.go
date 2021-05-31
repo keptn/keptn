@@ -3,12 +3,12 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/ghodss/yaml"
 	goutilsmodels "github.com/keptn/go-utils/pkg/api/models"
 	goutils "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 	"strings"
 
 	"github.com/keptn/keptn/shipyard-controller/models"

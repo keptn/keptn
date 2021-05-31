@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -43,10 +44,10 @@ func (eh *ConfigureMonitoringHandler) HandleEvent() error {
 		eh.KeptnHandler.Logger.Error("Could not create Kube API")
 		return err
 	}
-	_, err = kubeAPI.CoreV1().ConfigMaps(namespace).Create(configMap)
+	_, err = kubeAPI.CoreV1().ConfigMaps(namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 
 	if err != nil {
-		_, err = kubeAPI.CoreV1().ConfigMaps(namespace).Update(configMap)
+		_, err = kubeAPI.CoreV1().ConfigMaps(namespace).Update(context.TODO(), configMap, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}

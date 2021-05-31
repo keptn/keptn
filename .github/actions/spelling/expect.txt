@@ -294,6 +294,7 @@ GOPATH
 gopkg
 GOPROXY
 goreportcard
+gosec
 GOTRACEBACK
 goutils
 goutilsmodels
@@ -547,6 +548,7 @@ nobreak
 nodemon
 nodeport
 nokubectl
+nolint
 noname
 nonroot
 noopener

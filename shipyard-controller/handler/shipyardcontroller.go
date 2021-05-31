@@ -6,13 +6,13 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 	"time"
 )
 

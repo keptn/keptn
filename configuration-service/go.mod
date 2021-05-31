@@ -15,7 +15,7 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/martian v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.4
+	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
 	github.com/keptn/kubernetes-utils v0.8.2
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
@@ -24,10 +24,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.20.4
 	k8s.io/client-go v0.20.4
 )
-
-// Transitive requirement from Helm: See https://github.com/helm/helm/blob/v3.1.2/go.mod
-replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible

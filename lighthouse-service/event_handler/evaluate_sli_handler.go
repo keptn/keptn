@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
 	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v3"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"

@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"errors"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	"net/url"
@@ -8,7 +9,7 @@ import (
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
@@ -183,7 +184,7 @@ func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
 		return "", err
 	}
 
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config", v1.GetOptions{})
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "lighthouse-config", v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("no default SLI provider specified")
@@ -201,7 +202,7 @@ func (K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
 		return "", err
 	}
 
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get("lighthouse-config-"+project, v1.GetOptions{})
+	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("no SLI provider specified for project " + project)

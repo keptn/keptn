@@ -18,7 +18,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/go-openapi/strfmt"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -398,7 +397,7 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 			Shkeptncontext: "1234",
 			Source:         stringp("my-source"),
 			Specversion:    "1.0",
-			Time:           strfmt.DateTime{},
+			Time:           time.Time{},
 			Triggeredid:    "1234",
 			Type:           stringp("my-topic"),
 		},
@@ -410,7 +409,7 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 			Shkeptncontext: "1234",
 			Source:         stringp("my-source"),
 			Specversion:    "1.0",
-			Time:           strfmt.DateTime{},
+			Time:           time.Time{},
 			Triggeredid:    "1234",
 			Type:           stringp("my-topic"),
 		},
@@ -422,7 +421,7 @@ func Test_pollAndForwardEventsForTopic(t *testing.T) {
 			Shkeptncontext: "1234",
 			Source:         stringp("my-source"),
 			Specversion:    "1.0",
-			Time:           strfmt.DateTime{},
+			Time:           time.Time{},
 			Triggeredid:    "1234",
 			Type:           stringp("my-topic"),
 		},
