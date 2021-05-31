@@ -8,7 +8,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.4.4
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
+	github.com/keptn/go-utils v0.8.5-0.20210531064227-ecdd3cbbb723
 	github.com/keptn/kubernetes-utils v0.8.2
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
