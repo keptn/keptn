@@ -76,24 +76,31 @@ export class Project {
     return root?.findLastTrace(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
   }
 
-  getDeploymentsOfService(serviceName: string): Deployment[] {
+  private setDeployments() {
+    for (const service of this.getServices()) {
+      service.deployments = this.getDeploymentsOfService(service.serviceName);
+    }
+  }
+
+  private getDeploymentsOfService(serviceName: string): Deployment[] {
     const deployments: Deployment[] = [];
     this.stages.forEach(stage => {
-      const service = stage.services.find(service => service.serviceName === serviceName);
+      const service = stage.services.find(s => s.serviceName === serviceName);
       if (service?.deploymentContext) {
         const image = service.getImageVersion();
-        const deployment = deployments.find(deployment => deployment.version === image && deployment.shkeptncontext === service.deploymentContext);
+        const deployment = deployments.find(dp => dp.version === image && dp.shkeptncontext === service.deploymentContext);
+        const stageDetails = {stageName: stage.stageName, config: null, remediations: []};
         if (deployment) {
-          deployment.stages.push(stage.stageName);
+          deployment.stages.push(stageDetails);
         } else {
-          const deployment = Deployment.fromJSON({
+          const newDeployment = Deployment.fromJSON({
             version: image,
             service: service.serviceName,
-            stages: [stage.stageName],
+            stages: [stageDetails],
             shkeptncontext: service.deploymentContext
           } as Deployment);
 
-          deployments.push(deployment);
+          deployments.push(newDeployment);
         }
       }
     });
@@ -104,15 +111,11 @@ export class Project {
     let lastService: Service;
     this.stages.forEach((stage: Stage) => {
       const service = stage.services.find(s => s.serviceName === serviceName);
-      if(service?.deploymentContext && (!lastService || moment.unix(service.deploymentTime).isAfter(moment.unix(lastService.deploymentTime)))) {
+      if (service?.deploymentContext && (!lastService || moment.unix(service.deploymentTime).isAfter(moment.unix(lastService.deploymentTime)))) {
         lastService = service;
       }
     });
     return lastService;
-  }
-
-  public hasDeployment(serviceName: string): boolean {
-    return this.getDeploymentsOfService(serviceName).length !== 0;
   }
 
   public getStages(parent: string[]): Stage[] {
@@ -128,6 +131,8 @@ export class Project {
   }
 
   static fromJSON(data: any) {
-    return Object.assign(new this, data);
+    const project = Object.assign(new this(), data);
+    project.setDeployments();
+    return project;
   }
 }

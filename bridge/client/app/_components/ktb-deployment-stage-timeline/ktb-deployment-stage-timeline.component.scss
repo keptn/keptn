@@ -10,8 +10,21 @@
   cursor: pointer;
 }
 
-.link-icon {
+.timeline-icon {
   height: 25px;
   width: 25px;
+}
+:host::ng-deep {
+  .dt-icon-button.active, .dt-icon-button:hover {
+    background: $gray-100 !important;
+  }
+  .dt-button-icon {
+    margin-top: 0;
+    height: 25px !important;
+    width: 25px !important;
+  }
+}
+
+.link-icon {
   fill: $link-icon-color;
 }

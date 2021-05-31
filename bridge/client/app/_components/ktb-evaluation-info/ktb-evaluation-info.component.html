@@ -12,6 +12,14 @@
     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
   </ng-template>
 </dt-tag-list>
-<dt-tag-list *ngIf="!evaluation?.isFinished()">
+<dt-tag-list aria-label="evaluation-info" *ngIf="evaluationResult">
+  <dt-tag class="m-0 justify-content-center"
+          [class.error]="isError"
+          [class.warning]="isWarning"
+          [class.success]="isSuccess"
+          [class.border]="fill === false"
+          [textContent]="evaluationResult.score | number:'1.0-0'"></dt-tag>
+</dt-tag-list>
+<dt-tag-list *ngIf="!evaluation?.isFinished() && !evaluationResult">
   <dt-tag class="m-0 justify-content-center" [class.fill]="fill" [textContent]="'-'"></dt-tag>
 </dt-tag-list>

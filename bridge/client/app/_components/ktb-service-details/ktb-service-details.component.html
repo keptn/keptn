@@ -17,25 +17,27 @@
       </dt-info-group-title>
     </dt-info-group>
     <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
+    <ktb-service-remediation-list *ngIf="deployment?.getStage(this.selectedStage)?.remediations.length > 0" [stage]="deployment.getStage(selectedStage)"></ktb-service-remediation-list>
+    <ng-container>
+      <div fxLayout="row" class="mt-3">
+        <a [routerLink]="['/', 'project', projectName, 'sequence', deployment.sequence.shkeptncontext, 'stage', selectedStage]">
+          <button dt-button variant="secondary">View sequence execution</button>
+        </a>
+      </div>
 
-    <div fxLayout="row" class="mt-3">
-      <a [routerLink]="['/', 'project', projectName, 'sequence', deployment.sequence.shkeptncontext, 'stage', selectedStage]">
-        <button dt-button>View sequence execution</button>
-      </a>
-    </div>
 
+      <div class="mt-3" [class]="{'animation-pulse': selectedStage}" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApproval(selectedStage)">
+        <ktb-event-item [event]="deployment.sequence.getPendingApproval(selectedStage)">
+        </ktb-event-item>
+      </div>
 
-    <div class="mt-3" [class]="{'animation-pulse': selectedStage}" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApproval(selectedStage)">
-      <ktb-event-item [event]="deployment.sequence.getPendingApproval(selectedStage)">
-      </ktb-event-item>
-    </div>
-
-    <div class="mt-3" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence.getEvaluation(selectedStage) as evaluationEvent">
-      <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">
-        <ktb-event-item-detail>
-          <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
-        </ktb-event-item-detail>
-      </ktb-event-item>
-    </div>
+      <div class="mt-3" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence.getEvaluation(selectedStage) as evaluationEvent">
+        <ktb-event-item [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">
+          <ktb-event-item-detail>
+            <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
+          </ktb-event-item-detail>
+        </ktb-event-item>
+      </div>
+    </ng-container>
   </ng-template>
 </ng-container>

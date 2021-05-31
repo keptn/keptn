@@ -246,6 +246,10 @@ class Trace {
     return this.data?.stage;
   }
 
+  getProblemTitle(): string {
+    return this.data.problem?.ProblemTitle;
+  }
+
   getShortType(): string {
     let parts = this.type.split(".");
     if(parts.length == 6)

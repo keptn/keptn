@@ -68,7 +68,11 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
           .subscribe(project => {
             this.projectName = project.projectName;
             this.gitRemoteURI = project.gitRemoteURI;
-            this.service.deployments = project.getDeploymentsOfService(this.service.serviceName);
+            this.dataService._remediationsUpdated
+              .pipe(takeUntil(this.unsubscribe$))
+              .subscribe(() => {
+                this._changeDetectorRef.markForCheck();
+              });
             if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
               const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
               if (paramDeployment) {
@@ -90,13 +94,13 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
       });
   }
 
-  updateDataSource(count = -1): void {
+  private updateDataSource(count = -1): void {
     this.dataSource.data = count !== -1 ? this.service.deployments.slice(0, count) : this.service.deployments;
     this.pageSize = this.dataSource.data.length;
     this._changeDetectorRef.markForCheck();
   }
 
-  selectDeployment(deployment: Deployment, redirect = true): void {
+  public selectDeployment(deployment: Deployment, redirect = true): void {
     if (this.selectedDeployment !== deployment) {
       this.selectedDeployment = deployment;
 
@@ -107,6 +111,13 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
       this.selectedDeploymentChange.emit(this.selectedDeployment);
       this._changeDetectorRef.markForCheck();
     }
+  }
+
+  public selectStage(deployment: Deployment, stageName: string, $event) {
+    $event.stopPropagation();
+    this.selectDeployment(deployment, false);
+    this.router.navigate(['/', 'project', this.projectName, 'service', this.service.serviceName, 'context', deployment.shkeptncontext, 'stage', stageName]);
+    this._changeDetectorRef.markForCheck();
   }
 
   loadVersions(): void {
