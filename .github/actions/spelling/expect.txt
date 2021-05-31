@@ -159,7 +159,9 @@ depd
 dependabot
 depl
 deploymentdescriptions
+deploymentname
 deploymentstrategy
+deplyomentname
 DEPS
 dest
 destinationrule
@@ -168,6 +170,7 @@ devstorage
 devtools
 dirname
 distractor
+distributorversion
 dns
 dockerfile
 dockerhub
@@ -227,7 +230,6 @@ eventsender
 eventtype
 Evts
 exe
-exechelper
 expr
 expressjs
 externallink
@@ -349,6 +351,7 @@ Infof
 ingressgateway
 inp
 instanceof
+integrationversion
 Intelli
 ioutil
 ipaddress
@@ -367,6 +370,7 @@ istioctl
 ISub
 itf
 Itoa
+IUniform
 IUser
 jasminewd
 javascript
@@ -433,6 +437,7 @@ kubeconfig
 kubecontextcheck
 kubectl
 kubernetes
+kubernetesmetadata
 kvm
 kyaml
 lastversioncheck
@@ -467,7 +472,6 @@ mapfile
 mapstructure
 marcredhat
 matryer
-mattn
 mcs
 mdbrepo
 meb
@@ -601,6 +605,7 @@ plugin
 png
 poddescriptions
 podlogs
+podname
 polyfills
 powershell
 pprove
@@ -706,7 +711,6 @@ serviceutils
 Setenv
 shellcheck
 shellscripts
-shellwords
 shipyardversion
 shirtshop
 shkeptncontext
@@ -819,21 +823,26 @@ ucd
 ucdr
 uem
 uid
+uim
 uint
 unarchive
 uncomment
 undeploy
 unescape
+uniformintegrationmanager
+uniformrepo
 uninstall
 uninstalling
 unmarshal
 unmarshaling
 unmarshall
 unmarshalling
+unregister
 unsubscribe
 upgradable
 upgradeable
 uprinc
+Upsert
 upstreams
 uri
 URINo
