@@ -105,3 +105,13 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+  - package-ecosystem: npm
+    directory: "/bridge"
+    schedule:
+      interval: weekly
+      day: "wednesday"
+  - package-ecosystem: npm
+    directory: "/bridge/server"
+    schedule:
+      interval: weekly
+      day: "wednesday"
