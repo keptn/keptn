@@ -49,10 +49,10 @@ func Test_UniformRegistration(t *testing.T) {
 	require.Equal(t, uniformIntegration.Subscription, integrations[0].Subscription)
 
 	// delete the integration
-	resp, err = ApiDELETERequest("/controlPlan/v1/uniform/registration/" + registrationResponse.ID)
+	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/" + registrationResponse.ID)
 
 	require.Nil(t, err)
-	require.Equal(t, http.StatusOK, resp.Response().Status)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
 	// try to retrieve the integration again - should not be available anymore
 	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
