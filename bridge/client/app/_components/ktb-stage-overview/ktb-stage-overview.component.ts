@@ -4,6 +4,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output
 } from '@angular/core';
@@ -14,6 +15,8 @@ import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filt
 import {ApiService} from '../../_services/api.service';
 import {Service} from '../../_models/service';
 import {Root} from '../../_models/root';
+import {filter, takeUntil, tap} from "rxjs/operators";
+import {Subject, Subscription, timer} from "rxjs";
 
 @Component({
   selector: 'ktb-stage-overview',
@@ -21,13 +24,18 @@ import {Root} from '../../_models/root';
   styleUrls: ['./ktb-stage-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KtbStageOverviewComponent implements OnInit {
+export class KtbStageOverviewComponent implements OnInit, OnDestroy {
   public _project: Project;
   public selectedStage: Stage = null;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: any[];
   private filteredServices: string[] = [];
   private globalFilter: {[projectName: string]: {services: string[]}};
+
+  private unfinishedRoots: Root[];
+  private _rootsTimerInterval = 10;
+  private _rootsTimer: Subscription = Subscription.EMPTY;
+  private readonly unsubscribe$ = new Subject<void>();
 
   @Output() selectedStageChange: EventEmitter<any> = new EventEmitter();
   @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
@@ -48,6 +56,31 @@ export class KtbStageOverviewComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this._rootsTimer = timer(0, this._rootsTimerInterval * 1000)
+      .subscribe(() => {
+        this.dataService.loadRoots(this.project);
+        if(this.unfinishedRoots) {
+          this.unfinishedRoots.forEach(root => {
+            this.dataService.loadTraces(root);
+          })
+        }
+      });
+
+    this.dataService.roots
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter(roots => !!roots),
+        tap(roots => {
+            // Set unfinished roots so that the traces for updates can be loaded
+            // Also ignore currently selected root, as this is getting already polled
+            this.unfinishedRoots = roots.filter(root => root && !root.isFinished());
+          }
+        )).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this._rootsTimer.unsubscribe();
   }
 
   private setFilter(): void {

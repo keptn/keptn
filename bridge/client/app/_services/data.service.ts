@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from "rxjs";
-import {catchError, map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
+import {catchError, filter, map, mergeMap, switchMap, take, toArray} from "rxjs/operators";
 
 import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
@@ -15,6 +15,8 @@ import {DateUtil} from "../_utils/date.utils";
 import * as moment from 'moment';
 import {KeptnService} from '../_models/keptn-service';
 import {Deployment} from '../_models/deployment';
+import {Sequence} from '../_models/sequence';
+import {Resource} from '../_models/resource';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +29,7 @@ export class DataService {
   protected _traces = new BehaviorSubject<Trace[]>(null);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<any>(null);
+  protected _changedDeployments = new BehaviorSubject<Deployment[]>([]);
   protected _rootsLastUpdated: Object = {};
   protected _tracesLastUpdated: Object = {};
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
@@ -70,6 +73,10 @@ export class DataService {
 
   get evaluationResults(): Observable<any> {
     return this._evaluationResults;
+  }
+
+  get changedDeployments(): Observable<Deployment[]> {
+    return this._changedDeployments.asObservable();
   }
 
   public getProject(projectName): Observable<Project> {
@@ -131,26 +138,115 @@ export class DataService {
     this.loadKeptnInfo();
   }
 
+  public loadProject(projectName: string) {
+    this.apiService.getProject(projectName)
+      .pipe(
+        map(project => Project.fromJSON(project))
+      ).subscribe((project: Project) => {
+        const projects = this._projects.getValue();
+        const existingProject = projects.find(p => p.projectName === project.projectName);
+        if (existingProject){
+          Object.assign(existingProject, project);
+          this._projects.next(projects);
+        }
+    });
+  }
+
   public loadProjects() {
     this.apiService.getProjects(this._keptnInfo.getValue().bridgeInfo.projectsPageSize||50)
       .pipe(
         map(result => result.projects),
         map(projects =>
-          projects.map(project => {
-            project.stages = project.stages.map(stage => {
-              stage.services = stage.services.map(service => {
-                service.stage = stage.stageName;
-                return Service.fromJSON(service);
-              });
-              return Stage.fromJSON(stage);
-            });
-            return Project.fromJSON(project);
-          })
+          projects.map(project => Project.fromJSON(project))
         )
       ).subscribe((projects: Project[]) => {
       this._projects.next(projects);
     }, (err) => {
       this._projects.next([]);
+    });
+  }
+
+  public loadOpenRemediations(project: Project): void {
+    this.apiService.getOpenRemediations(project.projectName).pipe(
+      map(response => response.body),
+      map(sequenceResult => sequenceResult.states),
+      map(sequences => {
+        const changedDeployments: Deployment[] = [];
+        // remove finished remediations
+        for (const service of project.getServices()){
+          for (const deployment of service.deployments) {
+            for (const stage of deployment.stages) {
+              const filteredRemediations = stage.remediations.filter(r => sequences.some(s => s.shkeptncontext === r.shkeptncontext));
+              if (filteredRemediations.length !== stage.remediations.length) {
+                if(!changedDeployments.some(d => d.shkeptncontext === deployment.shkeptncontext)) {
+                  changedDeployments.push(deployment);
+                }
+                stage.remediations = filteredRemediations;
+              }
+            }
+          }
+        }
+        return [sequences, changedDeployments];
+      }),
+      mergeMap(([sequences, changedDeployments]) =>
+        from(sequences).pipe(
+          mergeMap((sequence: Sequence) => {
+            const service = project.getService(sequence.service);
+            const sequenceStage = sequence.stages[0].name;
+            let result = of(null);
+            if (service) {
+              const deployment = service.deployments.find(d => d.stages.some(stage => sequence.stages.some(s => s.name === stage.stageName)));
+              if (deployment) {
+                const stage = deployment.stages.find(s => s.stageName === sequenceStage);
+                if (stage) {
+                  const existingRemediation = stage.remediations.find(r => r.shkeptncontext === sequence.shkeptncontext);
+                  let _root: Observable<any> = of(null);
+                  let _resourceContent: Observable<any> = of(null);
+
+                  // update existing remediation
+                  if (existingRemediation) {
+                    Object.assign(existingRemediation, Sequence.fromJSON(sequence));
+                  }
+                  else {
+                    const remediation = Sequence.fromJSON(sequence);
+                    stage.remediations.push(remediation);
+                    if (!remediation.problemTitle) {
+                      _root = this.getRoot(project.projectName, remediation.shkeptncontext).pipe(
+                        map(root => {
+                          remediation.problemTitle = root.getProblemTitle();
+                        }));
+                    }
+                  }
+
+                  if (!stage?.config) {
+                    _resourceContent = this.apiService.getServiceResource(project.projectName, sequenceStage, deployment.service, 'remediation.yaml').pipe(
+                      map(resource => {
+                        stage.config = atob(resource.resourceContent);
+                        return stage;
+                      })
+                    );
+                  }
+                  result = forkJoin([_root, _resourceContent]).pipe(switchMap(() => of(deployment)));
+                }
+              }
+            }
+            return result;
+          }),
+          toArray(),
+          filter(deployment => !!deployment),
+          map((newChangedDeployments: Deployment[]) => {
+            const deployments = changedDeployments as Deployment[];
+            for (const deployment of newChangedDeployments) {
+              if (!deployments.some(d => d.shkeptncontext === deployment.shkeptncontext)) {
+                deployments.push(deployment);
+              }
+            }
+            return deployments;
+          })
+        )
+      )
+    ).subscribe((deployments: Deployment[]) => {
+      this._changedDeployments.next(deployments);
     });
   }
 

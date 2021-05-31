@@ -13,7 +13,7 @@ export class KtbDeploymentStageTimelineComponent {
 
   constructor() { }
 
-  selectStage(stage: string) {
+  public selectStage(stage: string): void {
     if (this.selectedStage !== stage) {
       this.selectedStage = stage;
       this.selectedStageChange.emit(this.selectedStage);

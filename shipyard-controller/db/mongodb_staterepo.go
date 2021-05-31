@@ -16,7 +16,11 @@ const taskSequenceStateCollectionSuffix = "-taskSequenceStates"
 var ErrStateAlreadyExists = errors.New("sequence state already exists")
 
 type MongoDBStateRepo struct {
-	DbConnection MongoDBConnection
+	DBConnection *MongoDBConnection
+}
+
+func NewMongoDBStateRepo(dbConnection *MongoDBConnection) *MongoDBStateRepo {
+	return &MongoDBStateRepo{DBConnection: dbConnection}
 }
 
 func (mdbrepo *MongoDBStateRepo) CreateSequenceState(state models.SequenceState) error {
@@ -29,7 +33,7 @@ func (mdbrepo *MongoDBStateRepo) CreateSequenceState(state models.SequenceState)
 	if state.Name == "" {
 		return errors.New("name must be set")
 	}
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -37,7 +41,7 @@ func (mdbrepo *MongoDBStateRepo) CreateSequenceState(state models.SequenceState)
 	defer cancel()
 
 	databaseName := getDatabaseName()
-	collection := mdbrepo.DbConnection.Client.Database(databaseName).Collection(state.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DBConnection.Client.Database(databaseName).Collection(state.Project + taskSequenceStateCollectionSuffix)
 
 	existingSequence := collection.FindOne(ctx, bson.M{"shkeptncontext": state.Shkeptncontext})
 	if existingSequence.Err() == nil || existingSequence.Err() != mongo.ErrNoDocuments {
@@ -54,11 +58,11 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	if filter.Project == "" {
 		return nil, errors.New("project must be set")
 	}
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
 	}
-	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -153,14 +157,14 @@ func (mdbrepo *MongoDBStateRepo) UpdateSequenceState(state models.SequenceState)
 	if state.Name == "" {
 		return errors.New("name must be set")
 	}
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(state.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(state.Project + taskSequenceStateCollectionSuffix)
 	_, err = collection.ReplaceOne(ctx, bson.M{"shkeptncontext": state.Shkeptncontext}, state)
 	if err != nil {
 		return err
@@ -175,7 +179,7 @@ func (mdbrepo *MongoDBStateRepo) DeleteSequenceStates(filter models.StateFilter)
 	if filter.Shkeptncontext == "" {
 		return errors.New("shkeptncontext must be set")
 	}
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -184,7 +188,7 @@ func (mdbrepo *MongoDBStateRepo) DeleteSequenceStates(filter models.StateFilter)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
+	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
 	_, err = collection.DeleteMany(ctx, searchOptions)
 	if err != nil {
 		return err

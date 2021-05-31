@@ -6,12 +6,11 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Observable, Subject} from 'rxjs';
-import {filter, takeUntil} from 'rxjs/operators';
+import {ActivatedRoute} from '@angular/router';
+import {Subject, timer} from 'rxjs';
+import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
-import {Location} from '@angular/common';
 import { Deployment } from 'client/app/_models/deployment';
 
 @Component({
@@ -28,12 +27,13 @@ import { Deployment } from 'client/app/_models/deployment';
 export class KtbServiceViewComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-  public project$: Observable<Project>;
+  public project: Project;
   public serviceName: string;
   public selectedDeployment: Deployment;
   public isQualityGatesOnly: boolean;
+  private _projectTimerInterval = 30 * 1000;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.dataService.keptnInfo
@@ -41,17 +41,42 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.isQualityGatesOnly = !keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY');
-      });
-
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.serviceName = params.serviceName;
-
-        this.project$ = this.dataService.getProject(params.projectName);
-        this.serviceName = params.serviceName;
         this._changeDetectorRef.markForCheck();
       });
+
+    this.dataService.changedDeployments
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this._changeDetectorRef.markForCheck();
+      });
+
+    const params$ = this.route.params
+      .pipe(takeUntil(this.unsubscribe$));
+
+    const project$ = params$.pipe(
+      switchMap(params => this.dataService.getProject(params.projectName)),
+      takeUntil(this.unsubscribe$)
+      );
+
+    const timer$ = params$.pipe(
+      switchMap((params) => timer(0, this._projectTimerInterval).pipe(map(() => params.projectName))),
+      takeUntil(this.unsubscribe$)
+    );
+
+    params$.subscribe(params => {
+      this.serviceName ??= params.serviceName;
+      this._changeDetectorRef.markForCheck();
+    });
+
+    project$.subscribe(project => {
+      this.dataService.loadOpenRemediations(project);
+      this.project = project;
+      this._changeDetectorRef.markForCheck();
+    });
+
+    timer$.subscribe(projectName => {
+      this.dataService.loadProject(projectName);
+    });
   }
 
   public selectService(projectName: string, serviceName: string): void {

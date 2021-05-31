@@ -40,7 +40,6 @@ const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarEventDispatchIntervalSecDefault = "10"
 
 func main() {
-
 	log.SetLevel(log.InfoLevel)
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
@@ -118,21 +117,27 @@ func main() {
 	evaluationController := controller.NewEvaluationController(evaluationHandler)
 	evaluationController.Inject(apiV1)
 
-	stateHandler := handler.NewStateHandler(&db.MongoDBStateRepo{})
+	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()))
 	stateController := controller.NewStateController(stateHandler)
 	stateController.Inject(apiV1)
 
-	healthHandler := handler.NewHealthHandler()
-	healthController := controller.NewHealthController(healthHandler)
-	healthController.Inject(apiHealth)
-
-	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(&db.MongoDBStateRepo{})
+	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(createStateRepo())
 	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
+
+	uniformRepo := createUniformRepo()
+	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
+	uniformHandler := handler.NewUniformIntegrationHandler(uniformManager)
+	uniformController := controller.NewUniformIntegrationController(uniformHandler)
+	uniformController.Inject(apiV1)
+
+	healthHandler := handler.NewHealthHandler()
+	healthController := controller.NewHealthController(healthHandler)
+	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
@@ -146,20 +151,28 @@ func createMaterializedView() *db.ProjectsMaterializedView {
 	return projectesMaterializedView
 }
 
+func createUniformRepo() *db.MongoDBUniformRepo {
+	return db.NewMongoDBUniformRepo(db.GetMongoDBConnectionInstance())
+}
+
+func createStateRepo() *db.MongoDBStateRepo {
+	return db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
+}
+
 func createProjectRepo() *db.MongoDBProjectsRepo {
-	return &db.MongoDBProjectsRepo{}
+	return db.NewMongoDBProjectsRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createEventsRepo() *db.MongoDBEventsRepo {
-	return &db.MongoDBEventsRepo{}
+	return db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createEventQueueRepo() *db.MongoDBEventQueueRepo {
-	return &db.MongoDBEventQueueRepo{}
+	return db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createTaskSequenceRepo() *db.TaskSequenceMongoDBRepo {
-	return &db.TaskSequenceMongoDBRepo{}
+	return db.NewTaskSequenceMongoDBRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {

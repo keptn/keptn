@@ -56,7 +56,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
                     filter(project => !!project)
                   )
                   .subscribe(project => {
-                    this.deployments = project.getDeploymentsOfService(this.root.getService());
+                    this.deployments = project.getService(this.root.getService()).deployments;
                     this._changeDetectorRef.markForCheck();
                   });
               } else {
@@ -72,7 +72,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
   }
 
   public getDeployment(stage: string) {
-    return this.deployments.find(deployment => deployment.stages.includes(stage));
+    return this.deployments.find(deployment => deployment.stages.find(s => s.stageName === stage));
   }
 
   goBack(): void {

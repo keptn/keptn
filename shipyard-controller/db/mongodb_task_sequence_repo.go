@@ -12,14 +12,18 @@ import (
 
 // TaskSequenceMongoDBRepo godoc
 type TaskSequenceMongoDBRepo struct {
-	DbConnection MongoDBConnection
+	DBConnection *MongoDBConnection
+}
+
+func NewTaskSequenceMongoDBRepo(dbConnection *MongoDBConnection) *TaskSequenceMongoDBRepo {
+	return &TaskSequenceMongoDBRepo{DBConnection: dbConnection}
 }
 
 const taskSequenceCollectionNameSuffix = "-taskSequences"
 
 // GetTaskSequence godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error) {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +53,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID str
 
 // CreateTaskSequenceMapping godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) CreateTaskSequenceMapping(project string, taskSequenceEvent models.TaskSequenceEvent) error {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -68,7 +72,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) CreateTaskSequenceMapping(project string
 
 // DeleteTaskSequenceMapping godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, project, stage, taskSequenceName string) error {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -87,7 +91,7 @@ func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceMapping(keptnContext, 
 
 // DeleteTaskSequenceCollection godoc
 func (mdbrepo *TaskSequenceMongoDBRepo) DeleteTaskSequenceCollection(project string) error {
-	err := mdbrepo.DbConnection.EnsureDBConnection()
+	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
@@ -113,6 +117,6 @@ func (mdbrepo *TaskSequenceMongoDBRepo) deleteCollection(collection *mongo.Colle
 }
 
 func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceCollection(project string) *mongo.Collection {
-	projectCollection := mdbrepo.DbConnection.Client.Database(getDatabaseName()).Collection(project + taskSequenceCollectionNameSuffix)
+	projectCollection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(project + taskSequenceCollectionNameSuffix)
 	return projectCollection
 }

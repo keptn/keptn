@@ -17,6 +17,8 @@ import {KeptnServicesMock} from '../_models/keptn-services.mock';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
 import * as moment from 'moment';
+import {SequenceResult} from '../_models/sequence-result';
+import {Project} from '../_models/project';
 
 @Injectable({
   providedIn: 'root'
@@ -94,6 +96,12 @@ export class ApiService {
     }
   }
 
+  public getProject(projectName: string): Observable<Project> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}?disableUpstreamSync=true`;
+    return this.http
+      .get<Project>(url);
+  }
+
   public getProjects(pageSize?: number): Observable<ProjectResult> {
     let url = `${this._baseUrl}/controlPlane/v1/project?disableUpstreamSync=true`;
     if(pageSize)
@@ -116,6 +124,12 @@ export class ApiService {
       .get<Resource[]>(url);
   }
 
+  public getServiceResource(projectName: string, stageName: string, serviceName: string, resourceUri: string) {
+    const url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/stage/${stageName}/service/${serviceName}/resource/${resourceUri}`;
+    return this.http
+      .get<Resource>(url);
+  }
+
   public getTaskNames(projectName: string): Observable<string[]>{
     return of(TaskNames);
   }
@@ -130,6 +144,29 @@ export class ApiService {
     let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url);
+  }
+
+  public getOpenRemediations(projectName: string): Observable<HttpResponse<SequenceResult>> {
+    return this.getSequences(projectName, 'remediation', 'triggered');
+  }
+
+  public getSequences(projectName: string, sequenceName?: string, state?: string, fromTime?: string, beforeTime?: string): Observable<HttpResponse<SequenceResult>> {
+    const url = `${this._baseUrl}/controlPlane/v1/sequence/${projectName}`;
+    const params: any = {};
+    if (sequenceName) {
+      params.name = sequenceName;
+    }
+    if (state) {
+      params.state = state;
+    }
+    if (fromTime) {
+      params.fromTime = fromTime;
+    }
+    if (beforeTime) {
+      params.beforeTime = beforeTime;
+    }
+    return this.http
+      .get<SequenceResult>(url, { params, observe: 'response' });
   }
 
   public getRoots(projectName: string, pageSize: number, serviceName?: string, fromTime?: string, beforeTime?: string, shkeptncontext?: string): Observable<HttpResponse<EventResult>> {

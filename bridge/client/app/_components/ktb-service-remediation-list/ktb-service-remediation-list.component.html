@@ -1,0 +1,55 @@
+<div fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="space-between center">
+  <h2>Open remediations</h2>
+  <button dt-button variant="secondary" (click)="showDialog()">
+    <dt-icon name="services"></dt-icon>
+    Show remediation config
+  </button>
+</div>
+<dt-table [dataSource]="dataSource">
+  <ng-container dtColumnDef="date" dtColumnProportion="2">
+    <dt-cell *dtCellDef="let row">
+      <div fxLayout="row" fxLayoutAlign="start center">
+        <button *ngIf="row.state === 'triggered', else finished" class="m-0 p-0" dt-button disabled variant="nested">
+          <dt-loading-spinner aria-label="Remediation is running..."></dt-loading-spinner>
+        </button>
+        <ng-template #finished>
+          <dt-icon name="criticalevent" [class]="row.isFaulty(this.stage.stageName) ? 'error' : 'success'" class="event-icon"></dt-icon>
+        </ng-template>
+        <span [textContent]="row.time | amDateFormat:dateUtil.getDateTimeFormat()"></span>
+      </div>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="remediation" dtColumnProportion="4">
+    <dt-cell *dtCellDef="let row">
+      <span>Remediation for: <span class="bold" [textContent]="row.problemTitle"></span></span>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="evaluationResult" dtColumnProportion="1">
+    <dt-cell *dtCellDef="let row">
+      <ktb-evaluation-info [evaluationResult]="row.getStage(this.stage.stageName).latestEvaluation"></ktb-evaluation-info>
+    </dt-cell>
+  </ng-container>
+
+  <ng-container dtColumnDef="action" dtColumnProportion="2" dtColumnAlign="number">
+    <dt-cell *dtCellDef="let row">
+      <button dt-button variant="secondary" class="table-button" [routerLink]="getRemediationLink(row)">
+        View remediation sequence
+      </button>
+    </dt-cell>
+  </ng-container>
+
+  <dt-row *dtRowDef="let row; columns: ['date', 'remediation', 'evaluationResult', 'action']"></dt-row>
+</dt-table>
+
+<ng-template #remediationDialog let-data>
+  <h1 mat-dialog-title>Remediation</h1>
+  <div mat-dialog-content>
+    <pre [textContent]="data"></pre>
+  </div>
+  <div mat-dialog-actions>
+    <button dt-button variant="secondary" (click)="copyPayload(data)">Copy</button>
+    <button dt-button class="ml-2" (click)="closeDialog()">Close</button>
+  </div>
+</ng-template>
