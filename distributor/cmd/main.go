@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"os/signal"
 
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -68,7 +69,7 @@ var closeChan = make(chan bool)
 
 var ceCache = lib.NewCloudEventsCache()
 
-var pubSubConnections map[string]*cenats.Sender
+var pubSubConnections = map[string]*cenats.Sender{}
 
 var env envConfig
 
@@ -99,30 +100,38 @@ func main() {
 }
 
 func _main(env envConfig) int {
-
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	go startAPIProxy(env, wg)
-	go startEventReceiver(wg)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-c
+		cancel()
+	}()
+
+	lib.Register()
+	go startAPIProxy(ctx, wg, env)
+	go startEventReceiver(ctx, wg)
 
 	wg.Wait()
-
+	logger.Info("Distributor terminated gracefully")
+	lib.Unregister()
 	return 0
 }
 
-func startEventReceiver(waitGroup *sync.WaitGroup) {
+func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
-
 	setupCEClient()
 
 	switch getPubSubConnectionType() {
 	case connectionTypeNATS:
-		createNATSClientConnection()
+		createNATSClientConnection(ctx)
 	case connectionTypeHTTP:
-		createHTTPConnection()
+		createHTTPConnection(ctx)
 	default:
-		createNATSClientConnection()
+		createNATSClientConnection(ctx)
 	}
 }
 
@@ -133,28 +142,45 @@ func getPubSubConnectionType() string {
 	}
 	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
 	return connectionTypeHTTP
-
 }
 
-func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
+func startAPIProxy(ctx context.Context, wg *sync.WaitGroup, env envConfig) (err error) {
 	defer wg.Done()
-	pubSubConnections = map[string]*cenats.Sender{}
 	logger.Info("Creating event forwarding endpoint")
-
-	http.HandleFunc(env.EventForwardingPath, EventForwardHandler)
-	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
 	serverURL := fmt.Sprintf("localhost:%d", env.APIProxyPort)
 
-	err := http.ListenAndServe(serverURL, nil)
-	if err != nil {
-		logger.Errorf("Unable to start API Proxy: %v", err)
+	mux := http.NewServeMux()
+	mux.Handle(env.EventForwardingPath, http.HandlerFunc(EventForwardHandler))
+	mux.Handle(env.APIProxyPath, http.HandlerFunc(APIProxyHandler))
+
+	svr := &http.Server{
+		Addr:    serverURL,
+		Handler: mux,
 	}
 
+	go func() {
+		if err := svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Fatalf("listen:%+s\n", err)
+		}
+	}()
+
+	<-ctx.Done()
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if err := svr.Shutdown(ctxShutDown); err != nil {
+		logger.Fatalf("server Shutdown Failed:%+s", err)
+	}
+	if errors.Is(err, http.ErrServerClosed) {
+		err = nil
+	}
+	return
 }
 
 // EventForwardHandler forwards events received by the execution plane services to the Keptn API or the Nats server
 func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
-
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		logger.Errorf("Failed to read body from request: %v", err)
@@ -393,7 +419,7 @@ func getHTTPClient() *http.Client {
 	return client
 }
 
-func createHTTPConnection() {
+func createHTTPConnection(ctx context.Context) {
 	if env.PubSubRecipient == "" {
 		logger.Error("No pubsub recipient defined")
 		return
@@ -410,8 +436,12 @@ func createHTTPConnection() {
 	pollingTicker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
 
 	for {
-		<-pollingTicker.C
-		pollHTTPEventSource(eventEndpoint, env.KeptnAPIToken, topics)
+		select {
+		case <-pollingTicker.C:
+			pollHTTPEventSource(eventEndpoint, env.KeptnAPIToken, topics)
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
@@ -579,13 +609,13 @@ func hasEventBeenSent(sentEvents []string, eventID string) bool {
 	return alreadySent
 }
 
-func createNATSClientConnection() {
+func createNATSClientConnection(ctx context.Context) {
 	if env.PubSubRecipient == "" {
-		fmt.Println("No pubsub recipient defined")
+		logger.Warn("No pubsub recipient defined")
 		return
 	}
 	if env.PubSubTopic == "" {
-		fmt.Println("No pubsub topic defined. No need to create NATS client connection.")
+		logger.Warn("No pubsub topic defined. No need to create NATS client connection.")
 		return
 	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
@@ -599,14 +629,13 @@ func createNATSClientConnection() {
 	err := nch.SubscribeToTopics()
 
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
 	defer func() {
 		nch.RemoveAllSubscriptions()
-		// Close connection
-		fmt.Println("Disconnected from NATS")
+		logger.Info("Disconnected from NATS")
 	}()
 
 	for {
@@ -615,8 +644,10 @@ func createNATSClientConnection() {
 			_ = nch.SubscribeToTopics()
 		case <-closeChan:
 			return
-
+		case <-ctx.Done():
+			return
 		}
+
 	}
 }
 
