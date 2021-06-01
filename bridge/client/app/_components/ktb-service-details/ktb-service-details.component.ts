@@ -16,7 +16,6 @@ import {Trace} from '../../_models/trace';
 export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   private _deployment: Deployment;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
-  public isQualityGatesOnly: boolean;
 
   public projectName: string;
   public selectedStage: string;
@@ -42,13 +41,6 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void {
-    this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
-        this.isQualityGatesOnly = !keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY');
-        this._changeDetectorRef.markForCheck();
-      });
     this.route.params.pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe(params => {

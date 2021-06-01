@@ -35,8 +35,7 @@
         <dt-icon class="event-icon info mr-1" name="information"></dt-icon>
         <div fxLayout="column">
           <span>No evaluation performed during the sequence execution.</span>
-          <span *ngIf="!isQualityGatesOnly">To perform an evaluation, add the <code>evaluation</code> task to the <code>delivery</code> sequence of the <code [textContent]="selectedStage"></code> stage in the Shipyard for this project.</span>
-          <span *ngIf="isQualityGatesOnly">To perform an evaluation, use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a>.</span>
+          <span>To perform an evaluation, add the <code>evaluation</code> task to the <code>delivery</code> sequence of the <code [textContent]="selectedStage"></code> stage in the Shipyard for this project.</span>
         </div>
       </div>
 
