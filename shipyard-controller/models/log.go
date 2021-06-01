@@ -6,11 +6,13 @@ type CreateLogsRequest struct {
 	Logs []LogEntry `form:"logs" json"logs"`
 }
 
+type CreateLogsReponse struct{}
+
 type GetLogParams struct {
 	NextPageKey int64 `form:"nextPageKey" json:"nextPageKey"`
 	PageSize    int64 `form:"pageSize" json:"pageSize"`
 
-	IntegrationID string `form:"integrationID" json:"integrationID"`
+	IntegrationID string `form:"integrationId" json:"integrationId"`
 	FromTime      string `form:"fromTime" json:"fromTime"`
 	BeforeTime    string `form:"beforeTime" json:"beforeTime"`
 }

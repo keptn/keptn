@@ -2,6 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"net/http"
 )
 
 type ILogHandler interface {
@@ -29,8 +31,18 @@ func NewLogHandler(logManager ILogManager) *LogHandler {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /log [post]
-func (LogHandler) CreateLogEntries(context *gin.Context) {
-	panic("implement me")
+func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
+	logs := &models.CreateLogsRequest{}
+	if err := context.ShouldBindJSON(logs); err != nil {
+		SetBadRequestErrorResponse(err, context)
+		return
+	}
+
+	if err := lh.logManager.CreateLogEntries(*logs); err != nil {
+		SetInternalServerErrorResponse(err, context)
+		return
+	}
+	context.JSON(http.StatusOK, models.CreateLogsReponse{})
 }
 
 // GetLogEntries Retrieves log entries based on the provided filter
@@ -49,6 +61,17 @@ func (LogHandler) CreateLogEntries(context *gin.Context) {
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /log [get]
-func (LogHandler) GetLogEntries(context *gin.Context) {
-	panic("implement me")
+func (lh *LogHandler) GetLogEntries(context *gin.Context) {
+	params := &models.GetLogParams{}
+	if err := context.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(err, context, "Invalid request format")
+		return
+	}
+
+	logs, err := lh.logManager.GetLogEntries(*params)
+	if err != nil {
+		SetInternalServerErrorResponse(err, context, "Unable to retrieve logs")
+		return
+	}
+	context.JSON(http.StatusOK, logs)
 }
