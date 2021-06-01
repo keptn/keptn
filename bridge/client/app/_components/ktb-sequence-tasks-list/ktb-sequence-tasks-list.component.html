@@ -1,4 +1,4 @@
-<div fxLayout="column" fxLayoutGap="15px">
+<div fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-tasks-list-tasks">
   <div #taskRef fxLayout="column" fxLayoutGap="15px" *ngFor="let task of getTasksByStage(tasks, stage); let i = index; trackBy: identifyEvent">
     <ktb-task-item [task]="task" [isExpanded]="isFocusedTask(task)" [class.focused]="task.id == focusedEventId && scrollIntoView(taskRef)" (itemClicked)="focusEvent($event)" (click)="focusEvent(task)"></ktb-task-item>
   </div>
