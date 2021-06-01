@@ -417,6 +417,7 @@ keptnexamples
 keptnkubeutils
 keptnlabel
 keptnmodels
+keptnsandbox
 keptnservices
 keptnutils
 keptnversion
