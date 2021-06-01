@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -78,13 +79,13 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 	myValidIntegration := &models.Integration{
 		ID:   "my-id",
 		Name: "my-name",
-		MetaData: models.MetaData{
+		MetaData: keptnmodels.MetaData{
 			DistributorVersion: "0.8.3",
-			KubernetesMetaData: models.KubernetesMetaData{
+			KubernetesMetaData: keptnmodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscription: models.Subscription{
+		Subscription: keptnmodels.Subscription{
 			Topics: []string{
 				"sh.keptn.event.test.triggered",
 			},
@@ -92,13 +93,13 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 	}
 	validPayload, _ := json.Marshal(myValidIntegration)
 
-	myInvalidIntegration := &models.Integration{
+	myInvalidIntegration := &keptnmodels.Integration{
 		ID:   "my-id",
 		Name: "my-name",
-		MetaData: models.MetaData{
+		MetaData: keptnmodels.MetaData{
 			DistributorVersion: "0.8.3",
 		},
-		Subscription: models.Subscription{
+		Subscription: keptnmodels.Subscription{
 			Topics: []string{
 				"sh.keptn.event.test.triggered",
 			},
