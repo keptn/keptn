@@ -378,6 +378,14 @@ export class DataService {
       });
   }
 
+  public getEvaluationResult(shkeptncontext: string): Observable<Trace> {
+    return this.apiService.getEvaluationResult(shkeptncontext)
+      .pipe(
+        map(result => result.events||[]),
+        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(t => true))
+      )
+  }
+
   public sendApprovalEvent(approval: Trace, approve: boolean) {
     this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_STARTED, 'approval.started')
       .pipe(
