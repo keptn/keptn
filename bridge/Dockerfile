@@ -37,7 +37,7 @@ WORKDIR /usr/src/app/server
 RUN npm install
 WORKDIR /usr/src/app
 
-RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
+RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app && chmod -R 755 /usr/src/app
 
 # Set user
 USER myuser
