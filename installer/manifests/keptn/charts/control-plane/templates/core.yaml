@@ -37,7 +37,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}  
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 type: Opaque
 data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
@@ -55,7 +55,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}    
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -71,7 +71,7 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}    
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
         fsGroup: 65532
@@ -79,6 +79,7 @@ spec:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -114,7 +115,8 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -139,7 +141,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}  
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080
@@ -162,7 +164,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}      
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -178,7 +180,7 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.bridge.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}      
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
         fsGroup: 65532
@@ -250,7 +252,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}      
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080
@@ -299,7 +301,8 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.livenessProbe" (dict "port" 8080) | nindent 10 }}
+          {{- include "control-plane.readinessProbe" (dict "port" 8080) | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIGURATION_SERVICE
@@ -342,7 +345,8 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -442,6 +446,7 @@ spec:
         - name: secret-service
           image: {{ .Values.secretService.image.repository }}:{{ .Values.secretService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAMESPACE
@@ -502,7 +507,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}     
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -524,7 +529,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}     
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -543,7 +548,7 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}   
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       securityContext:
         fsGroup: 65532
@@ -563,6 +568,7 @@ spec:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
@@ -610,7 +616,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
-    helm.sh/chart: {{ include "control-plane.chart" . }}   
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080
@@ -659,7 +665,8 @@ spec:
       containers:
         - name: statistics-service
           image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.livenessProbe" (dict "port" 8080) | nindent 10 }}
+          {{- include "control-plane.readinessProbe" (dict "port" 8080) | nindent 10 }}
           imagePullPolicy: IfNotPresent
           env:
             - name: AGGREGATION_INTERVAL_SECONDS
@@ -696,7 +703,8 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -773,6 +781,7 @@ spec:
         - name: approval-service
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -795,7 +804,8 @@ spec:
             allowPrivilegeEscalation: false
         - name: distributor
           image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

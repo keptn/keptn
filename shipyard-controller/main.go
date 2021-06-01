@@ -12,6 +12,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"strconv"
@@ -39,13 +40,16 @@ const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarEventDispatchIntervalSecDefault = "10"
 
 func main() {
-
 	log.SetLevel(log.InfoLevel)
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
 		docs.SwaggerInfo.Version = osutils.GetOSEnv("version")
 		docs.SwaggerInfo.BasePath = "/api/shipyard-controller/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
+
+		// disable GIN request logging in release mode
+		gin.SetMode("release")
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	eventDispatcherSyncInterval, err := strconv.Atoi(osutils.GetOSEnvOrDefault(envVarEventDispatchIntervalSec, envVarEventDispatchIntervalSecDefault))
@@ -87,6 +91,8 @@ func main() {
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
+	apiHealth := engine.Group("")
+
 	projectService := handler.NewProjectHandler(projectManager, eventSender)
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
@@ -128,6 +134,10 @@ func main() {
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformManager)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
 	uniformController.Inject(apiV1)
+
+	healthHandler := handler.NewHealthHandler()
+	healthController := controller.NewHealthController(healthHandler)
+	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
