@@ -20,9 +20,15 @@ var serviceTemplateRepoUrl = "https://github.com/keptn-sandbox/keptn-service-tem
 var serviceTemplateRefUrl = "https://api.github.com/repos/keptn-sandbox/keptn-service-template-go/git/refs/tags"
 
 var generateKeptnServiceCmd = &cobra.Command{
-	Use:          "keptn-service",
-	Short:        "Generates keptn service",
-	Long:         `Generates keptn service with version check`,
+	Use:   "keptn-service --service=SERVICE_NAME --image=IMAGE_NAME --events=EVENT1,EVENT2",
+	Short: "Generates a keptn service with your image and cloud events you wish to listen for",
+	Long: `Creates a new keptn service with your image and events you wish to listen for.
+
+	This command can be used to automatically clone the template from https://github.com/keptn-sandbox/keptn-service-template-go according to your keptn cluster version, and set the requirements as mentioned in the README.md.
+
+	A new folder with the service name will be generated which will hold all the template requirements for your own keptn-service.
+	`,
+	Example: `keptn generate keptn-service --service=myService --image=SOME_IMAGE_NAME --events=sh.keptn.events.problem,sh.keptn.events.deployment-finished`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Keptn Service CLI generation work in progress \n")
@@ -62,8 +68,8 @@ func generateServiceTemplate(generateKeptnService generateKeptnServiceStruct) er
 	return nil
 }
 
-func removeGeneratedGitFolder(serviceName string) error{
-	err := os.RemoveAll(serviceName+"/.git")
+func removeGeneratedGitFolder(serviceName string) error {
+	err := os.RemoveAll(serviceName + "/.git")
 	if err != nil {
 		return err
 	}
