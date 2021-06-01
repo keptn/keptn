@@ -27,11 +27,17 @@
     .dt-tag {
       border-color: $error-color;
     }
+    .timeline-item:hover, .focused {
+      background-color: $error-color;
+    }
   }
 
   &.ktb-stage-badge-warning {
     .dt-tag {
       border-color: $warning-color;
+    }
+    .timeline-item:hover, .focused {
+      background-color: $warning-color;
     }
   }
 
@@ -39,20 +45,27 @@
     .dt-tag {
       border-color: $cta-color;
     }
+    .timeline-item:hover, .focused {
+      background-color: $cta-color-active;
+    }
   }
 
   &.ktb-stage-badge-highlight {
     .dt-tag {
       border-color: $blue-400;
     }
+    .timeline-item:hover, .focused {
+      background-color: $blue-400;
+    }
   }
 }
 
-.stage-transition {
+.timeline-item {
   font-size: $default-font-size;
-  transition: font-size $transition-time, font-weight $transition-time;
-  &.focused {
-    font-size: $default-font-size + 2px;
-    font-weight: bold;
-  }
+  text-decoration: black underline;
+}
+
+.timeline-item:hover, .focused {
+  color: white;
+  text-decoration: white underline;
 }
