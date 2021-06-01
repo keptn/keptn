@@ -1,5 +1,5 @@
 <div class="container" *ngIf="!(projects$ | async)">
-  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" uitestid="keptn-dashboard-loading">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
   </div>
@@ -17,7 +17,7 @@
   </dt-empty-state>
 </div>
 <ng-container *ngIf="projects$ | async as projects">
-  <div class="container" *ngIf="projects.length > 0">
+  <div class="container" *ngIf="projects.length > 0" uitestid="keptn-dashboard-projectList">
     <dt-info-group>
       <dt-info-group-title>
         <p><span [textContent]="projects.length"></span>&nbsp;<span i18n>Projects</span></p>
