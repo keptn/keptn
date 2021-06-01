@@ -25,7 +25,7 @@
     </div>
   </div>
   <div *ngIf="_event.data.problem?.ProblemDetails">
-    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.problem.ProblemDetails.tagsOfAffectedEntities" uitestid="keptn-event-item-tags">
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.problem.ProblemDetails.tagsOfAffectedEntities" uitestid="keptn-event-item-problemTags">
       <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
       <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
         <dt-tag *ngFor="let tag of _event.data.problem.ProblemDetails.tagsOfAffectedEntities">
@@ -35,7 +35,7 @@
       </dt-tag-list>
     </div>
   </div>
-  <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()" uitestid="keptn-event-item-labels">
+  <div *ngIf="showLabels && _event.getFinishedEvent()?.hasLabels()" uitestid="keptn-event-item-evaluationTags">
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">

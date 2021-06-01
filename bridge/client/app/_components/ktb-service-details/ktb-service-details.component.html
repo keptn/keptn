@@ -6,7 +6,7 @@
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
           <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center" class="service-title">
             <span class="bold" [textContent]="deployment.sequence.getShortImageName() || deployment.service"></span>&nbsp;
-            <dt-tag-list aria-label="deployment-labels" uitestid="keptn-service-details-deployment-tags">
+            <dt-tag-list aria-label="deployment-labels" uitestid="keptn-service-details-deploymentTags">
               <dt-tag *ngFor="let label of (deployment.sequence.getLastTrace()?.getFinishedEvent()?.data.labels || deployment.sequence.data.labels) | keyvalue">
                 <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
                 <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
