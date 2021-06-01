@@ -53,6 +53,7 @@ if(lookAndFeelUrl) {
     });
   } catch (e) {
     console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+    process.exit(1);
   }
 }
 
