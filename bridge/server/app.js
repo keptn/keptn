@@ -31,16 +31,6 @@ if(!integrationsPageLink) {
   integrationsPageLink = "https://get.keptn.sh/integrations.html";
 }
 
-function getFiles(dir, files_) {
-  files_ = files_ || [];
-  var files = fs.readdirSync(dir);
-  for (var i in files){
-    var name = dir + '/' + files[i];
-    files_.push(name);
-  }
-  return files_;
-}
-
 if(lookAndFeelUrl) {
   setTimeout(() => {
     console.log("Downloading custom Look-and-Feel file from", lookAndFeelUrl);
@@ -55,7 +45,7 @@ if(lookAndFeelUrl) {
       file.on('finish', function() {
         file.close(() => {
           let zip = new admZip(destFile);
-          zip.extractAllTo(/*target path*/ destDir, /*overwrite*/ true);
+          zip.extractAllTo(destDir, true);
         });
       });
     }).on('error', function(err) {
@@ -67,22 +57,6 @@ if(lookAndFeelUrl) {
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
 
 module.exports = (async function (){
-  app.use('/dir', (req, resp, next) => {
-    let bridgeDir = path.join(__dirname, '../dist');
-    let destDir = path.join(bridgeDir, '/assets/branding');
-    let destFile = path.join(destDir, '/lookandfeel.zip');
-    return resp.status(200).send({
-      bridgeDir,
-      destDir,
-      destFile,
-      bridgeFiles: getFiles(bridgeDir),
-      brandingFiles: getFiles(destDir),
-      clientFiles: getFiles(path.join(__dirname, '../client')),
-      rootFiles: getFiles(path.join(__dirname, '../')),
-      serverFiles: getFiles(__dirname)
-    });
-  });
-
   // server static files - Images & CSS
   app.use('/static', express.static(path.join(__dirname, 'views/static'), {maxAge: oneWeek}));
 
