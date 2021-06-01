@@ -36,11 +36,7 @@ function getFiles(dir, files_) {
   var files = fs.readdirSync(dir);
   for (var i in files){
     var name = dir + '/' + files[i];
-    if (fs.statSync(name).isDirectory()){
-      getFiles(name, files_);
-    } else {
-      files_.push(name);
-    }
+    files_.push(name);
   }
   return files_;
 }
@@ -82,6 +78,7 @@ module.exports = (async function (){
       bridgeFiles: getFiles(bridgeDir),
       brandingFiles: getFiles(destDir),
       clientFiles: getFiles(path.join(__dirname, '../client')),
+      rootFiles: getFiles(path.join(__dirname, '../')),
       serverFiles: getFiles(__dirname)
     });
   });
