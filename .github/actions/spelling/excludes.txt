@@ -16,6 +16,7 @@ reviewdog\.yml$
 \.sum$
 \.xlf$
 ^ADOPTERS\.md$
+CODEOWNERS
 ^bridge/client/app/_models/metadata\.ts$
 ^CODE_OF_CONDUCT\.md$
 ^\.github/actions/
