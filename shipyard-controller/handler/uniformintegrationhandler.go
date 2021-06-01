@@ -95,6 +95,10 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id query string false "id"
+// @Param name query string false "name"
+// @Param project query string false "project"
+// @Param stage query string false "stage"
+// @Param service query string false "service"
 // @Success 200 {object} []models.Integration "ok"
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
