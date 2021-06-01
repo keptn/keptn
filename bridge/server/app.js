@@ -32,7 +32,7 @@ if(!integrationsPageLink) {
 }
 
 if(lookAndFeelUrl) {
-  setTimeout(() => {
+  try {
     console.log("Downloading custom Look-and-Feel file from", lookAndFeelUrl);
 
     let bridgeDir = path.join(__dirname, '../dist');
@@ -51,7 +51,9 @@ if(lookAndFeelUrl) {
     }).on('error', function(err) {
       fs.unlink(destFile);
     });
-  }, 90000);
+  } catch (e) {
+    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+  }
 }
 
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
