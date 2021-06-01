@@ -49,9 +49,8 @@ var upgraderCmd = NewUpgraderCommand(version.NewKeptnVersionChecker())
 func NewUpgraderCommand(vChecker *version.KeptnVersionChecker) *cobra.Command {
 	upgradeCmd := &cobra.Command{
 		Use:   "upgrade",
-		Short: "Upgrades Keptn on a Kubernetes cluster and also the project to new format.",
-		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift. 
-		Also upgrade each of your existing projects to the new format for the shipyard.
+		Short: "Upgrades Keptn on a Kubernetes cluster and supports upgrading the shipyard of a project to a new specification.",
+		Long: `The Keptn CLI allows upgrading Keptn on any Kubernetes derivative to which your kube config is pointing to, and on OpenShift. Also, it supports upgrading the shipyard of an existing project to a new specification.
 
 For more information, please follow the installation guide [Upgrade Keptn](https://keptn.sh/docs/` + keptnReleaseDocsURL + `/operate/upgrade/)
 `,
