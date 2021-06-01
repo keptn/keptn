@@ -9,7 +9,6 @@ require (
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/go-git/go-git/v5 v5.3.0
-	github.com/go-openapi/validate v0.19.5 // indirect
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.2.0
