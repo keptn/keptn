@@ -17,8 +17,10 @@ export class AppInitService {
       }).then(config => {
         if(config)
           window.config = config;
+        return config;
       }).catch(err => {
         console.log("Error loading app-config.json " + err);
+        return null;
       })
     ).toPromise();
   }
