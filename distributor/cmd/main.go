@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/sliceutils"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -45,24 +47,6 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib"
 )
 
-type envConfig struct {
-	KeptnAPIEndpoint    string `envconfig:"KEPTN_API_ENDPOINT" default:""`
-	KeptnAPIToken       string `envconfig:"KEPTN_API_TOKEN" default:""`
-	APIProxyPort        int    `envconfig:"API_PROXY_PORT" default:"8081"`
-	APIProxyPath        string `envconfig:"API_PROXY_PATH" default:"/"`
-	HTTPPollingInterval string `envconfig:"HTTP_POLLING_INTERVAL" default:"10"`
-	EventForwardingPath string `envconfig:"EVENT_FORWARDING_PATH" default:"/event"`
-	VerifySSL           bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
-	PubSubURL           string `envconfig:"PUBSUB_URL" default:"nats://keptn-nats-cluster"`
-	PubSubTopic         string `envconfig:"PUBSUB_TOPIC" default:""`
-	PubSubRecipient     string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
-	PubSubRecipientPort string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
-	PubSubRecipientPath string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
-	ProjectFilter       string `envconfig:"PROJECT_FILTER" default:""`
-	StageFilter         string `envconfig:"STAGE_FILTER" default:""`
-	ServiceFilter       string `envconfig:"SERVICE_FILTER" default:""`
-}
-
 var uptimeTicker *time.Ticker
 
 var closeChan = make(chan bool)
@@ -71,7 +55,7 @@ var ceCache = lib.NewCloudEventsCache()
 
 var pubSubConnections = map[string]*cenats.Sender{}
 
-var env envConfig
+var env config.EnvConfig
 
 var ceClient cloudevents.Client
 
@@ -87,8 +71,11 @@ var externalAPIProxyMappings = map[string]string{
 	"/controlPlane":          "/controlPlane",
 }
 
-const connectionTypeNATS = "nats"
-const connectionTypeHTTP = "http"
+const (
+	defaultEventsEndpoint = "http://shipyard-controller:8080/v1/event/triggered"
+	connectionTypeNATS    = "nats"
+	connectionTypeHTTP    = "http"
+)
 
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
@@ -99,10 +86,20 @@ func main() {
 	os.Exit(_main(env))
 }
 
-func _main(env envConfig) int {
-	wg := new(sync.WaitGroup)
-	wg.Add(2)
+func _main(env config.EnvConfig) int {
+	uniformHandler := keptnapi.NewAuthenticatedUniformHandler("", "", "", nil, "http")
+	controlPlane := lib.ControlPlane{
+		UniformHandler: uniformHandler,
+		EnvConfig:      env,
+	}
 
+	// Register integration in control plane
+	err := controlPlane.Register()
+	if err != nil {
+		logger.Fatalf("Unable to register to Keptn's control plane: %v", err)
+	}
+
+	// Prepare signal handling for graceful shutdown
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -111,13 +108,18 @@ func _main(env envConfig) int {
 		cancel()
 	}()
 
-	lib.Register()
+	// Start api proxy and event receiver
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
 	go startAPIProxy(ctx, wg, env)
 	go startEventReceiver(ctx, wg)
-
 	wg.Wait()
-	logger.Info("Distributor terminated gracefully")
-	lib.Unregister()
+
+	// Unregister integratio in control plane
+	err = controlPlane.Unregister()
+	if err != nil {
+		logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
+	}
 	return 0
 }
 
@@ -144,7 +146,7 @@ func getPubSubConnectionType() string {
 	return connectionTypeHTTP
 }
 
-func startAPIProxy(ctx context.Context, wg *sync.WaitGroup, env envConfig) (err error) {
+func startAPIProxy(ctx context.Context, wg *sync.WaitGroup, env config.EnvConfig) (err error) {
 	defer wg.Done()
 	logger.Info("Creating event forwarding endpoint")
 	serverURL := fmt.Sprintf("localhost:%d", env.APIProxyPort)
@@ -449,7 +451,7 @@ func getHTTPPollingEndpoint() string {
 	endpoint := env.KeptnAPIEndpoint
 	if endpoint == "" {
 		if endpoint == "" {
-			return "http://shipyard-controller:8080/v1/event/triggered"
+			return defaultEventsEndpoint
 		}
 	} else {
 		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
@@ -647,7 +649,6 @@ func createNATSClientConnection(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		}
-
 	}
 }
 
@@ -668,13 +669,13 @@ func setupCEClient() {
 
 func handleMessage(m *nats.Msg) {
 	go func() {
-		fmt.Printf("Received a message for topic [%s]\n", m.Subject)
+		logger.Infof("Received a message for topic [%s]\n", m.Subject)
 		e, err := decodeCloudEvent(m.Data)
 
 		if e != nil && err == nil {
 			err = sendEvent(*e)
 			if err != nil {
-				fmt.Println("Could not send CloudEvent: " + err.Error())
+				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
 		}
 	}()
@@ -685,7 +686,6 @@ type ceVersion struct {
 }
 
 func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
-
 	cv := &ceVersion{}
 	if err := json.Unmarshal(data, cv); err != nil {
 		return nil, err
@@ -694,7 +694,7 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	event := cloudevents.NewEvent(cv.SpecVersion)
 
 	if err := json.Unmarshal(data, &event); err != nil {
-		fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
+		logger.Errorf("Could not unmarshal CloudEvent: %v", err)
 		return nil, err
 	}
 
@@ -703,27 +703,16 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 
 // Primitive filtering based on project, stage, and service properties
 func matchesFilter(e cloudevents.Event) bool {
-
 	keptnBase := &v0_2_0.EventData{}
 	if err := e.DataAs(keptnBase); err != nil {
 		return true
 	}
-	if env.ProjectFilter != "" && !contains(strings.Split(env.ProjectFilter, ","), keptnBase.Project) ||
-		env.StageFilter != "" && !contains(strings.Split(env.StageFilter, ","), keptnBase.Stage) ||
-		env.ServiceFilter != "" && !contains(strings.Split(env.ServiceFilter, ","), keptnBase.Service) {
+	if env.ProjectFilter != "" && !sliceutils.ContainsStr(strings.Split(env.ProjectFilter, ","), keptnBase.Project) ||
+		env.StageFilter != "" && !sliceutils.ContainsStr(strings.Split(env.StageFilter, ","), keptnBase.Stage) ||
+		env.ServiceFilter != "" && !sliceutils.ContainsStr(strings.Split(env.ServiceFilter, ","), keptnBase.Service) {
 		return false
 	}
 	return true
-}
-
-// contains checks if a string is present in a slice
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-	return false
 }
 
 func sendEvent(event cloudevents.Event) error {
