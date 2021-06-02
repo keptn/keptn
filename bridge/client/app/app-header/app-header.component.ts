@@ -23,7 +23,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
   public projectBoardView = '';
-  public appTitle = environment.config.appTitle;
+  public appTitle = environment?.config?.appTitle;
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
