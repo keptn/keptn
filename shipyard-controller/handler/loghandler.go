@@ -9,6 +9,7 @@ import (
 type ILogHandler interface {
 	CreateLogEntries(context *gin.Context)
 	GetLogEntries(context *gin.Context)
+	DeleteLogEntries(context *gin.Context)
 }
 
 type LogHandler struct {
@@ -74,4 +75,32 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, logs)
+}
+
+// DeleteLogEntries
+// @Summary Delete logs
+// @Description Delete logs
+// @Tags Log
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param integrationId query string false "integrationId"
+// @Param	fromTime			query	string	false	"The from time stamp for fetching sequence states"
+// @Param 	beforeTime			query	string	false	"The before time stamp for fetching sequence states"
+// @Success 200 {object} models.DeleteLogResponse "ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /log [delete]
+func (lh *LogHandler) DeleteLogEntries(context *gin.Context) {
+	params := &models.DeleteLogParams{}
+	if err := context.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(err, context, "Invalid request format")
+		return
+	}
+
+	if err := lh.logManager.DeleteLogEntries(*params); err != nil {
+		SetInternalServerErrorResponse(err, context, "Unable to retrieve logs")
+		return
+	}
+	context.JSON(http.StatusOK, models.DeleteLogParams{})
 }

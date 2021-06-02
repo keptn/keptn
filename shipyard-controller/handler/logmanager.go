@@ -9,6 +9,7 @@ import (
 type ILogManager interface {
 	CreateLogEntries(entry models.CreateLogsRequest) error
 	GetLogEntries(filter models.GetLogParams) (*models.GetLogsResponse, error)
+	DeleteLogEntries(params models.DeleteLogParams) error
 }
 
 type LogManager struct {
@@ -25,4 +26,8 @@ func (lm *LogManager) CreateLogEntries(entries models.CreateLogsRequest) error {
 
 func (lm *LogManager) GetLogEntries(filter models.GetLogParams) (*models.GetLogsResponse, error) {
 	return lm.logRepo.GetLogEntries(filter)
+}
+
+func (lm *LogManager) DeleteLogEntries(params models.DeleteLogParams) error {
+	return lm.logRepo.DeleteLogEntries(params)
 }

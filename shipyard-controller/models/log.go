@@ -10,9 +10,19 @@ type CreateLogsRequest struct {
 type CreateLogsReponse struct{}
 
 type GetLogParams struct {
+	LogFilter
+
 	NextPageKey int64 `form:"nextPageKey" json:"nextPageKey"`
 	PageSize    int64 `form:"pageSize" json:"pageSize"`
+}
 
+type DeleteLogParams struct {
+	LogFilter
+}
+
+type DeleteLogResponse struct{}
+
+type LogFilter struct {
 	IntegrationID string `form:"integrationId" json:"integrationId"`
 	FromTime      string `form:"fromTime" json:"fromTime"`
 	BeforeTime    string `form:"beforeTime" json:"beforeTime"`

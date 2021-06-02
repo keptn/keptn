@@ -167,11 +167,13 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				},
 			},
 			wantGetLogsParams: &models.GetLogParams{
-				NextPageKey:   1,
-				PageSize:      2,
-				IntegrationID: "my-id",
-				FromTime:      "from",
-				BeforeTime:    "to",
+				NextPageKey: 1,
+				PageSize:    2,
+				LogFilter: models.LogFilter{
+					IntegrationID: "my-id",
+					FromTime:      "from",
+					BeforeTime:    "to",
+				},
 			},
 		},
 	}
@@ -197,6 +199,70 @@ func TestLogHandler_GetLogEntries(t *testing.T) {
 				err := json.Unmarshal(w.Body.Bytes(), logs)
 				require.Nil(t, err)
 				require.Equal(t, tt.wantLogs, logs)
+			}
+		})
+	}
+}
+
+func TestLogHandler_DeleteLogEntries(t *testing.T) {
+	type fields struct {
+		logManager *fake.ILogManagerMock
+	}
+	tests := []struct {
+		name                 string
+		fields               fields
+		request              *http.Request
+		wantStatus           int
+		wantDeleteLogsParams *models.DeleteLogParams
+	}{
+		{
+			name: "delete logs - no filter",
+			fields: fields{
+				&fake.ILogManagerMock{
+					DeleteLogEntriesFunc: func(params models.DeleteLogParams) error {
+						return nil
+					},
+				},
+			},
+			request:              httptest.NewRequest(http.MethodDelete, "/log", nil),
+			wantStatus:           http.StatusOK,
+			wantDeleteLogsParams: &models.DeleteLogParams{},
+		},
+		{
+			name: "delete logs - with filter",
+			fields: fields{
+				&fake.ILogManagerMock{
+					DeleteLogEntriesFunc: func(filter models.DeleteLogParams) error {
+						return nil
+					},
+				},
+			},
+			request:    httptest.NewRequest(http.MethodDelete, "/log?nextPageKey=1&pageSize=2&integrationId=my-id&fromTime=from&beforeTime=to", nil),
+			wantStatus: http.StatusOK,
+			wantDeleteLogsParams: &models.DeleteLogParams{
+				LogFilter: models.LogFilter{
+					IntegrationID: "my-id",
+					FromTime:      "from",
+					BeforeTime:    "to",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lh := handler.NewLogHandler(tt.fields.logManager)
+
+			router := gin.Default()
+			router.DELETE("/log", func(c *gin.Context) {
+				lh.DeleteLogEntries(c)
+			})
+			w := performRequest(router, tt.request)
+
+			require.Equal(t, tt.wantStatus, w.Code)
+
+			if tt.wantDeleteLogsParams != nil {
+				require.Len(t, tt.fields.logManager.DeleteLogEntriesCalls(), 1)
+				require.Equal(t, *tt.wantDeleteLogsParams, tt.fields.logManager.DeleteLogEntriesCalls()[0].Params)
 			}
 		})
 	}

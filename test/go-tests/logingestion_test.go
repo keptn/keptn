@@ -41,4 +41,35 @@ func Test_LogIngestion(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, getLogsResponse.Logs, 3)
+	require.Equal(t, int64(3), getLogsResponse.TotalCount)
+
+	// retrieve the error logs - using pagination
+	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s&pageSize=1", myLogID))
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	getLogsResponse = &models.GetLogsResponse{}
+	err = resp.ToJSON(getLogsResponse)
+
+	require.Nil(t, err)
+	require.Len(t, getLogsResponse.Logs, 1)
+	require.Equal(t, int64(3), getLogsResponse.TotalCount)
+
+	// delete the logs
+	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID))
+
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	// retrieve the error logs again -should not be there anymore
+	resp, err = ApiGETRequest(fmt.Sprintf("/controlPlane/v1/log?integrationId=%s", myLogID))
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	getLogsResponse = &models.GetLogsResponse{}
+	err = resp.ToJSON(getLogsResponse)
+
+	require.Nil(t, err)
+	require.Len(t, getLogsResponse.Logs, 0)
+	require.Equal(t, int64(0), getLogsResponse.TotalCount)
 }

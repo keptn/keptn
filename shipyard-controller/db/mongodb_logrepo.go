@@ -6,6 +6,7 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -93,16 +94,16 @@ func (mdbrepo *MongoDBLogRepo) CreateLogEntries(entries []models.LogEntry) error
 	return nil
 }
 
-func (mdbrepo *MongoDBLogRepo) GetLogEntries(filter models.GetLogParams) (*models.GetLogsResponse, error) {
+func (mdbrepo *MongoDBLogRepo) GetLogEntries(params models.GetLogParams) (*models.GetLogsResponse, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return nil, err
 	}
 	defer cancel()
 
-	searchOptions, response, err2 := mdbrepo.getSearchOptions(filter)
-	if err2 != nil {
-		return response, err2
+	searchOptions, err := mdbrepo.getSearchOptions(params.LogFilter)
+	if err != nil {
+		return nil, err
 	}
 
 	totalCount, err := collection.CountDocuments(ctx, searchOptions)
@@ -110,10 +111,10 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(filter models.GetLogParams) (*model
 		return nil, fmt.Errorf("error counting elements in events collection: %v", err)
 	}
 
-	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(filter.NextPageKey)
+	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(params.NextPageKey)
 
-	if filter.PageSize > 0 {
-		sortOptions = sortOptions.SetLimit(filter.PageSize)
+	if params.PageSize > 0 {
+		sortOptions = sortOptions.SetLimit(params.PageSize)
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
@@ -129,31 +130,52 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(filter models.GetLogParams) (*model
 	}
 	logs := []models.LogEntry{}
 
-	if filter.PageSize > 0 && filter.PageSize+filter.NextPageKey < totalCount {
-		result.NextPageKey = filter.PageSize + filter.NextPageKey
+	if params.PageSize > 0 && params.PageSize+params.NextPageKey < totalCount {
+		result.NextPageKey = params.PageSize + params.NextPageKey
 	}
 
 	for cur.Next(ctx) {
-		log := &models.LogEntry{}
-		if err := cur.Decode(log); err != nil {
-			// TODO log
+		logEntry := &models.LogEntry{}
+		if err := cur.Decode(logEntry); err != nil {
+			log.Errorf("could not decode log entry: %s", err.Error())
 		}
-		logs = append(logs, *log)
+		logs = append(logs, *logEntry)
 	}
 	result.Logs = logs
 	return result, nil
 
 }
 
-func (mdbrepo *MongoDBLogRepo) getSearchOptions(filter models.GetLogParams) (bson.M, *models.GetLogsResponse, error) {
-	searchOptions := bson.M{
-		"integrationid": filter.IntegrationID,
+func (mdbrepo *MongoDBLogRepo) DeleteLogEntries(params models.DeleteLogParams) error {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	searchOptions, err := mdbrepo.getSearchOptions(params.LogFilter)
+	if err != nil {
+		return err
+	}
+
+	_, err = collection.DeleteMany(ctx, searchOptions)
+	if err != nil {
+		return fmt.Errorf("could not delete log entries: %s", err)
+	}
+
+	return nil
+}
+
+func (mdbrepo *MongoDBLogRepo) getSearchOptions(filter models.LogFilter) (bson.M, error) {
+	searchOptions := bson.M{}
+	if filter.IntegrationID != "" {
+		searchOptions["integrationid"] = filter.IntegrationID
 	}
 
 	if filter.FromTime != "" {
 		fromTime, err := time.Parse(timeutils.KeptnTimeFormatISO8601, filter.FromTime)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse provided fromTime %s: %s", filter.FromTime, err.Error())
+			return nil, fmt.Errorf("could not parse provided fromTime %s: %s", filter.FromTime, err.Error())
 		}
 		if filter.BeforeTime == "" {
 			searchOptions["time"] = bson.M{
@@ -162,7 +184,7 @@ func (mdbrepo *MongoDBLogRepo) getSearchOptions(filter models.GetLogParams) (bso
 		} else {
 			beforeTime, err := time.Parse(timeutils.KeptnTimeFormatISO8601, filter.BeforeTime)
 			if err != nil {
-				return nil, nil, fmt.Errorf("could not parse provided beforeTime %s: %s", filter.BeforeTime, err.Error())
+				return nil, fmt.Errorf("could not parse provided beforeTime %s: %s", filter.BeforeTime, err.Error())
 			}
 			searchOptions["$and"] = []bson.M{
 				{"time": bson.M{"$gte": fromTime}},
@@ -174,13 +196,13 @@ func (mdbrepo *MongoDBLogRepo) getSearchOptions(filter models.GetLogParams) (bso
 	if filter.FromTime == "" && filter.BeforeTime != "" {
 		beforeTime, err := time.Parse(timeutils.KeptnTimeFormatISO8601, filter.BeforeTime)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not parse provided beforeTime %s: %s", filter.BeforeTime, err.Error())
+			return nil, fmt.Errorf("could not parse provided beforeTime %s: %s", filter.BeforeTime, err.Error())
 		}
 		searchOptions["time"] = bson.M{
 			"$lte": beforeTime,
 		}
 	}
-	return searchOptions, nil, nil
+	return searchOptions, nil
 }
 
 func (mdbrepo *MongoDBLogRepo) getCollectionAndContext() (*mongo.Collection, context.Context, context.CancelFunc, error) {

@@ -268,6 +268,64 @@ var doc = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Log"
+                ],
+                "summary": "Delete logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationId",
+                        "name": "integrationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The from time stamp for fetching sequence states",
+                        "name": "fromTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The before time stamp for fetching sequence states",
+                        "name": "beforeTime",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeleteLogResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
             }
         },
         "/project": {
@@ -1211,31 +1269,6 @@ var doc = `{
         }
     },
     "definitions": {
-        "models.Approval": {
-            "type": "object",
-            "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
-                "image": {
-                    "description": "image",
-                    "type": "string"
-                },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "tag": {
-                    "description": "tag",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
-                    "type": "string"
-                }
-            }
-        },
         "models.CreateLogsRequest": {
             "type": "object",
             "properties": {
@@ -1247,6 +1280,9 @@ var doc = `{
                     }
                 }
             }
+        },
+        "models.DeleteLogResponse": {
+            "type": "object"
         },
         "models.Error": {
             "type": "object",
@@ -1307,23 +1343,6 @@ var doc = `{
             }
         },
         "models.EventContext": {
-            "type": "object",
-            "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
-                    "type": "string"
-                }
-            }
-        },
-        "models.EventContextInfo": {
             "type": "object",
             "properties": {
                 "eventId": {
@@ -1776,53 +1795,6 @@ var doc = `{
                 }
             }
         },
-        "models.Service": {
-            "type": "object",
-            "properties": {
-                "creationDate": {
-                    "description": "Creation date of the service",
-                    "type": "string"
-                },
-                "deployedImage": {
-                    "description": "Currently deployed image",
-                    "type": "string"
-                },
-                "lastEventTypes": {
-                    "description": "last event types",
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/models.EventContextInfo"
-                    }
-                },
-                "openApprovals": {
-                    "description": "open approvals",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Approval"
-                    }
-                },
-                "serviceName": {
-                    "description": "Service name",
-                    "type": "string"
-                }
-            }
-        },
-        "models.Stage": {
-            "type": "object",
-            "properties": {
-                "services": {
-                    "description": "services",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Service"
-                    }
-                },
-                "stageName": {
-                    "description": "Stage name",
-                    "type": "string"
-                }
-            }
-        },
         "models.Stages": {
             "type": "object",
             "properties": {
@@ -1838,7 +1810,7 @@ var doc = `{
                     "description": "stages",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Stage"
+                        "$ref": "#/definitions/models.ExpandedStage"
                     }
                 },
                 "totalCount": {

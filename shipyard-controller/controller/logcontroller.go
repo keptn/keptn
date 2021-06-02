@@ -16,4 +16,5 @@ func NewLogController(logHandler handler.ILogHandler) *LogController {
 func (controller LogController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.GET("/log", controller.LogHandler.GetLogEntries)
 	apiGroup.POST("/log", controller.LogHandler.CreateLogEntries)
+	apiGroup.DELETE("/log", controller.LogHandler.DeleteLogEntries)
 }

@@ -17,6 +17,9 @@ import (
 // 			CreateLogEntriesFunc: func(entry models.CreateLogsRequest) error {
 // 				panic("mock out the CreateLogEntries method")
 // 			},
+// 			DeleteLogEntriesFunc: func(params models.DeleteLogParams) error {
+// 				panic("mock out the DeleteLogEntries method")
+// 			},
 // 			GetLogEntriesFunc: func(filter models.GetLogParams) (*models.GetLogsResponse, error) {
 // 				panic("mock out the GetLogEntries method")
 // 			},
@@ -30,6 +33,9 @@ type ILogManagerMock struct {
 	// CreateLogEntriesFunc mocks the CreateLogEntries method.
 	CreateLogEntriesFunc func(entry models.CreateLogsRequest) error
 
+	// DeleteLogEntriesFunc mocks the DeleteLogEntries method.
+	DeleteLogEntriesFunc func(params models.DeleteLogParams) error
+
 	// GetLogEntriesFunc mocks the GetLogEntries method.
 	GetLogEntriesFunc func(filter models.GetLogParams) (*models.GetLogsResponse, error)
 
@@ -40,6 +46,11 @@ type ILogManagerMock struct {
 			// Entry is the entry argument value.
 			Entry models.CreateLogsRequest
 		}
+		// DeleteLogEntries holds details about calls to the DeleteLogEntries method.
+		DeleteLogEntries []struct {
+			// Params is the params argument value.
+			Params models.DeleteLogParams
+		}
 		// GetLogEntries holds details about calls to the GetLogEntries method.
 		GetLogEntries []struct {
 			// Filter is the filter argument value.
@@ -47,6 +58,7 @@ type ILogManagerMock struct {
 		}
 	}
 	lockCreateLogEntries sync.RWMutex
+	lockDeleteLogEntries sync.RWMutex
 	lockGetLogEntries    sync.RWMutex
 }
 
@@ -78,6 +90,37 @@ func (mock *ILogManagerMock) CreateLogEntriesCalls() []struct {
 	mock.lockCreateLogEntries.RLock()
 	calls = mock.calls.CreateLogEntries
 	mock.lockCreateLogEntries.RUnlock()
+	return calls
+}
+
+// DeleteLogEntries calls DeleteLogEntriesFunc.
+func (mock *ILogManagerMock) DeleteLogEntries(params models.DeleteLogParams) error {
+	if mock.DeleteLogEntriesFunc == nil {
+		panic("ILogManagerMock.DeleteLogEntriesFunc: method is nil but ILogManager.DeleteLogEntries was just called")
+	}
+	callInfo := struct {
+		Params models.DeleteLogParams
+	}{
+		Params: params,
+	}
+	mock.lockDeleteLogEntries.Lock()
+	mock.calls.DeleteLogEntries = append(mock.calls.DeleteLogEntries, callInfo)
+	mock.lockDeleteLogEntries.Unlock()
+	return mock.DeleteLogEntriesFunc(params)
+}
+
+// DeleteLogEntriesCalls gets all the calls that were made to DeleteLogEntries.
+// Check the length with:
+//     len(mockedILogManager.DeleteLogEntriesCalls())
+func (mock *ILogManagerMock) DeleteLogEntriesCalls() []struct {
+	Params models.DeleteLogParams
+} {
+	var calls []struct {
+		Params models.DeleteLogParams
+	}
+	mock.lockDeleteLogEntries.RLock()
+	calls = mock.calls.DeleteLogEntries
+	mock.lockDeleteLogEntries.RUnlock()
 	return calls
 }
 
