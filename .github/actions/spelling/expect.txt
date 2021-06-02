@@ -155,6 +155,7 @@ Debugf
 debuglogs
 ded
 deletecollection
+Deliv
 depd
 dependabot
 depl
@@ -299,6 +300,7 @@ GOTRACEBACK
 goutils
 goutilsmodels
 gpg
+gpu
 grabnerandi
 grep
 grpc
@@ -718,6 +720,7 @@ shipyardversion
 shirtshop
 shkeptncontext
 shkeptnspecversion
+shm
 SIGINT
 sigs
 SIGTERM
@@ -877,6 +880,7 @@ virtualservice
 VMs
 vuser
 Vwd
+Webdriver
 webhook
 webkit
 webpack
@@ -902,6 +906,7 @@ xit
 xml
 XNlcg
 xolv
+xpath
 XPOST
 XToken
 XVersion
