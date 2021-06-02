@@ -31,6 +31,24 @@ if(!integrationsPageLink) {
   integrationsPageLink = "https://get.keptn.sh/integrations.html";
 }
 
+
+try {
+  console.log("Installing default Look-and-Feel");
+
+  let destDir = path.join(__dirname, '../dist/assets/branding');
+  let srcDir = path.join(__dirname, '../client/assets/default-branding');
+
+  let brandingFiles = ["app-config.json", "logo.png", "logo_inverted.png"];
+  brandingFiles.forEach((file) => {
+    if(!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
+  });
+} catch (e) {
+  console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+  process.exit(1);
+}
 if(lookAndFeelUrl) {
   try {
     console.log("Downloading custom Look-and-Feel file from", lookAndFeelUrl);
@@ -52,24 +70,6 @@ if(lookAndFeelUrl) {
       });
     }).on('error', function(err) {
       fs.unlink(destFile);
-    });
-  } catch (e) {
-    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
-    process.exit(1);
-  }
-} else {
-  try {
-    console.log("Installing default Look-and-Feel");
-
-    let destDir = path.join(__dirname, '../dist/assets/branding');
-    let srcDir = path.join(__dirname, '../client/assets/default-branding');
-
-    let brandingFiles = ["app-config.json", "logo.png", "logo_inverted.png"];
-    brandingFiles.forEach((file) => {
-      if(!fs.existsSync(destDir)) {
-        fs.mkdirSync(destDir, { recursive: true });
-      }
-      fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
     });
   } catch (e) {
     console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
