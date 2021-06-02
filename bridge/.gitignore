@@ -45,3 +45,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# e2e screenshots
+e2e/screenshots/
+!e2e/screenshots/.gitkeep

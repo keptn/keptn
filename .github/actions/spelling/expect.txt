@@ -155,6 +155,7 @@ Debugf
 debuglogs
 ded
 deletecollection
+Deliv
 depd
 dependabot
 depl
@@ -877,6 +878,7 @@ virtualservice
 VMs
 vuser
 Vwd
+Webdriver
 webhook
 webkit
 webpack
@@ -902,6 +904,7 @@ xit
 xml
 XNlcg
 xolv
+xpath
 XPOST
 XToken
 XVersion
