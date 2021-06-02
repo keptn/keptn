@@ -3,8 +3,6 @@ import { browser, by, element, logging, protractor } from 'protractor';
 
 import { takeScreenshot } from './utils';
 
-const {execSync} = require('child_process');
-
 // run with: ng e2e --dev-server-target= --base-url=http://localhost:3000/
 describe('User Menu', () => {
   let page: AppPage;
@@ -35,7 +33,8 @@ describe('User Menu', () => {
     await apiTokenTempInput.sendKeys(protractor.Key.chord(protractor.Key.CONTROL, 'v'));
 
     const val = await apiTokenTempInput.getAttribute('value');
-    const apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}').toString(), 'base64').toString();
+
+    const apiToken = process.env.KEPTN_API_TOKEN;
 
     await expect(val).toEqual(apiToken);
   });
