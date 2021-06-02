@@ -4,15 +4,6 @@
 
 const { SpecReporter } = require('jasmine-spec-reporter');
 
-let chromeExtensions = [];
-
-// add basic auth to chrome
-if (process.env.KEPTN_BRIDGE_USER && process.env.KEPTN_BRIDGE_PASSWORD) {
-  const { Authenticator } = require('authenticator-browser-extension');
-
-  chromeExtensions.push(Authenticator.for(process.env.KEPTN_BRIDGE_USER || null, process.env.KEPTN_BRIDGE_PASSWORD || null).asBase64());
-}
-
 /**
  * @type { import("protractor").Config }
  */
@@ -22,11 +13,7 @@ exports.config = {
     './src/**/*.e2e-spec.ts'
   ],
   capabilities: {
-    browserName: 'chrome',
-
-    chromeOptions: {
-      extensions: chromeExtensions
-    }
+    browserName: 'chrome'
   },
   directConnect: true,
   baseUrl: 'http://localhost:4200/',

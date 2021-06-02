@@ -300,6 +300,7 @@ GOTRACEBACK
 goutils
 goutilsmodels
 gpg
+gpu
 grabnerandi
 grep
 grpc
@@ -719,6 +720,7 @@ shipyardversion
 shirtshop
 shkeptncontext
 shkeptnspecversion
+shm
 SIGINT
 sigs
 SIGTERM

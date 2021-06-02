@@ -47,5 +47,5 @@ testem.log
 Thumbs.db
 
 # e2e screenshots
-e2e/screenshots/
+e2e/screenshots/*
 !e2e/screenshots/.gitkeep
