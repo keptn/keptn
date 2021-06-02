@@ -132,7 +132,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		}
 	}
 
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Index(r.URL.Path, "/swagger-ui/") == 0 {
 			http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("swagger-ui"))).ServeHTTP(w, r)

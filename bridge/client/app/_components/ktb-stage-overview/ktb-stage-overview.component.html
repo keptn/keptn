@@ -12,7 +12,7 @@
     ></dt-filter-field>
   </div>
   <div class="container p-0" fxFlex fxLayout="column">
-    <div class="stage-list mr-minus-15" fxLayout="row" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
+    <div class="stage-list" fxLayout="row" fxLayout.lt-sm="column" fxLayoutGap="15px" fxLayoutAlign="start">
       <div class="stage-group" fxLayout="column" fxLayoutGap="15px" *ngFor="let parentStage of project.getParentStages(); let i = index; trackBy:trackStage">
         <ktb-selectable-tile *ngFor="let stage of project.getStages(parentStage)"
                              (click)="selectStage($event, stage);" [selected]="selectedStage == stage">

@@ -2,7 +2,7 @@
   <ng-container *ngIf="services && services.length > 0; else noService">
     <dt-table [dataSource]="dataSource">
 
-      <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2">
+      <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
           <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0">
             <a *ngIf="row.deploymentContext" [routerLink]="getServiceLink(row)" [textContent]="row.getShortImageName() || row.serviceName"></a>
@@ -24,7 +24,7 @@
                 <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
               </button>
             </ng-template>
-            <a class="m-0" [routerLink]="getSequenceLink(currentSequence, row)" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" [textContent]="currentSequence.getLabel()"></a>
+            <a class="m-0" [routerLink]="getSequenceLink(currentSequence, row)" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" uitestid="keptn-services-list-jumpToSequence" [textContent]="currentSequence.getLabel()"></a>
           </div>
           <p class="m-0" *ngIf="!row.roots">-</p>
         </dt-cell>
@@ -41,13 +41,13 @@
 
       <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
     </dt-table>
-    <button *ngIf="services.length > DEFAULT_PAGE_SIZE" dt-show-more [showLess]="pageSize > DEFAULT_PAGE_SIZE" (click)="toggleAllServices()">Show all <span [textContent]="services.length"></span> services</button>
+    <button *ngIf="services.length > DEFAULT_PAGE_SIZE" uitestid="keptn-services-list-showMoreServices" dt-show-more [showLess]="pageSize > DEFAULT_PAGE_SIZE" (click)="toggleAllServices()">Show all <span [textContent]="services.length"></span> services</button>
   </ng-container>
 </div>
 
 
 <ng-template #noService>
-  <div fxLayout="row" fxLayoutAlign="start center">
+  <div fxLayout="row" fxLayoutAlign="start center" uitestid="keptn-services-list-noServices">
     <dt-icon class="icon" name="information"></dt-icon>
     <p class="m-0">No service onboarded yet.</p>
   </div>

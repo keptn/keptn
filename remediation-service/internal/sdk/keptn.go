@@ -91,7 +91,7 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) Start() error {
-	go api.RunHealthEndpoint("10999")
+	go api.RunHealthEndpoint("10998")
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	return k.EventReceiver.StartReceiver(ctx, k.gotEvent)

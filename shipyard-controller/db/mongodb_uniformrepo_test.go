@@ -1,6 +1,7 @@
 package db
 
 import (
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -11,13 +12,13 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration1 := models.Integration{
 		ID:   "my-integration-id-1",
 		Name: "my-integration",
-		MetaData: models.MetaData{
+		MetaData: keptnmodels.MetaData{
 			DeploymentName: "my-integration",
 		},
-		Subscription: models.Subscription{
+		Subscription: keptnmodels.Subscription{
 			Topics: []string{"sh.keptn.event.test.triggered"},
 			Status: "active",
-			Filter: models.SubscriptionFilter{
+			Filter: keptnmodels.SubscriptionFilter{
 				Project: "my-project",
 			},
 		},
@@ -26,13 +27,13 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration2 := models.Integration{
 		ID:   "my-integration-id-2",
 		Name: "my-integration2",
-		MetaData: models.MetaData{
+		MetaData: keptnmodels.MetaData{
 			DeploymentName: "my-integration2",
 		},
-		Subscription: models.Subscription{
+		Subscription: keptnmodels.Subscription{
 			Topics: []string{"sh.keptn.event.deployment.triggered"},
 			Status: "active",
-			Filter: models.SubscriptionFilter{
+			Filter: keptnmodels.SubscriptionFilter{
 				Project: "my-project-2",
 			},
 		},

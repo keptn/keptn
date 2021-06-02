@@ -24,15 +24,15 @@ func NewMongoDBEventQueueRepo(dbConnection *MongoDBConnection) *MongoDBEventQueu
 }
 
 // GetQueuedEvents gets all queued events that should be sent next
-func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error) {
-	err := mdbrepo.DBConnection.EnsureDBConnection()
+func (m *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error) {
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
+	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
 
 	if collection == nil {
 		return nil, errors.New("invalid event type")
@@ -67,15 +67,15 @@ func (mdbrepo *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]mo
 	return queuedItems, nil
 }
 
-func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
-	err := mdbrepo.DBConnection.EnsureDBConnection()
+func (m *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
+	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
 
 	if collection == nil {
 		return errors.New("invalid event type")
@@ -98,15 +98,15 @@ func (mdbrepo *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 }
 
 // DeleteQueuedEvent deletes a queue item from the collection
-func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
-	err := mdbrepo.DBConnection.EnsureDBConnection()
+func (m *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
+	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
 
 	if collection == nil {
 		return errors.New("invalid event type")
@@ -122,15 +122,15 @@ func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
 }
 
 // DeleteQueuedEvent deletes a queue item from the collection
-func (mdbrepo *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) error {
-	err := mdbrepo.DBConnection.EnsureDBConnection()
+func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) error {
+	err := m.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
+	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
 
 	if collection == nil {
 		return errors.New("invalid event type")

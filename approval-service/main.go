@@ -29,7 +29,7 @@ func main() {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
 
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 	os.Exit(_main(os.Args[1:], env))
 }
 

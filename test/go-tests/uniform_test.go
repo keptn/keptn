@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
@@ -10,17 +11,17 @@ import (
 
 func Test_UniformRegistration(t *testing.T) {
 
-	uniformIntegration := &models.Integration{
+	uniformIntegration := &keptnmodels.Integration{
 		Name: "my-uniform-service",
-		MetaData: models.MetaData{
+		MetaData: keptnmodels.MetaData{
 			DeploymentName:     "my-uniform-service",
 			DistributorVersion: "0.8.3",
 			Status:             "active",
-			KubernetesMetaData: models.KubernetesMetaData{
+			KubernetesMetaData: keptnmodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscription: models.Subscription{
+		Subscription: keptnmodels.Subscription{
 			Topics: []string{keptnv2.GetTriggeredEventType(keptnv2.TestTaskName)},
 		},
 	}

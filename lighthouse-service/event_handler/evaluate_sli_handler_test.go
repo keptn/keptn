@@ -3065,7 +3065,7 @@ func TestEvaluateSLIHandler_HandleEvent(t *testing.T) {
 
 					return true
 				},
-				time.Second * 20, time.Second * 1,
+				time.Second*20, time.Second*1,
 			)
 
 			// evaluate which events have been sent
