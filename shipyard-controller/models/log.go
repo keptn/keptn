@@ -3,6 +3,7 @@ package models
 import keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 
 type CreateLogsRequest struct {
+	// logs
 	Logs []LogEntry `form:"logs" json"logs"`
 }
 
