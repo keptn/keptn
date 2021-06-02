@@ -87,7 +87,7 @@ func main() {
 }
 
 func _main(env config.EnvConfig) int {
-	uniformHandler := keptnapi.NewAuthenticatedUniformHandler("", "", "", nil, "http")
+	uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
 	controlPlane := lib.ControlPlane{
 		UniformHandler: uniformHandler,
 		EnvConfig:      env,

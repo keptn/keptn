@@ -16,4 +16,11 @@ type EnvConfig struct {
 	ProjectFilter       string `envconfig:"PROJECT_FILTER" default:""`
 	StageFilter         string `envconfig:"STAGE_FILTER" default:""`
 	ServiceFilter       string `envconfig:"SERVICE_FILTER" default:""`
+	Location            string `envconfig:"LOCATION" default:""`
+	DistributorVersion  string `envconfig:"DISTRIBUTOR_VERSION" default:""`
+	Version             string `envconfig:"VERSION" default:""`
+	K8sDeploymentName   string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
+	K8sNamespace        string `envconfig:"K8S_NAMESPACE" default:""`
+	K8sPodName          string `envconfig:"K8S_POD_NAME" default:""`
+	K8sNodeName         string `envconfig:"K8S_NODE_NAME" default:""`
 }
