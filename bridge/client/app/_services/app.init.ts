@@ -13,13 +13,18 @@ export class AppInitService {
           'Accept': 'application/json'
         }
       }).then(response => {
-        return response.json();
+        return response.text();
       }).then(config => {
-        if(config)
-          window.config = config;
-        return config;
+        try {
+          if(config)
+            window.config = JSON.parse(config);
+          return config;
+        } catch(err) {
+          console.error("Error parsing app-config.json:", err);
+          return null;
+        }
       }).catch(err => {
-        console.log("Error loading app-config.json " + err);
+        console.error("Error loading app-config.json.", err);
         return null;
       })
     ).toPromise();
