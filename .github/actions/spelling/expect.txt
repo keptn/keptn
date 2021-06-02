@@ -344,6 +344,7 @@ IEvent
 IHealth
 IHelper
 IKeptn
+ILog
 img
 IMPL
 imroc
@@ -353,6 +354,7 @@ Infof
 ingressgateway
 inp
 instanceof
+integrationid
 integrationversion
 Intelli
 ioutil
@@ -462,6 +464,7 @@ loadgen
 localhost
 lodash
 Logf
+logmanager
 logrus
 loopcount
 Lshortfile
