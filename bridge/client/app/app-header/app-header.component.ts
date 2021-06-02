@@ -1,15 +1,15 @@
 import semver from 'semver';
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, NavigationEnd, Router, RoutesRecognized} from '@angular/router';
-import {Observable, Subject, timer} from 'rxjs';
-import {filter, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {NavigationEnd, Router, RoutesRecognized} from '@angular/router';
+import {Observable, Subject} from 'rxjs';
+import {filter, map, takeUntil} from 'rxjs/operators';
 
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
 import {NotificationsService} from '../_services/notifications.service';
 import {NotificationType} from '../_models/notification';
-import {Trace} from '../_models/trace';
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-header',
@@ -23,6 +23,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
   public projectBoardView = '';
+  public appTitle = environment.appTitle;
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
