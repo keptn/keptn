@@ -2,6 +2,7 @@ import semver from 'semver';
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {NavigationEnd, Router, RoutesRecognized} from '@angular/router';
+import {Title} from "@angular/platform-browser";
 import {Observable, Subject} from 'rxjs';
 import {filter, map, takeUntil} from 'rxjs/operators';
 
@@ -29,10 +30,11 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public versionCheckDialogState: string | null;
   public versionCheckReference = '/reference/version_check/';
 
-  constructor(private router: Router, private dataService: DataService, private notificationsService: NotificationsService) {}
+  constructor(private router: Router, private dataService: DataService, private notificationsService: NotificationsService, private titleService: Title) {}
 
   ngOnInit() {
     this.projects = this.dataService.projects;
+    this.titleService.setTitle(this.appTitle);
 
     this.router.events
       .pipe(takeUntil(this.unsubscribe$))
