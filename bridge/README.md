@@ -76,8 +76,9 @@ and make it downloadable from an URL.
 When the `LOOK_AND_FEEL_URL` environment variable is set and points to a zip archive the Keptn
 Bridge will download that file on startup and extract its content into `/assets/branding`.
 
-By default `/assets/branding` contains the `logo.png` and `logo_inverted.png`, which will be overwritten, 
-if the zip archive contains files with the same name.
+The zip archive should contain the `logo.png`, `logo_inverted.png` and an `app-config.json`.
+
+If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.png`, `logo_inverted.png` and an `app-config.json`.
 
 ### Delete in your Kubernetes cluster
 
