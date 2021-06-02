@@ -43,7 +43,7 @@ func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 		SetInternalServerErrorResponse(err, context)
 		return
 	}
-	context.JSON(http.StatusOK, models.CreateLogsReponse{})
+	context.JSON(http.StatusOK, models.CreateLogsResponse{})
 }
 
 // GetLogEntries Retrieves log entries based on the provided filter

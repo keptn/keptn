@@ -7,7 +7,7 @@ type CreateLogsRequest struct {
 	Logs []LogEntry `form:"logs" json"logs"`
 }
 
-type CreateLogsReponse struct{}
+type CreateLogsResponse struct{}
 
 type GetLogParams struct {
 	LogFilter
