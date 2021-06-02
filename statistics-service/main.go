@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -32,8 +34,12 @@ func main() {
 
 	if os.Getenv("GIN_MODE") == "release" {
 		docs.SwaggerInfo.Version = os.Getenv("version")
-		docs.SwaggerInfo.BasePath = "/api/statistics-service/v1"
+		docs.SwaggerInfo.BasePath = "r/api/statistics-service/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
+
+		// disable GIN request logging in release mode
+		gin.SetMode("release")
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	apiV1 := router.Group("/v1")
@@ -42,6 +48,9 @@ func main() {
 	apiV1.POST("/event", api.HandleEvent)
 
 	router.Static("/swagger-ui", "./swagger-ui")
+
+	apiHealth := router.Group("")
+	apiHealth.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	router.Run()
 }

@@ -78,12 +78,26 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10999
+              port: 10998
+            initialDelaySeconds: 0
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 10998
+            initialDelaySeconds: 5
+            periodSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
           livenessProbe:
+            httpGet:
+              path: /health
+              port: 10999
+            initialDelaySeconds: 0
+            periodSeconds: 5
+          readinessProbe:
             httpGet:
               path: /health
               port: 10999

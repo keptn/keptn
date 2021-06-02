@@ -1,13 +1,13 @@
 <dt-table [dataSource]="dataSource" interactiveRows>
   <ng-container dtColumnDef="version" dtColumnProportion="1">
-    <dt-cell *dtCellDef="let row">
+    <dt-cell *dtCellDef="let row" uitestid="keptn-deployment-list-serviceVersion">
       <span [textContent]="row.name"></span>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="stages" dtColumnProportion="2" dtColumnAlign="number">
     <dt-cell *dtCellDef="let row">
-      <dt-tag-list aria-label="fetch-info" *ngFor="let stage of row.stages">
+      <dt-tag-list aria-label="fetch-info" *ngFor="let stage of row.stages" uitestid="keptn-deployment-list-stages">
         <dt-tag>
           <a href="javascript:void(0)" (click)="selectStage(row, stage.stageName, $event)">
             <span [textContent]="stage.stageName"></span>

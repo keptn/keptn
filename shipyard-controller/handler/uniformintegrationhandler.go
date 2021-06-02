@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
 )
@@ -40,7 +41,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		return
 	}
 
-	integrationID := models.IntegrationID{
+	integrationID := keptnmodels.IntegrationID{
 		Name:      integration.Name,
 		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
 		Project:   integration.Subscription.Filter.Project,

@@ -341,6 +341,7 @@ IDURL
 idx
 IEvaluation
 IEvent
+IHealth
 IHelper
 IKeptn
 img
@@ -827,6 +828,7 @@ uem
 uid
 uim
 uint
+uitestid
 unarchive
 uncomment
 undeploy
