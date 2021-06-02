@@ -78,6 +78,14 @@ Bridge will download that file on startup and extract its content into `/assets/
 
 The zip archive should contain the `logo.png`, `logo_inverted.png` and an `app-config.json`.
 
+```app-config.json
+{
+  "appTitle": "keptn",
+  "logoUrl": "assets/branding/logo.png",
+  "logoInvertedUrl": "assets/branding/logo_inverted.png"
+}
+```
+
 If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.png`, `logo_inverted.png` and an `app-config.json`.
 
 ### Delete in your Kubernetes cluster
