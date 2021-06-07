@@ -230,6 +230,44 @@ rules:
       - get
       - delete
       - deletecollection
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keptn-read-pod-logs
+  labels:
+    app.kubernetes.io/name: keptn-read-pod-logs
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods/log
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keptn-default-read-pod-logs
+  labels:
+    app.kubernetes.io/name: keptn-default-read-pod-logs
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keptn-read-pod-logs
+subjects:
+  - kind: ServiceAccount
+    name: keptn-default
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

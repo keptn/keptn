@@ -20,7 +20,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"log"
 	"net/url"
 
@@ -105,6 +108,48 @@ func _main(env envConfig) int {
 
 	go startAPIProxy(env, wg)
 	go startEventReceiver(wg)
+
+	var clientSet kubernetes.Interface
+	logger := keptnutils.NewLogger("", "", "api")
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		logger.Errorf("Could not get InClusterConfig: %s", err.Error())
+	} else {
+		// creates the clientset
+		clientSet, err = kubernetes.NewForConfig(config)
+		if err != nil {
+			logger.Errorf("Could not create kubernetes client: %s", err.Error())
+		}
+	}
+
+	integrationID := keptnmodels.IntegrationID{
+		Name:      os.Getenv("MY_SERVICE_NAME"),
+		Namespace: "keptn",
+	}
+
+	integrationIDHash, _ := integrationID.Hash()
+
+	myIntegration := keptnmodels.Integration{
+		ID:   integrationIDHash,
+		Name: os.Getenv("MY_SERVICE_NAME"),
+		MetaData: keptnmodels.MetaData{
+			DeploymentName: os.Getenv("MY_SERVICE_NAME"),
+			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+				Namespace:      "keptn",
+				PodName:        os.Getenv("MY_POD_NAME"),
+				DeploymentName: os.Getenv("MY_SERVICE_NAME"),
+			},
+		},
+		Subscription: keptnmodels.Subscription{},
+	}
+
+	uniformLogger := lib.K8sUniformLogger{
+		K8sClient:   clientSet,
+		Integration: myIntegration,
+		Closed:      make(chan struct{}),
+	}
+
+	uniformLogger.Start(context.Background())
 
 	wg.Wait()
 
