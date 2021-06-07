@@ -140,7 +140,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
               }
               if (roots) {
                 this.updateFilterSequence(roots);
-                this._filterDataSource.data = this.filterFieldData;
+                this.refreshFilterDataSource();
                 // Set unfinished roots so that the traces for updates can be loaded
                 // Also ignore currently selected root, as this is getting already polled
                 this.unfinishedRoots = roots.filter(root => root && !root.isFinished() && root !== this.currentSequence);
@@ -203,10 +203,17 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.filterFieldData.autocomplete.find(f => f.name == 'Service').autocomplete = project.services.map(s => Object.assign({}, { name: s.serviceName, value: s.serviceName }));
     this.filterFieldData.autocomplete.find(f => f.name == 'Stage').autocomplete = project.stages.map(s => Object.assign({}, { name: s.stageName, value: s.stageName }));
     this.updateFilterSequence(project.sequences);
-    this._filterDataSource.data = this.filterFieldData;
+    this.refreshFilterDataSource();
 
     this.filtersChanged({ filters: [] });
     this._changeDetectorRef.markForCheck();
+  }
+
+  private refreshFilterDataSource() {
+    this._filterDataSource = new DtQuickFilterDefaultDataSource(
+      this.filterFieldData,
+      this._config,
+    );
   }
 
   getFilteredSequences(sequences: Root[]) {
