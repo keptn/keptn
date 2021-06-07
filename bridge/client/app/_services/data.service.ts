@@ -112,25 +112,29 @@ export class DataService {
   }
 
   public loadKeptnInfo() {
-    forkJoin({
-      availableVersions: this.apiService.getAvailableVersions(),
-      bridgeInfo: this.apiService.getKeptnInfo(),
-      keptnVersion: this.apiService.getKeptnVersion(),
-      versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
-      metadata: this.apiService.getMetadata()
-    }).subscribe((result) => {
-        if(result.bridgeInfo.showApiToken) {
+    // #4165 Get bridge info first to get info if versions.json should be loaded or not
+    // Versions should not be loaded if enableVersionCheckFeature is set to false (when ENABLE_VERSION_CHECK is set to false in env)
+    this.apiService.getKeptnInfo().subscribe((bridgeInfo) => {
+      forkJoin({
+        availableVersions: bridgeInfo.enableVersionCheckFeature ? this.apiService.getAvailableVersions() : of(null),
+        keptnVersion: this.apiService.getKeptnVersion(),
+        versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
+        metadata: this.apiService.getMetadata()
+      }).subscribe((result) => {
+        const keptnInfo = {...result, bridgeInfo: {...bridgeInfo}};
+        if(keptnInfo.bridgeInfo.showApiToken) {
           if(window.location.href.indexOf('bridge') != -1)
-            result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf('/bridge'))}/api`;
+            keptnInfo.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf('/bridge'))}/api`;
           else
-            result.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf(window.location.pathname))}/api`;
+            keptnInfo.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf(window.location.pathname))}/api`;
 
-          result.bridgeInfo.authCommand = `keptn auth --endpoint=${result.bridgeInfo.apiUrl} --api-token=${result.bridgeInfo.apiToken}`;
+          keptnInfo.bridgeInfo.authCommand = `keptn auth --endpoint=${keptnInfo.bridgeInfo.apiUrl} --api-token=${keptnInfo.bridgeInfo.apiToken}`;
         }
-        this._keptnInfo.next(result);
+        this._keptnInfo.next(keptnInfo);
       }, (err) => {
         this._keptnInfo.error(err);
       });
+    });
   }
 
   public setVersionCheck(enabled: boolean) {
