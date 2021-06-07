@@ -27,6 +27,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public projectBoardView = '';
   public appTitle = environment?.config?.appTitle;
   public logoUrl = environment?.config?.logoUrl;
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
@@ -37,7 +38,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.projects = this.dataService.projects;
     this.titleService.setTitle(this.appTitle);
-    this.setAppFavicon(this.logoUrl);
+    this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events
       .pipe(takeUntil(this.unsubscribe$))
