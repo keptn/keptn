@@ -25,6 +25,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public project: Observable<Project>;
   public projectBoardView = '';
   public appTitle = environment?.config?.appTitle;
+  public logoUrl = environment?.config?.logoUrl;
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;

@@ -2,7 +2,7 @@
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
-        <img alt="Keptn logo" class="mt-2" src="assets/branding/logo_inverted.png" />
+        <img alt="Keptn logo" class="mt-2" [src]="logoInvertedUrl" />
       </dt-empty-state-item-img>
       <ng-container [ngSwitch]="error">
         <ng-container *ngSwitchCase="'project'">
