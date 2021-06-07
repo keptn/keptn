@@ -1,6 +1,7 @@
 import semver from 'semver';
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {DOCUMENT} from "@angular/common";
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {NavigationEnd, Router, RoutesRecognized} from '@angular/router';
 import {Title} from "@angular/platform-browser";
 import {Observable, Subject} from 'rxjs';
@@ -31,11 +32,12 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public versionCheckDialogState: string | null;
   public versionCheckReference = '/reference/version_check/';
 
-  constructor(private router: Router, private dataService: DataService, private notificationsService: NotificationsService, private titleService: Title) {}
+  constructor(@Inject(DOCUMENT) private _document: HTMLDocument, private router: Router, private dataService: DataService, private notificationsService: NotificationsService, private titleService: Title) {}
 
   ngOnInit() {
     this.projects = this.dataService.projects;
     this.titleService.setTitle(this.appTitle);
+    this.setAppFavicon(this.logoUrl);
 
     this.router.events
       .pipe(takeUntil(this.unsubscribe$))
@@ -156,6 +158,10 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   versionCheckClicked(event) {
     this.dataService.setVersionCheck(event.checked);
+  }
+
+  setAppFavicon(path: string){
+    this._document.getElementById('appFavicon').setAttribute('href', path);
   }
 
   ngOnDestroy(): void {
