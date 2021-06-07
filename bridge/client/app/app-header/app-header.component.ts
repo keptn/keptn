@@ -162,7 +162,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   setAppFavicon(path: string){
-    this._document.getElementById('appFavicon').setAttribute('href', path);
+    this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
   ngOnDestroy(): void {
