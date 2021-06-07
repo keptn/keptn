@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const https = require('https');
+const urlParser = require('url');
 const logger = require('morgan');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -61,7 +63,10 @@ if(lookAndFeelUrl) {
       fs.mkdirSync(destDir, { recursive: true });
     }
     let file = fs.createWriteStream(destFile);
-    http.get(lookAndFeelUrl, function(response) {
+    let parsedUrl = urlParser.parse(lookAndFeelUrl);
+    let lib = parsedUrl.protocol === "https" ? https : http;
+
+    lib.get(lookAndFeelUrl, function(response) {
       response.pipe(file);
       file.on('finish', function() {
         file.close(() => {
