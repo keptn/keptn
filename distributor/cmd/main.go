@@ -20,9 +20,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/sliceutils"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	"io/ioutil"
 	"log"
 	"net/url"
+	"os/signal"
 
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -44,35 +47,21 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib"
 )
 
-type envConfig struct {
-	KeptnAPIEndpoint    string `envconfig:"KEPTN_API_ENDPOINT" default:""`
-	KeptnAPIToken       string `envconfig:"KEPTN_API_TOKEN" default:""`
-	APIProxyPort        int    `envconfig:"API_PROXY_PORT" default:"8081"`
-	APIProxyPath        string `envconfig:"API_PROXY_PATH" default:"/"`
-	HTTPPollingInterval string `envconfig:"HTTP_POLLING_INTERVAL" default:"10"`
-	EventForwardingPath string `envconfig:"EVENT_FORWARDING_PATH" default:"/event"`
-	VerifySSL           bool   `envconfig:"HTTP_SSL_VERIFY" default:"true"`
-	PubSubURL           string `envconfig:"PUBSUB_URL" default:"nats://keptn-nats-cluster"`
-	PubSubTopic         string `envconfig:"PUBSUB_TOPIC" default:""`
-	PubSubRecipient     string `envconfig:"PUBSUB_RECIPIENT" default:"http://127.0.0.1"`
-	PubSubRecipientPort string `envconfig:"PUBSUB_RECIPIENT_PORT" default:"8080"`
-	PubSubRecipientPath string `envconfig:"PUBSUB_RECIPIENT_PATH" default:""`
-	ProjectFilter       string `envconfig:"PROJECT_FILTER" default:""`
-	StageFilter         string `envconfig:"STAGE_FILTER" default:""`
-	ServiceFilter       string `envconfig:"SERVICE_FILTER" default:""`
-}
-
 var uptimeTicker *time.Ticker
 
 var closeChan = make(chan bool)
 
 var ceCache = lib.NewCloudEventsCache()
 
-var pubSubConnections map[string]*cenats.Sender
+var eventsChannel = make(chan cloudevents.Event)
 
-var env envConfig
+var pubSubConnections = map[string]*cenats.Sender{}
+
+var env config.EnvConfig
 
 var ceClient cloudevents.Client
+
+var uniformLogger lib.UniformLog
 
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
@@ -86,8 +75,12 @@ var externalAPIProxyMappings = map[string]string{
 	"/controlPlane":          "/controlPlane",
 }
 
-const connectionTypeNATS = "nats"
-const connectionTypeHTTP = "http"
+const (
+	defaultShipyardControllerBaseURL = "http://shipyard-controller:8080"
+	defaultEventsEndpoint            = defaultShipyardControllerBaseURL + "/v1/event/triggered"
+	connectionTypeNATS               = "nats"
+	connectionTypeHTTP               = "http"
+)
 
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
@@ -98,31 +91,77 @@ func main() {
 	os.Exit(_main(env))
 }
 
-func _main(env envConfig) int {
+func _main(env config.EnvConfig) int {
+	connectionType := getPubSubConnectionType()
 
+	uniformHandler := createUniformHandler(connectionType)
+	controlPlane := lib.ControlPlane{
+		UniformHandler: uniformHandler,
+		EnvConfig:      env,
+	}
+
+	// Register integration in control plane
+	id, err := controlPlane.Register()
+	if err != nil {
+		logger.Warnf("Unable to register to Keptn's control plane: %v", err)
+	} else {
+		logger.Infof("Registered Keptn Integration with id %s", id)
+	}
+	defer func(string) {
+		err = controlPlane.Unregister()
+		if err != nil {
+			logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
+		} else {
+			logger.Infof("Unregistered Keptn Integration with id %s", id)
+		}
+	}(id)
+
+	// Prepare signal handling for graceful shutdown
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-c
+		cancel()
+	}()
+
+	logHandler := createUniformLogHandler(connectionType)
+	uniformLogger = lib.NewEventUniformLog(id, logHandler)
+	uniformLogger.Start(ctx, eventsChannel)
+
+	// Start api proxy and event receiver
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	go startAPIProxy(env, wg)
-	go startEventReceiver(wg)
-
+	go startAPIProxy(ctx, wg, env)
+	go startEventReceiver(ctx, wg, connectionType)
 	wg.Wait()
 
 	return 0
 }
 
-func startEventReceiver(waitGroup *sync.WaitGroup) {
-	defer waitGroup.Done()
+func createUniformHandler(connectionType string) *keptnapi.UniformHandler {
+	if connectionType == connectionTypeHTTP {
+		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	}
+	return keptnapi.NewUniformHandler(defaultShipyardControllerBaseURL)
+}
 
+func createUniformLogHandler(connectionType string) *keptnapi.LogHandler {
+	if connectionType == connectionTypeHTTP {
+		return keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	}
+	return keptnapi.NewLogHandler(defaultShipyardControllerBaseURL)
+}
+
+func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType string) {
+	defer waitGroup.Done()
 	setupCEClient()
 
-	switch getPubSubConnectionType() {
-	case connectionTypeNATS:
-		createNATSClientConnection()
-	case connectionTypeHTTP:
-		createHTTPConnection()
-	default:
-		createNATSClientConnection()
+	if connectionType == connectionTypeHTTP {
+		createHTTPConnection(ctx)
+	} else {
+		createNATSClientConnection(ctx)
 	}
 }
 
@@ -133,28 +172,45 @@ func getPubSubConnectionType() string {
 	}
 	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
 	return connectionTypeHTTP
-
 }
 
-func startAPIProxy(env envConfig, wg *sync.WaitGroup) {
+func startAPIProxy(ctx context.Context, wg *sync.WaitGroup, env config.EnvConfig) (err error) {
 	defer wg.Done()
-	pubSubConnections = map[string]*cenats.Sender{}
 	logger.Info("Creating event forwarding endpoint")
-
-	http.HandleFunc(env.EventForwardingPath, EventForwardHandler)
-	http.HandleFunc(env.APIProxyPath, APIProxyHandler)
 	serverURL := fmt.Sprintf("localhost:%d", env.APIProxyPort)
 
-	err := http.ListenAndServe(serverURL, nil)
-	if err != nil {
-		logger.Errorf("Unable to start API Proxy: %v", err)
+	mux := http.NewServeMux()
+	mux.Handle(env.EventForwardingPath, http.HandlerFunc(EventForwardHandler))
+	mux.Handle(env.APIProxyPath, http.HandlerFunc(APIProxyHandler))
+
+	svr := &http.Server{
+		Addr:    serverURL,
+		Handler: mux,
 	}
 
+	go func() {
+		if err := svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Fatalf("listen:%+s\n", err)
+		}
+	}()
+
+	<-ctx.Done()
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if err := svr.Shutdown(ctxShutDown); err != nil {
+		logger.Fatalf("server Shutdown Failed:%+s", err)
+	}
+	if errors.Is(err, http.ErrServerClosed) {
+		err = nil
+	}
+	return
 }
 
 // EventForwardHandler forwards events received by the execution plane services to the Keptn API or the Nats server
 func EventForwardHandler(rw http.ResponseWriter, req *http.Request) {
-
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		logger.Errorf("Failed to read body from request: %v", err)
@@ -298,6 +354,14 @@ const defaultPollingInterval = 10
 
 func gotEvent(event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
+
+	go func() {
+		eventsChannel <- event
+	}() // send the event to the logger for further processing
+
+	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
+		return nil
+	}
 	if env.KeptnAPIEndpoint == "" {
 		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
 		return forwardEventToNATSServer(event)
@@ -393,7 +457,7 @@ func getHTTPClient() *http.Client {
 	return client
 }
 
-func createHTTPConnection() {
+func createHTTPConnection(ctx context.Context) {
 	if env.PubSubRecipient == "" {
 		logger.Error("No pubsub recipient defined")
 		return
@@ -410,8 +474,12 @@ func createHTTPConnection() {
 	pollingTicker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
 
 	for {
-		<-pollingTicker.C
-		pollHTTPEventSource(eventEndpoint, env.KeptnAPIToken, topics)
+		select {
+		case <-pollingTicker.C:
+			pollHTTPEventSource(eventEndpoint, env.KeptnAPIToken, topics)
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
@@ -419,7 +487,7 @@ func getHTTPPollingEndpoint() string {
 	endpoint := env.KeptnAPIEndpoint
 	if endpoint == "" {
 		if endpoint == "" {
-			return "http://shipyard-controller:8080/v1/event/triggered"
+			return defaultEventsEndpoint
 		}
 	} else {
 		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
@@ -579,13 +647,13 @@ func hasEventBeenSent(sentEvents []string, eventID string) bool {
 	return alreadySent
 }
 
-func createNATSClientConnection() {
+func createNATSClientConnection(ctx context.Context) {
 	if env.PubSubRecipient == "" {
-		fmt.Println("No pubsub recipient defined")
+		logger.Warn("No pubsub recipient defined")
 		return
 	}
 	if env.PubSubTopic == "" {
-		fmt.Println("No pubsub topic defined. No need to create NATS client connection.")
+		logger.Warn("No pubsub topic defined. No need to create NATS client connection.")
 		return
 	}
 	uptimeTicker = time.NewTicker(10 * time.Second)
@@ -599,14 +667,13 @@ func createNATSClientConnection() {
 	err := nch.SubscribeToTopics()
 
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
 	defer func() {
 		nch.RemoveAllSubscriptions()
-		// Close connection
-		fmt.Println("Disconnected from NATS")
+		logger.Info("Disconnected from NATS")
 	}()
 
 	for {
@@ -615,7 +682,8 @@ func createNATSClientConnection() {
 			_ = nch.SubscribeToTopics()
 		case <-closeChan:
 			return
-
+		case <-ctx.Done():
+			return
 		}
 	}
 }
@@ -637,13 +705,13 @@ func setupCEClient() {
 
 func handleMessage(m *nats.Msg) {
 	go func() {
-		fmt.Printf("Received a message for topic [%s]\n", m.Subject)
+		logger.Infof("Received a message for topic [%s]\n", m.Subject)
 		e, err := decodeCloudEvent(m.Data)
 
 		if e != nil && err == nil {
 			err = sendEvent(*e)
 			if err != nil {
-				fmt.Println("Could not send CloudEvent: " + err.Error())
+				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
 		}
 	}()
@@ -654,7 +722,6 @@ type ceVersion struct {
 }
 
 func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
-
 	cv := &ceVersion{}
 	if err := json.Unmarshal(data, cv); err != nil {
 		return nil, err
@@ -663,7 +730,7 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 	event := cloudevents.NewEvent(cv.SpecVersion)
 
 	if err := json.Unmarshal(data, &event); err != nil {
-		fmt.Println("Could not unmarshal CloudEvent: " + err.Error())
+		logger.Errorf("Could not unmarshal CloudEvent: %v", err)
 		return nil, err
 	}
 
@@ -672,27 +739,16 @@ func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
 
 // Primitive filtering based on project, stage, and service properties
 func matchesFilter(e cloudevents.Event) bool {
-
 	keptnBase := &v0_2_0.EventData{}
 	if err := e.DataAs(keptnBase); err != nil {
 		return true
 	}
-	if env.ProjectFilter != "" && !contains(strings.Split(env.ProjectFilter, ","), keptnBase.Project) ||
-		env.StageFilter != "" && !contains(strings.Split(env.StageFilter, ","), keptnBase.Stage) ||
-		env.ServiceFilter != "" && !contains(strings.Split(env.ServiceFilter, ","), keptnBase.Service) {
+	if env.ProjectFilter != "" && !sliceutils.ContainsStr(strings.Split(env.ProjectFilter, ","), keptnBase.Project) ||
+		env.StageFilter != "" && !sliceutils.ContainsStr(strings.Split(env.StageFilter, ","), keptnBase.Stage) ||
+		env.ServiceFilter != "" && !sliceutils.ContainsStr(strings.Split(env.ServiceFilter, ","), keptnBase.Service) {
 		return false
 	}
 	return true
-}
-
-// contains checks if a string is present in a slice
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-	return false
 }
 
 func sendEvent(event cloudevents.Event) error {

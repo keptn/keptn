@@ -27,6 +27,43 @@ spec:
     spec:
       serviceAccountName: keptn-default
       containers:
+      - name: remediation-service
+        image: keptn/remediation-service:0.8.3
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+        env:
+          - name: EVENTBROKER
+            value: 'http://event-broker/keptn'
+          - name: CONFIGURATION_SERVICE
+            value: 'http://configuration-service:8080'
+          - name: MONGODB_DATASTORE
+            value: 'http://mongodb-datastore:8080'
+          - name: ENVIRONMENT
+            value: 'production'
+          - name: WAIT_TIME_MINUTES
+            value: '10m'
+          - name: MONGODB_HOST
+            value: 'mongodb:27017'
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: user
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-credentials
+                key: password
+          - name: MONGO_DB_NAME
+            value: 'keptn'
       - name: distributor
         image: keptn/distributor:latest
         ports:
@@ -42,6 +79,18 @@ spec:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'
         - name: PUBSUB_TOPIC
-          value: 'sh.keptn.event.configuration.change,sh.keptn.events.deployment-finished'
+          value: 'sh.keptn.event.get-action.triggered'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_SERVICE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['app.kubernetes.io/name']
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
