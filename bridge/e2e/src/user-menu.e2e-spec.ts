@@ -11,30 +11,21 @@ describe('User Menu', () => {
     page = new AppPage();
   });
 
-  it('should open the user menu and copy api token', async () => {
+  it('should open the user menu validate api token', async () => {
     await page.navigateTo();
 
     await element(
       by.xpath('//*[@uitestid="keptn-nav-userMenu"]')
     ).click();
-    takeScreenshot('user-menu-open.png');
 
     await element(
-      by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[2]/dt-copy-to-clipboard/button')
+      by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[3]/button')
     ).click();
 
-    await browser.executeScript(() => {
-      let el = document.createElement('input');
-      el.setAttribute('id', 'apiTokenTempInput');
-      document.getElementsByTagName('body')[0].appendChild(el);
-    });
-
-    const apiTokenTempInput = element(by.id('apiTokenTempInput'));
-    await apiTokenTempInput.sendKeys(protractor.Key.chord(protractor.Key.CONTROL, 'v'));
-
-    const val = await apiTokenTempInput.getAttribute('value');
+    takeScreenshot('user-menu-open-with-api-token-revealed.png');
 
     const apiToken = process.env.KEPTN_API_TOKEN;
+    const val = await element(by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[2]/dt-copy-to-clipboard/div/input')).getAttribute('value');
 
     await expect(val).toEqual(apiToken);
   });
