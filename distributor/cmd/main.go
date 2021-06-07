@@ -56,6 +56,8 @@ var ceCache = lib.NewCloudEventsCache()
 
 var pubSubConnections = map[string]*cenats.Sender{}
 
+var eventsChannel = make(chan cloudevents.Event)
+
 var env config.EnvConfig
 
 var ceClient cloudevents.Client
@@ -92,6 +94,15 @@ func main() {
 func _main(env config.EnvConfig) int {
 	connectionType := getPubSubConnectionType()
 
+	// Prepare signal handling for graceful shutdown
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-c
+		cancel()
+	}()
+
 	if !env.DisableRegistration {
 		controlPlane := lib.ControlPlane{
 			UniformHandler: createUniformHandler(connectionType),
@@ -105,6 +116,11 @@ func _main(env config.EnvConfig) int {
 				return err
 			}
 			logger.Infof("Registered Keptn Integration with id %s", id)
+
+			logHandler := createUniformLogHandler(connectionType)
+			uniformLogger := lib.NewEventUniformLog(id, logHandler)
+			uniformLogger.Start(ctx, eventsChannel)
+			logger.Infof("Started UniformLogger for Keptn Integration")
 			return nil
 		})
 
@@ -117,15 +133,6 @@ func _main(env config.EnvConfig) int {
 			}
 		}()
 	}
-
-	// Prepare signal handling for graceful shutdown
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		<-c
-		cancel()
-	}()
 
 	// Start api proxy and event receiver
 	wg := new(sync.WaitGroup)
@@ -142,6 +149,13 @@ func createUniformHandler(connectionType string) *keptnapi.UniformHandler {
 		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
 	}
 	return keptnapi.NewUniformHandler(defaultShipyardControllerBaseURL)
+}
+
+func createUniformLogHandler(connectionType string) *keptnapi.LogHandler {
+	if connectionType == connectionTypeHTTP {
+		return keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	}
+	return keptnapi.NewLogHandler(defaultShipyardControllerBaseURL)
 }
 
 func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType string) {
@@ -342,6 +356,13 @@ func getProxyHost(path string) (string, string, string) {
 
 func gotEvent(event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
+	go func() {
+		eventsChannel <- event
+	}() // send the event to the logger for further processing
+
+	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
+		return nil
+	}
 	if env.KeptnAPIEndpoint == "" {
 		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
 		return forwardEventToNATSServer(event)

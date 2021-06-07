@@ -235,18 +235,12 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
-          volumeMounts:
-            - mountPath: /usr/src/app/dist/assets/branding
-              name: assets
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
       serviceAccountName: keptn-default
-      volumes:
-        - emptyDir: {}
-          name: assets
 
 ---
 apiVersion: v1
@@ -367,8 +361,7 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
-            - name: DISABLE_REGISTRATION
-              value: "true"
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

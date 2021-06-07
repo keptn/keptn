@@ -16,7 +16,6 @@ type EnvConfig struct {
 	ProjectFilter       string `envconfig:"PROJECT_FILTER" default:""`
 	StageFilter         string `envconfig:"STAGE_FILTER" default:""`
 	ServiceFilter       string `envconfig:"SERVICE_FILTER" default:""`
-	DisableRegistration bool   `envconfig:"DISABLE_REGISTRATION" default:"false"`
 	Location            string `envconfig:"LOCATION" default:""`
 	DistributorVersion  string `envconfig:"DISTRIBUTOR_VERSION" default:""`
 	Version             string `envconfig:"VERSION" default:""`
