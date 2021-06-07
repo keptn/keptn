@@ -64,7 +64,7 @@ if(lookAndFeelUrl) {
     }
     let file = fs.createWriteStream(destFile);
     let parsedUrl = urlParser.parse(lookAndFeelUrl);
-    let lib = parsedUrl.protocol === "https" ? https : http;
+    let lib = parsedUrl.protocol === "https:" ? https : http;
 
     lib.get(lookAndFeelUrl, function(response) {
       response.pipe(file);
