@@ -35,14 +35,15 @@ if(!integrationsPageLink) {
 try {
   console.log("Installing default Look-and-Feel");
 
-  let destDir = path.join(__dirname, '../dist/assets/branding');
-  let srcDir = path.join(__dirname, '../client/assets/default-branding');
+  const destDir = path.join(__dirname, '../dist/assets/branding');
+  const srcDir = path.join(__dirname, '../client/assets/default-branding');
+  const brandingFiles = ["app-config.json", "logo.png", "logo_inverted.png"];
 
-  let brandingFiles = ["app-config.json", "logo.png", "logo_inverted.png"];
+  if(!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+
   brandingFiles.forEach((file) => {
-    if(!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
     fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
   });
 } catch (e) {
@@ -53,8 +54,8 @@ if(lookAndFeelUrl) {
   try {
     console.log("Downloading custom Look-and-Feel file from", lookAndFeelUrl);
 
-    let destDir = path.join(__dirname, '../dist/assets/branding');
-    let destFile = path.join(destDir, '/lookandfeel.zip');
+    const destDir = path.join(__dirname, '../dist/assets/branding');
+    const destFile = path.join(destDir, '/lookandfeel.zip');
 
     if(!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
