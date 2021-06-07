@@ -1,3 +1,6 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
 .service-title {
   height: 32px;
 }
@@ -7,4 +10,14 @@
   transform: scale(1);
   animation: pulse 2s;
   animation-delay: .5s;
+}
+
+code {
+  padding: 5px;
+  background-color: $gray-200;
+  border-radius: 5px;
+}
+
+.info {
+  fill: $primary-color;
 }

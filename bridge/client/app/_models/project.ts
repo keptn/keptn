@@ -90,7 +90,7 @@ export class Project {
       if (service?.deploymentContext) {
         const image = service.getImageVersion();
         const deployment = deployments.find(dp => dp.version === image && dp.shkeptncontext === service.deploymentContext);
-        const stageDetails = new DeploymentStage(stage.stageName);
+        const stageDetails = new DeploymentStage(stage.stageName, service.evaluationContext);
         if (deployment) {
           deployment.stages.push(stageDetails);
         } else {
