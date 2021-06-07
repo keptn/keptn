@@ -76,13 +76,18 @@ and make it downloadable from an URL.
 When the `LOOK_AND_FEEL_URL` environment variable is set and points to a zip archive the Keptn
 Bridge will download that file on startup and extract its content into `/assets/branding`.
 
-The zip archive should contain the `logo.png`, `logo_inverted.png` and an `app-config.json`.
+The zip archive must contain an `app-config.json` and can have optionally a logo and a stylesheet.
+The `app-config.json` must define an `appTitle`, `logoUrl` and `logoInvertedUrl` and can have optionally
+a `stylesheetUrl`. The `logoUrl` will be used as logo in the app header, `logoInvertedUrl` will be used
+as app favicon and as placeholder in some empty state messages.
+If a `stylesheetUrl` is provided, the stylesheet will be injected in the app header on page load.
 
 ```app-config.json
 {
-  "appTitle": "keptn",
-  "logoUrl": "assets/branding/logo.png",
-  "logoInvertedUrl": "assets/branding/logo_inverted.png"
+  "appTitle": "custom title",
+  "logoUrl": "assets/branding/logo.svg",
+  "logoInvertedUrl": "assets/branding/logo.svg",
+  "stylesheetUrl": "assets/branding/style.css"
 }
 ```
 
