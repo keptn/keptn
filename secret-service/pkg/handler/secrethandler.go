@@ -139,7 +139,7 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 func (s SecretHandler) GetSecrets(c *gin.Context) {
 	secrets, err := s.SecretBackend.GetSecrets()
 	if err != nil {
-		SetInternalServerErrorResponse(err, c, "Unable to delete secret")
+		SetInternalServerErrorResponse(err, c, "Unable to get secrets")
 		return
 	}
 
