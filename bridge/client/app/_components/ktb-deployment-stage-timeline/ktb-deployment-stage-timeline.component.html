@@ -6,7 +6,7 @@
         [stage]="stage"
         [evaluation]="deployment.getEvaluation(stage)"
         [isSelected]="selectedStage === stage"
-        [success]="deployment.sequence.getFirstTraceOfStage(stage).isFinished() && stage !== deployment.sequence.isFaulty()"
+        [success]="!deployment.sequence.hasPendingApproval(stage) && stage !== deployment.sequence.isFaulty()"
         [error]="stage === deployment.sequence.isFaulty()"
         [class.warning]="stage === deployment.sequence.isWarning()"
         [highlight]="deployment.sequence.hasPendingApproval(stage)"

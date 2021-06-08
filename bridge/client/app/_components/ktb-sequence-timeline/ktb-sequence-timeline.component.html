@@ -16,8 +16,9 @@
           </ng-template>
           <span class="stage-text"
                 [class.error]="stage === currentSequence.isFaulty()"
-                [class.success]="currentSequence.getFirstTraceOfStage(stage).isFinished() && stage !== currentSequence.isFaulty()"
+                [class.success]="!currentSequence.hasPendingApproval(stage) && stage !== currentSequence.isFaulty()"
                 [class.highlight]="currentSequence.hasPendingApproval(stage)"
+                [class.warning]="stage === currentSequence.isWarning()"
                 [class.focused]="stage === selectedStage"
                 [textContent]="stage"></span>
         </div>
