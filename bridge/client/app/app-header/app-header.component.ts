@@ -62,7 +62,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.keptnInfo = keptnInfo;
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
-        } else if (keptnInfo.versionCheckEnabled) {
+        } else if (keptnInfo.bridgeInfo.enableVersionCheckFeature && keptnInfo.versionCheckEnabled) {
           keptnInfo.keptnVersionInvalid = !this.doVersionCheck(
             keptnInfo.bridgeInfo.bridgeVersion,
             keptnInfo.keptnVersion,
