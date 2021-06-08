@@ -91,6 +91,7 @@ chartutil
 checkbox
 chmod
 chown
+chromedriver
 ciphersuite
 ckf
 CLA
