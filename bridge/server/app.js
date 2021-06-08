@@ -70,16 +70,19 @@ if(lookAndFeelUrl) {
       response.pipe(file);
       file.on('finish', function() {
         file.close(() => {
-          let zip = new admZip(destFile);
-          zip.extractAllTo(destDir, true);
+          try {
+            let zip = new admZip(destFile);
+            zip.extractAllTo(destDir, true);
+          } catch (err) {
+            console.error(`Error while extracting custom Look-and-Feel file. ${err}`);
+          }
         });
       });
     }).on('error', function(err) {
       fs.unlink(destFile);
     });
-  } catch (e) {
-    console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
-    process.exit(1);
+  } catch (err) {
+    console.error(`Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
 
