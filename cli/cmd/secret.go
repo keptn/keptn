@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"strings"
 )
 
@@ -41,9 +44,11 @@ func (h SecretCmdHandler) CreateSecret(secretName string, data []string, scope *
 		return err
 	}
 	if _, err := h.secretAPI.CreateSecret(models.Secret{
-		Data:  secretData,
-		Name:  &secretName,
-		Scope: &secretScope,
+		Data: secretData,
+		SecretMetadata: models.SecretMetadata{
+			Name:  &secretName,
+			Scope: &secretScope,
+		},
 	}); err != nil {
 		return errors.New(*err.Message)
 	}
@@ -62,9 +67,11 @@ func (h SecretCmdHandler) UpdateSecret(secretName string, data []string, scope *
 		return err
 	}
 	secret := models.Secret{
-		Data:  secretData,
-		Name:  &secretName,
-		Scope: &secretScope,
+		Data: secretData,
+		SecretMetadata: models.SecretMetadata{
+			Name:  &secretName,
+			Scope: &secretScope,
+		},
 	}
 	if _, err := h.secretAPI.UpdateSecret(secret); err != nil {
 		return errors.New(*err.Message)
@@ -82,6 +89,35 @@ func (h SecretCmdHandler) DeleteSecret(name string, scope *string) error {
 	if _, err := h.secretAPI.DeleteSecret(name, secretScope); err != nil {
 		return errors.New(*err.Message)
 	}
+	return nil
+}
+
+func (h SecretCmdHandler) GetSecrets(outputFormat string) error {
+	secrets, errObj := h.secretAPI.GetSecrets()
+	if errObj != nil {
+		return errors.New(*errObj.Message)
+	}
+
+	var output string
+	if outputFormat == "json" {
+		marshal, err := json.MarshalIndent(secrets, "", "  ")
+		if err != nil {
+			return err
+		}
+		output = string(marshal)
+	} else if outputFormat == "yaml" {
+		marshal, err := yaml.Marshal(secrets)
+		if err != nil {
+			return err
+		}
+		output = string(marshal)
+	} else {
+		output = "NAME"
+		for _, secret := range secrets.Secrets {
+			output = output + "\n" + *secret.Name
+		}
+	}
+	logging.PrintLog(output, logging.QuietLevel)
 	return nil
 }
 
