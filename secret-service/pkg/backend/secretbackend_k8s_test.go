@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/keptn/keptn/secret-service/pkg/repository/fake"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,7 +29,7 @@ func TestCreateK8sSecretBackend(t *testing.T) {
 }
 
 /**
-CREATE SECREAT TESTS
+CREATE SECRET TESTS
 */
 func TestCreateSecrets(t *testing.T) {
 
@@ -52,6 +53,7 @@ func TestCreateSecrets(t *testing.T) {
 	assert.Equal(t, "my-secret", k8sSecret.Name)
 	assert.Equal(t, map[string]string(secret.Data), k8sSecret.StringData)
 	assert.Equal(t, FakeNamespaceProvider()(), k8sSecret.Namespace)
+	assert.Equal(t, "keptn-secret-service", k8sSecret.Labels["app.kubernetes.io/managed-by"])
 
 	k8sRole1, err := kubernetes.RbacV1().Roles(FakeNamespaceProvider()()).Get(context.TODO(), "my-scope-read-secrets", metav1.GetOptions{})
 	assert.Nil(t, err)
@@ -156,6 +158,55 @@ func TestCreateSecret_NoMatchingScopeConfigured(t *testing.T) {
 }
 
 /**
+GET SECRET TESTS
+*/
+func TestGetSecret(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	secret := createTestSecret("my-secret", "my-scope")
+	err := backend.CreateSecret(secret)
+	assert.Nil(t, err)
+
+	secrets, err := backend.GetSecrets()
+	require.Nil(t, err)
+
+	require.Equal(t, []model.SecretMetadata{
+		{
+			Name: "my-secret",
+		},
+	}, secrets)
+}
+
+func TestGetSecret_Fails(t *testing.T) {
+	kubernetes := k8sfake.NewSimpleClientset()
+	scopesRepository := &fake.ScopesRepositoryMock{}
+	scopesRepository.ReadFunc = func() (model.Scopes, error) { return createTestScopes(), nil }
+
+	backend := K8sSecretBackend{
+		KubeAPI:                kubernetes,
+		KeptnNamespaceProvider: FakeNamespaceProvider(),
+		ScopesRepository:       scopesRepository,
+	}
+
+	kubernetes.Fake.PrependReactor("list", "secrets", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("oops")
+	})
+
+	secrets, err := backend.GetSecrets()
+
+	require.NotNil(t, err)
+	require.Nil(t, secrets)
+}
+
+/**
 DELETE SECRET TESTS
 */
 func TestDeleteK8sSecret(t *testing.T) {
@@ -189,8 +240,10 @@ func TestDeleteK8sSecret(t *testing.T) {
 	})
 
 	err := backend.DeleteSecret(model.Secret{
-		Name:  "my-secret",
-		Scope: "my-scope",
+		SecretMetadata: model.SecretMetadata{
+			Name:  "my-secret",
+			Scope: "my-scope",
+		},
 	})
 
 	actions := kubernetes.Fake.Actions()
@@ -217,8 +270,10 @@ func TestDeleteK8sSecret_SecretNotFound(t *testing.T) {
 	}
 
 	err := backend.DeleteSecret(model.Secret{
-		Name:  "my-secret",
-		Scope: "my-scope",
+		SecretMetadata: model.SecretMetadata{
+			Name:  "my-secret",
+			Scope: "my-scope",
+		},
 	})
 
 	assert.NotNil(t, err)
@@ -270,9 +325,11 @@ func TestUpdateSecret_SecretNotFound(t *testing.T) {
 
 func createTestSecret(name, scope string) model.Secret {
 	secret := model.Secret{
-		Name:  name,
-		Scope: scope,
-		Data:  map[string]string{"password": "keptn"},
+		SecretMetadata: model.SecretMetadata{
+			Name:  name,
+			Scope: scope,
+		},
+		Data: map[string]string{"password": "keptn"},
 	}
 	return secret
 }

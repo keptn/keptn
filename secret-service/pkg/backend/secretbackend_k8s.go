@@ -125,6 +125,26 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	return nil
 }
 
+func (k K8sSecretBackend) GetSecrets() ([]model.SecretMetadata, error) {
+	result := []model.SecretMetadata{}
+
+	namespace := k.KeptnNamespaceProvider()
+	list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/managed-by=keptn-secret-service",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
+	}
+
+	for _, secret := range list.Items {
+		result = append(result, model.SecretMetadata{
+			Name: secret.Name,
+		})
+	}
+
+	return result, nil
+}
+
 func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 	log.Infof("Updating secret: %s with scope %s", secret.Name, secret.Scope)
 	namespace := k.KeptnNamespaceProvider()
@@ -182,6 +202,9 @@ func (k K8sSecretBackend) createK8sSecretObj(secret model.Secret, namespace stri
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      secret.Name,
 			Namespace: namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "keptn-secret-service", // add a 'managed-by' label so we can identify secrets managed by the secret-service
+			},
 		},
 		StringData: secret.Data,
 		Type:       "Opaque",
