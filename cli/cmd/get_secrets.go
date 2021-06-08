@@ -28,7 +28,7 @@ keptn get secrets -output=json  # Returns secret list in JSON format
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if *getSecrets.outputFormat != "" {
-			if *getProject.outputFormat != "yaml" && *getProject.outputFormat != "json" {
+			if *getSecrets.outputFormat != "yaml" && *getSecrets.outputFormat != "json" {
 				return errors.New("Invalid output format, only yaml or json allowed")
 			}
 		}

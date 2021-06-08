@@ -144,7 +144,7 @@ func (s SecretHandler) GetSecrets(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
-	c.JSON(http.StatusOK, secrets)
+	c.JSON(http.StatusOK, model.GetSecretsResponse{Secrets: secrets})
 }
 
 type DeleteSecretQueryParams struct {
