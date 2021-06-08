@@ -74,7 +74,7 @@ if(lookAndFeelUrl) {
             let zip = new admZip(destFile);
             zip.extractAllTo(destDir, true);
           } catch (err) {
-            console.error(`Error while extracting custom Look-and-Feel file. ${err}`);
+            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
           }
         });
       });
@@ -82,7 +82,7 @@ if(lookAndFeelUrl) {
       fs.unlink(destFile);
     });
   } catch (err) {
-    console.error(`Error while downloading custom Look-and-Feel file. ${err}`);
+    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
 
