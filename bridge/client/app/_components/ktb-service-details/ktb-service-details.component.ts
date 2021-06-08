@@ -1,11 +1,21 @@
 import {Location} from '@angular/common';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  TemplateRef,
+  ViewChild
+} from '@angular/core';
 import {Deployment} from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {defaultIfEmpty, filter, takeUntil} from 'rxjs/operators';
 import {forkJoin, Subject} from 'rxjs';
 import {Trace} from '../../_models/trace';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {ClipboardService} from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-service-details',
@@ -16,6 +26,9 @@ import {Trace} from '../../_models/trace';
 export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   private _deployment: Deployment;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
+  @ViewChild('remediationDialog')
+  public remediationDialog: TemplateRef<any>;
+  public remediationDialogRef: MatDialogRef<any, any>;
 
   public projectName: string;
   public selectedStage: string;
@@ -36,7 +49,7 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location, private dialog: MatDialog, private clipboard: ClipboardService) {
 
   }
 
@@ -97,6 +110,20 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
       return false;
     }
     return true;
+  }
+
+  public showRemediationConfigDialog(): void {
+    this.remediationDialogRef = this.dialog.open(this.remediationDialog, {data: this.deployment.getStage(this.selectedStage).config});
+  }
+
+  public closeRemediationConfigDialog(): void {
+    if (this.remediationDialogRef) {
+      this.remediationDialogRef.close();
+    }
+  }
+
+  public copyPayload(plainEvent: string): void {
+    this.clipboard.copy(plainEvent, 'remediation payload');
   }
 
   ngOnDestroy(): void {

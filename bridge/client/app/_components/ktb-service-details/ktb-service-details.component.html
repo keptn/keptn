@@ -17,14 +17,12 @@
       </dt-info-group-title>
     </dt-info-group>
     <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
-    <ktb-service-remediation-list *ngIf="deployment?.getStage(this.selectedStage)?.remediations.length > 0" [shkeptncontext]="deployment.shkeptncontext" [stage]="deployment.getStage(selectedStage)"></ktb-service-remediation-list>
+    <ktb-sequence-list [shkeptncontext]="deployment.shkeptncontext" [sequences]="deployment.sequence.getTracesOfStage(selectedStage)" [stage]="selectedStage" [remediations]="deployment?.getStage(selectedStage)?.remediations"></ktb-sequence-list>
+    <button *ngIf="deployment.getStage(selectedStage)?.remediations.length > 0" class="mt-1" dt-button variant="secondary" (click)="showRemediationConfigDialog()">
+      <dt-icon name="services"></dt-icon>
+      Show remediation config
+    </button>
     <ng-container>
-      <div fxLayout="row" class="mt-3" uitestid="keptn-services-details-jumpToSequence">
-        <a [routerLink]="['/', 'project', projectName, 'sequence', deployment.sequence.shkeptncontext, 'stage', selectedStage]">
-          <button dt-button variant="secondary">View sequence execution</button>
-        </a>
-      </div>
-
 
       <div class="mt-3" [class]="{'animation-pulse': selectedStage}" fxLayout="column" fxLayoutGap="15px" *ngIf="selectedStage && deployment.sequence.getPendingApproval(selectedStage)">
         <ktb-event-item [event]="deployment.sequence.getPendingApproval(selectedStage)">
@@ -47,5 +45,15 @@
         </ktb-event-item>
       </div>
     </ng-container>
+    <ng-template #remediationDialog let-data>
+      <h1 mat-dialog-title>Remediation</h1>
+      <div mat-dialog-content>
+        <pre [textContent]="data"></pre>
+      </div>
+      <div mat-dialog-actions>
+        <button dt-button variant="secondary" (click)="copyPayload(data)">Copy</button>
+        <button dt-button class="ml-2" (click)="closeRemediationConfigDialog()">Close</button>
+      </div>
+    </ng-template>
   </ng-template>
 </ng-container>
