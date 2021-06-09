@@ -8,6 +8,7 @@ import (
 	fakeapi "github.com/keptn/go-utils/pkg/api/utils/fake"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	credentialmanager_mock "github.com/keptn/keptn/cli/pkg/credentialmanager/fake"
+	"github.com/stretchr/testify/require"
 	"net/url"
 	"testing"
 )
@@ -350,5 +351,111 @@ func createMockCredentialManager() *credentialmanager_mock.CredentialManagerInte
 		GetCredsFunc: func(namespace string) (url.URL, string, error) {
 			return url.URL{}, "", nil
 		},
+	}
+}
+
+func TestSecretCmdHandler_GetSecrets(t *testing.T) {
+	type fields struct {
+		credentialManager credentialmanager.CredentialManagerInterface
+		secretAPI         api.SecretHandlerInterface
+	}
+	type args struct {
+		outputFormat string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get secrets",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, *apimodels.Error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+							{
+								Name: stringp("my-secret"),
+							},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "",
+			},
+			want:    "NAME\nmy-secret",
+			wantErr: false,
+		},
+		{
+			name: "get secrets",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, *apimodels.Error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+							{
+								Name: stringp("my-secret"),
+							},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "json",
+			},
+			want: `{
+          "secrets": [
+            {
+              "name": "my-secret"
+            }
+          ]
+        }`,
+			wantErr: false,
+		},
+		{
+			name: "get secrets",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, *apimodels.Error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+							{
+								Name: stringp("my-secret"),
+							},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "yaml",
+			},
+			want: `secrets:
+    - name: my-secret`,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := SecretCmdHandler{
+				credentialManager: tt.fields.credentialManager,
+				secretAPI:         tt.fields.secretAPI,
+			}
+			got, err := h.GetSecrets(tt.args.outputFormat)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSecrets() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.args.outputFormat == "yaml" {
+				require.YAMLEq(t, tt.want, got)
+			} else if tt.args.outputFormat == "json" {
+				require.JSONEq(t, tt.want, got)
+			} else {
+				require.Equal(t, tt.want, got)
+			}
+
+		})
 	}
 }

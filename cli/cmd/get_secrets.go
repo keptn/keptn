@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,12 @@ keptn get secrets -output=json  # Returns secret list in JSON format
 		if err != nil {
 			return nil
 		}
-		return handler.GetSecrets(*getSecrets.outputFormat)
+		output, err := handler.GetSecrets(*getSecrets.outputFormat)
+		if err != nil {
+			return err
+		}
+		logging.PrintLog(output, logging.QuietLevel)
+		return nil
 	},
 }
 

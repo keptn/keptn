@@ -7,7 +7,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"gopkg.in/yaml.v3"
 	"strings"
 )
@@ -92,23 +91,23 @@ func (h SecretCmdHandler) DeleteSecret(name string, scope *string) error {
 	return nil
 }
 
-func (h SecretCmdHandler) GetSecrets(outputFormat string) error {
+func (h SecretCmdHandler) GetSecrets(outputFormat string) (string, error) {
 	secrets, errObj := h.secretAPI.GetSecrets()
 	if errObj != nil {
-		return errors.New(*errObj.Message)
+		return "", errors.New(*errObj.Message)
 	}
 
 	var output string
 	if outputFormat == "json" {
 		marshal, err := json.MarshalIndent(secrets, "", "  ")
 		if err != nil {
-			return err
+			return "", err
 		}
 		output = string(marshal)
 	} else if outputFormat == "yaml" {
 		marshal, err := yaml.Marshal(secrets)
 		if err != nil {
-			return err
+			return "", err
 		}
 		output = string(marshal)
 	} else {
@@ -117,8 +116,7 @@ func (h SecretCmdHandler) GetSecrets(outputFormat string) error {
 			output = output + "\n" + *secret.Name
 		}
 	}
-	logging.PrintLog(output, logging.QuietLevel)
-	return nil
+	return output, nil
 }
 
 func parseLiteralKeyValuePair(in string) (string, string, error) {
