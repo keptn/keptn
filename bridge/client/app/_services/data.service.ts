@@ -6,17 +6,15 @@ import {Root} from "../_models/root";
 import {Trace} from "../_models/trace";
 import {Stage} from "../_models/stage";
 import {Project} from "../_models/project";
-import {Service} from "../_models/service";
 import {EventTypes} from "../_models/event-types";
 
 import {ApiService} from "./api.service";
 import {DateUtil} from "../_utils/date.utils";
 
 import * as moment from 'moment';
-import {KeptnService} from '../_models/keptn-service';
 import {Deployment} from '../_models/deployment';
 import {Sequence} from '../_models/sequence';
-import {Resource} from '../_models/resource';
+import {UniformRegistration} from "../_models/uniform-registration";
 
 @Injectable({
   providedIn: 'root'
@@ -87,11 +85,8 @@ export class DataService {
     );
   }
 
-  public getKeptnServices(projectName: string): Observable<KeptnService[]> {
-    return this.apiService.getKeptnServices(projectName).pipe(
-      map(services => services.map(service => KeptnService.fromJSON(service))),
-      map(services => services.sort((serviceA, serviceB) => serviceA.name.localeCompare(serviceB.name)))
-    );
+  public getUniformRegistrations(): Observable<UniformRegistration[]> {
+    return this.apiService.getUniformRegistrations();
   }
 
   public getRootsLastUpdated(project: Project): Date {

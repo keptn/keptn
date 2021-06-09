@@ -20,7 +20,6 @@ import {DataService} from "../../_services/data.service";
 
 import {DateUtil} from '../../_utils/date.utils';
 import {ActivatedRoute} from '@angular/router';
-import {KeptnService} from "../../_models/keptn-service";
 
 @Directive({
   selector: `ktb-task-item-detail, [ktb-task-item-detail], [ktbTaskItemDetail]`,

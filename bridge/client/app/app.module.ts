@@ -90,7 +90,6 @@ import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-se
 import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-badge.component';
 import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
-import { KtbSubscriptionComponent } from './_components/ktb-subscription/ktb-subscription.component';
 import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
@@ -148,7 +147,6 @@ registerLocaleData(localeEn, 'en');
     KtbUserComponent,
     KtbUniformViewComponent,
     KtbKeptnServicesListComponent,
-    KtbSubscriptionComponent,
     KtbSubscriptionItemComponent,
     KtbDeploymentListComponent,
     KtbServiceDetailsComponent,

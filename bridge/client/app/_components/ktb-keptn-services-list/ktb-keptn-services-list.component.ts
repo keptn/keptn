@@ -7,8 +7,7 @@ import {
   ViewChild
 } from '@angular/core';
 import {DtSort, DtTableDataSource} from '@dynatrace/barista-components/table';
-import {KeptnService} from '../../_models/keptn-service';
-import {Subscription} from '../../_models/subscription';
+import {UniformRegistration} from "../../_models/uniform-registration";
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -19,19 +18,19 @@ export class KtbKeptnServicesListComponent implements OnInit {
 
   @ViewChild('sortable', { read: DtSort, static: true }) sortable: DtSort;
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
-  private _keptnServices: KeptnService[];
-  public selectedService: KeptnService;
+  private _uniformRegistrations: UniformRegistration[];
+  public selectedService: UniformRegistration;
 
-  @Output() selectedServiceChanged: EventEmitter<KeptnService> = new EventEmitter();
+  @Output() selectedServiceChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
   @Input()
-  get keptnServices(): KeptnService[] {
-    return this._keptnServices;
+  get uniformRegistrations(): UniformRegistration[] {
+    return this._uniformRegistrations;
   }
-  set keptnServices(services: KeptnService[]) {
-    if (this._keptnServices !== services) {
-      this._keptnServices = services;
-      this.tableEntries.data = this._keptnServices;
+  set uniformRegistrations(services: UniformRegistration[]) {
+    if (this._uniformRegistrations !== services) {
+      this._uniformRegistrations = services;
+      this.tableEntries.data = this._uniformRegistrations;
     }
   }
 
@@ -40,20 +39,38 @@ export class KtbKeptnServicesListComponent implements OnInit {
     this.tableEntries.sort = this.sortable;
   }
 
-  public setSelectedService(service: KeptnService) {
+  public setSelectedService(service: UniformRegistration) {
     if (this.selectedService !== service) {
       this.selectedService = service;
       this.selectedServiceChanged.emit(service);
     }
   }
 
-  public formatSubscription(subscriptions: Subscription[]): string {
-    return subscriptions.reduce((events, subscription) => {
-      if (!events.includes(subscription.event)) {
-        events.push(subscription.event);
-      }
-      return events;
-    }, []).join(', ');
+  public formatSubscriptions(subscriptions: string[]): string {
+    const formatted = []
+    subscriptions.forEach(subscription => {formatted.push(subscription.replace('sh.keptn.', ''))});
+    return formatted.join(', ');
   }
 
+  public sortData(sortEvent) {
+    const isAscending = sortEvent.direction === 'asc';
+    if(this._uniformRegistrations) {
+      this._uniformRegistrations.sort((a, b) => {
+        switch (sortEvent.active) {
+          case 'host': return this.compare(a.metadata.hostname, b.metadata.hostname, isAscending);
+          case 'namespace': return this.compare(a.metadata.kubernetesmetadata.namespace, b.metadata.kubernetesmetadata.namespace, isAscending);
+          case 'deployment': return this.compare(a.metadata.kubernetesmetadata.deploymentname, b.metadata.kubernetesmetadata.deploymentname, isAscending);
+          case 'location': return this.compare(a.metadata.location, b.metadata.location, isAscending);
+        }
+      });
+
+      this.tableEntries.data = this._uniformRegistrations;
+    } else {
+      this.tableEntries.data = [];
+    }
+  }
+
+  private compare(a: number | string, b: number | string, isAsc: boolean): number {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
 }
