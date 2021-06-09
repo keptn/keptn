@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"os/signal"
 
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -131,8 +132,19 @@ func _main(env envConfig) int {
 		Subscription: keptnmodels.Subscription{},
 	}
 
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		oscall := <-c
+		logger.Info("received shutdown signal:%+v", oscall)
+		cancel()
+	}()
+
 	uniformLogger = lib.NewEventUniformLog(myIntegration)
-	uniformLogger.Start(context.Background(), eventsChannel)
+	uniformLogger.Start(ctx, eventsChannel)
 	wg.Wait()
 
 	return 0
