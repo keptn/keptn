@@ -20,10 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	keptnutils "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"log"
 	"net/url"
 
@@ -71,11 +68,15 @@ var closeChan = make(chan bool)
 
 var ceCache = lib.NewCloudEventsCache()
 
+var eventsChannel = make(chan cloudevents.Event)
+
 var pubSubConnections map[string]*cenats.Sender
 
 var env envConfig
 
 var ceClient cloudevents.Client
+
+var uniformLogger lib.UniformLog
 
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
@@ -109,19 +110,6 @@ func _main(env envConfig) int {
 	go startAPIProxy(env, wg)
 	go startEventReceiver(wg)
 
-	var clientSet kubernetes.Interface
-	logger := keptnutils.NewLogger("", "", "api")
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		logger.Errorf("Could not get InClusterConfig: %s", err.Error())
-	} else {
-		// creates the clientset
-		clientSet, err = kubernetes.NewForConfig(config)
-		if err != nil {
-			logger.Errorf("Could not create kubernetes client: %s", err.Error())
-		}
-	}
-
 	integrationID := keptnmodels.IntegrationID{
 		Name:      os.Getenv("MY_SERVICE_NAME"),
 		Namespace: "keptn",
@@ -143,14 +131,8 @@ func _main(env envConfig) int {
 		Subscription: keptnmodels.Subscription{},
 	}
 
-	uniformLogger := lib.K8sUniformLogger{
-		K8sClient:   clientSet,
-		Integration: myIntegration,
-		Closed:      make(chan struct{}),
-	}
-
-	uniformLogger.Start(context.Background())
-
+	uniformLogger = lib.NewEventUniformLog(myIntegration)
+	uniformLogger.Start(context.Background(), eventsChannel)
 	wg.Wait()
 
 	return 0
@@ -343,6 +325,10 @@ const defaultPollingInterval = 10
 
 func gotEvent(event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
+
+	uniformLogger.GetChannel() <- event // send the event to the logger for further processing
+
+	// TODO discard info/log events
 	if env.KeptnAPIEndpoint == "" {
 		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
 		return forwardEventToNATSServer(event)

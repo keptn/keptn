@@ -1,109 +1,75 @@
 package lib
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"github.com/benbjohnson/clock"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptn "github.com/keptn/go-utils/pkg/api/utils"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
-	"os"
 	"strings"
-	"time"
 )
 
-var errorPhrases = []string{"error", "could not", "fail", "couldn't"}
-
 type UniformLog interface {
-	Log(keptnapimodels.LogEntry) error
-	Start(ctx context.Context)
+	Start(ctx context.Context, eventChannel chan cloudevents.Event)
+	GetChannel() chan cloudevents.Event
 }
 
-type K8sUniformLogger struct {
-	K8sClient    kubernetes.Interface
+type EventUniformLog struct {
 	Integration  keptnapimodels.Integration
-	Closed       chan struct{}
-	logCache     []keptnapimodels.LogEntry
 	logHandler   keptn.LogHandler
-	theClock     clock.Clock
-	syncInterval time.Duration
+	eventChannel chan cloudevents.Event
 }
 
-func NewK8sUniformLogger(k8sClient kubernetes.Interface, integration keptnapimodels.Integration, theClock clock.Clock, syncInterval time.Duration) *K8sUniformLogger {
-	return &K8sUniformLogger{
-		K8sClient:    k8sClient,
-		Integration:  integration,
-		Closed:       make(chan struct{}),
-		logCache:     []keptnapimodels.LogEntry{},
-		logHandler:   keptn.LogHandler{},
-		theClock:     theClock,
-		syncInterval: syncInterval,
+func NewEventUniformLog(integration keptnapimodels.Integration) *EventUniformLog {
+	return &EventUniformLog{
+		Integration: integration,
+		logHandler:  keptn.LogHandler{},
 	}
 }
 
-func (K8sUniformLogger) Log(entry keptnapimodels.LogEntry) error {
-	panic("implement me")
+func (l *EventUniformLog) GetChannel() chan cloudevents.Event {
+	return l.eventChannel
 }
 
-func (kl *K8sUniformLogger) Start(ctx context.Context) {
+func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudevents.Event) {
+	l.logHandler.Start(ctx)
 	go func() {
-		rs, err := kl.K8sClient.CoreV1().Pods(kl.Integration.MetaData.KubernetesMetaData.Namespace).GetLogs(kl.Integration.MetaData.KubernetesMetaData.PodName, &v1.PodLogOptions{
-			Container:  kl.Integration.MetaData.KubernetesMetaData.DeploymentName,
-			Follow:     true,
-			Timestamps: false,
-		}).Stream(ctx)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+		for {
+			event := <-eventChannel
+			if err := l.OnEvent(event); err != nil {
+				logger.Errorf("could not handle event: %s", err.Error())
+			}
 			return
 		}
-		defer rs.Close()
-
-		go func() {
-			<-kl.Closed
-			rs.Close()
-		}()
-
-		sc := bufio.NewScanner(rs)
-
-		for sc.Scan() {
-			if containsErrorMessage(sc.Text()) {
-				kl.logCache = append(kl.logCache, keptnapimodels.LogEntry{
-					IntegrationID: kl.Integration.ID,
-					Message:       sc.Text(),
-				})
-			}
-		}
-	}()
-
-	go func() {
-		ticker := kl.theClock.Ticker(kl.syncInterval)
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Info("cancelling event dispatcher loop")
-				return
-			case <-ticker.C:
-				logger.Debugf("%.2f seconds have passed. Sending log messages to API", kl.syncInterval.Seconds())
-				kl.logHandler.Log(kl.logCache)
-			}
-		}
-	}()
-
-	go func() {
-		<-ctx.Done()
-		close(kl.Closed)
 	}()
 }
 
-func containsErrorMessage(text string) bool {
-	myText := strings.ToLower(text)
-	for _, phrase := range errorPhrases {
-		if strings.Contains(myText, phrase) {
-			return true
-		}
+func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
+	if !strings.HasSuffix(event.Context.GetType(), ".finished") {
+		return nil
 	}
-	return false
+	// TODO: also check for log event (needs to be defined)
+	keptnEvent, err := keptnv2.ToKeptnEvent(event)
+	if err != nil {
+		return fmt.Errorf("could not decode CloudEvent to Keptn event: %v", err.Error())
+	}
+
+	eventData := &keptnv2.EventData{}
+	if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
+		return fmt.Errorf("could not decode Keptn event data: %v", err.Error())
+	}
+
+	if eventData.Status == keptnv2.StatusErrored {
+		l.Log(keptnapimodels.LogEntry{
+			IntegrationID: l.Integration.ID,
+			Message:       eventData.Message,
+		})
+	}
+	return nil
+}
+
+func (l *EventUniformLog) Log(entry keptnapimodels.LogEntry) {
+	l.logHandler.Log([]keptnapimodels.LogEntry{entry})
 }
