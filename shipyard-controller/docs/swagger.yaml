@@ -1,5 +1,23 @@
 basePath: /v1
 definitions:
+  models.Approval:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      image:
+        description: image
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      tag:
+        description: tag
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
   models.Error:
     properties:
       code:
@@ -51,6 +69,18 @@ definitions:
         type: string
     type: object
   models.EventContext:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
+  models.EventContextInfo:
     properties:
       eventId:
         description: ID of the event
@@ -302,6 +332,39 @@ definitions:
         description: Total number of events
         type: integer
     type: object
+  models.Service:
+    properties:
+      creationDate:
+        description: Creation date of the service
+        type: string
+      deployedImage:
+        description: Currently deployed image
+        type: string
+      lastEventTypes:
+        additionalProperties:
+          $ref: '#/definitions/models.EventContextInfo'
+        description: last event types
+        type: object
+      openApprovals:
+        description: open approvals
+        items:
+          $ref: '#/definitions/models.Approval'
+        type: array
+      serviceName:
+        description: Service name
+        type: string
+    type: object
+  models.Stage:
+    properties:
+      services:
+        description: services
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+      stageName:
+        description: Stage name
+        type: string
+    type: object
   models.Stages:
     properties:
       nextPageKey:
@@ -313,7 +376,7 @@ definitions:
       stages:
         description: stages
         items:
-          $ref: '#/definitions/models.ExpandedStage'
+          $ref: '#/definitions/models.Stage'
         type: array
       totalCount:
         description: Total number of stages
@@ -970,11 +1033,13 @@ paths:
         in: query
         name: state
         type: string
-      - description: The from time stamp for fetching sequence states
+      - description: 'The from time stamp for fetching sequence states (in ISO8601
+          time format, e.g.: 2021-05-10T09:51:00.000Z)'
         in: query
         name: fromTime
         type: string
-      - description: The before time stamp for fetching sequence states
+      - description: 'The before time stamp for fetching sequence states (in ISO8601
+          time format, e.g.: 2021-05-10T09:51:00.000Z)'
         in: query
         name: beforeTime
         type: string
