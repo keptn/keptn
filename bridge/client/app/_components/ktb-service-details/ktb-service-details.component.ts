@@ -3,8 +3,9 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit
 import {Deployment} from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
+import {defaultIfEmpty, filter, takeUntil} from 'rxjs/operators';
+import {forkJoin, Subject} from 'rxjs';
+import {Trace} from '../../_models/trace';
 
 @Component({
   selector: 'ktb-service-details',
@@ -19,7 +20,7 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   public projectName: string;
   public selectedStage: string;
 
-  get deployment() {
+  get deployment(): Deployment {
     return this._deployment;
   }
 
@@ -53,10 +54,26 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
     if (this.deployment) {
       this.dataService.getRoot(this.projectName, this.deployment.shkeptncontext).subscribe(sequence => {
         this.deployment.sequence = sequence;
-        if (selectLast || !this.selectedStage) {
-          this.selectLastStage();
+        const evaluations$ = [];
+        for (const stage of this.deployment.stages) {
+          if (!stage.evaluation && stage.evaluationContext) {
+            evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
+          }
         }
-        this._changeDetectorRef.markForCheck();
+        forkJoin(evaluations$)
+          .pipe(defaultIfEmpty(null))
+          .subscribe((evaluations: Trace[] | null) => {
+            if (evaluations) {
+              for (const evaluation of evaluations){
+                this.deployment.getStage(evaluation.getStage()).evaluation = evaluation;
+              }
+            }
+
+            if (selectLast || !this.selectedStage) {
+              this.selectLastStage();
+            }
+            this._changeDetectorRef.markForCheck();
+        });
       });
     }
   }

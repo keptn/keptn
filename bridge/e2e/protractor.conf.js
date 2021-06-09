@@ -7,6 +7,10 @@ const { SpecReporter } = require('jasmine-spec-reporter');
 /**
  * @type { import("protractor").Config }
  */
+/* In case of a custom installed chrome driver - e.g. when Chrome and chrome driver versions do not match
+   chrome driver can be configured with chromeDriver property.
+   E.g.: chromeDriver: 'C:\\bin\\chromedriver.exe'
+*/
 exports.config = {
   allScriptsTimeout: 11000,
   specs: [
