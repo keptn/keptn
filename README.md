@@ -74,4 +74,4 @@ For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
 ## Further information
 
 * The [Keptn`s website](https://keptn.sh) has the documentation of Keptn and its use cases.
-* Please join the [Keptn community](https://github.com/keptn/community).
+* Please join the [Keptn community](https://keptn.sh/community/).
