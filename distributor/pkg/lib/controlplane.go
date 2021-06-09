@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/distributor/pkg/config"
@@ -20,7 +19,7 @@ func (c *ControlPlane) Register() error {
 	data := c.getRegistrationDataFromEnv()
 	id, err := c.UniformHandler.RegisterIntegration(data)
 	if err != nil {
-		return fmt.Errorf(*err.Message)
+		return err
 	}
 	c.CurrentID = id
 	return nil
@@ -28,9 +27,9 @@ func (c *ControlPlane) Register() error {
 
 func (c *ControlPlane) Unregister() error {
 	logger.Info("Unregistering integration")
-	_, err := c.UniformHandler.UnregisterIntegration(c.CurrentID)
+	err := c.UniformHandler.UnregisterIntegration(c.CurrentID)
 	if err != nil {
-		return fmt.Errorf(*err.Message)
+		return err
 	}
 	c.CurrentID = ""
 	return nil
