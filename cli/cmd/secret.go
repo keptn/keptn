@@ -111,9 +111,13 @@ func (h SecretCmdHandler) GetSecrets(outputFormat string) (string, error) {
 		}
 		output = string(marshal)
 	} else {
-		output = "NAME"
-		for _, secret := range secrets.Secrets {
-			output = output + "\n" + *secret.Name
+		if len(secrets.Secrets) == 0 {
+			output = "No secrets found"
+		} else {
+			output = "NAME"
+			for _, secret := range secrets.Secrets {
+				output = output + "\n" + *secret.Name
+			}
 		}
 	}
 	return output, nil

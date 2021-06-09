@@ -370,7 +370,7 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "get secrets",
+			name: "get secrets - no output format",
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
@@ -390,7 +390,23 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "get secrets",
+			name: "get secrets - no output format, received empty list of secret",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, *apimodels.Error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "",
+			},
+			want:    "No secrets found",
+			wantErr: false,
+		},
+		{
+			name: "get secrets - json output format",
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
@@ -416,7 +432,7 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "get secrets",
+			name: "get secrets - yaml output format",
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
