@@ -105,7 +105,7 @@ func _main(env config.EnvConfig) int {
 		if err != nil {
 			logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
 		} else {
-			logger.Infof("Unregisgtered Keptn Integration with id %s", id)
+			logger.Infof("Unregistered Keptn Integration with id %s", id)
 		}
 	}(id)
 
