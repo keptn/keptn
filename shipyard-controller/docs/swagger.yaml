@@ -196,18 +196,14 @@ definitions:
   models.GetLogsResponse:
     properties:
       logs:
-        description: logs
         items:
           $ref: '#/definitions/models.LogEntry'
         type: array
       nextPageKey:
-        description: Pointer to next page
         type: integer
       pageSize:
-        description: Size of returned page
         type: integer
       totalCount:
-        description: Total number of logs
         type: integer
     type: object
   models.Integration:
@@ -280,7 +276,13 @@ definitions:
         type: string
       message:
         type: string
+      shkeptncontext:
+        type: string
+      task:
+        type: string
       time:
+        type: string
+      triggeredid:
         type: string
     type: object
   models.MetaData:

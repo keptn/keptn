@@ -1533,22 +1533,18 @@ var doc = `{
             "type": "object",
             "properties": {
                 "logs": {
-                    "description": "logs",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.LogEntry"
                     }
                 },
                 "nextPageKey": {
-                    "description": "Pointer to next page",
                     "type": "integer"
                 },
                 "pageSize": {
-                    "description": "Size of returned page",
                     "type": "integer"
                 },
                 "totalCount": {
-                    "description": "Total number of logs",
                     "type": "integer"
                 }
             }
@@ -1642,7 +1638,16 @@ var doc = `{
                 "message": {
                     "type": "string"
                 },
+                "shkeptncontext": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "string"
+                },
                 "time": {
+                    "type": "string"
+                },
+                "triggeredid": {
                     "type": "string"
                 }
             }
