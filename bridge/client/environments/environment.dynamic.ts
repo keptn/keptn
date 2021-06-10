@@ -4,8 +4,8 @@ export class DynamicEnvironment {
   public get config() {
     return window.config || {
       "appTitle": "keptn",
-      "logoUrl": "assets/branding/logo.png",
-      "logoInvertedUrl": "assets/branding/logo_inverted.png"
+      "logoUrl": "assets/default-branding/logo.png",
+      "logoInvertedUrl": "assets/default-branding/logo_inverted.png"
     };
   }
 }

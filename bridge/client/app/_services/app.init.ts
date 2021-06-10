@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import {environment} from "../../environments/environment";
 declare var window: any;
 
 @Injectable()
@@ -6,7 +7,7 @@ export class AppInitService {
 
   public init() {
     return new Promise((resolve) => {
-      fetch('assets/branding/app-config.json').then(response => {
+      fetch(environment.appConfigUrl).then(response => {
         return response.text();
       }).then(config => {
         try {
