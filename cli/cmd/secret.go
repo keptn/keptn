@@ -42,14 +42,14 @@ func (h SecretCmdHandler) CreateSecret(secretName string, data []string, scope *
 	if err != nil {
 		return err
 	}
-	if _, err := h.secretAPI.CreateSecret(models.Secret{
+	if err := h.secretAPI.CreateSecret(models.Secret{
 		Data: secretData,
 		SecretMetadata: models.SecretMetadata{
 			Name:  &secretName,
 			Scope: &secretScope,
 		},
 	}); err != nil {
-		return errors.New(*err.Message)
+		return err
 	}
 	return nil
 }
@@ -72,8 +72,8 @@ func (h SecretCmdHandler) UpdateSecret(secretName string, data []string, scope *
 			Scope: &secretScope,
 		},
 	}
-	if _, err := h.secretAPI.UpdateSecret(secret); err != nil {
-		return errors.New(*err.Message)
+	if err := h.secretAPI.UpdateSecret(secret); err != nil {
+		return err
 	}
 	return nil
 }
@@ -85,16 +85,16 @@ func (h SecretCmdHandler) DeleteSecret(name string, scope *string) error {
 	} else {
 		secretScope = *scope
 	}
-	if _, err := h.secretAPI.DeleteSecret(name, secretScope); err != nil {
-		return errors.New(*err.Message)
+	if err := h.secretAPI.DeleteSecret(name, secretScope); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (h SecretCmdHandler) GetSecrets(outputFormat string) (string, error) {
-	secrets, errObj := h.secretAPI.GetSecrets()
-	if errObj != nil {
-		return "", errors.New(*errObj.Message)
+	secrets, err := h.secretAPI.GetSecrets()
+	if err != nil {
+		return "", err
 	}
 
 	var output string

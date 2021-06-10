@@ -508,6 +508,10 @@ github.com/keptn/go-utils v0.8.5-0.20210609064006-0d3b67e382dd h1:IrnlmlI62AmA22
 github.com/keptn/go-utils v0.8.5-0.20210609064006-0d3b67e382dd/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/go-utils v0.8.5-0.20210609064120-68ac7d802bad h1:I3jkAllmGkWkqNx+cx9njKBZpdwystPqcBdgEivu148=
 github.com/keptn/go-utils v0.8.5-0.20210609064120-68ac7d802bad/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210609143745-33ff504b64ee h1:ud62wxZPqSInNPvhizLk0qmLuDMGz3KXIBnB4Bh39nE=
+github.com/keptn/go-utils v0.8.5-0.20210609143745-33ff504b64ee/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210610073442-65b077274c6b h1:G0DsgPvetApkVvk156iaezklaZOo6LR/SazHDyqJyLQ=
+github.com/keptn/go-utils v0.8.5-0.20210610073442-65b077274c6b/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/kubernetes-utils v0.8.2 h1:DFq0JDHnPt9VQSyh8lYTvtajjWUOUSScbHEWK0C4AXQ=
 github.com/keptn/kubernetes-utils v0.8.2/go.mod h1:zIPmFbofRNUs1ESbGPTHx0ocQqDlUk/W+H/mInber94=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
