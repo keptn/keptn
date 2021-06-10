@@ -4,9 +4,18 @@
 
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
-          <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0">
-            <a *ngIf="row.deploymentContext" [routerLink]="getServiceLink(row)" [textContent]="row.getShortImageName() || row.serviceName"></a>
-            <span *ngIf="!row.deploymentContext" class="italic" [textContent]="row.getShortImageName() || row.serviceName"></span>
+          <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0 overflow-ellipsis">
+            <a [routerLink]="getServiceLink(row)" *ngIf="row.deploymentContext, else serviceContent">
+              <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
+            </a>
+            <ng-template #serviceContent>
+              <span [textContent]="row.getShortImageName() || row.serviceName" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: row.getShortImageName() || row.serviceName}}"></span>
+              <ng-container *ngIf="row.getImageVersion()">
+                <br>
+                <span [textContent]="row.getImageVersion()" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: row.getImageVersion()}}"></span>
+              </ng-container>
+            </ng-template>
+            <ng-template #overlay let-data><span [textContent]="data.text"></span></ng-template>
           </p>
         </dt-cell>
       </ng-container>

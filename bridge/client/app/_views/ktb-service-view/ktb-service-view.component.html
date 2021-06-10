@@ -25,7 +25,7 @@
           </ng-container>
           <ng-container *ngIf="!isQualityGatesOnly">
             <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service.serviceName) as lastService; else noDeployment">
-              <span class="bold">Last processed artifact: </span><span *ngIf="lastService.getShortImageName()" [textContent]="lastService.getShortImageName()"></span><span *ngIf="!lastService.getShortImageName()">unknown</span>
+              <span class="bold">Last processed artifact: </span><span *ngIf="lastService.getImageName()" [textContent]="lastService.getImageName()"></span><span *ngIf="!lastService.getImageName()">unknown</span>
             </p>
           </ng-container>
         </dt-info-group>
