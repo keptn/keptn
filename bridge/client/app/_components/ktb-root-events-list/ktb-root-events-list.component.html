@@ -33,8 +33,8 @@
             <p class="m-0 mr-1 small" *ngIf="event.getStages().length > 0">in</p>
             <ng-container *ngFor="let stage of event.getStages();">
               <ktb-stage-badge [stage]="stage" [evaluation]="event.getEvaluation(stage)"
-                               [success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()"
-                               [error]="stage == event.isFaulty()" [class.warning]="stage == event.isWarning()"
+                               [success]="event.getFirstTraceOfStage(stage).isFinished() && !event.isFaulty(stage)"
+                               [error]="event.isFaulty(stage)" [class.warning]="event.isWarning(stage)"
                                [highlight]="event.hasPendingApproval(stage)"
                                (click)="$event.stopPropagation();selectEvent(event, stage)"></ktb-stage-badge>
             </ng-container>
