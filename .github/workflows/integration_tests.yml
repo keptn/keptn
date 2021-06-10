@@ -804,7 +804,7 @@ jobs:
           fi
 
       - name: Create issue if tests failed
-        if: always() && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        if: ${{ github.ref == 'refs/heads/master' }} && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
         uses: JasonEtco/create-an-issue@v2.5.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
