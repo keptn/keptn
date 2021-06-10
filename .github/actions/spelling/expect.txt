@@ -7,6 +7,7 @@ addons
 addrowonbottom
 adduser
 agrabner
+agrimmer
 AKS
 alecthomas
 amd
@@ -42,6 +43,7 @@ autoupgrade
 avgrtvalidation
 aws
 axios
+bacherfl
 backend
 backports
 bak
@@ -89,6 +91,7 @@ chartutil
 checkbox
 chmod
 chown
+chromedriver
 ciphersuite
 ckf
 CLA
@@ -106,6 +109,7 @@ cmp
 codebase
 codecov
 codelyzer
+codeowners
 combi
 commitlink
 commonjs
@@ -139,10 +143,12 @@ cta
 ctx
 cyberciti
 daemonset
+danielkhan
 dasharray
 dataservice
 datastore
 datetime
+Davila
 dbg
 DDTHH
 Debian
@@ -150,6 +156,7 @@ Debugf
 debuglogs
 ded
 deletecollection
+Deliv
 depd
 dependabot
 depl
@@ -171,6 +178,7 @@ dockerfile
 dockerhub
 doctype
 Docu
+dominikmessner
 dompurify
 downlevel
 Downloader
@@ -178,6 +186,7 @@ dpl
 dracula
 dropdown
 dst
+dtx
 dvcm
 dynatrace
 dynatraceheader
@@ -292,6 +301,7 @@ GOTRACEBACK
 goutils
 goutilsmodels
 gpg
+gpu
 grabnerandi
 grep
 grpc
@@ -376,6 +386,7 @@ jenkinsjob
 jeremywohl
 jessevdk
 jetbrains
+jetzlstorfer
 JKEPTN
 JLoop
 jmeter
@@ -497,6 +508,7 @@ monto
 moq
 mousemove
 mozilla
+mpfosi
 mptr
 mtls
 muratovic
@@ -644,6 +656,7 @@ referer
 refname
 regex
 regexp
+Reitbauer
 releasename
 releasenotes
 remediations
@@ -673,6 +686,8 @@ runbook
 runlocal
 RUnlock
 rxjs
+samuelfahrngruber
+sandroschmid
 scc
 scopesrepository
 screenshot
@@ -706,6 +721,7 @@ shipyardversion
 shirtshop
 shkeptncontext
 shkeptnspecversion
+shm
 SIGINT
 sigs
 SIGTERM
@@ -717,7 +733,6 @@ sjb
 skaffold
 slackbot
 sli
-sliceutils
 slo
 Smode
 smv
@@ -760,7 +775,6 @@ sudo
 sutils
 svcs
 svg
-svr
 swaggo
 syscall
 tabwidth
@@ -867,7 +881,7 @@ virtualservice
 VMs
 vuser
 Vwd
-Warnf
+Webdriver
 webhook
 webkit
 webpack
@@ -893,6 +907,7 @@ xit
 xml
 XNlcg
 xolv
+xpath
 XPOST
 XToken
 XVersion

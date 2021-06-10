@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbServiceRemediationListComponent } from './ktb-service-remediation-list.component';
+import { KtbSequenceListComponent } from './ktb-sequence-list.component';
 import {AppModule} from '../../app.module';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 
-describe('KtbServiceRemediationListComponent', () => {
-  let component: KtbServiceRemediationListComponent;
-  let fixture: ComponentFixture<KtbServiceRemediationListComponent>;
+describe('KtbSequenceListComponent', () => {
+  let component: KtbSequenceListComponent;
+  let fixture: ComponentFixture<KtbSequenceListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KtbServiceRemediationListComponent ],
+      declarations: [ KtbSequenceListComponent ],
       imports: [AppModule, HttpClientTestingModule]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(KtbServiceRemediationListComponent);
+    fixture = TestBed.createComponent(KtbSequenceListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

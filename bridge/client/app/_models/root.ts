@@ -19,7 +19,7 @@ export class Root extends Trace {
     return this.traces.length === 0 ? false : this.traces[this.traces.length-1].isStarted();
   }
 
-  isFailedEvaluation(): string {
+  hasFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
       let failedEvaluation = this.findTrace(t => t.isEvaluation() && t.isFailedEvaluation());

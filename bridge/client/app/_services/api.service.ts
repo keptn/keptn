@@ -210,6 +210,12 @@ export class ApiService {
       .get<EventResult>(url);
   }
 
+  public getEvaluationResult(shkeptncontext: string) {
+    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}?filter=shkeptncontext:${shkeptncontext}&limit=1`;
+    return this.http
+      .get<EventResult>(url);
+  }
+
   public sendGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string) {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put(url, {
