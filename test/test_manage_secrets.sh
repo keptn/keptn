@@ -26,6 +26,10 @@ verify_test_step $? "Failed to create secret $SECRET_1"
 keptn create secret $SECRET_2 --from-literal="mykey2=myvalue2"
 verify_test_step $? "Failed to create secret $SECRET_2"
 
+secrets=$(keptn get secret -ojson)
+verify_using_jq "$secrets" ".secrets | length" 2
+verify_using_jq "$secrets" ".secrets[0].name" $SECRET_1
+verify_using_jq "$secrets" ".secrets[1].name" $SECRET_2
 
 kubectl get secrets $SECRET_1 -n "$KEPTN_NAMESPACE"
 verify_test_step $? "Secret $SECRET_1 was not created"

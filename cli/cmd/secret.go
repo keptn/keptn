@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"gopkg.in/yaml.v3"
 	"strings"
 )
 
@@ -40,12 +42,14 @@ func (h SecretCmdHandler) CreateSecret(secretName string, data []string, scope *
 	if err != nil {
 		return err
 	}
-	if _, err := h.secretAPI.CreateSecret(models.Secret{
-		Data:  secretData,
-		Name:  &secretName,
-		Scope: &secretScope,
+	if err := h.secretAPI.CreateSecret(models.Secret{
+		Data: secretData,
+		SecretMetadata: models.SecretMetadata{
+			Name:  &secretName,
+			Scope: &secretScope,
+		},
 	}); err != nil {
-		return errors.New(*err.Message)
+		return err
 	}
 	return nil
 }
@@ -62,12 +66,14 @@ func (h SecretCmdHandler) UpdateSecret(secretName string, data []string, scope *
 		return err
 	}
 	secret := models.Secret{
-		Data:  secretData,
-		Name:  &secretName,
-		Scope: &secretScope,
+		Data: secretData,
+		SecretMetadata: models.SecretMetadata{
+			Name:  &secretName,
+			Scope: &secretScope,
+		},
 	}
-	if _, err := h.secretAPI.UpdateSecret(secret); err != nil {
-		return errors.New(*err.Message)
+	if err := h.secretAPI.UpdateSecret(secret); err != nil {
+		return err
 	}
 	return nil
 }
@@ -79,10 +85,42 @@ func (h SecretCmdHandler) DeleteSecret(name string, scope *string) error {
 	} else {
 		secretScope = *scope
 	}
-	if _, err := h.secretAPI.DeleteSecret(name, secretScope); err != nil {
-		return errors.New(*err.Message)
+	if err := h.secretAPI.DeleteSecret(name, secretScope); err != nil {
+		return err
 	}
 	return nil
+}
+
+func (h SecretCmdHandler) GetSecrets(outputFormat string) (string, error) {
+	secrets, err := h.secretAPI.GetSecrets()
+	if err != nil {
+		return "", err
+	}
+
+	var output string
+	if outputFormat == "json" {
+		marshal, err := json.MarshalIndent(secrets, "", "  ")
+		if err != nil {
+			return "", err
+		}
+		output = string(marshal)
+	} else if outputFormat == "yaml" {
+		marshal, err := yaml.Marshal(secrets)
+		if err != nil {
+			return "", err
+		}
+		output = string(marshal)
+	} else {
+		if len(secrets.Secrets) == 0 {
+			output = "No secrets found"
+		} else {
+			output = "NAME"
+			for _, secret := range secrets.Secrets {
+				output = output + "\n" + *secret.Name
+			}
+		}
+	}
+	return output, nil
 }
 
 func parseLiteralKeyValuePair(in string) (string, string, error) {
