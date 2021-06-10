@@ -55,10 +55,9 @@ export class KtbKeptnServicesListComponent implements OnInit {
     if(this._uniformRegistrations) {
       this._uniformRegistrations.sort((a, b) => {
         switch (sortEvent.active) {
-          case 'host': return this.compare(a.metadata.hostname, b.metadata.hostname, isAscending);
-          case 'namespace': return this.compare(a.metadata.kubernetesmetadata.namespace, b.metadata.kubernetesmetadata.namespace, isAscending);
-          case 'deployment': return this.compare(a.metadata.kubernetesmetadata.deploymentname, b.metadata.kubernetesmetadata.deploymentname, isAscending);
-          case 'location': return this.compare(a.metadata.location, b.metadata.location, isAscending);
+          case 'host': return (this.compare(a.metadata.hostname, b.metadata.hostname, isAscending) || this.compare(a.name, b.name, true));
+          case 'namespace': return this.compare(a.metadata.kubernetesmetadata.namespace, b.metadata.kubernetesmetadata.namespace, isAscending) || this.compare(a.name, b.name, true);
+          case 'location': return this.compare(a.metadata.location, b.metadata.location, isAscending) || this.compare(a.name, b.name, true);
         }
       });
 
@@ -68,7 +67,11 @@ export class KtbKeptnServicesListComponent implements OnInit {
     }
   }
 
-  private compare(a: number | string, b: number | string, isAsc: boolean): number {
-    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  private compare(a: string, b: string, isAsc: boolean): number {
+    const result = a.localeCompare(b);
+    if (result !== 0 && !isAsc) {
+      return -result;
+    }
+    return result;
   }
 }

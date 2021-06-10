@@ -26,7 +26,7 @@
 
   <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
     <dt-header-cell *dtHeaderCellDef>Active Subscriptions</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.subscription.topics ? formatSubscriptions(row.subscription.topics) : 'n/a'"></dt-cell>
+    <dt-cell *dtCellDef="let row" [innerHtml]="row.subscription.topics ? formatSubscriptions(row.subscription.topics) : 'n/a'"></dt-cell>
   </ng-container>
 
   <dt-header-row
