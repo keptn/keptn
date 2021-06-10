@@ -124,6 +124,7 @@ spec:
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -360,6 +361,7 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -718,6 +720,7 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -817,6 +820,7 @@ spec:
               value: 'sh.keptn.event.approval.>'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
