@@ -47,7 +47,7 @@
         <dt-icon name="hops"></dt-icon>
       </button>
 
-      <button *ngIf="view === 'ff-uniform'" dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" (click)="redirectView('ff-uniform', project.projectName)" [class.active]="view === 'ff-uniform'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" (click)="redirectView('uniform', project.projectName)" [class.active]="view === 'uniform'">
         <dt-icon name="infrastructure"></dt-icon>
       </button>
 
@@ -66,7 +66,7 @@
     <ktb-service-view *ngSwitchCase="'service'" fxFlex="calc(100% - 150px)"></ktb-service-view>
     <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="calc(100% - 150px)"></ktb-sequence-view>
     <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="calc(100% - 150px)"></ktb-integration-view>
-    <ktb-uniform-view *ngSwitchCase="'ff-uniform'" fxFlex="calc(100% - 150px)"></ktb-uniform-view>
+    <ktb-uniform-view *ngSwitchCase="'uniform'" fxFlex="calc(100% - 150px)"></ktb-uniform-view>
     <ktb-settings-view *ngSwitchCase="'settings'" fxFlex="calc(100% - 150px)"></ktb-settings-view>
   </ng-container>
 </div>
