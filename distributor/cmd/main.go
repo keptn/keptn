@@ -94,11 +94,20 @@ func _main(env config.EnvConfig) int {
 	}
 
 	// Register integration in control plane
-	if id, err := controlPlane.Register(); err != nil {
+	id, err := controlPlane.Register()
+	if err != nil {
 		logger.Warnf("Unable to register to Keptn's control plane: %v", err)
 	} else {
 		logger.Infof("Registered Keptn Integration with id %s", id)
 	}
+	defer func(string) {
+		err = controlPlane.Unregister()
+		if err != nil {
+			logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
+		} else {
+			logger.Infof("Unregisgtered Keptn Integration with id %s", id)
+		}
+	}(id)
 
 	// Prepare signal handling for graceful shutdown
 	c := make(chan os.Signal, 1)
@@ -116,11 +125,6 @@ func _main(env config.EnvConfig) int {
 	go startEventReceiver(ctx, wg)
 	wg.Wait()
 
-	// Unregister integration in control plane
-	err := controlPlane.Unregister()
-	if err != nil {
-		logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
-	}
 	return 0
 }
 

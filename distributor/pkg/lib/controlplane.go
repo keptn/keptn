@@ -50,10 +50,9 @@ func (c *ControlPlane) getRegistrationDataFromEnv() models.Integration {
 		topics = strings.Split(c.EnvConfig.PubSubTopic, ",")
 	}
 	return models.Integration{
-		Name: c.EnvConfig.K8sPodName,
+		Name: c.EnvConfig.K8sDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           c.EnvConfig.K8sNodeName,
-			DeploymentName:     c.EnvConfig.K8sDeploymentName,
 			IntegrationVersion: c.EnvConfig.Version,
 			DistributorVersion: c.EnvConfig.DistributorVersion,
 			Location:           c.EnvConfig.Location,
