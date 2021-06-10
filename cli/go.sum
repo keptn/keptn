@@ -514,6 +514,8 @@ github.com/keptn/go-utils v0.8.5-0.20210610073442-65b077274c6b h1:G0DsgPvetApkVv
 github.com/keptn/go-utils v0.8.5-0.20210610073442-65b077274c6b/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/go-utils v0.8.5-0.20210610074002-4ae7c5982489 h1:zaqc3uJgNEgMJfO8M+L8LXYU9cW5hGw8wXtsmXCR5fI=
 github.com/keptn/go-utils v0.8.5-0.20210610074002-4ae7c5982489/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210610114954-417a4244f25f h1:shyazW4KwUln53gjdfetcyfRtz4+U8rKJR5EgnaeWFU=
+github.com/keptn/go-utils v0.8.5-0.20210610114954-417a4244f25f/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/kubernetes-utils v0.8.2 h1:DFq0JDHnPt9VQSyh8lYTvtajjWUOUSScbHEWK0C4AXQ=
 github.com/keptn/kubernetes-utils v0.8.2/go.mod h1:zIPmFbofRNUs1ESbGPTHx0ocQqDlUk/W+H/mInber94=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
