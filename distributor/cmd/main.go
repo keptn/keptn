@@ -116,7 +116,7 @@ func _main(env config.EnvConfig) int {
 	go startEventReceiver(ctx, wg)
 	wg.Wait()
 
-	// Unregister integratio in control plane
+	// Unregister integration in control plane
 	err := controlPlane.Unregister()
 	if err != nil {
 		logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)

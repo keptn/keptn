@@ -5,7 +5,6 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/distributor/pkg/config"
-	logger "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 )
@@ -20,7 +19,6 @@ type ControlPlane struct {
 func (c *ControlPlane) Register() (string, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
-	logger.Info("Registering integration")
 	data := c.getRegistrationDataFromEnv()
 	id, err := c.UniformHandler.RegisterIntegration(data)
 	if err != nil {
@@ -33,9 +31,8 @@ func (c *ControlPlane) Register() (string, error) {
 func (c *ControlPlane) Unregister() error {
 	c.mux.Lock()
 	defer c.mux.Unlock()
-	logger.Info("Unregistering integration")
 	if c.currentID == "" {
-		return fmt.Errorf("tried to unrigster without being registered first")
+		return fmt.Errorf("tried to unregister integration without being registered first")
 	}
 	err := c.UniformHandler.UnregisterIntegration(c.currentID)
 	if err != nil {
