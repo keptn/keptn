@@ -47,9 +47,7 @@ export class KtbKeptnServicesListComponent implements OnInit {
   }
 
   public formatSubscriptions(subscriptions: string[]): string {
-    const formatted = []
-    subscriptions.forEach(subscription => {formatted.push(subscription.replace('sh.keptn.', ''))});
-    return formatted.join(', ');
+    return subscriptions.join('<br/>');
   }
 
   public sortData(sortEvent) {
