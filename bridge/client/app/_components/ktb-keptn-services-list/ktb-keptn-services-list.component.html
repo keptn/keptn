@@ -19,11 +19,6 @@
     <dt-cell *dtCellDef="let row" [textContent]="row.metadata.kubernetesmetadata.namespace || 'n/a'"></dt-cell>
   </ng-container>
 
-  <ng-container dtColumnDef="deployment" dtColumnAlign="text" dtColumnProportion="2">
-    <dt-header-cell dt-sort-header *dtHeaderCellDef>Deployment</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.metadata.kubernetesmetadata.deploymentname || 'n/a'"></dt-cell>
-  </ng-container>
-
   <ng-container dtColumnDef="location" dtColumnAlign="text" dtColumnProportion="2">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Location</dt-header-cell>
     <dt-cell *dtCellDef="let row" [textContent]="row.metadata.location || 'n/a'"></dt-cell>
@@ -35,12 +30,12 @@
   </ng-container>
 
   <dt-header-row
-    *dtHeaderRowDef="['name', 'version', 'host', 'namespace', 'deployment', 'location', 'subscription']"
+    *dtHeaderRowDef="['name', 'version', 'host', 'namespace', 'location', 'subscription']"
   ></dt-header-row>
   <dt-row
     *dtRowDef="
           let row;
-          columns: ['name', 'version', 'host', 'namespace', 'deployment' ,'location', 'subscription']
+          columns: ['name', 'version', 'host', 'namespace', 'location', 'subscription']
         "
     class="pointer"
     [class.active]="selectedService === row"
