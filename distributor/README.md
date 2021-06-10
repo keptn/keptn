@@ -18,6 +18,12 @@ Thus, each service has its own distributor that is configured by the two environ
 - `PROJECT_FILTER` - Filter events for a specific project. default = `""`, supports a comma-separated list of projects.
 - `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-separated list of stages.
 - `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-separated list of services.
+- `LOCATION` - Location the distributor is running on, e.g. "executionPlane-A". default = `""`
+- `DISTRIBUTOR_VERSION` - The software version of the distributor. default = `""`
+- `VERSION` - The version of the Keptn integration
+- `K8S_DEPLOYMENT_NAME` - Kubernetes deployment name of the Keptn integration
+- `K8S_POD_NAME` -  Kubernetes deployment name of the Keptn integration
+- `K8S_NODE_NAME` - Kubernetes node name the Keptn integration is running on
 
 All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
 
