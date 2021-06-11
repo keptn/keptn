@@ -53,6 +53,8 @@ try {
   process.exit(1);
 }
 if(lookAndFeelUrl) {
+  let file;
+
   try {
     console.log("Downloading custom Look-and-Feel file from", lookAndFeelUrl);
 
@@ -62,7 +64,8 @@ if(lookAndFeelUrl) {
     if(!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
-    let file = fs.createWriteStream(destFile);
+
+    file = fs.createWriteStream(destFile);
     let parsedUrl = urlParser.parse(lookAndFeelUrl);
     let lib = parsedUrl.protocol === "https:" ? https : http;
 
@@ -74,22 +77,23 @@ if(lookAndFeelUrl) {
             let zip = new admZip(destFile);
             zip.extractAllTo(destDir, true);
           } catch (err) {
-            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
+            console.trace(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
           }
         });
       });
       file.on("error", (err) => {
         fs.unlink(destFile, () => {
-          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+          console.trace(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
         });
       });
     }).on('error', (err) => {
-      console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+      console.trace(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
     });
 
     file.end();
   } catch (err) {
-    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+    file.end();
+    console.trace(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
 
