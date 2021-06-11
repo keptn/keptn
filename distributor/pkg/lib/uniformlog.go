@@ -17,15 +17,15 @@ type UniformLog interface {
 }
 
 type EventUniformLog struct {
-	Integration  keptnapimodels.Integration
-	logHandler   keptn.LogHandler
-	eventChannel chan cloudevents.Event
+	IntegrationID string
+	logHandler    keptn.LogHandler
+	eventChannel  chan cloudevents.Event
 }
 
-func NewEventUniformLog(integration keptnapimodels.Integration) *EventUniformLog {
+func NewEventUniformLog(integrationID string) *EventUniformLog {
 	return &EventUniformLog{
-		Integration: integration,
-		logHandler:  keptn.LogHandler{},
+		IntegrationID: integrationID,
+		logHandler:    keptn.LogHandler{},
 	}
 }
 
@@ -63,7 +63,7 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 
 	if eventData.Status == keptnv2.StatusErrored {
 		l.Log(keptnapimodels.LogEntry{
-			IntegrationID: l.Integration.ID,
+			IntegrationID: l.IntegrationID,
 			Message:       eventData.Message,
 		})
 	}

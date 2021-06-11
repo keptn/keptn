@@ -125,44 +125,13 @@ func _main(env config.EnvConfig) int {
 		cancel()
 	}()
 
+	uniformLogger = lib.NewEventUniformLog(id)
+	uniformLogger.Start(ctx, eventsChannel)
+
 	// Start api proxy and event receiver
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	integrationID := keptnmodels.IntegrationID{
-		Name:      os.Getenv("MY_SERVICE_NAME"),
-		Namespace: "keptn",
-	}
-
-	integrationIDHash, _ := integrationID.Hash()
-
-	myIntegration := keptnmodels.Integration{
-		ID:   integrationIDHash,
-		Name: os.Getenv("MY_SERVICE_NAME"),
-		MetaData: keptnmodels.MetaData{
-			DeploymentName: os.Getenv("MY_SERVICE_NAME"),
-			KubernetesMetaData: keptnmodels.KubernetesMetaData{
-				Namespace:      "keptn",
-				PodName:        os.Getenv("MY_POD_NAME"),
-				DeploymentName: os.Getenv("MY_SERVICE_NAME"),
-			},
-		},
-		Subscription: keptnmodels.Subscription{},
-	}
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	go func() {
-		oscall := <-c
-		logger.Info("received shutdown signal:%+v", oscall)
-		cancel()
-	}()
-
-	uniformLogger = lib.NewEventUniformLog(myIntegration)
-	uniformLogger.Start(ctx, eventsChannel)
 	go startAPIProxy(ctx, wg, env)
 	go startEventReceiver(ctx, wg, connectionType)
 	wg.Wait()
