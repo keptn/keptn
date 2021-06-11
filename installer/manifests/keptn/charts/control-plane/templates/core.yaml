@@ -361,7 +361,8 @@ spec:
               value: '127.0.0.1'
             - name: PUBSUB_RECIPIENT_PATH
               value: '/v1/event'
-          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
+            - name: DISABLE_REGISTRATION
+              value: "true"
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
