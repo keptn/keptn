@@ -1,3 +1,4 @@
+github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/cloudevents/sdk-go/v2 v2.4.1 h1:rZJoz9QVLbWQmnvLPDFEmv17Czu+CfSPwMO6lhJ72xQ=
 github.com/cloudevents/sdk-go/v2 v2.4.1/go.mod h1:MZiMwmAh5tGj+fPFvtHv9hKurKqXtdB9haJYMJ/7GJY=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
@@ -19,6 +20,8 @@ github.com/keptn/go-utils v0.8.5-0.20210525115156-b26a133bc0de h1:GTH/Dh0q7yis0l
 github.com/keptn/go-utils v0.8.5-0.20210525115156-b26a133bc0de/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4 h1:QxsmYD+FReY0JTHAAeiaNiMy+u+1c7ljZzPpYckuuQM=
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210611094424-49345918ccd9 h1:0XoeFDvs64IC+TOIFJ2vGFTmfDAHF7EdEAmum5aAOQw=
+github.com/keptn/go-utils v0.8.5-0.20210611094424-49345918ccd9/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=

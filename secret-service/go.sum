@@ -41,6 +41,7 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
+github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
@@ -169,6 +170,8 @@ github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4 h1:QxsmYD+FReY0JT
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/go-utils v0.8.5-0.20210610114954-417a4244f25f h1:shyazW4KwUln53gjdfetcyfRtz4+U8rKJR5EgnaeWFU=
 github.com/keptn/go-utils v0.8.5-0.20210610114954-417a4244f25f/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210611094424-49345918ccd9 h1:0XoeFDvs64IC+TOIFJ2vGFTmfDAHF7EdEAmum5aAOQw=
+github.com/keptn/go-utils v0.8.5-0.20210611094424-49345918ccd9/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

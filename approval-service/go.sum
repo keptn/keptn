@@ -14,6 +14,7 @@ github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535/go.mod h1:o
 github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef h1:46PFijGLmAjMPwCCCo7Jf0W6f9slllCkkv7vyc1yOSg=
 github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
+github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudevents/sdk-go/v2 v2.3.1/go.mod h1:4fO2UjPMYYR1/7KPJQCwTPb0lFA8zYuitkUpAZFSY1Q=
 github.com/cloudevents/sdk-go/v2 v2.4.1 h1:rZJoz9QVLbWQmnvLPDFEmv17Czu+CfSPwMO6lhJ72xQ=
@@ -189,6 +190,8 @@ github.com/keptn/go-utils v0.8.5-0.20210525115156-b26a133bc0de h1:GTH/Dh0q7yis0l
 github.com/keptn/go-utils v0.8.5-0.20210525115156-b26a133bc0de/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4 h1:QxsmYD+FReY0JTHAAeiaNiMy+u+1c7ljZzPpYckuuQM=
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210611094424-49345918ccd9 h1:0XoeFDvs64IC+TOIFJ2vGFTmfDAHF7EdEAmum5aAOQw=
+github.com/keptn/go-utils v0.8.5-0.20210611094424-49345918ccd9/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/klauspost/compress v1.9.5/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
