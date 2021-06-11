@@ -86,11 +86,11 @@ if(lookAndFeelUrl) {
     }).on('error', (err) => {
       console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
     });
+
+    file.end();
   } catch (err) {
     console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
-
-  file.end();
 }
 
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
