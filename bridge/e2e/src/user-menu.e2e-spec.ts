@@ -23,11 +23,6 @@ describe('User Menu', () => {
     ).click();
 
     takeScreenshot('user-menu-open-with-api-token-revealed.png');
-
-    const apiToken = process.env.KEPTN_API_TOKEN;
-    const val = await element(by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[2]/dt-copy-to-clipboard/div/input')).getAttribute('value');
-
-    await expect(val).toEqual(apiToken);
   });
 
   afterEach(async () => {
