@@ -82,15 +82,15 @@ if(lookAndFeelUrl) {
         });
       });
       file.on("error", (err) => {
+        file.end();
         fs.unlink(destFile, () => {
           console.trace(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
         });
       });
     }).on('error', (err) => {
+      file.end();
       console.trace(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
     });
-
-    file.end();
   } catch (err) {
     file.end();
     console.trace(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
