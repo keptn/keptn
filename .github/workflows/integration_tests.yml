@@ -804,7 +804,7 @@ jobs:
           fi
 
       - name: Create issue if tests failed
-        if: ${{ github.ref == 'refs/heads/master' }} && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        if: github.ref == 'refs/heads/master' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
         uses: JasonEtco/create-an-issue@v2.5.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -817,7 +817,7 @@ jobs:
 
       - name: Create PR comment if tests failed
         # Only run if not on master branch and we have a PR number
-        if: ${{ github.ref != 'refs/heads/master' }} && steps.find_pr_for_build.outputs.number && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        if: github.ref != 'refs/heads/master' && steps.find_pr_for_build.outputs.number && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
         uses: marocchino/sticky-pull-request-comment@v2.1.0
         with:
           path: integration-tests-failed.md
