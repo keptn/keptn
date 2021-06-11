@@ -72,9 +72,10 @@ var externalAPIProxyMappings = map[string]string{
 }
 
 const (
-	defaultEventsEndpoint = "http://shipyard-controller:8080/v1/event/triggered"
-	connectionTypeNATS    = "nats"
-	connectionTypeHTTP    = "http"
+	defaultShipyardControllerBaseURL = "http://shipyard-controller:8080"
+	defaultEventsEndpoint            = defaultShipyardControllerBaseURL + "/v1/event/triggered"
+	connectionTypeNATS               = "nats"
+	connectionTypeHTTP               = "http"
 )
 
 func main() {
@@ -87,7 +88,9 @@ func main() {
 }
 
 func _main(env config.EnvConfig) int {
-	uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	connectionType := getPubSubConnectionType()
+
+	uniformHandler := createUniformHandler(connectionType)
 	controlPlane := lib.ControlPlane{
 		UniformHandler: uniformHandler,
 		EnvConfig:      env,
@@ -122,22 +125,26 @@ func _main(env config.EnvConfig) int {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 	go startAPIProxy(ctx, wg, env)
-	go startEventReceiver(ctx, wg)
+	go startEventReceiver(ctx, wg, connectionType)
 	wg.Wait()
 
 	return 0
 }
 
-func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup) {
+func createUniformHandler(connectionType string) *keptnapi.UniformHandler {
+	if connectionType == connectionTypeHTTP {
+		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	}
+	return keptnapi.NewUniformHandler(defaultShipyardControllerBaseURL)
+}
+
+func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType string) {
 	defer waitGroup.Done()
 	setupCEClient()
 
-	switch getPubSubConnectionType() {
-	case connectionTypeNATS:
-		createNATSClientConnection(ctx)
-	case connectionTypeHTTP:
+	if connectionType == connectionTypeHTTP {
 		createHTTPConnection(ctx)
-	default:
+	} else {
 		createNATSClientConnection(ctx)
 	}
 }
