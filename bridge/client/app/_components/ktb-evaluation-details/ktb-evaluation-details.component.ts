@@ -138,10 +138,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       },
       tickPositioner: function() {
         const positions = [],
+          labelWidth = 70,
           ext = this.getExtremes(),
           xMax = Math.round(ext.max),
           xMin = Math.round(ext.min),
-          maxElements = window.innerWidth / 70,
+          maxElements = (document.querySelector('dt-chart')?.clientWidth || labelWidth) / labelWidth,
           tick = Math.floor(xMax / maxElements) || 1;
 
         for (let i = xMax; i > xMin; i -= tick) {
