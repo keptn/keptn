@@ -79,7 +79,7 @@ if(lookAndFeelUrl) {
         });
       });
     }).on('error', function(err) {
-      fs.unlink(destFile);
+      console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
     });
   } catch (err) {
     console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
