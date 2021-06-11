@@ -66,9 +66,9 @@ if(lookAndFeelUrl) {
     let parsedUrl = urlParser.parse(lookAndFeelUrl);
     let lib = parsedUrl.protocol === "https:" ? https : http;
 
-    lib.get(lookAndFeelUrl, function(response) {
+    lib.get(lookAndFeelUrl, (response) => {
       response.pipe(file);
-      file.on('finish', function() {
+      file.on('finish', () => {
         file.close(() => {
           try {
             let zip = new admZip(destFile);
@@ -78,12 +78,19 @@ if(lookAndFeelUrl) {
           }
         });
       });
-    }).on('error', function(err) {
+      file.on("error", (err) => {
+        fs.unlink(destFile, () => {
+          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+        });
+      });
+    }).on('error', (err) => {
       console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
     });
   } catch (err) {
     console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
+
+  file.end();
 }
 
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
