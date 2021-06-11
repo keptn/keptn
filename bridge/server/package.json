@@ -10,6 +10,7 @@
     "url": "https://github.com/keptn/keptn/issues"
   },
   "dependencies": {
+    "adm-zip": "^0.5.5",
     "express": "^4.17.1",
     "depd": "^2.0.0",
     "cookie-parser": "^1.4.5",

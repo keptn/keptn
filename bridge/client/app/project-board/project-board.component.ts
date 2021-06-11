@@ -7,6 +7,7 @@ import {Project} from "../_models/project";
 import {Trace} from "../_models/trace";
 
 import {DataService} from "../_services/data.service";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-project-board',
@@ -15,6 +16,8 @@ import {DataService} from "../_services/data.service";
 })
 export class ProjectBoardComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
+
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
   public project$: Observable<Project>;
   public contextId: string;

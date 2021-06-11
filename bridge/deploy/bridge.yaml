@@ -76,6 +76,12 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
+        volumeMounts:
+          - mountPath: /usr/src/app/dist/assets/branding
+            name: assets
+      volumes:
+        - emptyDir: {}
+          name: assets
 ---
 apiVersion: v1
 kind: Service
