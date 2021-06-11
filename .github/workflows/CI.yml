@@ -603,7 +603,7 @@ jobs:
       - name: Build Helm Charts
         id: build_helm_charts
         run: |
-          if [[ "$BRANCH" == "master" ]]; then
+          if [[ "$BRANCH" == "master" ]] || [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
             ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
           else
