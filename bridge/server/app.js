@@ -75,25 +75,27 @@ if(lookAndFeelUrl) {
         file.close(() => {
           try {
             let zip = new admZip(destFile);
-            zip.extractAllTo(destDir, true);
+            zip.extractAllToAsync(destDir, true, () => {
+              console.log("Custom Look-and-Feel downloaded and extracted successfully");
+            });
           } catch (err) {
-            console.trace(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
+            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
           }
         });
       });
       file.on("error", (err) => {
         file.end();
         fs.unlink(destFile, () => {
-          console.trace(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
         });
       });
     }).on('error', (err) => {
       file.end();
-      console.trace(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+      console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
     });
   } catch (err) {
     file.end();
-    console.trace(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
 
