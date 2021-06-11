@@ -359,14 +359,14 @@ class Trace {
     return this.data.deployment?.deploymentURIsPublic?.find(e => true);
   }
 
-  findTrace(comp: <T = Trace>(args: Trace) => any): Trace {
+  findTrace(comp: (args: Trace) => any): Trace {
     if (comp(this))
       return this;
     else
       return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
   }
 
-  findLastTrace(comp) {
+  findLastTrace(comp: (args: Trace) => any) {
     if(comp(this))
       return this;
     else

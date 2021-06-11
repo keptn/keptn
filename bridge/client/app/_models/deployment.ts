@@ -6,13 +6,28 @@ export class Deployment {
   public stages: DeploymentStage[];
   public service: string;
   public shkeptncontext: string;
-  public sequence: Root;
+  private _sequence: Root;
   public name: string;
 
   static fromJSON(data: any): Deployment {
     const deployment = Object.assign(new this(), data);
     deployment.name = deployment.version || deployment.service;
     return deployment;
+  }
+
+  set sequence(sequence: Root) {
+    this._sequence = sequence;
+    for (const stage of this.stages) {
+      stage.evaluation = this.sequence.getEvaluation(stage.stageName);
+    }
+  }
+
+  get sequence(): Root {
+    return this._sequence;
+  }
+
+  public getEvaluation(stageName: string) {
+    return this.getStage(stageName)?.evaluation || this.sequence.getEvaluation(stageName);
   }
 
   public getStage(stage: string): DeploymentStage {

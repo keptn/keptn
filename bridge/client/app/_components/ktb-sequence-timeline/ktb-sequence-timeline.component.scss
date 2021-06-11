@@ -48,6 +48,9 @@
     &.highlight {
       background-color: $blue-400;
     }
+    &.warning {
+      background-color: $warning-color;
+    }
   }
 }
 

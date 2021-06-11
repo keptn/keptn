@@ -1,10 +1,21 @@
 import {Location} from '@angular/common';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  TemplateRef,
+  ViewChild
+} from '@angular/core';
 import {Deployment} from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
+import {defaultIfEmpty, filter, takeUntil} from 'rxjs/operators';
+import {forkJoin, Subject} from 'rxjs';
+import {Trace} from '../../_models/trace';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {ClipboardService} from '../../_services/clipboard.service';
 
 @Component({
   selector: 'ktb-service-details',
@@ -15,11 +26,14 @@ import {Subject} from 'rxjs';
 export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   private _deployment: Deployment;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
+  @ViewChild('remediationDialog')
+  public remediationDialog: TemplateRef<any>;
+  public remediationDialogRef: MatDialogRef<any, any>;
 
   public projectName: string;
   public selectedStage: string;
 
-  get deployment() {
+  get deployment(): Deployment {
     return this._deployment;
   }
 
@@ -35,7 +49,7 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location, private dialog: MatDialog, private clipboard: ClipboardService) {
 
   }
 
@@ -53,10 +67,26 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
     if (this.deployment) {
       this.dataService.getRoot(this.projectName, this.deployment.shkeptncontext).subscribe(sequence => {
         this.deployment.sequence = sequence;
-        if (selectLast || !this.selectedStage) {
-          this.selectLastStage();
+        const evaluations$ = [];
+        for (const stage of this.deployment.stages) {
+          if (!stage.evaluation && stage.evaluationContext) {
+            evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
+          }
         }
-        this._changeDetectorRef.markForCheck();
+        forkJoin(evaluations$)
+          .pipe(defaultIfEmpty(null))
+          .subscribe((evaluations: Trace[] | null) => {
+            if (evaluations) {
+              for (const evaluation of evaluations){
+                this.deployment.getStage(evaluation.getStage()).evaluation = evaluation;
+              }
+            }
+
+            if (selectLast || !this.selectedStage) {
+              this.selectLastStage();
+            }
+            this._changeDetectorRef.markForCheck();
+        });
       });
     }
   }
@@ -80,6 +110,20 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
       return false;
     }
     return true;
+  }
+
+  public showRemediationConfigDialog(): void {
+    this.remediationDialogRef = this.dialog.open(this.remediationDialog, {data: this.deployment.getStage(this.selectedStage).config});
+  }
+
+  public closeRemediationConfigDialog(): void {
+    if (this.remediationDialogRef) {
+      this.remediationDialogRef.close();
+    }
+  }
+
+  public copyPayload(plainEvent: string): void {
+    this.clipboard.copy(plainEvent, 'remediation payload');
   }
 
   ngOnDestroy(): void {

@@ -1,9 +1,9 @@
 import { AppPage } from './app.po';
-import { browser, by, element, logging, protractor } from 'protractor';
+import { browser, by, element, logging } from 'protractor';
 
 import { takeScreenshot } from './utils';
 
-// run with ng e2e --dev-server-target= --base-url=http://localhost:3000/
+// run with: ng e2e --dev-server-target= --base-url=http://localhost:3000/
 describe('Bridge Navigation', () => {
   let page: AppPage;
 

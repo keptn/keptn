@@ -9,55 +9,27 @@
 # FYI: Owners will be auto-assigned for code reviews as well
 #################################################################################
 
-# Codeowners file
-CODEOWNERS @AloisReitbauer @grabnerandi @jetzlstorfer @christian-kreuzberger-dtx @johannes-b @danielkhan
+# Maintainers own everything: Keptn Maintainers https://github.com/orgs/keptn/teams/maintainers/members
+* @keptn/maintainers
+
+
+########################################################################################################################
+# Special Interests and Approvers (https://github.com/orgs/keptn/teams/approvers/members)
+# Those will be automatically selected as Reviewers for a PR, if the files are touched.
+########################################################################################################################
+
+# Organization owners need a fallback for the CODEOWNERS file
+CODEOWNERS @AloisReitbauer @johannes-b @jetzlstorfer @warber
 
 # Adopters file
 ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
 
-# api
-api/ @agrimmer @bacherfl
-
-# Keptn Bridge (includes reviewers without write-access)
-bridge/ @ermin-muratovic @SaraDavilaMendez @mpfosi @sandroschmid @GustavAT @dominikmessner @samuelfahrngruber
-
-# cli
-cli/ @agrimmer @bacherfl
-
-# approval-service
-approval-service/ @agrimmer @bacherfl
-
-# helm-service
-helm-service/ @agrimmer @bacherfl
-
-# Installer
-installer/ @bacherfl @agrimmer @christian-kreuzberger-dtx
-
-# Upgrader
-upgrader/ @bacherfl
-
-# JMeter service
-jmeter-service/ @grabnerandi
-
-# mongodb-datastore
-mongodb-datastore/ @agrimmer @bacherfl
-
-# shipyard-service
-shipyard-service/ @agrimmer @bacherfl
+# UI / Keptn Bridge
+bridge/ @ermin-muratovic @laneli @Kirdock
 
 # Release Notes
-releasenotes/ @johannes-b
+releasenotes/ @johannes-b @warber
 
-# Docs, etc...
-*.md @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
-docs/ @christian-kreuzberger-dtx @johannes-b @jetzlstorfer
-
-# Dockerfiles
-*/Dockerfile @christian-kreuzberger-dtx @bacherfl
-
-# dot files are usually config files
-.* @christian-kreuzberger-dtx
-
-# all other files
-* @christian-kreuzberger-dtx @johannes-b
+# Keptn Spec subfolder (git submodule)
+specification/ @johannes-b @warber
 

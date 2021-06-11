@@ -19,7 +19,7 @@
     <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-event-item-contextButtons">
       <div fxLayout="row" fxLayoutAlign="start start">
         <p *ngIf="showTime" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
-        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
+        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished() || showChartLink"><dt-icon name="chart-bar"></dt-icon></button>
         <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-payload" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
       </div>
     </div>

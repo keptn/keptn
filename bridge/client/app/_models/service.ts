@@ -15,11 +15,15 @@ export class Service {
   openApprovals: Trace[] = [];
 
   get deploymentContext(): string {
-    return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
+    return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.evaluationContext;
   }
 
   get deploymentTime(): number {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time || this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time;
+  }
+
+  get evaluationContext(): string {
+    return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }
 
   getShortImageName(): string {

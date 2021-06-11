@@ -4,16 +4,16 @@
       <ktb-stage-badge
         class="pointer"
         [stage]="stage"
-        [evaluation]="deployment.sequence.getEvaluation(stage)"
+        [evaluation]="deployment.getEvaluation(stage)"
         [isSelected]="selectedStage === stage"
-        [success]="deployment.sequence.getFirstTraceOfStage(stage).isFinished() && stage !== deployment.sequence.isFaulty()"
-        [error]="stage == deployment.sequence.isFaulty()"
+        [success]="!deployment.sequence.hasPendingApproval(stage) && stage !== deployment.sequence.isFaulty()"
+        [error]="stage === deployment.sequence.isFaulty()"
         [class.warning]="stage === deployment.sequence.isWarning()"
         [highlight]="deployment.sequence.hasPendingApproval(stage)"
         [fill]="deployment.hasStage(stage)"
         (click)="$event.stopPropagation(); selectStage(stage)"></ktb-stage-badge>
 
-      <dt-icon *ngIf="deployment.getStage(stage).remediations.length !== 0" name="criticalevent" class="event-icon error timeline-icon" ></dt-icon>
+      <dt-icon *ngIf="deployment.getStage(stage)?.remediations.length > 0" name="criticalevent" class="event-icon error timeline-icon" ></dt-icon>
       <a *ngIf="deployment.hasStage(stage) && deployment.sequence.getDeploymentTrace(stage)?.getFinishedEvent().getDeploymentUrl() as url" [href]="url" target="_blank" class="timeline-icon link-icon">
         <button dt-icon-button variant="nested" class="timeline-icon">
           <dt-icon name="externallink"></dt-icon>
