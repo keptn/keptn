@@ -96,21 +96,25 @@ func _main(env config.EnvConfig) int {
 			UniformHandler: createUniformHandler(connectionType),
 			EnvConfig:      env,
 		}
-		// Register integration in control plane
-		id, err := controlPlane.Register()
-		if err != nil {
-			logger.Warnf("Unable to register to Keptn's control plane: %v", err)
-		} else {
+
+		go lib.Retry(context.Background(), func() error {
+			id, err := controlPlane.Register()
+			if err != nil {
+				logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
+				return err
+			}
 			logger.Infof("Registered Keptn Integration with id %s", id)
-		}
-		defer func(string) {
-			err = controlPlane.Unregister()
+			return nil
+		})
+
+		defer func() {
+			err := controlPlane.Unregister()
 			if err != nil {
 				logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
 			} else {
-				logger.Infof("Unregistered Keptn Integration with id %s", id)
+				logger.Infof("Unregistered Keptn Integration")
 			}
-		}(id)
+		}()
 	}
 
 	// Prepare signal handling for graceful shutdown
