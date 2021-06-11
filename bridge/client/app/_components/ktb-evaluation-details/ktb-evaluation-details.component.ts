@@ -136,6 +136,25 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       labels: {
         rotation: -45
       },
+      tickPositioner: function() {
+        const positions = [],
+          ext = this.getExtremes(),
+          xMax = Math.round(ext.max),
+          xMin = Math.round(ext.min),
+          maxElements = window.innerWidth / 70,
+          tick = Math.floor(xMax / maxElements) || 1;
+
+        for (let i = xMax; i > xMin; i -= tick) {
+          positions.push(i);
+        }
+        if(positions[positions.length-1] - tick < xMin){ //if the second item is too near to the first one, remove the second one
+          positions[positions.length-1] = xMin;
+        }
+        else {
+          positions.push(xMin);
+        }
+        return positions;
+      }
     }],
 
     yAxis: [{
