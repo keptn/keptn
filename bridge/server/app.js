@@ -76,6 +76,7 @@ if(lookAndFeelUrl) {
           try {
             let zip = new admZip(destFile);
             zip.extractAllToAsync(destDir, true, () => {
+              fs.unlinkSync(destFile);
               console.log("Custom Look-and-Feel downloaded and extracted successfully");
             });
           } catch (err) {
