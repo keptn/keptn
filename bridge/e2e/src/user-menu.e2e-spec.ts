@@ -19,10 +19,10 @@ describe('User Menu', () => {
     ).click();
 
     await element(
-      by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[3]/button')
+      by.xpath('//*[@uitestid="keptn-nav-copyKeptnAuthCommand"]/ktb-copy-to-clipboard/div/div[3]/button')
     ).click();
 
-    takeScreenshot('user-menu-open-with-api-token-revealed.png');
+    takeScreenshot('user-menu-open-with-api-command-revealed.png');
   });
 
   afterEach(async () => {
