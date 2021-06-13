@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"io/ioutil"
@@ -97,7 +98,7 @@ func _main(env config.EnvConfig) int {
 			EnvConfig:      env,
 		}
 
-		go lib.Retry(context.Background(), func() error {
+		go retry.Retry(func() error {
 			id, err := controlPlane.Register()
 			if err != nil {
 				logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
