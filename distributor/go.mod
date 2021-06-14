@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.4.1
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210613111720-190f94dafdf2
+	github.com/keptn/go-utils v0.8.5-0.20210614121931-d8b936d4171e
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/nats-io/nats-server/v2 v2.2.6
 	github.com/nats-io/nats.go v1.11.0
