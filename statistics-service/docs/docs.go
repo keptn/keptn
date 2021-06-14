@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/alecthomas/template"
 	"github.com/swaggo/swag"
+	"text/template"
 )
 
 var doc = `{
@@ -100,13 +100,13 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "From",
+                        "description": "From (Unix timestamp - see https://www.unixtimestamp.com/)",
                         "name": "from",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "To",
+                        "description": "To (Unix timestamp - see https://www.unixtimestamp.com/)",
                         "name": "to",
                         "in": "query"
                     }
@@ -139,7 +139,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "errorCode": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"
@@ -153,7 +153,7 @@ var doc = `{
                     "type": "string"
                 },
                 "data": {
-                    "type": "object"
+                    "$ref": "#/definitions/operations.KeptnBase"
                 },
                 "extensions": {
                     "type": "object"
@@ -181,15 +181,44 @@ var doc = `{
                 }
             }
         },
+        "operations.KeptnBase": {
+            "type": "object",
+            "properties": {
+                "project": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                }
+            }
+        },
+        "operations.KeptnService": {
+            "type": "object",
+            "properties": {
+                "executions": {
+                    "description": "Executions godoc",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "description": "Name godoc",
+                    "type": "string"
+                }
+            }
+        },
         "operations.Project": {
             "type": "object",
             "properties": {
                 "name": {
+                    "description": "Name godoc",
                     "type": "string"
                 },
                 "services": {
-                    "type": "array",
-                    "items": {
+                    "description": "Services godoc",
+                    "type": "object",
+                    "additionalProperties": {
                         "$ref": "#/definitions/operations.Service"
                     }
                 }
@@ -199,15 +228,32 @@ var doc = `{
             "type": "object",
             "properties": {
                 "events": {
+                    "description": "Events godoc",
                     "type": "object",
                     "additionalProperties": {
                         "type": "integer"
                     }
                 },
                 "executedSequences": {
+                    "description": "ExecutedSequences godoc",
                     "type": "integer"
                 },
+                "executedSequencesPerType": {
+                    "description": "ExecutedSequencesPerType godoc",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "keptnServiceExecutions": {
+                    "description": "KeptnServiceExecutions godoc",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/operations.KeptnService"
+                    }
+                },
                 "name": {
+                    "description": "Name godoc",
                     "type": "string"
                 }
             }
@@ -216,15 +262,18 @@ var doc = `{
             "type": "object",
             "properties": {
                 "from": {
+                    "description": "From godoc",
                     "type": "string"
                 },
                 "projects": {
-                    "type": "array",
-                    "items": {
+                    "description": "Projects godoc",
+                    "type": "object",
+                    "additionalProperties": {
                         "$ref": "#/definitions/operations.Project"
                     }
                 },
                 "to": {
+                    "description": "To godoc",
                     "type": "string"
                 }
             }

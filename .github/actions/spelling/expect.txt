@@ -162,6 +162,7 @@ deploymentdescriptions
 deploymentname
 deploymentstrategy
 deplyomentname
+deps
 DEPS
 dest
 destinationrule
@@ -841,6 +842,7 @@ uniformintegrationmanager
 uniformrepo
 uninstall
 uninstalling
+unixtimestamp
 unmarshal
 unmarshaling
 unmarshall

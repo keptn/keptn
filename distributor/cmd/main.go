@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"io/ioutil"
@@ -53,15 +54,11 @@ var closeChan = make(chan bool)
 
 var ceCache = lib.NewCloudEventsCache()
 
-var eventsChannel = make(chan cloudevents.Event)
-
 var pubSubConnections = map[string]*cenats.Sender{}
 
 var env config.EnvConfig
 
 var ceClient cloudevents.Client
-
-var uniformLogger lib.UniformLog
 
 var inClusterAPIProxyMappings = map[string]string{
 	"/mongodb-datastore":     "mongodb-datastore:8080",
@@ -80,6 +77,7 @@ const (
 	defaultEventsEndpoint            = defaultShipyardControllerBaseURL + "/v1/event/triggered"
 	connectionTypeNATS               = "nats"
 	connectionTypeHTTP               = "http"
+	defaultPollingInterval           = 10
 )
 
 func main() {
@@ -94,27 +92,31 @@ func main() {
 func _main(env config.EnvConfig) int {
 	connectionType := getPubSubConnectionType()
 
-	uniformHandler := createUniformHandler(connectionType)
-	controlPlane := lib.ControlPlane{
-		UniformHandler: uniformHandler,
-		EnvConfig:      env,
-	}
-
-	// Register integration in control plane
-	id, err := controlPlane.Register()
-	if err != nil {
-		logger.Warnf("Unable to register to Keptn's control plane: %v", err)
-	} else {
-		logger.Infof("Registered Keptn Integration with id %s", id)
-	}
-	defer func(string) {
-		err = controlPlane.Unregister()
-		if err != nil {
-			logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
-		} else {
-			logger.Infof("Unregistered Keptn Integration with id %s", id)
+	if !env.DisableRegistration {
+		controlPlane := lib.ControlPlane{
+			UniformHandler: createUniformHandler(connectionType),
+			EnvConfig:      env,
 		}
-	}(id)
+
+		go retry.Retry(func() error {
+			id, err := controlPlane.Register()
+			if err != nil {
+				logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
+				return err
+			}
+			logger.Infof("Registered Keptn Integration with id %s", id)
+			return nil
+		})
+
+		defer func() {
+			err := controlPlane.Unregister()
+			if err != nil {
+				logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
+			} else {
+				logger.Infof("Unregistered Keptn Integration")
+			}
+		}()
+	}
 
 	// Prepare signal handling for graceful shutdown
 	c := make(chan os.Signal, 1)
@@ -125,14 +127,9 @@ func _main(env config.EnvConfig) int {
 		cancel()
 	}()
 
-	logHandler := createUniformLogHandler(connectionType)
-	uniformLogger = lib.NewEventUniformLog(id, logHandler)
-	uniformLogger.Start(ctx, eventsChannel)
-
 	// Start api proxy and event receiver
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
-
 	go startAPIProxy(ctx, wg, env)
 	go startEventReceiver(ctx, wg, connectionType)
 	wg.Wait()
@@ -145,13 +142,6 @@ func createUniformHandler(connectionType string) *keptnapi.UniformHandler {
 		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
 	}
 	return keptnapi.NewUniformHandler(defaultShipyardControllerBaseURL)
-}
-
-func createUniformLogHandler(connectionType string) *keptnapi.LogHandler {
-	if connectionType == connectionTypeHTTP {
-		return keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
-	}
-	return keptnapi.NewLogHandler(defaultShipyardControllerBaseURL)
 }
 
 func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType string) {
@@ -350,18 +340,8 @@ func getProxyHost(path string) (string, string, string) {
 	return "", "", ""
 }
 
-const defaultPollingInterval = 10
-
 func gotEvent(event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
-
-	go func() {
-		eventsChannel <- event
-	}() // send the event to the logger for further processing
-
-	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
-		return nil
-	}
 	if env.KeptnAPIEndpoint == "" {
 		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
 		return forwardEventToNATSServer(event)
@@ -451,7 +431,7 @@ func forwardEventToAPI(event cloudevents.Event) error {
 
 func getHTTPClient() *http.Client {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL}, //nolint:gosec
 	}
 	client := &http.Client{Transport: tr}
 	return client

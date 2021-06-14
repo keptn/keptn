@@ -18,6 +18,7 @@ Thus, each service has its own distributor that is configured by the two environ
 - `PROJECT_FILTER` - Filter events for a specific project. default = `""`, supports a comma-separated list of projects.
 - `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-separated list of stages.
 - `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-separated list of services.
+- `DISABLE_REGISTRATION` - Disables automatic registration of the Keptn integration to the Control plane. default = `false`  
 - `LOCATION` - Location the distributor is running on, e.g. "executionPlane-A". default = `""`
 - `DISTRIBUTOR_VERSION` - The software version of the distributor. default = `""`
 - `VERSION` - The version of the Keptn integration. default = `""`
