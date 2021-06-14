@@ -4,6 +4,8 @@ These are the wonderful people who have donated their time and effort to help ma
 
 [New contributors](CONTRIBUTING.md) should add their name to the bottom of this list on their first pull request. If you are a contributor in other ways other than code, please either submit a pull request adding your name, or mention it to another maintainer and we will add you. **All** contributors belong here - please don't hesitate do add yourself even if you have contributed to documentation, Keptn Enhancements Proposals, or in any other way!
 
+For a realtime overview of current contributors to the Keptn project, we refer to the [GitHub contributors overview](https://github.com/keptn/keptn/graphs/contributors). However, in the following all contributors to the Keptn project (code as well as non-code contributions) are listed. If your name is missing, please don't hesitate to file a PR or reach out to the project maintainers.
+
 
 * [Alois Reitbauer](https://github.com/AloisReitbauer)
 * [Dirk Wallerstorfer](https://github.com/dirkwall)
@@ -51,7 +53,7 @@ These are the wonderful people who have donated their time and effort to help ma
 * [Barun Acharya](https://github.com/daemon1024)
 * [Adam Gardner](https://github.com/Dynatrace-Adam-Gardner)
 * [Godtide](https://github.com/Godtide)
-* [Stephan Dannewith](https://github.com/avodaqstephan)
+* [Stephan Dannewitz](https://github.com/avodaqstephan)
 * [Prayag Savsani](https://github.com/PrayagS)
 * [Shouri Piratla](https://github.com/shouri007)
 * [Bert van der Heyden](https://github.com/heydenb)
