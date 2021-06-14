@@ -1,14 +1,14 @@
 {{- $apiToken := (randAlphaNum 45) | b64enc | quote }}
-  {{- $apisecret := (lookup "v1" "Secret" .Release.Namespace "keptn-api-token") }}
-  {{- if $apisecret }}
-  {{- $apiToken = index $apisecret.data "keptn-api-token" }}
-  {{- end -}}
+{{- $apisecret := (lookup "v1" "Secret" .Release.Namespace "keptn-api-token") }}
+{{- if $apisecret }}
+{{- $apiToken = index $apisecret.data "keptn-api-token" }}
+{{- end -}}
 
-  {{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
-  {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
-  {{- if $bridgesecret }}
-  {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
-  {{- end -}}
+{{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
+{{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
+{{- if $bridgesecret }}
+{{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
+{{- end -}}
 
 ---
 apiVersion: v1
@@ -26,7 +26,7 @@ type: Opaque
 data:
   keptn-api-token: {{ $apiToken }}
 ---
-  {{- if .Values.bridge.secret.enabled }}
+{{- if .Values.bridge.secret.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -43,7 +43,7 @@ data:
   BASIC_AUTH_USERNAME: 'a2VwdG4='
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
-  {{- end }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -221,7 +221,7 @@ spec:
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
-          {{- end }}
+            {{- end }}
           envFrom:
             - secretRef:
                 name: bridge-credentials
@@ -591,7 +591,7 @@ spec:
             {{- range $key, $value := .Values.configurationService.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
-          {{- end }}
+            {{- end }}
           ports:
             - containerPort: 8080
           resources:
