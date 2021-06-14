@@ -10,7 +10,7 @@ require (
 	github.com/keptn/keptn/shipyard-controller v0.0.0-20210503133401-8c1194432b46
 	github.com/keptn/kubernetes-utils v0.8.1
 	github.com/stretchr/testify v1.7.0
-	k8s.io/apimachinery v0.20.4
+	k8s.io/apimachinery v0.21.1
 )
 
 replace github.com/keptn/keptn/shipyard-controller => ../../shipyard-controller
