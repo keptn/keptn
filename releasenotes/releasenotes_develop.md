@@ -1,22 +1,22 @@
 # Release Notes develop
 
-Keptn 0.8.4
+Keptn 0.8.4 starts to implement the Uniform mockup that has been released/presented with Keptn 0.8.1. This new Bridge screen brings visibility into the Keptn-services (aka Integrations) that are connected to a Keptn, allows troubleshooting Keptn-services by retrieving their error logs, and enables creating/deleting secrets for integrations.
+
 ---
 
 **Key announcements:**
 
-:tada: 
+:tada: *Troubleshooting support for Keptn-service (aka. Integration)*: To support troubleshooting Keptn-services (aka Integrations) without connecting to the environment that runs the Keptn-service, errors are sent to Keptn and displayed in the Uniform screen of a project.
 
-:star: 
+:star: *Creating/Deleting Secrets for Integrations*: To not rely on the Keptn CLI to manage a secret for integrations, the Bridge allows creating/deleting secrets. This is supported for Keptn-services that are running on a Keptn control-plane since the public Keptn API does yet not allow querying secrets.  
 
-:rocket: 
+:rocket: *Customization of Bridge*: With this release, the Keptn Bridge can get a custom *look-and-feel* by providing a custom logo, title, and/or stylesheet. More details on this feature are available [here](https://github.com/keptn/keptn/tree/0.8.4/bridge#custom-look-and-feel).
 
 ---
 
 ## Keptn Enhancement Proposals
 
-This release implements the KEPs: [KEP 46](https://github.com/keptn/enhancement-proposals/pull/46) & [KEP 45](https://github.com/keptn/enhancement-proposals/pull/45) 
-
+This release implements the KEPs: [KEP 45](https://github.com/keptn/enhancement-proposals/pull/45) & [KEP 46](https://github.com/keptn/enhancement-proposals/pull/46) 
 
 ## Keptn Specification
 
@@ -35,6 +35,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <details><summary>API</summary>
 <p>
 
+- Log ingest endpoint for a Keptn-Service [4032](https://github.com/keptn/keptn/issues/4032)
 - List all secrets created by secret-service [4061](https://github.com/keptn/keptn/issues/4061)
 - Register/Unregister endpoint for registering a Keptn-service that connects to Keptn control-plane [4041](https://github.com/keptn/keptn/issues/4041)
 
@@ -47,6 +48,9 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - `keptn upgrade`: Improve help messages [3479](https://github.com/keptn/keptn/issues/3479)
 - Replace `exechelper.ExecuteCommand` with `keptnutils.ExecuteCommand` [4068](https://github.com/keptn/keptn/issues/4068)
 - *Fixed*: Keptn configure bridge output shows error after disabling basic auth [4154](https://github.com/keptn/keptn/issues/4154)
+- *Fixed*: `keptn generate support-archive` not working on windows [4225](https://github.com/keptn/keptn/issues/4225)
+- *Fixed*: Trying to install a different keptn version on the cluster results in error [3959](https://github.com/keptn/keptn/issues/3959)
+- *Fixed*: `keptn uninstall` does not have any effect on cluster [3958](https://github.com/keptn/keptn/issues/3958) 
 
 </p>
 </details>
@@ -65,7 +69,6 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - *lighthouse-service*:
   - *Fixed*: "Response time degradation in lighthouse-service" when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
 
-
 </p>
 </details>
 
@@ -73,21 +76,22 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
 - *Enhancements:*
+  - Bridge downloads and uses customized look and feel on startup [4095](https://github.com/keptn/keptn/issues/4095)
   - Environment layout improvement for service versions [4006](https://github.com/keptn/keptn/issues/4006)
-  - Show uniform screen with data fetched from Uniform Backend [4034](https://github.com/keptn/keptn/issues/4034)
-  - Improve status information in Bridge Service View for failed deployments [4002](https://github.com/keptn/keptn/issues/4002)
+  - Show *Uniform screen* with data fetched from Uniform Backend [4034](https://github.com/keptn/keptn/issues/4034)
+  - Improve status information irn *Service screen* for failed deployments [4002](https://github.com/keptn/keptn/issues/4002)
   - Show instructions or link for triggering evaluations in stage [4055](https://github.com/keptn/keptn/issues/4055)
   - Mark currently selected stage using a color [3948](https://github.com/keptn/keptn/issues/3948)
-  - Update Service screen on a regular basis [4049](https://github.com/keptn/keptn/issues/4049)
-  - Display running remediations in the service screen [3761](https://github.com/keptn/keptn/issues/3761)
+  - Update *Service screen* on a regular basis [4049](https://github.com/keptn/keptn/issues/4049)
+  - Display running remediations in the *Service screen* [3761](https://github.com/keptn/keptn/issues/3761)
 
 - *Fixes:*
-  - Bridge shows Configure monitoring succeeded, although dynatrace-service responded with result fail [4073](https://github.com/keptn/keptn/issues/4073)
+  - Bridge shows `Configure monitoring succeeded`, although dynatrace-service responded with result fail [4073](https://github.com/keptn/keptn/issues/4073)
   - Bridge breaks on "sh.keptn.event.evaluation.triggered" root event [4155](https://github.com/keptn/keptn/issues/4155)
   - Timelines show the wrong selection color for a running stage [4262](https://github.com/keptn/keptn/issues/4262)
   - Bridge runs version check although ENABLE_VERSION_CHECK env is set to "false" [4165](https://github.com/keptn/keptn/issues/4165)
   - Incorrect sequence filter if project is changed or the page is reloaded [4151](https://github.com/keptn/keptn/issues/4151)
-  - Evaluation result can be viewed from Sequence but not from Service screen [4056](https://github.com/keptn/keptn/issues/4056)
+  - Evaluation result can be viewed from Sequence but not from *Service screen* [4056](https://github.com/keptn/keptn/issues/4056)
   - Unexpected behavior of scrollbars in environment screen [4149](https://github.com/keptn/keptn/issues/4149)
   - Selection change in heatmap does not always update SLO table - needs second click [4007](https://github.com/keptn/keptn/issues/4007)
   - Environment panels are not updated on approval / finish [4048](https://github.com/keptn/keptn/issues/4048)
@@ -104,6 +108,8 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 
 ## Development Process / Testing
 
+- For non-release-builds, use timestamps for containers in Helm Charts [4191](https://github.com/keptn/keptn/issues/4191)
+- Integration test: create an issue if integration tests on master branch are failing [3772](https://github.com/keptn/keptn/issues/3772)
 - Reduce dependabot to only post PRs once a week [4076](https://github.com/keptn/keptn/issues/4076)
 - Selenium E2E tests for Bridge [4142](https://github.com/keptn/keptn/issues/4142)
 - Introduce uitestid-s in Bridge [4038](https://github.com/keptn/keptn/issues/4038)
