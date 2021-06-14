@@ -11,6 +11,7 @@ keptnSpecVersion: latest
 
 nats:
   nameOverride: keptn-nats-cluster
+  fullnameOverride: keptn-nats-cluster
   nats.cluster.replicas: 3
 
   natsbox:
