@@ -48,7 +48,7 @@
                     </ng-container>
                   </div>
                 </dt-info-group-title>
-                <a [routerLink]="getServiceLink(service)" class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getShortImageName()"></a>
+                <a [routerLink]="getServiceLink(service)" class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getImageName()"></a>
                 <ng-template #noDeployment>
                   <p class="m-0" *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">Use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a> to trigger a quality gate evaluation.</p>
                   <p class="m-0" *ngIf="!isQualityGatesOnly">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>

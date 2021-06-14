@@ -2,6 +2,7 @@ abcd
 ABCDEF
 acceptederrorrate
 acceptederrors
+adb
 addgroup
 addons
 addrowonbottom
@@ -48,6 +49,7 @@ bak
 barista
 basiccheck
 baz
+bbb
 benbjohnson
 bestpractices
 Bitbucket
@@ -150,6 +152,7 @@ Debian
 Debugf
 debuglogs
 ded
+deeb
 deletecollection
 Deliv
 depd
@@ -233,6 +236,8 @@ Fatalf
 Fatalln
 favicon
 featuretoggle
+fedadd
+feec
 filepath
 filesystem
 filetype
@@ -340,6 +345,7 @@ IEvent
 IHealth
 IHelper
 IKeptn
+ILog
 img
 IMPL
 imroc
@@ -349,6 +355,7 @@ Infof
 ingressgateway
 inp
 instanceof
+integrationid
 integrationversion
 Intelli
 ioutil
@@ -457,7 +464,9 @@ loadgen
 localhost
 lodash
 Logf
+logmanager
 logrus
+lookandfeel
 loopcount
 Lshortfile
 LSN
@@ -510,6 +519,7 @@ myclientcert
 mydbserver
 mygateway
 mygroup
+myjmeter
 myjmeter
 mykey
 myprojec
@@ -831,6 +841,7 @@ uniformintegrationmanager
 uniformrepo
 uninstall
 uninstalling
+unixtimestamp
 unmarshal
 unmarshaling
 unmarshall

@@ -1,8 +1,13 @@
-const express = require('express');
+const fs = require('fs');
 const path = require('path');
-const cookieParser = require('cookie-parser');
+const http = require('http');
+const https = require('https');
+const urlParser = require('url');
 const logger = require('morgan');
+const express = require('express');
+const cookieParser = require('cookie-parser');
 const {execSync} = require('child_process');
+const admZip = require('adm-zip');
 
 const apiRouter = require('./api');
 
@@ -11,6 +16,7 @@ let apiUrl = process.env.API_URL;
 let apiToken = process.env.API_TOKEN;
 let cliDownloadLink = process.env.CLI_DOWNLOAD_LINK;
 let integrationsPageLink = process.env.INTEGRATIONS_PAGE_LINK;
+let lookAndFeelUrl = process.env.LOOK_AND_FEEL_URL;
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
@@ -25,6 +31,73 @@ if (!cliDownloadLink) {
 if(!integrationsPageLink) {
   console.log("Integrations page Link was not provided, defaulting to get.keptn.sh/integrations.html")
   integrationsPageLink = "https://get.keptn.sh/integrations.html";
+}
+
+
+try {
+  console.log("Installing default Look-and-Feel");
+
+  const destDir = path.join(__dirname, '../dist/assets/branding');
+  const srcDir = path.join(__dirname, '../client/assets/default-branding');
+  const brandingFiles = ["app-config.json", "logo.png", "logo_inverted.png"];
+
+  if(!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+
+  brandingFiles.forEach((file) => {
+    fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
+  });
+} catch (e) {
+  console.error(`Error while downloading custom Look-and-Feel file. Cause : ${e}`);
+  process.exit(1);
+}
+if(lookAndFeelUrl) {
+  let file;
+
+  try {
+    console.log("Downloading custom Look-and-Feel file from", lookAndFeelUrl);
+
+    const destDir = path.join(__dirname, '../dist/assets/branding');
+    const destFile = path.join(destDir, '/lookandfeel.zip');
+
+    if(!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    file = fs.createWriteStream(destFile);
+    let parsedUrl = urlParser.parse(lookAndFeelUrl);
+    let lib = parsedUrl.protocol === "https:" ? https : http;
+
+    lib.get(lookAndFeelUrl, (response) => {
+      response.pipe(file);
+      file.on('finish', () => {
+        file.close(() => {
+          try {
+            let zip = new admZip(destFile);
+            zip.extractAllToAsync(destDir, true, () => {
+              fs.unlinkSync(destFile);
+              console.log("Custom Look-and-Feel downloaded and extracted successfully");
+            });
+          } catch (err) {
+            console.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${err}`);
+          }
+        });
+      });
+      file.on("error", (err) => {
+        file.end();
+        fs.unlink(destFile, () => {
+          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+        });
+      });
+    }).on('error', (err) => {
+      file.end();
+      console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+    });
+  } catch (err) {
+    file.end();
+    console.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+  }
 }
 
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour

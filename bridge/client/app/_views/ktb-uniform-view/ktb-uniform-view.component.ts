@@ -1,41 +1,25 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {DataService} from '../../_services/data.service';
-import {takeUntil} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
-import {Subject} from 'rxjs';
-import {KeptnService} from '../../_models/keptn-service';
+import {Observable} from 'rxjs';
+import {UniformRegistration} from "../../_models/uniform-registration";
 
 @Component({
   selector: 'ktb-uniform-view',
   templateUrl: './ktb-uniform-view.component.html',
   styleUrls: ['./ktb-uniform-view.component.scss']
 })
-export class KtbUniformViewComponent implements OnInit, OnDestroy {
-  private readonly unsubscribe$ = new Subject<void>();
-
-  public keptnServices: KeptnService[];
-  public selectedService: KeptnService;
+export class KtbUniformViewComponent implements OnInit {
+  public selectedService: UniformRegistration;
+  public uniformRegistrations$: Observable<UniformRegistration[]>;
 
   constructor(private dataService: DataService, private route: ActivatedRoute, private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.dataService.getKeptnServices(params.projectName).subscribe(services => {
-          this.keptnServices = services;
-          this._changeDetectorRef.markForCheck();
-        });
-        this.dataService.loadTaskNames(params.projectName);
-      });
+    this.uniformRegistrations$ = this.dataService.getUniformRegistrations();
   }
 
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-  }
-
-  selectService(service: KeptnService) {
+  selectService(service: UniformRegistration) {
     this.selectedService = service;
-    this._changeDetectorRef.markForCheck();
   }
 }

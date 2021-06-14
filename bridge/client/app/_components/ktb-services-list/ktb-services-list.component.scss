@@ -1,2 +1,8 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
+
+.overflow-ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}

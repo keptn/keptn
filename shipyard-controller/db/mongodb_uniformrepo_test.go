@@ -12,9 +12,6 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration1 := models.Integration{
 		ID:   "my-integration-id-1",
 		Name: "my-integration",
-		MetaData: keptnmodels.MetaData{
-			DeploymentName: "my-integration",
-		},
 		Subscription: keptnmodels.Subscription{
 			Topics: []string{"sh.keptn.event.test.triggered"},
 			Status: "active",
@@ -27,9 +24,6 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration2 := models.Integration{
 		ID:   "my-integration-id-2",
 		Name: "my-integration2",
-		MetaData: keptnmodels.MetaData{
-			DeploymentName: "my-integration2",
-		},
 		Subscription: keptnmodels.Subscription{
 			Topics: []string{"sh.keptn.event.deployment.triggered"},
 			Status: "active",
