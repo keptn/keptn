@@ -21,3 +21,4 @@ CODEOWNERS
 ^CODE_OF_CONDUCT\.md$
 ^\.github/actions/
 _test\.go$
+CONTRIBUTORS.md
