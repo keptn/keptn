@@ -51,6 +51,14 @@ func Test_UserInput(t *testing.T) {
 		answer := input.AskBool("Are you sure?", &opts)
 		assert.True(t, answer)
 	})
+	t.Run("test Y with spaces", func(t *testing.T) {
+		input := UserInput{
+			Writer: ioutil.Discard,
+			Reader: bufio.NewReader(bytes.NewBufferString("Y  \n")),
+		}
+		answer := input.AskBool("Are you sure?", &opts)
+		assert.True(t, answer)
+	})
 	t.Run("test other than yes", func(t *testing.T) {
 		input := UserInput{
 			Writer: ioutil.Discard,

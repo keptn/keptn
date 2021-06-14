@@ -12,13 +12,12 @@ import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
-import {KeptnService} from '../_models/keptn-service';
-import {KeptnServicesMock} from '../_models/keptn-services.mock';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
 import * as moment from 'moment';
 import {SequenceResult} from '../_models/sequence-result';
 import {Project} from '../_models/project';
+import {UniformRegistration} from "../_models/uniform-registration";
 
 @Injectable({
   providedIn: 'root'
@@ -110,8 +109,9 @@ export class ApiService {
       .get<ProjectResult>(url);
   }
 
-  public getKeptnServices(projectName: string): Observable<KeptnService[]> {
-    return of(KeptnServicesMock);
+  public getUniformRegistrations(): Observable<UniformRegistration[]> {
+    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration`;
+    return this.http.get<UniformRegistration[]>(url);
   }
 
   public getMetadata(): Observable<Metadata> {

@@ -126,7 +126,7 @@ keptn generate support-archive --dir=/some/directory`,
 					fmt.Println("Please confirm that this is the cluster Keptn is running on: ")
 					fmt.Printf("Cluster: %v\n", strings.TrimSpace(ctx))
 
-					userConfirmation := common.NewUserInput().AskBool("Is this all correct?", &common.UserInputOptions{AssumeYes: false})
+					userConfirmation := common.NewUserInput().AskBool("Is this all correct?", &common.UserInputOptions{AssumeYes: assumeYes})
 					if !userConfirmation {
 						return nil
 					}

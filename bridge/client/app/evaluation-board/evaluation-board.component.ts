@@ -9,6 +9,7 @@ import {ApiService} from '../_services/api.service';
 import {EventTypes} from '../_models/event-types';
 import {DataService} from '../_services/data.service';
 import {Deployment} from '../_models/deployment';
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-project-board',
@@ -19,6 +20,8 @@ import {Deployment} from '../_models/deployment';
 export class EvaluationBoardComponent implements OnInit, OnDestroy {
 
   private unsubscribe$ = new Subject();
+
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
   public error: string = null;
   public contextId: string;

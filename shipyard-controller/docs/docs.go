@@ -152,6 +152,182 @@ var doc = `{
                 }
             }
         },
+        "/log": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Log"
+                ],
+                "summary": "Retrieve logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationId",
+                        "name": "integrationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The from time stamp for fetching sequence states",
+                        "name": "fromTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The before time stamp for fetching sequence states",
+                        "name": "beforeTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "The number of items to return",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pointer to the next set of items",
+                        "name": "nextPageKey",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetLogsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Persist a list of log entries",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Log"
+                ],
+                "summary": "Persist a list of log entries",
+                "parameters": [
+                    {
+                        "description": "Logs",
+                        "name": "integration",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateLogsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Log"
+                ],
+                "summary": "Delete logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "integrationId",
+                        "name": "integrationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The from time stamp for fetching sequence states",
+                        "name": "fromTime",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The before time stamp for fetching sequence states",
+                        "name": "beforeTime",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeleteLogResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/project": {
             "get": {
                 "security": [
@@ -948,6 +1124,30 @@ var doc = `{
                         "description": "id",
                         "name": "id",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "project",
+                        "name": "project",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "stage",
+                        "name": "stage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "service",
+                        "name": "service",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1069,6 +1269,21 @@ var doc = `{
         }
     },
     "definitions": {
+        "models.CreateLogsRequest": {
+            "type": "object",
+            "properties": {
+                "logs": {
+                    "description": "logs",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.LogEntry"
+                    }
+                }
+            }
+        },
+        "models.DeleteLogResponse": {
+            "type": "object"
+        },
         "models.Approval": {
             "type": "object",
             "properties": {
@@ -1193,7 +1408,7 @@ var doc = `{
                     "description": "events",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Event"
+                        "$ref": "#/definitions/models.KeptnContextExtendedCE"
                     }
                 },
                 "nextPageKey": {
@@ -1205,7 +1420,7 @@ var doc = `{
                     "type": "number"
                 },
                 "totalCount": {
-                    "description": "Total number of events",
+                    "description": "Total number of resources",
                     "type": "number"
                 }
             }
@@ -1356,6 +1571,26 @@ var doc = `{
                 }
             }
         },
+        "models.GetLogsResponse": {
+            "type": "object",
+            "properties": {
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.LogEntry"
+                    }
+                },
+                "nextPageKey": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalCount": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Integration": {
             "type": "object",
             "properties": {
@@ -1373,6 +1608,55 @@ var doc = `{
                 }
             }
         },
+        "models.KeptnContextExtendedCE": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "description": "contenttype",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "data\nRequired: true",
+                    "type": "object"
+                },
+                "extensions": {
+                    "description": "extensions",
+                    "type": "object"
+                },
+                "id": {
+                    "description": "id",
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "shkeptnspecversion": {
+                    "description": "shkeptnspecversion",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source\nRequired: true",
+                    "type": "string"
+                },
+                "specversion": {
+                    "description": "specversion",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "time\nFormat: date-time",
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "description": "triggeredid",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
         "models.KubernetesMetaData": {
             "type": "object",
             "properties": {
@@ -1383,6 +1667,29 @@ var doc = `{
                     "type": "string"
                 },
                 "podname": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LogEntry": {
+            "type": "object",
+            "properties": {
+                "integrationid": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "triggeredid": {
                     "type": "string"
                 }
             }

@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
@@ -270,6 +271,62 @@ func TestHandler_Update(t *testing.T) {
 				c, _ := gin.CreateTestContext(w)
 				c.Request = r
 				secretsHandler.UpdateSecret(c)
+			}
+
+			w := httptest.NewRecorder()
+			handler(w, tt.request)
+
+			resp := w.Result()
+			assert.Equal(t, tt.expectedHTTPStatus, resp.StatusCode)
+
+		})
+	}
+}
+
+func TestHandler_GetSecrets(t *testing.T) {
+	type fields struct {
+		Backend backend.SecretBackend
+	}
+
+	tests := []struct {
+		name               string
+		fields             fields
+		expectedHTTPStatus int
+		request            *http.Request
+	}{
+		{
+			name: "GET Secret - SUCCESS",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					GetSecretsFunc: func() ([]model.SecretMetadata, error) {
+						return []model.SecretMetadata{}, nil
+					},
+				},
+			},
+			request:            httptest.NewRequest("GET", "/secret", nil),
+			expectedHTTPStatus: http.StatusOK,
+		},
+		{
+			name: "GET Secret - Backend some error",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					GetSecretsFunc: func() ([]model.SecretMetadata, error) {
+						return nil, errors.New("oops")
+					},
+				},
+			},
+			request:            httptest.NewRequest("GET", "/secret", nil),
+			expectedHTTPStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			secretsHandler := handler.NewSecretHandler(tt.fields.Backend)
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				c, _ := gin.CreateTestContext(w)
+				c.Request = r
+				secretsHandler.GetSecrets(c)
 			}
 
 			w := httptest.NewRecorder()

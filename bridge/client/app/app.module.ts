@@ -1,8 +1,8 @@
 import { registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
-import { NgModule } from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserModule } from '@angular/platform-browser';
@@ -90,7 +90,6 @@ import { KtbServicesListComponent } from './_components/ktb-services-list/ktb-se
 import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-badge.component';
 import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
-import { KtbSubscriptionComponent } from './_components/ktb-subscription/ktb-subscription.component';
 import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
@@ -98,9 +97,15 @@ import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
-import { KtbServiceRemediationListComponent } from './_components/ktb-service-remediation-list/ktb-service-remediation-list.component';
+import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
+
+import { AppInitService } from "./_services/app.init";
 
 registerLocaleData(localeEn, 'en');
+
+export function init_app(appLoadService: AppInitService) {
+  return () => appLoadService.init();
+}
 
 @NgModule({
   declarations: [
@@ -148,13 +153,12 @@ registerLocaleData(localeEn, 'en');
     KtbUserComponent,
     KtbUniformViewComponent,
     KtbKeptnServicesListComponent,
-    KtbSubscriptionComponent,
     KtbSubscriptionItemComponent,
     KtbDeploymentListComponent,
     KtbServiceDetailsComponent,
     KtbSettingsViewComponent,
     KtbDeploymentStageTimelineComponent,
-    KtbServiceRemediationListComponent,
+    KtbSequenceListComponent,
   ],
     imports: [
         BrowserModule,
@@ -207,6 +211,13 @@ registerLocaleData(localeEn, 'en');
         ReactiveFormsModule,
     ],
   providers: [
+    AppInitService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: init_app,
+      deps: [AppInitService],
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpDefaultInterceptor,

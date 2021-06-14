@@ -6,9 +6,9 @@
         [stage]="stage"
         [evaluation]="deployment.getEvaluation(stage)"
         [isSelected]="selectedStage === stage"
-        [success]="!deployment.sequence.hasPendingApproval(stage) && stage !== deployment.sequence.isFaulty()"
-        [error]="stage === deployment.sequence.isFaulty()"
-        [class.warning]="stage === deployment.sequence.isWarning()"
+        [success]="!deployment.sequence.hasPendingApproval(stage) &&  !deployment.sequence.isFaulty(stage)"
+        [error]="deployment.sequence.isFaulty(stage)"
+        [class.warning]="deployment.sequence.isWarning(stage)"
         [highlight]="deployment.sequence.hasPendingApproval(stage)"
         [fill]="deployment.hasStage(stage)"
         (click)="$event.stopPropagation(); selectStage(stage)"></ktb-stage-badge>

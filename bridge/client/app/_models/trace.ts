@@ -114,14 +114,14 @@ class Trace {
     State: string;
   };
 
-  isFaulty(): string {
-    let result: string = null;
-    if(this.data) {
-      if(this.isFailed() ||
+  isFaulty(stageName?: string): boolean {
+    let result = false;
+    if (this.data) {
+      if (this.isFailed() ||
         (this.isProblem() && !this.isProblemResolvedOrClosed()) ||
         (this.isRemediation() && !this.isSuccessfulRemediation()) ||
-        this.traces.some(t => t.isFaulty() != null)) {
-        result = this.data.stage;
+        this.traces.some(t => t.isFaulty())) {
+        result = stageName ? this.data.stage === stageName : true;
       }
     }
     return result;
@@ -137,20 +137,20 @@ class Trace {
     return result;
   }
 
-  isWarning(): string {
-    let result: string = null;
-    if(this.getFinishedEvent()?.data.result == ResultTypes.WARNING) {
-      result = this.data.stage;
+  isWarning(stageName?: string): boolean {
+    let result = false;
+    if (this.getFinishedEvent()?.data.result === ResultTypes.WARNING) {
+      result = stageName ? this.data.stage === stageName : true;
     }
     return result;
   }
 
-  isSuccessful(): string {
-    let result: string = null;
-    if ( this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
-      result = this.data.stage;
+  isSuccessful(stageName?: string): boolean {
+    let result = false;
+    if (this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED || this.isApprovalFinished() && this.isApproved() || this.isProblem() && this.isProblemResolvedOrClosed() || this.isSuccessfulRemediation()) {
+      result = stageName ? this.data.stage === stageName : true;
     }
-    return !this.isFaulty() && result ? result : null;
+    return !this.isFaulty() && result;
   }
 
   public isFailed(): boolean {
@@ -359,14 +359,14 @@ class Trace {
     return this.data.deployment?.deploymentURIsPublic?.find(e => true);
   }
 
-  findTrace(comp: <T = Trace>(args: Trace) => any): Trace {
+  findTrace(comp: (args: Trace) => any): Trace {
     if (comp(this))
       return this;
     else
       return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
   }
 
-  findLastTrace(comp) {
+  findLastTrace(comp: (args: Trace) => any) {
     if(comp(this))
       return this;
     else
