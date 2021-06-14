@@ -1,23 +1,5 @@
 basePath: /v1
 definitions:
-  models.Approval:
-    properties:
-      eventId:
-        description: ID of the event
-        type: string
-      image:
-        description: image
-        type: string
-      keptnContext:
-        description: Keptn Context ID of the event
-        type: string
-      tag:
-        description: tag
-        type: string
-      time:
-        description: Time of the event
-        type: string
-    type: object
   models.CreateLogsRequest:
     properties:
       logs:
@@ -80,26 +62,10 @@ definitions:
     type: object
   models.EventContext:
     properties:
-      eventId:
-        description: ID of the event
-        type: string
       keptnContext:
-        description: Keptn Context ID of the event
-        type: string
-      time:
-        description: Time of the event
-        type: string
-    type: object
-  models.EventContextInfo:
-    properties:
-      eventId:
-        description: ID of the event
-        type: string
-      keptnContext:
-        description: Keptn Context ID of the event
-        type: string
-      time:
-        description: Time of the event
+        description: |-
+          keptn context
+          Required: true
         type: string
     type: object
   models.Events:
@@ -226,14 +192,18 @@ definitions:
   models.GetLogsResponse:
     properties:
       logs:
+        description: logs
         items:
           $ref: '#/definitions/models.LogEntry'
         type: array
       nextPageKey:
+        description: Pointer to next page
         type: integer
       pageSize:
+        description: Size of returned page
         type: integer
       totalCount:
+        description: Total number of logs
         type: integer
     type: object
   models.Integration:
@@ -317,8 +287,6 @@ definitions:
     type: object
   models.MetaData:
     properties:
-      deplyomentname:
-        type: string
       distributorversion:
         type: string
       hostname:
@@ -328,8 +296,6 @@ definitions:
       kubernetesmetadata:
         $ref: '#/definitions/models.KubernetesMetaData'
       location:
-        type: string
-      status:
         type: string
     type: object
   models.Remediation:
@@ -414,39 +380,6 @@ definitions:
         description: Total number of events
         type: integer
     type: object
-  models.Service:
-    properties:
-      creationDate:
-        description: Creation date of the service
-        type: string
-      deployedImage:
-        description: Currently deployed image
-        type: string
-      lastEventTypes:
-        additionalProperties:
-          $ref: '#/definitions/models.EventContextInfo'
-        description: last event types
-        type: object
-      openApprovals:
-        description: open approvals
-        items:
-          $ref: '#/definitions/models.Approval'
-        type: array
-      serviceName:
-        description: Service name
-        type: string
-    type: object
-  models.Stage:
-    properties:
-      services:
-        description: services
-        items:
-          $ref: '#/definitions/models.Service'
-        type: array
-      stageName:
-        description: Stage name
-        type: string
-    type: object
   models.Stages:
     properties:
       nextPageKey:
@@ -458,7 +391,7 @@ definitions:
       stages:
         description: stages
         items:
-          $ref: '#/definitions/models.Stage'
+          $ref: '#/definitions/models.ExpandedStage'
         type: array
       totalCount:
         description: Total number of stages
@@ -1372,7 +1305,7 @@ paths:
       tags:
       - Uniform
 securityDefinitions:
-  ApiKeyAuth:
+  key:
     in: header
     name: x-token
     type: apiKey
