@@ -162,6 +162,7 @@ deploymentdescriptions
 deploymentname
 deploymentstrategy
 deplyomentname
+deps
 DEPS
 dest
 destinationrule
