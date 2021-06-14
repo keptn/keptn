@@ -3,7 +3,6 @@ import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/cor
 import {KtbTaskItemComponent} from './ktb-task-item.component';
 import {AppModule} from '../../app.module';
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbSubscriptionComponent} from "../ktb-subscription/ktb-subscription.component";
 
 describe('KtbEventItemComponent', () => {
   let component: KtbTaskItemComponent;

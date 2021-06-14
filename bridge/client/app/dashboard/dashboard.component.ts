@@ -1,10 +1,10 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {Observable, Subject, Subscription} from "rxjs";
+import {ChangeDetectorRef, Component} from '@angular/core';
+import {Observable} from "rxjs";
 
 import {Project} from "../_models/project";
 
 import {DataService} from "../_services/data.service";
-import {takeUntil} from "rxjs/operators";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-dashboard',
@@ -14,6 +14,8 @@ import {takeUntil} from "rxjs/operators";
 export class DashboardComponent {
 
   public projects$: Observable<Project[]>;
+
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {
     this.projects$ = this.dataService.projects;

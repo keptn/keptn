@@ -25,8 +25,11 @@ export class Service {
   get evaluationContext(): string {
     return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }
+  public getShortImageName() {
+    return this.deployedImage?.split('/').pop().split(':').find(() => true);
+  }
 
-  getShortImageName(): string {
+  getImageName(): string {
     return this.deployedImage?.split('/').pop();
   }
 

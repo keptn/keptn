@@ -3,7 +3,6 @@ import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/cor
 import { KtbKeptnServicesListComponent } from './ktb-keptn-services-list.component';
 import {AppModule} from "../../app.module";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbHttpLoadingBarComponent} from "../ktb-http-loading-bar/ktb-http-loading-bar.component";
 
 describe('KtbKeptnServicesListComponent', () => {
   let component: KtbKeptnServicesListComponent;
