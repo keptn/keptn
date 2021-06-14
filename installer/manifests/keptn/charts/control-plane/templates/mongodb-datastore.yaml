@@ -89,6 +89,7 @@ spec:
             value: '127.0.0.1'
           - name: PUBSUB_RECIPIENT_PATH
             value: '/event'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532

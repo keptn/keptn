@@ -731,6 +731,7 @@ sjb
 skaffold
 slackbot
 sli
+sliceutils
 slo
 Smode
 smv
@@ -773,6 +774,7 @@ sudo
 sutils
 svcs
 svg
+svr
 swaggo
 syscall
 tabwidth
@@ -880,6 +882,7 @@ virtualservice
 VMs
 vuser
 Vwd
+Warnf
 Webdriver
 webhook
 webkit
