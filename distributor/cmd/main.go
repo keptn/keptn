@@ -125,7 +125,8 @@ func _main(env config.EnvConfig) int {
 		cancel()
 	}()
 
-	uniformLogger = lib.NewEventUniformLog(id)
+	logHandler := createUniformLogHandler(connectionType)
+	uniformLogger = lib.NewEventUniformLog(id, logHandler)
 	uniformLogger.Start(ctx, eventsChannel)
 
 	// Start api proxy and event receiver
@@ -144,6 +145,13 @@ func createUniformHandler(connectionType string) *keptnapi.UniformHandler {
 		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
 	}
 	return keptnapi.NewUniformHandler(defaultShipyardControllerBaseURL)
+}
+
+func createUniformLogHandler(connectionType string) *keptnapi.LogHandler {
+	if connectionType == connectionTypeHTTP {
+		return keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	}
+	return keptnapi.NewLogHandler(defaultShipyardControllerBaseURL)
 }
 
 func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType string) {
@@ -349,7 +357,9 @@ func gotEvent(event cloudevents.Event) error {
 
 	uniformLogger.GetChannel() <- event // send the event to the logger for further processing
 
-	// TODO discard info/log events
+	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
+		return nil
+	}
 	if env.KeptnAPIEndpoint == "" {
 		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
 		return forwardEventToNATSServer(event)

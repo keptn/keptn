@@ -33,6 +33,12 @@ github.com/keptn/go-utils v0.8.5-0.20210608080938-9e6963a5e435 h1:ZOle/1r3x3uEep
 github.com/keptn/go-utils v0.8.5-0.20210608080938-9e6963a5e435/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/keptn/go-utils v0.8.5-0.20210610142510-624edc832fee h1:265g+BatGs8bNtSdl5f3bDRANK91VJabWRv2XW743BE=
 github.com/keptn/go-utils v0.8.5-0.20210610142510-624edc832fee/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210614073858-4770c4f99382 h1:ShELvaJKCFwdUGaY4VTrvTzTcWTTVCRmtT7hF1FSzaE=
+github.com/keptn/go-utils v0.8.5-0.20210614073858-4770c4f99382/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210614080014-548580c6713b h1:0C6/GBcz+ocl3n/vpM0aaA83yOwZprp/CNhSreuprR0=
+github.com/keptn/go-utils v0.8.5-0.20210614080014-548580c6713b/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210614080238-d924fa1ed9b5 h1:ZsxhfKpI/39JzNFfY6e1FlQZbv1gmABjblbBEvNZj34=
+github.com/keptn/go-utils v0.8.5-0.20210614080238-d924fa1ed9b5/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/klauspost/compress v1.11.12 h1:famVnQVu7QwryBN4jNseQdUKES71ZAOnB6UQQJPZvqk=
 github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
