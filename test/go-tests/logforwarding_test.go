@@ -2,6 +2,8 @@ package go_tests
 
 import (
 	"fmt"
+	"github.com/imroc/req"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -9,18 +11,21 @@ import (
 	"time"
 )
 
-const logForwardingTestShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
-kind: "Shipyard"
-metadata:
-  name: "shipyard-log-forwarding"
-spec:
-  stages:
-    - name: "dev"
-      sequences:
-        - name: "evaluation"
-          tasks:
-            - name: "evaluation"
-			  properties:
+const logForwardingTestShipyard = `--- 
+apiVersion: spec.keptn.sh/0.2.3
+kind: Shipyard
+metadata: 
+  name: shipyard-log-forwarding
+spec: 
+  stages: 
+    - 
+      name: dev
+      sequences: 
+        - 
+          name: evaluation
+          tasks: 
+            - name: evaluation
+              properties: 
                 timeframe: "invalid"`
 
 func Test_LogForwarding(t *testing.T) {
@@ -67,5 +72,69 @@ func Test_LogForwarding(t *testing.T) {
 			return false
 		}
 		return true
-	}, 10*time.Second, 2*time.Second)
+	}, 100*time.Second, 2*time.Second)
+
+	// retrieve the integration for the lighthouse service
+	integrations, _, err := getIntegrations()
+	require.Nil(t, err)
+
+	integrationID := ""
+	for _, integration := range integrations {
+		if integration.Name == "lighthouse-service" {
+			integrationID = integration.ID
+		}
+	}
+
+	require.NotEmpty(t, t, integrationID)
+
+	var logs *models.GetLogsResponse
+	require.Eventually(t, func() bool {
+		logs, _, err = getLogs(integrationID)
+		if len(logs.Logs) == 0 {
+			t.Log("error logs of lighthouse service not available yet... retrying in 10s")
+			return false
+		}
+		t.Log("received logs of lighthouse service")
+		return true
+	}, 20*time.Second, 10*time.Second)
+
+	// check if log entry for our task sequence context is available
+	var contextLogEntry *models.LogEntry
+	for _, log := range logs.Logs {
+		if log.KeptnContext == keptnContextID {
+			contextLogEntry = &log
+			break
+		}
+	}
+
+	require.NotEmpty(t, contextLogEntry)
+	t.Logf("received expected error log entry: %v", contextLogEntry)
+}
+
+func getIntegrations() ([]*models.Integration, *req.Resp, error) {
+	integrations := []*models.Integration{}
+
+	resp, err := ApiGETRequest("/controlPlane/v1/uniform/registration")
+	if err != nil {
+		return nil, nil, err
+	}
+	err = resp.ToJSON(&integrations)
+	if err != nil {
+		return nil, nil, err
+	}
+	return integrations, resp, nil
+}
+
+func getLogs(integrationID string) (*models.GetLogsResponse, *req.Resp, error) {
+	logs := &models.GetLogsResponse{}
+
+	resp, err := ApiGETRequest("/controlPlane/v1/log?integrationId=" + integrationID)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = resp.ToJSON(&logs)
+	if err != nil {
+		return nil, nil, err
+	}
+	return logs, resp, nil
 }

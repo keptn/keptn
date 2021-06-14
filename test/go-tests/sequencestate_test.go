@@ -351,19 +351,3 @@ func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 
 	return states, resp, err
 }
-
-func getIntegrations() ([]*scmodels.Integration, *req.Resp, error) {
-	integrations := []*scmodels.Integration{}
-
-	resp, err := ApiGETRequest("/controlPlane/v1/uniform/registration")
-	if err != nil {
-		return nil, nil, err
-	}
-	err = resp.ToJSON(&integrations)
-	if err != nil {
-		return nil, nil, err
-	}
-	return integrations, resp, nil
-}
-
-//func getLogs(integrationID string) (*scmodels.)

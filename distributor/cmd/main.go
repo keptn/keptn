@@ -355,7 +355,9 @@ const defaultPollingInterval = 10
 func gotEvent(event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
 
-	uniformLogger.GetChannel() <- event // send the event to the logger for further processing
+	go func() {
+		eventsChannel <- event
+	}() // send the event to the logger for further processing
 
 	if event.Context.GetType() == v0_2_0.ErrorLogEventName {
 		return nil
