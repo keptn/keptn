@@ -53,7 +53,7 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 		return fmt.Errorf("could not decode CloudEvent to Keptn event: %v", err.Error())
 	}
 	if keptnEvent.Type == nil {
-		return errors.New("received keptnEvent has no type")
+		return errors.New("received Keptn Event has no type")
 	}
 	if strings.HasSuffix(*keptnEvent.Type, ".finished") {
 		eventData := &keptnv2.EventData{}
