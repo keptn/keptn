@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/alecthomas/template"
 	"github.com/swaggo/swag"
-	"text/template"
 )
 
 var doc = `{
@@ -280,7 +280,7 @@ var doc = `{
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "key": {
             "type": "apiKey",
             "name": "x-token",
             "in": "header"
