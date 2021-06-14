@@ -18,12 +18,13 @@ Thus, each service has its own distributor that is configured by the two environ
 - `PROJECT_FILTER` - Filter events for a specific project. default = `""`, supports a comma-separated list of projects.
 - `STAGE_FILTER` - Filter events for a specific stage. default = `""`, supports a comma-separated list of stages.
 - `SERVICE_FILTER` - Filter events for a specific service. default = `""`, supports a comma-separated list of services.
+- `DISABLE_REGISTRATION` - Disables automatic registration of the Keptn integration to the Control plane. default = `false`
 - `LOCATION` - Location the distributor is running on, e.g. "executionPlane-A". default = `""`
 - `DISTRIBUTOR_VERSION` - The software version of the distributor. default = `""`
 - `VERSION` - The version of the Keptn integration. default = `""`
 - `K8S_DEPLOYMENT_NAME` - Kubernetes deployment name of the Keptn integration. default = `""`
 - `K8S_POD_NAME` -  Kubernetes deployment name of the Keptn integration. default = `""`
-- `K8S_NAMESPACE` - Kubernetes namespace of the Keptn integration. default = `""`  
+- `K8S_NAMESPACE` - Kubernetes namespace of the Keptn integration. default = `""`
 - `K8S_NODE_NAME` - Kubernetes node name the Keptn integration is running on. default = `""`
 
 All cloud events specified in `PUBSUB_TOPIC` and match the filters are forwarded to `http://{PUBSUB_RECIPIENT}:{PUBSUB_RECIPIENT_PORT}{PUBSUB_RECIPIENT_PATH}`, e.g.: `http://helm-service:8080`.
@@ -57,13 +58,13 @@ The Keptn API services will then be reachable for the execution plane service vi
 
 
 - Mongodb-datastore:
-    - `http://localhost:8081/mongodb-datastore`
+  - `http://localhost:8081/mongodb-datastore`
 
 - Configuration-service:
-    - `http://localhost:8081/configuration-service`
+  - `http://localhost:8081/configuration-service`
 
 - Shipyard-controller:
-    - `http://localhost:8081/controlPlane`
+  - `http://localhost:8081/controlPlane`
 
 If the distributor should listen on a port other than `8081` (e.g. when that port is needed by the execution plane service), a different port can be set using the `API_PROXY_PORT` environment variable
 
