@@ -96,7 +96,7 @@ func Test_LogForwarding(t *testing.T) {
 		}
 		t.Log("received logs of lighthouse service")
 		return true
-	}, 20*time.Second, 10*time.Second)
+	}, 100*time.Second, 10*time.Second)
 
 	// check if log entry for our task sequence context is available
 	var contextLogEntry *models.LogEntry

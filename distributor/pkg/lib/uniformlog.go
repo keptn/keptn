@@ -55,7 +55,6 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 	if keptnEvent.Type == nil {
 		return errors.New("received keptnEvent has no type")
 	}
-	logger.Infof("Received Event: %v", keptnEvent)
 	if strings.HasSuffix(*keptnEvent.Type, ".finished") {
 		eventData := &keptnv2.EventData{}
 		if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
