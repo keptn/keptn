@@ -351,3 +351,9 @@ var problemOpenEventData = keptn.ProblemEventData{
 	Stage:          "production",
 	Service:        "service",
 }
+
+var errorLogEventData = keptnv2.ErrorLogEvent{
+	Message:       "an unexpected error occurred",
+	IntegrationID: "2b4b199c-cdaf-11eb-b8bc-0242ac130003",
+	Task:          "deployment",
+}
