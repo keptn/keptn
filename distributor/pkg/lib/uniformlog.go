@@ -2,7 +2,6 @@ package lib
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -51,9 +50,6 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 	keptnEvent, err := keptnv2.ToKeptnEvent(event)
 	if err != nil {
 		return fmt.Errorf("could not decode CloudEvent to Keptn event: %v", err.Error())
-	}
-	if keptnEvent.Type == nil {
-		return errors.New("received Keptn Event has no type")
 	}
 	if strings.HasSuffix(*keptnEvent.Type, ".finished") {
 		eventData := &keptnv2.EventData{}
