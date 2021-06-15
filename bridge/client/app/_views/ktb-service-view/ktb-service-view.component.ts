@@ -69,6 +69,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     });
 
     project$.subscribe(project => {
+      this.selectedDeployment = undefined;
       this.dataService.loadOpenRemediations(project);
       this.project = project;
       this._changeDetectorRef.markForCheck();
