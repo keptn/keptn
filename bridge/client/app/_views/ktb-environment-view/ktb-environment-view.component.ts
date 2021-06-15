@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {takeUntil} from "rxjs/operators";
+import {map, switchMap, takeUntil} from "rxjs/operators";
 import {Observable, Subject} from "rxjs";
 import {ActivatedRoute} from "@angular/router";
 
@@ -13,23 +13,22 @@ import {DataService} from "../../_services/data.service";
   host: {
     class: 'ktb-environment-view'
   },
-  preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  preserveWhitespaces: false
 })
 export class KtbEnvironmentViewComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   public project$: Observable<Project>;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) {
+  constructor(private dataService: DataService, private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.project$ = this.dataService.getProject(params.projectName);
-      });
+    this.project$ = this.route.params
+      .pipe(
+        map(params => params.projectName),
+        switchMap(projectName => this.dataService.getProject(projectName))
+      );
   }
 
   ngOnDestroy(): void {

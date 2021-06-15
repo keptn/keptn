@@ -3,7 +3,7 @@ import {Subject} from "rxjs";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {DataService} from "../../_services/data.service";
 import {ActivatedRoute} from "@angular/router";
-import {takeUntil} from "rxjs/operators";
+import {filter, map, switchMap, takeUntil} from "rxjs/operators";
 import {DtToast} from "@dynatrace/barista-components/toast";
 
 @Component({
@@ -29,26 +29,22 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.dataService.getProject(params.projectName)
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(project => {
-            if (project) {
-              this.projectName = project.projectName;
-              if (project.gitRemoteURI) {
-                this.gitUrlControl.setValue(project.gitRemoteURI);
-              }
-              if (project.gitUser) {
-                this.gitUserControl.setValue(project.gitUser);
-              }
-              if (project.gitRemoteURI && project.gitUser) {
-                this.gitTokenControl.setValue('***********************');
-              }
-            }
-          });
-      })
+    this.route.params.pipe(
+      map(params => params.projectName),
+      switchMap(projectName => this.dataService.getProject(projectName)),
+      takeUntil(this.unsubscribe$),
+      filter(project => !!project)
+    ).subscribe(project => {
+      this.projectName = project.projectName;
+      this.gitUrlControl.setValue(project.gitRemoteURI);
+      this.gitUserControl.setValue(project.gitUser);
+
+      if (project.gitRemoteURI && project.gitUser) {
+        this.gitTokenControl.setValue('***********************');
+      } else {
+        this.gitTokenControl.setValue('');
+      }
+    });
   }
 
   ngOnDestroy(): void {
