@@ -176,7 +176,7 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 		}
 
 		histClient := action.NewHistory(cfg)
-		var release *release.Release
+		var newRelease *release.Release
 
 		timeoutInMinutes := 10
 
@@ -187,13 +187,14 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 			iCli.ReleaseName = releaseName
 			iCli.Wait = true
 			iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
-			release, err = iCli.Run(ch, vals)
+			newRelease, err = iCli.Run(ch, vals)
 		} else {
 			logging.PrintLog("Found existing installation, overwriting...", logging.InfoLevel)
 
 			// check if the previous installation is still pending (e.g., waiting to complete)
-			for _, release := range releases {
-				if release.Info.Status == "pending-upgrade" {
+			for _, r := range releases {
+				if r.Info.Status == release.StatusPendingInstall || r.Info.Status == release.StatusPendingUpgrade ||
+					r.Info.Status == release.StatusPendingRollback {
 					return fmt.Errorf("Previous installation (e.g., using keptn install or helm upgrade) is still in progress. Please try again in %d minutes.", timeoutInMinutes)
 				}
 			}
@@ -204,16 +205,16 @@ func (c Helper) UpgradeChart(ch *chart.Chart, releaseName, namespace string, val
 			iCli.Wait = true
 			iCli.Timeout = time.Duration(timeoutInMinutes) * time.Minute
 			iCli.ReuseValues = true // reuse values when overwriting existing installation (similar to keptn upgrade)
-			release, err = iCli.Run(releaseName, ch, vals)
+			newRelease, err = iCli.Run(releaseName, ch, vals)
 		}
 		// check if install/upgrade worked
 		if err != nil {
 			return fmt.Errorf("Error when installing/upgrading Helm Chart %s in namespace %s: %s",
 				releaseName, namespace, err.Error())
 		}
-		if release != nil {
-			logging.PrintLog(release.Manifest, logging.VerboseLevel)
-			if err := waitForDeploymentsOfHelmRelease(release.Manifest); err != nil {
+		if newRelease != nil {
+			logging.PrintLog(newRelease.Manifest, logging.VerboseLevel)
+			if err := waitForDeploymentsOfHelmRelease(newRelease.Manifest); err != nil {
 				return err
 			}
 		} else {
