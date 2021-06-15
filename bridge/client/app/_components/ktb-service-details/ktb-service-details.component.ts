@@ -2,7 +2,7 @@ import {Location} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
+  Component, Input,
   OnDestroy,
   OnInit,
   TemplateRef,
@@ -33,6 +33,7 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   public projectName: string;
   public selectedStage: string;
 
+  @Input()
   get deployment(): Deployment {
     return this._deployment;
   }
@@ -41,10 +42,12 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
     if (this._deployment !== deployment) {
       const selectLast = !!this._deployment;
       this._deployment = deployment;
-      if (!this._deployment.sequence) {
-        this.loadSequence(selectLast);
-      } else {
-        this.selectLastStage();
+      if (deployment) {
+        if (!this._deployment.sequence) {
+          this.loadSequence(selectLast);
+        } else {
+          this.selectLastStage();
+        }
       }
     }
   }
