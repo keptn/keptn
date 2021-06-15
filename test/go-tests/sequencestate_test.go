@@ -43,7 +43,7 @@ spec:
             - name: "evaluation"`
 
 func Test_SequenceStateIntegrationTest(t *testing.T) {
-	PrepareEnvVars()
+	//PrepareEnvVars()
 	projectName := "state"
 	serviceName := "my-service"
 	file, err := CreateTmpShipyardFile(sequenceStateShipyard)
