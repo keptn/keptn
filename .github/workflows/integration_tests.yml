@@ -402,7 +402,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run UniformRegistration
+        run: cd test/go-tests && go test -run UniformRegistration -v
 
       - name: Test Log Ingestion
         id: test_log_ingestion
@@ -410,7 +410,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run LogIngestion
+        run: cd test/go-tests && go test -run LogIngestion -v
 
       - name: Test Log Forwarding
         id: test_log_forwarding
@@ -418,7 +418,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run LogForwarding
+        run: cd test/go-tests && go test -run LogForwarding -v
 
       - name: Test Sequence States
         id: test_sequence_states
@@ -426,7 +426,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceStateIntegrationTest
+        run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
 
       - name: Test Sequence Loop
         id: test_sequence_loop
@@ -434,7 +434,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest
+        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
 
       - name: Test Delayed Tasks
         id: test_delayed_tasks
