@@ -38,6 +38,10 @@ app-root {
   white-space: nowrap;
 }
 
+.dt-info-group-content > *{
+  white-space: normal;
+}
+
 p.small,
 span.small {
   font-family: BerninaSansWeb,OpenSans,sans-serif;

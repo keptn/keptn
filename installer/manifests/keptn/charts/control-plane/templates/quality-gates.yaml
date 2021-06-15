@@ -80,6 +80,7 @@ spec:
               value: 'sh.keptn.event.evaluation.triggered,sh.keptn.event.get-sli.finished,sh.keptn.event.monitoring.configure'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

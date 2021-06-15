@@ -2,7 +2,7 @@
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
-        <img alt="Keptn logo" class="mt-2" src="assets/keptn_logo.png" />
+        <img alt="Keptn logo" class="mt-2" [src]="logoInvertedUrl" />
       </dt-empty-state-item-img>
       <ng-container [ngSwitch]="error">
         <ng-container *ngSwitchCase="'project'">
@@ -35,38 +35,33 @@
     <dt-menu-group>
       <ng-template #overlay let-data><span>{{data.text}}</span></ng-template>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" (click)="selectView('environment', project.projectName)" [class.active]="view === 'environment'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" routerLinkActive="active" routerLink="./" [routerLinkActiveOptions]= "{exact: true}">
         <dt-icon name="environment"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" (click)="redirectView('service', project.projectName)" [class.active]="view === 'service'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" routerLinkActive="active" routerLink="service">
         <dt-icon name="services"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" (click)="redirectView('sequence', project.projectName)" [class.active]="view === 'sequence'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
         <dt-icon name="hops"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" (click)="redirectView('uniform', project.projectName)" [class.active]="view === 'uniform'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
         <dt-icon name="infrastructure"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" (click)="redirectView('integration', project.projectName)" [class.active]="view === 'integration'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
         <dt-icon name="plugin-connection"></dt-icon>
       </button>
     </dt-menu-group>
     <dt-menu-group class="bottom-menu">
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open settings view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Settings'}}" (click)="redirectView('settings', project.projectName)" [class.active]="view === 'settings'">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open settings view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Settings'}}" routerLinkActive="active" routerLink="settings">
         <dt-icon name="options-menu"></dt-icon>
       </button>
     </dt-menu-group>
   </dt-menu>
-  <ng-container [ngSwitch]="view">
-    <ktb-environment-view *ngSwitchCase="'environment'" fxFlex="calc(100% - 150px)"></ktb-environment-view>
-    <ktb-service-view *ngSwitchCase="'service'" fxFlex="calc(100% - 150px)"></ktb-service-view>
-    <ktb-sequence-view *ngSwitchCase="'sequence'" fxFlex="calc(100% - 150px)"></ktb-sequence-view>
-    <ktb-integration-view *ngSwitchCase="'integration'" fxFlex="calc(100% - 150px)"></ktb-integration-view>
-    <ktb-uniform-view *ngSwitchCase="'uniform'" fxFlex="calc(100% - 150px)"></ktb-uniform-view>
-    <ktb-settings-view *ngSwitchCase="'settings'" fxFlex="calc(100% - 150px)"></ktb-settings-view>
-  </ng-container>
+  <div fxFlex>
+    <router-outlet></router-outlet>
+  </div>
 </div>

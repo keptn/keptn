@@ -1,8 +1,8 @@
 import { registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
-import { NgModule } from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDialogModule } from '@angular/material/dialog';
 import { BrowserModule } from '@angular/platform-browser';
@@ -100,7 +100,13 @@ import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deploymen
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
 import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 
+import { AppInitService } from "./_services/app.init";
+
 registerLocaleData(localeEn, 'en');
+
+export function init_app(appLoadService: AppInitService) {
+  return () => appLoadService.init();
+}
 
 @NgModule({
   declarations: [
@@ -207,6 +213,13 @@ registerLocaleData(localeEn, 'en');
         ReactiveFormsModule,
     ],
   providers: [
+    AppInitService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: init_app,
+      deps: [AppInitService],
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpDefaultInterceptor,

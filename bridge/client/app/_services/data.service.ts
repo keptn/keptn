@@ -270,7 +270,7 @@ export class DataService {
         map(result => result.events||[]),
         mergeMap((roots) => this.rootMapper(roots))
       ).subscribe((roots: Root[]) => {
-        if(!project.sequences?.length && roots.length < this.DEFAULT_SEQUENCE_PAGE_SIZE) {
+        if(!fromTime && !project.sequences?.length && roots.length < this.DEFAULT_SEQUENCE_PAGE_SIZE) {
           project.allSequencesLoaded = true;
         }
         project.sequences = [...roots||[], ...project.sequences||[]].sort(DateUtil.compareTraceTimesAsc);

@@ -14,9 +14,7 @@ func Test_UniformRegistration(t *testing.T) {
 	uniformIntegration := &keptnmodels.Integration{
 		Name: "my-uniform-service",
 		MetaData: keptnmodels.MetaData{
-			DeploymentName:     "my-uniform-service",
 			DistributorVersion: "0.8.3",
-			Status:             "active",
 			KubernetesMetaData: keptnmodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},

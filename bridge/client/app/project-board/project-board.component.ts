@@ -7,6 +7,7 @@ import {Project} from "../_models/project";
 import {Trace} from "../_models/trace";
 
 import {DataService} from "../_services/data.service";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-project-board',
@@ -16,12 +17,13 @@ import {DataService} from "../_services/data.service";
 export class ProjectBoardComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
+
   public project$: Observable<Project>;
   public contextId: string;
   private _rootEventsTimerInterval = 30;
 
   public error: string = null;
-  public view: string = 'environment';
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private router: Router, private route: ActivatedRoute, private dataService: DataService) { }
 
@@ -82,32 +84,12 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
             .subscribe(project => {
               this.dataService.loadRoots(project);
             });
-
-          if(this.route.snapshot.url.length > 2) {
-            this.view = this.route.snapshot.url[2].path;
-          } else {
-            this.view = 'environment';
-          }
         }
       });
   }
 
   loadProjects() {
     this.dataService.loadProjects();
-  }
-
-  selectView(view: string, projectName: string) {
-    this.setView(view, '/project', projectName);
-  }
-
-  setView(view: string, ...urlCommands: string[]) {
-    if (this.view !== view) {
-      this.router.navigate(urlCommands);
-    }
-  }
-
-  redirectView(view: string, projectName: string) {
-    this.setView(view, '/project', projectName, view);
   }
 
   ngOnDestroy(): void {

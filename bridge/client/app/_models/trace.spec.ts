@@ -2124,9 +2124,9 @@ describe('Trace', () => {
     expect(rootTraces[0].getLabel()).toBe('create', 'Label for trace "sh.keptn.event.service.create.started" should be "create"');
     expect(rootTraces[0].getShortImageName()).toBe(undefined);
     expect(rootTraces[0].getIcon()).toBe('information', 'Icon for trace "sh.keptn.event.service.create.started" should be "information"');
-    expect(rootTraces[0].isFaulty()).toBe(null);
-    expect(rootTraces[0].isWarning()).toBe(null);
-    expect(rootTraces[0].isSuccessful()).toBe(null);
+    expect(rootTraces[0].isFaulty()).toBe(false);
+    expect(rootTraces[0].isWarning()).toBe(false);
+    expect(rootTraces[0].isSuccessful()).toBe(false);
     expect(rootTraces[0].getProject()).toBe('sockshop');
     expect(rootTraces[0].getService()).toBe('carts');
 
@@ -2134,9 +2134,9 @@ describe('Trace', () => {
     expect(rootTraces[1].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[1].getShortImageName()).toBe('carts:0.10.1', 'ShortImageName for first trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "carts:0.10.1"');
     expect(rootTraces[1].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
-    expect(rootTraces[1].isFaulty()).toBe(null);
-    expect(rootTraces[1].isWarning()).toBe(null);
-    expect(rootTraces[1].isSuccessful()).toBe(null);
+    expect(rootTraces[1].isFaulty()).toBe(false);
+    expect(rootTraces[1].isWarning()).toBe(false);
+    expect(rootTraces[1].isSuccessful()).toBe(false);
     expect(rootTraces[1].getProject()).toBe('sockshop');
     expect(rootTraces[1].getService()).toBe('carts');
 
@@ -2144,9 +2144,9 @@ describe('Trace', () => {
     expect(rootTraces[2].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[2].getShortImageName()).toBe('carts:0.10.2', 'ShortImageName for second trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "carts:0.10.2"');
     expect(rootTraces[2].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
-    expect(rootTraces[2].isFaulty()).toBe(null);
-    expect(rootTraces[2].isWarning()).toBe(null);
-    expect(rootTraces[2].isSuccessful()).toBe(null);
+    expect(rootTraces[2].isFaulty()).toBe(false);
+    expect(rootTraces[2].isWarning()).toBe(false);
+    expect(rootTraces[2].isSuccessful()).toBe(false);
     expect(rootTraces[2].getProject()).toBe('sockshop');
     expect(rootTraces[2].getService()).toBe('carts');
 
@@ -2154,18 +2154,18 @@ describe('Trace', () => {
     expect(rootTraces[8].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
     expect(rootTraces[8].getShortImageName()).toBe(undefined, 'ShortImageName for third trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "undefined"');
     expect(rootTraces[8].getIcon()).toBe('duplicate', 'Icon for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "duplicate"');
-    expect(rootTraces[8].isFaulty()).toBe(null);
-    expect(rootTraces[8].isWarning()).toBe(null);
-    expect(rootTraces[8].isSuccessful()).toBe(null);
+    expect(rootTraces[8].isFaulty()).toBe(false);
+    expect(rootTraces[8].isWarning()).toBe(false);
+    expect(rootTraces[8].isSuccessful()).toBe(false);
     expect(rootTraces[8].getProject()).toBe('keptn');
     expect(rootTraces[8].getService()).toBe('control-plane');
 
     expect(evaluationTraces[0].type).toBe('sh.keptn.event.evaluation.finished');
     expect(evaluationTraces[0].getLabel()).toBe('evaluation', 'Label for trace "sh.keptn.event.evaluation.finished" should be "evaluation"');
     expect(evaluationTraces[0].getIcon()).toBe('traffic-light', 'Icon for trace "sh.keptn.event.evaluation.finished" should be "traffic-light"');
-    expect(evaluationTraces[0].isFaulty()).toBe(null);
-    expect(evaluationTraces[0].isWarning()).toBe(null);
-    expect(evaluationTraces[0].isSuccessful()).toBe(evaluationTraces[0].data.stage, 'Successful evaluation should return true');
+    expect(evaluationTraces[0].isFaulty()).toBe(false);
+    expect(evaluationTraces[0].isWarning()).toBe(false);
+    expect(evaluationTraces[0].isSuccessful(evaluationTraces[0].data.stage)).toBe(true, 'Successful evaluation should return true');
     expect(evaluationTraces[0].getProject()).toBe('sockshop');
     expect(evaluationTraces[0].getService()).toBe('carts');
   }));
