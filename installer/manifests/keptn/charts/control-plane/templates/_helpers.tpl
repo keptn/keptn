@@ -97,3 +97,30 @@ readinessProbe:
   initialDelaySeconds: {{.initialDelaySeconds | default 5}}
   periodSeconds: 5
 {{- end }}
+
+{{- define "control-plane.dist.common.env.vars" -}}
+- name: VERSION
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/version']
+- name: LOCATION
+  valueFrom:
+   fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/component']
+- name: K8S_DEPLOYMENT_NAME
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/name']
+- name: K8S_POD_NAME
+  valueFrom:
+    fieldRef:
+     fieldPath: metadata.name
+- name: K8S_NAMESPACE
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.namespace
+- name: K8S_NODE_NAME
+  valueFrom:
+    fieldRef:
+      fieldPath: spec.nodeName
+{{- end }}

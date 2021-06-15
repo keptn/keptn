@@ -25,8 +25,8 @@
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="row.getRecentSequence() as currentSequence">
             <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(row.stage).isLoading() || currentSequence.hasPendingApproval(row.stage); else showLoading" class="event-icon"
                      [name]="currentSequence.getFirstTraceOfStage(row.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
-                     [class.error]="row.stage === currentSequence.isFaulty()"
-                     [class.success]="currentSequence.getFirstTraceOfStage(row.stage).isFinished() && row.stage !== currentSequence.isFaulty()"
+                     [class.error]="currentSequence.isFaulty(row.stage)"
+                     [class.success]="currentSequence.getFirstTraceOfStage(row.stage).isFinished() && !currentSequence.isFaulty(row.stage)"
                      [class.highlight]="currentSequence.hasPendingApproval(row.stage)"></dt-icon>
             <ng-template #showLoading>
               <button class="m-0 p-0" dt-button disabled variant="nested">

@@ -1,5 +1,15 @@
 basePath: /v1
 definitions:
+  models.CreateLogsRequest:
+    properties:
+      logs:
+        description: logs
+        items:
+          $ref: '#/definitions/models.LogEntry'
+        type: array
+    type: object
+  models.DeleteLogResponse:
+    type: object
   models.Error:
     properties:
       code:
@@ -52,14 +62,10 @@ definitions:
     type: object
   models.EventContext:
     properties:
-      eventId:
-        description: ID of the event
-        type: string
       keptnContext:
-        description: Keptn Context ID of the event
-        type: string
-      time:
-        description: Time of the event
+        description: |-
+          keptn context
+          Required: true
         type: string
     type: object
   models.Events:
@@ -67,7 +73,7 @@ definitions:
       events:
         description: events
         items:
-          $ref: '#/definitions/models.Event'
+          $ref: '#/definitions/models.KeptnContextExtendedCE'
         type: array
       nextPageKey:
         description: Pointer to next page, base64 encoded
@@ -76,7 +82,7 @@ definitions:
         description: Size of returned page
         type: number
       totalCount:
-        description: Total number of events
+        description: Total number of resources
         type: number
     type: object
   models.ExpandedProject:
@@ -183,6 +189,23 @@ definitions:
         description: Stage name
         type: string
     type: object
+  models.GetLogsResponse:
+    properties:
+      logs:
+        description: logs
+        items:
+          $ref: '#/definitions/models.LogEntry'
+        type: array
+      nextPageKey:
+        description: Pointer to next page
+        type: integer
+      pageSize:
+        description: Size of returned page
+        type: integer
+      totalCount:
+        description: Total number of logs
+        type: integer
+    type: object
   models.Integration:
     properties:
       id:
@@ -194,6 +217,50 @@ definitions:
       subscription:
         $ref: '#/definitions/models.Subscription'
     type: object
+  models.KeptnContextExtendedCE:
+    properties:
+      contenttype:
+        description: contenttype
+        type: string
+      data:
+        description: |-
+          data
+          Required: true
+        type: object
+      extensions:
+        description: extensions
+        type: object
+      id:
+        description: id
+        type: string
+      shkeptncontext:
+        description: shkeptncontext
+        type: string
+      shkeptnspecversion:
+        description: shkeptnspecversion
+        type: string
+      source:
+        description: |-
+          source
+          Required: true
+        type: string
+      specversion:
+        description: specversion
+        type: string
+      time:
+        description: |-
+          time
+          Format: date-time
+        type: string
+      triggeredid:
+        description: triggeredid
+        type: string
+      type:
+        description: |-
+          type
+          Required: true
+        type: string
+    type: object
   models.KubernetesMetaData:
     properties:
       deploymentname:
@@ -203,10 +270,23 @@ definitions:
       podname:
         type: string
     type: object
+  models.LogEntry:
+    properties:
+      integrationid:
+        type: string
+      message:
+        type: string
+      shkeptncontext:
+        type: string
+      task:
+        type: string
+      time:
+        type: string
+      triggeredid:
+        type: string
+    type: object
   models.MetaData:
     properties:
-      deplyomentname:
-        type: string
       distributorversion:
         type: string
       hostname:
@@ -216,8 +296,6 @@ definitions:
       kubernetesmetadata:
         $ref: '#/definitions/models.KubernetesMetaData'
       location:
-        type: string
-      status:
         type: string
     type: object
   models.Remediation:
@@ -511,6 +589,118 @@ paths:
       summary: Get triggered events
       tags:
       - Events
+  /log:
+    delete:
+      consumes:
+      - application/json
+      description: Delete logs
+      parameters:
+      - description: integrationId
+        in: query
+        name: integrationId
+        type: string
+      - description: The from time stamp for fetching sequence states
+        in: query
+        name: fromTime
+        type: string
+      - description: The before time stamp for fetching sequence states
+        in: query
+        name: beforeTime
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.DeleteLogResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete logs
+      tags:
+      - Log
+    get:
+      consumes:
+      - application/json
+      description: Retrieve logs
+      parameters:
+      - description: integrationId
+        in: query
+        name: integrationId
+        type: string
+      - description: The from time stamp for fetching sequence states
+        in: query
+        name: fromTime
+        type: string
+      - description: The before time stamp for fetching sequence states
+        in: query
+        name: beforeTime
+        type: string
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.GetLogsResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve logs
+      tags:
+      - Log
+    post:
+      consumes:
+      - application/json
+      description: Persist a list of log entries
+      parameters:
+      - description: Logs
+        in: body
+        name: integration
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateLogsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Persist a list of log entries
+      tags:
+      - Log
   /project:
     get:
       consumes:
@@ -970,11 +1160,13 @@ paths:
         in: query
         name: state
         type: string
-      - description: The from time stamp for fetching sequence states
+      - description: 'The from time stamp for fetching sequence states (in ISO8601
+          time format, e.g.: 2021-05-10T09:51:00.000Z)'
         in: query
         name: fromTime
         type: string
-      - description: The before time stamp for fetching sequence states
+      - description: 'The before time stamp for fetching sequence states (in ISO8601
+          time format, e.g.: 2021-05-10T09:51:00.000Z)'
         in: query
         name: beforeTime
         type: string
@@ -1015,6 +1207,22 @@ paths:
       - description: id
         in: query
         name: id
+        type: string
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: project
+        in: query
+        name: project
+        type: string
+      - description: stage
+        in: query
+        name: stage
+        type: string
+      - description: service
+        in: query
+        name: service
         type: string
       produces:
       - application/json
@@ -1097,7 +1305,7 @@ paths:
       tags:
       - Uniform
 securityDefinitions:
-  ApiKeyAuth:
+  key:
     in: header
     name: x-token
     type: apiKey

@@ -3,7 +3,7 @@ definitions:
   operations.Error:
     properties:
       errorCode:
-        type: string
+        type: integer
       message:
         type: string
     type: object
@@ -12,7 +12,7 @@ definitions:
       contenttype:
         type: string
       data:
-        type: object
+        $ref: '#/definitions/operations.KeptnBase'
       extensions:
         type: object
       id:
@@ -30,35 +30,71 @@ definitions:
       type:
         type: string
     type: object
+  operations.KeptnBase:
+    properties:
+      project:
+        type: string
+      service:
+        type: string
+    type: object
+  operations.KeptnService:
+    properties:
+      executions:
+        additionalProperties:
+          type: integer
+        description: Executions godoc
+        type: object
+      name:
+        description: Name godoc
+        type: string
+    type: object
   operations.Project:
     properties:
       name:
+        description: Name godoc
         type: string
       services:
-        items:
+        additionalProperties:
           $ref: '#/definitions/operations.Service'
-        type: array
+        description: Services godoc
+        type: object
     type: object
   operations.Service:
     properties:
       events:
         additionalProperties:
           type: integer
+        description: Events godoc
         type: object
       executedSequences:
+        description: ExecutedSequences godoc
         type: integer
+      executedSequencesPerType:
+        additionalProperties:
+          type: integer
+        description: ExecutedSequencesPerType godoc
+        type: object
+      keptnServiceExecutions:
+        additionalProperties:
+          $ref: '#/definitions/operations.KeptnService'
+        description: KeptnServiceExecutions godoc
+        type: object
       name:
+        description: Name godoc
         type: string
     type: object
   operations.Statistics:
     properties:
       from:
+        description: From godoc
         type: string
       projects:
-        items:
+        additionalProperties:
           $ref: '#/definitions/operations.Project'
-        type: array
+        description: Projects godoc
+        type: object
       to:
+        description: To godoc
         type: string
     type: object
 info:
@@ -108,11 +144,11 @@ paths:
       - application/json
       description: get statistics about Keptn installation
       parameters:
-      - description: From
+      - description: From (Unix timestamp - see https://www.unixtimestamp.com/)
         in: query
         name: from
         type: string
-      - description: To
+      - description: To (Unix timestamp - see https://www.unixtimestamp.com/)
         in: query
         name: to
         type: string
@@ -137,7 +173,7 @@ paths:
       tags:
       - Statistics
 securityDefinitions:
-  ApiKeyAuth:
+  key:
     in: header
     name: x-token
     type: apiKey

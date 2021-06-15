@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -15,6 +16,7 @@ import (
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"os"
 	"strconv"
 	"time"
 )
@@ -23,7 +25,7 @@ import (
 // @version 1.0
 // @description This is the API documentation of the Shipyard Controller.
 
-// @securityDefinitions.apiKey ApiKeyAuth
+// @securityDefinitions.apiKey key
 // @in header
 // @name x-token
 
@@ -38,6 +40,7 @@ import (
 const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarEventDispatchIntervalSecDefault = "10"
+const envVarLogsTTLDefault = "120h" // 5 days
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -135,6 +138,12 @@ func main() {
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
 	uniformController.Inject(apiV1)
 
+	logRepo := createLogRepo()
+	logRepo.SetupTTLIndex(getLogTTLDurationInSeconds(os.Getenv("LOG_TTL")))
+	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
+	logController := controller.NewLogController(logHandler)
+	logController.Inject(apiV1)
+
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
@@ -179,6 +188,10 @@ func createSecretStore(kubeAPI *kubernetes.Clientset) *common.K8sSecretStore {
 	return common.NewK8sSecretStore(kubeAPI)
 }
 
+func createLogRepo() *db.MongoDBLogRepo {
+	return db.NewMongoDBLogRepo(db.GetMongoDBConnectionInstance())
+}
+
 // GetKubeAPI godoc
 func createKubeAPI() (*kubernetes.Clientset, error) {
 	var config *rest.Config
@@ -193,4 +206,30 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return kubeAPI, nil
+}
+
+func getLogTTLDurationInSeconds(logsTTL string) int32 {
+	var duration time.Duration
+	var err error
+	if logsTTL != "" {
+		duration, err = time.ParseDuration(logsTTL)
+		if err != nil {
+			log.Errorf("could not parse log TTL env var %s: %s. Will use default value %s", logsTTL, err.Error(), envVarLogsTTLDefault)
+		}
+	}
+
+	if duration.Seconds() == 0 {
+		duration, err = time.ParseDuration(envVarLogsTTLDefault)
+		if err != nil {
+			log.Errorf("could not parse default duration string %s. Log TTL will be set to 0", err.Error())
+			return int32(0)
+		}
+	}
+
+	secondsStr := fmt.Sprintf("%.0f", duration.Seconds())
+	secondsInt, err := strconv.Atoi(secondsStr)
+	if err != nil {
+		return 0
+	}
+	return int32(secondsInt)
 }
