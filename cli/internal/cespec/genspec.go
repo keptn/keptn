@@ -63,6 +63,7 @@ func Generate(outputDir string) {
 	md.Bullet().Link("Get-SLI", "#get-sli")
 	md.Bullet().Link("Monitoring", "#monitoring")
 	md.Bullet().Link("Problem", "#problem")
+	md.Bullet().Link("Error Log", "#error-log")
 
 	md.Writeln("---")
 
