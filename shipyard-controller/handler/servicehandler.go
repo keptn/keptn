@@ -30,7 +30,6 @@ type ServiceHandler struct {
 // @Summary Create a new service
 // @Description Create a new service
 // @Tags Services
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project"
@@ -88,7 +87,6 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 // @Summary Delete a service
 // @Description Delete a service
 // @Tags Services
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project"
@@ -136,7 +134,6 @@ func (sh *ServiceHandler) DeleteService(c *gin.Context) {
 // @Summary Gets a service by its name
 // @Description Gets a service by its name
 // @Tags Services
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project"
@@ -168,7 +165,6 @@ func (sh *ServiceHandler) GetService(c *gin.Context) {
 // @Summary Gets all services of a stage in a project
 // @Description Gets all services of a stage in a project
 // @Tags Services
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     path    string     true        "Project"

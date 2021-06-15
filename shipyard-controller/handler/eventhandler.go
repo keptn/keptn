@@ -27,7 +27,6 @@ type NextTaskSequence struct {
 // @Summary Get triggered events
 // @Description get triggered events by their type
 // @Tags Events
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   eventType     path    string     true        "Event type"
@@ -97,7 +96,6 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 // @Summary Handle event
 // @Description Handle incoming cloud event
 // @Tags Events
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   event     body    models.Event     true        "Event type"

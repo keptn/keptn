@@ -24,7 +24,6 @@ func NewLogHandler(logManager ILogManager) *LogHandler {
 // @Summary Persist a list of log entries
 // @Description Persist a list of log entries
 // @Tags Log
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param integration body models.CreateLogsRequest true "Logs"
@@ -50,7 +49,6 @@ func (lh *LogHandler) CreateLogEntries(context *gin.Context) {
 // @Summary Retrieve logs
 // @Description Retrieve logs
 // @Tags Log
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param integrationId query string false "integrationId"
@@ -81,7 +79,6 @@ func (lh *LogHandler) GetLogEntries(context *gin.Context) {
 // @Summary Delete logs
 // @Description Delete logs
 // @Tags Log
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param integrationId query string false "integrationId"

@@ -28,7 +28,6 @@ func NewStageHandler(stageManager IStageManager) *StageHandler {
 // @Summary Get all stages of a project
 // @Description Get the list of stages of a project
 // @Tags Stage
-// @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
 // @Param	project				path	string	true	"The name of the project"
@@ -90,7 +89,6 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 // @Summary Get a stage
 // @Description Get a stage of a project
 // @Tags Projects
-// @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
 // @Param	project		path	string	true	"The name of the project"
