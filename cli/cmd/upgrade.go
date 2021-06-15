@@ -207,7 +207,15 @@ func getLatestKeptnRelease() (*release.Release, error) {
 		return nil, fmt.Errorf("No Keptn release found in namespace %s: %v", keptnNamespace, err)
 	}
 
-	return releases[len(releases)-1], nil
+	// iterate over releases and find the one with status = deployed
+	for _, r := range releases {
+		if r.Info.Status == release.StatusDeployed {
+			return r, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Found %d releases, but none of them is currently deployed", len(releases))
+
 }
 
 func init() {
