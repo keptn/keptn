@@ -27,25 +27,6 @@ spec:
     spec:
       serviceAccountName: keptn-default
       containers:
-      - name: remediation-service
-        image: keptn/remediation-service:latest
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 8080
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "64Mi"
-            cpu: "50m"
-        env:
-          - name: EVENTBROKER
-            value: 'http://event-broker/keptn'
-          - name: CONFIGURATION_SERVICE
-            value: 'http://configuration-service:8080'
-          - name: ENVIRONMENT
-            value: 'production'
       - name: distributor
         image: keptn/distributor:latest
         ports:
