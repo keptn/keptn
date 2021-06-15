@@ -63,6 +63,7 @@ func Generate(outputDir string) {
 	md.Bullet().Link("Get-SLI", "#get-sli")
 	md.Bullet().Link("Monitoring", "#monitoring")
 	md.Bullet().Link("Problem", "#problem")
+	md.Bullet().Link("Error Log", "#error-log")
 
 	md.Writeln("---")
 
@@ -186,6 +187,15 @@ func Generate(outputDir string) {
 	createSectionTitle(md, "Problem")
 	createSection(md, "Problem", keptn.ProblemEventType, problemOpenEventData)
 	fmt.Println(md.String())
+
+	md.Title("General purpose events", 3)
+	md.Writeln("In addition to the task sequence/task events listed above, Keptn also supports the following general-purpose events:")
+
+	createSectionTitle(md, "Logging")
+	md.Writeln("For easier debugging of errors that occur either during the execution of a task of a sequence, or while performing any other operation, Keptn integration services can send error log events to the Keptn API via the distributor.")
+	createSection(md, "Error Log", keptnv2.ErrorLogEventName, errorLogEventData)
+
+	md.WriteLineBreak()
 
 	file, err := os.Create(outputDir + "/" + "cloudevents.md")
 	check(err)
