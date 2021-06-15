@@ -73,7 +73,7 @@ func Test_UniformRegistration(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func TestRegistrationOfKeptnIntegration(t *testing.T) {
 	// install echo integration
-	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/d071db9beb1cb6a5f278bc2cfa5803b56322bd31/deploy/service.yaml")
+	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/4434d5b61bda3fa24c4428fb5617e4616f204369/deploy/service.yaml")
 	require.Nil(t, err)
 
 	// wait for echo integration registered
@@ -81,7 +81,7 @@ func TestRegistrationOfKeptnIntegration(t *testing.T) {
 	require.Eventually(t, func() bool {
 		fetchedEchoIntegration, err = getIntegrationWithName("echo-service")
 		return err == nil
-	}, time.Second*10, time.Second*1)
+	}, time.Second*20, time.Second*3)
 
 	require.Nil(t, err)
 	require.NotNil(t, fetchedEchoIntegration)
@@ -99,7 +99,7 @@ func TestRegistrationOfKeptnIntegration(t *testing.T) {
 	require.Eventually(t, func() bool {
 		fetchedEchoIntegration, err = getIntegrationWithName("echo-service")
 		return err != nil
-	}, time.Second*10, time.Second*1)
+	}, time.Second*20, time.Second*3)
 }
 
 func getIntegrationWithName(name string) (models.Integration, error) {
