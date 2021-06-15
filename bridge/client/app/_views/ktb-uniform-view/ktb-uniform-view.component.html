@@ -1,5 +1,7 @@
-<div fxLayout="column" fxFlex="100%">
-  <div class="container" fxLayout="column" fxFlex="0 0 calc(100%-35px)">
-    <ktb-keptn-services-list class="overflow-y-auto" fxFlex="0 0 calc(100%-15px)" [uniformRegistrations]="(uniformRegistrations$ | async)" (selectedServiceChanged)="selectService($event)"></ktb-keptn-services-list>
+<div fxFlexFill>
+  <div fxLayout="column">
+    <div class="container" fxLayout="column" fxFlex="0 0 calc(100%-35px)">
+      <ktb-keptn-services-list class="overflow-y-auto" fxFlex="0 0 calc(100%-15px)" [uniformRegistrations]="(uniformRegistrations$ | async)" (selectedServiceChanged)="selectService($event)"></ktb-keptn-services-list>
+    </div>
   </div>
 </div>
