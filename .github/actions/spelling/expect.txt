@@ -563,6 +563,7 @@ noreferrer
 noreply
 noscript
 nospace
+notask
 Noto
 nowrap
 npm
