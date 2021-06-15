@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: statistics-service
+  namespace: keptn
 spec:
   selector:
     matchLabels:
@@ -46,22 +47,22 @@ spec:
             - name: MONGO_DB_NAME
               value: 'keptn'
         - name: distributor
-          image: keptn/distributor:latest
+          image: keptn/distributor:0.8.3
           ports:
             - containerPort: 8080
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 10999
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
             requests:
+              memory: "16Mi"
+              cpu: "25m"
+            limits:
               memory: "32Mi"
               cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'

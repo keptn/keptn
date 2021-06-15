@@ -13,7 +13,6 @@ import (
 // @Summary Handle event
 // @Description Handle incoming cloud event
 // @Tags Events
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   event     body    operations.Event     true        "Event type"

@@ -2,21 +2,13 @@
 
 This service provides usage statistics about a Keptn installation.
 
-### Generate  Swagger doc from source
+## Generate  Swagger doc from source
 
-First, the following go modules have to be installed:
+1. Download and install Swag for Go by calling `go get -u github.com/swaggo/swag/cmd/swag` in fresh terminal (not within a Keptn source directory!).
+2. `cd` to the Statistics Service's root folder and run `swag init --parseDependency`
 
-```
-go get -u github.com/swaggo/swag/cmd/swag
-go get -u github.com/swaggo/gin-swagger
-go get -u github.com/swaggo/files
-```
+*Note*: This updates files in the docs/ subfolder (`docs.go`, `swagger.yaml` and `swagger.json`). It is not necessary to do it manually, as this happens within the [Dockerfile](Dockerfile) during the build process.
 
-If the `swagger.yaml` should be updated with new endpoints or models, generate the new source by executing:
-
-```console
-swag init
-```
 
 ## How to use the service
 

@@ -16,7 +16,6 @@ import (
 // @Summary Get statistics
 // @Description get statistics about Keptn installation
 // @Tags Statistics
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   from     query    string     false        "From (Unix timestamp - see https://www.unixtimestamp.com/)"

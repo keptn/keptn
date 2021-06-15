@@ -28,7 +28,6 @@ type SecretHandler struct {
 // @Summary Create a Secret
 // @Description Create a new Secret
 // @Tags Secrets
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param secret body model.Secret true "The new secret to be created"
@@ -61,7 +60,6 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 // @Summary Update a Secret
 // @Description Update an existing Secret
 // @Tags Secrets
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param secret body model.Secret true "The updated Secret"
@@ -93,7 +91,6 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Summary Delete a Secret
 // @Description Delete an existing Secret
 // @Tags Secrets
-// @Security ApiKeyAuth
 // @Param name query string true "The name of the secret"
 // @Param scope query string true "The scope of the secret"
 // @Success 200
@@ -132,7 +129,6 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 // @Summary Get secrets
 // @Description Get secrets
 // @Tags Secrets
-// @Security ApiKeyAuth
 // @Success 200 {object} model.GetSecretsResponse
 // @Failure 500 {object} model.Error
 // @Router /secret [get]

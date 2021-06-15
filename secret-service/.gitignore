@@ -1,15 +1,8 @@
-# Build, Debug files
-
-vendor
-cmd/shipyard-controller-server/debug
-
-MANIFEST
-
 # Idea
 .idea
 
 #binary - go build
-shipyard-controller
+secret-service
 
 # swagger docs, will be auto-generated in Dockerfile
 docs/*.yaml
