@@ -97,7 +97,7 @@ func _main(env config.EnvConfig) int {
 
 	// Prepare signal handling for graceful shutdown
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		<-c
