@@ -91,7 +91,9 @@ export class DataService {
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {
-    return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize);
+    return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize).pipe(
+      map((response) => response.logs)
+    );
   }
 
   public getRootsLastUpdated(project: Project): Date {

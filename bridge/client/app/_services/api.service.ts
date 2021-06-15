@@ -18,7 +18,7 @@ import * as moment from 'moment';
 import {SequenceResult} from '../_models/sequence-result';
 import {Project} from '../_models/project';
 import {UniformRegistration} from "../_models/uniform-registration";
-import {UniformRegistrationLog, UniformRegistrationLogResponse} from "../_models/uniform-registration-log";
+import {UniformRegistrationLogResponse} from "../_models/uniform-registration-log";
 
 @Injectable({
   providedIn: 'root'
@@ -115,11 +115,9 @@ export class ApiService {
     return this.http.get<UniformRegistration[]>(url);
   }
 
-  public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLog[]> {
+  public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLogResponse> {
     const url = `${this._baseUrl}/controlPlane/v1/log?integrationId=${uniformRegistrationId}&pageSize=${pageSize}`;
-    return this.http.get<UniformRegistrationLogResponse>(url).pipe(
-      map((response) => response.logs)
-    );
+    return this.http.get<UniformRegistrationLogResponse>(url);
   }
 
   public getMetadata(): Observable<Metadata> {
