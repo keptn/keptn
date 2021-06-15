@@ -81,8 +81,14 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 		if err := keptnv2.EventDataAs(keptnEvent, eventData); err != nil {
 			return fmt.Errorf("could not decode Keptn event data: %v", err.Error())
 		}
+
+		integrationID := l.IntegrationID
+		if eventData.IntegrationID != "" {
+			// overwrite default integrationID if it has been set in the event
+			integrationID = eventData.IntegrationID
+		}
 		l.Log(keptnapimodels.LogEntry{
-			IntegrationID: l.IntegrationID,
+			IntegrationID: integrationID,
 			Message:       eventData.Message,
 			KeptnContext:  keptnEvent.Shkeptncontext,
 			Task:          eventData.Task,
