@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/kubernetes-utils/pkg"
@@ -17,9 +18,11 @@ import (
 	"testing"
 )
 
-const defaultKeptnNamespace = "keptn"
-
-const KeptnSpecVersion = "0.2.0"
+const (
+	KeptnSpecVersion      = "0.2.0"
+	KeptnNamespaceEnvVar  = "KEPTN_NAMESPACE"
+	DefaultKeptnNamespace = "keptn"
+)
 
 type APIEventSender struct {
 }
@@ -140,13 +143,13 @@ func ApiPOSTRequest(path string, payload interface{}) (*req.Resp, error) {
 }
 
 func GetApiCredentials() (string, string, error) {
-	apiToken, err := keptnkubeutils.GetKeptnAPITokenFromSecret(false, os.Getenv("KEPTN_NAMESPACE"), "keptn-api-token")
+	apiToken, err := keptnkubeutils.GetKeptnAPITokenFromSecret(false, GetKeptnNameSpaceFromEnv(), "keptn-api-token")
 	if err != nil {
 		return "", "", err
 	}
 	keptnAPIURL := os.Getenv("KEPTN_ENDPOINT")
 	if keptnAPIURL == "" {
-		serviceIP, err := keptnkubeutils.GetKeptnEndpointFromService(false, os.Getenv("KEPTN_NAMESPACE"), "api-gateway-nginx")
+		serviceIP, err := keptnkubeutils.GetKeptnEndpointFromService(false, GetKeptnNameSpaceFromEnv(), "api-gateway-nginx")
 		if err != nil {
 			return "", "", err
 		}
@@ -157,7 +160,7 @@ func GetApiCredentials() (string, string, error) {
 
 func ScaleDownUniform(deployments []string) error {
 	for _, deployment := range deployments {
-		if err := keptnkubeutils.ScaleDeployment(false, deployment, os.Getenv("KEPTN_NAMESPACE"), 0); err != nil {
+		if err := keptnkubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale down deployment: " + err.Error())
 		}
@@ -167,7 +170,7 @@ func ScaleDownUniform(deployments []string) error {
 
 func ScaleUpUniform(deployments []string) error {
 	for _, deployment := range deployments {
-		if err := keptnkubeutils.ScaleDeployment(false, deployment, os.Getenv("KEPTN_NAMESPACE"), 1); err != nil {
+		if err := keptnkubeutils.ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 1); err != nil {
 			// log the error but continue
 			fmt.Println("could not scale up deployment: " + err.Error())
 		}
@@ -199,10 +202,8 @@ func ExecuteCommand(cmd string) (string, error) {
 	return keptnkubeutils.ExecuteCommand(split[0], split[1:])
 }
 
-func PrepareEnvVars() {
-	if os.Getenv("KEPTN_NAMESPACE") == "" {
-		os.Setenv("KEPTN_NAMESPACE", defaultKeptnNamespace)
-	}
+func GetKeptnNameSpaceFromEnv() string {
+	return osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace)
 }
 
 func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*models.KeptnContextExtendedCE, error) {
@@ -226,4 +227,8 @@ func IsEqual(t *testing.T, expected, actual interface{}, property string) bool {
 		return false
 	}
 	return true
+}
+
+func StringArr(el ...string) []string {
+	return el
 }
