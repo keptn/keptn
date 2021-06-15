@@ -163,7 +163,6 @@ deploymentname
 deploymentstrategy
 deplyomentname
 deps
-DEPS
 dest
 destinationrule
 devkit
@@ -189,6 +188,7 @@ dynatrace
 dynatraceheader
 dynatracelabs
 easytravel
+ebd
 ebe
 ECDHE
 ECDSA
