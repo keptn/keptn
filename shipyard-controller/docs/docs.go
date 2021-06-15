@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/swaggo/swag"
+
 	"text/template"
 )
 
@@ -1284,31 +1285,6 @@ var doc = `{
         "models.DeleteLogResponse": {
             "type": "object"
         },
-        "models.Approval": {
-            "type": "object",
-            "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
-                "image": {
-                    "description": "image",
-                    "type": "string"
-                },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "tag": {
-                    "description": "tag",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
-                    "type": "string"
-                }
-            }
-        },
         "models.Error": {
             "type": "object",
             "properties": {
@@ -1370,33 +1346,8 @@ var doc = `{
         "models.EventContext": {
             "type": "object",
             "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
                 "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
-                    "type": "string"
-                }
-            }
-        },
-        "models.EventContextInfo": {
-            "type": "object",
-            "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
+                    "description": "keptn context\nRequired: true",
                     "type": "string"
                 }
             }
@@ -1575,18 +1526,22 @@ var doc = `{
             "type": "object",
             "properties": {
                 "logs": {
+                    "description": "logs",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.LogEntry"
                     }
                 },
                 "nextPageKey": {
+                    "description": "Pointer to next page",
                     "type": "integer"
                 },
                 "pageSize": {
+                    "description": "Size of returned page",
                     "type": "integer"
                 },
                 "totalCount": {
+                    "description": "Total number of logs",
                     "type": "integer"
                 }
             }
@@ -1697,9 +1652,6 @@ var doc = `{
         "models.MetaData": {
             "type": "object",
             "properties": {
-                "deplyomentname": {
-                    "type": "string"
-                },
                 "distributorversion": {
                     "type": "string"
                 },
@@ -1713,9 +1665,6 @@ var doc = `{
                     "$ref": "#/definitions/models.KubernetesMetaData"
                 },
                 "location": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -1842,53 +1791,6 @@ var doc = `{
                 }
             }
         },
-        "models.Service": {
-            "type": "object",
-            "properties": {
-                "creationDate": {
-                    "description": "Creation date of the service",
-                    "type": "string"
-                },
-                "deployedImage": {
-                    "description": "Currently deployed image",
-                    "type": "string"
-                },
-                "lastEventTypes": {
-                    "description": "last event types",
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/models.EventContextInfo"
-                    }
-                },
-                "openApprovals": {
-                    "description": "open approvals",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Approval"
-                    }
-                },
-                "serviceName": {
-                    "description": "Service name",
-                    "type": "string"
-                }
-            }
-        },
-        "models.Stage": {
-            "type": "object",
-            "properties": {
-                "services": {
-                    "description": "services",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Service"
-                    }
-                },
-                "stageName": {
-                    "description": "Stage name",
-                    "type": "string"
-                }
-            }
-        },
         "models.Stages": {
             "type": "object",
             "properties": {
@@ -1904,7 +1806,7 @@ var doc = `{
                     "description": "stages",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Stage"
+                        "$ref": "#/definitions/models.ExpandedStage"
                     }
                 },
                 "totalCount": {
@@ -2066,7 +1968,7 @@ var doc = `{
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "key": {
             "type": "apiKey",
             "name": "x-token",
             "in": "header"

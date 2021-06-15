@@ -91,6 +91,7 @@ spec:
             value: 'sh.keptn.event.get-action.triggered'
           - name: PUBSUB_RECIPIENT
             value: '127.0.0.1'
+        {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532

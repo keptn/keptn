@@ -1,43 +1,45 @@
-<div class="container" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="project">
-  <div fxFlex fxLayout="column" fxLayoutGap="15px">
-    <div>
-      <dt-info-group>
-        <dt-info-group-title>
-          <p class="mb-0"><span [textContent]="project.getServices().length"></span> Services</p>
-        </dt-info-group-title>
-      </dt-info-group>
-    </div>
-    <div fxLayout="row" fxLayoutAlign="start center" *ngIf="project.getServices().length == 0" uitestid="keptn-service-view-noServices">
-      <dt-icon class="icon" name="information"></dt-icon>
-      <p>No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
-    </div>
-    <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName" (click)="selectService(project.projectName, service.serviceName)">
-      <ktb-expandable-tile-header [attr.uitestid]="'keptn-service-view-service-' + service.serviceName">
+<div fxFlexFill>
+  <div class="container" fxFlex="34" fxLayout="column" fxLayoutGap="15px" *ngIf="project">
+    <div fxFlex fxLayout="column" fxLayoutGap="15px">
+      <div>
         <dt-info-group>
           <dt-info-group-title>
-            <div fxLayout="row" fxLayoutAlign="start center">
-              <h2 class="m-0" [textContent]="service.serviceName"></h2>
-              <dt-icon *ngIf="service.hasRemediations()" name="criticalevent" class="event-icon error"></dt-icon>
-            </div>
+            <p class="mb-0"><span [textContent]="project.getServices().length"></span> Services</p>
           </dt-info-group-title>
-          <ng-container *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">
-            <p class="m-0">Use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a> to trigger a quality gate evaluation.</p>
-          </ng-container>
-          <ng-container *ngIf="!isQualityGatesOnly">
-            <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service.serviceName) as lastService; else noDeployment">
-              <span class="bold">Last processed artifact: </span><span *ngIf="lastService.getImageName()" [textContent]="lastService.getImageName()"></span><span *ngIf="!lastService.getImageName()">unknown</span>
-            </p>
-          </ng-container>
         </dt-info-group>
-      </ktb-expandable-tile-header>
-      <ktb-deployment-list [service]="service" [(selectedDeployment)]="selectedDeployment"></ktb-deployment-list>
-    </ktb-expandable-tile>
-    <div class="mb-3"></div>
+      </div>
+      <div fxLayout="row" fxLayoutAlign="start center" *ngIf="project.getServices().length == 0" uitestid="keptn-service-view-noServices">
+        <dt-icon class="icon" name="information"></dt-icon>
+        <p>No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+      </div>
+      <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName" (click)="selectService(project.projectName, service.serviceName)">
+        <ktb-expandable-tile-header [attr.uitestid]="'keptn-service-view-service-' + service.serviceName">
+          <dt-info-group>
+            <dt-info-group-title>
+              <div fxLayout="row" fxLayoutAlign="start center">
+                <h2 class="m-0" [textContent]="service.serviceName"></h2>
+                <dt-icon *ngIf="service.hasRemediations()" name="criticalevent" class="event-icon error"></dt-icon>
+              </div>
+            </dt-info-group-title>
+            <ng-container *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">
+              <p class="m-0">Use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a> to trigger a quality gate evaluation.</p>
+            </ng-container>
+            <ng-container *ngIf="!isQualityGatesOnly">
+              <p class="m-0 mb-1 mt-1" *ngIf="project.getLatestDeployment(service.serviceName) as lastService; else noDeployment">
+                <span class="bold">Last processed artifact: </span><span *ngIf="lastService.getImageName()" [textContent]="lastService.getImageName()"></span><span *ngIf="!lastService.getImageName()">unknown</span>
+              </p>
+            </ng-container>
+          </dt-info-group>
+        </ktb-expandable-tile-header>
+        <ktb-deployment-list [service]="service" [(selectedDeployment)]="selectedDeployment"></ktb-deployment-list>
+      </ktb-expandable-tile>
+      <div class="mb-3"></div>
+    </div>
   </div>
+  <div class="container dark" fxFlex="66" fxLayout="column" fxLayoutGap="15px">
+    <ktb-service-details [deployment]="selectedDeployment"></ktb-service-details>
+  </div>
+  <ng-template #noDeployment>
+    <p class="m-0">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>
+  </ng-template>
 </div>
-<div class="container dark" fxFlex="66" fxLayout="column" fxLayoutGap="15px">
-  <ktb-service-details [deployment]="selectedDeployment"></ktb-service-details>
-</div>
-<ng-template #noDeployment>
-  <p class="m-0">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>
-</ng-template>

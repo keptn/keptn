@@ -173,7 +173,7 @@ paths:
       tags:
       - Statistics
 securityDefinitions:
-  ApiKeyAuth:
+  key:
     in: header
     name: x-token
     type: apiKey
