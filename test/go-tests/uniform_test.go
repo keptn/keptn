@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-// Test_UniformRegistration directly tests the API for (un)registering Keptn integrations
+// Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
-func Test_UniformRegistration(t *testing.T) {
+func Test_UniformRegistration_TestAPI(t *testing.T) {
 
 	uniformIntegration := &keptnmodels.Integration{
 		Name: "my-uniform-service",
@@ -69,9 +69,9 @@ func Test_UniformRegistration(t *testing.T) {
 	require.Empty(t, integrations)
 }
 
-// Test_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
+// Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
-func TestRegistrationOfKeptnIntegration(t *testing.T) {
+func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// install echo integration
 	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/4434d5b61bda3fa24c4428fb5617e4616f204369/deploy/service.yaml")
 	require.Nil(t, err)
