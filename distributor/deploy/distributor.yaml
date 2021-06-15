@@ -82,15 +82,3 @@ spec:
           value: 'sh.keptn.event.get-action.triggered'
         - name: PUBSUB_RECIPIENT
           value: 'helm-service'
-        - name: MY_POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: MY_SERVICE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.labels['app.kubernetes.io/name']
-        - name: MY_POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
