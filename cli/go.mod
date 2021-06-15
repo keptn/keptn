@@ -11,7 +11,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.5-0.20210610114954-417a4244f25f
+	github.com/keptn/go-utils v0.8.5-0.20210615080012-f40eaa6bdbcf
 	github.com/keptn/kubernetes-utils v0.8.2
 	github.com/mattn/go-shellwords v1.0.11
 	github.com/mitchellh/go-homedir v1.1.0
@@ -22,10 +22,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.0
-	k8s.io/api v0.21.0
-	k8s.io/apimachinery v0.21.0
+	k8s.io/api v0.21.1
+	k8s.io/apimachinery v0.21.1
 	k8s.io/cli-runtime v0.21.0
-	k8s.io/client-go v0.21.0
+	k8s.io/client-go v0.21.1
 	k8s.io/kubectl v0.21.0
 )
 
