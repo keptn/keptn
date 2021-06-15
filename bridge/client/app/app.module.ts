@@ -98,6 +98,7 @@ import { KtbServiceDetailsComponent } from './_components/ktb-service-details/kt
 import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-settings-view.component';
 import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
+import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -153,6 +154,7 @@ registerLocaleData(localeEn, 'en');
     KtbSettingsViewComponent,
     KtbDeploymentStageTimelineComponent,
     KtbSequenceListComponent,
+    KtbUniformRegistrationLogsComponent,
   ],
     imports: [
         BrowserModule,

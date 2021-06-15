@@ -1,0 +1,13 @@
+<div class="uniform-registration-error-log">
+  <ng-container *ngFor="let log of logs">
+    <div fxLayout="row" fxLayoutGap="30px" class="pt-2 pb-2 pl-2">
+      <div>{{ log.time }}</div>
+      <div>{{ log.message}} </div>
+        <div>
+          <ng-container *ngIf="log.shkeptncontext && log.triggeredid && log.task">
+            Task: <a [routerLink]="['/', 'project', projectName, 'sequence', log.shkeptncontext, 'event', log.triggeredid]">{{ log.task }}</a>
+          </ng-container>
+        </div>
+    </div>
+  </ng-container>
+</div>

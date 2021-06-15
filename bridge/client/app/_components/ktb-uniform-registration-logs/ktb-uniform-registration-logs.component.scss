@@ -1,0 +1,6 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.uniform-registration-error-log > div:nth-of-type(even) {
+  background-color: $gray-100;
+}

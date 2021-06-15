@@ -9,6 +9,10 @@
   overflow-y: auto;
 }
 
+.overflow-y-scroll {
+  overflow-y: scroll;
+}
+
 .notification {
   background-color: $blue-500;
   padding: 6px;

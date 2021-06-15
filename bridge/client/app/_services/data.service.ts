@@ -15,6 +15,8 @@ import * as moment from 'moment';
 import {Deployment} from '../_models/deployment';
 import {Sequence} from '../_models/sequence';
 import {UniformRegistration} from "../_models/uniform-registration";
+import {UniformRegistrationLog} from "../_models/uniform-registration-log";
+import {UniformRegistrationLogsMock} from "../_models/uniform-registrations-logs.mock";
 
 @Injectable({
   providedIn: 'root'
@@ -87,6 +89,10 @@ export class DataService {
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
     return this.apiService.getUniformRegistrations();
+  }
+
+  public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {
+    return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize);
   }
 
   public getRootsLastUpdated(project: Project): Date {

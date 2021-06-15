@@ -21,7 +21,7 @@ export class KtbKeptnServicesListComponent implements OnInit {
   private _uniformRegistrations: UniformRegistration[];
   public selectedService: UniformRegistration;
 
-  @Output() selectedServiceChanged: EventEmitter<UniformRegistration> = new EventEmitter();
+  @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
   @Input()
   get uniformRegistrations(): UniformRegistration[] {
@@ -42,7 +42,7 @@ export class KtbKeptnServicesListComponent implements OnInit {
   public setSelectedService(service: UniformRegistration) {
     if (this.selectedService !== service) {
       this.selectedService = service;
-      this.selectedServiceChanged.emit(service);
+      this.selectedUniformRegistrationChanged.emit(service);
     }
   }
 
