@@ -9,7 +9,9 @@ const logs = [
   },
   {
     integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
-    message: 'Error on evaluation - failed',
+    message: 'Error on evaluation - failed - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, ' +
+      'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ' +
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     time: '2021-05-10T04:04:05.000Z',
     shkeptncontext: 'a6c9ec8b-2021-4797-875c-2693005312b8',
     task: 'evaluation',
@@ -17,7 +19,9 @@ const logs = [
   },
   {
     integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
-    message: 'Error line 1',
+    message: 'Very long Error line 1 - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, ' +
+      'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ' +
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     time: '2021-05-10T05:04:05.000Z'
   },
   {
