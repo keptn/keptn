@@ -1,10 +1,6 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-:host {
-  padding: 2px;
-}
-
 .overflow-y-auto {
   overflow-y: auto;
 }
