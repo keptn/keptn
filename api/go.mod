@@ -14,11 +14,11 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
-	github.com/keptn/kubernetes-utils v0.8.2
+	github.com/keptn/kubernetes-utils v0.8.3-0.20210615105006-623444d0a098
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.20.4
-	k8s.io/apimachinery v0.20.4
-	k8s.io/client-go v0.20.4
+	k8s.io/api v0.21.1
+	k8s.io/apimachinery v0.21.1
+	k8s.io/client-go v0.21.1
 )
