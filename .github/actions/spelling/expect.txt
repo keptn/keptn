@@ -521,7 +521,6 @@ mydbserver
 mygateway
 mygroup
 myjmeter
-myjmeter
 mykey
 myprojec
 myproject
@@ -723,6 +722,7 @@ shkeptncontext
 shkeptnspecversion
 shm
 SIGINT
+SIGKILL
 sigs
 SIGTERM
 simplenode

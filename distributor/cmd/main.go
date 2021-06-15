@@ -27,6 +27,7 @@ import (
 	"log"
 	"net/url"
 	"os/signal"
+	"syscall"
 
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
@@ -120,7 +121,7 @@ func _main(env config.EnvConfig) int {
 
 	// Prepare signal handling for graceful shutdown
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		<-c
