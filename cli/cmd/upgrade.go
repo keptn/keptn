@@ -208,9 +208,9 @@ func getLatestKeptnRelease() (*release.Release, error) {
 	}
 
 	// iterate over releases and find the one with status = deployed
-	for _, release := range releases {
-		if release.Info.Status == "deployed" {
-			return release, nil
+	for _, r := range releases {
+		if r.Info.Status == release.StatusDeployed {
+			return r, nil
 		}
 	}
 
