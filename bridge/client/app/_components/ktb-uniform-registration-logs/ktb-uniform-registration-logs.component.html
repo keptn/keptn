@@ -1,4 +1,4 @@
-<div class="uniform-registration-error-log">
+<div class="uniform-registration-error-log" *ngIf="logs && logs.length > 0">
   <ng-container *ngFor="let log of logs">
     <div fxLayout="row" fxLayoutGap="30px" class="pt-2 pb-2 pl-2">
       <div>{{ log.time }}</div>
@@ -10,4 +10,8 @@
         </div>
     </div>
   </ng-container>
+</div>
+
+<div *ngIf="logs && logs.length === 0">
+  No logs for this integration available
 </div>

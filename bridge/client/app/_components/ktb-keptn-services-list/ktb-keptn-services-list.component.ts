@@ -3,10 +3,9 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  Output,
-  ViewChild
+  Output
 } from '@angular/core';
-import {DtSort, DtTableDataSource} from '@dynatrace/barista-components/table';
+import {DtTableDataSource} from '@dynatrace/barista-components/table';
 import {UniformRegistration} from "../../_models/uniform-registration";
 
 @Component({
@@ -16,7 +15,6 @@ import {UniformRegistration} from "../../_models/uniform-registration";
 })
 export class KtbKeptnServicesListComponent implements OnInit {
 
-  @ViewChild('sortable', { read: DtSort, static: true }) sortable: DtSort;
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
   private _uniformRegistrations: UniformRegistration[];
   public selectedService: UniformRegistration;
@@ -35,8 +33,6 @@ export class KtbKeptnServicesListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.sortable.sort('name', 'asc');
-    this.tableEntries.sort = this.sortable;
   }
 
   public setSelectedService(service: UniformRegistration) {
@@ -55,6 +51,7 @@ export class KtbKeptnServicesListComponent implements OnInit {
     if(this._uniformRegistrations) {
       this._uniformRegistrations.sort((a, b) => {
         switch (sortEvent.active) {
+          case 'name': return this.compare(a.name, b.name, isAscending);
           case 'host': return (this.compare(a.metadata.hostname, b.metadata.hostname, isAscending) || this.compare(a.name, b.name, true));
           case 'namespace': return this.compare(a.metadata.kubernetesmetadata.namespace, b.metadata.kubernetesmetadata.namespace, isAscending) || this.compare(a.name, b.name, true);
           case 'location': return this.compare(a.metadata.location, b.metadata.location, isAscending) || this.compare(a.name, b.name, true);

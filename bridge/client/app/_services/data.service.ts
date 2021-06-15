@@ -16,7 +16,6 @@ import {Deployment} from '../_models/deployment';
 import {Sequence} from '../_models/sequence';
 import {UniformRegistration} from "../_models/uniform-registration";
 import {UniformRegistrationLog} from "../_models/uniform-registration-log";
-import {UniformRegistrationLogsMock} from "../_models/uniform-registrations-logs.mock";
 
 @Injectable({
   providedIn: 'root'

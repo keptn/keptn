@@ -5,7 +5,10 @@
   <ng-container *ngIf="selectedUniformRegistration">
     <h3 class="mt-3 mb-0"><span class="mr-1 bold" [textContent]="selectedUniformRegistration.name"></span></h3>
     <h3 class="mt-1">Error Logs</h3>
-    <div fxFlex="0 0 calc(30% - 25px)" fxLayout="column" class="overflow-y-scroll" >
+
+    <dt-loading-spinner *ngIf="isLoadingLogs"></dt-loading-spinner>
+
+    <div fxFlex="0 0 calc(30% - 25px)" fxLayout="column" class="overflow-y-scroll" *ngIf="!isLoadingLogs" >
       <ktb-uniform-registration-logs [projectName]="projectName" [logs]="uniformRegistrationLogs$ | async"></ktb-uniform-registration-logs>
     </div>
   </ng-container>

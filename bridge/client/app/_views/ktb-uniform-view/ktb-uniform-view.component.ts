@@ -13,12 +13,13 @@ import {switchMap, takeUntil} from "rxjs/operators";
 })
 export class KtbUniformViewComponent implements OnInit, OnDestroy {
   private selectedUniformRegistrationId$ = new Subject<string>();
-  private uniformRegistrationLogsSubject = new BehaviorSubject([]);
+  private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
   private unsubscribe$ = new Subject();
 
   public selectedUniformRegistration: UniformRegistration;
   public uniformRegistrations$: Observable<UniformRegistration[]>;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
+  public isLoadingLogs = false;
 
   public projectName: string
 
@@ -34,6 +35,7 @@ export class KtbUniformViewComponent implements OnInit, OnDestroy {
     this.selectedUniformRegistrationId$.pipe(
       takeUntil(this.unsubscribe$),
       switchMap(uniformRegistrationId => {
+        this.isLoadingLogs = true;
         return this.dataService.getUniformRegistrationLogs(uniformRegistrationId);
       })
     ).subscribe((uniformRegLogs) => {
@@ -42,6 +44,7 @@ export class KtbUniformViewComponent implements OnInit, OnDestroy {
         if (a.time.valueOf() < b.time.valueOf()) return 1;
         return 0;
       });
+      this.isLoadingLogs = false;
       this.uniformRegistrationLogsSubject.next(uniformRegLogs);
     });
 

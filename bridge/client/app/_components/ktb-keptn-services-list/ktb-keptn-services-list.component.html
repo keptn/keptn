@@ -1,4 +1,10 @@
-<dt-table [dataSource]="tableEntries" dtSort (dtSortChange)="sortData($event)" #sortable interactiveRows>
+<dt-loading-spinner *ngIf="!uniformRegistrations"></dt-loading-spinner>
+
+<div *ngIf="uniformRegistrations && uniformRegistrations.length === 0">
+  No integrations available.
+</div>
+
+<dt-table [dataSource]="tableEntries" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations && uniformRegistrations.length > 0">
   <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
     <dt-cell *dtCellDef="let row" [textContent]="row.name || 'n/a'"></dt-cell>
