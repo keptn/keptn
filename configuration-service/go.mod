@@ -16,7 +16,7 @@ require (
 	github.com/google/martian v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
-	github.com/keptn/kubernetes-utils v0.8.3-0.20210615105006-623444d0a098
+	github.com/keptn/kubernetes-utils v0.8.3-0.20210616080720-2ca91c671183
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.6.0
