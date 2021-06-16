@@ -11,6 +11,13 @@ definitions:
       message:
         type: string
     type: object
+  model.GetSecretsResponse:
+    properties:
+      secrets:
+        items:
+          $ref: '#/definitions/model.SecretMetadata'
+        type: array
+    type: object
   model.Secret:
     properties:
       data:
@@ -19,6 +26,19 @@ definitions:
         type: string
       scope:
         type: string
+    required:
+    - name
+    - scope
+    type: object
+  model.SecretMetadata:
+    properties:
+      name:
+        type: string
+      scope:
+        type: string
+    required:
+    - name
+    - scope
     type: object
 info:
   contact:
@@ -59,6 +79,22 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete a Secret
+      tags:
+      - Secrets
+    get:
+      description: Get secrets
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetSecretsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get secrets
       tags:
       - Secrets
     post:

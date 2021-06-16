@@ -16,6 +16,32 @@
     "basePath": "/v1",
     "paths": {
         "/secret": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get secrets",
+                "tags": [
+                    "Secrets"
+                ],
+                "summary": "Get secrets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.GetSecretsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -179,12 +205,42 @@
                 }
             }
         },
+        "model.GetSecretsResponse": {
+            "type": "object",
+            "properties": {
+                "secrets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SecretMetadata"
+                    }
+                }
+            }
+        },
         "model.Secret": {
             "type": "object",
+            "required": [
+                "name",
+                "scope"
+            ],
             "properties": {
                 "data": {
                     "$ref": "#/definitions/model.Data"
                 },
+                "name": {
+                    "type": "string"
+                },
+                "scope": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SecretMetadata": {
+            "type": "object",
+            "required": [
+                "name",
+                "scope"
+            ],
+            "properties": {
                 "name": {
                     "type": "string"
                 },
