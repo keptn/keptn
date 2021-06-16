@@ -85,7 +85,8 @@ func _main(env config.EnvConfig) int {
 	}()
 
 	if !env.DisableRegistration {
-		controlPlane := lib.NewControlPlane(createUniformHandler(connectionType), lib.CreateRegistrationData(connectionType, env))
+		uniformHandler, uniformLogHandler := createUniformHandlers(connectionType)
+		controlPlane := lib.NewControlPlane(uniformHandler, lib.CreateRegistrationData(connectionType, env))
 		go func() {
 			retry.Retry(func() error {
 				id, err := controlPlane.Register()
@@ -95,7 +96,7 @@ func _main(env config.EnvConfig) int {
 				}
 				logger.Infof("Registered Keptn Integration with id %s", id)
 
-				logHandler := createUniformLogHandler(connectionType)
+				logHandler := uniformLogHandler
 				uniformLogger := lib.NewEventUniformLog(id, logHandler)
 				uniformLogger.Start(ctx, eventsChannel)
 				logger.Infof("Started UniformLogger for Keptn Integration")
@@ -134,18 +135,13 @@ func _main(env config.EnvConfig) int {
 	return 0
 }
 
-func createUniformHandler(connectionType config.ConnectionType) *keptnapi.UniformHandler {
+func createUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
-		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+		return uniformHandler, uniformLogHandler
 	}
-	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL)
-}
-
-func createUniformLogHandler(connectionType config.ConnectionType) *keptnapi.LogHandler {
-	if connectionType == config.ConnectionTypeHTTP {
-		return keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
-	}
-	return keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
+	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
 }
 
 func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType config.ConnectionType) {
