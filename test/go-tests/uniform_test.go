@@ -14,7 +14,6 @@ import (
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
 func Test_UniformRegistration_TestAPI(t *testing.T) {
-
 	uniformIntegration := &keptnmodels.Integration{
 		Name: "my-uniform-service",
 		MetaData: keptnmodels.MetaData{
