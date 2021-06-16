@@ -73,7 +73,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// install echo integration
-	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/4434d5b61bda3fa24c4428fb5617e4616f204369/deploy/service.yaml")
+	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/c7c97bb1b5affa938adb2f65260bcba8619a343f/deploy/service.yaml")
 	require.Nil(t, err)
 
 	// wait for echo integration registered
