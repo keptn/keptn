@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4
+	github.com/keptn/go-utils v0.8.5-0.20210616082450-28ca6b2be5dc
 	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
