@@ -160,7 +160,7 @@ paths:
       tags:
       - Secrets
 securityDefinitions:
-  key:
+  ApiKeyAuth:
     in: header
     name: x-token
     type: apiKey

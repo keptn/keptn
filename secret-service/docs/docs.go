@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/swaggo/swag"
-
 	"text/template"
 )
 
@@ -268,7 +267,7 @@ var doc = `{
         }
     },
     "securityDefinitions": {
-        "key": {
+        "ApiKeyAuth": {
             "type": "apiKey",
             "name": "x-token",
             "in": "header"
