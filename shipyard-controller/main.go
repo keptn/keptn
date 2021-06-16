@@ -25,7 +25,7 @@ import (
 // @version 1.0
 // @description This is the API documentation of the Shipyard Controller.
 
-// @securityDefinitions.apiKey key
+// @securityDefinitions.apiKey ApiKeyAuth
 // @in header
 // @name x-token
 

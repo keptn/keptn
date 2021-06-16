@@ -251,7 +251,7 @@
         }
     },
     "securityDefinitions": {
-        "key": {
+        "ApiKeyAuth": {
             "type": "apiKey",
             "name": "x-token",
             "in": "header"
