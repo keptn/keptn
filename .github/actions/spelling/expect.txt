@@ -139,6 +139,7 @@ criticalevent
 cron
 css
 cta
+Ctl
 ctx
 cyberciti
 daemonset
@@ -162,7 +163,6 @@ deploymentdescriptions
 deploymentname
 deploymentstrategy
 deplyomentname
-DEPS
 deps
 dest
 destinationrule
@@ -440,6 +440,7 @@ kube
 kubeclient
 kubeconfig
 kubecontextcheck
+kubect
 kubectl
 kubernetes
 kubernetesmetadata
@@ -712,7 +713,6 @@ servicename
 servicenow
 servicetype
 serviceutils
-Setenv
 shellcheck
 shellscripts
 shipyardversion

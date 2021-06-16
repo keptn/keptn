@@ -672,11 +672,13 @@ jobs:
           minishift delete profile keptn-dev
 
       - name: Write test report
+        id: write_test_report
         if: always()
         env:
           TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
+          # please check with headings in print_test_report task roughly 50 lines below
           echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_bridge_e2e.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
@@ -735,8 +737,9 @@ jobs:
         run: |
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Bridge E2E |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | ---------- |" >> final-test-report.txt
+          # please check with output in write_test_report task roughly 50 lines above
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Bridge E2E |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ---------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report
