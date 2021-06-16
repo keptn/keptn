@@ -1102,7 +1102,7 @@ jobs:
             {
               "data": {
                 "deployment": {
-                  "deploymentURIsLocal": ["http://helm-service.keptn-dev:8080"],
+                  "deploymentURIsLocal": ["http://keptn-dev-helm-service.keptn-dev:8080"],
                   "deploymentstrategy": "user_managed"
                 },
                 "message": "",
@@ -1131,7 +1131,7 @@ jobs:
             {
               "data": {
                 "deployment": {
-                  "deploymentURIsLocal": ["http://jmeter-service.keptn-dev:8080"],
+                  "deploymentURIsLocal": ["http://keptn-dev-jmeter-service.keptn-dev:8080"],
                   "deploymentstrategy": "user_managed"
                 },
                 "message": "",
