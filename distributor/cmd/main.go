@@ -63,18 +63,6 @@ var env config.EnvConfig
 
 var ceClient cloudevents.Client
 
-var inClusterAPIProxyMappings = map[string]string{
-	"/mongodb-datastore":     "mongodb-datastore:8080",
-	"/configuration-service": "configuration-service:8080",
-	"/controlPlane":          "shipyard-controller:8080",
-}
-
-var externalAPIProxyMappings = map[string]string{
-	"/mongodb-datastore":     "/mongodb-datastore",
-	"/configuration-service": "/configuration-service",
-	"/controlPlane":          "/controlPlane",
-}
-
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
@@ -98,20 +86,34 @@ func _main(env config.EnvConfig) int {
 
 	if !env.DisableRegistration {
 		controlPlane := lib.NewControlPlane(connectionType, env)
-		go retry.Retry(func() error {
-			id, err := controlPlane.Register()
-			if err != nil {
-				logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
-				return err
-			}
-			logger.Infof("Registered Keptn Integration with id %s", id)
+		go func() {
+			retry.Retry(func() error {
+				id, err := controlPlane.Register()
+				if err != nil {
+					logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
+					return err
+				}
+				logger.Infof("Registered Keptn Integration with id %s", id)
 
-			logHandler := createUniformLogHandler(connectionType)
-			uniformLogger := lib.NewEventUniformLog(id, logHandler)
-			uniformLogger.Start(ctx, eventsChannel)
-			logger.Infof("Started UniformLogger for Keptn Integration")
-			return nil
-		})
+				logHandler := createUniformLogHandler(connectionType)
+				uniformLogger := lib.NewEventUniformLog(id, logHandler)
+				uniformLogger.Start(ctx, eventsChannel)
+				logger.Infof("Started UniformLogger for Keptn Integration")
+
+				return nil
+			})
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(config.GetRegistrationInterval(env)):
+					_, err := controlPlane.Register()
+					if err != nil {
+						logger.Warnf("Unable to (re)register to Keptn's control plane: %s", err.Error())
+					}
+				}
+			}
+		}()
 
 		defer func() {
 			err := controlPlane.Unregister()
@@ -286,7 +288,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 func getProxyHost(path string) (string, string, string) {
 	// if the endpoint is empty, redirect to the internal services
 	if env.KeptnAPIEndpoint == "" {
-		for key, value := range inClusterAPIProxyMappings {
+		for key, value := range config.InClusterAPIProxyMappings {
 			if strings.HasPrefix(path, key) {
 				split := strings.Split(strings.TrimPrefix(path, "/"), "/")
 				join := strings.Join(split[1:], "/")
@@ -302,7 +304,7 @@ func getProxyHost(path string) (string, string, string) {
 	}
 
 	// if the endpoint is not empty, map to the correct api
-	for key, value := range externalAPIProxyMappings {
+	for key, value := range config.ExternalAPIProxyMappings {
 		if strings.HasPrefix(path, key) {
 			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
 			join := strings.Join(split[1:], "/")
