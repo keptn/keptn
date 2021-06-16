@@ -48,8 +48,9 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - `keptn upgrade`: Improve help messages [3479](https://github.com/keptn/keptn/issues/3479)
 - Replace `exechelper.ExecuteCommand` with `keptnutils.ExecuteCommand` [4068](https://github.com/keptn/keptn/issues/4068)
 - *Fixed*: Keptn configure bridge output shows error after disabling basic auth [4154](https://github.com/keptn/keptn/issues/4154)
-- *Fixed*: `keptn generate support-archive` not working on windows [4225](https://github.com/keptn/keptn/issues/4225)
 - *Fixed*: Trying to install a different keptn version on the cluster results in error [3959](https://github.com/keptn/keptn/issues/3959)
+- *Fixed*: `keptn upgrade` getLatestKeptnRelease returns the wrong version [3841](https://github.com/keptn/keptn/issues/3841)
+- *Fixed*: `keptn generate support-archive` not working on windows [4225](https://github.com/keptn/keptn/issues/4225)
 - *Fixed*: `keptn uninstall` does not have any effect on cluster [3958](https://github.com/keptn/keptn/issues/3958) 
 
 </p>
@@ -58,16 +59,24 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <details><summary>Keptn Core</summary>
 <p>
 
+- *general*:
+  - `shkeptnspecversion` missing in many Keptn CloudEvents [3408](https://github.com/keptn/keptn/issues/3408)
+
+- *distributor*:
+  - Forward log messages of execution plane Keptn-services to Keptn core [4030](https://github.com/keptn/keptn/issues/4030)
+  - Send data of subscribed Keptn-services (via distributors) to uniform [4031](https://github.com/keptn/keptn/issues/4031)
+
 - *helm-service*: 
   - *Fixed*: Helm-service lost its resource requests/limits [4250](https://github.com/keptn/keptn/issues/4250)
+
+- *lighthouse-service*:
+  - *Fixed*: "Response time degradation in lighthouse-service" when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
 
 - *shipyard-controller*: 
   - Define Uniform backend data model [4033](https://github.com/keptn/keptn/issues/4033)
   - *Fixed*: Keptn 0.8.3 shows that it uses specversion 0.2.1 instead of 0.2.2 [4192](https://github.com/keptn/keptn/issues/4192)
   - *Fixed*: Shipyard-controller keeps sending events for tasks with the same name indefinitely [4039](https://github.com/keptn/keptn/issues/4039)
 
-- *lighthouse-service*:
-  - *Fixed*: "Response time degradation in lighthouse-service" when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
 
 </p>
 </details>
@@ -108,6 +117,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 
 ## Development Process / Testing
 
+- Integration Test for Uniform and Log Ingest Feature [4103](https://github.com/keptn/keptn/issues/4103)
 - For non-release-builds, use timestamps for containers in Helm Charts [4191](https://github.com/keptn/keptn/issues/4191)
 - Integration test: create an issue if integration tests on master branch are failing [3772](https://github.com/keptn/keptn/issues/3772)
 - Reduce dependabot to only post PRs once a week [4076](https://github.com/keptn/keptn/issues/4076)
@@ -126,7 +136,6 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Installing/Upgrading Keptn in an air-gapped environment does not work for `configuration-service` and `nats` [4183](https://github.com/keptn/keptn/issues/4183)
   - Selected service is not reset on project change [4166](https://github.com/keptn/keptn/issues/4166)
   - *Response time degradation in configuration-service* when using a Git Upstream (e.g., GitHub) [4066](https://github.com/keptn/keptn/issues/4066)
-  - *Response time degradation in lighthouse-service* when spamming get-sli-events [4065](https://github.com/keptn/keptn/issues/4065)
   - Mongodb OOM crash after flooding it with events [3968](https://github.com/keptn/keptn/issues/3968)
   - Inconsistent usage of user-managed and user_managed causing issues [3624](https://github.com/keptn/keptn/issues/3624)
  
