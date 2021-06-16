@@ -88,7 +88,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Bridge downloads and uses customized look and feel on startup [4095](https://github.com/keptn/keptn/issues/4095)
   - Environment layout improvement for service versions [4006](https://github.com/keptn/keptn/issues/4006)
   - Show *Uniform screen* with data fetched from Uniform Backend [4034](https://github.com/keptn/keptn/issues/4034)
-  - Improve status information irn *Service screen* for failed deployments [4002](https://github.com/keptn/keptn/issues/4002)
+  - Improve status information in *Service screen* for failed deployments [4002](https://github.com/keptn/keptn/issues/4002)
   - Show instructions or link for triggering evaluations in stage [4055](https://github.com/keptn/keptn/issues/4055)
   - Mark currently selected stage using a color [3948](https://github.com/keptn/keptn/issues/3948)
   - Update *Service screen* on a regular basis [4049](https://github.com/keptn/keptn/issues/4049)
