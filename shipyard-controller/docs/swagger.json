@@ -1392,7 +1392,7 @@
                     "description": "events",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.KeptnContextExtendedCE"
+                        "$ref": "#/definitions/models.Event"
                     }
                 },
                 "nextPageKey": {
@@ -1404,7 +1404,7 @@
                     "type": "number"
                 },
                 "totalCount": {
-                    "description": "Total number of resources",
+                    "description": "Total number of events",
                     "type": "number"
                 }
             }
@@ -1559,18 +1559,22 @@
             "type": "object",
             "properties": {
                 "logs": {
+                    "description": "logs",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.LogEntry"
                     }
                 },
                 "nextPageKey": {
+                    "description": "Pointer to next page",
                     "type": "integer"
                 },
                 "pageSize": {
+                    "description": "Size of returned page",
                     "type": "integer"
                 },
                 "totalCount": {
+                    "description": "Total number of logs",
                     "type": "integer"
                 }
             }
@@ -1589,55 +1593,6 @@
                 },
                 "subscription": {
                     "$ref": "#/definitions/models.Subscription"
-                }
-            }
-        },
-        "models.KeptnContextExtendedCE": {
-            "type": "object",
-            "properties": {
-                "contenttype": {
-                    "description": "contenttype",
-                    "type": "string"
-                },
-                "data": {
-                    "description": "data\nRequired: true",
-                    "type": "object"
-                },
-                "extensions": {
-                    "description": "extensions",
-                    "type": "object"
-                },
-                "id": {
-                    "description": "id",
-                    "type": "string"
-                },
-                "shkeptncontext": {
-                    "description": "shkeptncontext",
-                    "type": "string"
-                },
-                "shkeptnspecversion": {
-                    "description": "shkeptnspecversion",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "source\nRequired: true",
-                    "type": "string"
-                },
-                "specversion": {
-                    "description": "specversion",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "time\nFormat: date-time",
-                    "type": "string"
-                },
-                "triggeredid": {
-                    "description": "triggeredid",
-                    "type": "string"
-                },
-                "type": {
-                    "description": "type\nRequired: true",
-                    "type": "string"
                 }
             }
         },
@@ -1681,9 +1636,6 @@
         "models.MetaData": {
             "type": "object",
             "properties": {
-                "deplyomentname": {
-                    "type": "string"
-                },
                 "distributorversion": {
                     "type": "string"
                 },
@@ -1697,9 +1649,6 @@
                     "$ref": "#/definitions/models.KubernetesMetaData"
                 },
                 "location": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
