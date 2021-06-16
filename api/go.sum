@@ -98,6 +98,7 @@ github.com/aws/aws-sdk-go v1.15.11/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZo
 github.com/aws/aws-sdk-go v1.27.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/aws/aws-sdk-go-v2 v0.18.0/go.mod h1:JWVYvqSMppoMJC0x5wdwiImzgXTI9FuZwxzkQq9wy+g=
+github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
@@ -500,6 +501,8 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/keptn/go-utils v0.8.4/go.mod h1:8cm/j/fPLl+qpSIDyyw5WVqT7W6W/ZlsAtMv8dLKtPU=
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4 h1:QxsmYD+FReY0JTHAAeiaNiMy+u+1c7ljZzPpYckuuQM=
 github.com/keptn/go-utils v0.8.5-0.20210526102329-8b22839909f4/go.mod h1://VAg14UZLtAbjvtPOW6qTWiZabWqOXhi5Kib56iN8I=
+github.com/keptn/go-utils v0.8.5-0.20210615142016-cf9d86bb9070 h1:BBouFvTrFLMSAC/yn7Dw4P1jRAvxhojnJLZiLIl+KZY=
+github.com/keptn/go-utils v0.8.5-0.20210615142016-cf9d86bb9070/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/keptn/kubernetes-utils v0.8.3-0.20210615105006-623444d0a098 h1:gcUhLWhwSYc3XZbU5MFCWo8Dhwog8mw+mUzQvHe9HFU=
 github.com/keptn/kubernetes-utils v0.8.3-0.20210615105006-623444d0a098/go.mod h1:DyljwSnd6RyScSOZiB0AxxcjZjpmhU7jhlZW7WqEM7o=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
