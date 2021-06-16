@@ -107,7 +107,7 @@ definitions:
       events:
         description: events
         items:
-          $ref: '#/definitions/models.KeptnContextExtendedCE'
+          $ref: '#/definitions/models.Event'
         type: array
       nextPageKey:
         description: Pointer to next page, base64 encoded
@@ -116,7 +116,7 @@ definitions:
         description: Size of returned page
         type: number
       totalCount:
-        description: Total number of resources
+        description: Total number of events
         type: number
     type: object
   models.ExpandedProject:
@@ -226,14 +226,18 @@ definitions:
   models.GetLogsResponse:
     properties:
       logs:
+        description: logs
         items:
           $ref: '#/definitions/models.LogEntry'
         type: array
       nextPageKey:
+        description: Pointer to next page
         type: integer
       pageSize:
+        description: Size of returned page
         type: integer
       totalCount:
+        description: Total number of logs
         type: integer
     type: object
   models.Integration:
@@ -246,50 +250,6 @@ definitions:
         type: string
       subscription:
         $ref: '#/definitions/models.Subscription'
-    type: object
-  models.KeptnContextExtendedCE:
-    properties:
-      contenttype:
-        description: contenttype
-        type: string
-      data:
-        description: |-
-          data
-          Required: true
-        type: object
-      extensions:
-        description: extensions
-        type: object
-      id:
-        description: id
-        type: string
-      shkeptncontext:
-        description: shkeptncontext
-        type: string
-      shkeptnspecversion:
-        description: shkeptnspecversion
-        type: string
-      source:
-        description: |-
-          source
-          Required: true
-        type: string
-      specversion:
-        description: specversion
-        type: string
-      time:
-        description: |-
-          time
-          Format: date-time
-        type: string
-      triggeredid:
-        description: triggeredid
-        type: string
-      type:
-        description: |-
-          type
-          Required: true
-        type: string
     type: object
   models.KubernetesMetaData:
     properties:
@@ -317,8 +277,6 @@ definitions:
     type: object
   models.MetaData:
     properties:
-      deplyomentname:
-        type: string
       distributorversion:
         type: string
       hostname:
@@ -328,8 +286,6 @@ definitions:
       kubernetesmetadata:
         $ref: '#/definitions/models.KubernetesMetaData'
       location:
-        type: string
-      status:
         type: string
     type: object
   models.Remediation:
