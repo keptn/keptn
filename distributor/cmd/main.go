@@ -85,7 +85,7 @@ func _main(env config.EnvConfig) int {
 	}()
 
 	if !env.DisableRegistration {
-		controlPlane := lib.NewControlPlane(connectionType, env)
+		controlPlane := lib.NewControlPlane(createUniformHandler(connectionType), lib.CreateRegistrationData(connectionType, env))
 		go func() {
 			retry.Retry(func() error {
 				id, err := controlPlane.Register()
@@ -99,7 +99,6 @@ func _main(env config.EnvConfig) int {
 				uniformLogger := lib.NewEventUniformLog(id, logHandler)
 				uniformLogger.Start(ctx, eventsChannel)
 				logger.Infof("Started UniformLogger for Keptn Integration")
-
 				return nil
 			})
 			for {
@@ -133,6 +132,13 @@ func _main(env config.EnvConfig) int {
 	wg.Wait()
 
 	return 0
+}
+
+func createUniformHandler(connectionType config.ConnectionType) *keptnapi.UniformHandler {
+	if connectionType == config.ConnectionTypeHTTP {
+		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	}
+	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL)
 }
 
 func createUniformLogHandler(connectionType config.ConnectionType) *keptnapi.LogHandler {

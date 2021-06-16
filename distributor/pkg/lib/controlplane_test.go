@@ -43,21 +43,20 @@ func TestControlPlaneRegister(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := ControlPlane{
-		UniformHandler: api.NewUniformHandler(server.URL),
-		EnvConfig: config.EnvConfig{
-			ProjectFilter:      "p-filter",
-			StageFilter:        "s-filter",
-			ServiceFilter:      "sv-filter",
-			Location:           "location",
-			DistributorVersion: "1.0",
-			Version:            "2.0",
-			K8sDeploymentName:  "k8s-deployment",
-			K8sNamespace:       "k8s-namespace",
-			K8sPodName:         "k8s-podname",
-			K8sNodeName:        "k8s-nodename",
-		},
+	envConfig := config.EnvConfig{
+		ProjectFilter:      "p-filter",
+		StageFilter:        "s-filter",
+		ServiceFilter:      "sv-filter",
+		Location:           "location",
+		DistributorVersion: "1.0",
+		Version:            "2.0",
+		K8sDeploymentName:  "k8s-deployment",
+		K8sNamespace:       "k8s-namespace",
+		K8sPodName:         "k8s-podname",
+		K8sNodeName:        "k8s-nodename",
 	}
+
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, envConfig))
 
 	id, err := controlPlane.Register()
 	assert.Nil(t, err)
@@ -75,10 +74,7 @@ func TestControlPlaneRegisterFails(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := ControlPlane{
-		UniformHandler: api.NewUniformHandler(server.URL),
-		EnvConfig:      config.EnvConfig{},
-	}
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
 	id, err := controlPlane.Register()
 	assert.NotNil(t, err)
 	assert.Equal(t, "", id)
@@ -95,10 +91,7 @@ func TestControlPlaneUnregister(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := ControlPlane{
-		UniformHandler: api.NewUniformHandler(server.URL),
-		EnvConfig:      config.EnvConfig{},
-	}
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
 	controlPlane.Register()
 	err := controlPlane.Unregister()
 	assert.Nil(t, err)
@@ -116,10 +109,7 @@ func TestControlPlaneUnregisterFails(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := ControlPlane{
-		UniformHandler: api.NewUniformHandler(server.URL),
-		EnvConfig:      config.EnvConfig{},
-	}
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
 	controlPlane.Register()
 	err := controlPlane.Unregister()
 	assert.NotNil(t, err)
@@ -132,10 +122,7 @@ func TestControlPlaneUnregisterWithoutPreviousRegister(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := ControlPlane{
-		UniformHandler: api.NewUniformHandler(server.URL),
-		EnvConfig:      config.EnvConfig{},
-	}
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
 	err := controlPlane.Unregister()
 	assert.NotNil(t, err)
 	assert.False(t, endpointInvoked)
