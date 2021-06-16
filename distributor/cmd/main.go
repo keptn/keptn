@@ -75,14 +75,6 @@ var externalAPIProxyMappings = map[string]string{
 	"/controlPlane":          "/controlPlane",
 }
 
-const (
-	defaultShipyardControllerBaseURL = "http://shipyard-controller:8080"
-	defaultEventsEndpoint            = defaultShipyardControllerBaseURL + "/v1/event/triggered"
-	connectionTypeNATS               = "nats"
-	connectionTypeHTTP               = "http"
-	defaultPollingInterval           = 10
-)
-
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
@@ -93,11 +85,11 @@ func main() {
 }
 
 func _main(env config.EnvConfig) int {
-	connectionType := getPubSubConnectionType()
+	connectionType := config.GetPubSubConnectionType(env)
 
 	// Prepare signal handling for graceful shutdown
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		<-c
@@ -105,11 +97,7 @@ func _main(env config.EnvConfig) int {
 	}()
 
 	if !env.DisableRegistration {
-		controlPlane := lib.ControlPlane{
-			UniformHandler: createUniformHandler(connectionType),
-			EnvConfig:      env,
-		}
-
+		controlPlane := lib.NewControlPlane(connectionType, env)
 		go retry.Retry(func() error {
 			id, err := controlPlane.Register()
 			if err != nil {
@@ -145,38 +133,22 @@ func _main(env config.EnvConfig) int {
 	return 0
 }
 
-func createUniformHandler(connectionType string) *keptnapi.UniformHandler {
-	if connectionType == connectionTypeHTTP {
-		return keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
-	}
-	return keptnapi.NewUniformHandler(defaultShipyardControllerBaseURL)
-}
-
-func createUniformLogHandler(connectionType string) *keptnapi.LogHandler {
-	if connectionType == connectionTypeHTTP {
+func createUniformLogHandler(connectionType config.ConnectionType) *keptnapi.LogHandler {
+	if connectionType == config.ConnectionTypeHTTP {
 		return keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
 	}
-	return keptnapi.NewLogHandler(defaultShipyardControllerBaseURL)
+	return keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
 }
 
-func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType string) {
+func startEventReceiver(ctx context.Context, waitGroup *sync.WaitGroup, connectionType config.ConnectionType) {
 	defer waitGroup.Done()
 	setupCEClient()
 
-	if connectionType == connectionTypeHTTP {
+	if connectionType == config.ConnectionTypeHTTP {
 		createHTTPConnection(ctx)
 	} else {
 		createNATSClientConnection(ctx)
 	}
-}
-
-func getPubSubConnectionType() string {
-	if env.KeptnAPIEndpoint == "" {
-		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
-		return connectionTypeNATS
-	}
-	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
-	return connectionTypeHTTP
 }
 
 func startAPIProxy(ctx context.Context, wg *sync.WaitGroup, env config.EnvConfig) (err error) {
@@ -470,7 +442,7 @@ func createHTTPConnection(ctx context.Context) {
 
 	pollingInterval, err := strconv.ParseInt(env.HTTPPollingInterval, 10, 64)
 	if err != nil {
-		pollingInterval = defaultPollingInterval
+		pollingInterval = config.DefaultPollingInterval
 	}
 
 	pollingTicker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
@@ -489,7 +461,7 @@ func getHTTPPollingEndpoint() string {
 	endpoint := env.KeptnAPIEndpoint
 	if endpoint == "" {
 		if endpoint == "" {
-			return defaultEventsEndpoint
+			return config.DefaultEventsEndpoint
 		}
 	} else {
 		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
@@ -760,7 +732,7 @@ func sendEvent(event cloudevents.Event) error {
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
-	ctx = cloudevents.ContextWithTarget(ctx, getPubSubRecipientURL())
+	ctx = cloudevents.ContextWithTarget(ctx, config.GetPubSubRecipientURL(env))
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
@@ -770,18 +742,4 @@ func sendEvent(event cloudevents.Event) error {
 	}
 	fmt.Printf("sent: %s\n", event.ID())
 	return nil
-}
-
-func getPubSubRecipientURL() string {
-	recipientService := env.PubSubRecipient
-
-	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
-		recipientService = "http://" + recipientService
-	}
-
-	path := ""
-	if env.PubSubRecipientPath != "" {
-		path = "/" + strings.TrimPrefix(env.PubSubRecipientPath, "/")
-	}
-	return recipientService + ":" + env.PubSubRecipientPort + path
 }

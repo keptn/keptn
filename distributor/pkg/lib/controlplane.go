@@ -11,9 +11,27 @@ import (
 
 type ControlPlane struct {
 	UniformHandler *api.UniformHandler
+	ConnectionType config.ConnectionType
 	EnvConfig      config.EnvConfig
 	currentID      string
 	mux            sync.Mutex
+}
+
+func NewControlPlane(connectionType config.ConnectionType, env config.EnvConfig) *ControlPlane {
+	var uniformHandler *api.UniformHandler
+	if connectionType == config.ConnectionTypeHTTP {
+		uniformHandler = api.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+	} else {
+		uniformHandler = api.NewUniformHandler(config.DefaultShipyardControllerBaseURL)
+	}
+
+	return &ControlPlane{
+		UniformHandler: uniformHandler,
+		ConnectionType: connectionType,
+		EnvConfig:      env,
+		currentID:      "",
+		mux:            sync.Mutex{},
+	}
 }
 
 func (c *ControlPlane) Register() (string, error) {
@@ -49,13 +67,20 @@ func (c *ControlPlane) getRegistrationDataFromEnv() models.Integration {
 	} else {
 		topics = strings.Split(c.EnvConfig.PubSubTopic, ",")
 	}
+
+	var location string
+	if c.EnvConfig.Location == "" {
+		location = config.ConnectionTypeToLocation[c.ConnectionType]
+	} else {
+		location = c.EnvConfig.Location
+	}
 	return models.Integration{
 		Name: c.EnvConfig.K8sDeploymentName,
 		MetaData: models.MetaData{
 			Hostname:           c.EnvConfig.K8sNodeName,
 			IntegrationVersion: c.EnvConfig.Version,
 			DistributorVersion: c.EnvConfig.DistributorVersion,
-			Location:           c.EnvConfig.Location,
+			Location:           location,
 			KubernetesMetaData: models.KubernetesMetaData{
 				Namespace:      c.EnvConfig.K8sNamespace,
 				PodName:        c.EnvConfig.K8sPodName,

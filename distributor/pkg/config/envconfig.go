@@ -1,5 +1,7 @@
 package config
 
+import "strings"
+
 type EnvConfig struct {
 	KeptnAPIEndpoint    string `envconfig:"KEPTN_API_ENDPOINT" default:""`
 	KeptnAPIToken       string `envconfig:"KEPTN_API_TOKEN" default:""`
@@ -24,4 +26,27 @@ type EnvConfig struct {
 	K8sNamespace        string `envconfig:"K8S_NAMESPACE" default:""`
 	K8sPodName          string `envconfig:"K8S_POD_NAME" default:""`
 	K8sNodeName         string `envconfig:"K8S_NODE_NAME" default:""`
+}
+
+func GetPubSubConnectionType(env EnvConfig) ConnectionType {
+	if env.KeptnAPIEndpoint == "" {
+		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
+		return ConnectionTypeNATS
+	}
+	// if a Keptn API URL has been defined, this means that the distributor runs outside of the Keptn cluster -> therefore no NATS connection is possible
+	return ConnectionTypeHTTP
+}
+
+func GetPubSubRecipientURL(env EnvConfig) string {
+	recipientService := env.PubSubRecipient
+
+	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
+		recipientService = "http://" + recipientService
+	}
+
+	path := ""
+	if env.PubSubRecipientPath != "" {
+		path = "/" + strings.TrimPrefix(env.PubSubRecipientPath, "/")
+	}
+	return recipientService + ":" + env.PubSubRecipientPort + path
 }

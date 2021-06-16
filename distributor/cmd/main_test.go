@@ -120,7 +120,7 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 			env = config.EnvConfig{}
 			_ = envconfig.Process("", &env)
 
-			got := getPubSubRecipientURL()
+			got := config.GetPubSubRecipientURL(env)
 			if got != tt.want {
 				t.Errorf("getPubSubRecipientURL() got = %v, want1 %v", got, tt.want)
 			}
