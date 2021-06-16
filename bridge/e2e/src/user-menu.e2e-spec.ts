@@ -19,15 +19,10 @@ describe('User Menu', () => {
     ).click();
 
     await element(
-      by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[3]/button')
+      by.xpath('//*[@uitestid="keptn-nav-copyKeptnAuthCommand"]/ktb-copy-to-clipboard/div/div[3]/button')
     ).click();
 
-    takeScreenshot('user-menu-open-with-api-token-revealed.png');
-
-    const apiToken = process.env.KEPTN_API_TOKEN;
-    const val = await element(by.xpath('//*[@uitestid="keptn-nav-copyKeptnApiToken"]/ktb-copy-to-clipboard/div/div[2]/dt-copy-to-clipboard/div/input')).getAttribute('value');
-
-    await expect(val).toEqual(apiToken);
+    takeScreenshot('user-menu-open-with-api-command-revealed.png');
   });
 
   afterEach(async () => {
