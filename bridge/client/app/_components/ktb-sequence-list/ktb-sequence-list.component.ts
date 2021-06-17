@@ -68,13 +68,15 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   }
 
   public getTraceMessage(trace: Trace): string {
-    let message;
+    let message = '';
     const finishedEvent = trace.getFinishedEvent();
     if (finishedEvent?.data.message) {
       message = finishedEvent.data.message;
     } else {
       const failedEvent = trace.findTrace(t => t.data.result === ResultTypes.FAILED);
-      message = `${failedEvent.source} ${!failedEvent.isFinished() && !failedEvent.isChanged() ? 'started' : failedEvent.isChanged() ? 'changed' : failedEvent.isFinished() ? `finished with result ${failedEvent.data.result}` : ''}`;
+      if (failedEvent) {
+        message = `${failedEvent.source} ${!failedEvent.isFinished() && !failedEvent.isChanged() ? 'started' : failedEvent.isChanged() ? 'changed' : failedEvent.isFinished() ? `finished with result ${failedEvent.data.result}` : ''}`;
+      }
     }
     return message;
   }
