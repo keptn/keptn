@@ -17,6 +17,9 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
+  public currentSecret: Secret;
+
+  public deleteSecretDialogState: string | null;
 
   constructor(private dataService: DataService, private route: ActivatedRoute, private _changeDetectorRef: ChangeDetectorRef) {
   }
@@ -28,14 +31,28 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
       });
   }
 
+  triggerDeleteSecret(secret) {
+    this.currentSecret = secret;
+    this.deleteSecretDialogState = 'confirm';
+  }
+
   deleteSecret(secret) {
+    this.deleteSecretDialogState = 'deleting';
     this.dataService.deleteSecret(secret.name, secret.scope)
       .subscribe((result) => {
+        this.deleteSecretDialogState = 'success';
+        setTimeout(() =>{
+          this.closeConfirmationDialog();
+        }, 2000);
         this.dataService.getSecrets()
           .subscribe((secrets) => {
             this.tableEntries.data = secrets;
           });
       });
+  }
+
+  closeConfirmationDialog() {
+    this.deleteSecretDialogState = null;
   }
 
   ngOnDestroy(): void {
