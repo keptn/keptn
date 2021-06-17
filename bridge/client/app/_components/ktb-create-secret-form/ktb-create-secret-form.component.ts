@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {DataService} from '../../_services/data.service';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Secret} from "../../_models/secret";
 
@@ -19,7 +19,7 @@ export class KtbCreateSecretFormComponent implements OnInit {
   };
   public createSecretForm = new FormGroup(this.defaultFormControls);
 
-  constructor(private dataService: DataService, private router: Router) { }
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.secret = new Secret();
@@ -32,7 +32,7 @@ export class KtbCreateSecretFormComponent implements OnInit {
       this.dataService.addSecret(this.secret)
         .subscribe((result) => {
           this.isLoading = false;
-          this.router.navigate(['../secrets']);
+          this.router.navigate(['../'], { relativeTo: this.route });
         });
     }
   }
