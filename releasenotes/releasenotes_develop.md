@@ -1,4 +1,4 @@
-# Release Notes develop
+# Release Notes 0.8.4
 
 *Gain visibility into the integrations connected to Keptn* - Keptn 0.8.4 starts to implement the Uniform mockup that has been released/presented with Keptn 0.8.1. This new Bridge screen brings insights into the Keptn-services (aka Integrations) that are connected to a Keptn control-plane, allows troubleshooting by retrieving their error logs, and enables creating/deleting secrets for integrations.
 
