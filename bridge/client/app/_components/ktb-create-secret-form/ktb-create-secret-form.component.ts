@@ -14,8 +14,11 @@ export class KtbCreateSecretFormComponent implements OnInit {
   public isLoading: Boolean = false;
   public secret: Secret = null;
 
+  public secretNamePattern = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
+  public secretKeyPattern = "[-._a-zA-Z0-9]+";
+
   public defaultFormControls: {} = {
-    name: new FormControl('', [Validators.required])
+    name: new FormControl('', [Validators.required, Validators.pattern(this.secretNamePattern)])
   };
   public createSecretForm = new FormGroup(this.defaultFormControls);
 
@@ -26,7 +29,7 @@ export class KtbCreateSecretFormComponent implements OnInit {
     this.addPair();
   }
 
-  createSecret() {
+  public createSecret() {
     if(this.createSecretForm.valid) {
       this.isLoading = true;
       this.dataService.addSecret(this.secret)
@@ -39,16 +42,20 @@ export class KtbCreateSecretFormComponent implements OnInit {
     }
   }
 
-  addPair() {
+  public addPair() {
     this.secret.addData();
-    this.createSecretForm.addControl('key'+this.secret.data.length, new FormControl('', [Validators.required]));
+    this.createSecretForm.addControl('key'+this.secret.data.length, new FormControl('', [Validators.required, Validators.pattern(this.secretKeyPattern)]));
     this.createSecretForm.addControl('value'+this.secret.data.length, new FormControl('', [Validators.required]));
   }
 
-  removePair(index) {
+  public removePair(index) {
     this.secret.removeData(index);
     this.createSecretForm.removeControl('key'+(index+1));
     this.createSecretForm.removeControl('value'+(index+1));
+  }
+
+  public getFormControl(controlName) {
+    return this.createSecretForm.get(controlName);
   }
 
 }
