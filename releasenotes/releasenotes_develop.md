@@ -1,18 +1,20 @@
 # Release Notes develop
 
-Keptn 0.8.4 starts to implement the Uniform mockup that has been released/presented with Keptn 0.8.1. This new Bridge screen brings visibility into the Keptn-services (aka Integrations) that are connected to a Keptn, allows troubleshooting Keptn-services by retrieving their error logs, and enables creating/deleting secrets for integrations.
+*Gain visibility into the integrations connected to Keptn* - Keptn 0.8.4 starts to implement the Uniform mockup that has been released/presented with Keptn 0.8.1. This new Bridge screen brings insights into the Keptn-services (aka Integrations) that are connected to a Keptn control-plane, allows troubleshooting by retrieving their error logs, and enables creating/deleting secrets for integrations.
 
 ---
 
 **Key announcements:**
 
-:tada: *Troubleshooting support for Keptn-service (aka. Integration)*: To support troubleshooting Keptn-services (aka Integrations) without connecting to the environment that runs the Keptn-service, errors are sent to Keptn and displayed in the Uniform screen of a project.
+:tada: *Troubleshooting support for Integration*: To support troubleshooting integrations without connecting to the environment that runs them, errors are sent to Keptn and displayed in the Uniform screen of a project.
 
-:star: *Creating/Deleting Secrets for Integrations*: To not rely on the Keptn CLI to manage a secret for integrations, the Bridge allows creating/deleting secrets. This is supported for Keptn-services that are running on a Keptn control-plane since the public Keptn API does yet not allow querying secrets.  
+:star: *Creating/Deleting Secrets for Integrations*: To not rely on the Keptn CLI to manage a secret for integrations, the Bridge allows creating/deleting secrets. This is supported for integrations that are running on a Keptn control-plane since the public Keptn API does yet not allow querying secrets.  
 
 :rocket: *Customization of Bridge*: With this release, the Keptn Bridge can get a custom *look-and-feel* by providing a custom logo, title, and/or stylesheet. More details on this feature are available [here](https://github.com/keptn/keptn/tree/0.8.4/bridge#custom-look-and-feel).
 
 ---
+
+*Note*: If you are a maintainer of an Integration that is hosted on [github.com/keptn-contrib](https://github.com/keptn-contrib) or [github.com/keptn-sandbox](https://github.com/keptn-sandbox), you will receive an issue explaining how to upgrade your integration; especially, the distributor. With this upgrade, your integration will then benefit from the new feature and will be displayed in the Bridge.  
 
 ## Keptn Enhancement Proposals
 
@@ -72,6 +74,9 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - *lighthouse-service*:
   - *Fixed*: "Response time degradation in lighthouse-service" when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
 
+- *remediation-service*:
+  - *Fixed*: Remediation-service lost fallback to `problem type: default` [4254](https://github.com/keptn/keptn/issues/4254)
+
 - *shipyard-controller*: 
   - Define Uniform backend data model [4033](https://github.com/keptn/keptn/issues/4033)
   - *Fixed*: Keptn 0.8.3 shows that it uses specversion 0.2.1 instead of 0.2.2 [4192](https://github.com/keptn/keptn/issues/4192)
@@ -85,6 +90,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
 - *Enhancements:*
+  - List, create and delete Secrets [4062](https://github.com/keptn/keptn/issues/4062)
   - Bridge downloads and uses customized look and feel on startup [4095](https://github.com/keptn/keptn/issues/4095)
   - Environment layout improvement for service versions [4006](https://github.com/keptn/keptn/issues/4006)
   - Show *Uniform screen* with data fetched from Uniform Backend [4034](https://github.com/keptn/keptn/issues/4034)
@@ -132,7 +138,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
   <!--TODO: final check-->
-  - Remediation-service lost fallback to `problem type: default` [4254](https://github.com/keptn/keptn/issues/4254)
+  - Shipyard-controller and Bridge run into errors when using an `image` object for a configuration change [4348](https://github.com/keptn/keptn/issues/4348)
   - Installing/Upgrading Keptn in an air-gapped environment does not work for `configuration-service` and `nats` [4183](https://github.com/keptn/keptn/issues/4183)
   - Selected service is not reset on project change [4166](https://github.com/keptn/keptn/issues/4166)
   - *Response time degradation in configuration-service* when using a Git Upstream (e.g., GitHub) [4066](https://github.com/keptn/keptn/issues/4066)
