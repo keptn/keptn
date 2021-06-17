@@ -23,9 +23,9 @@ require (
 	helm.sh/helm/v3 v3.6.0
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
-	k8s.io/cli-runtime v0.21.0
+	k8s.io/cli-runtime v0.21.1
 	k8s.io/client-go v0.21.1
-	k8s.io/kubectl v0.21.0
+	k8s.io/kubectl v0.21.1
 )
 
 // required as per https://github.com/helm/helm/issues/9354
