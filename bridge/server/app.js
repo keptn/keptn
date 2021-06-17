@@ -196,7 +196,7 @@ module.exports = (async function (){
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     // render the error page
-    res.status(err.status || 500).send(err);
+    res.status(err.status || 500).send(err.message);
     console.error(err);
     // res.json(err);
   });
