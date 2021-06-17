@@ -145,14 +145,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           maxElements = (document.querySelector('dt-chart')?.clientWidth || labelWidth) / labelWidth,
           tick = Math.floor(xMax / maxElements) || 1;
 
-        for (let i = xMax; i > xMin; i -= tick) {
+        for (let i = xMax; i >= xMin; i -= tick) {
           positions.push(i);
-        }
-        if(positions[positions.length-1] - tick < xMin){ //if the second item is too near to the first one, remove the second one
-          positions[positions.length-1] = xMin;
-        }
-        else {
-          positions.push(xMin);
         }
         return positions;
       }
