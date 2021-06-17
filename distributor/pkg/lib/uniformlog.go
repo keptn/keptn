@@ -59,7 +59,7 @@ func (l *EventUniformLog) OnEvent(event cloudevents.Event) error {
 
 		taskName, _, _ := keptnv2.ParseTaskEventType(*keptnEvent.Type)
 
-		if eventData.Status == keptnv2.StatusErrored {
+		if eventData.Status == keptnv2.StatusErrored || eventData.Result == keptnv2.ResultFailed {
 			logger.Info("UniformLogger: received .finished event with status errored. forwarding log message to log ingestion API")
 			l.Log(keptnapimodels.LogEntry{
 				IntegrationID: l.IntegrationID,
