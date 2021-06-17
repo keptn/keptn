@@ -108,6 +108,7 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 		for _, r := range remediation.Spec.Remediations {
 			if r.ProblemType == "default" {
 				actions = r.ActionsOnOpen
+				break
 			}
 		}
 	}
