@@ -10,17 +10,23 @@ import (
 )
 
 type ControlPlane struct {
-	UniformHandler *api.UniformHandler
-	EnvConfig      config.EnvConfig
-	currentID      string
-	mux            sync.Mutex
+	sync.Mutex
+	uniformHandler  *api.UniformHandler
+	currentID       string
+	integrationData models.Integration
+}
+
+func NewControlPlane(uniformHandler *api.UniformHandler, integrationData models.Integration) *ControlPlane {
+	return &ControlPlane{
+		uniformHandler:  uniformHandler,
+		integrationData: integrationData,
+	}
 }
 
 func (c *ControlPlane) Register() (string, error) {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-	data := c.getRegistrationDataFromEnv()
-	id, err := c.UniformHandler.RegisterIntegration(data)
+	c.Lock()
+	defer c.Unlock()
+	id, err := c.uniformHandler.RegisterIntegration(c.integrationData)
 	if err != nil {
 		return "", err
 	}
@@ -29,12 +35,12 @@ func (c *ControlPlane) Register() (string, error) {
 }
 
 func (c *ControlPlane) Unregister() error {
-	c.mux.Lock()
-	defer c.mux.Unlock()
+	c.Lock()
+	defer c.Unlock()
 	if c.currentID == "" {
 		return fmt.Errorf("tried to unregister integration without being registered first")
 	}
-	err := c.UniformHandler.UnregisterIntegration(c.currentID)
+	err := c.uniformHandler.UnregisterIntegration(c.currentID)
 	if err != nil {
 		return err
 	}
@@ -42,34 +48,40 @@ func (c *ControlPlane) Unregister() error {
 	return nil
 }
 
-func (c *ControlPlane) getRegistrationDataFromEnv() models.Integration {
+func CreateRegistrationData(connectionType config.ConnectionType, env config.EnvConfig) models.Integration {
 	var topics []string
-	if c.EnvConfig.PubSubTopic == "" {
+	if env.PubSubTopic == "" {
 		topics = []string{}
 	} else {
-		topics = strings.Split(c.EnvConfig.PubSubTopic, ",")
+		topics = strings.Split(env.PubSubTopic, ",")
+	}
+
+	var location string
+	if env.Location == "" {
+		location = config.ConnectionTypeToLocation[connectionType]
+	} else {
+		location = env.Location
 	}
 	return models.Integration{
-		Name: c.EnvConfig.K8sDeploymentName,
+		Name: env.K8sDeploymentName,
 		MetaData: models.MetaData{
-			Hostname:           c.EnvConfig.K8sNodeName,
-			IntegrationVersion: c.EnvConfig.Version,
-			DistributorVersion: c.EnvConfig.DistributorVersion,
-			Location:           c.EnvConfig.Location,
+			Hostname:           env.K8sNodeName,
+			IntegrationVersion: env.Version,
+			DistributorVersion: env.DistributorVersion,
+			Location:           location,
 			KubernetesMetaData: models.KubernetesMetaData{
-				Namespace:      c.EnvConfig.K8sNamespace,
-				PodName:        c.EnvConfig.K8sPodName,
-				DeploymentName: c.EnvConfig.K8sDeploymentName,
+				Namespace:      env.K8sNamespace,
+				PodName:        env.K8sPodName,
+				DeploymentName: env.K8sDeploymentName,
 			},
 		},
 		Subscription: models.Subscription{
 			Topics: topics,
 			Filter: models.SubscriptionFilter{
-				Project: c.EnvConfig.ProjectFilter,
-				Stage:   c.EnvConfig.StageFilter,
-				Service: c.EnvConfig.ServiceFilter,
+				Project: env.ProjectFilter,
+				Stage:   env.StageFilter,
+				Service: env.ServiceFilter,
 			},
 		},
 	}
-
 }

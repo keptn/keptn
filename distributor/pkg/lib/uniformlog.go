@@ -28,7 +28,7 @@ func NewEventUniformLog(integrationID string, logHandler keptn.ILogHandler) *Eve
 }
 
 func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudevents.Event) {
-	logger.Info("starting UniformLog")
+	logger.Info("Starting UniformLog")
 	l.logHandler.Start(ctx)
 	go func() {
 		for {
@@ -39,9 +39,9 @@ func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudeven
 					logger.Errorf("could not handle event: %s", err.Error())
 				}
 			case <-ctx.Done():
-				logger.Info("closing UniformLogger")
+				logger.Info("Closing UniformLogger")
+				return
 			}
-
 		}
 	}()
 }
