@@ -19,6 +19,7 @@ import {SequenceResult} from '../_models/sequence-result';
 import {Project} from '../_models/project';
 import {UniformRegistration} from "../_models/uniform-registration";
 import {UniformRegistrationLogResponse} from "../_models/uniform-registration-log";
+import {Secret} from "../_models/secret";
 
 @Injectable({
   providedIn: 'root'
@@ -118,6 +119,25 @@ export class ApiService {
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLogResponse> {
     const url = `${this._baseUrl}/controlPlane/v1/log?integrationId=${uniformRegistrationId}&pageSize=${pageSize}`;
     return this.http.get<UniformRegistrationLogResponse>(url);
+  }
+
+  public getSecrets(): Observable<Secret[]> {
+    const url = `${this._baseUrl}/secrets/v1/secret`;
+    return this.http.get<any>(url)
+      .pipe(
+        map(res => res.Secrets),
+        map(secrets => secrets.map(secret => Secret.fromJSON(secret)))
+      );
+  }
+
+  public addSecret(secret): Observable<object> {
+    const url = `${this._baseUrl}/secrets/v1/secret`;
+    return this.http.post<any>(url, secret);
+  }
+
+  public deleteSecret(name, scope): Observable<object> {
+    const url = `${this._baseUrl}/secrets/v1/secret?name=${name}&scope=${scope}`;
+    return this.http.delete<any>(url);
   }
 
   public getMetadata(): Observable<Metadata> {

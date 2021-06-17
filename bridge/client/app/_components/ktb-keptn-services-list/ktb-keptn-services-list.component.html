@@ -1,50 +1,72 @@
-<dt-loading-spinner *ngIf="!uniformRegistrations"></dt-loading-spinner>
+<div fxFlexFill fxLayout="column" class="container">
+  <div fxLayout="column" fxFlex="0 0 60%" class="overflow-y-scroll">
+    <dt-loading-spinner *ngIf="!uniformRegistrations.data"></dt-loading-spinner>
 
-<div *ngIf="uniformRegistrations && uniformRegistrations.length === 0">
-  No integrations available.
-</div>
+    <div *ngIf="uniformRegistrations.data && uniformRegistrations.data.length === 0">
+      No integrations available.
+    </div>
 
-<dt-table [dataSource]="tableEntries" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations && uniformRegistrations.length > 0">
-  <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
-    <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.name || 'n/a'"></dt-cell>
-  </ng-container>
+    <dt-table [dataSource]="uniformRegistrations" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0">
+      <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
+        <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="row.name || 'n/a'"></dt-cell>
+      </ng-container>
 
-  <ng-container dtColumnDef="version" dtColumnAlign="text" dtColumnProportion="2">
-    <dt-header-cell *dtHeaderCellDef>Version</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.metadata.integrationversion || 'n/a'"></dt-cell>
-  </ng-container>
+      <ng-container dtColumnDef="version" dtColumnAlign="text" dtColumnProportion="2">
+        <dt-header-cell *dtHeaderCellDef>Version</dt-header-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.integrationversion || 'n/a'"></dt-cell>
+      </ng-container>
 
-  <ng-container dtColumnDef="host" dtColumnAlign="text" dtColumnProportion="3" >
-    <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.metadata.hostname || 'n/a'"></dt-cell>
-  </ng-container>
+      <ng-container dtColumnDef="host" dtColumnAlign="text" dtColumnProportion="3" >
+        <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.hostname || 'n/a'"></dt-cell>
+      </ng-container>
 
-  <ng-container dtColumnDef="namespace" dtColumnAlign="text" dtColumnProportion="2">
-    <dt-header-cell dt-sort-header *dtHeaderCellDef>Namespace</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.metadata.kubernetesmetadata.namespace || 'n/a'"></dt-cell>
-  </ng-container>
+      <ng-container dtColumnDef="namespace" dtColumnAlign="text" dtColumnProportion="2">
+        <dt-header-cell dt-sort-header *dtHeaderCellDef>Namespace</dt-header-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.kubernetesmetadata.namespace || 'n/a'"></dt-cell>
+      </ng-container>
 
-  <ng-container dtColumnDef="location" dtColumnAlign="text" dtColumnProportion="2">
-    <dt-header-cell dt-sort-header *dtHeaderCellDef>Location</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="row.metadata.location || 'n/a'"></dt-cell>
-  </ng-container>
+      <ng-container dtColumnDef="location" dtColumnAlign="text" dtColumnProportion="2">
+        <dt-header-cell dt-sort-header *dtHeaderCellDef>Location</dt-header-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.location || 'n/a'"></dt-cell>
+      </ng-container>
 
-  <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
-    <dt-header-cell *dtHeaderCellDef>Active Subscriptions</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [innerHtml]="row.subscription.topics ? formatSubscriptions(row.subscription.topics) : 'n/a'"></dt-cell>
-  </ng-container>
+      <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
+        <dt-header-cell *dtHeaderCellDef>Active Subscriptions</dt-header-cell>
+        <dt-cell *dtCellDef="let row" [innerHtml]="row.subscription.topics ? formatSubscriptions(row.subscription.topics) : 'n/a'"></dt-cell>
+      </ng-container>
 
-  <dt-header-row
-    *dtHeaderRowDef="['name', 'version', 'host', 'namespace', 'location', 'subscription']"
-  ></dt-header-row>
-  <dt-row
-    *dtRowDef="
+      <dt-header-row
+        *dtHeaderRowDef="['name', 'version', 'host', 'namespace', 'location', 'subscription']"
+      ></dt-header-row>
+      <dt-row
+        *dtRowDef="
           let row;
           columns: ['name', 'version', 'host', 'namespace', 'location', 'subscription']
         "
-    class="pointer"
-    [class.active]="selectedService === row"
-    (click)="setSelectedService(row)"
-  ></dt-row>
-</dt-table>
+        class="pointer"
+        [class.active]="selectedUniformRegistration === row"
+        (click)="setSelectedUniformRegistration(row)"
+      ></dt-row>
+    </dt-table>
+  </div>
+  <div fxLayout="column" fxFlex="0 0 40%">
+    <div class="no-integration-selected p-3 mt-3" fxLayout="row" *ngIf="!selectedUniformRegistration">
+      <dt-icon class="event-icon info mr-1" name="information"></dt-icon>
+      Select an integration to show error logs
+    </div>
+
+    <ng-container *ngIf="selectedUniformRegistration">
+      <h3 class="mt-3 mb-0"><span class="mr-1 bold" [textContent]="selectedUniformRegistration.name"></span></h3>
+      <h3 class="mt-1">Error Logs</h3>
+
+      <dt-loading-spinner *ngIf="isLoadingLogs"></dt-loading-spinner>
+
+      <div fxLayout="column" class="overflow-y-scroll" *ngIf="!isLoadingLogs">
+        <ktb-uniform-registration-logs [projectName]="projectName"
+                                       [logs]="uniformRegistrationLogs$ | async"></ktb-uniform-registration-logs>
+      </div>
+    </ng-container>
+  </div>
+</div>

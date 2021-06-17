@@ -10,6 +10,9 @@ import {KtbSettingsViewComponent} from './_views/ktb-settings-view/ktb-settings-
 import {KtbServiceViewComponent} from './_views/ktb-service-view/ktb-service-view.component';
 import {KtbSequenceViewComponent} from './_views/ktb-sequence-view/ktb-sequence-view.component';
 import {KtbEnvironmentViewComponent} from './_views/ktb-environment-view/ktb-environment-view.component';
+import {KtbKeptnServicesListComponent} from "./_components/ktb-keptn-services-list/ktb-keptn-services-list.component";
+import {KtbSecretsListComponent} from "./_components/ktb-secrets-list/ktb-secrets-list.component";
+import {KtbCreateSecretFormComponent} from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always'
@@ -20,7 +23,12 @@ const routes: Routes = [
   {path: 'dashboard', component: DashboardComponent},
   {path: 'project/:projectName', component: ProjectBoardComponent, children: [
       {path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent},
-      {path: 'uniform', component: KtbUniformViewComponent},
+      {path: 'uniform', component: KtbUniformViewComponent, children: [
+          {path: 'services', component: KtbKeptnServicesListComponent},
+          {path: 'secrets', component: KtbSecretsListComponent},
+          {path: 'secrets/add', component: KtbCreateSecretFormComponent},
+          {path: '', pathMatch: 'full', redirectTo: 'services'}
+      ]},
       {path: 'integration', component: KtbIntegrationViewComponent},
       {path: 'settings', component: KtbSettingsViewComponent},
       {path: 'service', component: KtbServiceViewComponent},

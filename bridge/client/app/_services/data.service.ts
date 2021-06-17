@@ -16,6 +16,7 @@ import {Deployment} from '../_models/deployment';
 import {Sequence} from '../_models/sequence';
 import {UniformRegistration} from "../_models/uniform-registration";
 import {UniformRegistrationLog} from "../_models/uniform-registration-log";
+import {Secret} from "../_models/secret";
 
 @Injectable({
   providedIn: 'root'
@@ -94,6 +95,20 @@ export class DataService {
     return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize).pipe(
       map((response) => response.logs)
     );
+  }
+
+  public getSecrets(): Observable<Secret[]> {
+    return this.apiService.getSecrets();
+  }
+
+  public addSecret(secret: Secret): Observable<object> {
+    return this.apiService.addSecret(Object.assign({}, secret, {
+      data: secret.data.reduce((result, item) => Object.assign(result, {[item.key]: item.value}), {})
+    }));
+  }
+
+  public deleteSecret(name, scope): Observable<object> {
+    return this.apiService.deleteSecret(name, scope);
   }
 
   public getRootsLastUpdated(project: Project): Date {
