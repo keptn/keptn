@@ -1056,12 +1056,44 @@ jobs:
         id: deploy_keptn_with_keptn
         run: |
           KEPTN_HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
+          KEPTN_INGRESS_TEMPLATE_FILENAME=test/assets/keptn-on-keptn/ingress.yaml
+          ENDPOINTS_TEMPLATE_BASE_PATH=test/assets/keptn-on-keptn
           HELM_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/helm-service*.tgz | head -1)
           JMETER_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/jmeter-service*.tgz | head -1)
 
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${KEPTN_HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=helm-service --all-stages --resource=${HELM_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/helm-service.tgz
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=jmeter-service --all-stages --resource=${JMETER_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/jmeter-service.tgz
+
+          stages=('dev' 'hardening' 'production')
+          services=('keptn' 'helm-service' 'jmeter-service')
+          for SERVICE in "${services[@]}"
+          do
+            for STAGE in "${stages[@]}"
+            do
+              export SERVICE
+              export STAGE
+              envsubst < ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}.yaml > ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}-${STAGE}.yaml
+              keptn add-resource \
+                --project=${{ env.META_KEPTN_KEPTN_PROJECT }} \
+                --service=${SERVICE} \
+                --stage=${STAGE} \
+                --resource=${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}-${STAGE}.yaml \
+                --resourceUri=helm/endpoints.yaml
+            done
+          done
+
+          for STAGE in "${stages[@]}"
+          do
+            export STAGE
+            envsubst < ${KEPTN_INGRESS_TEMPLATE_FILENAME} > ${ENDPOINTS_TEMPLATE_BASE_PATH}/ingress-${STAGE}.yaml
+            keptn add-resource \
+              --project=${{ env.META_KEPTN_KEPTN_PROJECT }} \
+              --service=keptn \
+              --stage=${STAGE} \
+              --resource=${ENDPOINTS_TEMPLATE_BASE_PATH}/ingress-${STAGE}.yaml \
+              --resourceUri=helm/keptn/templates/ingress.yaml
+          done
 
       - name: Trigger Keptn Control Plane Delivery
         id: trigger-keptn-control-plane-delivery
@@ -1072,10 +1104,6 @@ jobs:
           event: |
             {
               "data": {
-                "deployment": {
-                  "deploymentURIsLocal": ["http://api-gateway-nginx.keptn-dev"],
-                  "deploymentstrategy": "user_managed"
-                },
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
                 "result": "",
@@ -1101,10 +1129,6 @@ jobs:
           event: |
             {
               "data": {
-                "deployment": {
-                  "deploymentURIsLocal": ["http://keptn-dev-helm-service.keptn-dev:8080"],
-                  "deploymentstrategy": "user_managed"
-                },
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
                 "result": "",
@@ -1130,10 +1154,6 @@ jobs:
           event: |
             {
               "data": {
-                "deployment": {
-                  "deploymentURIsLocal": ["http://keptn-dev-jmeter-service.keptn-dev:8080"],
-                  "deploymentstrategy": "user_managed"
-                },
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
                 "result": "",

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  name: api-keptn-ingress
+spec:
+  rules:
+    - host: &host $STAGE.keptn-on.keptn.sh
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-nginx
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - *host
+      secretName: api-keptn-ingress-cert
