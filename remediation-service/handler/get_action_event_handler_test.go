@@ -143,9 +143,24 @@ func TestGetNextAction(t *testing.T) {
 			false,
 		},
 		{
-			"determine action - not found",
+			"determine action - not found - Default",
 			args{
 				newRemediation("test/remediation.yaml"),
+				newProblemDetails("", ""),
+				0,
+			},
+			&keptnv2.ActionInfo{
+				Name:        "escalateDefaultName",
+				Action:      "escalateDefaultAction",
+				Description: "escalateDefaultDescription",
+				Value:       map[string]interface{}{"foo": "bar"},
+			},
+			false,
+		},
+		{
+			"determine action - not found - no Default",
+			args{
+				newRemediation("test/remediation-without-default.yaml"),
 				newProblemDetails("", ""),
 				0,
 			},
