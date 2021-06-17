@@ -189,6 +189,7 @@ dynatrace
 dynatraceheader
 dynatracelabs
 easytravel
+ebd
 ebe
 ECDHE
 ECDSA
@@ -563,6 +564,7 @@ noreferrer
 noreply
 noscript
 nospace
+notask
 Noto
 nowrap
 npm
