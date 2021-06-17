@@ -15,6 +15,7 @@ import {Secret} from "../../_models/secret";
 export class KtbSecretsListComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
+  private closeConfirmationDialogTimeout;
 
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
   public currentSecret: Secret;
@@ -33,6 +34,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
 
   triggerDeleteSecret(secret) {
     this.currentSecret = secret;
+    clearTimeout(this.closeConfirmationDialogTimeout);
     this.deleteSecretDialogState = 'confirm';
   }
 
@@ -41,7 +43,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
     this.dataService.deleteSecret(secret.name, secret.scope)
       .subscribe((result) => {
         this.deleteSecretDialogState = 'success';
-        setTimeout(() =>{
+        this.closeConfirmationDialogTimeout = setTimeout(() =>{
           this.closeConfirmationDialog();
         }, 2000);
         this.dataService.getSecrets()
