@@ -1,6 +1,8 @@
 (?:^|/)(?i)LICENSE
 /package-lock\.json$
 /swagger-ui/
+CODEOWNERS
+CONTRIBUTORS.md
 dynatrace
 ignore$
 reviewdog\.yml$
@@ -16,9 +18,9 @@ reviewdog\.yml$
 \.sum$
 \.xlf$
 ^ADOPTERS\.md$
-CODEOWNERS
 ^bridge/client/app/_models/metadata\.ts$
+^bridge/client/app/_models/uniform-registrations-logs\.mock\.ts$
 ^CODE_OF_CONDUCT\.md$
+^test/assets/keptn-on-keptn/endpoints-keptn\.yaml$
 ^\.github/actions/
 _test\.go$
-CONTRIBUTORS.md
