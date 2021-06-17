@@ -153,7 +153,7 @@ data:
       proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location {{ .Values.prefixPath }}/api/secrets/swagger-ui/docs/swagger.yaml {
+    location {{ .Values.prefixPath }}/api/secrets/swagger-ui/swagger.yaml {
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.

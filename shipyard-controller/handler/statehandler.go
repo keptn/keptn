@@ -23,7 +23,6 @@ func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
 // @Summary Get task sequence execution states
 // @Description Get task sequence execution states
 // @Tags Sequence
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     		path    string  false   "The project name"

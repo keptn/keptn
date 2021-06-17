@@ -31,5 +31,7 @@ kubectl delete -f deploy/service.yaml
 
 ## Generate  Swagger doc from source
 
-1. Download and install Swag for Go by calling `go get -u github.com/swaggo/swag/cmd/swag` in fresh terminal.
+1. Download and install Swag for Go by calling `go get -u github.com/swaggo/swag/cmd/swag` in fresh terminal (not within a Keptn source directory!).
 2. `cd` to the Shipyard Controller's root folder and run `swag init --parseDependency`
+
+*Note*: This updates files in the docs/ subfolder (`docs.go`, `swagger.yaml` and `swagger.json`). It is not necessary to do it manually, as this happens within the [Dockerfile](Dockerfile) during the build process.

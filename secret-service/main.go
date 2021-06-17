@@ -3,17 +3,18 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	_ "github.com/keptn/keptn/secret-service/docs"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/controller"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
-	"github.com/keptn/keptn/secret-service/swagger-ui/docs"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 )
 
 // @title Secret Service API
-// @version 1.0
+// @version develop
 // @description This is the API documentation of the Secret Service.
 
 // @securityDefinitions.apiKey ApiKeyAuth
@@ -34,9 +35,9 @@ func main() {
 	}
 
 	if os.Getenv("GIN_MODE") == "release" {
-		docs.SwaggerInfo.Version = os.Getenv("version")
-		docs.SwaggerInfo.BasePath = "/api/secrets/v1"
-		docs.SwaggerInfo.Schemes = []string{"https"}
+		// disable GIN request logging in release mode
+		gin.SetMode("release")
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	log.Infof("Registered Backends: %v", backend.GetRegisteredBackends())

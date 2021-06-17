@@ -25,7 +25,6 @@ func NewUniformIntegrationHandler(im IUniformIntegrationManager) *UniformIntegra
 // @Summary Register a uniform integration
 // @Description Register a uniform integration
 // @Tags Uniform
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param integration body models.Integration true "Integration"
@@ -70,7 +69,6 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 // @Summary Unregister a uniform integration
 // @Description Unregister a uniform integration
 // @Tags Uniform
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param id path string true "id"
@@ -92,7 +90,6 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 // @Summary Retrieve uniform integrations
 // @Description Retrieve uniform integrations
 // @Tags Uniform
-// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param id query string false "id"

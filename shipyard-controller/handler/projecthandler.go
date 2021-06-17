@@ -37,7 +37,6 @@ func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSe
 // @Summary Get all projects
 // @Description Get the list of all projects
 // @Tags Projects
-// @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
 // @Param	pageSize			query		int			false	"The number of items to return"
@@ -88,7 +87,6 @@ func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 // @Summary Get a project by name
 // @Description Get a project by its name
 // @Tags Projects
-// @Security ApiKeyAuth
 // @Accept	json
 // @Produce  json
 // @Param	project		path	string	true	"The name of the project"
@@ -118,7 +116,6 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 // @Summary Create a new project
 // @Description Create a new project
 // @Tags Projects
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     body    operations.CreateProjectParams     true        "Project"
@@ -172,7 +169,6 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 // @Summary Updates a project
 // @Description Updates project
 // @Tags Projects
-// @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
 // @Param   project     body    operations.UpdateProjectParams     true        "Project"
@@ -209,7 +205,6 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 //// @Summary Delete a project
 //// @Description Delete a project
 //// @Tags Projects
-//// @Security ApiKeyAuth
 //// @Accept  json
 //// @Produce  json
 //// @Param   project     path    string     true        "Project name"
