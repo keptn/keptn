@@ -73,6 +73,7 @@ func main() {
 }
 
 func _main(env config.EnvConfig) int {
+
 	connectionType := config.GetPubSubConnectionType(env)
 
 	// Prepare signal handling for graceful shutdown
@@ -84,7 +85,7 @@ func _main(env config.EnvConfig) int {
 		cancel()
 	}()
 
-	if !env.DisableRegistration {
+	if shallRegister(env) {
 		uniformHandler, uniformLogHandler := createUniformHandlers(connectionType)
 		controlPlane := lib.NewControlPlane(uniformHandler, lib.CreateRegistrationData(connectionType, env))
 		go func() {
@@ -133,6 +134,19 @@ func _main(env config.EnvConfig) int {
 	wg.Wait()
 
 	return 0
+}
+
+func shallRegister(env config.EnvConfig) bool {
+	if env.DisableRegistration {
+		logger.Infof("Registration to Keptn's control plane disabled")
+		return false
+	}
+
+	if env.K8sNamespace == "" || env.K8sDeploymentName == "" {
+		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
+		return false
+	}
+	return true
 }
 
 func createUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
