@@ -189,7 +189,6 @@ dynatrace
 dynatraceheader
 dynatracelabs
 easytravel
-ebd
 ebe
 ECDHE
 ECDSA
@@ -204,6 +203,7 @@ entrypoint
 enum
 envconfig
 envoyproxy
+envsubst
 eofline
 epochconverter
 eql
@@ -453,6 +453,7 @@ Ldate
 ldflags
 leafnode
 len
+letsencrypt
 libc
 libnpx
 lifecycle
@@ -723,7 +724,6 @@ shkeptncontext
 shkeptnspecversion
 shm
 SIGINT
-SIGKILL
 sigs
 SIGTERM
 simplenode
