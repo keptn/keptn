@@ -33,6 +33,8 @@ export class KtbCreateSecretFormComponent implements OnInit {
         .subscribe((result) => {
           this.isLoading = false;
           this.router.navigate(['../'], { relativeTo: this.route });
+        }, (err) => {
+          this.isLoading = false;
         });
     }
   }
