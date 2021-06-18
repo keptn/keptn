@@ -69,7 +69,9 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     });
 
     project$.subscribe(project => {
-      this.selectedDeployment = undefined;
+      if (this.selectedDeployment) { // the selected deployment gets lost if the project is updated, because the deployments are rebuild
+        this.selectedDeployment = project.getServices().find(s => s.serviceName === this.selectedDeployment.service)?.deployments.find(d => d.shkeptncontext === this.selectedDeployment.shkeptncontext);
+      }
       this.dataService.loadOpenRemediations(project);
       this.project = project;
       this._changeDetectorRef.markForCheck();
