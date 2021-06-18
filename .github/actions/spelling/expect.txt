@@ -926,3 +926,5 @@ YAMLTo
 yml
 YOURURL
 zsh
+exechelper
+scrollbars
