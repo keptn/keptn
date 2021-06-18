@@ -21,13 +21,17 @@ Keptn runs on Kubernetes. To get started, you can follow our [Quickstart guide](
 
 ### Developing Keptn
 
-The easiest way to develop is to run it on K3d locally via the following commands:
+The easiest way to develop is to spin up a Kubernetes cluster locally by using [K3d](https://k3d.io) via the following commands:
 
 ```console
 curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v4.4.4 bash
 k3d cluster create mykeptn -p "8082:80@agent[0]" --k3s-server-arg '--no-deploy=traefik' --agents 1
+```
+
+Afterwards, install Keptn:
+```console
 curl -sL https://get.keptn.sh | bash
-keptn install --use-case=continuous-delivery 
+keptn install --use-case=continuous-delivery
 ```
 
 You can find more information in our [docs](docs/).
