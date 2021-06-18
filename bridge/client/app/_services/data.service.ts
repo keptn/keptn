@@ -98,7 +98,11 @@ export class DataService {
   }
 
   public getSecrets(): Observable<Secret[]> {
-    return this.apiService.getSecrets();
+    return this.apiService.getSecrets()
+      .pipe(
+        map(res => res.Secrets),
+        map(secrets => secrets.map(secret => Secret.fromJSON(secret)))
+      );
   }
 
   public addSecret(secret: Secret): Observable<object> {

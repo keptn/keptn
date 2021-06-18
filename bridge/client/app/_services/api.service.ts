@@ -121,13 +121,9 @@ export class ApiService {
     return this.http.get<UniformRegistrationLogResponse>(url);
   }
 
-  public getSecrets(): Observable<Secret[]> {
+  public getSecrets(): Observable<object> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
-    return this.http.get<any>(url)
-      .pipe(
-        map(res => res.Secrets),
-        map(secrets => secrets.map(secret => Secret.fromJSON(secret)))
-      );
+    return this.http.get<any>(url);
   }
 
   public addSecret(secret): Observable<object> {
