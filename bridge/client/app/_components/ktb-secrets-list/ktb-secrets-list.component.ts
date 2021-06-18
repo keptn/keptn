@@ -46,10 +46,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
         this.closeConfirmationDialogTimeout = setTimeout(() =>{
           this.closeConfirmationDialog();
         }, 2000);
-        this.dataService.getSecrets()
-          .subscribe((secrets) => {
-            this.tableEntries.data = secrets;
-          });
+        this.tableEntries.data = this.tableEntries.data.slice(this.tableEntries.data.indexOf(secret), 1);
       });
   }
 
