@@ -29,6 +29,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <details><summary>Platform Support / Installer</summary>
 <p>
 
+- Support for Kubernetes 1.21 [4400](https://github.com/keptn/keptn/issues/4400)
 - Add readinessProbe to Helm Chart of: keptn, jmeter-service, and helm-service [3648](https://github.com/keptn/keptn/issues/3648)
 
 </p>
