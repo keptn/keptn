@@ -16,34 +16,25 @@ In addition, you can find the roadmap of the Keptn project [here](https://github
 an overview of user stories that are currently in the focus of development for the next release.
 
 ## Quickstart
-To get started with keptn you need a Kubernetes cluster. Supported Kubernetes engines and versions can be found [in the documentation](https://keptn.sh/docs/0.7.x/operate/k8s_support/).  
-<br>
-Here is a quick guide on how to get started with Keptn on [k3s](https://k3s.io/) on MacOS and Linux:
 
-**Install K3s**  
-Download, install and run K3s (tested with versions 1.16 to 1.19):
-``` console
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.19.5+k3s1 K3S_KUBECONFIG_MODE="644" sh -s - --no-deploy=traefik
+Keptn runs on Kubernetes. To get started, you can follow our [Quickstart guide](https://keptn.sh/docs/quickstart).
+
+### Developing Keptn
+
+The easiest way to develop is to spin up a Kubernetes cluster locally by using [K3d](https://k3d.io) via the following commands:
+
+```console
+curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v4.4.4 bash
+k3d cluster create mykeptn -p "8082:80@agent[0]" --k3s-server-arg '--no-deploy=traefik' --agents 1
 ```
-**Export the Kubernetes config using:**
-``` console
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-```  
 
-**Download keptn CLI using Bash (e.g., Linux and Mac OS)**:
+Afterwards, install Keptn:
 ```console
 curl -sL https://get.keptn.sh | bash
-```
-or download a release for your platform from the [release page](https://github.com/keptn/keptn/releases)
-
-
-**Install keptn**:
-```console
-keptn install --endpoint-service-type=ClusterIP --use-case=continuous-delivery
+keptn install --use-case=continuous-delivery
 ```
 
-You can find documentation on how to get started with Keptn in our [Quick Start Guide](https://keptn.sh/docs/quickstart/) and the [Installation instructions](https://keptn.sh/docs/0.7.x/operate/install/). 
-We recommend using the [latest stable release](https://github.com/keptn/keptn/releases) as provided in the [release section](https://github.com/keptn/keptn/releases).
+You can find more information in our [docs](docs/).
 
 ## Community
 
