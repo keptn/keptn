@@ -45,7 +45,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
-            VERSION: "v1.20.4+k3s1" # see https://github.com/rancher/k3s/releases
+            VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
@@ -62,7 +62,7 @@ jobs:
             REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.18"
+            VERSION: "1.19"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
