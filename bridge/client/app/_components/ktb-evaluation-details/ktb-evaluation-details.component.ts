@@ -136,6 +136,20 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       labels: {
         rotation: -45
       },
+      tickPositioner: function() {
+        const positions = [],
+          labelWidth = 70,
+          ext = this.getExtremes(),
+          xMax = Math.round(ext.max),
+          xMin = Math.round(ext.min),
+          maxElements = (document.querySelector('dt-chart')?.clientWidth || labelWidth) / labelWidth,
+          tick = Math.floor(xMax / maxElements) || 1;
+
+        for (let i = xMax; i >= xMin; i -= tick) {
+          positions.push(i);
+        }
+        return positions;
+      }
     }],
 
     yAxis: [{
