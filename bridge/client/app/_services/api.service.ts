@@ -121,7 +121,7 @@ export class ApiService {
     return this.http.get<UniformRegistrationLogResponse>(url);
   }
 
-  public getSecrets(): Observable<object> {
+  public getSecrets(): Observable<{Secrets: Secret[]}> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
     return this.http.get<any>(url);
   }
