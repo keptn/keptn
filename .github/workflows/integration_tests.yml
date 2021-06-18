@@ -34,13 +34,13 @@ jobs:
         include:
           - CLOUD_PROVIDER: "minishift-on-GHA"
             PLATFORM: "openshift"
-            VERSION: "3.11"
+            PLATFORM_VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
           - CLOUD_PROVIDER: "k3s-on-GHA"
-            VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
+            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
@@ -48,15 +48,24 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
-            VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
+            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_QUALITY_GATES_TEST: "true"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "k3d-on-GHA"
+            PLATFORM_VERSION: "v4.4.4" # see https://github.com/rancher/k3d/releases
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_AIRGAPPED_TEST: "true"
+            RUN_QUALITY_GATES_TEST: "false"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.17"
+            PLATFORM_VERSION: "1.17"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
@@ -65,7 +74,7 @@ jobs:
             REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "GKE"
-            VERSION: "1.19"
+            PLATFORM_VERSION: "1.19"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
@@ -76,11 +85,12 @@ jobs:
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
-      VERSION: ${{ matrix.VERSION }}
+      PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-test"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
+      RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
@@ -89,6 +99,7 @@ jobs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
     steps:
+
       - name: Check out code.
         uses: actions/checkout@v2.3.4
 
@@ -131,6 +142,63 @@ jobs:
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
 
+      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
+      - name: Download build artifacts from specified branch
+        uses: dawidd6/action-download-artifact@v2.14.0
+        id: download_artifacts_push
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
+          workflow_conclusion: success
+          # use the following branch
+          branch: ${{ steps.determine_branch.outputs.BRANCH}}
+          # directory where to extract artifacts to
+          path: ./dist
+
+      # load build-config
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+        id: load_build_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
+
+      - name: DEBUG Build-Config
+        run: |
+          echo VERSION=${VERSION}
+          echo BRANCH=${BRANCH}
+
+      - name: Extract Keptn CLI artifact
+        run: |
+          tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
+          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
+
+      - name: Verify Keptn CLI works
+        timeout-minutes: 1
+        run: keptn version
+
+      - name: Extract name of helm chart
+        id: extract_helm_chart_name
+        run: |
+          ls dist/keptn-installer/*.tgz # debug output
+          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
+          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
+          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
+
+          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
+          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
         timeout-minutes: 15
@@ -147,14 +215,26 @@ jobs:
       - name: Install and start K3s
         if: env.CLOUD_PROVIDER == 'k3s-on-GHA'
         env:
-          K3S_VERSION: ${{ matrix.VERSION }}
+          K3S_VERSION: ${{ matrix.PLATFORM_VERSION }}
         run: |
           test/utils/download_and_install_k3s.sh
           test/utils/k3s_create_cluster.sh
+
+      - name: Install and start K3d
+        if: env.CLOUD_PROVIDER == 'k3d-on-GHA'
+        env:
+          K3D_VERSION: ${{ matrix.PLATFORM_VERSION }}
+        run: |
+          test/utils/download_and_install_k3d.sh
+
+          # create registry and cluster
+          k3d registry create container-registry.localhost --port 12345
+          k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use k3d-container-registry.localhost:12345
+
       - name: Install and start GKE cluster
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
-          GKE_VERSION: ${{ matrix.VERSION }}
+          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
@@ -209,53 +289,50 @@ jobs:
         run: kubectl get services --all-namespaces
       - name: Debug - Get Kubernetes Deployments
         run: kubectl get deployments --all-namespaces -owide
-      # try to download artifacts from the specified branch with event type push (e.g., push to master/release branch)
-      - name: Download CLI artifact from specified branch
-        uses: dawidd6/action-download-artifact@v2.14.0
-        id: download_artifacts_push
-        with:
-          # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
-          workflow_conclusion: success
-          # use the following branch
-          branch: ${{ steps.determine_branch.outputs.BRANCH}}
-          # directory where to extract artifacts to
-          path: ./dist
-      - name: Extract Keptn CLI artifact
-        run: |
-          tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
-          sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
-
-      - name: Verify Keptn CLI works
-        timeout-minutes: 1
-        run: keptn version
-
-      - name: Extract name of helm chart
-        id: extract_helm_chart_name
-        run: |
-          ls dist/keptn-installer/*.tgz # debug output
-          HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
-          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
-          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
-
-          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
-          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
-          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
-
 
       - name: Host helm chart via python http server
         run: cd dist/keptn-installer/ && python3 -m http.server &
+
+      - name: Push images to airgapped registry
+        if: env.RUN_AIRGAPPED_TEST == 'true'
+        timeout-minutes: 15
+        env:
+          KEPTN_TAG: ${{ env.VERSION }}
+        run: |
+          # pull images and push it to the local k3d registry
+          installer/airgapped/pull_and_retag_images.sh "k3d-container-registry.localhost:12345/"
+
+      - name: Prevent egress traffic for airgapped system
+        # this only prevents pods / containers from accessing services outside of the Kubernetes cluster, it does not
+        # prevent containers/images to be pulled from DockerHub
+        if: env.RUN_AIRGAPPED_TEST == 'true'
+        run: |
+          # Deny egress traffic: https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-and-all-egress-traffic
+          kubectl apply -f - <<EOF
+          ---
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: default-deny-all
+          spec:
+            podSelector: {}
+            policyTypes:
+              - Egress
+          EOF
+
+          # wait a bit
+          sleep 30
 
       - name: Install Keptn
         id: keptn_install
         timeout-minutes: 10
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
+          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
+          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
+          RUN_AIRGAPPED_TEST: ${{ env.RUN_AIRGAPPED_TEST }}
         run: |
           echo "Installing Keptn on cluster"
-
           if [[ $PLATFORM == "openshift" ]]; then
             echo "{
               \"openshiftUrl\": \"https://127.0.0.1:8443\",
@@ -265,22 +342,27 @@ jobs:
           else
             echo "{}" > creds.json # empty credentials file
           fi
-
           # Determine use case
           USE_CASE=""
           if [[ $RUN_CONTINUOUS_DELIVERY_TEST == "true" ]]; then
             USE_CASE="--use-case=continuous-delivery"
           fi
 
-          # Install Keptn
-          keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
-             --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
+          if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
+            # Install Keptn via Helmer Script
+            installer/airgapped/install_keptn.sh "k3d-container-registry.localhost:12345/" "http://0.0.0.0:8000/$HELM_CHART_NAME" "http://0.0.0.0:8000/$HELM_SERVICE_HELM_CHART_NAME" "http://0.0.0.0:8000/$JMETER_SERVICE_HELM_CHART_NAME"
+          else
+            # Install Keptn via CLI
+            keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
+               --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
+          fi
+
 
       # Gather resource limits directly after installation of Keptn
       - name: Gather resource limits
         if: env.COLLECT_RESOURCE_LIMITS == 'true'
         env:
-          TEST_REPORT_FILENAME: test-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
+          TEST_REPORT_FILENAME: test-resource-limits-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.txt
         run: |
           echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
           test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
@@ -391,7 +473,16 @@ jobs:
         timeout-minutes: 1
         run: keptn status
 
+      - name: Test Airgapped Images
+        id: test_airgapped_images
+        if: env.RUN_AIRGAPPED_TEST == 'true'
+        timeout-minutes: 2
+        continue-on-error: true
+        run: test/test_airgapped_images.sh "k3d-container-registry.localhost:12345"
+
       - name: Test Linking Stages
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_linking_stages
         timeout-minutes: 5
         continue-on-error: true
@@ -400,6 +491,8 @@ jobs:
         run: test/test_linking_stages.sh
 
       - name: Test Uniform Registration
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_uniform_registration
         timeout-minutes: 5
         continue-on-error: true
@@ -408,6 +501,8 @@ jobs:
         run: cd test/go-tests && go test -run UniformRegistration -v
 
       - name: Test Log Ingestion
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_log_ingestion
         timeout-minutes: 5
         continue-on-error: true
@@ -416,6 +511,8 @@ jobs:
         run: cd test/go-tests && go test -run LogIngestion -v
 
       - name: Test Log Forwarding
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_log_forwarding
         timeout-minutes: 5
         continue-on-error: true
@@ -424,6 +521,8 @@ jobs:
         run: cd test/go-tests && go test -run LogForwarding -v
 
       - name: Test Sequence States
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_sequence_states
         timeout-minutes: 5
         continue-on-error: true
@@ -432,6 +531,8 @@ jobs:
         run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
 
       - name: Test Sequence Loop
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_sequence_loop
         timeout-minutes: 5
         continue-on-error: true
@@ -440,6 +541,8 @@ jobs:
         run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
 
       - name: Test Delayed Tasks
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_delayed_tasks
         timeout-minutes: 5
         continue-on-error: true
@@ -449,8 +552,8 @@ jobs:
 
       - name: Test Quality Gates Standalone
         id: test_quality_gates
-        # Note: quality gates test requires network access, which doesn't work on some platforms
-        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
         timeout-minutes: 10
         continue-on-error: true
         env:
@@ -463,8 +566,8 @@ jobs:
 
       - name: Test Quality Gates Backwards compatibility
         id: test_quality_gates_backwards_compatibility
-        # Note: quality gates test requires network access, which doesn't work on some platforms
-        if: env.RUN_QUALITY_GATES_TEST == 'true' # run test only if set to true
+        # Note: quality gates test requires network access, which doesn't work on some platforms (also not on airgapped)
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_QUALITY_GATES_TEST == 'true'
         timeout-minutes: 10
         continue-on-error: true
         env:
@@ -472,6 +575,8 @@ jobs:
         run: test/test_quality_gates_backwards_compatibility.sh
 
       - name: Test Self Healing
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_self_healing
         timeout-minutes: 10
         continue-on-error: true
@@ -481,6 +586,8 @@ jobs:
         run: test/test_self_healing.sh
 
       - name: Bridge E2E Tests (Protractor, Selenium)
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_bridge_e2e
         timeout-minutes: 15
         continue-on-error: true
@@ -513,7 +620,7 @@ jobs:
       - name: Test Delivery Assistant
         id: test_delivery_assistant
         # Delivery Assistant only works when we install keptn with continuous delivery use-case
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run test only if set to true
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
         timeout-minutes: 5
         continue-on-error: true
         env:
@@ -524,7 +631,7 @@ jobs:
 
       - name: Test User Managed Delivery
         id: test_user_managed_delivery
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
+        if: env.RUN_AIRGAPPED_TEST != 'true' && env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
         timeout-minutes: 5
         continue-on-error: true
         env:
@@ -554,7 +661,7 @@ jobs:
 
       - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
-        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
+        if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
         timeout-minutes: 45
         continue-on-error: true
         env:
@@ -568,7 +675,7 @@ jobs:
 
       - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
         id: test_continuous_delivery_remote_exec
-        if: (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
+        if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
         timeout-minutes: 45
         continue-on-error: true
         env:
@@ -582,6 +689,8 @@ jobs:
 
       - name: Test Manage Secrets
         id: test_manage_secrets
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
         timeout-minutes: 5
         continue-on-error: true
         env:
@@ -618,7 +727,7 @@ jobs:
       - name: keptn generate support-archive
         if: always()
         env:
-          SUPPORT_ARCHIVE_FILENAME: keptn-support-archive-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}
+          SUPPORT_ARCHIVE_FILENAME: keptn-support-archive-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
         timeout-minutes: 5
         run: |
           mkdir support-archive/
@@ -659,7 +768,7 @@ jobs:
         if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
         timeout-minutes: 5
         env:
-          GKE_VERSION: ${{ matrix.VERSION }}
+          GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
@@ -678,11 +787,11 @@ jobs:
         id: write_test_report
         if: always()
         env:
-          TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.VERSION }}.txt
+          TEST_REPORT_FILENAME: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.txt
         run: |
           echo "write test report to $TEST_REPORT_FILENAME"
           # please check with headings in print_test_report task roughly 50 lines below
-          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_bridge_e2e.outcome }} |" > $TEST_REPORT_FILENAME
+          echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_bridge_e2e.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
 
       - name: Upload Bridge E2E Screenshots
@@ -741,8 +850,8 @@ jobs:
           echo "Integration Tests have finished." > final-test-report.txt
           echo "" >> final-test-report.txt
           # please check with output in write_test_report task roughly 50 lines above
-          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Bridge E2E |" >> final-test-report.txt
-          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ---------- |" >> final-test-report.txt
+          echo "| Target Platform        |  Keptn Install    |  Keptn Auth  | Airgapped Images | Linking Stages   | Uniform Registration   | Log Ingestion   | Log Forwarding   | Sequence States   | Sequence Loop |  QG Standalone  |  QG Backwards Compat. | Self Healing  |  Del-Assist  |  User-Man. Depl.  | Cont Deliv | Cont Deliv (Remote Exec) | Manage secrets | Bridge E2E |" >> final-test-report.txt
+          echo "| ---------------------- | ----------------- | ------------ | ---------------- | ---------------- | ---------------------- | --------------- | ---------------- | ----------------- | ------------- | --------------- | ----------------------|-------------- | ------------ | ----------------- |----------- | ------------------------ | -------------- | ---------- |" >> final-test-report.txt
           cat test-report*.txt >> final-test-report.txt
 
           # print test report

@@ -8,6 +8,7 @@ addons
 addrowonbottom
 adduser
 agrabner
+airgapped
 AKS
 alecthomas
 amd
@@ -122,6 +123,7 @@ configurationstore
 configurator
 configuremonitoring
 configutils
+connecteverything
 consumercatalog
 containerregistry
 contenttype
@@ -230,6 +232,7 @@ eventsender
 eventtype
 Evts
 exe
+exechelper
 expr
 expressjs
 externallink
@@ -265,6 +268,7 @@ fwlink
 gcc
 gcflags
 gcloud
+gcr
 gendoc
 genericclioptions
 genid
@@ -697,6 +701,7 @@ rxjs
 scc
 scopesrepository
 screenshot
+scrollbars
 scss
 sdk
 secondstage
@@ -785,6 +790,7 @@ svcs
 svg
 svr
 swaggo
+synadia
 syscall
 tabwidth
 tabwriter
@@ -927,5 +933,3 @@ YAMLTo
 yml
 YOURURL
 zsh
-exechelper
-scrollbars
