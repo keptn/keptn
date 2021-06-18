@@ -9,11 +9,11 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.8.5
-	github.com/keptn/kubernetes-utils v0.8.3
+	github.com/keptn/kubernetes-utils v0.8.4-0.20210618121814-d9b6afca0f32
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
-	helm.sh/helm/v3 v3.6.0
+	helm.sh/helm/v3 v3.6.1
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/cli-runtime v0.21.1
