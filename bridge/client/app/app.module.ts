@@ -101,6 +101,8 @@ import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-se
 import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 
 import { AppInitService } from "./_services/app.init";
+import {KtbSecretsListComponent} from "./_components/ktb-secrets-list/ktb-secrets-list.component";
+import {KtbCreateSecretFormComponent} from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -161,6 +163,8 @@ export function init_app(appLoadService: AppInitService) {
     KtbDeploymentStageTimelineComponent,
     KtbSequenceListComponent,
     KtbUniformRegistrationLogsComponent,
+    KtbSecretsListComponent,
+    KtbCreateSecretFormComponent,
   ],
     imports: [
         BrowserModule,

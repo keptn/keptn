@@ -666,6 +666,7 @@ regexp
 releasename
 releasenotes
 remediations
+removerow
 replicacount
 repolink
 resolv
@@ -699,6 +700,7 @@ scss
 sdk
 secondstage
 secretbackend
+secretname
 secretstore
 secuirtycontextconstraints
 securitycontextconstraints
@@ -774,6 +776,7 @@ subdomain
 subfolder
 Submatch
 submatches
+submenu
 subrequest
 sudo
 sutils

@@ -1,34 +1,15 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-.container > div:first-of-type {
-  border-top: 1px solid $gray-200;
+.dt-menu.uniform-submenu,
+::ng-deep .dt-menu.uniform-submenu .dt-menu-group-header,
+.dt-menu.uniform-submenu .dt-menu-item {
+  color: $default-font-color !important;
+  background-color: $gray-100 !important;
 }
 
-.overflow-y-auto {
-  overflow-y: auto;
-}
-
-.overflow-y-scroll {
-  overflow-y: scroll;
-}
-
-.notification {
-  background-color: $blue-500;
-  padding: 6px;
-  color: $white;
-
-  a {
-    color: $white;
-  }
-}
-
-.info {
-  fill: $primary-color;
-}
-
-
-.no-integration-selected {
-  background-color: $gray-200;
-  border-radius: 5px;
+.dt-menu.uniform-submenu .dt-menu-item.active,
+.dt-menu.uniform-submenu .dt-menu-item:hover,
+.dt-menu.uniform-submenu .dt-menu-item:active {
+  background-color: $gray-200 !important;
 }

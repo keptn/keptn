@@ -1,6 +1,37 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
+.container > div:first-of-type {
+  border-top: 1px solid $gray-200;
+}
+
+.notification {
+  background-color: $blue-500;
+  padding: 6px;
+  color: $white;
+
+  a {
+    color: $white;
+  }
+}
+
+.info {
+  fill: $primary-color;
+}
+
+.no-integration-selected {
+  background-color: $gray-200;
+  border-radius: 5px;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.overflow-y-scroll {
+  overflow-y: scroll;
+}
+
 .pointer {
   cursor: pointer;
 }
