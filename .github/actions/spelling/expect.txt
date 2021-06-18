@@ -253,6 +253,7 @@ fpath
 Fprintf
 Fprintln
 fptr
+frameguard
 fromdate
 frontend
 Frontmatter
