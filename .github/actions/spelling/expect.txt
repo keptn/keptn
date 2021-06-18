@@ -524,6 +524,7 @@ mydbserver
 mygateway
 mygroup
 myjmeter
+mykeptn
 mykey
 myprojec
 myproject
@@ -623,6 +624,7 @@ pprove
 prebuilt
 preemptible
 prepender
+PRID
 printf
 Println
 prj
