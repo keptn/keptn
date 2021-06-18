@@ -1,6 +1,6 @@
 # Release Notes 0.8.4
 
-*Gain visibility into the integrations connected to Keptn* - Keptn 0.8.4 starts to implement the Uniform mockup that has been released/presented with Keptn 0.8.1. This new Bridge screen brings insights into the Keptn-services (aka Integrations) that are connected to a Keptn control-plane, allows troubleshooting by retrieving their error logs, and enables creating/deleting secrets for integrations.
+*Gain visibility into integrations connected to Keptn* - Keptn 0.8.4 starts to implement the Uniform mockup that has been released/presented with Keptn 0.8.1. This new Bridge screen brings insights into the Keptn-services (aka Integrations) that are connected to a Keptn control-plane, allows troubleshooting by retrieving their error logs, and enables creating/deleting secrets for integrations.
 
 ---
 
@@ -14,7 +14,7 @@
 
 ---
 
-*Note*: If you are a maintainer of an Integration that is hosted on [github.com/keptn-contrib](https://github.com/keptn-contrib) or [github.com/keptn-sandbox](https://github.com/keptn-sandbox), you will receive an issue explaining how to upgrade your integration; especially, the distributor. With this upgrade, your integration will then benefit from the new feature and will be displayed in the Bridge.  
+*Note*: If you are a maintainer of an Integration that is hosted on [github.com/keptn-contrib](https://github.com/keptn-contrib) or [github.com/keptn-sandbox](https://github.com/keptn-sandbox), you will receive an issue explaining how to upgrade your integration; especially, the distributor. With this upgrade, your integration will then benefit from the new feature and will be displayed in Keptn Bridge.  
 
 ## Keptn Enhancement Proposals
 
