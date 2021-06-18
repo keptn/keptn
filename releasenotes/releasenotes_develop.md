@@ -6,11 +6,11 @@
 
 **Key announcements:**
 
-:tada: *Troubleshooting support for Integration*: To support troubleshooting integrations without connecting to the environment that runs them, errors are sent to Keptn and displayed in the Uniform screen of a project.
+:tada: *Troubleshooting support for Integrations*: To support troubleshooting integrations without connecting to the environment that runs them, errors are sent to Keptn and displayed in the Uniform screen of a project.
 
-:star: *Creating/Deleting Secrets for Integrations*: To not rely on the Keptn CLI to manage a secret for integrations, the Bridge allows creating/deleting secrets. This is supported for integrations that are running on a Keptn control-plane since the public Keptn API does yet not allow querying secrets.  
+:star: *Creating/Deleting Secrets for Integrations*: To not rely on the Keptn CLI to manage secrets for integrations, Bridge allows creating/deleting secrets. This is supported for integrations that are running on a Keptn control-plane since the public Keptn API does yet not allow querying secrets.  
 
-:rocket: *Customization of Bridge*: With this release, the Keptn Bridge can get a custom *look-and-feel* by providing a custom logo, title, and/or stylesheet. More details on this feature are available [here](https://github.com/keptn/keptn/tree/0.8.4/bridge#custom-look-and-feel).
+:rocket: *Customization of Bridge*: With this release, Keptn Bridge can get a custom *look-and-feel* by providing a custom logo, title, and/or stylesheet. More details on this feature are available [here](https://github.com/keptn/keptn/tree/0.8.4/bridge#custom-look-and-feel).
 
 ---
 
@@ -72,7 +72,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - *Fixed*: Helm-service lost its resource requests/limits [4250](https://github.com/keptn/keptn/issues/4250)
 
 - *lighthouse-service*:
-  - *Fixed*: "Response time degradation in lighthouse-service" when spamming get-sil-events [4065](https://github.com/keptn/keptn/issues/4065)
+  - *Fixed*: "Response time degradation in lighthouse-service" when spamming get-sli-events [4065](https://github.com/keptn/keptn/issues/4065)
 
 - *remediation-service*:
   - *Fixed*: Remediation-service lost fallback to `problem type: default` [4254](https://github.com/keptn/keptn/issues/4254)
