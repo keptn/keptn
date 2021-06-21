@@ -807,6 +807,13 @@ jobs:
             echo "---" >> integration-tests-failed.md
             echo "" >> integration-tests-failed.md
             echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> integration-tests-failed.md
+
+            if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
+              echo "* Triggered by: Scheduled build" >> integration-tests-failed.md
+            else
+              echo "* Triggered by: @$GITHUB_ACTOR" >> integration-tests-failed.md
+            fi
+
             echo "* Branch: $BRANCH" >> integration-tests-failed.md
             echo "* Version: $VERSION" >> integration-tests-failed.md
             echo "* Datetime: $DATETIME" >> integration-tests-failed.md
