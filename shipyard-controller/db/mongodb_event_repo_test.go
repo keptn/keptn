@@ -89,6 +89,22 @@ func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 		require.Equal(t, "my-keptn-context-1", event.Shkeptncontext)
 	}
 
+	// test event deletion
+	events, err := repo.GetEvents(projectName, common.EventFilter{
+		ID: common.Stringp("my-root-event-id-1"),
+	})
+	require.Nil(t, err)
+	require.Len(t, events, 1)
+
+	err = repo.DeleteEvent(projectName, "my-root-event-id-1", common.RootEvent)
+
+	require.Nil(t, err)
+
+	events, err = repo.GetEvents(projectName, common.EventFilter{
+		ID: common.Stringp("my-root-event-id-1"),
+	}, common.RootEvent)
+	require.Equal(t, db.ErrNoEventFound, err)
+	require.Empty(t, events)
 }
 
 func generateRootEvents(projectName, stageName, serviceName string, numberOfEvents int) []models.Event {
