@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Subject, timer} from 'rxjs';
-import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
+import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
 import { Deployment } from 'client/app/_models/deployment';
@@ -59,8 +59,8 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     );
 
-    params$.subscribe(params => {
-      this.serviceName ??= params.serviceName;
+    params$.pipe(take(1)).subscribe(params => {
+      this.serviceName = params.serviceName;
       this._changeDetectorRef.markForCheck();
     });
 

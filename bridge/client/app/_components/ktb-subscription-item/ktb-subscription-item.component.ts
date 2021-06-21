@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {Subscription} from '../../_models/subscription';
-import {map, takeUntil} from 'rxjs/operators';
+import {map, switchMap, takeUntil} from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute} from '@angular/router';
 import {Project} from '../../_models/project';
@@ -34,20 +34,20 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   constructor(private changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
+    this.dataService.taskNamesTriggered
+      .pipe(
+        takeUntil(this.unsubscribe$),
+      ).subscribe( tasks => {
+        this.tasks = ['all', ...tasks];
+      });
+
     this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.dataService.taskNamesTriggered.pipe(
-          takeUntil(this.unsubscribe$),
-        ).subscribe( tasks => {
-            this.tasks = ['all', ...tasks];
-          }
-        );
-        this.dataService.getProject(params.projectName)
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(project => {
-            this.updateDataSource(project);
-          });
+      .pipe(
+        map(params => params.projectName),
+        switchMap(projectName => this.dataService.getProject(projectName)),
+        takeUntil(this.unsubscribe$)
+      ).subscribe(project => {
+          this.updateDataSource(project);
       });
   }
 

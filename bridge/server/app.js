@@ -8,6 +8,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const {execSync} = require('child_process');
 const admZip = require('adm-zip');
+const helmet = require("helmet");
 
 const apiRouter = require('./api');
 
@@ -129,6 +130,7 @@ module.exports = (async function (){
   app.use(express.json());
   app.use(express.urlencoded({extended: false}));
   app.use(cookieParser());
+  app.use(helmet.frameguard());
 
   let authType;
 
