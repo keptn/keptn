@@ -10,9 +10,15 @@
       </div>
       <div fxLayout="row" fxLayoutAlign="start" class="mt-2" *ngIf="project.getServices().length == 0" uitestid="keptn-service-view-noServices">
         <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
-        <p class="m-0 ml-2">No service onboarded yet. Follow the instructions to
-          <a *ngIf="!isQualityGatesOnly" [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>
-          <a *ngIf="isQualityGatesOnly" [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">create a service</a>.
+        <p class="m-0 ml-2">
+          <ng-container *ngIf="!isQualityGatesOnly">
+            No service onboarded yet. Follow the instructions to
+            <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.
+          </ng-container>
+          <ng-container *ngIf="isQualityGatesOnly">
+            No service created yet.
+            <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">create a service</a>.
+          </ng-container>
         </p>
       </div>
       <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName" (click)="selectService(project.projectName, service.serviceName)">

@@ -60,14 +60,13 @@
     <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
     <p class="m-0 ml-2">
       <ng-container *ngIf="!isQualityGatesOnly">
-        No service onboarded yet.
+        No service onboarded yet.<br/>Follow the instructions to
+        <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.
       </ng-container>
       <ng-container *ngIf="isQualityGatesOnly">
-        No service created yet.
+        No service created yet.<br/>Follow the instructions to
+        <a *ngIf="isQualityGatesOnly" [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">create a service</a>.
       </ng-container>
-      Follow the instructions to
-      <a *ngIf="!isQualityGatesOnly" [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>
-      <a *ngIf="isQualityGatesOnly" [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">create a service</a>.
     </p>
   </div>
 </ng-template>
