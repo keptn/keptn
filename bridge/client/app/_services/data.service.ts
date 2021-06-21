@@ -36,6 +36,7 @@ export class DataService {
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
+  protected _isQualityGatesOnly: BehaviorSubject<boolean> = new BehaviorSubject(false);
   protected _evaluationResults = new Subject();
 
   constructor(private apiService: ApiService) {
@@ -77,6 +78,10 @@ export class DataService {
 
   get changedDeployments(): Observable<Deployment[]> {
     return this._changedDeployments.asObservable();
+  }
+
+  get isQualityGatesOnly(): Observable<boolean> {
+    return this._isQualityGatesOnly.asObservable();
   }
 
   public getProject(projectName): Observable<Project> {
@@ -150,6 +155,8 @@ export class DataService {
             keptnInfo.bridgeInfo.apiUrl = `${window.location.href.substring(0, window.location.href.indexOf(window.location.pathname))}/api`;
 
           keptnInfo.bridgeInfo.authCommand = `keptn auth --endpoint=${keptnInfo.bridgeInfo.apiUrl} --api-token=${keptnInfo.bridgeInfo.apiToken}`;
+
+          this._isQualityGatesOnly.next(!keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY'));
         }
         this._keptnInfo.next(keptnInfo);
       }, (err) => {

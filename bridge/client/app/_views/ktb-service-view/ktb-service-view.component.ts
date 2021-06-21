@@ -36,13 +36,9 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
-        this.isQualityGatesOnly = !keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY');
-        this._changeDetectorRef.markForCheck();
-      });
+    this.dataService.isQualityGatesOnly.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
 
     this.dataService.changedDeployments
       .pipe(takeUntil(this.unsubscribe$))

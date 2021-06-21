@@ -56,9 +56,18 @@
 
 
 <ng-template #noService>
-  <div fxLayout="row" fxLayoutAlign="start center" uitestid="keptn-services-list-noServices">
-    <dt-icon class="icon" name="information"></dt-icon>
-    <p class="m-0">No service onboarded yet.</p>
+  <div fxLayout="row" fxLayoutAlign="start" uitestid="keptn-services-list-noServices">
+    <dt-icon fxFlex="20px" class="icon" name="information"></dt-icon>
+    <p class="m-0 ml-2">
+      <ng-container *ngIf="!isQualityGatesOnly">
+        No service onboarded yet.
+      </ng-container>
+      <ng-container *ngIf="isQualityGatesOnly">
+        No service created yet.
+      </ng-container>
+      Follow the instructions to
+      <a *ngIf="!isQualityGatesOnly" [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>
+      <a *ngIf="isQualityGatesOnly" [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">create a service</a>.
+    </p>
   </div>
-  <p class="m-0">Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
 </ng-template>

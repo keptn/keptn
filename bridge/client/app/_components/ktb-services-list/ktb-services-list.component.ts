@@ -36,6 +36,7 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
   public _services: Service[] = [];
   public _pageSize: number = DEFAULT_PAGE_SIZE;
   public dataSource: DtTableDataSource<Service>;
+  public isQualityGatesOnly: boolean;
 
   @Input()
   get services(): Service[] {
@@ -67,6 +68,10 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
+    this.dataService.isQualityGatesOnly.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
+
     this.dataService.roots
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(roots => {
