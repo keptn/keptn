@@ -2,49 +2,49 @@
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
 .ktb-root-events-list {
+  .ktb-selectable-tile.ktb-tile-error,
+  .ktb-selectable-tile.ktb-tile-success,
+  .ktb-selectable-tile.ktb-tile-highlight {
+    &:hover {
+      .ktb-selectable-tile-container {
+        border-color: $gray-300;
+      }
 
-  .ktb-selectable-tile.ktb-tile-error {
-    .ktb-selectable-tile-container {
-      border: 1px solid $gray-200;
-      border-left: 3px solid $error-color;
+      .ktb-selectable-tile-header {
+        background-color: $gray-200;
+      }
     }
 
-    &:hover,
+    .ktb-selectable-tile-container {
+      border: 1px solid $gray-200;
+    }
+
     &.ktb-tile-selected {
+      &:hover .ktb-selectable-tile-container,
       .ktb-selectable-tile-container {
-        border: 1px solid $gray-300;
-        border-left: 3px solid $error-color;
+        border-left-width: 7px;
       }
+    }
+  }
+
+  .ktb-selectable-tile.ktb-tile-error {
+    &:hover .ktb-selectable-tile-container,
+    .ktb-selectable-tile-container {
+      border-left: 3px solid $error-color;
     }
   }
 
   .ktb-selectable-tile.ktb-tile-success {
+    &:hover .ktb-selectable-tile-container,
     .ktb-selectable-tile-container {
-      border: 1px solid $gray-200;
       border-left: 3px solid $cta-color;
-    }
-
-    &:hover,
-    &.ktb-tile-selected {
-      .ktb-selectable-tile-container {
-        border: 1px solid $gray-300;
-        border-left: 3px solid $cta-color;
-      }
     }
   }
 
   .ktb-selectable-tile.ktb-tile-highlight {
+    &:hover .ktb-selectable-tile-container,
     .ktb-selectable-tile-container {
-      border: 1px solid $gray-200;
       border-left: 3px solid $blue-400;
-    }
-
-    &:hover,
-    &.ktb-tile-selected {
-      .ktb-selectable-tile-container {
-        border: 1px solid $gray-300;
-        border-left: 3px solid $blue-400;
-      }
     }
   }
 }
