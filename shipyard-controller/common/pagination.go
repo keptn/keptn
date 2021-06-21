@@ -5,6 +5,11 @@ import (
 	"strconv"
 )
 
+type PaginationConfig struct {
+	PageSize int
+	Limit    int
+}
+
 // PaginationResult contains pagination info
 type PaginationResult struct {
 	// Pointer to next page, base64 encoded

@@ -21,8 +21,14 @@ import (
 // 			DeleteEventCollectionsFunc: func(project string) error {
 // 				panic("mock out the DeleteEventCollections method")
 // 			},
+// 			GetEventTraceFunc: func(project string, keptnContext string) (*models.GetEventsResult, error) {
+// 				panic("mock out the GetEventTrace method")
+// 			},
 // 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 // 				panic("mock out the GetEvents method")
+// 			},
+// 			GetRootEventsFunc: func(params models.GetRootEventParams) (*models.GetEventsResult, error) {
+// 				panic("mock out the GetRootEvents method")
 // 			},
 // 			InsertEventFunc: func(project string, event models.Event, status common.EventStatus) error {
 // 				panic("mock out the InsertEvent method")
@@ -40,8 +46,14 @@ type EventRepoMock struct {
 	// DeleteEventCollectionsFunc mocks the DeleteEventCollections method.
 	DeleteEventCollectionsFunc func(project string) error
 
+	// GetEventTraceFunc mocks the GetEventTrace method.
+	GetEventTraceFunc func(project string, keptnContext string) (*models.GetEventsResult, error)
+
 	// GetEventsFunc mocks the GetEvents method.
 	GetEventsFunc func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
+
+	// GetRootEventsFunc mocks the GetRootEvents method.
+	GetRootEventsFunc func(params models.GetRootEventParams) (*models.GetEventsResult, error)
 
 	// InsertEventFunc mocks the InsertEvent method.
 	InsertEventFunc func(project string, event models.Event, status common.EventStatus) error
@@ -62,6 +74,13 @@ type EventRepoMock struct {
 			// Project is the project argument value.
 			Project string
 		}
+		// GetEventTrace holds details about calls to the GetEventTrace method.
+		GetEventTrace []struct {
+			// Project is the project argument value.
+			Project string
+			// KeptnContext is the keptnContext argument value.
+			KeptnContext string
+		}
 		// GetEvents holds details about calls to the GetEvents method.
 		GetEvents []struct {
 			// Project is the project argument value.
@@ -70,6 +89,11 @@ type EventRepoMock struct {
 			Filter common.EventFilter
 			// Status is the status argument value.
 			Status []common.EventStatus
+		}
+		// GetRootEvents holds details about calls to the GetRootEvents method.
+		GetRootEvents []struct {
+			// Params is the params argument value.
+			Params models.GetRootEventParams
 		}
 		// InsertEvent holds details about calls to the InsertEvent method.
 		InsertEvent []struct {
@@ -83,7 +107,9 @@ type EventRepoMock struct {
 	}
 	lockDeleteEvent            sync.RWMutex
 	lockDeleteEventCollections sync.RWMutex
+	lockGetEventTrace          sync.RWMutex
 	lockGetEvents              sync.RWMutex
+	lockGetRootEvents          sync.RWMutex
 	lockInsertEvent            sync.RWMutex
 }
 
@@ -157,6 +183,41 @@ func (mock *EventRepoMock) DeleteEventCollectionsCalls() []struct {
 	return calls
 }
 
+// GetEventTrace calls GetEventTraceFunc.
+func (mock *EventRepoMock) GetEventTrace(project string, keptnContext string) (*models.GetEventsResult, error) {
+	if mock.GetEventTraceFunc == nil {
+		panic("EventRepoMock.GetEventTraceFunc: method is nil but EventRepo.GetEventTrace was just called")
+	}
+	callInfo := struct {
+		Project      string
+		KeptnContext string
+	}{
+		Project:      project,
+		KeptnContext: keptnContext,
+	}
+	mock.lockGetEventTrace.Lock()
+	mock.calls.GetEventTrace = append(mock.calls.GetEventTrace, callInfo)
+	mock.lockGetEventTrace.Unlock()
+	return mock.GetEventTraceFunc(project, keptnContext)
+}
+
+// GetEventTraceCalls gets all the calls that were made to GetEventTrace.
+// Check the length with:
+//     len(mockedEventRepo.GetEventTraceCalls())
+func (mock *EventRepoMock) GetEventTraceCalls() []struct {
+	Project      string
+	KeptnContext string
+} {
+	var calls []struct {
+		Project      string
+		KeptnContext string
+	}
+	mock.lockGetEventTrace.RLock()
+	calls = mock.calls.GetEventTrace
+	mock.lockGetEventTrace.RUnlock()
+	return calls
+}
+
 // GetEvents calls GetEventsFunc.
 func (mock *EventRepoMock) GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 	if mock.GetEventsFunc == nil {
@@ -193,6 +254,37 @@ func (mock *EventRepoMock) GetEventsCalls() []struct {
 	mock.lockGetEvents.RLock()
 	calls = mock.calls.GetEvents
 	mock.lockGetEvents.RUnlock()
+	return calls
+}
+
+// GetRootEvents calls GetRootEventsFunc.
+func (mock *EventRepoMock) GetRootEvents(params models.GetRootEventParams) (*models.GetEventsResult, error) {
+	if mock.GetRootEventsFunc == nil {
+		panic("EventRepoMock.GetRootEventsFunc: method is nil but EventRepo.GetRootEvents was just called")
+	}
+	callInfo := struct {
+		Params models.GetRootEventParams
+	}{
+		Params: params,
+	}
+	mock.lockGetRootEvents.Lock()
+	mock.calls.GetRootEvents = append(mock.calls.GetRootEvents, callInfo)
+	mock.lockGetRootEvents.Unlock()
+	return mock.GetRootEventsFunc(params)
+}
+
+// GetRootEventsCalls gets all the calls that were made to GetRootEvents.
+// Check the length with:
+//     len(mockedEventRepo.GetRootEventsCalls())
+func (mock *EventRepoMock) GetRootEventsCalls() []struct {
+	Params models.GetRootEventParams
+} {
+	var calls []struct {
+		Params models.GetRootEventParams
+	}
+	mock.lockGetRootEvents.RLock()
+	calls = mock.calls.GetRootEvents
+	mock.lockGetRootEvents.RUnlock()
 	return calls
 }
 

@@ -14,6 +14,8 @@ var ErrNoEventFound = errors.New("no matching event found")
 type EventRepo interface {
 	// GetEvents gets all events of a project, based on the provided filter
 	GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error)
+	// GetRootEvents returns all root events of a project
+	GetRootEvents(params models.GetRootEventParams) (*models.GetEventsResult, error)
 	// InsertEvent inserts an event into the collection of the specified project
 	InsertEvent(project string, event models.Event, status common.EventStatus) error
 	// DeleteEvent deletes an event from the collection

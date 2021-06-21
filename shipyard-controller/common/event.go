@@ -10,6 +10,8 @@ const (
 	StartedEvent EventStatus = "started"
 	// FinishedEvent describes a 'finished' event
 	FinishedEvent EventStatus = "finished"
+	// RootEvent indicates that an event triggered a task sequence execution
+	RootEvent EventStatus = "root"
 )
 
 // EventFilter allows to pass filters
