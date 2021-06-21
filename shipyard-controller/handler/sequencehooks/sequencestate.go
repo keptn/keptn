@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-const sequenceTriggeredState = "triggered"
-const sequenceFinished = "finished"
-
 type SequenceStateMaterializedView struct {
 	SequenceStateRepo db.SequenceStateRepo
 }
@@ -38,9 +35,9 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		Name:           sequenceName,
 		Service:        eventScope.Service,
 		Project:        eventScope.Project,
-		Time:           timeutils.GetKeptnTimeStamp(time.Now()),
+		Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
 		Shkeptncontext: eventScope.KeptnContext,
-		State:          sequenceTriggeredState,
+		State:          models.SequenceTriggeredState,
 		Stages:         []models.SequenceStateStage{},
 	}
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
@@ -133,7 +130,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 
 	state := states.States[0]
 
-	state.State = sequenceFinished
+	state.State = models.SequenceFinished
 	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}

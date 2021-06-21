@@ -78,6 +78,17 @@ func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 	require.Len(t, eventsResult.Events, 2)
 	require.Equal(t, int64(4), eventsResult.NextPageKey)
 
+	// check if NextPageKey is set to 0 if we have reached the end of the collection
+	eventsResult, err = repo.GetRootEvents(models.GetRootEventParams{
+		Project:     projectName,
+		PageSize:    int64(8),
+		NextPageKey: int64(2),
+	})
+
+	require.Nil(t, err)
+	require.Len(t, eventsResult.Events, 8)
+	require.Equal(t, int64(0), eventsResult.NextPageKey)
+
 	// check if event traces work
 	eventTraceResult, err := repo.GetEvents(projectName, common.EventFilter{
 		KeptnContext: common.Stringp("my-keptn-context-1"),
