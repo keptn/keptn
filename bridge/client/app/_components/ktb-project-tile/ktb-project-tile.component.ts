@@ -29,9 +29,10 @@ export class KtbProjectTileComponent implements OnInit, OnDestroy {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {
     this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter(keptnInfo => !!keptnInfo)
+      ).subscribe(keptnInfo => {
         this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
       });
   }

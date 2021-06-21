@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import {Root} from '../../_models/root';
 import {DateUtil} from '../../_utils/date.utils';
-import {filter, takeUntil} from 'rxjs/operators';
+import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
 import {DataService} from '../../_services/data.service';
 import {Subject} from 'rxjs';
@@ -60,22 +60,21 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil, private route: ActivatedRoute, private dataService: DataService) { }
 
   ngOnInit() {
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
-        this.dataService.getProject(params.projectName).pipe(
-          takeUntil(this.unsubscribe$)
-        ).subscribe(project => {
-          this.project = project;
-        });
-        this.dataService.roots.pipe(
-          takeUntil(this.unsubscribe$),
-          filter(roots => !!roots)
-        ).subscribe(() => {
-          this.loading = false;
-          this._changeDetectorRef.markForCheck();
-        });
-      });
+    this.route.params.pipe(
+      map(params => params.projectName),
+      switchMap(projectName => this.dataService.getProject(projectName)),
+      takeUntil(this.unsubscribe$)
+    ).subscribe(project => {
+      this.project = project;
+    });
+
+    this.dataService.roots.pipe(
+      takeUntil(this.unsubscribe$),
+      filter(roots => !!roots)
+    ).subscribe(() => {
+      this.loading = false;
+      this._changeDetectorRef.markForCheck();
+    });
   }
 
   selectEvent(root: Root, stage?: String) {
