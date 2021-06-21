@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -113,12 +114,20 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 		Stages:         []models.SequenceStateStage{},
 	}
 
-	//events, err := sm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: common.Stringp(rootEvent.Shkeptncontext)})
-	//if err != nil {
-	//	return err
-	//}
+	events, err := sm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: common.Stringp(rootEvent.Shkeptncontext)})
+	if err != nil {
+		return err
+	}
 
-	//sequenceState.State = getSequenceState(events)
+	overallState, stageStates, err := getSequenceState(events)
+	if err != nil {
+		return err
+	}
+
+	sequenceState.State = overallState
+	for _, stageState := range stageStates {
+		sequenceState.Stages = append(sequenceState.Stages, *stageState)
+	}
 
 	if err := sm.taskSequenceRepo.CreateSequenceState(sequenceState); err != nil {
 		return err
@@ -167,6 +176,7 @@ func getSequenceState(events []models.Event) (string, map[string]*models.Sequenc
 			// check if this is a <stage>.<sequence>.(triggered|finished) event
 			_, _, _, err = keptnv2.ParseSequenceEventType(scope.EventType)
 			if err != nil {
+				// TODO make this more readable
 				// not a <stage>.<sequence>.(triggered|finished), but a task event
 				// events are sorted by time in a descending order (newest to oldest), so the first event we encounter for a certain stage here is the LatestEvent of the stage state
 
@@ -178,8 +188,22 @@ func getSequenceState(events []models.Event) (string, map[string]*models.Sequenc
 				if stateMap[scope.Stage].LatestEvent == nil {
 					stateMap[scope.Stage].LatestEvent = latestEvent
 				}
-				if scope.Result == keptnv2.ResultFailed && scope.Status == keptnv2.StatusErrored {
+				if scope.Result == keptnv2.ResultFailed && scope.Status == keptnv2.StatusErrored && stateMap[scope.Stage].LatestFailedEvent == nil {
 					stateMap[scope.Stage].LatestFailedEvent = latestEvent
+				}
+
+				if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && stateMap[scope.Stage].LatestEvaluation == nil {
+					evaluationData := &keptnv2.EvaluationFinishedEventData{}
+					if err := keptnv2.Decode(event.Data, evaluationData); err != nil {
+						// continue with the other events
+						continue
+					}
+					stateMap[scope.Stage].LatestEvaluation = &models.SequenceStateEvaluation{
+						Result: string(scope.Result),
+						Score:  evaluationData.Evaluation.Score,
+					}
+				} else if *event.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) && stateMap[scope.Stage].Image == "" {
+
 				}
 			} else {
 				if index == 0 && !strings.HasSuffix(*event.Type, ".finished") { // TODO add a helper func to go-utils to determine if an event is finished/triggered, etc.
