@@ -9,7 +9,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/controller"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/docs"
+	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ import (
 )
 
 // @title Control Plane API
-// @version 1.0
+// @version develop
 // @description This is the API documentation of the Shipyard Controller.
 
 // @securityDefinitions.apiKey ApiKeyAuth
@@ -46,10 +46,6 @@ func main() {
 	log.SetLevel(log.InfoLevel)
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
-		docs.SwaggerInfo.Version = osutils.GetOSEnv("version")
-		docs.SwaggerInfo.BasePath = "/api/shipyard-controller/v1"
-		docs.SwaggerInfo.Schemes = []string{"https"}
-
 		// disable GIN request logging in release mode
 		gin.SetMode("release")
 		gin.DefaultWriter = ioutil.Discard
