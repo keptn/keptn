@@ -95,8 +95,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       .pipe(
         map(params => params.projectName)
       );
-    this.roots$ = this.dataService.roots;
-    const roots$ = this.dataService.roots
+
+    this.roots$ = this.dataService.roots
       .pipe(
         takeUntil(this.unsubscribe$),
         filter(roots => roots?.length > 0)
@@ -130,7 +130,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
 
     // init; set parameters
-    combineLatest([this.route.params, roots$])
+    combineLatest([this.route.params, this.roots$])
       .pipe(
         takeUntil(this.unsubscribe$),
         take(1)
@@ -146,7 +146,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         }
     });
 
-    roots$.subscribe(roots => {
+    this.roots$.subscribe(roots => {
       this.updateFilterSequence(roots);
       this.refreshFilterDataSource();
       // Set unfinished roots so that the traces for updates can be loaded
