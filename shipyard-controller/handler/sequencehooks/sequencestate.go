@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -162,17 +163,18 @@ func (smv *SequenceStateMaterializedView) updateImageOfSequence(event models.Eve
 		return fmt.Errorf("could not decode deployment.triggered event data: %s", err.Error())
 	}
 
-	if deployedImage := deploymentTriggeredEventData.ConfigurationChange.Values["image"]; deployedImage != nil {
+	if deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData); err != nil {
 		eventScope, err := models.NewEventScope(event)
 		if err != nil {
 			return fmt.Errorf("could not determine event scope: %s", err.Error())
 		}
 		for index, stage := range state.Stages {
 			if stage.Name == eventScope.Stage {
-				state.Stages[index].Image = deployedImage.(string)
+				state.Stages[index].Image = deployedImage
 			}
 		}
 	}
+
 	return nil
 }
 

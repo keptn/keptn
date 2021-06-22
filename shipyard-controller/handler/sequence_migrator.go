@@ -8,7 +8,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"strings"
 	"time"
 )
 
@@ -38,6 +37,7 @@ func (sm *SequenceMigrator) Run(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				log.Debugf("%.2f seconds have passed. checking if there are sequences to migrate.", sm.syncInterval.Seconds())
+				sm.migrateSequences()
 			case <-ctx.Done():
 				log.Info("stopping SequenceMigrator")
 				return
@@ -119,7 +119,7 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 		return err
 	}
 
-	overallState, stageStates, err := getSequenceState(events)
+	overallState, stageStates, err := getSequenceStateAndStages(events)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func splitEventTraceByStage(events []models.Event) (map[string][]models.Event, e
 	return stageEvents, nil
 }
 
-func getSequenceState(events []models.Event) (string, map[string]*models.SequenceStateStage, error) {
+func getSequenceStateAndStages(events []models.Event) (string, map[string]*models.SequenceStateStage, error) {
 	// a sequence is finished if for every <stage>.<sequence>.triggered,
 	// there is a matching <stage>.<sequence>.finished event available within the context
 	stageEvents, err := splitEventTraceByStage(events)
@@ -155,16 +155,12 @@ func getSequenceState(events []models.Event) (string, map[string]*models.Sequenc
 		return "", nil, err
 	}
 
-	sequenceState := models.SequenceFinished
+	sequenceState := models.SequenceTriggeredState
 
 	stateMap := map[string]*models.SequenceStateStage{}
 	for stageName, events := range stageEvents {
 		stateMap[stageName] = &models.SequenceStateStage{
-			Name:              stageName,
-			Image:             "",  // TODO
-			LatestEvaluation:  nil, // TODO
-			LatestEvent:       nil,
-			LatestFailedEvent: nil, // TODO
+			Name: stageName,
 		}
 
 		for index, event := range events {
@@ -173,10 +169,7 @@ func getSequenceState(events []models.Event) (string, map[string]*models.Sequenc
 				return "", nil, err
 			}
 
-			// check if this is a <stage>.<sequence>.(triggered|finished) event
-			_, _, _, err = keptnv2.ParseSequenceEventType(scope.EventType)
-			if err != nil {
-				// TODO make this more readable
+			if keptnv2.IsTaskEventType(scope.EventType) {
 				// not a <stage>.<sequence>.(triggered|finished), but a task event
 				// events are sorted by time in a descending order (newest to oldest), so the first event we encounter for a certain stage here is the LatestEvent of the stage state
 
@@ -196,6 +189,7 @@ func getSequenceState(events []models.Event) (string, map[string]*models.Sequenc
 					evaluationData := &keptnv2.EvaluationFinishedEventData{}
 					if err := keptnv2.Decode(event.Data, evaluationData); err != nil {
 						// continue with the other events
+						log.WithError(err).Error("could not decode evaluation.finished event data")
 						continue
 					}
 					stateMap[scope.Stage].LatestEvaluation = &models.SequenceStateEvaluation{
@@ -203,17 +197,22 @@ func getSequenceState(events []models.Event) (string, map[string]*models.Sequenc
 						Score:  evaluationData.Evaluation.Score,
 					}
 				} else if *event.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) && stateMap[scope.Stage].Image == "" {
-
+					deploymentTriggeredEventData := &keptnv2.DeploymentTriggeredEventData{}
+					if err := keptnv2.Decode(event.Data, deploymentTriggeredEventData); err != nil {
+						log.WithError(err).Error("could not decode deployment.triggered event data")
+						continue
+					}
+					if deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData); err != nil {
+						stateMap[scope.Stage].Image = deployedImage
+					}
 				}
-			} else {
-				if index == 0 && !strings.HasSuffix(*event.Type, ".finished") { // TODO add a helper func to go-utils to determine if an event is finished/triggered, etc.
-					// if the chronologically last event of a stage is not a <stage>.<sequence>.finished event, we can assume that the sequence in that stage is not finished
-					sequenceState = models.SequenceTriggeredState
+			} else if keptnv2.IsSequenceEventType(scope.EventType) {
+				if index == 0 && keptnv2.IsFinishedEventType(*event.Type) {
+					// if the chronologically last event of a stage is a <stage>.<sequence>.finished event, we can assume that the sequence in that stage is finished
+					sequenceState = models.SequenceFinished
 				}
 			}
 		}
-
 	}
-
 	return sequenceState, stateMap, nil
 }
