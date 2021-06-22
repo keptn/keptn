@@ -13,7 +13,7 @@
     "adm-zip": "^0.5.5",
     "axios": "^0.21.1",
     "cookie-parser": "^1.4.5",
-    "crypto-random-string": "^4.0.0",
+    "crypto-random-string": "^3.3.1",
     "depd": "^2.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",

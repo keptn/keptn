@@ -67,7 +67,7 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.1102.13",
+    "@angular-devkit/build-angular": "^12.0.5",
     "@angular/cli": "^11.2.13",
     "@angular/compiler-cli": "^11.2.8",
     "@angular/language-service": "^12.0.4",
@@ -93,6 +93,8 @@
     "typescript": "^4.1.5"
   },
   "resolutions": {
-    "minimist": "1.2.5"
+    "minimist": "~1.2.5",
+    "css-what": "~5.0.1",
+    "glob-parent": "~5.1.2"
   }
 }
