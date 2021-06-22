@@ -57,7 +57,7 @@
     "highlight.js": "^10.4.1",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.15",
-    "marked": "^2.0.0",
+    "marked": "^2.1.0",
     "moment": "^2.29.0",
     "ngx-moment": "^3.5.0",
     "normalize.css": "^8.0.1",
