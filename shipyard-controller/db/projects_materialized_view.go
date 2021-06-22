@@ -466,9 +466,11 @@ func (mv *ProjectsMaterializedView) UpdateEventOfService(event interface{}, even
 				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
 			}
 
-			if deployedImage, err := common.ExtractImageOfDeploymentEvent(*triggeredData); err != nil {
-				service.DeployedImage = deployedImage
+			deployedImage, err := common.ExtractImageOfDeploymentEvent(*triggeredData)
+			if err != nil {
+				return fmt.Errorf("could not determine deployed image: %s", err.Error())
 			}
+			service.DeployedImage = deployedImage
 		}
 		return nil
 	})

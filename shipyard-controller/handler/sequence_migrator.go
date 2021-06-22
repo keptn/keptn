@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
 
@@ -37,7 +38,7 @@ func (sm *SequenceMigrator) Run(ctx context.Context) {
 			select {
 			case <-ticker.C:
 				log.Debugf("%.2f seconds have passed. checking if there are sequences to migrate.", sm.syncInterval.Seconds())
-				sm.migrateSequences()
+				sm.MigrateSequences()
 			case <-ctx.Done():
 				log.Info("stopping SequenceMigrator")
 				return
@@ -46,20 +47,23 @@ func (sm *SequenceMigrator) Run(ctx context.Context) {
 	}()
 }
 
-func (sm *SequenceMigrator) migrateSequences() {
+func (sm *SequenceMigrator) MigrateSequences() {
 	projects, err := sm.projectRepo.GetProjects()
 	if err != nil {
 		log.WithError(err).Error("could not load projects")
 		return
 	}
 
+	wg := &sync.WaitGroup{}
+	wg.Add(len(projects))
 	for _, project := range projects {
 		// migrate sequences of projects in parallel
-		go sm.migrateSequencesOfProject(project.ProjectName)
+		go sm.migrateSequencesOfProject(project.ProjectName, wg)
 	}
+	wg.Wait()
 }
 
-func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string) {
+func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sync.WaitGroup) {
 	pageSize := int64(50)
 
 	for {
@@ -83,6 +87,7 @@ func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string) {
 			break
 		}
 	}
+	wg.Done()
 }
 
 func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models.Event) error {
@@ -135,35 +140,47 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	return nil
 }
 
-func splitEventTraceByStage(events []models.Event) (map[string][]models.Event, error) {
-	stageEvents := map[string][]models.Event{}
+type stageEventTrace struct {
+	stageName string
+	events    []models.Event
+}
+
+func splitEventTraceByStage(events []models.Event) []stageEventTrace {
+	stageEventTraces := []stageEventTrace{}
 	for _, event := range events {
 		scope, err := models.NewEventScope(event)
 		if err != nil {
-			return nil, err
+			log.WithError(err).Error("could not determine scope of event")
+			continue
 		}
-		stageEvents[scope.Stage] = append(stageEvents[scope.Stage], event)
+		stageFound := false
+		for index := range stageEventTraces {
+			if stageEventTraces[index].stageName == scope.Stage {
+				stageFound = true
+				stageEventTraces[index].events = append(stageEventTraces[index].events, event)
+			}
+		}
+		if !stageFound {
+			stageEventTraces = append(stageEventTraces, stageEventTrace{stageName: scope.Stage, events: []models.Event{event}})
+		}
 	}
-	return stageEvents, nil
+	return stageEventTraces
 }
 
-func getSequenceStateAndStages(events []models.Event) (string, map[string]*models.SequenceStateStage, error) {
+func getSequenceStateAndStages(events []models.Event) (string, []*models.SequenceStateStage, error) {
 	// a sequence is finished if for every <stage>.<sequence>.triggered,
 	// there is a matching <stage>.<sequence>.finished event available within the context
-	stageEvents, err := splitEventTraceByStage(events)
-	if err != nil {
-		return "", nil, err
-	}
+	stageEvents := splitEventTraceByStage(events)
 
 	sequenceState := models.SequenceTriggeredState
 
-	stateMap := map[string]*models.SequenceStateStage{}
-	for stageName, events := range stageEvents {
-		stateMap[stageName] = &models.SequenceStateStage{
-			Name: stageName,
+	stageStates := []*models.SequenceStateStage{}
+	for _, stageEventTrace := range stageEvents {
+		stageState := &models.SequenceStateStage{
+			Name: stageEventTrace.stageName,
 		}
 
-		for index, event := range events {
+		for index, event := range stageEventTrace.events {
 			scope, err := models.NewEventScope(event)
 			if err != nil {
 				return "", nil, err
@@ -174,37 +191,40 @@ func getSequenceStateAndStages(events []models.Event) (string, map[string]*model
 				// events are sorted by time in a descending order (newest to oldest), so the first event we encounter for a certain stage here is the LatestEvent of the stage state
 
 				latestEvent := &models.SequenceStateEvent{
-					Type: *event.Type,
+					Type: scope.EventType,
 					ID:   event.ID,
 					Time: event.Time,
 				}
-				if stateMap[scope.Stage].LatestEvent == nil {
-					stateMap[scope.Stage].LatestEvent = latestEvent
+				if stageState.LatestEvent == nil {
+					stageState.LatestEvent = latestEvent
 				}
-				if scope.Result == keptnv2.ResultFailed && scope.Status == keptnv2.StatusErrored && stateMap[scope.Stage].LatestFailedEvent == nil {
-					stateMap[scope.Stage].LatestFailedEvent = latestEvent
+				if (scope.Result == keptnv2.ResultFailed || scope.Status == keptnv2.StatusErrored) && stageState.LatestFailedEvent == nil {
+					stageState.LatestFailedEvent = latestEvent
 				}
 
-				if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && stateMap[scope.Stage].LatestEvaluation == nil {
+				if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && stageState.LatestEvaluation == nil {
 					evaluationData := &keptnv2.EvaluationFinishedEventData{}
 					if err := keptnv2.Decode(event.Data, evaluationData); err != nil {
 						// continue with the other events
 						log.WithError(err).Error("could not decode evaluation.finished event data")
 						continue
 					}
-					stateMap[scope.Stage].LatestEvaluation = &models.SequenceStateEvaluation{
+					stageState.LatestEvaluation = &models.SequenceStateEvaluation{
 						Result: string(scope.Result),
 						Score:  evaluationData.Evaluation.Score,
 					}
-				} else if *event.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) && stateMap[scope.Stage].Image == "" {
+				} else if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) && stageState.Image == "" {
 					deploymentTriggeredEventData := &keptnv2.DeploymentTriggeredEventData{}
 					if err := keptnv2.Decode(event.Data, deploymentTriggeredEventData); err != nil {
 						log.WithError(err).Error("could not decode deployment.triggered event data")
 						continue
 					}
-					if deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData); err != nil {
-						stateMap[scope.Stage].Image = deployedImage
+					deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
+					if err != nil {
+						log.WithError(err).Error("could not determine deployed image")
+						continue
 					}
+					stageState.Image = deployedImage
 				}
 			} else if keptnv2.IsSequenceEventType(scope.EventType) {
 				if index == 0 && keptnv2.IsFinishedEventType(*event.Type) {
@@ -213,6 +233,7 @@ func getSequenceStateAndStages(events []models.Event) (string, map[string]*model
 				}
 			}
 		}
+		stageStates = append(stageStates, stageState)
 	}
-	return sequenceState, stateMap, nil
+	return sequenceState, stageStates, nil
 }

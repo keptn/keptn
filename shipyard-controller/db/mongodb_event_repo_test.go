@@ -27,7 +27,7 @@ func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 
 	require.Nil(t, err)
 
-	rootEvents := generateRootEvents(projectName, stageName, serviceName, numberOfTraces)
+	rootEvents := GenerateRootEvents(projectName, stageName, serviceName, numberOfTraces)
 
 	for _, event := range rootEvents {
 		// insert the event into the root events collection
@@ -38,7 +38,7 @@ func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 		err = repo.InsertEvent(projectName, event, "")
 		require.Nil(t, err)
 
-		eventTrace := generateTraceForRootEvent(projectName, stageName, serviceName, event, numberOfTasksPerTrace)
+		eventTrace := GenerateTraceForRootEvent(projectName, stageName, serviceName, event, numberOfTasksPerTrace)
 		for _, event := range eventTrace {
 			err = repo.InsertEvent(projectName, event, "")
 			require.Nil(t, err)
@@ -118,7 +118,7 @@ func TestMongoDBEventsRepo_InsertAndRetrieve(t *testing.T) {
 	require.Empty(t, events)
 }
 
-func generateRootEvents(projectName, stageName, serviceName string, numberOfEvents int) []models.Event {
+func GenerateRootEvents(projectName, stageName, serviceName string, numberOfEvents int) []models.Event {
 	result := []models.Event{}
 	for i := 0; i < numberOfEvents; i++ {
 		myRootEvent := models.Event{
@@ -137,7 +137,7 @@ func generateRootEvents(projectName, stageName, serviceName string, numberOfEven
 	return result
 }
 
-func generateTraceForRootEvent(projectName, stageName, serviceName string, rootEvent models.Event, numberOfTasks int) []models.Event {
+func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootEvent models.Event, numberOfTasks int) []models.Event {
 	result := []models.Event{}
 
 	for i := 0; i < numberOfTasks; i++ {
