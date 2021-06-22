@@ -29,7 +29,7 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 		wantSequenceState models.SequenceState
 	}{
 		{
-			name: "recreate task sequence state",
+			name: "recreate task sequence state - complete sequence",
 			fields: fields{
 				eventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
@@ -332,6 +332,125 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 						LatestEvent: &models.SequenceStateEvent{
 							Type: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
 							ID:   "dev-task-2-finished-id",
+							Time: timestampForAllEvents,
+						},
+						LatestFailedEvent: nil,
+					},
+				},
+			},
+		},
+		{
+			name: "recreate task sequence state - unfinished sequence",
+			fields: fields{
+				eventRepo: &db_mock.EventRepoMock{
+					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
+						return []models.Event{
+							{
+								Data: keptnv2.EventData{
+									Project: "my-project",
+									Stage:   "dev",
+									Service: "my-service",
+									Result:  keptnv2.ResultPass,
+									Status:  keptnv2.StatusSucceeded,
+								},
+								ID:             "dev-task-1-finished-id",
+								Triggeredid:    "dev-task-1-triggered-id",
+								Shkeptncontext: "my-keptn-context-1",
+								Time:           timestampForAllEvents,
+								Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+							},
+							{
+								Data: keptnv2.EventData{
+									Project: "my-project",
+									Stage:   "dev",
+									Service: "my-service",
+								},
+								ID:             "dev-task-1-started-id",
+								Triggeredid:    "dev-task-1-triggered-id",
+								Shkeptncontext: "my-keptn-context-1",
+								Time:           timestampForAllEvents,
+								Type:           common.Stringp(keptnv2.GetStartedEventType(keptnv2.DeploymentTaskName)),
+							},
+							{
+								Data: keptnv2.DeploymentTriggeredEventData{
+									EventData: keptnv2.EventData{
+										Project: "my-project",
+										Stage:   "dev",
+										Service: "my-service",
+									},
+									ConfigurationChange: keptnv2.ConfigurationChange{Values: map[string]interface{}{
+										"image": "my-image",
+									}},
+								},
+								ID:             "dev-task-1-triggered-id",
+								Shkeptncontext: "my-keptn-context-1",
+								Time:           timestampForAllEvents,
+								Type:           common.Stringp(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName)),
+							},
+							{
+								Data: keptnv2.EventData{
+									Project: "my-project",
+									Service: "my-service",
+									Stage:   "dev",
+								},
+								ID:             fmt.Sprintf("my-root-event-id-1"),
+								Shkeptncontext: fmt.Sprintf("my-keptn-context-1"),
+								Time:           timestampForAllEvents,
+								Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+							},
+						}, nil
+					},
+					GetRootEventsFunc: func(params models.GetRootEventParams) (*models.GetEventsResult, error) {
+						return &models.GetEventsResult{Events: []models.Event{
+							{
+								Data: keptnv2.EventData{
+									Project: "my-project",
+									Stage:   "dev",
+									Service: "my-service",
+								},
+								ID:             fmt.Sprintf("my-root-event-id-1"),
+								Shkeptncontext: fmt.Sprintf("my-keptn-context-1"),
+								Time:           timestampForAllEvents,
+								Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+							},
+						}}, nil
+					},
+				},
+				taskSequenceRepo: &db_mock.SequenceStateRepoMock{
+					CreateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return nil, nil
+					},
+				},
+				projectRepo: &db_mock.ProjectRepoMock{
+					GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
+						return []*models.ExpandedProject{
+							{
+								ProjectName: "my-project",
+							},
+						}, nil
+					},
+				},
+				theClock:     clock.NewMock(),
+				syncInterval: 10 * time.Minute,
+			},
+			wantSequenceState: models.SequenceState{
+				Name:           "delivery",
+				Service:        "my-service",
+				Project:        "my-project",
+				Time:           timestampForAllEvents,
+				Shkeptncontext: "my-keptn-context-1",
+				State:          models.SequenceTriggeredState,
+				Stages: []models.SequenceStateStage{
+					{
+						Name:             "dev",
+						Image:            "my-image",
+						LatestEvaluation: nil,
+						LatestEvent: &models.SequenceStateEvent{
+							Type: keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName),
+							ID:   "dev-task-1-finished-id",
 							Time: timestampForAllEvents,
 						},
 						LatestFailedEvent: nil,
