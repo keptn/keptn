@@ -1113,6 +1113,12 @@ jobs:
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
       META_KEPTN_KEPTN_PROJECT: keptn
     steps:
+      - name: Cache Keptn CLI
+        uses: actions/cache@v2
+        with:
+          path: /usr/local/bin/keptn
+          key: ${{ env.META_KEPTN_VERSION }}
+
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
         run: |
