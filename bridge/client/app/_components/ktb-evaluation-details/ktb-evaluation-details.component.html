@@ -2,21 +2,21 @@
   <div class="mt-1 mb-1" *ngIf="showChart && !isInvalidated">
     <div fxLayout="row" class="pr-2">
       <div fxFlex></div>
-      <div fxLayout="column" fxLayoutAlign="start end">
+      <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-contextButtons">
         <dt-button-group [(value)]="_comparisonView">
-          <dt-button-group-item [value]="'heatmap'" (click)="_comparisonView = 'heatmap'">Heatmap</dt-button-group-item>
-          <dt-button-group-item [value]="'chart'" (click)="_comparisonView = 'chart'">Chart</dt-button-group-item>
+          <dt-button-group-item [value]="'heatmap'" uitestid="keptn-evaluation-details-contextButtons-heatmap" (click)="_comparisonView = 'heatmap'">Heatmap</dt-button-group-item>
+          <dt-button-group-item [value]="'chart'" uitestid="keptn-evaluation-details-contextButtons-chart" (click)="_comparisonView = 'chart'">Chart</dt-button-group-item>
         </dt-button-group>
       </div>
     </div>
   </div>
   <div class="m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
-    <dt-chart class="mr-2" #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'"
+    <dt-chart class="mr-2" #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'" uitestid="keptn-evaluation-details-chartHeatmap"
               [options]="_heatmapOptions"
               [series]="_heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
-    <dt-chart *ngIf="showChart && _comparisonView == 'chart'"
+    <dt-chart *ngIf="showChart && _comparisonView == 'chart'" uitestid="keptn-evaluation-details-chartSeries"
               [options]="_chartOptions"
               [series]="_chartSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
@@ -40,10 +40,10 @@
   <div *ngIf="isInvalidated">
     <p class="m-0 error">This evaluation result has been invalidated.</p>
   </div>
-  <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData" (click)="$event.stopPropagation();">
+  <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData" (click)="$event.stopPropagation();" uitestid="keptn-evaluation-details-selected">
     <div fxLayout="row">
       <div fxFlex></div>
-      <div fxLayout="row" fxLayoutAlign="start end">
+      <div fxLayout="row" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-selected-contextButtons">
         <button dt-button variant="secondary" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluation.sloFileContentParsed"><dt-icon name="services"></dt-icon> Show SLO</button>
         <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">Ignore for comparison</button>
       </div>

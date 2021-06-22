@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -116,10 +117,10 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 				os.Unsetenv("PUBSUB_RECIPIENT_PATH")
 			}
 
-			env = envConfig{}
+			env = config.EnvConfig{}
 			_ = envconfig.Process("", &env)
 
-			got := getPubSubRecipientURL()
+			got := config.GetPubSubRecipientURL(env)
 			if got != tt.want {
 				t.Errorf("getPubSubRecipientURL() got = %v, want1 %v", got, tt.want)
 			}
@@ -540,7 +541,7 @@ func Test__main(t *testing.T) {
 	os.Setenv("PUBSUB_URL", natsURL)
 
 	natsPublisher, _ := nats.Connect(natsURL)
-	env = envConfig{}
+	env = config.EnvConfig{}
 	if err := envconfig.Process("", &env); err != nil {
 		t.Errorf("Failed to process env var: %s", err)
 	}

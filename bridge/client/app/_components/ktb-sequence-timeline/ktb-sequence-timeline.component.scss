@@ -27,11 +27,29 @@
     }
   }
 
-  .stage-transition {
-    transition: font-size $transition-time, font-weight $transition-time;
-    &.focused {
-      font-size: $default-font-size + 2px;
-      font-weight: bold;
+  .stage-text {
+    color: black;
+    padding: 3px 10px;
+    margin-left: 2px;
+    text-decoration: black underline;
+  }
+
+  .focused, .stage-item:hover .stage-text {
+    color: white;
+    text-decoration: white underline;
+    border-radius: 15px;
+
+    &.error {
+      background-color: $error-color;
+    }
+    &.success {
+      background-color: $cta-color-active;
+    }
+    &.highlight {
+      background-color: $blue-400;
+    }
+    &.warning {
+      background-color: $warning-color;
     }
   }
 }

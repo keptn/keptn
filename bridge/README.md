@@ -68,6 +68,31 @@ kubectl -n keptn scale deployment bridge --replicas=0
 kubectl -n keptn scale deployment bridge --replicas=1
 ```
 
+### Custom Look And Feel
+
+You can change the Look And Feel of the Keptn Bridge by creating a zip archive with your resources 
+and make it downloadable from an URL.
+
+When the `LOOK_AND_FEEL_URL` environment variable is set and points to a zip archive the Keptn
+Bridge will download that file on startup and extract its content into `/assets/branding`.
+
+The zip archive must contain an `app-config.json` and can have optionally a logo and a stylesheet.
+The `app-config.json` must define an `appTitle`, `logoUrl` and `logoInvertedUrl` and can have optionally
+a `stylesheetUrl`. The `logoUrl` will be used as logo in the app header, `logoInvertedUrl` will be used
+as app favicon and as placeholder in some empty state messages.
+If a `stylesheetUrl` is provided, the stylesheet will be injected in the app header on page load.
+
+```app-config.json
+{
+  "appTitle": "custom title",
+  "logoUrl": "assets/branding/logo.svg",
+  "logoInvertedUrl": "assets/branding/logo.svg",
+  "stylesheetUrl": "assets/branding/style.css"
+}
+```
+
+If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.png`, `logo_inverted.png` and an `app-config.json`.
+
 ### Delete in your Kubernetes cluster
 
 To delete a deployed bridge, use the file `deploy/bridge.yaml` from this repository and delete the Kubernetes resources:

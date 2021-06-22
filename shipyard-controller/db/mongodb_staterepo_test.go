@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,7 +29,21 @@ func setupLocalMongoDB() (*dockertest.Pool, *dockertest.Resource) {
 	}
 	var mongoClient *mongo.Client
 	// pulls an image, creates a container based on it and runs it
-	resource, err := pool.Run("docker.io/centos/mongodb-36-centos7", "1", []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password"})
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "docker.io/centos/mongodb-36-centos7",
+		Tag:        "1",
+		Env:        []string{"MONGODB_DATABASE=keptn", "MONGODB_PASSWORD=password", "MONGODB_USER=keptn", "MONGODB_ADMIN_PASSWORD=password"},
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"27017/tcp": {{HostPort: "27017"}}, // this makes the container reachable via localhost:27017 instead of always using a random port
+		},
+	}, func(config *docker.HostConfig) {
+		// set AutoRemove to true so that stopped container goes away by itself
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{
+			Name: "no",
+		}
+	})
+
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
@@ -60,14 +75,17 @@ func shutDownLocalMongoDB(pool *dockertest.Pool, resource *dockertest.Resource) 
 	}
 }
 
+func TestMain(m *testing.M) {
+	pool, dbResource := setupLocalMongoDB()
+	code := m.Run()
+	shutDownLocalMongoDB(pool, dbResource)
+	os.Exit(code)
+}
+
 func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	fmt.Println(timeutils.GetKeptnTimeStamp(time.Now()))
-	pool, dbResource := setupLocalMongoDB()
-	defer shutDownLocalMongoDB(pool, dbResource)
 
-	mdbrepo := &db.MongoDBStateRepo{
-		DbConnection: db.MongoDBConnection{},
-	}
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	state := models.SequenceState{
 		Name:           "my-sequence",
@@ -188,12 +206,8 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 }
 
 func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
-	pool, dbResource := setupLocalMongoDB()
-	defer shutDownLocalMongoDB(pool, dbResource)
 
-	mdbrepo := &db.MongoDBStateRepo{
-		DbConnection: db.MongoDBConnection{},
-	}
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	state := models.SequenceState{
 		Name:           "my-sequence",
@@ -205,7 +219,16 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 		Stages:         nil,
 	}
 
-	err := mdbrepo.CreateSequenceState(state)
+	// first, delete any entries that might have been inserted previously
+	err := mdbrepo.DeleteSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: "my-project",
+		},
+		Shkeptncontext: "my-context",
+	})
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateSequenceState(state)
 	require.Nil(t, err)
 
 	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
@@ -264,12 +287,8 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 }
 
 func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
-	pool, dbResource := setupLocalMongoDB()
-	defer shutDownLocalMongoDB(pool, dbResource)
 
-	mdbrepo := &db.MongoDBStateRepo{
-		DbConnection: db.MongoDBConnection{},
-	}
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
 
 	// create a state without a project
 	invalidState := models.SequenceState{

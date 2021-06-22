@@ -44,13 +44,14 @@ type shipyardController struct {
 func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
+		cbConnectionInstance := db.GetMongoDBConnectionInstance()
 		shipyardControllerInstance = &shipyardController{
-			projectRepo:      &db.MongoDBProjectsRepo{},
-			eventRepo:        &db.MongoDBEventsRepo{},
-			taskSequenceRepo: &db.TaskSequenceMongoDBRepo{},
+			projectRepo:      db.NewMongoDBProjectsRepo(cbConnectionInstance),
+			eventRepo:        db.NewMongoDBEventsRepo(cbConnectionInstance),
+			taskSequenceRepo: db.NewTaskSequenceMongoDBRepo(cbConnectionInstance),
 			eventsDbOperations: &db.ProjectsMaterializedView{
-				ProjectRepo:     &db.MongoDBProjectsRepo{},
-				EventsRetriever: &db.MongoDBEventsRepo{},
+				ProjectRepo:     db.NewMongoDBProjectsRepo(cbConnectionInstance),
+				EventsRetriever: db.NewMongoDBEventsRepo(cbConnectionInstance),
 			},
 			eventDispatcher: eventDispatcher,
 		}

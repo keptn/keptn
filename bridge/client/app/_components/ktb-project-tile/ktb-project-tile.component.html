@@ -1,20 +1,20 @@
 <dt-tile [id]="project.projectName" [routerLink]="['/project', project.projectName]" *ngIf="project">
-  <dt-tile-title [textContent]="project.projectName" [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)"></dt-tile-title>
+  <dt-tile-title [textContent]="project.projectName" [class.error]="project.isShipyardNotSupported(supportedShipyardVersion)" uitestid="keptn-project-tile-title"></dt-tile-title>
   <dt-tile-subtitle>
-    <p class="mt-0 mb-2" *ngIf="project.stages"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</p>
-    <p class="mt-0 mb-2" *ngIf="project.getShipyardVersion() as sv">Shipyard version: <span [textContent]="sv"></span> <dt-icon name="abort" class="error bottom" *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)"></dt-icon> </p>
+    <p class="mt-0 mb-2" *ngIf="project.stages" uitestid="keptn-project-tile-numStagesServices"><span [textContent]="project.stages.length"></span> Stages, <span [textContent]="project.getServices().length"></span> Services</p>
+    <p class="mt-0 mb-2" *ngIf="project.getShipyardVersion() as sv" uitestid="keptn-project-tile-shipyardVersion">Shipyard version: <span [textContent]="sv"></span> <dt-icon name="abort" class="error bottom" *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)"></dt-icon> </p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="project.isShipyardNotSupported(supportedShipyardVersion)">
       <dt-icon name="information" class="info mr-1"></dt-icon>
-      <p class="small m-0">Shipyard version not supported. <br/>Please use <a [href]="'/operate/upgrade/' | keptnUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn upgrade project</a> to upgrade to the latest shipyard version.</p>
+      <p class="small m-0" uitestid="keptn-project-tile-shipyardVersionNotSupported">Shipyard version not supported. <br/>Please use <a [href]="'/operate/upgrade/' | keptnUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">keptn upgrade project</a> to upgrade to the latest shipyard version.</p>
     </div>
-    <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI"><a [href]="project.gitRemoteURI" [textContent]="project.gitRemoteURI" target="_blank" (click)="$event.stopPropagation()"></a></p>
+    <p class="mt-0 mb-2" *ngIf="project.gitRemoteURI" uitestid="keptn-project-tile-gitRemoteUri"><a [href]="project.gitRemoteURI" [textContent]="project.gitRemoteURI" target="_blank" (click)="$event.stopPropagation()"></a></p>
     <div class="mb-2" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="!project.gitRemoteURI">
       <dt-icon class="info mr-1" [name]="'information'"></dt-icon>
-      <p class="small m-0">No Git upstream configured.
-        <a [routerLink]="['/project', project.projectName, 'settings']">Set Git upstream</a>
+      <p class="small m-0" uitestid="keptn-project-tile-gitRemoteUri-noUpstreamConfigured">No Git upstream configured.
+        <a [routerLink]="['/project', project.projectName, 'settings']" uitestid="keptn-project-tile-gitRemoteUri-setUpstream">Set Git upstream</a>
     </div>
   </dt-tile-subtitle>
-  <dt-tag-list aria-label="stages">
+  <dt-tag-list aria-label="stages" uitestid="keptn-project-tile-stagesTags">
     <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
   </dt-tag-list>
 </dt-tile>

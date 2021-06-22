@@ -4,6 +4,13 @@ metadata:
   name: service-remediation
 spec:
   remediations:
+    - problemType: "default"
+      actionsOnOpen:
+        - action: escalateDefaultAction
+          name: escalateDefaultName
+          description: escalateDefaultDescription
+          value:
+            foo: "bar"
     - problemType: problemType1
       actionsOnOpen:
         - action: action1

@@ -36,6 +36,7 @@ spec:
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
+        {{- include "control-plane.readinessProbe" . | nindent 8 }}
         ports:
         - containerPort: 8080
         resources:
@@ -78,7 +79,8 @@ spec:
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
-        {{- include "control-plane.livenessProbe" . | nindent 8 }}
+        {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
+        {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
         ports:
           - containerPort: 8080
         {{- include "keptn.distributor.resources" . | nindent 8 }}
@@ -89,6 +91,7 @@ spec:
             value: 'sh.keptn.event.get-action.triggered'
           - name: PUBSUB_RECIPIENT
             value: '127.0.0.1'
+        {{- include "control-plane.dist.common.env.vars" . | nindent 10 }}
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532

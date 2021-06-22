@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"errors"
 	"github.com/bmizerany/assert"
-	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	fakeapi "github.com/keptn/go-utils/pkg/api/utils/fake"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	credentialmanager_mock "github.com/keptn/keptn/cli/pkg/credentialmanager/fake"
+	"github.com/stretchr/testify/require"
 	"net/url"
 	"testing"
 )
@@ -34,8 +35,8 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					CreateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", nil
+					CreateSecretFunc: func(secret apimodels.Secret) error {
+						return nil
 					},
 				},
 			},
@@ -48,8 +49,10 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
-				Name:  stringp("my-secret"),
-				Scope: stringp(defaultSecretScope),
+				SecretMetadata: apimodels.SecretMetadata{
+					Name:  stringp("my-secret"),
+					Scope: stringp(defaultSecretScope),
+				},
 			},
 			wantErr: false,
 		},
@@ -58,8 +61,8 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					CreateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", nil
+					CreateSecretFunc: func(secret apimodels.Secret) error {
+						return nil
 					},
 				},
 			},
@@ -73,8 +76,10 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
-				Name:  stringp("my-secret"),
-				Scope: stringp("my-scope"),
+				SecretMetadata: apimodels.SecretMetadata{
+					Name:  stringp("my-secret"),
+					Scope: stringp("my-scope"),
+				},
 			},
 			wantErr: false,
 		},
@@ -83,8 +88,8 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					CreateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", &apimodels.Error{Message: stringp("could not update secret")}
+					CreateSecretFunc: func(secret apimodels.Secret) error {
+						return errors.New("could not update secret")
 					},
 				},
 			},
@@ -97,8 +102,10 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
-				Name:  stringp("my-secret"),
-				Scope: stringp(defaultSecretScope),
+				SecretMetadata: apimodels.SecretMetadata{
+					Name:  stringp("my-secret"),
+					Scope: stringp(defaultSecretScope),
+				},
 			},
 			wantErr: true,
 		},
@@ -107,8 +114,8 @@ func TestSecretCmdHandler_CreateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					CreateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", &apimodels.Error{Message: stringp("could not update secret")}
+					CreateSecretFunc: func(secret apimodels.Secret) error {
+						return errors.New("could not update secret")
 					},
 				},
 			},
@@ -163,8 +170,8 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					UpdateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", nil
+					UpdateSecretFunc: func(secret apimodels.Secret) error {
+						return nil
 					},
 				},
 			},
@@ -177,8 +184,10 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
-				Name:  stringp("my-secret"),
-				Scope: stringp(defaultSecretScope),
+				SecretMetadata: apimodels.SecretMetadata{
+					Name:  stringp("my-secret"),
+					Scope: stringp(defaultSecretScope),
+				},
 			},
 			wantErr: false,
 		},
@@ -187,8 +196,8 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					UpdateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", nil
+					UpdateSecretFunc: func(secret apimodels.Secret) error {
+						return nil
 					},
 				},
 			},
@@ -202,8 +211,10 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
-				Name:  stringp("my-secret"),
-				Scope: stringp("my-scope"),
+				SecretMetadata: apimodels.SecretMetadata{
+					Name:  stringp("my-secret"),
+					Scope: stringp("my-scope"),
+				},
 			},
 			wantErr: false,
 		},
@@ -212,8 +223,8 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					UpdateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", &apimodels.Error{Message: stringp("could not update secret")}
+					UpdateSecretFunc: func(secret apimodels.Secret) error {
+						return errors.New("could not update secret")
 					},
 				},
 			},
@@ -226,8 +237,10 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 					"foo": "bar",
 					"bar": "foo",
 				},
-				Name:  stringp("my-secret"),
-				Scope: stringp(defaultSecretScope),
+				SecretMetadata: apimodels.SecretMetadata{
+					Name:  stringp("my-secret"),
+					Scope: stringp(defaultSecretScope),
+				},
 			},
 			wantErr: true,
 		},
@@ -236,8 +249,8 @@ func TestSecretCmdHandler_UpdateSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					UpdateSecretFunc: func(secret apimodels.Secret) (string, *apimodels.Error) {
-						return "", &apimodels.Error{Message: stringp("could not update secret")}
+					UpdateSecretFunc: func(secret apimodels.Secret) error {
+						return errors.New("could not update secret")
 					},
 				},
 			},
@@ -289,8 +302,8 @@ func TestSecretCmdHandler_DeleteSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					DeleteSecretFunc: func(secretName string, secretScope string) (string, *models.Error) {
-						return "", nil
+					DeleteSecretFunc: func(secretName string, secretScope string) error {
+						return nil
 					},
 				},
 			},
@@ -305,11 +318,8 @@ func TestSecretCmdHandler_DeleteSecret(t *testing.T) {
 			fields: fields{
 				credentialManager: createMockCredentialManager(),
 				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
-					DeleteSecretFunc: func(secretName string, secretScope string) (string, *models.Error) {
-						return "", &apimodels.Error{
-							Code:    0,
-							Message: stringp("could not delete secret"),
-						}
+					DeleteSecretFunc: func(secretName string, secretScope string) error {
+						return errors.New("could not delete secret")
 					},
 				},
 			},
@@ -338,5 +348,143 @@ func createMockCredentialManager() *credentialmanager_mock.CredentialManagerInte
 		GetCredsFunc: func(namespace string) (url.URL, string, error) {
 			return url.URL{}, "", nil
 		},
+	}
+}
+
+func TestSecretCmdHandler_GetSecrets(t *testing.T) {
+	type fields struct {
+		credentialManager credentialmanager.CredentialManagerInterface
+		secretAPI         api.SecretHandlerInterface
+	}
+	type args struct {
+		outputFormat string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "get secrets - no output format",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+							{
+								Name: stringp("my-secret"),
+							},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "",
+			},
+			want:    "NAME\nmy-secret",
+			wantErr: false,
+		},
+		{
+			name: "get secrets - no output format, received empty list of secret",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "",
+			},
+			want:    "No secrets found",
+			wantErr: false,
+		},
+		{
+			name: "get secrets - json output format",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+							{
+								Name: stringp("my-secret"),
+							},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "json",
+			},
+			want: `{
+          "secrets": [
+            {
+              "name": "my-secret"
+            }
+          ]
+        }`,
+			wantErr: false,
+		},
+		{
+			name: "get secrets - yaml output format",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
+						return &apimodels.GetSecretsResponse{Secrets: []apimodels.SecretMetadata{
+							{
+								Name: stringp("my-secret"),
+							},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				outputFormat: "yaml",
+			},
+			want: `secrets:
+    - name: my-secret`,
+			wantErr: false,
+		},
+		{
+			name: "get secrets - error",
+			fields: fields{
+				credentialManager: createMockCredentialManager(),
+				secretAPI: &fakeapi.SecretHandlerInterfaceMock{
+					GetSecretsFunc: func() (*apimodels.GetSecretsResponse, error) {
+						return nil, errors.New("could not get secrets")
+					},
+				},
+			},
+			args: args{
+				outputFormat: "",
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := SecretCmdHandler{
+				credentialManager: tt.fields.credentialManager,
+				secretAPI:         tt.fields.secretAPI,
+			}
+			got, err := h.GetSecrets(tt.args.outputFormat)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSecrets() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.args.outputFormat == "yaml" {
+				require.YAMLEq(t, tt.want, got)
+			} else if tt.args.outputFormat == "json" {
+				require.JSONEq(t, tt.want, got)
+			} else {
+				require.Equal(t, tt.want, got)
+			}
+
+		})
 	}
 }

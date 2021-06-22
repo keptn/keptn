@@ -58,12 +58,9 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
-        this.isQualityGatesOnly = !keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY');
-      });
+    this.dataService.isQualityGatesOnly.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
   }
 
   selectStage($event) {

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Subject, timer} from 'rxjs';
-import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
+import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
 import { Deployment } from 'client/app/_models/deployment';
@@ -36,13 +36,9 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
-        this.isQualityGatesOnly = !keptnInfo.bridgeInfo.keptnInstallationType?.includes('CONTINUOUS_DELIVERY');
-        this._changeDetectorRef.markForCheck();
-      });
+    this.dataService.isQualityGatesOnly.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
 
     this.dataService.changedDeployments
       .pipe(takeUntil(this.unsubscribe$))
@@ -63,12 +59,15 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     );
 
-    params$.subscribe(params => {
-      this.serviceName ??= params.serviceName;
+    params$.pipe(take(1)).subscribe(params => {
+      this.serviceName = params.serviceName;
       this._changeDetectorRef.markForCheck();
     });
 
     project$.subscribe(project => {
+      if (this.selectedDeployment) { // the selected deployment gets lost if the project is updated, because the deployments are rebuild
+        this.selectedDeployment = project.getServices().find(s => s.serviceName === this.selectedDeployment.service)?.deployments.find(d => d.shkeptncontext === this.selectedDeployment.shkeptncontext);
+      }
       this.dataService.loadOpenRemediations(project);
       this.project = project;
       this._changeDetectorRef.markForCheck();

@@ -1,16 +1,21 @@
 import { AppPage } from './app.po';
-import { browser, logging } from 'protractor';
+import { browser, by, element, logging, protractor } from 'protractor';
+import { takeScreenshot } from './utils';
 
-describe('workspace-project App', () => {
+// run with ng e2e --dev-server-target= --base-url=http://localhost:3000/
+describe('Loading Bridge Example', () => {
   let page: AppPage;
 
   beforeEach(() => {
     page = new AppPage();
   });
 
-  it('should display welcome message', () => {
+  it('should match the title', () => {
     page.navigateTo();
-    expect(page.getTitleText()).toEqual('bridge app is running!');
+
+    expect(browser.getTitle()).toEqual('keptn');
+
+    takeScreenshot('entry-page.png');
   });
 
   afterEach(async () => {

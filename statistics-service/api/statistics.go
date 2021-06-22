@@ -19,8 +19,8 @@ import (
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   from     query    string     false        "From"
-// @Param   to     query    string     false        "To"
+// @Param   from     query    string     false        "From (Unix timestamp - see https://www.unixtimestamp.com/)"
+// @Param   to     query    string     false        "To (Unix timestamp - see https://www.unixtimestamp.com/)"
 // @Success 200 {object} operations.Statistics	"ok"
 // @Failure 400 {object} operations.Error "Invalid payload"
 // @Failure 500 {object} operations.Error "Internal error"

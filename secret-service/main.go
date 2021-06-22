@@ -2,18 +2,20 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/secret-service/pkg/backend"
 	"github.com/keptn/keptn/secret-service/pkg/controller"
 	"github.com/keptn/keptn/secret-service/pkg/handler"
 	"github.com/keptn/keptn/secret-service/pkg/repository"
-	"github.com/keptn/keptn/secret-service/swagger-ui/docs"
+	_ "github.com/keptn/keptn/secret-service/docs"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 )
 
 // @title Secret Service API
-// @version 1.0
+// @version develop
 // @description This is the API documentation of the Secret Service.
 
 // @securityDefinitions.apiKey ApiKeyAuth
@@ -33,10 +35,10 @@ func main() {
 		log.Fatalf("Scopes configuration file not found: %s", repository.ScopesConfigurationFile)
 	}
 
-	if os.Getenv("GIN_MODE") == "release" {
-		docs.SwaggerInfo.Version = os.Getenv("version")
-		docs.SwaggerInfo.BasePath = "/api/secrets/v1"
-		docs.SwaggerInfo.Schemes = []string{"https"}
+	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
+		// disable GIN request logging in release mode
+		gin.SetMode("release")
+		gin.DefaultWriter = ioutil.Discard
 	}
 
 	log.Infof("Registered Backends: %v", backend.GetRegisteredBackends())
@@ -49,7 +51,7 @@ func main() {
 	secretController := controller.NewSecretController(handler.NewSecretHandler(secretsBackend))
 	secretController.Inject(apiV1)
 
-	go keptnapi.RunHealthEndpoint("10999")
+	go keptnapi.RunHealthEndpoint("10998")
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	err := engine.Run()

@@ -1,5 +1,33 @@
 basePath: /v1
 definitions:
+  models.Approval:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      image:
+        description: image
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      tag:
+        description: tag
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
+  models.CreateLogsRequest:
+    properties:
+      logs:
+        description: logs
+        items:
+          $ref: '#/definitions/models.LogEntry'
+        type: array
+    type: object
+  models.DeleteLogResponse:
+    type: object
   models.Error:
     properties:
       code:
@@ -51,6 +79,18 @@ definitions:
         type: string
     type: object
   models.EventContext:
+    properties:
+      eventId:
+        description: ID of the event
+        type: string
+      keptnContext:
+        description: Keptn Context ID of the event
+        type: string
+      time:
+        description: Time of the event
+        type: string
+    type: object
+  models.EventContextInfo:
     properties:
       eventId:
         description: ID of the event
@@ -169,6 +209,11 @@ definitions:
       lastEventContext:
         $ref: '#/definitions/models.EventContext'
         description: last event context
+      parentStages:
+        description: Parent Stages
+        items:
+          type: string
+        type: array
       services:
         description: services
         items:
@@ -176,6 +221,71 @@ definitions:
         type: array
       stageName:
         description: Stage name
+        type: string
+    type: object
+  models.GetLogsResponse:
+    properties:
+      logs:
+        description: logs
+        items:
+          $ref: '#/definitions/models.LogEntry'
+        type: array
+      nextPageKey:
+        description: Pointer to next page
+        type: integer
+      pageSize:
+        description: Size of returned page
+        type: integer
+      totalCount:
+        description: Total number of logs
+        type: integer
+    type: object
+  models.Integration:
+    properties:
+      id:
+        type: string
+      metadata:
+        $ref: '#/definitions/models.MetaData'
+      name:
+        type: string
+      subscription:
+        $ref: '#/definitions/models.Subscription'
+    type: object
+  models.KubernetesMetaData:
+    properties:
+      deploymentname:
+        type: string
+      namespace:
+        type: string
+      podname:
+        type: string
+    type: object
+  models.LogEntry:
+    properties:
+      integrationid:
+        type: string
+      message:
+        type: string
+      shkeptncontext:
+        type: string
+      task:
+        type: string
+      time:
+        type: string
+      triggeredid:
+        type: string
+    type: object
+  models.MetaData:
+    properties:
+      distributorversion:
+        type: string
+      hostname:
+        type: string
+      integrationversion:
+        type: string
+      kubernetesmetadata:
+        $ref: '#/definitions/models.KubernetesMetaData'
+      location:
         type: string
     type: object
   models.Remediation:
@@ -260,6 +370,39 @@ definitions:
         description: Total number of events
         type: integer
     type: object
+  models.Service:
+    properties:
+      creationDate:
+        description: Creation date of the service
+        type: string
+      deployedImage:
+        description: Currently deployed image
+        type: string
+      lastEventTypes:
+        additionalProperties:
+          $ref: '#/definitions/models.EventContextInfo'
+        description: last event types
+        type: object
+      openApprovals:
+        description: open approvals
+        items:
+          $ref: '#/definitions/models.Approval'
+        type: array
+      serviceName:
+        description: Service name
+        type: string
+    type: object
+  models.Stage:
+    properties:
+      services:
+        description: services
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+      stageName:
+        description: Stage name
+        type: string
+    type: object
   models.Stages:
     properties:
       nextPageKey:
@@ -271,11 +414,31 @@ definitions:
       stages:
         description: stages
         items:
-          $ref: '#/definitions/models.ExpandedStage'
+          $ref: '#/definitions/models.Stage'
         type: array
       totalCount:
         description: Total number of stages
         type: number
+    type: object
+  models.Subscription:
+    properties:
+      filter:
+        $ref: '#/definitions/models.SubscriptionFilter'
+      status:
+        type: string
+      topics:
+        items:
+          type: string
+        type: array
+    type: object
+  models.SubscriptionFilter:
+    properties:
+      project:
+        type: string
+      service:
+        type: string
+      stage:
+        type: string
     type: object
   operations.CreateEvaluationParams:
     properties:
@@ -449,6 +612,118 @@ paths:
       summary: Get triggered events
       tags:
       - Events
+  /log:
+    delete:
+      consumes:
+      - application/json
+      description: Delete logs
+      parameters:
+      - description: integrationId
+        in: query
+        name: integrationId
+        type: string
+      - description: The from time stamp for fetching sequence states
+        in: query
+        name: fromTime
+        type: string
+      - description: The before time stamp for fetching sequence states
+        in: query
+        name: beforeTime
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.DeleteLogResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete logs
+      tags:
+      - Log
+    get:
+      consumes:
+      - application/json
+      description: Retrieve logs
+      parameters:
+      - description: integrationId
+        in: query
+        name: integrationId
+        type: string
+      - description: The from time stamp for fetching sequence states
+        in: query
+        name: fromTime
+        type: string
+      - description: The before time stamp for fetching sequence states
+        in: query
+        name: beforeTime
+        type: string
+      - description: The number of items to return
+        in: query
+        name: pageSize
+        type: integer
+      - description: Pointer to the next set of items
+        in: query
+        name: nextPageKey
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.GetLogsResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve logs
+      tags:
+      - Log
+    post:
+      consumes:
+      - application/json
+      description: Persist a list of log entries
+      parameters:
+      - description: Logs
+        in: body
+        name: integration
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateLogsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Persist a list of log entries
+      tags:
+      - Log
   /project:
     get:
       consumes:
@@ -908,11 +1183,13 @@ paths:
         in: query
         name: state
         type: string
-      - description: The from time stamp for fetching sequence states
+      - description: 'The from time stamp for fetching sequence states (in ISO8601
+          time format, e.g.: 2021-05-10T09:51:00.000Z)'
         in: query
         name: fromTime
         type: string
-      - description: The before time stamp for fetching sequence states
+      - description: 'The before time stamp for fetching sequence states (in ISO8601
+          time format, e.g.: 2021-05-10T09:51:00.000Z)'
         in: query
         name: beforeTime
         type: string
@@ -944,6 +1221,112 @@ paths:
       summary: Get task sequence execution states
       tags:
       - Sequence
+  /uniform/registration:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve uniform integrations
+      parameters:
+      - description: id
+        in: query
+        name: id
+        type: string
+      - description: name
+        in: query
+        name: name
+        type: string
+      - description: project
+        in: query
+        name: project
+        type: string
+      - description: stage
+        in: query
+        name: stage
+        type: string
+      - description: service
+        in: query
+        name: service
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/models.Integration'
+            type: array
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve uniform integrations
+      tags:
+      - Uniform
+    post:
+      consumes:
+      - application/json
+      description: Register a uniform integration
+      parameters:
+      - description: Integration
+        in: body
+        name: integration
+        required: true
+        schema:
+          $ref: '#/definitions/models.Integration'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Register a uniform integration
+      tags:
+      - Uniform
+  /uniform/registration/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Unregister a uniform integration
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/models.Error'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Unregister a uniform integration
+      tags:
+      - Uniform
 securityDefinitions:
   ApiKeyAuth:
     in: header

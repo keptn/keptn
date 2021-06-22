@@ -1,42 +1,44 @@
-<div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="roots$ | async as roots">
-  <div fxFlex fxLayout="column" fxLayoutGap="15px">
-    <dt-quick-filter [dataSource]="_filterDataSource" [filters]="_seqFilters" (filterChanges)="filtersChanged($event)" aria-label="Filter By Input value" label="Filter by" clearAllLabel="Clear all" fxFlex>
-      <div class="container" fxFlex fxLayout="column">
-        <ktb-root-events-list [events]="getFilteredSequences(roots)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)" fxFlex></ktb-root-events-list>
-        <div class="mb-3"></div>
-      </div>
-    </dt-quick-filter>
-  </div>
-</div>
-<div class="container" fxFlex="60" fxLayout="column" fxLayoutGap="15px">
-  <div *ngIf="currentSequence" fxFlex fxLayout="column" fxLayoutGap="15px">
-    <div class="mt-2 mb-3">
-      <dt-info-group>
-        <dt-info-group-title>
-          <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-            <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
-              <p class="m-0">
-                <span class="bold" [textContent]="currentSequence.getLabel()"></span>&nbsp;
-                <span [textContent]="currentSequence.getStatusLabel()"></span>
-              </p>
-              <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
-            </div>
-          </div>
-        </dt-info-group-title>
-        <p class="m-0 mb-1"><span class="bold">Context: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
-        <p class="m-0">
-          <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName(); else noImageName" [textContent]="currentSequence.getShortImageName()"></dt-tag>
-          <ng-template #noImageName>
-            <dt-tag class="mr-1" *ngIf="currentSequence.getService()" [textContent]="currentSequence.getService()"></dt-tag>
-          </ng-template>
-        </p>
-      </dt-info-group>
+<div fxFlexFill>
+  <div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="roots$ | async as roots">
+    <div fxFlex fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-view-filter">
+      <dt-quick-filter [dataSource]="_filterDataSource" [filters]="_seqFilters" (filterChanges)="filtersChanged($event)" aria-label="Filter By Input value" label="Filter by" clearAllLabel="Clear all" fxFlex>
+        <div class="container" fxFlex fxLayout="column">
+          <ktb-root-events-list uitestid="keptn-sequence-view-roots" [events]="getFilteredSequences(roots)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)" fxFlex></ktb-root-events-list>
+          <div class="mb-3"></div>
+        </div>
+      </dt-quick-filter>
     </div>
-    <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" [selectedStage]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
-    <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
-    <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
-      <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
-      <button class="ml-2" dt-button (click)="loadTraces(currentSequence)" *ngIf="showReloadButton(currentSequence)"><dt-icon name="refresh"></dt-icon> Reload</button>
+  </div>
+  <div class="container" fxFlex="60" fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-view-sequenceDetails">
+    <div *ngIf="currentSequence" fxFlex fxLayout="column" fxLayoutGap="15px">
+      <div class="mt-2 mb-3">
+        <dt-info-group>
+          <dt-info-group-title>
+            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+              <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
+                <p class="m-0">
+                  <span class="bold" [textContent]="currentSequence.getLabel()"></span>&nbsp;
+                  <span [textContent]="currentSequence.getStatusLabel()"></span>
+                </p>
+                <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+              </div>
+            </div>
+          </dt-info-group-title>
+          <p class="m-0 mb-1"><span class="bold">Context: </span><span [textContent]="currentSequence.shkeptncontext"></span></p>
+          <p class="m-0">
+            <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName(); else noImageName" [textContent]="currentSequence.getShortImageName()"></dt-tag>
+            <ng-template #noImageName>
+              <dt-tag class="mr-1" *ngIf="currentSequence.getService()" [textContent]="currentSequence.getService()"></dt-tag>
+            </ng-template>
+          </p>
+        </dt-info-group>
+      </div>
+      <ktb-sequence-timeline *ngIf="currentSequence.getStages().length > 0" [currentSequence]="currentSequence" [selectedStage]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-sequence-timeline>
+      <ktb-sequence-tasks-list [tasks]="currentSequence.traces" [stage]="selectedStage"></ktb-sequence-tasks-list>
+      <div class="mb-3" fxLayout="row" fxLayoutAlign="end center">
+        <dt-tag>Last time fetched: <span [textContent]="getTracesLastUpdated(currentSequence) | amCalendar:dateUtil.getCalendarFormats(true)"></span></dt-tag>
+        <button class="ml-2" dt-button (click)="loadTraces(currentSequence)" *ngIf="showReloadButton(currentSequence)"><dt-icon name="refresh"></dt-icon> Reload</button>
+      </div>
     </div>
   </div>
 </div>

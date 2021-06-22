@@ -1,15 +1,17 @@
 import semver from 'semver';
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, NavigationEnd, Router, RoutesRecognized} from '@angular/router';
-import {Observable, Subject, timer} from 'rxjs';
-import {filter, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {DOCUMENT} from "@angular/common";
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {NavigationEnd, Router, RoutesRecognized} from '@angular/router';
+import {Title} from "@angular/platform-browser";
+import {Observable, Subject} from 'rxjs';
+import {filter, map, takeUntil} from 'rxjs/operators';
 
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
 import {NotificationsService} from '../_services/notifications.service';
 import {NotificationType} from '../_models/notification';
-import {Trace} from '../_models/trace';
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-header',
@@ -23,15 +25,20 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   public projects: Observable<Project[]>;
   public project: Observable<Project>;
   public projectBoardView = '';
+  public appTitle = environment?.config?.appTitle;
+  public logoUrl = environment?.config?.logoUrl;
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
 
   public keptnInfo: any;
   public versionCheckDialogState: string | null;
   public versionCheckReference = '/reference/version_check/';
 
-  constructor(private router: Router, private dataService: DataService, private notificationsService: NotificationsService) {}
+  constructor(@Inject(DOCUMENT) private _document: HTMLDocument, private router: Router, private dataService: DataService, private notificationsService: NotificationsService, private titleService: Title) {}
 
   ngOnInit() {
     this.projects = this.dataService.projects;
+    this.titleService.setTitle(this.appTitle);
+    this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events
       .pipe(takeUntil(this.unsubscribe$))
@@ -62,7 +69,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         this.keptnInfo = keptnInfo;
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
-        } else if (keptnInfo.versionCheckEnabled) {
+        } else if (keptnInfo.bridgeInfo.enableVersionCheckFeature && keptnInfo.versionCheckEnabled) {
           keptnInfo.keptnVersionInvalid = !this.doVersionCheck(
             keptnInfo.bridgeInfo.bridgeVersion,
             keptnInfo.keptnVersion,
@@ -152,6 +159,10 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   versionCheckClicked(event) {
     this.dataService.setVersionCheck(event.checked);
+  }
+
+  setAppFavicon(path: string){
+    this._document.getElementById('appFavicon')?.setAttribute('href', path);
   }
 
   ngOnDestroy(): void {

@@ -30,7 +30,6 @@ spec:
             - name: "othertask"`
 
 func TestMain(m *testing.M) {
-	PrepareEnvVars()
 	code := m.Run()
 	os.Exit(code)
 }

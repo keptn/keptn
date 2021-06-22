@@ -3,14 +3,18 @@
 FROM golang:1.16.2-alpine as builder
 ARG version=develop
 
-WORKDIR /go/src/github.com/keptn/keptn/shipyard-controller
+# install additional dependencies
+RUN apk add --no-cache gcc libc-dev git
 
-# Force the go compiler to use modules 
+# Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+# Pre-Req for gin-gonic/go-swagger: Install swag cli to generate swagger.yaml and swagger.json
+RUN go get -u github.com/swaggo/swag/cmd/swag@v1.7.0
+
+WORKDIR /go/src/github.com/keptn/keptn/shipyard-controller
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -26,6 +30,14 @@ ENV REPLACE="version: ${version}"
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
+
+# generate swagger docs
+RUN GOOS=linux swag init --parseDependency
+
+# replace github.com/alecthomas/template; with text/template in docs/docs.go
+RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
+# replace version "develop" with actual version
+RUN sed -i "s/version: develop/${REPLACE}/g" docs/swagger.yaml
 
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 

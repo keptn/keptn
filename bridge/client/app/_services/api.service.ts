@@ -12,13 +12,14 @@ import {Trace} from "../_models/trace";
 import {ApprovalStates} from "../_models/approval-states";
 import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
-import {KeptnService} from '../_models/keptn-service';
-import {KeptnServicesMock} from '../_models/keptn-services.mock';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
 import * as moment from 'moment';
 import {SequenceResult} from '../_models/sequence-result';
 import {Project} from '../_models/project';
+import {UniformRegistration} from "../_models/uniform-registration";
+import {UniformRegistrationLogResponse} from "../_models/uniform-registration-log";
+import {Secret} from "../_models/secret";
 
 @Injectable({
   providedIn: 'root'
@@ -110,8 +111,29 @@ export class ApiService {
       .get<ProjectResult>(url);
   }
 
-  public getKeptnServices(projectName: string): Observable<KeptnService[]> {
-    return of(KeptnServicesMock);
+  public getUniformRegistrations(): Observable<UniformRegistration[]> {
+    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration`;
+    return this.http.get<UniformRegistration[]>(url);
+  }
+
+  public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLogResponse> {
+    const url = `${this._baseUrl}/controlPlane/v1/log?integrationId=${uniformRegistrationId}&pageSize=${pageSize}`;
+    return this.http.get<UniformRegistrationLogResponse>(url);
+  }
+
+  public getSecrets(): Observable<{Secrets: Secret[]}> {
+    const url = `${this._baseUrl}/secrets/v1/secret`;
+    return this.http.get<any>(url);
+  }
+
+  public addSecret(secret): Observable<object> {
+    const url = `${this._baseUrl}/secrets/v1/secret`;
+    return this.http.post<any>(url, secret);
+  }
+
+  public deleteSecret(name, scope): Observable<object> {
+    const url = `${this._baseUrl}/secrets/v1/secret?name=${name}&scope=${scope}`;
+    return this.http.delete<any>(url);
   }
 
   public getMetadata(): Observable<Metadata> {
@@ -206,6 +228,12 @@ export class ApiService {
     let url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}?filter=data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}&excludeInvalidated=true&limit=50`;
     if(fromTime)
       url += `&fromTime=${fromTime}`;
+    return this.http
+      .get<EventResult>(url);
+  }
+
+  public getEvaluationResult(shkeptncontext: string) {
+    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}?filter=shkeptncontext:${shkeptncontext}&limit=1`;
     return this.http
       .get<EventResult>(url);
   }

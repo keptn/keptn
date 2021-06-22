@@ -103,6 +103,16 @@ func GetNextAction(remediation *v0_1_4.Remediation, problemDetails keptnv2.Probl
 		}
 	}
 
+	// fallback: search problem type default
+	if actions == nil {
+		for _, r := range remediation.Spec.Remediations {
+			if r.ProblemType == "default" {
+				actions = r.ActionsOnOpen
+				break
+			}
+		}
+	}
+
 	// we did not find an action
 	if actions == nil {
 		return nil, fmt.Errorf("unable to find actions for root cause %s", rootCause)

@@ -8,26 +8,26 @@
             <dt-toggle-button-item-icon>
               <dt-icon class="stage-state-icon event-icon" name="criticalevent"></dt-icon>
             </dt-toggle-button-item-icon>
-            <p class="m-0"><span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length != 1">s</span> open</p>
+            <span [textContent]="problemEvents.length"></span> Problem<span *ngIf="problemEvents.length != 1">s</span> open
           </button>
           <button #evaluationFilterEventButton dt-toggle-button-item class="default" [value]="'evaluation'" [class.error]="failedRootEvents.length > 0" [disabled]="failedRootEvents.length == 0" [selected]="filterEventType == 'evaluation'">
             <dt-toggle-button-item-icon>
               <dt-icon class="stage-state-icon event-icon" name="traffic-light"></dt-icon>
             </dt-toggle-button-item-icon>
-            <p class="m-0"><span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed</p>
+            <span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed
           </button>
           <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="selectedStage.servicesWithOpenApprovals().length > 0" [disabled]="selectedStage.servicesWithOpenApprovals().length == 0" [selected]="filterEventType == 'approval'">
             <dt-toggle-button-item-icon>
               <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
             </dt-toggle-button-item-icon>
-            <p class="m-0"><span [textContent]="selectedStage.servicesWithOpenApprovals().length"></span> Service<span *ngIf="selectedStage.servicesWithOpenApprovals().length != 1">s</span> out-of-sync</p>
+            <span [textContent]="selectedStage.servicesWithOpenApprovals().length"></span> Service<span *ngIf="selectedStage.servicesWithOpenApprovals().length != 1">s</span> out-of-sync
           </button>
         </dt-toggle-button-group>
 
-        <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedStage.services.length == 0">
-          <dt-icon class="icon" name="information"></dt-icon>
-          <p class="m-0">No service onboarded yet. Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
-        </div>
+        <ng-container *ngIf="selectedStage.services.length == 0">
+          <ktb-no-service-info></ktb-no-service-info>
+        </ng-container>
+
         <ng-container *ngFor="let service of filterServices(selectedStage.services)">
           <ktb-expandable-tile class="mt-1" [expanded]="service.getOpenApprovals().length > 0"
                                *ngIf="!filterEventType || filterEventType == 'problem' && hasProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
@@ -48,7 +48,7 @@
                     </ng-container>
                   </div>
                 </dt-info-group-title>
-                <a [routerLink]="getServiceLink(service)" class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getShortImageName()"></a>
+                <a [routerLink]="getServiceLink(service)" class="m-0 mt-1" *ngIf="service.deployedImage; else noDeployment" [textContent]="service.getImageName()"></a>
                 <ng-template #noDeployment>
                   <p class="m-0" *ngIf="isQualityGatesOnly && !project.getLatestDeployment(service.serviceName)">Use <a [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger evaluation</a> to trigger a quality gate evaluation.</p>
                   <p class="m-0" *ngIf="!isQualityGatesOnly">Service not deployed yet. Use <a [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl" target="_blank" rel="noopener noreferrer">keptn trigger delivery</a> to trigger a deployment.</p>

@@ -6,6 +6,8 @@ First off, thank you for considering contributing to Keptn! It's people like you
 
 * **Start contributing**: We also have a list of [good first issues](https://github.com/keptn/keptn/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22). If you want to work on it, just post a comment on the issue.
 
+* **Add yourself**: Add yourself to the [list of contributors](CONTRIBUTORS.md) along with your first pull request.
+
 This document lays out how to get you started in contributing to Keptn, so please read on.
 
 ## Documentation

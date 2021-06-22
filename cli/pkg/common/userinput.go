@@ -42,7 +42,7 @@ func (ui *UserInput) AskBool(question string, opts *UserInputOptions) bool {
 		log.Fatal(err.Error())
 	}
 
-	if line == "y" || line == "Y" || line == "Yes" || line == "yes" {
+	if input := strings.TrimSpace(strings.ToLower(line)); input == "y" || input == "yes" {
 		return true
 	}
 

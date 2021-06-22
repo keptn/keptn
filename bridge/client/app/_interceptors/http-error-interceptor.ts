@@ -44,7 +44,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             // The backend returned an unsuccessful response code.
             // The response body may contain clues as to what went wrong,
             console.error(`${error.status} ${error.message}`);
-            this.toast.create(`${error.message}`);
+            this.toast.create(`${error.error}`);
           }
 
           return throwError(error);

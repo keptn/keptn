@@ -66,7 +66,61 @@ Create the name of the service account to use
 livenessProbe:
   httpGet:
     path: /health
-    port: 10999
-  initialDelaySeconds: 45
+    port: {{.port | default 10998}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
   periodSeconds: 5
+{{- end }}
+
+{{- define "control-plane.readinessProbe" -}}
+readinessProbe:
+  httpGet:
+    path: /health
+    port: {{.port | default 10998}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
+  periodSeconds: 5
+{{- end }}
+
+{{- define "control-plane.dist.livenessProbe" -}}
+livenessProbe:
+  httpGet:
+    path: /health
+    port: {{.port | default 10999}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
+  periodSeconds: 5
+{{- end }}
+
+{{- define "control-plane.dist.readinessProbe" -}}
+readinessProbe:
+  httpGet:
+    path: /health
+    port: {{.port | default 10999}}
+  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
+  periodSeconds: 5
+{{- end }}
+
+{{- define "control-plane.dist.common.env.vars" -}}
+- name: VERSION
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/version']
+- name: LOCATION
+  valueFrom:
+   fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/component']
+- name: K8S_DEPLOYMENT_NAME
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.labels['app.kubernetes.io/name']
+- name: K8S_POD_NAME
+  valueFrom:
+    fieldRef:
+     fieldPath: metadata.name
+- name: K8S_NAMESPACE
+  valueFrom:
+    fieldRef:
+      fieldPath: metadata.namespace
+- name: K8S_NODE_NAME
+  valueFrom:
+    fieldRef:
+      fieldPath: spec.nodeName
 {{- end }}

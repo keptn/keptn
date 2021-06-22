@@ -134,6 +134,7 @@
     "variable-name": {
       "options": [
         "ban-keywords",
+        "allow-leading-underscore",
         "check-format",
         "allow-pascal-case"
       ]

@@ -4,6 +4,7 @@
                          [error]="event.isFinished() && event.isFaulty()"
                          [success]="event.isFinished() && !event.isFaulty()"
                          [highlight]="!!event.getPendingApproval()" [selected]="_selectedEvent == event"
+                         [attr.uitestid]="'keptn-root-events-list-' + event.shkeptncontext"
                          *ngIf="event">
       <ktb-selectable-tile-header>
         <div class="container">
@@ -24,7 +25,7 @@
               </p>
             </div>
           </div>
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" uitestid="keptn-root-events-list-stageDetails">
             <p class="m-0 mr-1 small bold" *ngIf="event.getShortImageName(); else noImageName" [textContent]="event.getShortImageName()"></p>
             <ng-template #noImageName>
               <p class="m-0 mr-1 small bold" *ngIf="event.getService()" [textContent]="event.getService()"></p>
@@ -32,15 +33,15 @@
             <p class="m-0 mr-1 small" *ngIf="event.getStages().length > 0">in</p>
             <ng-container *ngFor="let stage of event.getStages();">
               <ktb-stage-badge [stage]="stage" [evaluation]="event.getEvaluation(stage)"
-                               [success]="event.getFirstTraceOfStage(stage).isFinished() && stage != event.isFaulty()"
-                               [error]="stage == event.isFaulty()" [class.warning]="stage == event.isWarning()"
+                               [success]="event.getFirstTraceOfStage(stage).isFinished() && !event.isFaulty(stage)"
+                               [error]="event.isFaulty(stage)" [class.warning]="event.isWarning(stage)"
                                [highlight]="event.hasPendingApproval(stage)"
                                (click)="$event.stopPropagation();selectEvent(event, stage)"></ktb-stage-badge>
             </ng-container>
           </div>
         </div>
       </ktb-selectable-tile-header>
-      <p class="m-0 small">
+      <p class="m-0 small" uitestid="keptn-root-events-list-eventTiming">
         Started
         <span [textContent]="event.time | amCalendar:dateUtil.getCalendarFormats()"></span>
         and

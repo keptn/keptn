@@ -11,6 +11,7 @@ type ISecretHandler interface {
 	CreateSecret(c *gin.Context)
 	UpdateSecret(c *gin.Context)
 	DeleteSecret(c *gin.Context)
+	GetSecrets(c *gin.Context)
 }
 
 func NewSecretHandler(backend backend.SecretBackend) *SecretHandler {
@@ -107,9 +108,11 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 	}
 
 	secret := model.Secret{
-		Name:  params.Name,
-		Scope: params.Scope,
-		Data:  nil,
+		SecretMetadata: model.SecretMetadata{
+			Name:  params.Name,
+			Scope: params.Scope,
+		},
+		Data: nil,
 	}
 	err := s.SecretBackend.DeleteSecret(secret)
 	if err != nil {
@@ -123,6 +126,25 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 
+}
+
+// GetSecrets godoc
+// @Summary Get secrets
+// @Description Get secrets
+// @Tags Secrets
+// @Security ApiKeyAuth
+// @Success 200 {object} model.GetSecretsResponse
+// @Failure 500 {object} model.Error
+// @Router /secret [get]
+func (s SecretHandler) GetSecrets(c *gin.Context) {
+	secrets, err := s.SecretBackend.GetSecrets()
+	if err != nil {
+		SetInternalServerErrorResponse(err, c, "Unable to get secrets")
+		return
+	}
+
+	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, model.GetSecretsResponse{Secrets: secrets})
 }
 
 type DeleteSecretQueryParams struct {

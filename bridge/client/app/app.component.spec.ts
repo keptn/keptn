@@ -66,7 +66,7 @@ describe('AppComponent', () => {
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
   }));
 
-  it('should set base href correctly', waitForAsync(() => {
+  it('should set base href correctly', () => {
     fixture.detectChanges();
 
     // NOTE: function used in index.html, this is a duplicate only for testing
@@ -100,7 +100,7 @@ describe('AppComponent', () => {
     // base = 'https://bridge.demo.keptn.sh'
     expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/dashboard')).toBe('https://bridge.demo.keptn.sh');
     expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/project/sockshop')).toBe('https://bridge.demo.keptn.sh');
-  }));
+  });
 
   it('should render project board for "sockshop"', fakeAsync(() => {
     router.navigate(['project', 'sockshop']);

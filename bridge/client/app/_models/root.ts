@@ -4,22 +4,31 @@ import {EventTypes} from "./event-types";
 export class Root extends Trace {
   traces: Trace[] = [];
 
-  isFaulty(): string {
+  isFaulty(stageName?: string): boolean {
     // a Sequence is faulty, if there is a sequence that is faulty, but no other sequence that is successful on the same stage
-    let result: string = null;
-    this.getStages().forEach(stage => {
-      let stageTraces = this.traces.filter(t => t.getStage() == stage);
-      if(stageTraces.some(t => t.isFaulty() != null) && !stageTraces.some(t => t.isSuccessful() != null))
-        result = stage;
-    });
+    let result = false;
+    const stages = stageName ? [stageName] : this.getStages();
+    if (stages.length > 0) {
+      stages.forEach(stage => {
+        result ||= this.areTracesFaulty(stage);
+      });
+    }
+    else {
+      result = this.areTracesFaulty();
+    }
     return result;
+  }
+
+  private areTracesFaulty(stageName?: string): boolean {
+    const stageTraces = stageName ? this.traces.filter(t => t.getStage() === stageName) : this.traces;
+    return stageTraces.some(t => t.isFaulty()) && !stageTraces.some(t => t.isSuccessful());
   }
 
   isStarted(): boolean {
     return this.traces.length === 0 ? false : this.traces[this.traces.length-1].isStarted();
   }
 
-  isFailedEvaluation(): string {
+  hasFailedEvaluation(): string {
     let result: string = null;
     if(this.traces) {
       let failedEvaluation = this.findTrace(t => t.isEvaluation() && t.isFailedEvaluation());
@@ -37,17 +46,17 @@ export class Root extends Trace {
     return this.traces.reduce((result: string, trace: Trace) => result ? result : trace.isDeployment(), null);
   }
 
-  isWarning(): string {
-    return this.traces.reduce((result: string, trace: Trace) => trace.isWarning() ? trace.data.stage : result, null);
+  isWarning(stageName?: string): boolean {
+    return this.traces.reduce((result: boolean, trace: Trace) => trace.isWarning(stageName), false);
   }
 
-  isSuccessful(): string {
-    return this.traces.reduce((result: string, trace: Trace) => {
-      if(result)
-        return trace.isFaulty() ? null : result;
+  isSuccessful(stageName?: string): boolean {
+    return this.traces.reduce((result: boolean, trace: Trace) => {
+      if (result)
+        return !trace.isFaulty(stageName);
       else
-        return trace.isSuccessful() ? trace.data.stage : result
-    }, null);
+        return trace.isSuccessful(stageName);
+    }, false);
   }
 
   hasPendingApproval(stage: string): boolean {
