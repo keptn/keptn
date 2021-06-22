@@ -8,11 +8,26 @@
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
-        <img class="mt-2" [src]="logoInvertedUrl" />
+        <img class="mt-2" [src]="logoInvertedUrl"/>
       </dt-empty-state-item-img>
-      <dt-empty-state-item-title class="mt-2" aria-level="2">No projects existing</dt-empty-state-item-title>
-      <p>Sorry, no project could be found. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">Quick Start</a> instructions on how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a> and <a [href]="'/manage/service/' | keptnUrl" target="_blank">onboard a service</a>.</p>
-      <button dt-button (click)="loadProjects()"><dt-icon name="refresh"></dt-icon> Retry</button>
+      <dt-empty-state-item-title class="mt-2" aria-level="2">
+        No projects existing
+      </dt-empty-state-item-title>
+      <p>
+        Sorry, no project could be found. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">
+        Quick Start</a> instructions on
+        how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
+        <ng-container *ngIf="!isQualityGatesOnly">
+          and <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
+        </ng-container>
+        <ng-container *ngIf="isQualityGatesOnly">
+          and <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank">create a service</a>.
+        </ng-container>
+      </p>
+      <button dt-button (click)="loadProjects()">
+        <dt-icon name="refresh"></dt-icon>
+        Retry
+      </button>
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
