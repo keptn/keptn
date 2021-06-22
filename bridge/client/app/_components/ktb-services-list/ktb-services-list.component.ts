@@ -1,6 +1,5 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   Input,
   OnDestroy,
@@ -46,7 +45,6 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     if (this._services !== value) {
       this._services = value;
       this.updateDataSource();
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -57,7 +55,6 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     if (this._pageSize !== value) {
       this._pageSize = value;
       this.updateDataSource();
-      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -65,18 +62,13 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     return DEFAULT_PAGE_SIZE;
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
+  constructor(public dataService: DataService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
-    this.dataService.isQualityGatesOnly.pipe(
-      takeUntil(this.unsubscribe$)
-    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
-
     this.dataService.roots
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(roots => {
+      .subscribe(() => {
         this.updateDataSource();
-        this._changeDetectorRef.markForCheck();
       });
   }
 
