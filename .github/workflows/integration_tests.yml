@@ -1114,6 +1114,7 @@ jobs:
       META_KEPTN_KEPTN_PROJECT: keptn
     steps:
       - name: Cache Keptn CLI
+        id: keptn-cli-cache
         uses: actions/cache@v2
         with:
           path: /usr/local/bin/keptn
@@ -1121,6 +1122,7 @@ jobs:
 
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
+        if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
         run: |
           curl -sL https://get.keptn.sh | KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash
 
