@@ -12,9 +12,11 @@ require (
 	github.com/go-openapi/swag v0.19.14
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/uuid v1.2.0
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.5
-	github.com/keptn/kubernetes-utils v0.8.3
+	github.com/keptn/kubernetes-utils v0.8.4-0.20210618123434-8cc4dfaabf4c
+	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	gopkg.in/yaml.v2 v2.4.0
