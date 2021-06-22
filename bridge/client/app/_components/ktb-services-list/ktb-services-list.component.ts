@@ -35,7 +35,6 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
   public _services: Service[] = [];
   public _pageSize: number = DEFAULT_PAGE_SIZE;
   public dataSource: DtTableDataSource<Service>;
-  public isQualityGatesOnly: boolean;
 
   @Input()
   get services(): Service[] {
