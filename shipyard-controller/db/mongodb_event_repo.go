@@ -56,20 +56,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
-		var outputEvent interface{}
-		err := cur.Decode(&outputEvent)
-		if err != nil {
-			return nil, err
-		}
-		outputEvent, err = flattenRecursively(outputEvent)
-		if err != nil {
-			return nil, err
-		}
-
-		data, _ := json.Marshal(outputEvent)
-
-		event := &models.Event{}
-		err = json.Unmarshal(data, event)
+		event, err := decodeKeptnEvent(cur)
 		if err != nil {
 			continue
 		}
@@ -77,6 +64,24 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	}
 
 	return events, nil
+}
+
+func decodeKeptnEvent(cur *mongo.Cursor) (*models.Event, error) {
+	var outputEvent interface{}
+	err := cur.Decode(&outputEvent)
+	if err != nil {
+		return nil, err
+	}
+	outputEvent, err = flattenRecursively(outputEvent)
+	if err != nil {
+		return nil, err
+	}
+
+	data, _ := json.Marshal(outputEvent)
+
+	event := &models.Event{}
+	err = json.Unmarshal(data, event)
+	return event, nil
 }
 
 func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEventParams) (*models.GetEventsResult, error) {
@@ -117,9 +122,9 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	}
 
 	for cur.Next(ctx) {
-		event := &models.Event{}
-		if err := cur.Decode(event); err != nil {
-			log.Errorf("could not decode event: %s", err.Error())
+		event, err := decodeKeptnEvent(cur)
+		if err != nil {
+			continue
 		}
 		events = append(events, *event)
 	}

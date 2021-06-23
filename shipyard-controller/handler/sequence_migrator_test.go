@@ -300,24 +300,6 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 				State:          models.SequenceFinished,
 				Stages: []models.SequenceStateStage{
 					{
-						Name:  "staging",
-						Image: "my-image",
-						LatestEvaluation: &models.SequenceStateEvaluation{
-							Result: string(keptnv2.ResultFailed),
-							Score:  0,
-						},
-						LatestEvent: &models.SequenceStateEvent{
-							Type: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
-							ID:   "staging-task-2-finished-id",
-							Time: timestampForAllEvents,
-						},
-						LatestFailedEvent: &models.SequenceStateEvent{
-							Type: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
-							ID:   "staging-task-2-finished-id",
-							Time: timestampForAllEvents,
-						},
-					},
-					{
 						Name:  "dev",
 						Image: "my-image",
 						LatestEvaluation: &models.SequenceStateEvaluation{
@@ -325,11 +307,29 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 							Score:  100,
 						},
 						LatestEvent: &models.SequenceStateEvent{
-							Type: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
-							ID:   "dev-task-2-finished-id",
+							Type: keptnv2.GetFinishedEventType("dev.delivery"),
+							ID:   "my-root-event-id-1",
 							Time: timestampForAllEvents,
 						},
 						LatestFailedEvent: nil,
+					},
+					{
+						Name:  "staging",
+						Image: "my-image",
+						LatestEvaluation: &models.SequenceStateEvaluation{
+							Result: string(keptnv2.ResultFailed),
+							Score:  0,
+						},
+						LatestEvent: &models.SequenceStateEvent{
+							Type: keptnv2.GetFinishedEventType("staging.delivery"),
+							ID:   "my-root-event-id-1",
+							Time: timestampForAllEvents,
+						},
+						LatestFailedEvent: &models.SequenceStateEvent{
+							Type: keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName),
+							ID:   "staging-task-2-finished-id",
+							Time: timestampForAllEvents,
+						},
 					},
 				},
 			},

@@ -132,8 +132,8 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	}
 
 	sequenceState.State = overallState
-	for _, stageState := range stageStates {
-		sequenceState.Stages = append(sequenceState.Stages, *stageState)
+	for i := len(stageStates) - 1; i >= 0; i-- {
+		sequenceState.Stages = append(sequenceState.Stages, *stageStates[i])
 	}
 
 	if err := sm.taskSequenceRepo.CreateSequenceState(sequenceState); err != nil {
@@ -143,9 +143,8 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 }
 
 type stageEventTrace struct {
-	stageName      string
-	taskEvents     []models.Event
-	sequenceEvents []models.Event
+	stageName string
+	events    []models.Event
 }
 
 func splitEventTraceByStage(events []models.Event) []stageEventTrace {
@@ -160,11 +159,11 @@ func splitEventTraceByStage(events []models.Event) []stageEventTrace {
 		for index := range stageEventTraces {
 			if stageEventTraces[index].stageName == scope.Stage {
 				stageFound = true
-				stageEventTraces[index].taskEvents = append(stageEventTraces[index].taskEvents, event)
+				stageEventTraces[index].events = append(stageEventTraces[index].events, event)
 			}
 		}
 		if !stageFound {
-			stageEventTraces = append(stageEventTraces, stageEventTrace{stageName: scope.Stage, taskEvents: []models.Event{event}})
+			stageEventTraces = append(stageEventTraces, stageEventTrace{stageName: scope.Stage, events: []models.Event{event}})
 		}
 	}
 	return stageEventTraces
@@ -177,12 +176,19 @@ func getSequenceStageStates(stageEvents []stageEventTrace) ([]*models.SequenceSt
 			Name: stageEventTrace.stageName,
 		}
 
-		for _, event := range stageEventTrace.taskEvents {
+		for _, event := range stageEventTrace.events {
 			scope, err := models.NewEventScope(event)
 			if err != nil {
 				return nil, err
 			}
-
+			latestEvent := &models.SequenceStateEvent{
+				Type: scope.EventType,
+				ID:   event.ID,
+				Time: event.Time,
+			}
+			if shouldAddLatestEvent(*stageState) {
+				stageState.LatestEvent = latestEvent
+			}
 			if keptnv2.IsTaskEventType(scope.EventType) {
 				// not a <stage>.<sequence>.(triggered|finished), but a task event
 				stageState, err = processTaskEventTaskEvent(*scope, event, *stageState)
@@ -205,7 +211,7 @@ func getOverallSequenceState(stageEvents []stageEventTrace) (string, error) {
 	for _, stageEventTrace := range stageEvents {
 		stagesFinished[stageEventTrace.stageName] = false
 
-		lastEventOfStage := stageEventTrace.taskEvents[0]
+		lastEventOfStage := stageEventTrace.events[0]
 		if keptnv2.IsSequenceEventType(*lastEventOfStage.Type) && keptnv2.IsFinishedEventType(*lastEventOfStage.Type) {
 			stagesFinished[stageEventTrace.stageName] = true
 		}
@@ -228,9 +234,6 @@ func processTaskEventTaskEvent(scope models.EventScope, event models.Event, stag
 		Type: scope.EventType,
 		ID:   event.ID,
 		Time: event.Time,
-	}
-	if shouldAddLatestEvent(stageState) {
-		stageState.LatestEvent = latestEvent
 	}
 	if shouldAddLatestFailedEvent(scope, stageState) {
 		stageState.LatestFailedEvent = latestEvent
