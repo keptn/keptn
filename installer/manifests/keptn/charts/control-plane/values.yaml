@@ -47,6 +47,7 @@ bridge:
   showApiToken:
     enabled: true
   installationType: null
+  lookAndFeelUrl: null
   oauth:
     enabled: false
     discovery: ""
