@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This integration test checks that all images that are pulled (can be retrieved by kubectl get events -n keptn)
+# are coming from the local registry from K3d (passed as a parameter to this script), rather than anywhere else.
+# Exception: k3s/rancher based images, as they are needed internally by K3d.
+
 # shellcheck disable=SC1091
 source test/utils.sh
 

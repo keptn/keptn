@@ -349,7 +349,7 @@ jobs:
           fi
 
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
-            # Install Keptn via Helmer Script
+            # Install Keptn via Helper Script
             installer/airgapped/install_keptn.sh "k3d-container-registry.localhost:12345/" "http://0.0.0.0:8000/$HELM_CHART_NAME" "http://0.0.0.0:8000/$HELM_SERVICE_HELM_CHART_NAME" "http://0.0.0.0:8000/$JMETER_SERVICE_HELM_CHART_NAME"
           else
             # Install Keptn via CLI
