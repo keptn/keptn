@@ -116,9 +116,16 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 		return fmt.Errorf("could not fetch event trace for shkeptncontext %s :%s", rootEvent.Shkeptncontext, err.Error())
 	}
 
-	overallState, stageStates, err := getSequenceStateAndStages(events)
+	stageEvents := splitEventTraceByStage(events)
+
+	stageStates, err := getSequenceStageStates(stageEvents)
 	if err != nil {
-		return fmt.Errorf("could not derive sequence state of shkeptncontext %s: %s", rootEvent.Shkeptncontext, err.Error())
+		return fmt.Errorf("could not derive stage states of shkeptncontext %s: %s", rootEvent.Shkeptncontext, err.Error())
+	}
+
+	overallState, err := getOverallSequenceState(stageEvents)
+	if err != nil {
+		return fmt.Errorf("could not derive overall state of shkeptncontext %s: %s", rootEvent.Shkeptncontext, err.Error())
 	}
 
 	sequenceState.State = overallState
@@ -133,8 +140,9 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 }
 
 type stageEventTrace struct {
-	stageName string
-	events    []models.Event
+	stageName      string
+	taskEvents     []models.Event
+	sequenceEvents []models.Event
 }
 
 func splitEventTraceByStage(events []models.Event) []stageEventTrace {
@@ -149,33 +157,27 @@ func splitEventTraceByStage(events []models.Event) []stageEventTrace {
 		for index := range stageEventTraces {
 			if stageEventTraces[index].stageName == scope.Stage {
 				stageFound = true
-				stageEventTraces[index].events = append(stageEventTraces[index].events, event)
+				stageEventTraces[index].taskEvents = append(stageEventTraces[index].taskEvents, event)
 			}
 		}
 		if !stageFound {
-			stageEventTraces = append(stageEventTraces, stageEventTrace{stageName: scope.Stage, events: []models.Event{event}})
+			stageEventTraces = append(stageEventTraces, stageEventTrace{stageName: scope.Stage, taskEvents: []models.Event{event}})
 		}
 	}
 	return stageEventTraces
 }
 
-func getSequenceStateAndStages(events []models.Event) (string, []*models.SequenceStateStage, error) {
-	// a sequence is finished if for every <stage>.<sequence>.triggered,
-	// there is a matching <stage>.<sequence>.finished event available within the context
-	stageEvents := splitEventTraceByStage(events)
-
-	sequenceState := models.SequenceTriggeredState
-
+func getSequenceStageStates(stageEvents []stageEventTrace) ([]*models.SequenceStateStage, error) {
 	stageStates := []*models.SequenceStateStage{}
 	for _, stageEventTrace := range stageEvents {
 		stageState := &models.SequenceStateStage{
 			Name: stageEventTrace.stageName,
 		}
 
-		for index, event := range stageEventTrace.events {
+		for _, event := range stageEventTrace.taskEvents {
 			scope, err := models.NewEventScope(event)
 			if err != nil {
-				return "", nil, err
+				return nil, err
 			}
 
 			if keptnv2.IsTaskEventType(scope.EventType) {
@@ -185,16 +187,45 @@ func getSequenceStateAndStages(events []models.Event) (string, []*models.Sequenc
 					log.WithError(err).Error("could not process task event")
 					continue
 				}
-			} else if keptnv2.IsSequenceEventType(scope.EventType) {
-				if index == 0 && keptnv2.IsFinishedEventType(*event.Type) {
-					// if the chronologically last event of a stage is a <stage>.<sequence>.finished event, we can assume that the sequence in that stage is finished
-					sequenceState = models.SequenceFinished
-				}
 			}
 		}
 		stageStates = append(stageStates, stageState)
 	}
-	return sequenceState, stageStates, nil
+	return stageStates, nil
+}
+
+func getOverallSequenceState(stageEvents []stageEventTrace) (string, error) {
+	// a sequence is finished if for every <stage>.<sequence>.triggered,
+	// there is a matching <stage>.<sequence>.finished event available within the context
+	sequenceState := models.SequenceFinished
+	stagesFinished := map[string]bool{}
+	for _, stageEventTrace := range stageEvents {
+		stagesFinished[stageEventTrace.stageName] = false
+
+		for index, event := range stageEventTrace.taskEvents {
+			scope, err := models.NewEventScope(event)
+			if err != nil {
+				return "", err
+			}
+
+			if keptnv2.IsSequenceEventType(scope.EventType) {
+				if index == 0 && keptnv2.IsFinishedEventType(*event.Type) {
+					// if the chronologically last event of a stage is a <stage>.<sequence>.finished event, we can assume that the sequence in that stage is finished
+					stagesFinished[stageEventTrace.stageName] = true
+				}
+			}
+		}
+	}
+
+	// check if each stage has ended with a <stage>.<sequence>.finished event
+	// if there is one stage where this is not the case, we can assume the sequence is not finished
+	for _, finished := range stagesFinished {
+		if !finished {
+			sequenceState = models.SequenceTriggeredState
+			break
+		}
+	}
+	return sequenceState, nil
 }
 
 func processTaskEventTaskEvent(scope models.EventScope, event models.Event, stageState models.SequenceStateStage) (*models.SequenceStateStage, error) {
