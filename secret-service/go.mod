@@ -11,6 +11,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0
 	k8s.io/api v0.20.4
-	k8s.io/apimachinery v0.20.4
+	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.20.4
 )
