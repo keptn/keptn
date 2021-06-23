@@ -1125,7 +1125,7 @@ jobs:
           - SERVICE_NAME: helm-service
     env:
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
-      KEPTN_INSTALLER_PATH: ~/downloads/keptn-installer.sh
+      KEPTN_ARCHIVE_PATH: ~/downloads/keptn-archive.tar.gz
     steps:
       - name: Create downloads folder
         run: mkdir ~/downloads
@@ -1141,8 +1141,11 @@ jobs:
         id: download_keptn_cli
         if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
         run: |
-          curl -sL https://get.keptn.sh -o ${{ env.KEPTN_INSTALLER_PATH }}
-          chmod +x ${{ env.KEPTN_INSTALLER_PATH }}
+          curl -sL https://github.com/keptn/keptn/releases/download/${META_KEPTN_VERSION}/keptn-${META_KEPTN_VERSION}-linux-amd64.tar.gz -o ${{ env.KEPTN_ARCHIVE_PATH }}
+          tar -xvf ${{ env.KEPTN_ARCHIVE_PATH }}
+          mv ./keptn-${META_KEPTN_VERSION}-linux-amd64 keptn
+          chmod +x keptn
+          mv ./keptn /usr/local/bin/keptn
 
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
