@@ -202,18 +202,9 @@ func getOverallSequenceState(stageEvents []stageEventTrace) (string, error) {
 	for _, stageEventTrace := range stageEvents {
 		stagesFinished[stageEventTrace.stageName] = false
 
-		for index, event := range stageEventTrace.taskEvents {
-			scope, err := models.NewEventScope(event)
-			if err != nil {
-				return "", err
-			}
-
-			if keptnv2.IsSequenceEventType(scope.EventType) {
-				if index == 0 && keptnv2.IsFinishedEventType(*event.Type) {
-					// if the chronologically last event of a stage is a <stage>.<sequence>.finished event, we can assume that the sequence in that stage is finished
-					stagesFinished[stageEventTrace.stageName] = true
-				}
-			}
+		lastEventOfStage := stageEventTrace.taskEvents[0]
+		if keptnv2.IsSequenceEventType(*lastEventOfStage.Type) && keptnv2.IsFinishedEventType(*lastEventOfStage.Type) {
+			stagesFinished[stageEventTrace.stageName] = true
 		}
 	}
 
