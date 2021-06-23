@@ -79,7 +79,7 @@ func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sy
 
 func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models.Event) error {
 	// first, check if there is already a task sequence for this context
-	log.Infof("checking if root event for shkeptncontext %s already has a task sequence state in the collection")
+	log.Infof("checking if root event for shkeptncontext %s already has a task sequence state in the collection", rootEvent.Shkeptncontext)
 	sequence, err := sm.taskSequenceRepo.FindSequenceStates(models.StateFilter{
 		Shkeptncontext: rootEvent.Shkeptncontext,
 	})
@@ -92,7 +92,7 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 		return nil
 	}
 
-	log.Infof("sequence of shkeptncontext %s not stored in collection yet. starting migration")
+	log.Infof("sequence of shkeptncontext %s not stored in collection yet. starting migration", rootEvent.Shkeptncontext)
 	eventScope, err := models.NewEventScope(rootEvent)
 	if err != nil {
 		return fmt.Errorf("could not determine scope of task sequence: %s", err.Error())
