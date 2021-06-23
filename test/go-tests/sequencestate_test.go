@@ -361,6 +361,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	}, 1*time.Minute, 10*time.Second)
 
 	// verify that the state has been recreated correctly
+	require.Equal(t, projectName, copiedState.Project)
 	require.Equal(t, "finished", copiedState.State)
 	require.Equal(t, 2, len(copiedState.Stages))
 	stagingStage := copiedState.Stages[1]
