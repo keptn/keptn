@@ -79,8 +79,8 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	return events, nil
 }
 
-func (mdbrepo *MongoDBEventsRepo) GetRootEvents(params models.GetRootEventParams) (*models.GetEventsResult, error) {
-	collection, ctx, cancel, err := mdbrepo.getEventsCollection(params.Project, common.RootEvent)
+func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEventParams) (*models.GetEventsResult, error) {
+	collection, ctx, cancel, err := mdbrepo.getEventsCollection(getRootParams.Project, common.RootEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -93,10 +93,10 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(params models.GetRootEventParams
 		return nil, fmt.Errorf("error counting elements in events collection: %v", err)
 	}
 
-	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(params.NextPageKey)
+	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}}).SetSkip(getRootParams.NextPageKey)
 
-	if params.PageSize > 0 {
-		sortOptions = sortOptions.SetLimit(params.PageSize)
+	if getRootParams.PageSize > 0 {
+		sortOptions = sortOptions.SetLimit(getRootParams.PageSize)
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
@@ -112,8 +112,8 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(params models.GetRootEventParams
 	}
 	events := []models.Event{}
 
-	if params.PageSize > 0 && params.PageSize+params.NextPageKey < totalCount {
-		result.NextPageKey = params.PageSize + params.NextPageKey
+	if getRootParams.PageSize > 0 && getRootParams.PageSize+getRootParams.NextPageKey < totalCount {
+		result.NextPageKey = getRootParams.PageSize + getRootParams.NextPageKey
 	}
 
 	for cur.Next(ctx) {
