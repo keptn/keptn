@@ -37,7 +37,7 @@ INSTALLER_BASE_PATH=installer/manifests
 helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 helm dependency build ${INSTALLER_BASE_PATH}/keptn/charts/control-plane
 
-helm package ${INSTALLER_BASE_PATH}/keptn --app-version "$VERSION" --version "$VERSION"
+helm package ${INSTALLER_BASE_PATH}/keptn --app-version "$IMAGE_TAG" --version "$VERSION"
 if [ $? -ne 0 ]; then
   echo "Error packing installer, exiting..."
   exit 1
@@ -58,7 +58,7 @@ fi
 # ####################
 HELM_SVC_BASE_PATH=helm-service
 
-helm package ${HELM_SVC_BASE_PATH}/chart --app-version "$VERSION" --version "$VERSION"
+helm package ${HELM_SVC_BASE_PATH}/chart --app-version "$IMAGE_TAG" --version "$VERSION"
 if [ $? -ne 0 ]; then
   echo "Error packaging installer, exiting..."
   exit 1
@@ -79,7 +79,7 @@ fi
 # ####################
 JMETER_SVC_BASE_PATH=jmeter-service
 
-helm package ${JMETER_SVC_BASE_PATH}/chart --app-version "$VERSION" --version "$VERSION"
+helm package ${JMETER_SVC_BASE_PATH}/chart --app-version "$IMAGE_TAG" --version "$VERSION"
 if [ $? -ne 0 ]; then
   echo "Error packaging installer, exiting..."
   exit 1
