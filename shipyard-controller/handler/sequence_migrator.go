@@ -180,43 +180,10 @@ func getSequenceStateAndStages(events []models.Event) (string, []*models.Sequenc
 
 			if keptnv2.IsTaskEventType(scope.EventType) {
 				// not a <stage>.<sequence>.(triggered|finished), but a task event
-				// events are sorted by time in a descending order (newest to oldest), so the first event we encounter for a certain stage here is the LatestEvent of the stage state
-
-				latestEvent := &models.SequenceStateEvent{
-					Type: scope.EventType,
-					ID:   event.ID,
-					Time: event.Time,
-				}
-				if stageState.LatestEvent == nil {
-					stageState.LatestEvent = latestEvent
-				}
-				if (scope.Result == keptnv2.ResultFailed || scope.Status == keptnv2.StatusErrored) && stageState.LatestFailedEvent == nil {
-					stageState.LatestFailedEvent = latestEvent
-				}
-
-				if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && stageState.LatestEvaluation == nil {
-					evaluationData := &keptnv2.EvaluationFinishedEventData{}
-					if err := keptnv2.Decode(event.Data, evaluationData); err != nil {
-						// continue with the other events
-						log.WithError(err).Error("could not decode evaluation.finished event data")
-						continue
-					}
-					stageState.LatestEvaluation = &models.SequenceStateEvaluation{
-						Result: string(scope.Result),
-						Score:  evaluationData.Evaluation.Score,
-					}
-				} else if *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) && stageState.Image == "" {
-					deploymentTriggeredEventData := &keptnv2.DeploymentTriggeredEventData{}
-					if err := keptnv2.Decode(event.Data, deploymentTriggeredEventData); err != nil {
-						log.WithError(err).Error("could not decode deployment.triggered event data")
-						continue
-					}
-					deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
-					if err != nil {
-						log.WithError(err).Error("could not determine deployed image")
-						continue
-					}
-					stageState.Image = deployedImage
+				stageState, err = processTaskEventTaskEvent(*scope, event, *stageState)
+				if err != nil {
+					log.WithError(err).Error("could not process task event")
+					continue
 				}
 			} else if keptnv2.IsSequenceEventType(scope.EventType) {
 				if index == 0 && keptnv2.IsFinishedEventType(*event.Type) {
@@ -228,4 +195,59 @@ func getSequenceStateAndStages(events []models.Event) (string, []*models.Sequenc
 		stageStates = append(stageStates, stageState)
 	}
 	return sequenceState, stageStates, nil
+}
+
+func processTaskEventTaskEvent(scope models.EventScope, event models.Event, stageState models.SequenceStateStage) (*models.SequenceStateStage, error) {
+	// events are sorted by time in a descending order (newest to oldest), so the first event we encounter for a certain stage here is the LatestEvent of the stage state
+	latestEvent := &models.SequenceStateEvent{
+		Type: scope.EventType,
+		ID:   event.ID,
+		Time: event.Time,
+	}
+	if shouldAddLatestEvent(stageState) {
+		stageState.LatestEvent = latestEvent
+	}
+	if shouldAddLatestFailedEvent(scope, stageState) {
+		stageState.LatestFailedEvent = latestEvent
+	}
+
+	if shouldAddLatestEvaluation(event, stageState) {
+		evaluationData := &keptnv2.EvaluationFinishedEventData{}
+		if err := keptnv2.Decode(event.Data, evaluationData); err != nil {
+			// continue with the other events
+			return nil, fmt.Errorf("could not decode evaluation.finished event data: %s", err.Error())
+		}
+		stageState.LatestEvaluation = &models.SequenceStateEvaluation{
+			Result: string(scope.Result),
+			Score:  evaluationData.Evaluation.Score,
+		}
+	} else if shouldAddDeployedImage(event, stageState) {
+		deploymentTriggeredEventData := &keptnv2.DeploymentTriggeredEventData{}
+		if err := keptnv2.Decode(event.Data, deploymentTriggeredEventData); err != nil {
+			return nil, fmt.Errorf("could not decode deployment.triggered event data: %s", err.Error())
+		}
+		deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
+		if err != nil {
+			return nil, fmt.Errorf("could not determine deployed image: %s", err.Error())
+		}
+		stageState.Image = deployedImage
+	}
+
+	return &stageState, nil
+}
+
+func shouldAddLatestEvent(stageState models.SequenceStateStage) bool {
+	return stageState.LatestEvent == nil
+}
+
+func shouldAddLatestFailedEvent(scope models.EventScope, stageState models.SequenceStateStage) bool {
+	return (scope.Result == keptnv2.ResultFailed || scope.Status == keptnv2.StatusErrored) && stageState.LatestFailedEvent == nil
+}
+
+func shouldAddDeployedImage(event models.Event, stageState models.SequenceStateStage) bool {
+	return *event.Type == keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName) && stageState.Image == ""
+}
+
+func shouldAddLatestEvaluation(event models.Event, stageState models.SequenceStateStage) bool {
+	return *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && stageState.LatestEvaluation == nil
 }

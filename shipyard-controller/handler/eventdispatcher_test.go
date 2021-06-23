@@ -148,7 +148,9 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 	clock.Add(9 * time.Second)
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	clock.Add(2 * time.Second)
-	require.Equal(t, 3, len(eventSender.SentEvents))
+	require.Eventually(t, func() bool {
+		return len(eventSender.SentEvents) == 3
+	}, 5*time.Second, 1*time.Second)
 	// check if the time stamp of the event has been set to the time at which it has been sent
 	require.WithinDuration(t, clock.Now().UTC(), eventSender.SentEvents[0].Time(), time.Second)
 	require.Equal(t, 3, len(eventQueueRepo.DeleteQueuedEventCalls()))
@@ -224,7 +226,9 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	dispatcher.Run(context.Background())
 
 	clock.Add(10 * time.Second)
-	require.Equal(t, 1, len(eventSender.SentEvents))
+	require.Eventually(t, func() bool {
+		return len(eventSender.SentEvents) == 1
+	}, 5*time.Second, 1*time.Second)
 	require.Equal(t, 1, len(eventQueueRepo.DeleteQueuedEventCalls()))
 	require.Equal(t, event3.ID, eventQueueRepo.DeleteQueuedEventCalls()[0].EventID)
 }
