@@ -15,7 +15,7 @@ export class DashboardComponent implements OnInit, OnDestroy{
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public isQualityGatesOnly: boolean;
 
-  private readonly _projectTimerInterval = 30 * 1000;
+  private readonly _projectTimerInterval = 5 * 1000;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private ngZone: NgZone) {
@@ -34,7 +34,9 @@ export class DashboardComponent implements OnInit, OnDestroy{
       timer(this._projectTimerInterval, this._projectTimerInterval)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
-          this.loadProjects();
+          this.ngZone.run(() => {
+            this.loadProjects();
+          });
         });
     });
   }
