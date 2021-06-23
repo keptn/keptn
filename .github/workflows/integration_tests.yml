@@ -257,7 +257,7 @@ jobs:
         id: install_keptn_cli
         run: |
           tar -xvf ${{ env.KEPTN_ARCHIVE_PATH }}
-          chmod +x /keptn-${META_KEPTN_VERSION}-linux-amd64
+          chmod +x ./keptn-${META_KEPTN_VERSION}-linux-amd64
           sudo mv ./keptn-${META_KEPTN_VERSION}-linux-amd64 /usr/local/bin/keptn
 
       - name: Authenticate Keptn CLI
