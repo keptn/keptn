@@ -9,7 +9,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/go-utils v0.8.6-0.20210623084135-feb84d6fd126
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.6.7
 	github.com/ugorji/go v1.1.8 // indirect

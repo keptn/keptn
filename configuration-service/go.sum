@@ -510,6 +510,8 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/keptn/go-utils v0.8.4/go.mod h1:8cm/j/fPLl+qpSIDyyw5WVqT7W6W/ZlsAtMv8dLKtPU=
 github.com/keptn/go-utils v0.8.5 h1:/syiNfrn6zUBq0JZeZS6RQDvoaMpQqfXsO5a3XWMQaM=
 github.com/keptn/go-utils v0.8.5/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.6-0.20210623084135-feb84d6fd126 h1:25ZmQ7aQme934sFrsP1nCEF82Yr/kn0lTBFtzROW1ZA=
+github.com/keptn/go-utils v0.8.6-0.20210623084135-feb84d6fd126/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/keptn/kubernetes-utils v0.8.3 h1:aMmb8O0bpbiDXEmZCtmHWq103gnJAIoo6g0DjG9iEsg=
 github.com/keptn/kubernetes-utils v0.8.3/go.mod h1:DyljwSnd6RyScSOZiB0AxxcjZjpmhU7jhlZW7WqEM7o=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

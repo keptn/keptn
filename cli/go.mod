@@ -10,7 +10,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/go-utils v0.8.6-0.20210623084135-feb84d6fd126
 	github.com/keptn/kubernetes-utils v0.8.3
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-homedir v1.1.0
