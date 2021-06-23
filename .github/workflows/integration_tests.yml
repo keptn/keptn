@@ -807,6 +807,13 @@ jobs:
             echo "---" >> integration-tests-failed.md
             echo "" >> integration-tests-failed.md
             echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> integration-tests-failed.md
+
+            if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
+              echo "* Triggered by: Scheduled build" >> integration-tests-failed.md
+            else
+              echo "* Triggered by: @$GITHUB_ACTOR" >> integration-tests-failed.md
+            fi
+
             echo "* Branch: $BRANCH" >> integration-tests-failed.md
             echo "* Version: $VERSION" >> integration-tests-failed.md
             echo "* Datetime: $DATETIME" >> integration-tests-failed.md
@@ -823,7 +830,7 @@ jobs:
           fi
 
       - name: Create issue if tests failed
-        if: always() && github.event.inputs.branch == 'master' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
+        if: always() && github.event_name == 'schedule' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
         uses: JasonEtco/create-an-issue@v2.5.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1095,8 +1102,43 @@ jobs:
               --resourceUri=helm/keptn/templates/ingress.yaml
           done
 
-      - name: Trigger Keptn Control Plane Delivery
-        id: trigger-keptn-control-plane-delivery
+  #######################################################################
+  # This job triggers service deliveries and wait for them to pass      #
+  #######################################################################
+  trigger_keptn_delivery:
+    name: Trigger Service Delivery
+    needs: deploy_keptn_with_keptn
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - SERVICE_NAME: keptn
+          - SERVICE_NAME: jmeter-service
+          - SERVICE_NAME: helm-service
+    env:
+      SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
+      META_KEPTN_KEPTN_PROJECT: keptn
+    steps:
+      - name: Cache Keptn CLI
+        id: keptn-cli-cache
+        uses: actions/cache@v2
+        with:
+          path: /usr/local/bin/keptn
+          key: ${{ env.META_KEPTN_VERSION }}
+
+      - name: Install Keptn CLI for META_KEPTN
+        id: install_keptn_cli
+        if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sL https://get.keptn.sh | KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash
+
+      - name: Authenticate Keptn CLI
+        id: authenticate_keptn_cli
+        run: |
+          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
+      - name: Trigger Service Delivery
+        id: trigger-service-delivery
         uses: keptn/gh-action-send-event@main
         with:
           keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
@@ -1107,7 +1149,7 @@ jobs:
                 "message": "",
                 "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
                 "result": "",
-                "service": "keptn",
+                "service": "${{ env.SERVICE_NAME }}",
                 "stage": "dev",
                 "status": "",
                 "labels": {
@@ -1120,52 +1162,13 @@ jobs:
               "shkeptnspecversion": "0.2.1"
             }
 
-      - name: Trigger Helm Service Delivery
-        id: trigger-helm-service-delivery
-        uses: keptn/gh-action-send-event@main
-        with:
-          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
-          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
-          event: |
-            {
-              "data": {
-                "message": "",
-                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
-                "result": "",
-                "service": "helm-service",
-                "stage": "dev",
-                "status": "",
-                "labels": {
-                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                }
-              },
-              "source": "gh",
-              "specversion": "1.0",
-              "type": "sh.keptn.event.dev.delivery.triggered",
-              "shkeptnspecversion": "0.2.1"
-            }
-
-      - name: Trigger Jmeter Service Delivery
-        id: trigger-jmeter-service-delivery
-        uses: keptn/gh-action-send-event@main
-        with:
-          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
-          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
-          event: |
-            {
-              "data": {
-                "message": "",
-                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
-                "result": "",
-                "service": "jmeter-service",
-                "stage": "dev",
-                "status": "",
-                "labels": {
-                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                }
-              },
-              "source": "gh",
-              "specversion": "1.0",
-              "type": "sh.keptn.event.dev.delivery.triggered",
-              "shkeptnspecversion": "0.2.1"
-            }
+      - name: Check if keptn on keptn delivery passed
+        id: check-service-delivery
+        timeout-minutes: 5
+        run: |
+          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
+          do
+            sleep 10;
+          done
+        env:
+          KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}

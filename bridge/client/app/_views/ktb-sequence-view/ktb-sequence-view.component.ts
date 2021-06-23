@@ -11,8 +11,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from '@dynatrace/barista-components/quick-filter';
 import {isObject} from '@dynatrace/barista-components/core';
 
-import {Observable, Subject, Subscription, timer} from 'rxjs';
-import {filter, take, takeUntil, tap} from 'rxjs/operators';
+import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
+import {filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 
 import * as moment from 'moment';
 
@@ -71,7 +71,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   private sequenceFilters = {};
   private project: Project;
 
-  private unfinishedRoots: Root[];
+  private unfinishedRoots: Root[] = [];
 
   private _tracesTimerInterval = 10;
   private _tracesTimer: Subscription = Subscription.EMPTY;
@@ -91,64 +91,68 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, public dateUtil: DateUtil, private router: Router, private location: Location) { }
 
   ngOnInit() {
-    this.currentSequence = null;
-    this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(params => {
+    const projectName$ = this.route.params
+      .pipe(
+        map(params => params.projectName)
+      );
 
-        this.project$ = this.dataService.getProject(params.projectName);
-        this.project$
-          .pipe(
-            filter(project => !!project && !!project.getServices() && !!project.stages),
-            take(1)
-          )
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(project => {
-            this.currentSequence = null;
-            this.selectedStage = null;
-            this.project = project;
-            this.updateFilterDataSource(project);
+    this.roots$ = this.dataService.roots
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter(roots => roots?.length > 0)
+      );
 
-            this.dataService.loadRoots(project);
+    this.project$ = projectName$.pipe(
+      switchMap(projectName => this.dataService.getProject(projectName))
+    );
 
-            this._rootsTimer = timer(0, this._tracesTimerInterval*1000)
-              .pipe(takeUntil(this.unsubscribe$))
-              .subscribe(() => {
-                // This triggers the subscription for roots$
-                this.unfinishedRoots?.forEach(root => {
-                  this.dataService.loadTraces(root);
-                })
-              });
-
-            this._changeDetectorRef.markForCheck();
-          });
-
-        this.roots$ = this.dataService.roots
-          .pipe(
-            takeUntil(this.unsubscribe$),
-            filter(roots => !!roots),
-            tap(roots => {
-              if (!this.currentSequence && roots && params.shkeptncontext) {
-                const root = roots.find(sequence => sequence.shkeptncontext === params.shkeptncontext);
-                let stage = params.eventId ? root?.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
-                let eventId = params.eventId;
-                if (root) {
-                  this.selectSequence({ root, stage, eventId });
-                } else {
-                  this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
-                }
-              }
-              if (roots) {
-                this.updateFilterSequence(roots);
-                this.refreshFilterDataSource();
-                // Set unfinished roots so that the traces for updates can be loaded
-                // Also ignore currently selected root, as this is getting already polled
-                this.unfinishedRoots = roots.filter(root => root && !root.isFinished() && root !== this.currentSequence);
-              }
-              this._changeDetectorRef.markForCheck();
-            })
-          );
+    this.project$
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter(project => !!project && !!project.getServices() && !!project.stages)
+      )
+      .subscribe(project => {
+        this.currentSequence = null;
+        this.selectedStage = null;
+        this.project = project;
+        this.updateFilterDataSource(project);
+        this.dataService.loadRoots(project);
+        this._changeDetectorRef.markForCheck();
       });
+
+    this._rootsTimer = timer(0, this._tracesTimerInterval * 1000)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        // This triggers the subscription for roots$
+        this.unfinishedRoots.forEach(root => {
+          this.dataService.loadTraces(root);
+        });
+    });
+
+    // init; set parameters
+    combineLatest([this.route.params, this.roots$])
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        take(1)
+      )
+      .subscribe(([params, roots]) => {
+        const root = roots.find(sequence => sequence.findTrace(t => t.shkeptncontext === params.shkeptncontext));
+        const stage = params.eventId ? root?.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
+        const eventId = params.eventId;
+        if (root) {
+          this.selectSequence({ root, stage, eventId });
+        } else {
+          this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+        }
+    });
+
+    this.roots$.subscribe(roots => {
+      this.updateFilterSequence(roots);
+      this.refreshFilterDataSource();
+      // Set unfinished roots so that the traces for updates can be loaded
+      // Also ignore currently selected root, as this is getting already polled
+      this.unfinishedRoots = roots.filter(root => root && !root.isFinished() && root !== this.currentSequence);
+    });
   }
 
   selectSequence(event: {root: Root, stage: string, eventId: string}): void {

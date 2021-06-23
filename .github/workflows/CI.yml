@@ -11,7 +11,8 @@ on:
       - 'master'
       - 'release-*'
   workflow_dispatch: # run CI when triggered manually
-
+env:
+  GO_VERSION: ^1.16
 defaults:
   run:
     shell: bash
@@ -305,7 +306,7 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.16
+          go-version: ${{ env.GO_VERSION }}
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
 
@@ -458,7 +459,6 @@ jobs:
     needs: prepare_ci_run
     strategy:
       matrix:
-        go-version: [ 1.16.x ]
         platform: [ ubuntu-20.04 ] #, macOS-11.0, windows-2019 ]
     runs-on: ${{ matrix.platform }}
     env:
@@ -467,7 +467,7 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ env.GO_VERSION }}
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
 
@@ -522,7 +522,7 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: "1.16.x"
+          go-version: ${{ env.GO_VERSION }}
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
       # cache go modules

@@ -56,9 +56,5 @@
 
 
 <ng-template #noService>
-  <div fxLayout="row" fxLayoutAlign="start center" uitestid="keptn-services-list-noServices">
-    <dt-icon class="icon" name="information"></dt-icon>
-    <p class="m-0">No service onboarded yet.</p>
-  </div>
-  <p class="m-0">Follow the instructions to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank" rel="noopener noreferrer">onboard a service</a>.</p>
+  <ktb-no-service-info></ktb-no-service-info>
 </ng-template>
