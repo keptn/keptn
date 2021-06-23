@@ -18,6 +18,9 @@ on:
         description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
+env:
+  META_KEPTN_VERSION: 0.8.4
+  META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
     shell: bash
@@ -800,6 +803,8 @@ jobs:
           REPORT=$(cat final-test-report.txt)
 
           if [[ "$REPORT" == *"failure"* ]]; then
+            echo "INTEGRATION TESTS FAILED! - Creating GH issue description now..."
+
             # create a markdown file that contains details about the error
             echo "---" > integration-tests-failed.md
             echo "title: Integration tests failed" >> integration-tests-failed.md
@@ -821,12 +826,14 @@ jobs:
             echo "" >> integration-tests-failed.md
 
             # print report but make failures bold
-            echo "${REPORT//failure/:x: **failure**}"     >> integration-tests-failed.md
+            echo "${REPORT//failure/:x: **failure**}" >> integration-tests-failed.md
 
             echo "" >> integration-tests-failed.md
             echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> integration-tests-failed.md
 
             echo "##[set-output name=INTEGRATION_TESTS_FAILED;]true"
+          else
+            echo "Integration tests passed, moving on..."
           fi
 
       - name: Create issue if tests failed
@@ -1118,20 +1125,28 @@ jobs:
           - SERVICE_NAME: helm-service
     env:
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
-      META_KEPTN_KEPTN_PROJECT: keptn
+      KEPTN_INSTALLER_PATH: ~/downloads/keptn-installer.sh
     steps:
+      - name: Create downloads folder
+        run: mkdir ~/downloads
+
       - name: Cache Keptn CLI
         id: keptn-cli-cache
         uses: actions/cache@v2
         with:
-          path: /usr/local/bin/keptn
+          path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}
+
+      - name: Download Keptn CLI for META_KEPTN
+        id: download_keptn_cli
+        if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sL https://get.keptn.sh -o ${{ env.KEPTN_INSTALLER_PATH }}
+          chmod +x ${{ env.KEPTN_INSTALLER_PATH }}
 
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
-        if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
-        run: |
-          curl -sL https://get.keptn.sh | KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash
+        run: KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash ${{ env.KEPTN_INSTALLER_PATH }}
 
       - name: Authenticate Keptn CLI
         id: authenticate_keptn_cli
