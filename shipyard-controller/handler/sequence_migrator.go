@@ -89,7 +89,7 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	if err != nil {
 		return err
 	}
-	if sequence != nil {
+	if len(sequence.States) > 0 {
 		// sequence exists already, no need to migrate it anymore
 		log.Infof("sequence with shkeptncontext %s already present", rootEvent.Shkeptncontext)
 		return nil
