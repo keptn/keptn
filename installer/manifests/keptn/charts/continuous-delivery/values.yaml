@@ -11,13 +11,3 @@ distributor:
   image:
     repository: docker.io/keptn/distributor
     tag: ""
-
-jmeterService:
-  image:
-    repository: docker.io/keptn/jmeter-service
-    tag: ""
-
-helmService:
-  image:
-    repository: docker.io/keptn/helm-service
-    tag: ""
