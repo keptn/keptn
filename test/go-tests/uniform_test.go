@@ -82,6 +82,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		return err == nil
 	}, time.Second*20, time.Second*3)
 
+	// Integration exists - fine
 	require.Nil(t, err)
 	require.NotNil(t, fetchedEchoIntegration)
 	require.Equal(t, "echo-service", fetchedEchoIntegration.Name)
@@ -94,11 +95,14 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	err = deleteEchoIntegration()
 	require.Nil(t, err)
 
+	// Note: Uninstalling the integration + unregistering usually takes a while on GH Actions with K3s
+
 	// wait for echo integration unregistered
 	require.Eventually(t, func() bool {
 		fetchedEchoIntegration, err = getIntegrationWithName("echo-service")
+		// we expect error to be "No Keptn Integration with name echo-service found"
 		return err != nil
-	}, time.Second*20, time.Second*3)
+	}, time.Second*30, time.Second*3)
 }
 
 func getIntegrationWithName(name string) (models.Integration, error) {
@@ -112,5 +116,5 @@ func getIntegrationWithName(name string) (models.Integration, error) {
 			return r, nil
 		}
 	}
-	return models.Integration{}, fmt.Errorf("No Keptn Inegration with name %s found", name)
+	return models.Integration{}, fmt.Errorf("No Keptn Integration with name %s found", name)
 }
