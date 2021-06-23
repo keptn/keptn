@@ -18,7 +18,9 @@ export class DashboardComponent implements OnInit, OnDestroy{
   private readonly _projectTimerInterval = 30 * 1000;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private ngZone: NgZone) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef,
+              private dataService: DataService,
+              private ngZone: NgZone) {
     this.projects$ = this.dataService.projects;
   }
 
