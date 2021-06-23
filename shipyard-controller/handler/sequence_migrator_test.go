@@ -2,7 +2,6 @@ package handler_test
 
 import (
 	"fmt"
-	"github.com/benbjohnson/clock"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
@@ -20,8 +19,6 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 		eventRepo        *db_mock.EventRepoMock
 		taskSequenceRepo *db_mock.SequenceStateRepoMock
 		projectRepo      *db_mock.ProjectRepoMock
-		theClock         clock.Clock
-		syncInterval     time.Duration
 	}
 	tests := []struct {
 		name              string
@@ -293,8 +290,6 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 						}, nil
 					},
 				},
-				theClock:     clock.NewMock(),
-				syncInterval: 10 * time.Minute,
 			},
 			wantSequenceState: models.SequenceState{
 				Name:           "delivery",
@@ -433,8 +428,6 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 						}, nil
 					},
 				},
-				theClock:     clock.NewMock(),
-				syncInterval: 10 * time.Minute,
 			},
 			wantSequenceState: models.SequenceState{
 				Name:           "delivery",
@@ -461,7 +454,7 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := handler.NewSequenceMigrator(tt.fields.eventRepo, tt.fields.taskSequenceRepo, tt.fields.projectRepo, tt.fields.theClock, tt.fields.syncInterval)
+			sm := handler.NewSequenceMigrator(tt.fields.eventRepo, tt.fields.taskSequenceRepo, tt.fields.projectRepo)
 
 			sm.MigrateSequences()
 

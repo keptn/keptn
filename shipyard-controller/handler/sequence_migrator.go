@@ -1,53 +1,38 @@
 package handler
 
 import (
-	"context"
-	"github.com/benbjohnson/clock"
+	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"sync"
-	"time"
 )
 
 type SequenceMigrator struct {
 	eventRepo        db.EventRepo
 	taskSequenceRepo db.SequenceStateRepo
 	projectRepo      db.ProjectRepo
-	theClock         clock.Clock
-	syncInterval     time.Duration
 }
 
-func NewSequenceMigrator(eventRepo db.EventRepo, taskSequenceRepo db.SequenceStateRepo, projectRepo db.ProjectRepo, theClock clock.Clock, syncInterval time.Duration) *SequenceMigrator {
+func NewSequenceMigrator(eventRepo db.EventRepo, taskSequenceRepo db.SequenceStateRepo, projectRepo db.ProjectRepo) *SequenceMigrator {
 	return &SequenceMigrator{
 		eventRepo:        eventRepo,
 		taskSequenceRepo: taskSequenceRepo,
 		projectRepo:      projectRepo,
-		theClock:         theClock,
-		syncInterval:     syncInterval,
 	}
 }
 
-func (sm *SequenceMigrator) Run(ctx context.Context) {
-	ticker := sm.theClock.Ticker(sm.syncInterval)
+func (sm *SequenceMigrator) Run() {
 	go func() {
 		log.Info("Starting SequenceMigrator")
-		for {
-			select {
-			case <-ticker.C:
-				log.Debugf("%.2f seconds have passed. checking if there are sequences to migrate.", sm.syncInterval.Seconds())
-				sm.MigrateSequences()
-			case <-ctx.Done():
-				log.Info("stopping SequenceMigrator")
-				return
-			}
-		}
+		sm.MigrateSequences()
 	}()
 }
 
 func (sm *SequenceMigrator) MigrateSequences() {
+	log.Info("starting task sequence migration")
 	projects, err := sm.projectRepo.GetProjects()
 	if err != nil {
 		log.WithError(err).Error("could not load projects")
@@ -58,6 +43,7 @@ func (sm *SequenceMigrator) MigrateSequences() {
 	wg.Add(len(projects))
 	for _, project := range projects {
 		// migrate sequences of projects in parallel
+		log.Infof("migrating sequences of project %s", project.ProjectName)
 		go sm.migrateSequencesOfProject(project.ProjectName, wg)
 	}
 	wg.Wait()
@@ -67,6 +53,7 @@ func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sy
 	pageSize := int64(50)
 
 	for {
+		log.Infof("getting root events of project %s", projectName)
 		rootEvents, err := sm.eventRepo.GetRootEvents(models.GetRootEventParams{
 			Project:  projectName,
 			PageSize: pageSize,
@@ -92,6 +79,7 @@ func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sy
 
 func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models.Event) error {
 	// first, check if there is already a task sequence for this context
+	log.Infof("checking if root event for shkeptncontext %s already has a task sequence state in the collection")
 	sequence, err := sm.taskSequenceRepo.FindSequenceStates(models.StateFilter{
 		Shkeptncontext: rootEvent.Shkeptncontext,
 	})
@@ -100,16 +88,20 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	}
 	if sequence != nil {
 		// sequence exists already, no need to migrate it anymore
-		log.Infof("sequence with context %s already present", rootEvent.Shkeptncontext)
+		log.Infof("sequence with shkeptncontext %s already present", rootEvent.Shkeptncontext)
 		return nil
 	}
 
+	log.Infof("sequence of shkeptncontext %s not stored in collection yet. starting migration")
 	eventScope, err := models.NewEventScope(rootEvent)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not determine scope of task sequence: %s", err.Error())
 	}
 
 	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(*rootEvent.Type)
+	if err != nil {
+		return fmt.Errorf("could not parse task sequence event type: %s", err.Error())
+	}
 	sequenceState := models.SequenceState{
 		Name:           taskSequenceName,
 		Service:        eventScope.Service,
@@ -121,12 +113,12 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 
 	events, err := sm.eventRepo.GetEvents(projectName, common.EventFilter{KeptnContext: common.Stringp(rootEvent.Shkeptncontext)})
 	if err != nil {
-		return err
+		return fmt.Errorf("could not fetch event trace for shkeptncontext %s :%s", rootEvent.Shkeptncontext, err.Error())
 	}
 
 	overallState, stageStates, err := getSequenceStateAndStages(events)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not derive sequence state of shkeptncontext %s: %s", rootEvent.Shkeptncontext, err.Error())
 	}
 
 	sequenceState.State = overallState
@@ -135,7 +127,7 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	}
 
 	if err := sm.taskSequenceRepo.CreateSequenceState(sequenceState); err != nil {
-		return err
+		return fmt.Errorf("could not store task sequence: %s", err.Error())
 	}
 	return nil
 }

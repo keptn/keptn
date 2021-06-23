@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -146,8 +144,8 @@ func main() {
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
 
-	sequenceMigrator := handler.NewSequenceMigrator(createEventsRepo(), createStateRepo(), createProjectRepo(), clock.New(), getSequenceMigrationSyncInterval())
-	sequenceMigrator.Run(context.Background())
+	sequenceMigrator := handler.NewSequenceMigrator(createEventsRepo(), createStateRepo(), createProjectRepo())
+	sequenceMigrator.Run()
 
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)
@@ -155,10 +153,6 @@ func main() {
 
 	engine.Static("/swagger-ui", "./swagger-ui")
 	engine.Run()
-}
-
-func getSequenceMigrationSyncInterval() time.Duration {
-	return 10 * time.Minute
 }
 
 func createMaterializedView() *db.ProjectsMaterializedView {
