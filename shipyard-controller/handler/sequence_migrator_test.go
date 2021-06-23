@@ -278,7 +278,7 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 						return nil
 					},
 					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
-						return nil, nil
+						return &models.SequenceStates{}, nil
 					},
 				},
 				projectRepo: &db_mock.ProjectRepoMock{
@@ -416,7 +416,7 @@ func TestSequenceMigrator_MigrateSequences(t *testing.T) {
 						return nil
 					},
 					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
-						return nil, nil
+						return &models.SequenceStates{}, nil
 					},
 				},
 				projectRepo: &db_mock.ProjectRepoMock{
