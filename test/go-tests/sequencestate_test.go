@@ -332,6 +332,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
+	// Test Sequence migration
 	// create a copy of the event stream by directly sending them to the datastore under a new context
 	eventTrace, err := GetEventTraceForContext(*context.KeptnContext, projectName)
 
