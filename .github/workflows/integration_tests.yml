@@ -245,7 +245,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/downloads
-          key: ${{ env.META_KEPTN_VERSION }}
+          key: ${{ env.META_KEPTN_VERSION }}-cli
 
       - name: Download Keptn CLI for META_KEPTN
         id: download_keptn_cli
