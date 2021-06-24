@@ -13,24 +13,18 @@ either promotes or rolls back the new version depending on the (evaluation) resu
 ## Installation
 
 The *helm-service* is part of the *Execution Plane for Continuous Delivery*.
-Details about the installation options can be found [here](https://keptn.sh/docs/0.7.x/operate/install/#install-keptn).
 
-### Manually Deploy in your Kubernetes cluster
+You can find installation instructions [here](https://keptn.sh/docs/0.8.x/operate/install/#install-keptn).
 
-To deploy the current version of the *helm-service* in your Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it:
-
-```console
-kubectl apply -f deploy/service.yaml
-```
-
-### Delete in your Kubernetes cluster
-
-To delete a deployed *helm-service*, use the file `deploy/service.yaml` from this repository and delete the Kubernetes resources:
+To install it next to your Keptn installation, you can use the following command:
 
 ```console
-kubectl delete -f deploy/service.yaml
+helm install helm-service https://github.com/keptn/keptn/releases/download/0.8.4/helm-service-0.8.4.tgz -n keptn
 ```
 
+## Development
+
+You can use `skaffold run --tail` to build and deploy from this directory.
 
 ## Handled events
 The *helm-service* handles a set of events. The following sequence diagrams describe the respectively executed actions
