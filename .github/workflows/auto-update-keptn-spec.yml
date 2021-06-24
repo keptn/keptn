@@ -1,0 +1,46 @@
+name: Auto Update - Spec
+on:
+  repository_dispatch:
+    types: [spec-update]
+defaults:
+  run:
+    shell: bash
+jobs:
+  update-spec:
+    env:
+      SPEC_VERSION: ${{ github.event.client_payload.ref }}
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Update keptn/spec
+        run: |
+          cd specification
+          git fetch
+          git checkout ${{ env.SPEC_VERSION }}
+          cd ..
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        env:
+          SPEC_VERSION: ${{ env.SPEC_VERSION }}
+        with:
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          commit-message: "Update keptn/spec to release ${SPEC_VERSION#refs/tags/}"
+          committer: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          author: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          signoff: true
+          branch: patch/update-keptn-spec-${SPEC_VERSION#refs/tags/}
+          delete-branch: true
+          base: master
+          labels: "area:spec,automated pr,dependencies"
+          title: "Update keptn/spec to release ${SPEC_VERSION#refs/tags/}"
+          body: |
+            **This is an automated PR!**
+
+            Update to the keptn/spec
+            New version: ${SPEC_VERSION#refs/tags/}
