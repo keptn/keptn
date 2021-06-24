@@ -11,7 +11,8 @@ jobs:
       SPEC_VERSION: ${{ github.event.client_payload.ref }}
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
           submodules: true
