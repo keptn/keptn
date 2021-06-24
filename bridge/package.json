@@ -11,7 +11,8 @@
     "test": "ng test",
     "test:ci": "ng test --karma-config karma-headless.conf.js",
     "lint": "ng lint",
-    "e2e": "ng e2e",
+    "e2e": "ng e2e --dev-server-target= --base-url=http://localhost:3000/",
+    "e2e:ci": "ng e2e --dev-server-target= --base-url=http://localhost:3000/ --protractor-config=./e2e/protractor-ci.conf.js",
     "preinstall": "npx npm-force-resolutions"
   },
   "license": "Apache-2.0",
