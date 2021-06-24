@@ -255,40 +255,10 @@ jobs:
           test/utils/gke_authenticate_at_cluster.sh
 
           echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
-      # get some debug infos
-      - name: Debug - Describe Kubernetes Nodes
-        run: kubectl describe nodes
-
-      - name: Debug - cat /etc/resolv.conf
-        run: cat /etc/resolv.conf
-
-      - name: Debug - check for internet access
-        continue-on-error: true # this only serves debugging purpose, we should still continue
-        timeout-minutes: 2
-        run: |
-          sleep 30
-          kubectl run -i --restart=Never --rm test-${RANDOM} --image=alpine:3.13 -- sh -c "wget https://keptn.sh"
-          if [[ $? -ne 0 ]]; then
-            echo "::error::Could not reach https://keptn.sh - this cluster probably has no working network connection (expected for MiniShift).
-          fi
 
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
         run: test/utils/install_istio.sh
-
-      # Print some Kubernetes Debug Output
-      - name: Debug - Minishift status
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc status
-      - name: Debug - Minishift routes
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc get routes --all-namespaces
-      - name: Debug - Get Kubernetes namespaces
-        run: kubectl get namespaces
-      - name: Debug - Get Kubernetes services
-        run: kubectl get services --all-namespaces
-      - name: Debug - Get Kubernetes Deployments
-        run: kubectl get deployments --all-namespaces -owide
 
       - name: Host helm chart via python http server
         run: cd dist/keptn-installer/ && python3 -m http.server &
@@ -400,22 +370,6 @@ jobs:
           # restart helm-service
           kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
           sleep 15
-
-      # Print some Kubernetes Debug Output
-      - name: Debug - Minishift status
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc status
-      - name: Debug - Minishift routes
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc get routes --all-namespaces
-      - name: Debug - Get Kubernetes namespaces
-        run: kubectl get namespaces
-      - name: Debug - Get Kubernetes services
-        run: kubectl get services --all-namespaces
-      - name: Debug - Get Kubernetes Deployments
-        run: kubectl get deployments --all-namespaces -owide
-      - name: Debug - Get Keptn Pods
-        run: kubectl -n ${KEPTN_NAMESPACE} get pods
 
       - name: Verify Deployments of Keptn
         run: |
@@ -706,23 +660,6 @@ jobs:
 #        run: |
 #          test/test_self_healing_scaling.sh
 
-
-      # All Tests finished, time for cleanup
-      - name: Debug - Minishift status
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc status
-      - name: Debug - Minishift routes
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc get routes --all-namespaces
-      - name: Debug - Get Kubernetes namespaces
-        run: kubectl get namespaces
-      - name: Debug - Get Kubernetes services
-        run: kubectl get services --all-namespaces
-      - name: Debug - Get Kubernetes Deployments
-        run: kubectl get deployments --all-namespaces -owide
-      - name: Debug - Get Keptn Pods
-        run: kubectl -n ${KEPTN_NAMESPACE} get pods
-
       # for debugging etc... it makes sense to have the support archive attached as an artifact
       - name: keptn generate support-archive
         if: always()
@@ -749,20 +686,6 @@ jobs:
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
         timeout-minutes: 5
         run: test/utils/uninstall_istio.sh
-
-      # one last time: debug infos
-      - name: Debug - Minishift status
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc status
-      - name: Debug - Minishift routes
-        if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
-        run: oc get routes --all-namespaces
-      - name: Debug - Get Kubernetes namespaces
-        run: kubectl get namespaces
-      - name: Debug - Get Kubernetes services
-        run: kubectl get services --all-namespaces
-      - name: Debug - Get Kubernetes Deployments
-        run: kubectl get deployments --all-namespaces -owide
 
       - name: Cleanup GKE cluster
         if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
