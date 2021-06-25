@@ -51,26 +51,8 @@ spec:
             value: 'http://localhost:8081/event'
           - name: CONFIGURATION_SERVICE
             value: 'http://configuration-service:8080'
-          - name: MONGODB_DATASTORE
-            value: 'http://mongodb-datastore:8080'
           - name: ENVIRONMENT
             value: 'production'
-          - name: WAIT_TIME_MINUTES
-            value: '10m'
-          - name: MONGODB_HOST
-            value: 'mongodb:27017'
-          - name: MONGODB_USER
-            valueFrom:
-              secretKeyRef:
-                name: mongodb-credentials
-                key: user
-          - name: MONGODB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mongodb-credentials
-                key: password
-          - name: MONGO_DB_NAME
-            value: 'keptn'
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532
