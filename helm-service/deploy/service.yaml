@@ -27,7 +27,7 @@ spec:
       serviceAccountName: keptn-helm-service
       containers:
       - name: helm-service
-        image: keptn/helm-service:latest
+        image: grabnerandi/helm-service:0.8.1
         ports:
         - containerPort: 8080
         resources:
