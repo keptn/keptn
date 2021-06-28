@@ -6,7 +6,7 @@ build:
       docker:
         dockerfile: Dockerfile
 # Before executing this, install jmeter-service manually:
-# helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.0/jmeter-service-0.8.0.tgz -n keptn
+# helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.4/jmeter-service-0.8.4.tgz -n keptn
 deploy:
   helm:
     flags:
@@ -21,5 +21,5 @@ deploy:
         overrides:
           distributor:
             image:
-              tag: 0.8.0
+              tag: 0.8.4
         chartPath: chart
