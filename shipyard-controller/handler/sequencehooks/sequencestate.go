@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
-
-const sequenceTriggeredState = "triggered"
-const sequenceFinished = "finished"
 
 type SequenceStateMaterializedView struct {
 	SequenceStateRepo db.SequenceStateRepo
@@ -38,9 +36,9 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		Name:           sequenceName,
 		Service:        eventScope.Service,
 		Project:        eventScope.Project,
-		Time:           timeutils.GetKeptnTimeStamp(time.Now()),
+		Time:           timeutils.GetKeptnTimeStamp(time.Now().UTC()),
 		Shkeptncontext: eventScope.KeptnContext,
-		State:          sequenceTriggeredState,
+		State:          models.SequenceTriggeredState,
 		Stages:         []models.SequenceStateStage{},
 	}
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
@@ -133,7 +131,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 
 	state := states.States[0]
 
-	state.State = sequenceFinished
+	state.State = models.SequenceFinished
 	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
@@ -165,17 +163,20 @@ func (smv *SequenceStateMaterializedView) updateImageOfSequence(event models.Eve
 		return fmt.Errorf("could not decode deployment.triggered event data: %s", err.Error())
 	}
 
-	if deployedImage := deploymentTriggeredEventData.ConfigurationChange.Values["image"]; deployedImage != nil {
-		eventScope, err := models.NewEventScope(event)
-		if err != nil {
-			return fmt.Errorf("could not determine event scope: %s", err.Error())
-		}
-		for index, stage := range state.Stages {
-			if stage.Name == eventScope.Stage {
-				state.Stages[index].Image = deployedImage.(string)
-			}
+	deployedImage, err := common.ExtractImageOfDeploymentEvent(*deploymentTriggeredEventData)
+	if err != nil {
+		return fmt.Errorf("could not determine deployed image: %s", err.Error())
+	}
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		return fmt.Errorf("could not determine event scope: %s", err.Error())
+	}
+	for index, stage := range state.Stages {
+		if stage.Name == eventScope.Stage {
+			state.Stages[index].Image = deployedImage
 		}
 	}
+
 	return nil
 }
 

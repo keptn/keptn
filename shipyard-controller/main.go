@@ -140,6 +140,9 @@ func main() {
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
 
+	sequenceMigrator := handler.NewSequenceMigrator(createEventsRepo(), createStateRepo(), createProjectRepo())
+	sequenceMigrator.Run()
+
 	healthHandler := handler.NewHealthHandler()
 	healthController := controller.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)

@@ -1,5 +1,10 @@
 package models
 
+const (
+	SequenceTriggeredState = "triggered"
+	SequenceFinished       = "finished"
+)
+
 type GetSequenceStateParams struct {
 	/*Pointer to the next set of items
 	  In: query

@@ -178,6 +178,10 @@ func ScaleUpUniform(deployments []string) error {
 	return nil
 }
 
+func RestartPod(deploymentName string) error {
+	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+}
+
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
 	return CreateTmpFile("shipyard-*.yaml", shipyardContent)
 }
@@ -217,6 +221,21 @@ func GetLatestEventOfType(keptnContext, projectName, stage, eventType string) (*
 	}
 	if len(events.Events) > 0 {
 		return events.Events[0], nil
+	}
+	return nil, nil
+}
+
+func GetEventTraceForContext(keptnContext, projectName string) ([]*models.KeptnContextExtendedCE, error) {
+	resp, err := ApiGETRequest("/mongodb-datastore/event?project=" + projectName + "&keptnContext=" + keptnContext)
+	if err != nil {
+		return nil, err
+	}
+	events := &models.Events{}
+	if err := resp.ToJSON(events); err != nil {
+		return nil, err
+	}
+	if len(events.Events) > 0 {
+		return events.Events, nil
 	}
 	return nil, nil
 }
