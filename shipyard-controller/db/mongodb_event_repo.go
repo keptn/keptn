@@ -80,7 +80,9 @@ func decodeKeptnEvent(cur *mongo.Cursor) (*models.Event, error) {
 	data, _ := json.Marshal(outputEvent)
 
 	event := &models.Event{}
-	err = json.Unmarshal(data, event)
+	if err := json.Unmarshal(data, event); err != nil {
+		return nil, err
+	}
 	return event, nil
 }
 
