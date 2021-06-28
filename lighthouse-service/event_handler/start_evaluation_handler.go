@@ -104,7 +104,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(keptnContext string, e *k
 				IndicatorResults: nil,
 				TimeStart:        evaluationStartTimestamp,
 				TimeEnd:          evaluationEndTimestamp,
-				Result:           fmt.Sprintf("no evaluation performed by lighthouse because no SLI-provider configured for project %s", e.Project),
+				Result:           string(keptnv2.ResultPass),
 			}
 
 			evaluationFinishedData := keptnv2.EvaluationFinishedEventData{
@@ -134,7 +134,7 @@ func (eh *StartEvaluationHandler) sendEvaluationFinishedWithErrorEvent(start, en
 		IndicatorResults: nil,
 		TimeStart:        start,
 		TimeEnd:          end,
-		Result:           message,
+		Result:           string(keptnv2.ResultFailed),
 	}
 
 	evaluationFinishedData := keptnv2.EvaluationFinishedEventData{

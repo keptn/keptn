@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -22,6 +21,23 @@ func (a *ApprovalTriggeredEventHandler) IsTypeHandled(event cloudevents.Event) b
 	return event.Type() == keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName)
 }
 
+// getResult returns the result from either the preceeding task, or if result is empty, evaluation.result
+func getResult(data keptnv2.ApprovalTriggeredEventData, event cloudevents.Event) keptnv2.ResultType {
+	if data.Result != "" {
+		return data.Result
+	}
+
+	// handle the case of no result being present (see https://github.com/keptn/keptn/issues/4391)
+	// check if evaluation.finished event data are present
+	evaluationFinishedData := &keptnv2.EvaluationFinishedEventData{}
+	if err := event.DataAs(evaluationFinishedData); err == nil {
+		return keptnv2.ResultType(evaluationFinishedData.Evaluation.Result)
+	}
+
+	// no suitable result -> we will stay empty
+	return ""
+}
+
 // Handle godoc
 func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn) {
 	data := &keptnv2.ApprovalTriggeredEventData{}
@@ -29,6 +45,9 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 		a.keptn.Logger.Error(fmt.Sprintf("failed to parse ApprovalTriggeredEventData: %v", err))
 		return
 	}
+
+	// handle the case of no result being present (see https://github.com/keptn/keptn/issues/4391)
+	data.Result = getResult(*data, event)
 
 	outgoingEvents := a.handleApprovalTriggeredEvent(*data, event.Context.GetID(), keptnHandler.KeptnContext)
 	sendEvents(keptnHandler, outgoingEvents, a.keptn.Logger)
