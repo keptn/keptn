@@ -7,28 +7,27 @@ import (
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
 
 type SequenceWatcher struct {
-	eventRepo           db.EventRepo
-	projectRepo         db.ProjectRepo
-	sequenceTimeoutHook sequencehooks.ISequenceTimeoutHook
-	eventTimeout        time.Duration
-	syncInterval        time.Duration
-	theClock            clock.Clock
+	shipyardController *shipyardController
+	eventRepo          db.EventRepo
+	projectRepo        db.ProjectRepo
+	eventTimeout       time.Duration
+	syncInterval       time.Duration
+	theClock           clock.Clock
 }
 
-func NewSequenceWatcher(eventRepo db.EventRepo, projectRepo db.ProjectRepo, timeoutHook sequencehooks.ISequenceTimeoutHook, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(shipyardController *shipyardController, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
-		eventRepo:           eventRepo,
-		projectRepo:         projectRepo,
-		sequenceTimeoutHook: timeoutHook,
-		eventTimeout:        eventTimeout,
-		syncInterval:        syncInterval,
-		theClock:            theClock,
+		shipyardController: shipyardController,
+		eventRepo:          eventRepo,
+		projectRepo:        projectRepo,
+		eventTimeout:       eventTimeout,
+		syncInterval:       syncInterval,
+		theClock:           theClock,
 	}
 }
 
@@ -78,12 +77,30 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 		}
 
 		if eventSentTime.Add(sw.eventTimeout).After(sw.theClock.Now()) {
-			// event has been timed out, task sequence is cancelled
-			sw.sequenceTimeoutHook.OnSequenceTimeout(event)
-			// send out task sequence.finished event
-
+			// check if an event that reacted to the .triggered event has been received in the meantime
+			responseEvents, err := sw.eventRepo.GetEvents(project, common.EventFilter{
+				TriggeredID:  &event.ID,
+				KeptnContext: &event.Shkeptncontext,
+			})
+			if err != nil {
+				log.WithError(err).Errorf("could not fetch events with triggeredId %s", event.ID)
+				continue
+			}
+			if len(responseEvents) == 0 {
+				// time out -> tell shipyard controller to complete the task sequence
+				err := sw.shipyardController.CancelSequence(SequenceCancellation{
+					KeptnContext: event.Shkeptncontext,
+					Reason:       Timeout,
+					LastEvent:    event,
+				})
+				if err != nil {
+					log.WithError(err).Errorf("could not cancel sequence with keptnContext %s", event.Shkeptncontext)
+				}
+			}
 			// clean up open .triggered event
-			sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent)
+			if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
+				log.WithError(err).Errorf("could not delete event %s", event.ID)
+			}
 		}
 
 	}

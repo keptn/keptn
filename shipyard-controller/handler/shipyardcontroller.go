@@ -148,8 +148,27 @@ func (sc *shipyardController) onSequenceTimeout(event models.Event) {
 
 func (sc *shipyardController) CancelSequence(cancelRequest SequenceCancellation) error {
 	if cancelRequest.Reason == Timeout {
+		eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
+		if err != nil {
+			return err
+		}
+		taskContext, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, cancelRequest.LastEvent.ID)
+		if err != nil {
+			return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID+": "+err.Error())
+		}
+
+		if taskContext == nil {
+			log.Infof("No task event associated with eventID %s found", cancelRequest.LastEvent.ID)
+			return nil
+		}
 		sc.onSequenceTimeout(cancelRequest.LastEvent)
-		//sc.completeTaskSequence()
+		taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskContext.TaskSequenceName)
+		if err != nil {
+			return err
+		}
+		if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -561,20 +580,13 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *models.EventScope,
 // this function retrieves the .triggered event for the task sequence and appends its properties to the existing .finished events
 // this ensures that all parameters set in the .triggered event are received by all execution plane services, instead of just the first one
 func (sc *shipyardController) appendTriggerEventProperties(eventScope *models.EventScope, taskSequence *keptnv2.Sequence, eventHistory []interface{}) (*models.Event, []interface{}, error) {
-	events, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
-		Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequence.Name),
-		Stage:        &eventScope.Stage,
-		KeptnContext: &eventScope.KeptnContext,
-	}, common.TriggeredEvent)
+	inputEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskSequence.Name)
 
 	if err != nil {
 		log.Errorf("Could not load event that triggered task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext)
 		return nil, nil, err
 	}
-
-	var inputEvent *models.Event
-	if len(events) > 0 {
-		inputEvent = &events[0]
+	if inputEvent != nil {
 		marshal, err := json.Marshal(inputEvent.Data)
 		if err != nil {
 			log.Errorf("Could not marshal input event: %s", err.Error())
@@ -584,7 +596,26 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope *models.Ev
 		_ = json.Unmarshal(marshal, &tmp)
 		eventHistory = append(eventHistory, tmp)
 	}
+
 	return inputEvent, eventHistory, nil
+}
+
+func (sc *shipyardController) getTaskSequenceTriggeredEvent(eventScope *models.EventScope, taskSequenceName string) (*models.Event, error) {
+	events, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
+		Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequenceName),
+		Stage:        &eventScope.Stage,
+		KeptnContext: &eventScope.KeptnContext,
+	}, common.TriggeredEvent)
+
+	if err != nil {
+		log.Errorf("Could not load event that triggered task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequenceName, eventScope.KeptnContext)
+		return nil, err
+	}
+
+	if len(events) > 0 {
+		return &events[0], nil
+	}
+	return nil, nil
 }
 
 func (sc *shipyardController) triggerNextTaskSequences(eventScope *models.EventScope, completedSequence *keptnv2.Sequence, shipyard *keptnv2.Shipyard, eventHistory []interface{}, inputEvent *models.Event, previousTask string) error {

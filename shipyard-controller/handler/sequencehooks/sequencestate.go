@@ -114,20 +114,9 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
-	eventScope, err := models.NewEventScope(event)
+	states, err := smv.findSequenceStateForEvent(event)
 	if err != nil {
-		log.Errorf("could not determine event scope: %s", err.Error())
-		return
-	}
-
-	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: eventScope.Project,
-		},
-		Shkeptncontext: eventScope.KeptnContext,
-	})
-	if err != nil {
-		log.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		log.Errorf("could not fetch sequence state for keptnContext %s: %s", event.Shkeptncontext, err.Error())
 		return
 	}
 
@@ -139,7 +128,22 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 	}
 }
 
+func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(event models.Event) (*models.SequenceStates, error) {
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		return nil, fmt.Errorf("could not determine event scope: %s", err.Error())
+	}
+
+	return smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: eventScope.Project,
+		},
+		Shkeptncontext: eventScope.KeptnContext,
+	})
+}
+
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
+	// TODO implement this
 	panic("implement me")
 }
 
