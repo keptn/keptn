@@ -139,6 +139,10 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 	}
 }
 
+func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
+	panic("implement me")
+}
+
 func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event models.Event, state models.SequenceState) error {
 	evaluationFinishedEventData := &keptnv2.EvaluationFinishedEventData{}
 	if err := keptnv2.Decode(event.Data, evaluationFinishedEventData); err != nil {

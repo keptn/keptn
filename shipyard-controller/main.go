@@ -41,6 +41,7 @@ const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarLogsTTLDefault = "120h" // 5 days
+const envVarTaskStartedWaitDurationDefault = "10m"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -135,7 +136,7 @@ func main() {
 	uniformController.Inject(apiV1)
 
 	logRepo := createLogRepo()
-	logRepo.SetupTTLIndex(getLogTTLDurationInSeconds(os.Getenv("LOG_TTL")))
+	logRepo.SetupTTLIndex(getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault))
 	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
@@ -204,20 +205,21 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 	return kubeAPI, nil
 }
 
-func getLogTTLDurationInSeconds(logsTTL string) int32 {
+func getDurationFromEnvVar(envVar, fallbackValue string) int32 {
+	durationString := os.Getenv(envVar)
 	var duration time.Duration
 	var err error
-	if logsTTL != "" {
-		duration, err = time.ParseDuration(logsTTL)
+	if durationString != "" {
+		duration, err = time.ParseDuration(durationString)
 		if err != nil {
-			log.Errorf("could not parse log TTL env var %s: %s. Will use default value %s", logsTTL, err.Error(), envVarLogsTTLDefault)
+			log.Errorf("could not parse log %s env var %s: %s. Will use default value %s", envVar, duration, err.Error(), fallbackValue)
 		}
 	}
 
 	if duration.Seconds() == 0 {
-		duration, err = time.ParseDuration(envVarLogsTTLDefault)
+		duration, err = time.ParseDuration(fallbackValue)
 		if err != nil {
-			log.Errorf("could not parse default duration string %s. Log TTL will be set to 0", err.Error())
+			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), envVar)
 			return int32(0)
 		}
 	}

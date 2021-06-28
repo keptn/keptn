@@ -25,3 +25,7 @@ type ISubSequenceFinishedHook interface {
 type ISequenceFinishedHook interface {
 	OnSequenceFinished(event models.Event)
 }
+
+type ISequenceTimeoutHook interface {
+	OnSequenceTimeout(event models.Event)
+}

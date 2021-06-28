@@ -1,0 +1,91 @@
+package handler
+
+import (
+	"context"
+	"fmt"
+	"github.com/benbjohnson/clock"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/db"
+	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
+	log "github.com/sirupsen/logrus"
+	"time"
+)
+
+type SequenceWatcher struct {
+	eventRepo           db.EventRepo
+	projectRepo         db.ProjectRepo
+	sequenceTimeoutHook sequencehooks.ISequenceTimeoutHook
+	eventTimeout        time.Duration
+	syncInterval        time.Duration
+	theClock            clock.Clock
+}
+
+func NewSequenceWatcher(eventRepo db.EventRepo, projectRepo db.ProjectRepo, timeoutHook sequencehooks.ISequenceTimeoutHook, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+	return &SequenceWatcher{
+		eventRepo:           eventRepo,
+		projectRepo:         projectRepo,
+		sequenceTimeoutHook: timeoutHook,
+		eventTimeout:        eventTimeout,
+		syncInterval:        syncInterval,
+		theClock:            theClock,
+	}
+}
+
+func (sw *SequenceWatcher) Run(ctx context.Context) {
+	ticker := sw.theClock.Ticker(sw.syncInterval)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				log.Info("cancelling SequenceWatcher loop")
+				return
+			case <-ticker.C:
+				log.Debugf("%.2f seconds have passed. Looking for orphaned tasks", sw.syncInterval.Seconds())
+			}
+		}
+	}()
+}
+
+func (sw *SequenceWatcher) cleanUpOrphanedTasks() {
+	projects, err := sw.projectRepo.GetProjects()
+	if err != nil {
+		log.WithError(err).Error("could not load projects")
+		return
+	}
+
+	for _, project := range projects {
+		go func() {
+			if err := sw.cleanUpOrphanedTasksOfProject(project.ProjectName); err != nil {
+				log.WithError(err).Errorf("could not clean up orphaned tasks of project %s", project.ProjectName)
+			}
+		}()
+	}
+}
+
+func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
+	// get open triggered events
+	events, err := sw.eventRepo.GetEvents(project, common.EventFilter{}, common.TriggeredEvent)
+	if err != nil {
+		return fmt.Errorf("could not retrieve open triggered events: %s", err.Error())
+	}
+
+	for _, event := range events {
+		eventSentTime, err := time.Parse(timeutils.KeptnTimeFormatISO8601, event.Time)
+		if err != nil {
+			log.WithError(err).Errorf("could not parse event timestamp of event with id %s", event.ID)
+			continue
+		}
+
+		if eventSentTime.Add(sw.eventTimeout).After(sw.theClock.Now()) {
+			// event has been timed out, task sequence is cancelled
+			sw.sequenceTimeoutHook.OnSequenceTimeout(event)
+			// send out task sequence.finished event
+
+			// clean up open .triggered event
+			sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent)
+		}
+
+	}
+	return nil
+}

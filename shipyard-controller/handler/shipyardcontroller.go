@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -21,10 +22,25 @@ const maxRepoReadRetries = 30
 var errNoMatchingEvent = errors.New("no matching event found")
 var shipyardControllerInstance *shipyardController
 
+type SequenceCancellationReason int
+
+const (
+	Cancelled SequenceCancellationReason = iota
+	Timeout
+)
+
+type SequenceCancellation struct {
+	KeptnContext string
+	Reason       SequenceCancellationReason
+	LastEvent    models.Event
+}
+
+//go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
 type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
+	CancelSequence(cancelRequest SequenceCancellation) error
 }
 
 type shipyardController struct {
@@ -39,6 +55,7 @@ type shipyardController struct {
 	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook
 	subSequenceFinishedHooks   []sequencehooks.ISubSequenceFinishedHook
 	sequenceFinishedHooks      []sequencehooks.ISequenceFinishedHook
+	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
 }
 
 func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardController {
@@ -83,6 +100,10 @@ func (sc *shipyardController) AddSequenceFinishedHook(hook sequencehooks.ISequen
 	sc.sequenceFinishedHooks = append(sc.sequenceFinishedHooks, hook)
 }
 
+func (sc *shipyardController) AddSequenceTimeoutHook(hook sequencehooks.ISequenceTimeoutHook) {
+	sc.sequenceTimoutHooks = append(sc.sequenceTimoutHooks, hook)
+}
+
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
 	for _, hook := range sc.sequenceTriggeredHooks {
 		hook.OnSequenceTriggered(event)
@@ -117,6 +138,20 @@ func (sc *shipyardController) onSequenceFinished(event models.Event) {
 	for _, hook := range sc.sequenceFinishedHooks {
 		hook.OnSequenceFinished(event)
 	}
+}
+
+func (sc *shipyardController) onSequenceTimeout(event models.Event) {
+	for _, hook := range sc.sequenceTimoutHooks {
+		hook.OnSequenceTimeout(event)
+	}
+}
+
+func (sc *shipyardController) CancelSequence(cancelRequest SequenceCancellation) error {
+	if cancelRequest.Reason == Timeout {
+		sc.onSequenceTimeout(cancelRequest.LastEvent)
+		//sc.completeTaskSequence()
+	}
+	return nil
 }
 
 func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCompletion bool) error {
@@ -830,6 +865,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		}
 		log.Infof("queueing %s event with ID %s to be sent at %s", event.Type(), event.ID(), sendTaskTimestamp.String())
 	}
+	storeEvent.Time = timeutils.GetKeptnTimeStamp(sendTaskTimestamp)
 	sc.onSequenceTaskTriggered(*storeEvent)
 	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: sendTaskTimestamp, Event: event})
 }
