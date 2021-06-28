@@ -45,7 +45,7 @@ spec:
         - name: DATASTORE
           value: 'http://mongodb-datastore:8080'
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptn/distributor:0.8.4
         livenessProbe:
           httpGet:
             path: /health
