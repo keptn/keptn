@@ -25,19 +25,19 @@ func (g *GetActionEventHandler) Execute(k sdk.IKeptn, data interface{}) (interfa
 	// get remediation.yaml resource
 	resource, err := g.getRemediationResource(k, getActionTriggeredData)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "unable to get remediation.yaml"}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not get remediation.yaml file for services " + getActionTriggeredData.Service + " in stage " + getActionTriggeredData.Stage + "."}
 	}
 
 	// parse remediation.yaml resource
 	remediation, err := ParseRemediationResource(resource)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "unable to parse remediation.yaml"}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not parse remediation.yaml file. Please validate it against the specification."}
 	}
 
 	// determine next action
 	action, err := GetNextAction(remediation, getActionTriggeredData.Problem, getActionTriggeredData.ActionIndex)
 	if err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "unable to get next action from remediation.yaml"}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusSucceeded, ResultType: keptnv2.ResultFailed, Message: "No more actions defined for problem type " + getActionTriggeredData.Problem.RootCause + " in remediation.yaml file."}
 	}
 
 	finishedEventData := keptnv2.GetActionFinishedEventData{

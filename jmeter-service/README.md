@@ -2,24 +2,22 @@
 
 The *jmeter-service* has been updated with the implementation from the Keptn-Contrib project [jmeter-extended-service](https://github.com/keptn-contrib/jmeter-extended-service). This service provides extended capabilities around custom workload definitions and executions.
 
-The *jmeter-service* listens to Keptn events of type:
-- `sh.keptn.events.deployment-finished`
-
-In case the tests succeed, this service sends a `sh.keptn.events.test-finished` event with `pass` as `result`. In case the tests do not succeed (e.g., the error rate is too high), this service sends an `sh.keptn.events.test-finished` event with `fail` as `result`.
-
 ## Installation
 
-* To deploy the current version of the *jmeter-service* in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it:
+The *jmeter-service* is part of the *Execution Plane for Continuous Delivery*.
 
-  ```console
-  kubectl apply -f deploy/service.yaml
-  ```
+You can find installation instructions [here](https://keptn.sh/docs/0.8.x/operate/install/#install-keptn).
 
-* If you want to delete the service execute:
+To install it next to your Keptn installation, you can use the following command:
 
-  ```console
-  kubectl delete -f deploy/service.yaml
-  ```
+```console
+helm install jmeter-service https://github.com/keptn/keptn/releases/download/0.8.4/jmeter-service-0.8.4.tgz -n keptn
+```
+
+## Development
+
+You can use `skaffold run --tail` to build and deploy from this directory.
+
 
 ## Usage
 

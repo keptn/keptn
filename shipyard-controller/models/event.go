@@ -4,6 +4,26 @@ import (
 	"encoding/json"
 )
 
+type GetRootEventParams struct {
+	Project     string `json:"project"`
+	NextPageKey int64  `form:"nextPageKey" json:"nextPageKey"`
+	PageSize    int64  `form:"pageSize" json:"pageSize"`
+}
+
+type GetEventsResult struct {
+	// Pointer to next page
+	NextPageKey int64 `json:"nextPageKey,omitempty"`
+
+	// Size of returned page
+	PageSize int64 `json:"pageSize,omitempty"`
+
+	// Total number of logs
+	TotalCount int64 `json:"totalCount,omitempty"`
+
+	// Events
+	Events []Event `json:"events"`
+}
+
 // Event event
 // swagger:model Event
 type Event struct {

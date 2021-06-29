@@ -79,3 +79,59 @@ func TestValidateShipyardVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractImageOfDeploymentEvent(t *testing.T) {
+	type args struct {
+		eventData keptnv2.DeploymentTriggeredEventData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "extract image property from correctly structured event",
+			args: args{
+				eventData: keptnv2.DeploymentTriggeredEventData{
+					ConfigurationChange: keptnv2.ConfigurationChange{
+						Values: map[string]interface{}{
+							"image": "my-image",
+						},
+					},
+				},
+			},
+			want:    "my-image",
+			wantErr: false,
+		},
+		{
+			name: "image property has different type than expected",
+			args: args{
+				eventData: keptnv2.DeploymentTriggeredEventData{
+					ConfigurationChange: keptnv2.ConfigurationChange{
+						Values: map[string]interface{}{
+							"image": map[string]string{
+								"repo": "my-repo",
+								"tag":  "1",
+							},
+						},
+					},
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractImageOfDeploymentEvent(tt.args.eventData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractImageOfDeploymentEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ExtractImageOfDeploymentEvent() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

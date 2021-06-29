@@ -45,9 +45,9 @@ spec:
 func Test_SequenceStateIntegrationTest(t *testing.T) {
 	projectName := "state"
 	serviceName := "my-service"
-	file, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
 	require.Nil(t, err)
-	defer os.Remove(file)
+	defer os.Remove(sequenceStateShipyardFilePath)
 
 	source := "golang-test"
 
@@ -66,20 +66,11 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	}()
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
-	resp, err := ApiGETRequest("/controlPlane/v1/project/" + projectName)
-
-	if resp.Response().StatusCode != http.StatusNotFound {
-		// delete project if it exists
-		_, err = ExecuteCommand(fmt.Sprintf("keptn delete project %s", projectName))
-		require.NotNil(t, err)
-	}
-
-	output, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=./%s", projectName, file))
-
+	// check if the project is already available - if not, delete it before creating it again
+	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
-	require.Contains(t, output, "created successfully")
 
-	output, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
@@ -340,6 +331,43 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 		return true
 	}, 10*time.Second, 2*time.Second)
+
+	// Test Sequence migration
+	// create a copy of the event stream by directly sending them to the datastore under a new context
+	eventTrace, err := GetEventTraceForContext(*context.KeptnContext, projectName)
+
+	require.Nil(t, err)
+	newContext, err := copyEventTrace(eventTrace)
+
+	require.Nil(t, err)
+
+	// restart the shipyard controller pod - this should trigger the sequence state migration
+	err = RestartPod("shipyard-controller")
+	require.Nil(t, err)
+
+	var copiedState scmodels.SequenceState
+	// wait for the recreated state to be available
+	require.Eventually(t, func() bool {
+		states, _, err := getState(projectName)
+		if err != nil {
+			return false
+		}
+		for _, state := range states.States {
+			if state.Shkeptncontext == newContext {
+				copiedState = state
+				return true
+			}
+		}
+		return false
+	}, 1*time.Minute, 10*time.Second)
+
+	// verify that the state has been recreated correctly
+	require.Equal(t, projectName, copiedState.Project)
+	require.Equal(t, "finished", copiedState.State)
+	require.Equal(t, 2, len(copiedState.Stages))
+	stagingStage := copiedState.Stages[1]
+	require.Equal(t, keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type)
+
 }
 
 func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
@@ -349,4 +377,16 @@ func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {
+	newContext := uuid.New().String()
+
+	for i := len(events) - 1; i >= 0; i-- {
+		events[i].Shkeptncontext = newContext
+		if _, err := ApiPOSTRequest("/mongodb-datastore/event", events[i]); err != nil {
+			return "", err
+		}
+	}
+	return newContext, nil
 }
