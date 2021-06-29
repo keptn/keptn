@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/configuration-service/common_models"
+	"github.com/sirupsen/logrus"
 	"net/url"
 	"os"
 	"strings"
@@ -406,7 +407,8 @@ func ProjectExists(project string) bool {
 	// check if the project exists
 	_, err := os.Stat(projectConfigPath)
 	// create file if not exists
-	if os.IsNotExist(err) {
+	if err != nil {
+		logrus.WithError(err).Errorf("cannot check if project %s exists", project)
 		return false
 	}
 	return true
