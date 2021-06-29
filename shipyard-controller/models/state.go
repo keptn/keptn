@@ -3,6 +3,7 @@ package models
 const (
 	SequenceTriggeredState = "triggered"
 	SequenceFinished       = "finished"
+	TimedOut               = "timedOut"
 )
 
 type GetSequenceStateParams struct {

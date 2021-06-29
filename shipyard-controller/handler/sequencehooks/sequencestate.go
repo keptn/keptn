@@ -112,18 +112,7 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
-	states, err := smv.findSequenceStateForEvent(event)
-	if err != nil {
-		log.Errorf("could not fetch sequence state for keptnContext %s: %s", event.Shkeptncontext, err.Error())
-		return
-	}
-
-	state := states.States[0]
-
-	state.State = models.SequenceFinished
-	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-	}
+	smv.updateOverallSequenceState(event, models.SequenceFinished)
 }
 
 func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(event models.Event) (*models.SequenceStates, error) {
@@ -141,8 +130,22 @@ func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(event models
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
-	// TODO implement this
-	panic("implement me")
+	smv.updateOverallSequenceState(event, models.TimedOut)
+}
+
+func (smv *SequenceStateMaterializedView) updateOverallSequenceState(event models.Event, status string) {
+	states, err := smv.findSequenceStateForEvent(event)
+	if err != nil {
+		log.Errorf("could not fetch sequence state for keptnContext %s: %s", event.Shkeptncontext, err.Error())
+		return
+	}
+
+	state := states.States[0]
+
+	state.State = status
+	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
+		log.Errorf("could not update sequence state: %s", err.Error())
+	}
 }
 
 func (smv *SequenceStateMaterializedView) updateEvaluationOfSequence(event models.Event, state models.SequenceState) error {

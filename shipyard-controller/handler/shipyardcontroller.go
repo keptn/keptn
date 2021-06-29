@@ -152,6 +152,11 @@ func (sc *shipyardController) CancelSequence(cancelRequest SequenceCancellation)
 		if err != nil {
 			return err
 		}
+
+		eventScope.Status = keptnv2.StatusErrored
+		eventScope.Result = keptnv2.ResultFailed
+		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to finish", cancelRequest.LastEvent.Type)
+
 		taskContext, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, cancelRequest.LastEvent.ID)
 		if err != nil {
 			return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID+": "+err.Error())

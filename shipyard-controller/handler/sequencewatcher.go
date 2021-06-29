@@ -12,7 +12,7 @@ import (
 )
 
 type SequenceWatcher struct {
-	shipyardController *shipyardController
+	shipyardController IShipyardController
 	eventRepo          db.EventRepo
 	projectRepo        db.ProjectRepo
 	eventTimeout       time.Duration
@@ -20,7 +20,7 @@ type SequenceWatcher struct {
 	theClock           clock.Clock
 }
 
-func NewSequenceWatcher(shipyardController *shipyardController, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(shipyardController IShipyardController, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
 		shipyardController: shipyardController,
 		eventRepo:          eventRepo,
