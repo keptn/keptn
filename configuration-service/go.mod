@@ -21,6 +21,7 @@ require (
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.6.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
