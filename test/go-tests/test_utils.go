@@ -16,6 +16,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -180,6 +181,10 @@ func ScaleUpUniform(deployments []string) error {
 
 func RestartPod(deploymentName string) error {
 	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+}
+
+func WaitForPodOfDeployment(deploymentName string) error {
+	return keptnkubeutils.WaitForPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName, 10, 1*time.Minute)
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {

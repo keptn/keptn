@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -128,6 +130,22 @@ func main() {
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
+
+	taskStartedWaitDurationInSeconds := getDurationFromEnvVar("TASK_STARTED_WAIT_DURATION", envVarTaskStartedWaitDurationDefault)
+
+	taskStartedWaitDuration := time.Duration(taskStartedWaitDurationInSeconds) * time.Second
+
+	watcher := handler.NewSequenceWatcher(
+		shipyardController,
+		createEventsRepo(),
+		createProjectRepo(),
+		taskStartedWaitDuration,
+		1*time.Minute,
+		clock.New(),
+	)
+
+	watcher.Run(context.Background())
 
 	uniformRepo := createUniformRepo()
 	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
