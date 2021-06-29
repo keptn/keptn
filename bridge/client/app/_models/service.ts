@@ -2,6 +2,8 @@ import {Root} from './root';
 import {Trace} from './trace';
 import { Deployment } from './deployment';
 import {EventTypes} from './event-types';
+import {Sequence} from './sequence';
+import {EvaluationResult} from './evaluation-result';
 
 export class Service {
   serviceName: string;
@@ -11,8 +13,13 @@ export class Service {
   deployments: Deployment[] = [];
   lastEventTypes: {[key: string]: {eventId: string, keptnContext: string, time: number}};
 
+  sequences: Sequence[] = [];
   roots: Root[] = [];
   openApprovals: Trace[] = [];
+
+  static fromJSON(data: any) {
+    return Object.assign(new this(), data);
+  }
 
   get deploymentContext(): string {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.evaluationContext;
@@ -43,22 +50,18 @@ export class Service {
 
   getOpenProblems(): Trace[] {
     // show running remediation or last faulty remediation
-    return this.roots?.filter((root, index) => root.isRemediation() && (!root.isFinished() || root.isFaulty() && index == 0)) || [];
+    return this.roots?.filter((root, index) => root.isRemediation() && (!root.isFinished() || root.isFaulty() && index === 0)) || [];
   }
 
-  getRecentSequence(): Root {
+  getRecentRoot(): Root {
     return this.roots[0];
   }
 
   getRecentEvaluation(): Trace {
-    return this.getRecentSequence()?.getEvaluation(this.stage);
+    return this.getRecentRoot()?.getEvaluation(this.stage);
   }
 
   public hasRemediations(): boolean {
     return this.deployments.some(d => d.stages.some(s => s.remediations.length !== 0));
-  }
-
-  static fromJSON(data: any) {
-    return Object.assign(new this(), data);
   }
 }

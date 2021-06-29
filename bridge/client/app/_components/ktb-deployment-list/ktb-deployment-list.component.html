@@ -1,20 +1,24 @@
 <dt-table [dataSource]="dataSource" interactiveRows>
   <ng-container dtColumnDef="version" dtColumnProportion="1">
     <dt-cell *dtCellDef="let row" uitestid="keptn-deployment-list-serviceVersion">
-      <span [textContent]="row.name"></span>
+      <ng-container *ngIf="toDeployment(row) as deployment">
+        <span [textContent]="deployment.name"></span>
+      </ng-container>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="stages" dtColumnProportion="2" dtColumnAlign="number">
     <dt-cell *dtCellDef="let row">
-      <dt-tag-list aria-label="fetch-info" *ngFor="let stage of row.stages" uitestid="keptn-deployment-list-stages">
-        <dt-tag>
-          <a href="javascript:void(0)" (click)="selectStage(row, stage.stageName, $event)">
-            <span [textContent]="stage.stageName"></span>
-            <dt-icon *ngIf="row.hasRemediation(stage.stageName)" name="criticalevent" class="event-icon error tag-icon"></dt-icon>
-          </a>
-        </dt-tag>
-      </dt-tag-list>
+      <ng-container *ngIf="toDeployment(row) as deployment">
+        <dt-tag-list aria-label="fetch-info" *ngFor="let stage of deployment.stages" uitestid="keptn-deployment-list-stages">
+          <dt-tag>
+            <a href="javascript:void(0)" (click)="selectStage(deployment, stage.stageName, $event)">
+              <span [textContent]="stage.stageName"></span>
+              <dt-icon *ngIf="deployment.hasRemediation(stage.stageName)" name="criticalevent" class="event-icon error tag-icon"></dt-icon>
+            </a>
+          </dt-tag>
+        </dt-tag-list>
+      </ng-container>
     </dt-cell>
   </ng-container>
 

@@ -4,10 +4,10 @@
     <div fxLayout="row" fxLayoutAlign="space-between">
       <div class="text-center pointer stage-item" *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
         <div class="stage-info">
-          <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(stage).isLoading(); else showLoading" class="event-icon"
-                   [name]="currentSequence.getFirstTraceOfStage(stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
+          <dt-icon *ngIf="!currentSequence.isLoading(stage); else showLoading" class="event-icon"
+                   [name]="currentSequence.getIcon(stage)"
                    [class.error]="currentSequence.isFaulty(stage)"
-                   [class.success]="currentSequence.getFirstTraceOfStage(stage).isFinished() && !currentSequence.isFaulty(stage)"
+                   [class.success]="currentSequence.isSuccessful(stage)"
                    [class.highlight]="currentSequence.hasPendingApproval(stage)"></dt-icon>
           <ng-template #showLoading>
             <button class="m-0 p-0" dt-button disabled variant="nested">
@@ -23,7 +23,7 @@
                 [textContent]="stage"></span>
         </div>
         <p class="m-0">|</p>
-        <p class="m-0" [textContent]="currentSequence.getFirstTraceOfStage(stage)?.time | date:'HH:mm'"></p>
+        <p class="m-0" [textContent]="currentSequence.time | date:'HH:mm'"></p>
       </div>
     </div>
   </div>

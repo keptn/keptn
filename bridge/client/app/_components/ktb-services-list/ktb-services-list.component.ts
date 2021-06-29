@@ -73,12 +73,12 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   updateDataSource() {
     let data = this.services.sort((a, b) => {
-      if(!a.getRecentSequence())
+      if(!a.getRecentRoot())
         return 1;
-      else if(!b.getRecentSequence())
+      else if(!b.getRecentRoot())
         return -1;
       else
-        return DateUtil.compareTraceTimesAsc(a.getRecentSequence().getLastTrace(), b.getRecentSequence().getLastTrace());
+        return DateUtil.compareTraceTimesAsc(a.getRecentRoot().getLastTrace(), b.getRecentRoot().getLastTrace());
     });
     this.dataSource = new DtTableDataSource(data.slice(0, this.pageSize));
   }

@@ -130,6 +130,10 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
+  public toDeployment(row: Deployment): Deployment {
+    return row;
+  }
+
   loadVersions(): void {
     if (this.pageSize === this.minPageSize) {
       if (this.service.allDeploymentsLoaded) {

@@ -60,28 +60,16 @@
         </dt-tag-list>
       </div>
     </div>
-    <div *ngIf="_task.isApproval() && project.getRootEvent(project.getService(_task.data.service), _task)?.isApproval() == _task.data.stage">
-      <table>
-        <tr>
-          <td><p class="m-0">Currently deployed artifact: </p></td>
-          <td><p class="m-0" [textContent]="project.getLatestDeploymentTrace(project.getService(_task.data.service), project.getStage(_task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
-        </tr>
-        <tr>
-          <td><p class="m-0">Deployable artifact: </p></td>
-          <td><ktb-approval-item [event]="_task"></ktb-approval-item></td>
-        </tr>
-      </table>
-    </div>
   </ktb-expandable-tile-header>
   <div *ngIf="task.isApproval() && task.isApprovalPending()">
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeploymentTrace(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeploymentTraceOfSequence(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>
-        <td><ktb-approval-item [event]="task"></ktb-approval-item></td>
+        <td><ktb-approval-item [event]="task" [isSequence]="true"></ktb-approval-item></td>
       </tr>
     </table>
   </div>

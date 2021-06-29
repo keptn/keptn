@@ -1,9 +1,9 @@
 <div fxFlexFill>
-  <div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="roots$ | async as roots">
+  <div class="container p-0" fxFlex="40" fxLayout="column" fxLayoutGap="15px" *ngIf="sequences$ | async as sequences">
     <div fxFlex fxLayout="column" fxLayoutGap="15px" uitestid="keptn-sequence-view-filter">
       <dt-quick-filter [dataSource]="_filterDataSource" [filters]="_seqFilters" (filterChanges)="filtersChanged($event)" aria-label="Filter By Input value" label="Filter by" clearAllLabel="Clear all" fxFlex>
         <div class="container" fxFlex fxLayout="column">
-          <ktb-root-events-list uitestid="keptn-sequence-view-roots" [events]="getFilteredSequences(roots)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)" fxFlex></ktb-root-events-list>
+          <ktb-root-events-list uitestid="keptn-sequence-view-roots" [events]="getFilteredSequences(sequences)" [selectedEvent]="currentSequence" (selectedEventChange)="selectSequence($event)" fxFlex></ktb-root-events-list>
           <div class="mb-3"></div>
         </div>
       </dt-quick-filter>
@@ -17,8 +17,8 @@
             <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
               <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
                 <p class="m-0">
-                  <span class="bold" [textContent]="currentSequence.getLabel()"></span>&nbsp;
-                  <span [textContent]="currentSequence.getStatusLabel()"></span>
+                  <span class="bold" [textContent]="currentSequence.name"></span>&nbsp;
+                  <span [textContent]="currentSequence.getStatus()"></span>
                 </p>
                 <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
               </div>
@@ -28,7 +28,7 @@
           <p class="m-0">
             <dt-tag class="mr-1" *ngIf="currentSequence.getShortImageName(); else noImageName" [textContent]="currentSequence.getShortImageName()"></dt-tag>
             <ng-template #noImageName>
-              <dt-tag class="mr-1" *ngIf="currentSequence.getService()" [textContent]="currentSequence.getService()"></dt-tag>
+              <dt-tag class="mr-1" [textContent]="currentSequence.service"></dt-tag>
             </ng-template>
           </p>
         </dt-info-group>

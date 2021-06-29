@@ -21,7 +21,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public project$: Observable<Project>;
   public contextId: string;
-  private _rootEventsTimerInterval = 30;
 
   public error: string = null;
 
@@ -48,16 +47,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         }
       }, error => {
         this.error = 'projects';
-      });
-
-    timer(0, this._rootEventsTimerInterval*1000)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.project$),
-        filter(project => !!project && !!project.getServices()),
-        takeUntil(this.unsubscribe$)
-      ).subscribe(project => {
-        this.dataService.loadRoots(project);
       });
 
     if (this.route.snapshot.url[0].path === 'trace') {

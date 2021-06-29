@@ -60,11 +60,19 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   }
 
   private updateDataSource(): void {
-    this.dataSource.data = [...this.remediations, ...this.sequences];
+    this.dataSource.data = [...this.remediations || [], ...this.sequences];
   }
 
-  public isRemediation(row: Sequence | Trace): boolean {
-    return row instanceof Sequence;
+  public isRemediation(row: Sequence | Trace): Sequence | null {
+    return row instanceof Sequence ? row : null;
+  }
+
+  public isTrace(row: Sequence | Trace): Trace | null {
+    return row instanceof Trace ? row : null;
+  }
+
+  public toSequence(row: Sequence): Sequence {
+    return  row;
   }
 
   public getTraceMessage(trace: Trace): string {

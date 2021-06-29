@@ -15,8 +15,8 @@ import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filt
 import {ApiService} from '../../_services/api.service';
 import {Service} from '../../_models/service';
 import {Root} from '../../_models/root';
-import {filter, takeUntil, tap} from "rxjs/operators";
-import {Subject, Subscription, timer} from "rxjs";
+import {filter, takeUntil, tap} from 'rxjs/operators';
+import {Subject, Subscription, timer} from 'rxjs';
 
 @Component({
   selector: 'ktb-stage-overview',
@@ -59,10 +59,10 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
     this._rootsTimer = timer(0, this._rootsTimerInterval * 1000)
       .subscribe(() => {
         this.dataService.loadRoots(this.project);
-        if(this.unfinishedRoots) {
+        if (this.unfinishedRoots) {
           this.unfinishedRoots.forEach(root => {
-            this.dataService.loadTraces(root);
-          })
+            this.dataService.loadRootTraces(root);
+          });
         }
       });
 

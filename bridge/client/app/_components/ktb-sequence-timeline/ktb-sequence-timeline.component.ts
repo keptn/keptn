@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component, Input, Output, EventEmitter} from '@angula
 import {Root} from '../../_models/root';
 import {ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
+import {Sequence} from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-timeline',
@@ -9,7 +10,7 @@ import {Subject} from 'rxjs';
   styleUrls: ['./ktb-sequence-timeline.component.scss']
 })
 export class KtbSequenceTimelineComponent{
-  private _currentSequence: Root;
+  private _currentSequence: Sequence;
   public _selectedStage: String;
 
   @Output() selectedStageChange: EventEmitter<String> = new EventEmitter();
@@ -25,12 +26,12 @@ export class KtbSequenceTimelineComponent{
   }
 
   @Input()
-  get currentSequence(): Root {
+  get currentSequence(): Sequence {
     return this._currentSequence;
   }
-  set currentSequence(root: Root) {
-    if (this._currentSequence !== root) {
-      this._currentSequence = root;
+  set currentSequence(sequence: Sequence) {
+    if (this._currentSequence !== sequence) {
+      this._currentSequence = sequence;
     }
   }
 

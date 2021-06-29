@@ -2,6 +2,7 @@ import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 
 import {Trace} from '../../_models/trace';
 import {Stage} from '../../_models/stage';
+import {EvaluationResult} from '../../_models/evaluation-result';
 
 @Component({
   selector: 'ktb-stage-badge',
@@ -11,6 +12,7 @@ import {Stage} from '../../_models/stage';
 export class KtbStageBadgeComponent implements OnInit, OnDestroy {
 
   @Input() public evaluation: Trace;
+  @Input() public evaluationResult: EvaluationResult;
   @Input() public stage: Stage;
   @Input() public isSelected: boolean | undefined = undefined;
   @Input() public fill: boolean | undefined = undefined;

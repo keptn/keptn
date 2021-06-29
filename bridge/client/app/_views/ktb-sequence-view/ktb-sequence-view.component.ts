@@ -7,21 +7,17 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import {Location} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Params, Router} from '@angular/router';
 import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from '@dynatrace/barista-components/quick-filter';
 import {isObject} from '@dynatrace/barista-components/core';
-
 import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
-import {filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
-
+import {filter, map, startWith, switchMap, take, takeUntil} from 'rxjs/operators';
 import * as moment from 'moment';
-
-import {Root} from '../../_models/root';
 import {Stage} from '../../_models/stage';
 import {Project} from '../../_models/project';
-
 import {DataService} from '../../_services/data.service';
 import {DateUtil} from '../../_utils/date.utils';
+import {Sequence} from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -57,9 +53,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         name: 'Status',
         showInSidebar: true,
         autocomplete: [
-          { name: 'Active', value: 'active' },
+          { name: 'Active', value: 'started' },
           { name: 'Failed', value: 'failed' },
           { name: 'Succeeded', value: 'succeeded' },
+          { name: 'Waiting', value: 'waiting' }
         ],
       },
     ],
@@ -71,15 +68,16 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   private sequenceFilters = {};
   private project: Project;
 
-  private unfinishedRoots: Root[] = [];
+  private unfinishedSequences: Sequence[] = [];
 
-  private _tracesTimerInterval = 10;
+  private _tracesTimerInterval = 10_000;
+  private _sequenceTimerInterval = 30_000;
   private _tracesTimer: Subscription = Subscription.EMPTY;
   private _rootsTimer: Subscription = Subscription.EMPTY;
 
   public project$: Observable<Project>;
-  public roots$: Observable<Root[]>;
-  public currentSequence: Root;
+  public sequences$: Observable<Sequence[]>;
+  public currentSequence: Sequence;
   public selectedStage: String;
 
   public _filterDataSource = new DtQuickFilterDefaultDataSource(
@@ -96,10 +94,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         map(params => params.projectName)
       );
 
-    this.roots$ = this.dataService.roots
+    this.sequences$ = this.dataService.sequences
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter(roots => roots?.length > 0)
+        filter(sequences => sequences?.length > 0)
       );
 
     this.project$ = projectName$.pipe(
@@ -116,70 +114,79 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         this.selectedStage = null;
         this.project = project;
         this.updateFilterDataSource(project);
-        this.dataService.loadRoots(project);
         this._changeDetectorRef.markForCheck();
       });
+
+    timer(0, this._sequenceTimerInterval)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.project$),
+        filter(project => !!project && !!project.getServices()),
+        takeUntil(this.unsubscribe$)
+      ).subscribe(project => {
+      this.dataService.loadSequences(project);
+    });
 
     this._rootsTimer = timer(0, this._tracesTimerInterval * 1000)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         // This triggers the subscription for roots$
-        this.unfinishedRoots.forEach(root => {
-          this.dataService.loadTraces(root);
+        this.unfinishedSequences.forEach(sequence => {
+          this.dataService.loadTraces(sequence);
         });
     });
 
     // init; set parameters
-    combineLatest([this.route.params, this.roots$])
+    combineLatest([this.route.params, this.sequences$])
       .pipe(
         takeUntil(this.unsubscribe$),
         take(1)
       )
-      .subscribe(([params, roots]) => {
-        const root = roots.find(sequence => sequence.findTrace(t => t.shkeptncontext === params.shkeptncontext));
-        const stage = params.eventId ? root?.findTrace(t => t.id === params.eventId)?.getStage() : params.stage;
+      .subscribe(([params, sequences]: [Params, Sequence[]]) => {
+        const sequence = sequences.find(s => s.shkeptncontext === params.shkeptncontext);
+        const stage = params.eventId ? sequence?.traces.find(t => t.id === params.eventId)?.getStage() : params.stage;
         const eventId = params.eventId;
-        if (root) {
-          this.selectSequence({ root, stage, eventId });
-        } else {
+        if (sequence) {
+          this.selectSequence({ sequence, stage, eventId });
+        } else if(params.shkeptncontext) {
           this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
         }
     });
 
-    this.roots$.subscribe(roots => {
-      this.updateFilterSequence(roots);
+    this.sequences$.subscribe(sequences => {
+      this.updateFilterSequence(sequences);
       this.refreshFilterDataSource();
       // Set unfinished roots so that the traces for updates can be loaded
       // Also ignore currently selected root, as this is getting already polled
-      this.unfinishedRoots = roots.filter(root => root && !root.isFinished() && root !== this.currentSequence);
+      this.unfinishedSequences = sequences.filter(sequence => !sequence.isFinished() && sequence !== this.currentSequence);
     });
   }
 
-  selectSequence(event: {root: Root, stage: string, eventId: string}): void {
+  selectSequence(event: {sequence: Sequence, stage: string, eventId: string}): void {
     if (event.eventId) {
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, 'event', event.eventId]);
+      const routeUrl = this.router.createUrlTree(['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, 'event', event.eventId]);
       this.location.go(routeUrl.toString());
     } else {
-      const stage = event.stage || event.root.getStages().pop();
-      const routeUrl = this.router.createUrlTree(['/project', event.root.getProject(), 'sequence', event.root.shkeptncontext, ...(stage ? ['stage', stage] : [])]);
+      const stage = event.stage || event.sequence.getStages().pop();
+      const routeUrl = this.router.createUrlTree(['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext, ...(stage ? ['stage', stage] : [])]);
       this.location.go(routeUrl.toString());
     }
 
-    this.currentSequence = event.root;
-    this.selectedStage = event.stage || event.root.getStages().pop();
+    this.currentSequence = event.sequence;
+    this.selectedStage = event.stage || event.sequence.getStages().pop();
     this.loadTraces(this.currentSequence);
   }
 
-  loadTraces(root: Root): void {
+  loadTraces(sequence: Sequence): void {
     this._tracesTimer.unsubscribe();
-    if(moment().subtract(1, 'day').isBefore(root.time)) {
-      this._tracesTimer = timer(0, this._tracesTimerInterval*1000)
+    if(moment().subtract(1, 'day').isBefore(sequence.time)) {
+      this._tracesTimer = timer(0, this._tracesTimerInterval)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
-          this.dataService.loadTraces(root);
+          this.dataService.loadTraces(sequence);
         });
     } else {
-      this.dataService.loadTraces(root);
+      this.dataService.loadTraces(sequence);
       this._tracesTimer = Subscription.EMPTY;
     }
   }
@@ -194,9 +201,9 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     }, {});
   }
 
-  updateFilterSequence(sequences: Root[]) {
+  updateFilterSequence(sequences: Sequence[]) {
     if (sequences) {
-      this.filterFieldData.autocomplete.find(f => f.name == 'Sequence').autocomplete = sequences.map(s => s.getShortType()).filter((v, i, a) => a.indexOf(v) === i).map(seqName => Object.assign({}, {
+      this.filterFieldData.autocomplete.find(f => f.name == 'Sequence').autocomplete = sequences.map(s => s.name).filter((v, i, a) => a.indexOf(v) === i).map(seqName => Object.assign({}, {
         name: seqName,
         value: seqName
       }));
@@ -220,20 +227,20 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     );
   }
 
-  getFilteredSequences(sequences: Root[]) {
+  getFilteredSequences(sequences: Sequence[]) {
     if(sequences)
       return sequences.filter(s => {
         let res = true;
         Object.keys(this.sequenceFilters||{}).forEach((key) => {
           switch(key) {
             case "Service":
-              res = res && this.sequenceFilters[key].includes(s.getService());
+              res = res && this.sequenceFilters[key].includes(s.service);
               break;
             case "Stage":
               res = res && this.sequenceFilters[key].every(f => s.getStages().includes(f));
               break;
             case "Sequence":
-              res = res && this.sequenceFilters[key].includes(s.getShortType());
+              res = res && this.sequenceFilters[key].includes(s.name);
               break;
             case "Status":
               res = res && this.sequenceFilters[key].includes(s.getStatus());
@@ -244,16 +251,16 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  getTracesLastUpdated(root: Root): Date {
-    return this.dataService.getTracesLastUpdated(root);
+  getTracesLastUpdated(sequence: Sequence): Date {
+    return this.dataService.getTracesLastUpdated(sequence);
   }
 
-  showReloadButton(root: Root) {
-    return moment().subtract(1, 'day').isAfter(root.time);
+  showReloadButton(sequence: Sequence) {
+    return moment().subtract(1, 'day').isAfter(sequence.time);
   }
 
   selectStage(stageName: string) {
-    const routeUrl = this.router.createUrlTree(['/project', this.currentSequence.getProject(), 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName]);
+    const routeUrl = this.router.createUrlTree(['/project', this.currentSequence.project, 'sequence', this.currentSequence.shkeptncontext, 'stage', stageName]);
     this.location.go(routeUrl.toString());
 
     this.selectedStage = stageName;
