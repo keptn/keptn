@@ -1,6 +1,6 @@
 #!/bin/bash
 
-go get go.elastic.co/go-licence-detector
+command -v go-licence-detector >/dev/null 2>&1 || { echo >&2 "This script requires 'go-licence-detector' to be installed. Please install it via 'go get go.elastic.co/go-licence-detector'"; exit 1; }
 
 SCRIPT_FULL_PATH=$(dirname "$0")
 cd "$SCRIPT_FULL_PATH" || return
