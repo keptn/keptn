@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
+	fakehooks "github.com/keptn/keptn/shipyard-controller/handler/sequencehooks/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -2338,6 +2339,9 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 
 	sc := getTestShipyardController("")
 
+	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event models.Event) {}}
+	sc.AddSequenceTimeoutHook(fakeTimeoutHook)
+
 	// insert the test data
 	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
 		Data: keptnv2.EventData{
@@ -2358,6 +2362,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 		KeptnContext:     "my-keptn-context-id",
 	})
 
+	// invoke the CancelSequence function
 	err := sc.CancelSequence(common.SequenceCancellation{
 		KeptnContext: "my-keptn-context-id",
 		Reason:       common.Timeout,
@@ -2374,5 +2379,5 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	})
 
 	require.Nil(t, err)
-	// TODO: additional verification
+	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
 }
