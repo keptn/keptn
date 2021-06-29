@@ -2333,3 +2333,46 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 	}
 	return result, nil
 }
+
+func Test_shipyardController_CancelSequence(t *testing.T) {
+
+	sc := getTestShipyardController("")
+
+	// insert the test data
+	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-sequence-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
+	}, common.TriggeredEvent)
+
+	_ = sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", models.TaskSequenceEvent{
+		TaskSequenceName: "delivery",
+		TriggeredEventID: "my-task-triggered-id",
+		Task:             models.Task{},
+		Stage:            "my-stage",
+		KeptnContext:     "my-keptn-context-id",
+	})
+
+	err := sc.CancelSequence(common.SequenceCancellation{
+		KeptnContext: "my-keptn-context-id",
+		Reason:       common.Timeout,
+		LastEvent: models.Event{
+			Data: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-task")),
+			ID:             "my-task-triggered-id",
+			Shkeptncontext: "my-keptn-context-id",
+		},
+	})
+
+	require.Nil(t, err)
+	// TODO: additional verification
+}

@@ -22,25 +22,12 @@ const maxRepoReadRetries = 30
 var errNoMatchingEvent = errors.New("no matching event found")
 var shipyardControllerInstance *shipyardController
 
-type SequenceCancellationReason int
-
-const (
-	Cancelled SequenceCancellationReason = iota
-	Timeout
-)
-
-type SequenceCancellation struct {
-	KeptnContext string
-	Reason       SequenceCancellationReason
-	LastEvent    models.Event
-}
-
 //go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
 type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
-	CancelSequence(cancelRequest SequenceCancellation) error
+	CancelSequence(cancelRequest common.SequenceCancellation) error
 }
 
 type shipyardController struct {
@@ -146,8 +133,8 @@ func (sc *shipyardController) onSequenceTimeout(event models.Event) {
 	}
 }
 
-func (sc *shipyardController) CancelSequence(cancelRequest SequenceCancellation) error {
-	if cancelRequest.Reason == Timeout {
+func (sc *shipyardController) CancelSequence(cancelRequest common.SequenceCancellation) error {
+	if cancelRequest.Reason == common.Timeout {
 		eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
 		if err != nil {
 			return err
@@ -155,11 +142,11 @@ func (sc *shipyardController) CancelSequence(cancelRequest SequenceCancellation)
 
 		eventScope.Status = keptnv2.StatusErrored
 		eventScope.Result = keptnv2.ResultFailed
-		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to finish", cancelRequest.LastEvent.Type)
+		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to finish", *cancelRequest.LastEvent.Type)
 
 		taskContext, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, cancelRequest.LastEvent.ID)
 		if err != nil {
-			return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID+": "+err.Error())
+			return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID, err.Error())
 		}
 
 		if taskContext == nil {
@@ -171,8 +158,10 @@ func (sc *shipyardController) CancelSequence(cancelRequest SequenceCancellation)
 		if err != nil {
 			return err
 		}
-		if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
-			return err
+		if taskSequenceTriggeredEvent != nil {
+			if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -669,7 +658,7 @@ func (sc *shipyardController) completeTaskSequence(eventScope *models.EventScope
 		KeptnContext: &eventScope.KeptnContext,
 	}, common.FinishedEvent)
 
-	if err != nil {
+	if err != nil && err != db.ErrNoEventFound {
 		log.Errorf("could not retrieve task.finished events: %s", err.Error())
 		return err
 	}

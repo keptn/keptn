@@ -41,6 +41,7 @@ func (sw *SequenceWatcher) Run(ctx context.Context) {
 				return
 			case <-ticker.C:
 				log.Debugf("%.2f seconds have passed. Looking for orphaned tasks", sw.syncInterval.Seconds())
+				sw.cleanUpOrphanedTasks()
 			}
 		}
 	}()
@@ -76,7 +77,9 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 			continue
 		}
 
-		if eventSentTime.Add(sw.eventTimeout).After(sw.theClock.Now()) {
+		timeOut := eventSentTime.Add(sw.eventTimeout)
+		now := sw.theClock.Now().UTC()
+		if now.After(timeOut) {
 			// check if an event that reacted to the .triggered event has been received in the meantime
 			responseEvents, err := sw.eventRepo.GetEvents(project, common.EventFilter{
 				TriggeredID:  &event.ID,
@@ -88,21 +91,20 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 			}
 			if len(responseEvents) == 0 {
 				// time out -> tell shipyard controller to complete the task sequence
-				err := sw.shipyardController.CancelSequence(SequenceCancellation{
+				err := sw.shipyardController.CancelSequence(common.SequenceCancellation{
 					KeptnContext: event.Shkeptncontext,
-					Reason:       Timeout,
+					Reason:       common.Timeout,
 					LastEvent:    event,
 				})
 				if err != nil {
 					log.WithError(err).Errorf("could not cancel sequence with keptnContext %s", event.Shkeptncontext)
 				}
-			}
-			// clean up open .triggered event
-			if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
-				log.WithError(err).Errorf("could not delete event %s", event.ID)
+				// clean up open .triggered event
+				if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
+					log.WithError(err).Errorf("could not delete event %s", event.ID)
+				}
 			}
 		}
-
 	}
 	return nil
 }

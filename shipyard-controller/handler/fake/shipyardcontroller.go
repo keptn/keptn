@@ -5,7 +5,6 @@ package fake
 
 import (
 	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
@@ -36,7 +35,7 @@ import (
 // 	}
 type IShipyardControllerMock struct {
 	// CancelSequenceFunc mocks the CancelSequence method.
-	CancelSequenceFunc func(cancelRequest handler.SequenceCancellation) error
+	CancelSequenceFunc func(cancelRequest common.SequenceCancellation) error
 
 	// GetAllTriggeredEventsFunc mocks the GetAllTriggeredEvents method.
 	GetAllTriggeredEventsFunc func(filter common.EventFilter) ([]models.Event, error)
@@ -52,7 +51,7 @@ type IShipyardControllerMock struct {
 		// CancelSequence holds details about calls to the CancelSequence method.
 		CancelSequence []struct {
 			// CancelRequest is the cancelRequest argument value.
-			CancelRequest handler.SequenceCancellation
+			CancelRequest common.SequenceCancellation
 		}
 		// GetAllTriggeredEvents holds details about calls to the GetAllTriggeredEvents method.
 		GetAllTriggeredEvents []struct {
@@ -81,12 +80,12 @@ type IShipyardControllerMock struct {
 }
 
 // CancelSequence calls CancelSequenceFunc.
-func (mock *IShipyardControllerMock) CancelSequence(cancelRequest handler.SequenceCancellation) error {
+func (mock *IShipyardControllerMock) CancelSequence(cancelRequest common.SequenceCancellation) error {
 	if mock.CancelSequenceFunc == nil {
 		panic("IShipyardControllerMock.CancelSequenceFunc: method is nil but IShipyardController.CancelSequence was just called")
 	}
 	callInfo := struct {
-		CancelRequest handler.SequenceCancellation
+		CancelRequest common.SequenceCancellation
 	}{
 		CancelRequest: cancelRequest,
 	}
@@ -100,10 +99,10 @@ func (mock *IShipyardControllerMock) CancelSequence(cancelRequest handler.Sequen
 // Check the length with:
 //     len(mockedIShipyardController.CancelSequenceCalls())
 func (mock *IShipyardControllerMock) CancelSequenceCalls() []struct {
-	CancelRequest handler.SequenceCancellation
+	CancelRequest common.SequenceCancellation
 } {
 	var calls []struct {
-		CancelRequest handler.SequenceCancellation
+		CancelRequest common.SequenceCancellation
 	}
 	mock.lockCancelSequence.RLock()
 	calls = mock.calls.CancelSequence
