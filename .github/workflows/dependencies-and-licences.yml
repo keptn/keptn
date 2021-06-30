@@ -1,4 +1,4 @@
-name: Auto Update - Spec
+name: Dependencies and Licenses
 on:
   workflow_dispatch:
 defaults:
@@ -23,14 +23,14 @@ jobs:
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'keptn/kubernetes-utils'
-          repository: 'keptn/go-utils'
+          repository: 'keptn/kubernetes-utils'
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
       - name: Install go-licence-detector
         run: |
-         go get go.elastic.co/go-licence-detector
+          go get go.elastic.co/go-licence-detector
       - name: generate-dependencies-and-licenses
         run: |
           TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'keptndeps')
@@ -48,12 +48,15 @@ jobs:
           echo "🔍 Analyzing dependencies in kubernetes-utils"
           ( cd keptn/kubernetes-utils || return ; go mod tidy > /dev/null 2>&1; go list -m -json all | go-licence-detector -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl -depsOut="${TMP_DIR}"/kubernetes-utils-dependencies.txt )
 
-          cat "$TMP_DIR"/*.txt | sort | uniq > all-dependencies.txt
+          cat "$TMP_DIR"/*.txt | sort | uniq > dependencies-and-licenses.txt
 
           echo
-          echo "👍 done. written results to ./all-dependencies.txt"
+          echo "👍 done. written results to ./dependencies-and-licenses.txt"
 
-          cat all-dependencies.txt
-
-
-
+          cat dependencies-and-licenses.txt
+      - name: Upload dependencies and licenses artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependencies-and-licenses
+          path: dependencies-and-licenses.txt
