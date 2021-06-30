@@ -1,0 +1,11 @@
+{{- define "depRow" -}}
+{{- range $i, $dep := . }}
+{{ $dep.Name }},{{ $dep.Version }},{{ $dep.LicenceType }}
+{{- end }}
+{{- end -}}
+
+{{ template "depRow" .Direct  }}
+
+{{ if .Indirect }}
+{{ template "depRow" .Indirect  }}
+{{ end }}
