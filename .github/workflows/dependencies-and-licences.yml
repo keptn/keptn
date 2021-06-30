@@ -55,7 +55,6 @@ jobs:
 
           cat dependencies-and-licenses.txt
       - name: Upload dependencies and licenses artifact
-        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: dependencies-and-licenses
