@@ -31,11 +31,16 @@ jobs:
       - name: Install go-licence-detector
         run: |
           go get go.elastic.co/go-licence-detector
-      - name: generate-dependencies-and-licenses
+      - name: Set up Node
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 12.x
+      - name: Install npm libs
+        run: |
+          npm install -g license-report
+      - name: GO dependencies and licenses
         run: |
           TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'keptndeps')
-          echo "storing dependencies files in ${TMP_DIR}"
-
           MODULES="api approval-service cli configuration-service distributor helm-service jmeter-service lighthouse-service mongodb-datastore remediation-service secret-service shipyard-controller statistics-service"
           for MODULE in $MODULES; do
              echo "🔍 Analyzing dependencies in module $MODULE"
@@ -48,14 +53,24 @@ jobs:
           echo "🔍 Analyzing dependencies in kubernetes-utils"
           ( cd keptn/kubernetes-utils || return ; go mod tidy > /dev/null 2>&1; go list -m -json all | go-licence-detector -depsTemplate=../keptn/.dependencies/templates/dependencies.csv.tmpl -depsOut="${TMP_DIR}"/kubernetes-utils-dependencies.txt )
 
-          cat "$TMP_DIR"/*.txt | sort | uniq > dependencies-and-licenses.txt
+          cat "$TMP_DIR"/*.txt | sort | uniq > dependencies-and-licenses-go.txt
 
           echo
-          echo "👍 done. written results to ./dependencies-and-licenses.txt"
+          echo "👍 done. written results to ./dependencies-and-licenses-go.txt"
 
-          cat dependencies-and-licenses.txt
+          cat dependencies-and-licenses-go.txt
+      - name: Node dependencies and licenses
+        run: |
+          echo "🔍 Analyzing dependencies in module bridge"
+          ( cd keptn/keptn/bridge || return ; license-report --only-prod --output=csv > ../../../dependencies-and-licenses-node.txt )
+
+          echo
+          echo "👍 done. written results to ./dependencies-and-licenses-node.txt"
+
+          cat dependencies-and-licenses-node.txt
       - name: Upload dependencies and licenses artifact
         uses: actions/upload-artifact@v2
         with:
           name: dependencies-and-licenses
-          path: dependencies-and-licenses.txt
+          path: dependencies-and-licenses-*.txt
+
