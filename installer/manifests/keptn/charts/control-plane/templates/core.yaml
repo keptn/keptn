@@ -563,6 +563,18 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
+      initContainers:
+      - name: change-user-init
+        image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+          - mountPath: /data/config
+            name: configuration-volume
+        command:
+          - sh
+          - -c
+          - chown -R 65532 /data/config
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
