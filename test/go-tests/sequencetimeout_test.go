@@ -25,7 +25,7 @@ spec:
           tasks:
 			- name: "unknown"`
 
-func Test_SequenceStateTimeout(t *testing.T) {
+func Test_SequenceTimeout(t *testing.T) {
 	projectName := "sequence-timeout"
 	serviceName := "my-service"
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
