@@ -14,7 +14,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.5
-	github.com/keptn/kubernetes-utils v0.8.3
+	github.com/keptn/kubernetes-utils v0.8.4-0.20210630105421-d5fa6ba57cde
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	gopkg.in/yaml.v2 v2.4.0
