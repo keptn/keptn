@@ -1,5 +1,10 @@
 #!/bin/bash
 
+##########################################################################################
+# Analyzes each module of keptn/keptn mono repo and spits out a csv formatted file called
+# "all-dependencies.txt" containing a list of dependencies + their version and licences
+##########################################################################################
+
 command -v go-licence-detector >/dev/null 2>&1 || { echo >&2 "This script requires 'go-licence-detector' to be installed. Please install it via 'go get go.elastic.co/go-licence-detector'"; exit 1; }
 
 SCRIPT_FULL_PATH=$(dirname "$0")
