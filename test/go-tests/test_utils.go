@@ -16,7 +16,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 )
 
 const (
@@ -184,7 +183,7 @@ func RestartPod(deploymentName string) error {
 }
 
 func WaitForPodOfDeployment(deploymentName string) error {
-	return keptnkubeutils.WaitForPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName, 10, 1*time.Minute)
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {

@@ -71,10 +71,17 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 	}
 
 	for _, event := range events {
-		eventSentTime, err := time.Parse(timeutils.KeptnTimeFormatISO8601, event.Time)
+		var eventSentTime time.Time
+		eventSentTime, err = time.Parse(timeutils.KeptnTimeFormatISO8601, event.Time)
 		if err != nil {
-			log.WithError(err).Errorf("could not parse event timestamp of event with id %s", event.ID)
-			continue
+			// events in the .triggered collection were stored in this format prerviously
+			fallbackTimeFormat := "2006-01-02T15:04:05.000000000Z"
+			log.WithError(err).Errorf("could not parse event timestamp of event with id %s. Trying to parse with format %s", event.ID, fallbackTimeFormat)
+			eventSentTime, err = time.Parse(fallbackTimeFormat, event.Time)
+			if err != nil {
+				log.WithError(err).Errorf("could not parse event timestamp of event with id %s.", event.ID)
+				continue
+			}
 		}
 
 		timeOut := eventSentTime.Add(sw.eventTimeout)

@@ -33,7 +33,7 @@ func SendEvent(keptnContext, triggeredID, eventType, source string, data interfa
 	ev := cloudevents.NewEvent()
 	ev.SetType(eventType)
 	ev.SetID(uuid.New().String())
-	ev.SetTime(time.Now())
+	ev.SetTime(time.Now().UTC())
 	ev.SetSource(source)
 	ev.SetDataContentType(cloudevents.ApplicationJSON)
 	ev.SetExtension("shkeptncontext", keptnContext)

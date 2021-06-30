@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jeremywohl/flatten"
+	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -146,6 +147,8 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event models.Event
 	if collection == nil {
 		return errors.New("invalid event type")
 	}
+
+	event.Time = timeutils.GetKeptnTimeStamp(time.Now().UTC())
 
 	marshal, _ := json.Marshal(event)
 	var eventInterface interface{}

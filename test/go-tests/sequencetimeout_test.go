@@ -13,22 +13,26 @@ import (
 	"time"
 )
 
-const sequenceTimeoutShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
-kind: "Shipyard"
-metadata:
-  name: "shipyard-sockshop"
-spec:
-  stages:
-    - name: "dev"
-      sequences:
-        - name: "delivery"
-          tasks:
-			- name: "unknown"`
+const sequenceTimeoutShipyard = `--- 
+apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata: 
+  name: shipyard-sockshop
+spec: 
+  stages: 
+    - 
+      name: dev
+      sequences: 
+        - 
+          name: delivery
+          tasks: 
+            - 
+              name: unknown`
 
 func Test_SequenceTimeout(t *testing.T) {
 	projectName := "sequence-timeout"
 	serviceName := "my-service"
-	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceStateShipyard)
+	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceTimeoutShipyard)
 	require.Nil(t, err)
 	defer os.Remove(sequenceStateShipyardFilePath)
 
