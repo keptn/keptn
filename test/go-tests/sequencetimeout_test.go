@@ -93,7 +93,6 @@ func Test_SequenceTimeout(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, context.KeptnContext)
 
-	var theState scmodels.SequenceState
 	// wait for the recreated state to be available
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
 	require.Eventually(t, func() bool {
@@ -102,8 +101,7 @@ func Test_SequenceTimeout(t *testing.T) {
 			return false
 		}
 		for _, state := range states.States {
-			if state.Shkeptncontext == *context.KeptnContext && theState.State == scmodels.TimedOut {
-				theState = state
+			if state.Shkeptncontext == *context.KeptnContext && state.State == scmodels.TimedOut {
 				return true
 			}
 		}

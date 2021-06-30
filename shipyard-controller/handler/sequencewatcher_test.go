@@ -6,6 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
@@ -88,6 +89,9 @@ func TestSequenceWatcher(t *testing.T) {
 				if filter.TriggeredID != nil && event.Triggeredid == *filter.TriggeredID {
 					result = append(result, event)
 				}
+			}
+			if len(result) == 0 {
+				return nil, db.ErrNoEventFound
 			}
 			return result, nil
 		},

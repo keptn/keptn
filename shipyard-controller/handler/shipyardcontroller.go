@@ -135,6 +135,7 @@ func (sc *shipyardController) onSequenceTimeout(event models.Event) {
 
 func (sc *shipyardController) CancelSequence(cancelRequest common.SequenceCancellation) error {
 	if cancelRequest.Reason == common.Timeout {
+		log.Infof("sequence %s has been timed out", cancelRequest.KeptnContext)
 		eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
 		if err != nil {
 			return err
@@ -142,7 +143,7 @@ func (sc *shipyardController) CancelSequence(cancelRequest common.SequenceCancel
 
 		eventScope.Status = keptnv2.StatusErrored
 		eventScope.Result = keptnv2.ResultFailed
-		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to finish", *cancelRequest.LastEvent.Type)
+		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *cancelRequest.LastEvent.Type)
 
 		taskContext, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, cancelRequest.LastEvent.ID)
 		if err != nil {
