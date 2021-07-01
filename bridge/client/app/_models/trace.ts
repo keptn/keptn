@@ -280,8 +280,8 @@ class Trace {
     return this.image;
   }
 
-  public getConfigurationChangeImage(): string {
-    return typeof this.data.configurationChange.values.image === 'string' ? this.data.configurationChange.values.image.split('/').pop() : ''
+  public getConfigurationChangeImage(): string | undefined {
+    return typeof this.data.configurationChange.values.image === 'string' ? this.data.configurationChange.values.image.split('/').pop() : undefined
   }
 
   getProject(): string {
