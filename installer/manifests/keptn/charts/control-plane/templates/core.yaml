@@ -338,6 +338,8 @@ spec:
               value: 'keptn'
             - name: KEPTN_SPEC_VERSION
               value: {{ .Values.keptnSpecVersion }}
+            - name: TASK_STARTED_WAIT_DURATION
+              value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
           ports:
             - containerPort: 8080
           resources:
