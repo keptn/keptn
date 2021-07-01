@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 func Test_getDurationFromEnvVar(t *testing.T) {
@@ -12,42 +13,42 @@ func Test_getDurationFromEnvVar(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want int32
+		want time.Duration
 	}{
 		{
 			name: "get default value",
 			args: args{
 				envVarValue: "",
 			},
-			want: 432000,
+			want: 432000 * time.Second,
 		},
 		{
 			name: "get configured value",
 			args: args{
 				envVarValue: "10s",
 			},
-			want: 10,
+			want: 10 * time.Second,
 		},
 		{
 			name: "get configured value",
 			args: args{
 				envVarValue: "2m",
 			},
-			want: 120,
+			want: 120 * time.Second,
 		},
 		{
 			name: "get configured value",
 			args: args{
 				envVarValue: "1h30m",
 			},
-			want: 5400,
+			want: 5400 * time.Second,
 		},
 		{
 			name: "get default value because of invalid config",
 			args: args{
 				envVarValue: "invalid",
 			},
-			want: 432000,
+			want: 432000 * time.Second,
 		},
 	}
 	for _, tt := range tests {
