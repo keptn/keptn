@@ -64,7 +64,7 @@ class Trace {
     };
     configurationChange: {
       values: {
-        image: string
+        image: any
       }
     };
 
@@ -274,10 +274,14 @@ class Trace {
       else if(this.data.image)
         this.image = this.data.image.split("/").pop();
       else if(this.data.configurationChange?.values)
-        this.image = this.data.configurationChange.values.image?.split("/").pop();
+        this.image = this.getConfigurationChangeImage();
     }
 
     return this.image;
+  }
+
+  public getConfigurationChangeImage(): string {
+    return typeof this.data.configurationChange.values.image === 'string' ? this.data.configurationChange.values.image.split('/').pop() : ''
   }
 
   getProject(): string {
