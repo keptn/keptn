@@ -93,7 +93,7 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 		if err != nil {
 			fmt.Printf("Unmarshal: %v", err)
 		}
-		info := mapSwagger["info"].(map[interface{}]interface{})
+		info := mapSwagger["info"].(map[string]interface{})
 
 		for k, v := range info {
 			if k == "version" {
