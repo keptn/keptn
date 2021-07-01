@@ -10,7 +10,7 @@ import (
 
 func Test_MongoDBSequenceRepoInsertAndRetrieve(t *testing.T) {
 
-	nowTime := time.Now()
+	nowTime := time.Now().UTC()
 
 	queueItem1 := models.QueueItem{
 		Scope: models.EventScope{
@@ -75,9 +75,9 @@ func Test_MongoDBSequenceRepoInsertAndRetrieve(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Len(t, sequences, 3)
-	require.Equal(t, queueItem1, sequences[0])
-	require.Equal(t, queueItem3, sequences[1])
-	require.Equal(t, queueItem2, sequences[2])
+	verifyQueueItemEqual(t, queueItem1, sequences[0])
+	verifyQueueItemEqual(t, queueItem3, sequences[1])
+	verifyQueueItemEqual(t, queueItem2, sequences[2])
 
 	// filter sequence with "my-id-1"
 	err = mdbrepo.DeleteQueuedSequences(models.QueueItem{EventID: queueItem1.EventID})
@@ -87,8 +87,8 @@ func Test_MongoDBSequenceRepoInsertAndRetrieve(t *testing.T) {
 	sequences, err = mdbrepo.GetQueuedSequences()
 	require.Nil(t, err)
 	require.Len(t, sequences, 2)
-	require.Equal(t, queueItem3, sequences[0])
-	require.Equal(t, queueItem2, sequences[1])
+	verifyQueueItemEqual(t, queueItem3, sequences[0])
+	verifyQueueItemEqual(t, queueItem2, sequences[1])
 
 	// delete all sequences for the project "my-project"
 	err = mdbrepo.DeleteQueuedSequences(models.QueueItem{
@@ -103,4 +103,9 @@ func Test_MongoDBSequenceRepoInsertAndRetrieve(t *testing.T) {
 	// retrieve sequence queue again - should now be empty
 	sequences, err = mdbrepo.GetQueuedSequences()
 	require.Equal(t, ErrNoEventFound, err)
+}
+
+func verifyQueueItemEqual(t *testing.T, a, b models.QueueItem) {
+	require.Equal(t, a.Scope, b.Scope)
+	require.Equal(t, a.EventID, b.EventID)
 }

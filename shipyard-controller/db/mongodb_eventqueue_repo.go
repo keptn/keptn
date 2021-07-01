@@ -122,16 +122,16 @@ func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) erro
 
 	searchOptions := bson.M{}
 	if scope.KeptnContext != "" {
-		searchOptions["keptnContext"] = scope.KeptnContext
+		searchOptions["scope.keptnContext"] = scope.KeptnContext
 	}
 	if scope.Project != "" {
-		searchOptions["project"] = scope.Project
+		searchOptions["scope.project"] = scope.Project
 	}
 	if scope.Stage != "" {
-		searchOptions["stage"] = scope.Stage
+		searchOptions["scope.stage"] = scope.Stage
 	}
 	if scope.Service != "" {
-		searchOptions["service"] = scope.Stage
+		searchOptions["scope.service"] = scope.Stage
 	}
 	_, err = collection.DeleteMany(ctx, searchOptions)
 	if err != nil {

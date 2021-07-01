@@ -38,7 +38,7 @@ func (sq *MongoDBSequenceQueueRepo) GetQueuedSequences() ([]models.QueueItem, er
 	defer cancel()
 
 	// ascending order -> oldest to newest
-	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: 1}})
+	sortOptions := options.Find().SetSort(bson.D{{Key: "timestamp", Value: 1}})
 
 	return getQueueItemsFromCollection(collection, ctx, bson.M{}, sortOptions)
 
@@ -79,15 +79,19 @@ func (sq *MongoDBSequenceQueueRepo) getSequenceQueueSearchOptions(filter models.
 	}
 
 	if filter.Scope.Project != "" {
-		searchOptions["project"] = filter.Scope.Project
+		searchOptions["scope.project"] = filter.Scope.Project
 	}
 
 	if filter.Scope.Stage != "" {
-		searchOptions["stage"] = filter.Scope.Stage
+		searchOptions["scope.stage"] = filter.Scope.Stage
 	}
 
 	if filter.Scope.Service != "" {
-		searchOptions["service"] = filter.Scope.Service
+		searchOptions["scope.service"] = filter.Scope.Service
+	}
+
+	if filter.Scope.KeptnContext != "" {
+		searchOptions["scope.keptnContext"] = filter.Scope.KeptnContext
 	}
 
 	return searchOptions
