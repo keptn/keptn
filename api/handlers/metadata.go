@@ -3,12 +3,12 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
-	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

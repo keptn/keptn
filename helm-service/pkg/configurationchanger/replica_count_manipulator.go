@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	kyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 
-	"github.com/ghodss/yaml"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"helm.sh/helm/v3/pkg/chart"
 	appsv1 "k8s.io/api/apps/v1"
-	kyaml "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 // ReplicaCountManipulator allows to manipulate the replica count of Deployments contained in a chart

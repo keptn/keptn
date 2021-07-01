@@ -2,8 +2,8 @@ package controller
 
 import (
 	"fmt"
-	"github.com/ghodss/yaml"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	"gopkg.in/yaml.v3"
 	"strings"
 
 	keptnevents "github.com/keptn/go-utils/pkg/lib"

@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/ghodss/yaml"
 	"github.com/keptn/keptn/secret-service/pkg/model"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 )
 

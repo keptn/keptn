@@ -2,9 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"github.com/ghodss/yaml"
 	"github.com/keptn/keptn/secret-service/pkg/model"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 	"io"
 	"testing"
 )

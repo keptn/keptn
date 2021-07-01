@@ -5,12 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
-	"gopkg.in/yaml.v2"
 
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"

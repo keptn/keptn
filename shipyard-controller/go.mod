@@ -8,12 +8,12 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-openapi/swag v0.19.14 // indirect
-	github.com/go-test/deep v1.0.5
+	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.2.0
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/keptn/go-utils v0.8.6-0.20210623084135-feb84d6fd126
 	github.com/ory/dockertest/v3 v3.6.5
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0
 	go.mongodb.org/mongo-driver v1.5.3
