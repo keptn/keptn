@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -43,28 +44,7 @@ func (m *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]models.Q
 		"$lte": timeutils.GetKeptnTimeStamp(timestamp),
 	}
 
-	cur, err := collection.Find(ctx, searchOptions)
-	if err != nil && err == mongo.ErrNoDocuments {
-		return nil, ErrNoEventFound
-	} else if err != nil {
-		return nil, err
-	} else if cur.RemainingBatchLength() == 0 {
-		return nil, ErrNoEventFound
-	}
-
-	queuedItems := []models.QueueItem{}
-
-	defer cur.Close(ctx)
-	for cur.Next(ctx) {
-		queueItem := models.QueueItem{}
-		err := cur.Decode(&queueItem)
-		if err != nil {
-			return nil, err
-		}
-		queuedItems = append(queuedItems, queueItem)
-	}
-
-	return queuedItems, nil
+	return getQueueItemsFromCollection(collection, ctx, searchOptions)
 }
 
 func (m *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
@@ -81,6 +61,10 @@ func (m *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 		return errors.New("invalid event type")
 	}
 
+	return insertQueueItemIntoCollection(ctx, collection, item)
+}
+
+func insertQueueItemIntoCollection(ctx context.Context, collection *mongo.Collection, item models.QueueItem) error {
 	marshal, _ := json.Marshal(item)
 	var eventInterface interface{}
 	_ = json.Unmarshal(marshal, &eventInterface)
@@ -90,7 +74,7 @@ func (m *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
 		return errors.New("queue item with ID " + item.EventID + " already exists in collection")
 	}
 
-	_, err = collection.InsertOne(ctx, eventInterface)
+	_, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
 		log.Errorf("Could not insert event %s: %s", item.EventID, err.Error())
 	}
@@ -156,4 +140,29 @@ func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) erro
 	}
 	log.Info("Deleted queue items")
 	return nil
+}
+
+func getQueueItemsFromCollection(collection *mongo.Collection, ctx context.Context, searchOptions bson.M, opts ...*options.FindOptions) ([]models.QueueItem, error) {
+	cur, err := collection.Find(ctx, searchOptions, opts...)
+	if err != nil && err == mongo.ErrNoDocuments {
+		return nil, ErrNoEventFound
+	} else if err != nil {
+		return nil, err
+	} else if cur.RemainingBatchLength() == 0 {
+		return nil, ErrNoEventFound
+	}
+
+	queuedItems := []models.QueueItem{}
+
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		queueItem := models.QueueItem{}
+		err := cur.Decode(&queueItem)
+		if err != nil {
+			return nil, err
+		}
+		queuedItems = append(queuedItems, queueItem)
+	}
+
+	return queuedItems, nil
 }
