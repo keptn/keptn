@@ -34,7 +34,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: 12.x
+          node-version: 14
       - name: Install npm libs
         run: |
           npm install -g license-report
@@ -73,4 +73,3 @@ jobs:
         with:
           name: dependencies-and-licenses
           path: dependencies-and-licenses-*.txt
-
