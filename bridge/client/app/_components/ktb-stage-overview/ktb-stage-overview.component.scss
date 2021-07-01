@@ -25,6 +25,9 @@
   &.scrollable {
     .stage-group {
       min-width: 30%;
+      @media screen and (max-width: 1560px) {
+        min-width: 335px;
+      }
     }
   }
 
@@ -34,6 +37,10 @@
     // prevent jumping horizontal scrollbar
     @media screen and (max-width: 2073px){
       min-width: 32.6%;
+    }
+
+    @media screen and (max-width: 1560px) {
+      min-width: 335px;
     }
   }
 
