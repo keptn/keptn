@@ -5,8 +5,8 @@ import "github.com/keptn/keptn/shipyard-controller/models"
 type SequenceCancellationReason int
 
 const (
-	Cancelled SequenceCancellationReason = iota
-	Timeout
+	// there will be more reasons added later
+	Timeout SequenceCancellationReason = iota
 )
 
 type SequenceCancellation struct {

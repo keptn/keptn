@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
@@ -132,9 +131,7 @@ func main() {
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
 
-	taskStartedWaitDurationInSeconds := getDurationFromEnvVar("TASK_STARTED_WAIT_DURATION", envVarTaskStartedWaitDurationDefault)
-
-	taskStartedWaitDuration := time.Duration(taskStartedWaitDurationInSeconds) * time.Second
+	taskStartedWaitDuration := getDurationFromEnvVar("TASK_STARTED_WAIT_DURATION", envVarTaskStartedWaitDurationDefault)
 
 	watcher := handler.NewSequenceWatcher(
 		shipyardController,
@@ -154,7 +151,10 @@ func main() {
 	uniformController.Inject(apiV1)
 
 	logRepo := createLogRepo()
-	logRepo.SetupTTLIndex(getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault))
+	err = logRepo.SetupTTLIndex(getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault))
+	if err != nil {
+		log.WithError(err).Error("could not setup TTL index for log repo entries")
+	}
 	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
@@ -226,7 +226,7 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 	return kubeAPI, nil
 }
 
-func getDurationFromEnvVar(envVar, fallbackValue string) int32 {
+func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
 	durationString := os.Getenv(envVar)
 	var duration time.Duration
 	var err error
@@ -241,14 +241,9 @@ func getDurationFromEnvVar(envVar, fallbackValue string) int32 {
 		duration, err = time.ParseDuration(fallbackValue)
 		if err != nil {
 			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), envVar)
-			return int32(0)
+			return time.Duration(0)
 		}
 	}
 
-	secondsStr := fmt.Sprintf("%.0f", duration.Seconds())
-	secondsInt, err := strconv.Atoi(secondsStr)
-	if err != nil {
-		return 0
-	}
-	return int32(secondsInt)
+	return duration
 }

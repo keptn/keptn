@@ -25,7 +25,7 @@ func NewMongoDBLogRepo(dbConnection *MongoDBConnection) *MongoDBLogRepo {
 	return &MongoDBLogRepo{DbConnection: dbConnection, TheClock: clock.New()}
 }
 
-func (mdbrepo *MongoDBLogRepo) SetupTTLIndex(ttlInSeconds int32) error {
+func (mdbrepo *MongoDBLogRepo) SetupTTLIndex(duration time.Duration) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	defer cancel()
 
@@ -33,6 +33,7 @@ func (mdbrepo *MongoDBLogRepo) SetupTTLIndex(ttlInSeconds int32) error {
 		return fmt.Errorf("could not get collection: %s", err.Error())
 	}
 
+	ttlInSeconds := int32(duration.Seconds())
 	createIndex := true
 
 	cur, err := collection.Indexes().List(ctx)
