@@ -3,6 +3,7 @@ package handler_test
 import (
 	"encoding/json"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -10,7 +11,6 @@ import (
 	"github.com/keptn/keptn/remediation-service/internal/sdk"
 	"github.com/keptn/keptn/remediation-service/internal/sdk/fake"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
 	"reflect"

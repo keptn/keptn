@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/ghodss/yaml"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"gopkg.in/yaml.v3"
 )
 
 type RollbackFunc func() error

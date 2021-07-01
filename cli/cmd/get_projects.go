@@ -28,11 +28,11 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 
+	"github.com/ghodss/yaml"
 	"github.com/keptn/go-utils/pkg/api/models"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 type getProjectStruct struct {

@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v3"
+	"github.com/ghodss/yaml"
 	"log"
 	"os"
 

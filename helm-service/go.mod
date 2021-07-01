@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -11,7 +12,6 @@ require (
 	github.com/keptn/kubernetes-utils v0.8.3
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.2
 	k8s.io/api v0.21.2

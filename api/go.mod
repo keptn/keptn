@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/loads v0.20.2
 	github.com/go-openapi/runtime v0.19.29
@@ -17,7 +18,6 @@ require (
 	github.com/keptn/kubernetes-utils v0.8.3
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.21.2
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.2

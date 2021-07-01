@@ -24,10 +24,10 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 
+	"github.com/ghodss/yaml"
 	apiutils "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 type getServiceStruct struct {

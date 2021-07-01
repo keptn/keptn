@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.7
@@ -17,7 +18,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0
 	go.mongodb.org/mongo-driver v1.5.3
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.21.2
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.2

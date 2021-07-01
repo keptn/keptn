@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/service"
-	"gopkg.in/yaml.v3"
 )
 
 type serviceMetadata struct {

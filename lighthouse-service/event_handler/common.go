@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"gopkg.in/yaml.v3"
+	"github.com/ghodss/yaml"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"

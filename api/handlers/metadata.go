@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"gopkg.in/yaml.v3"
+	"github.com/ghodss/yaml"
 	"io/ioutil"
 	"os"
 	"strings"

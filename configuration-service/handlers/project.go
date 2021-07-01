@@ -9,13 +9,13 @@ import (
 
 	k8sutils "github.com/keptn/kubernetes-utils/pkg"
 
+	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/keptn/keptn/configuration-service/common"
 	"github.com/keptn/keptn/configuration-service/config"
 	"github.com/keptn/keptn/configuration-service/models"
 	"github.com/keptn/keptn/configuration-service/restapi/operations/project"
-	"gopkg.in/yaml.v3"
 )
 
 type projectMetadata struct {

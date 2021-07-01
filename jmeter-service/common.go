@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/ghodss/yaml"
 
 	models "github.com/keptn/go-utils/pkg/api/models"
 	configutils "github.com/keptn/go-utils/pkg/api/utils"

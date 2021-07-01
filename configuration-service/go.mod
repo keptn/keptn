@@ -6,6 +6,7 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/loads v0.20.2
 	github.com/go-openapi/runtime v0.19.29
@@ -24,7 +25,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.2
 )
