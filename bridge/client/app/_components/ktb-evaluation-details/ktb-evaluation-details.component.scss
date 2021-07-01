@@ -1,18 +1,24 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-::ng-deep path.highlight-primary {
-  stroke-width: 2;
-  stroke: rgb(109, 109, 109);
-  fill: rgba(109, 109, 109, 0.4);
-}
-::ng-deep path.highlight-secondary {
-  stroke-width: 1;
-  stroke-dasharray: 5,5;
-  stroke: rgb(137, 137, 137);
-  fill: rgba(137, 137, 137, 0.2);
-}
+::ng-deep {
+  path.highlight-primary {
+    stroke-width: 2;
+    stroke: rgb(109, 109, 109);
+    fill: rgba(109, 109, 109, 0.4);
+  }
 
+  path.highlight-secondary {
+    stroke-width: 1;
+    stroke-dasharray: 5,5;
+    stroke: rgb(137, 137, 137);
+    fill: rgba(137, 137, 137, 0.2);
+  }
+
+  .dt-chart-pane {
+    overflow: visible !important;
+  }
+}
 .dt-button + .dt-button {
   fill: $cta-color-active;	  margin-left: $gap-normal;
 }
@@ -21,6 +27,13 @@
   min-width: 440px;
 }
 
-::ng-deep .dt-chart-pane {
-  overflow: visible !important;
+.chart-container {
+  position: relative;
+}
+
+.button-show-more-slo {
+  width: calc(100% - 17px);
+  position: absolute;
+  bottom: 147px;
+  right: 17px;
 }
