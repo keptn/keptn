@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -41,6 +42,7 @@ const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarLogsTTLDefault = "120h" // 5 days
+const envVarTaskStartedWaitDurationDefault = "10m"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -129,6 +131,20 @@ func main() {
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
+
+	taskStartedWaitDuration := getDurationFromEnvVar("TASK_STARTED_WAIT_DURATION", envVarTaskStartedWaitDurationDefault)
+
+	watcher := handler.NewSequenceWatcher(
+		shipyardController,
+		createEventsRepo(),
+		createProjectRepo(),
+		taskStartedWaitDuration,
+		1*time.Minute,
+		clock.New(),
+	)
+
+	watcher.Run(context.Background())
 
 	uniformRepo := createUniformRepo()
 	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
@@ -137,7 +153,10 @@ func main() {
 	uniformController.Inject(apiV1)
 
 	logRepo := createLogRepo()
-	logRepo.SetupTTLIndex(getLogTTLDurationInSeconds(os.Getenv("LOG_TTL")))
+	err = logRepo.SetupTTLIndex(getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault))
+	if err != nil {
+		log.WithError(err).Error("could not setup TTL index for log repo entries")
+	}
 	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
@@ -213,28 +232,24 @@ func createKubeAPI() (*kubernetes.Clientset, error) {
 	return kubeAPI, nil
 }
 
-func getLogTTLDurationInSeconds(logsTTL string) int32 {
+func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
+	durationString := os.Getenv(envVar)
 	var duration time.Duration
 	var err error
-	if logsTTL != "" {
-		duration, err = time.ParseDuration(logsTTL)
+	if durationString != "" {
+		duration, err = time.ParseDuration(durationString)
 		if err != nil {
-			log.Errorf("could not parse log TTL env var %s: %s. Will use default value %s", logsTTL, err.Error(), envVarLogsTTLDefault)
+			log.Errorf("could not parse log %s env var %s: %s. Will use default value %s", envVar, duration, err.Error(), fallbackValue)
 		}
 	}
 
 	if duration.Seconds() == 0 {
-		duration, err = time.ParseDuration(envVarLogsTTLDefault)
+		duration, err = time.ParseDuration(fallbackValue)
 		if err != nil {
-			log.Errorf("could not parse default duration string %s. Log TTL will be set to 0", err.Error())
-			return int32(0)
+			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), envVar)
+			return time.Duration(0)
 		}
 	}
 
-	secondsStr := fmt.Sprintf("%.0f", duration.Seconds())
-	secondsInt, err := strconv.Atoi(secondsStr)
-	if err != nil {
-		return 0
-	}
-	return int32(secondsInt)
+	return duration
 }

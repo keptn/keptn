@@ -3,7 +3,6 @@ import * as moment from 'moment';
 import {EventTypes} from "./event-types";
 import {ResultTypes} from "./result-types";
 import {ApprovalStates} from "./approval-states";
-import {EVENT_LABELS} from "./event-labels";
 import {EVENT_ICONS} from "./event-icons";
 import {ProblemStates} from "./problem-states";
 import {DateUtil} from '../_utils/date.utils';
@@ -64,7 +63,7 @@ class Trace {
     };
     configurationChange: {
       values: {
-        image: string
+        image: any
       }
     };
 
@@ -274,10 +273,14 @@ class Trace {
       else if(this.data.image)
         this.image = this.data.image.split("/").pop();
       else if(this.data.configurationChange?.values)
-        this.image = this.data.configurationChange.values.image?.split("/").pop();
+        this.image = this.getConfigurationChangeImage();
     }
 
     return this.image;
+  }
+
+  public getConfigurationChangeImage(): string | undefined {
+    return typeof this.data.configurationChange.values.image === 'string' ? this.data.configurationChange.values.image.split('/').pop() : undefined
   }
 
   getProject(): string {
@@ -390,7 +393,17 @@ class Trace {
       return data;
 
     const plainEvent = JSON.parse(JSON.stringify(data));
-    return Object.assign(new this, data, { plainEvent });
+    const trace = Object.assign(new this, data, { plainEvent });
+
+    if (trace.evaluationHistory !== undefined && trace.evaluationHistory.length > 0) {
+      trace.evaluationHistory = trace.evaluationHistory.map(t => Trace.fromJSON(t));
+    }
+
+    if (trace.data !== undefined && trace.data.evaluationHistory !== undefined && trace.data.evaluationHistory.length > 0) {
+      trace.data.evaluationHistory = trace.data.evaluationHistory.map(t => Trace.fromJSON(t));
+    }
+
+    return trace;
   }
 
   static traceMapper(traces: Trace[]) {

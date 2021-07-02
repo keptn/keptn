@@ -9,6 +9,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
+	fakehooks "github.com/keptn/keptn/shipyard-controller/handler/sequencehooks/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -2332,4 +2333,51 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 		result = append(result, event)
 	}
 	return result, nil
+}
+
+func Test_shipyardController_CancelSequence(t *testing.T) {
+
+	sc := getTestShipyardController("")
+
+	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event models.Event) {}}
+	sc.AddSequenceTimeoutHook(fakeTimeoutHook)
+
+	// insert the test data
+	_ = sc.eventRepo.InsertEvent("my-project", models.Event{
+		Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		},
+		ID:             "my-sequence-triggered-id",
+		Shkeptncontext: "my-keptn-context-id",
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-stage.delivery")),
+	}, common.TriggeredEvent)
+
+	_ = sc.taskSequenceRepo.CreateTaskSequenceMapping("my-project", models.TaskSequenceEvent{
+		TaskSequenceName: "delivery",
+		TriggeredEventID: "my-task-triggered-id",
+		Task:             models.Task{},
+		Stage:            "my-stage",
+		KeptnContext:     "my-keptn-context-id",
+	})
+
+	// invoke the CancelSequence function
+	err := sc.CancelSequence(common.SequenceCancellation{
+		KeptnContext: "my-keptn-context-id",
+		Reason:       common.Timeout,
+		LastEvent: models.Event{
+			Data: keptnv2.EventData{
+				Project: "my-project",
+				Stage:   "my-stage",
+				Service: "my-service",
+			},
+			Type:           common.Stringp(keptnv2.GetTriggeredEventType("my-task")),
+			ID:             "my-task-triggered-id",
+			Shkeptncontext: "my-keptn-context-id",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
 }

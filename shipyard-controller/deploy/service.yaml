@@ -56,7 +56,9 @@ spec:
           - name: MONGO_DB_NAME
             value: 'keptn'
           - name: KEPTN_SPEC_VERSION
-            value: "0.2.0"
+            value: "0.2.3"
+          - name: TASK_STARTED_WAIT_DURATION
+            value: "10m"
         ports:
         - containerPort: 8080
         resources:
@@ -69,7 +71,7 @@ spec:
             memory: "256Mi"
             cpu: "500m"
       - name: distributor
-        image: keptn/distributor:0.8.0
+        image: keptn/distributor:0.8.4
         ports:
           - containerPort: 8080
         livenessProbe:

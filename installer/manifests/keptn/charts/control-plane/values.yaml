@@ -63,6 +63,8 @@ shipyardController:
   image:
     repository: docker.io/keptn/shipyard-controller
     tag: ""
+  config:
+    taskStartedWaitDuration: "10m"
 
 secretService:
   image:
