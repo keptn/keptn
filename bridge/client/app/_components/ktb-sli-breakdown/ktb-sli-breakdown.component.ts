@@ -1,5 +1,6 @@
 import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
 import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
+import {SliResult} from '../../_models/sli-result';
 
 @Component({
   selector: 'ktb-sli-breakdown',
@@ -23,6 +24,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   private _score: number;
   public columnNames: any = [];
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
+  private _comparedIndicatorResults: any[];
 
   @Input()
   get indicatorResults(): any {
@@ -38,6 +40,16 @@ export class KtbSliBreakdownComponent implements OnInit {
       this._changeDetectorRef.markForCheck();
     }
   }
+
+  @Input()
+  get comparedIndicatorResults(): any[] {
+    return this._comparedIndicatorResults;
+  }
+  set comparedIndicatorResults(comparedIndicatorResults: any[]) {
+    this._comparedIndicatorResults = comparedIndicatorResults;
+    this.updateDataSource();
+  }
+
   @Input()
   get score(): number {
     return this._score;
@@ -76,11 +88,16 @@ export class KtbSliBreakdownComponent implements OnInit {
     return n;
   }
 
-  private assembleTablesEntries(indicatorResults): any {
+  public toSliResult(row: SliResult): SliResult {
+    return row;
+  }
+
+  private assembleTablesEntries(indicatorResults): SliResult[] {
     const totalscore  = indicatorResults.reduce((acc, result) => acc + result.score, 0);
     const isOld = indicatorResults.some(result => !!result.targets);
     if (isOld) {
       this.columnNames = [
+        'details',
         'name',
         'value',
         'targets',
@@ -89,6 +106,7 @@ export class KtbSliBreakdownComponent implements OnInit {
       ];
     } else {
       this.columnNames = [
+        'details',
         'name',
         'value',
         'passTargets',
@@ -97,8 +115,15 @@ export class KtbSliBreakdownComponent implements OnInit {
         'score'
       ];
     }
-
     return indicatorResults.map(indicatorResult =>  {
+      const comparedValue = this.comparedIndicatorResults?.find(result => result.value.metric === indicatorResult.value.metric)?.value.value;
+      const compared: any = {};
+      if (comparedValue) {
+        compared.comparedValue = this.formatNumber(comparedValue);
+        compared.absoluteChange = this.formatNumber(compared.comparedValue - indicatorResult.value.value);
+        compared.relativeChange = this.formatNumber(compared.comparedValue / (indicatorResult.value.value || 1) * 100 - 100);
+      }
+
       return {
         name: indicatorResult.displayName || indicatorResult.value.metric,
         value: indicatorResult.value.message || this.formatNumber(indicatorResult.value.value),
@@ -107,6 +132,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         passTargets: indicatorResult.passTargets,
         warningTargets: indicatorResult.warningTargets,
         targets: indicatorResult.targets,
+        ...compared,
         keySli: indicatorResult.keySli,
         success: indicatorResult.value.success
       };

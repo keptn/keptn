@@ -7,3 +7,10 @@
   white-space: nowrap;
   text-overflow: ellipsis
 }
+.transform-icon {
+  transition: transform 150ms ease;
+}
+
+.open {
+  transform: rotate( 90deg );
+}
