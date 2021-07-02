@@ -1,0 +1,25 @@
+<h2>Git upstream repository</h2>
+<p class="mt-0 mb-3">Instructions, how to set your Git provider can be found in the
+  <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>
+</p>
+<form [formGroup]="gitUpstreamForm" class="mb-3" fxLayout="row" fxLayoutAlign="none end">
+  <dt-form-field class="mr-3">
+    <dt-label>Git remote URL</dt-label>
+    <input formControlName="gitUrl" type="text" required dtInput placeholder="https://git-repo.com/repo.git"/>
+    <dt-error>Must not be empty</dt-error>
+  </dt-form-field>
+  <dt-form-field class="mr-3">
+    <dt-label>Git user</dt-label>
+    <input formControlName="gitUser" type="text" required dtInput placeholder="Username"/>
+    <dt-error>Must not be empty</dt-error>
+  </dt-form-field>
+  <dt-form-field class="mr-3">
+    <dt-label>Token</dt-label>
+    <input formControlName="gitToken" (focus)="gitTokenControl.value.length > 0 && gitTokenControl.value.includes('*********') ? gitTokenControl.setValue('') : null" type="text" dtInput placeholder="Token"/>
+    <dt-error>Must not be empty</dt-error>
+  </dt-form-field>
+    <button [disabled]="gitUpstreamForm.invalid || !gitUpstreamForm.dirty || isGitUpstreamInProgress" (click)="setGitUpstream()" dt-button>
+      <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
+      Set Git upstream
+    </button>
+</form>

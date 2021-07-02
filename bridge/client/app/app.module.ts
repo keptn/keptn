@@ -104,6 +104,7 @@ import { AppInitService } from "./_services/app.init";
 import {KtbSecretsListComponent} from "./_components/ktb-secrets-list/ktb-secrets-list.component";
 import {KtbCreateSecretFormComponent} from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
+import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -167,6 +168,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbSecretsListComponent,
     KtbCreateSecretFormComponent,
     KtbNoServiceInfoComponent,
+    KtbProjectSettingsGitComponent,
   ],
   imports: [
     BrowserModule,

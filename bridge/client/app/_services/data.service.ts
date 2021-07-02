@@ -129,10 +129,11 @@ export class DataService {
   }
 
   public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<boolean> {
-    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(res => {
+    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(() => {
       this.loadProjects();
       return true;
     }), catchError((err) => {
+      console.log(err.error);
       return of(false);
     }));
   }
@@ -193,7 +194,7 @@ export class DataService {
         )
       ).subscribe((projects: Project[]) => {
       this._projects.next(projects);
-    }, (err) => {
+    }, () => {
       this._projects.next([]);
     });
   }
@@ -414,7 +415,7 @@ export class DataService {
     return this.apiService.getEvaluationResult(shkeptncontext)
       .pipe(
         map(result => result.events||[]),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(t => true))
+        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(() => true))
       )
   }
 
