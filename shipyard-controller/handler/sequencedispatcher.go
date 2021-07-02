@@ -83,7 +83,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
-			log.WithError(err).Error("could not dispatch sequence with keptnContext %s", queuedSequence.EventID)
+			log.WithError(err).Errorf("could not dispatch sequence with keptnContext %s", queuedSequence.EventID)
 		}
 	}
 }

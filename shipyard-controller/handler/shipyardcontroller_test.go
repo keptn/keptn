@@ -702,6 +702,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	err = nextSequenceTriggeredEvent.Event.DataAs(&sequenceTriggeredDataMap)
 	require.Nil(t, err)
 	require.NotNil(t, sequenceTriggeredDataMap["configurationChange"])
+	require.NotNil(t, sequenceTriggeredDataMap["deployment"])
 
 	// verify deployment.triggered event for hardening stage
 	verifyEvent = mockDispatcher.AddCalls()[6].Event
@@ -711,6 +712,12 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, "hardening", deploymentEvent.Stage)
 	require.Equal(t, "carts", deploymentEvent.ConfigurationChange.Values["image"])
+
+	// verify that data from .finished events of the previous stage are included
+	deploymentTriggeredDataMap := map[string]interface{}{}
+	err = verifyEvent.Event.DataAs(&deploymentTriggeredDataMap)
+	require.Nil(t, err)
+	require.NotNil(t, deploymentTriggeredDataMap["test"])
 
 	finishedEvents, _ := sc.eventRepo.GetEvents("test-project", common.EventFilter{
 		Stage: common.Stringp("dev"),
@@ -1955,11 +1962,7 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 				Status:  keptnv2.StatusSucceeded,
 				Result:  keptnv2.ResultPass,
 			},
-			Test: struct {
-				Start     string `json:"start"`
-				End       string `json:"end"`
-				GitCommit string `json:"gitCommit"`
-			}{
+			Test: keptnv2.TestFinishedDetails{
 				Start:     "start",
 				End:       "end",
 				GitCommit: "commit-id",
@@ -2306,6 +2309,13 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 
 			},
 		},
+	}
+
+	em.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
+		ev := &models.Event{}
+		keptnv2.Decode(&event.Event, ev)
+		em.HandleIncomingEvent(*ev, true)
+		return nil
 	}
 	return em
 }
