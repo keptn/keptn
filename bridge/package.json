@@ -64,7 +64,7 @@
     "normalize.css": "^8.0.1",
     "rxjs": "^6.6.3",
     "semver": "^7.3.2",
-    "tslib": "^2.0.0",
+    "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
