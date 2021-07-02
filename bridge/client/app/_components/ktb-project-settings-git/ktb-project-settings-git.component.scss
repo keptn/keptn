@@ -1,0 +1,9 @@
+#git-upstream-form {
+  > div:first-of-type {
+    min-width: 40%;
+
+    > div .dt-form-field {
+      width: 50%;
+    }
+  }
+}
