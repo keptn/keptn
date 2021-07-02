@@ -6,7 +6,6 @@ package db_mock
 import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
-	"time"
 )
 
 // SequenceQueueRepoMock is a mock implementation of db.SequenceQueueRepo.
@@ -18,7 +17,7 @@ import (
 // 			DeleteQueuedSequencesFunc: func(itemFilter models.QueueItem) error {
 // 				panic("mock out the DeleteQueuedSequences method")
 // 			},
-// 			GetQueuedSequencesFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
+// 			GetQueuedSequencesFunc: func() ([]models.QueueItem, error) {
 // 				panic("mock out the GetQueuedSequences method")
 // 			},
 // 			QueueSequenceFunc: func(item models.QueueItem) error {
@@ -35,7 +34,7 @@ type SequenceQueueRepoMock struct {
 	DeleteQueuedSequencesFunc func(itemFilter models.QueueItem) error
 
 	// GetQueuedSequencesFunc mocks the GetQueuedSequences method.
-	GetQueuedSequencesFunc func(timestamp time.Time) ([]models.QueueItem, error)
+	GetQueuedSequencesFunc func() ([]models.QueueItem, error)
 
 	// QueueSequenceFunc mocks the QueueSequence method.
 	QueueSequenceFunc func(item models.QueueItem) error
@@ -49,8 +48,6 @@ type SequenceQueueRepoMock struct {
 		}
 		// GetQueuedSequences holds details about calls to the GetQueuedSequences method.
 		GetQueuedSequences []struct {
-			// Timestamp is the timestamp argument value.
-			Timestamp time.Time
 		}
 		// QueueSequence holds details about calls to the QueueSequence method.
 		QueueSequence []struct {
@@ -95,29 +92,24 @@ func (mock *SequenceQueueRepoMock) DeleteQueuedSequencesCalls() []struct {
 }
 
 // GetQueuedSequences calls GetQueuedSequencesFunc.
-func (mock *SequenceQueueRepoMock) GetQueuedSequences(timestamp time.Time) ([]models.QueueItem, error) {
+func (mock *SequenceQueueRepoMock) GetQueuedSequences() ([]models.QueueItem, error) {
 	if mock.GetQueuedSequencesFunc == nil {
 		panic("SequenceQueueRepoMock.GetQueuedSequencesFunc: method is nil but SequenceQueueRepo.GetQueuedSequences was just called")
 	}
 	callInfo := struct {
-		Timestamp time.Time
-	}{
-		Timestamp: timestamp,
-	}
+	}{}
 	mock.lockGetQueuedSequences.Lock()
 	mock.calls.GetQueuedSequences = append(mock.calls.GetQueuedSequences, callInfo)
 	mock.lockGetQueuedSequences.Unlock()
-	return mock.GetQueuedSequencesFunc(timestamp)
+	return mock.GetQueuedSequencesFunc()
 }
 
 // GetQueuedSequencesCalls gets all the calls that were made to GetQueuedSequences.
 // Check the length with:
 //     len(mockedSequenceQueueRepo.GetQueuedSequencesCalls())
 func (mock *SequenceQueueRepoMock) GetQueuedSequencesCalls() []struct {
-	Timestamp time.Time
 } {
 	var calls []struct {
-		Timestamp time.Time
 	}
 	mock.lockGetQueuedSequences.RLock()
 	calls = mock.calls.GetQueuedSequences

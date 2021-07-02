@@ -76,7 +76,9 @@ func main() {
 		createSecretStore(kubeAPI),
 		createMaterializedView(),
 		createTaskSequenceRepo(),
-		createEventsRepo())
+		createEventsRepo(),
+		createSequenceQueueRepo(),
+		createEventQueueRepo())
 
 	serviceManager := handler.NewServiceManager(
 		createMaterializedView(),
@@ -173,6 +175,10 @@ func createProjectRepo() *db.MongoDBProjectsRepo {
 
 func createEventsRepo() *db.MongoDBEventsRepo {
 	return db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+}
+
+func createSequenceQueueRepo() *db.MongoDBSequenceQueueRepo {
+	return db.NewMongoDBSequenceQueueRepo(db.GetMongoDBConnectionInstance())
 }
 
 func createEventQueueRepo() *db.MongoDBEventQueueRepo {
