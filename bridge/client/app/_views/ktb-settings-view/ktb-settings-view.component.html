@@ -1,7 +1,18 @@
 <div fxFlexFill>
   <div class="container" fxFlex fxLayout="column">
-    <div class="mb-3 settings-section" fxFlex fxLayout="column">
-      <app-ktb-project-settings-git [gitData]="gitData" [isGitUpstreamInProgress]="isGitUpstreamInProgress" (gitUpstreamSet)="setGitUpstream($event)"></app-ktb-project-settings-git>
+    <div class="mb-3 settings-section">
+      <h2>Project name</h2>
+      <dt-form-field>
+        <dt-label>Project name</dt-label>
+        <input type="text" required dtInput placeholder="e.g. sockshop"/>
+<!--        <dt-error>Must not be empty</dt-error>-->
+      </dt-form-field>
+    </div>
+    <div class="mb-3 settings-section">
+      <ktb-project-settings-git [gitData]="gitData" [isGitUpstreamInProgress]="isGitUpstreamInProgress" (gitUpstreamSet)="setGitUpstream($event)"></ktb-project-settings-git>
+    </div>
+    <div class="mb-3 settings-section">
+      <ktb-project-settings-edit-project></ktb-project-settings-edit-project>
     </div>
   </div>
 </div>

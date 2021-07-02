@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 
 @Component({
-  selector: 'app-ktb-project-settings-git',
+  selector: 'ktb-project-settings-git',
   templateUrl: './ktb-project-settings-git.component.html',
   styleUrls: ['./ktb-project-settings-git.component.scss']
 })

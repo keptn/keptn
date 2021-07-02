@@ -1,0 +1,17 @@
+<h2>Shipyard</h2>
+<div class="shipyard-settings" fxLayout="row" fxLayoutAlign=" end">
+  <div>
+    <p class="mt-0 mb-3">
+      Your project needs a <a [href]="'/manage/shipyard/' | keptnUrl">Shipyard</a>. Add a file from your filesystem or drag & drop it here it upload it to your project.
+    </p>
+    <div ktbDragAndDrop (onDropped)="updateFile($event)" (onError)="dropError.innerText = $event" [allowedExtensions]="['yaml', 'yml']">
+      <p>Drag and drop a file here<br/>or</p>
+      <button dt-button (click)="shipyardFileInput.click()">Select a file</button>
+      <input hidden type="file" #shipyardFileInput (change)="updateFile($event.target.files)">
+      <p class="drop-error" #dropError></p>
+    </div>
+  </div>
+  <div class="ml-3">
+    <button dt-button>Update Shipyard</button>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 #git-upstream-form {
   > div:first-of-type {
-    min-width: 40%;
+    min-width: calc(100% - 170px);
 
     > div .dt-form-field {
       width: 50%;
