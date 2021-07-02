@@ -145,15 +145,16 @@ func (sc *shipyardController) CancelSequence(cancelRequest common.SequenceCancel
 		eventScope.Result = keptnv2.ResultFailed
 		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *cancelRequest.LastEvent.Type)
 
-		taskContext, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, cancelRequest.LastEvent.ID)
+		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: cancelRequest.LastEvent.ID})
 		if err != nil {
 			return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID, err.Error())
 		}
 
-		if taskContext == nil {
+		if taskContexts == nil || len(taskContexts) == 0 {
 			log.Infof("No task event associated with eventID %s found", cancelRequest.LastEvent.ID)
 			return nil
 		}
+		taskContext := taskContexts[0]
 		sc.onSequenceTimeout(cancelRequest.LastEvent)
 		taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskContext.TaskSequenceName)
 		if err != nil {
@@ -447,7 +448,7 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 		// get the taskSequence related to the triggeredID and proceed with the next task
 		log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
-		taskContexts, err := sc.taskSequenceRepo.GetTaskSequence(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: event.Triggeredid})
+		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: event.Triggeredid})
 		if err != nil {
 			msg := "Could not retrieve task sequence associated to eventID " + event.Triggeredid + ": " + err.Error()
 			log.Error(msg)

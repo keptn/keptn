@@ -22,7 +22,7 @@ func NewTaskSequenceMongoDBRepo(dbConnection *MongoDBConnection) *TaskSequenceMo
 const taskSequenceCollectionNameSuffix = "-taskSequences"
 
 // GetTaskSequence godoc
-func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequences(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err

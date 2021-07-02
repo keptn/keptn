@@ -2265,10 +2265,10 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 			},
 		},
 		taskSequenceRepo: &db_mock.TaskSequenceRepoMock{
-			GetTaskSequenceFunc: func(project, triggeredID string) (*models.TaskSequenceEvent, error) {
+			GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
 				for _, ts := range taskSequenceCollection {
-					if ts.TriggeredEventID == triggeredID {
-						return &ts, nil
+					if ts.TriggeredEventID == filter.TriggeredEventID {
+						return []models.TaskSequenceEvent{ts}, nil
 					}
 				}
 				return nil, nil
