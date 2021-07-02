@@ -1,6 +1,6 @@
 import marked, { Renderer } from 'marked';
 import DOMPurify from 'dompurify';
-import * as hljs from 'highlight.js';
+import hljs from 'highlight.js';
 
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChange, ViewEncapsulation} from '@angular/core';
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
