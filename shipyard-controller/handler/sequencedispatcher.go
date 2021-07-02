@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"github.com/benbjohnson/clock"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -18,25 +17,27 @@ type ISequenceDispatcher interface {
 }
 
 type SequenceDispatcher struct {
-	eventRepo      db.EventRepo
-	eventQueueRepo db.EventQueueRepo
-	theClock       clock.Clock
-	syncInterval   time.Duration
+	eventRepo         db.EventRepo
+	sequenceQueue     db.SequenceQueueRepo
+	sequenceStateRepo db.SequenceStateRepo
+	theClock          clock.Clock
+	syncInterval      time.Duration
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
 func NewSequenceDispatcher(
 	eventRepo db.EventRepo,
-	eventQueueRepo db.EventQueueRepo,
-	eventSender keptncommon.EventSender,
+	sequenceQueueRepo db.SequenceQueueRepo,
+	sequenceStateRepo db.SequenceStateRepo,
 	syncInterval time.Duration,
 
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
-		eventRepo:      eventRepo,
-		eventQueueRepo: eventQueueRepo,
-		theClock:       clock.New(),
-		syncInterval:   syncInterval,
+		eventRepo:         eventRepo,
+		sequenceQueue:     sequenceQueueRepo,
+		sequenceStateRepo: sequenceStateRepo,
+		theClock:          clock.New(),
+		syncInterval:      syncInterval,
 	}
 }
 
@@ -61,5 +62,31 @@ func (sd *SequenceDispatcher) Run(ctx context.Context) {
 }
 
 func (sd *SequenceDispatcher) dispatchSequences() {
+	queuedSequences, err := sd.sequenceQueue.GetQueuedSequences()
+	if err != nil {
+		log.WithError(err).Error("could not load queued sequences")
+		return
+	}
 
+	for _, queuedSequence := range queuedSequences {
+		if err := sd.dispatchSequence(queuedSequence); err != nil {
+			log.WithError(err).Error("could not dispatch sequence with keptnContext %s", queuedSequence.EventID)
+		}
+	}
+}
+
+func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
+	// fetch all sequences that are currently running in the project where the sequence should run
+	_, err := sd.sequenceStateRepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project: queuedSequence.Scope.Project,
+			State:   models.SequenceTriggeredState,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	// check if there is a free slot in the stage
+	return nil
 }

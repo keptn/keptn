@@ -22,7 +22,7 @@ func NewTaskSequenceMongoDBRepo(dbConnection *MongoDBConnection) *TaskSequenceMo
 const taskSequenceCollectionNameSuffix = "-taskSequences"
 
 // GetTaskSequence godoc
-func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID string) (*models.TaskSequenceEvent, error) {
+func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {
 		return nil, err
@@ -31,24 +31,23 @@ func (mdbrepo *TaskSequenceMongoDBRepo) GetTaskSequence(project, triggeredID str
 	defer cancel()
 
 	collection := mdbrepo.getTaskSequenceCollection(project)
-	res := collection.FindOne(ctx, bson.M{"triggeredEventID": triggeredID})
-	if res.Err() != nil {
-		if res.Err() == mongo.ErrNoDocuments {
-			return nil, nil
+	cur, err := collection.Find(ctx, mdbrepo.getTaskSequenceMappingSearchOptions(filter))
+	if err != nil && err != mongo.ErrNoDocuments {
+		return nil, err
+	}
+
+	result := []models.TaskSequenceEvent{}
+
+	for cur.Next(ctx) {
+		taskSequenceMapping := &models.TaskSequenceEvent{}
+		if err := cur.Decode(taskSequenceMapping); err != nil {
+			log.WithError(err).Errorf("could not decode task sequence mapping")
+			continue
 		}
-		log.Errorf("Error retrieving projects from mongoDB: %s", err.Error())
-		return nil, err
+		result = append(result, *taskSequenceMapping)
 	}
 
-	taskSequenceEvent := &models.TaskSequenceEvent{}
-	err = res.Decode(taskSequenceEvent)
-
-	if err != nil {
-		log.Errorf("Could not cast to *models.TaskSequenceEvent: %s", err.Error())
-		return nil, err
-	}
-
-	return taskSequenceEvent, nil
+	return result, nil
 }
 
 // CreateTaskSequenceMapping godoc
@@ -119,4 +118,22 @@ func (mdbrepo *TaskSequenceMongoDBRepo) deleteCollection(collection *mongo.Colle
 func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceCollection(project string) *mongo.Collection {
 	projectCollection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(project + taskSequenceCollectionNameSuffix)
 	return projectCollection
+}
+
+func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceMappingSearchOptions(filter models.TaskSequenceEvent) bson.M {
+	searchOptions := bson.M{}
+
+	if filter.TriggeredEventID != "" {
+		searchOptions["triggeredEventID"] = filter.TriggeredEventID
+	}
+	if filter.KeptnContext != "" {
+		searchOptions["keptnContext"] = filter.KeptnContext
+	}
+	if filter.TaskSequenceName != "" {
+		searchOptions["taskSequenceName"] = filter.TaskSequenceName
+	}
+	if filter.Stage != "" {
+		searchOptions["stage"] = filter.Stage
+	}
+	return searchOptions
 }
