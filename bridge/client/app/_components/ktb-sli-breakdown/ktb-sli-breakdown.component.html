@@ -36,9 +36,11 @@
         </ng-container>
 
         <ng-container *ngIf="result.expanded">
-          <span>{{result.comparedValue}} (
-            <span [class]="result.absoluteChange < 0 ? 'error' : 'success'" [textContent]="result.absoluteChange"></span>,
-            <span [class]="result.relativeChange < 0 ? 'error' : 'success'">{{result.relativeChange}}%</span>)
+          <span>{{result.comparedValue}}
+            (<span *ngIf="result.absoluteChange < 0" class="error" [textContent]="result.absoluteChange"></span>
+            <span *ngIf="result.absoluteChange >= 0" [class.success]="result.absoluteChange !== 0">+{{result.absoluteChange}}</span>,
+            <span *ngIf="result.relativeChange < 0" class="error">{{result.relativeChange}}%</span>
+            <span *ngIf="result.relativeChange >= 0" [class.success]="result.relativeChange !== 0">+{{result.relativeChange}}%</span> )
           </span>
         </ng-container>
       </div>
@@ -98,7 +100,7 @@
         let row;
         columns: columnNames
       "
-    (click)="toSliResult(row).comparedValue !== null && (toSliResult(row).expanded = !toSliResult(row).expanded)"
+    (click)="toSliResult(row).comparedValue !== undefined && (toSliResult(row).expanded = !toSliResult(row).expanded)"
   >
   </dt-row>
 </dt-table>

@@ -120,8 +120,8 @@ export class KtbSliBreakdownComponent implements OnInit {
       const compared: any = {};
       if (comparedValue) {
         compared.comparedValue = this.formatNumber(comparedValue);
-        compared.absoluteChange = this.formatNumber(compared.comparedValue - indicatorResult.value.value);
-        compared.relativeChange = this.formatNumber(compared.comparedValue / (indicatorResult.value.value || 1) * 100 - 100);
+        compared.absoluteChange = this.formatNumber(comparedValue - indicatorResult.value.value);
+        compared.relativeChange = this.formatNumber(comparedValue / (indicatorResult.value.value || 1) * 100 - 100);
       }
 
       return {
