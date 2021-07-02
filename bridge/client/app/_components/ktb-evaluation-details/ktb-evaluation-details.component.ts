@@ -138,7 +138,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       labels: {
         rotation: -45
       },
-      tickPositioner: function() {
+      tickPositioner: function () {
         const positions = [],
           labelWidth = 70,
           ext = this.getExtremes(),
@@ -358,6 +358,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           data: []
         }
       ];
+
       this._heatmapSeriesFull = [
         {
           name: 'Score',
@@ -393,14 +394,23 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
               z: s.indicatorResult.score,
               color: s.indicatorResult.value.success ? this._evaluationColor[s.indicatorResult.status] : this._evaluationColor['info']
             };
-            if(i < 9) {
-              this._heatmapSeriesReduced[1].data.push(dataPoint);
-            }
             return dataPoint;
           })], [])
         },
       ];
 
+      if (this._heatmapSeriesFull[1].data.length > 0) {
+        const minIdx = this._heatmapSeriesFull[1].data[this._heatmapSeriesFull[1].data.length - 1]['y'] - 8;
+        const reduced = [];
+        this._heatmapSeriesFull[1].data.forEach(series => {
+          if(series['y'] >= minIdx) {
+            const srs = {...series};
+            srs['y'] = (srs['y'] - minIdx);
+            reduced.push(srs);
+          }
+        });
+        this._heatmapSeriesReduced[1].data = reduced;
+      }
 
       chartSeries.forEach(item => {
         item.data.forEach(data => {
@@ -409,7 +419,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       });
       this._chartSeries = chartSeries;
 
-      if(this.isHeatmapExtendable) {
+      if (this.isHeatmapExtendable) {
         this._heatmapSeries = this._heatmapSeriesReduced;
       } else {
         this._heatmapSeries = this._heatmapSeriesFull;
@@ -440,7 +450,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     chartSeries.forEach((series, i) => {
       if (!this._metrics.includes(series.metricName)) {
         heatmapCategoriesFull.unshift(series.name);
-        if(i <= 10) {
+        if (i <= 10) {
           heatmapCategoriesReduced.unshift(series.name);
         }
         this._metrics.unshift(series.metricName);
@@ -469,7 +479,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this._heatmapCategoriesReduced = heatmapCategoriesReduced;
 
 
-    if(this._heatmapCategoriesFull.length > 10) {
+    if (this._heatmapCategoriesFull.length > 10) {
       this.isHeatmapExtendable = true;
       this.isHeatmapExtended = false;
     } else {
@@ -477,7 +487,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
     this._updateHeatmapExtension();
   }
-
 
 
   seriesVisibilityChanged(_: DtChartSeriesVisibilityChangeEvent): void {
@@ -579,7 +588,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private _updateHeatmapExtension() {
-    if(this.isHeatmapExtended) {
+    if (this.isHeatmapExtended) {
       this._heatmapSeries = this._heatmapSeriesFull;
       this._heatmapOptions.yAxis[0].categories = this._heatmapCategoriesFull;
       this._heatmapOptions.chart.height = this._heatmapCategoriesFull.length * 28 + 160;
@@ -588,7 +597,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this._heatmapOptions.yAxis[0].categories = this._heatmapCategoriesReduced;
       this._heatmapOptions.chart.height = this._heatmapCategoriesReduced.length * 28 + 173;
     }
-    if(this.isHeatmapExtendable) {
+    if (this.isHeatmapExtendable) {
       this._heatmapOptions.xAxis[0].offset = 40;
     } else {
       this._heatmapOptions.xAxis[0].offset = undefined;
