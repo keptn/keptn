@@ -60,7 +60,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   }
 
   private updateDataSource(): void {
-    this.dataSource.data = [...this.remediations, ...this.sequences];
+    this.dataSource.data = [...this.remediations || [], ...this.sequences];
   }
 
   public isRemediation(row: Sequence | Trace): boolean {
