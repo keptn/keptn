@@ -82,9 +82,9 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	log.Infof("checking if root event for shkeptncontext %s already has a task sequence state in the collection", rootEvent.Shkeptncontext)
 	sequence, err := sm.taskSequenceRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: projectName,
+			Project:        projectName,
+			KeptnContext: rootEvent.Shkeptncontext,
 		},
-		Shkeptncontext: rootEvent.Shkeptncontext,
 	})
 	if err != nil {
 		return err

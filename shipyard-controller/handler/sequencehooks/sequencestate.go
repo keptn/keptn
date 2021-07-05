@@ -123,9 +123,9 @@ func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(event models
 
 	return smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: eventScope.Project,
+			Project:        eventScope.Project,
+			KeptnContext: eventScope.KeptnContext,
 		},
-		Shkeptncontext: eventScope.KeptnContext,
 	})
 }
 
@@ -199,9 +199,9 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 
 	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: eventScope.Project,
+			Project:        eventScope.Project,
+			KeptnContext: eventScope.KeptnContext,
 		},
-		Shkeptncontext: eventScope.KeptnContext,
 	})
 	if err != nil {
 		return models.SequenceState{}, fmt.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())

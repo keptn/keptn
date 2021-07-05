@@ -33,6 +33,7 @@ func TestStateHandler_GetState(t *testing.T) {
 						require.Equal(t, "sequenceState", filter.State)
 						require.Equal(t, "2021-05-10T09:51:00.000Z", filter.FromTime)
 						require.Equal(t, "2021-05-10T09:50:00.000Z", filter.BeforeTime)
+						require.Equal(t, "my-context", filter.KeptnContext)
 						return &models.SequenceStates{
 							States: []models.SequenceState{
 								{
@@ -52,7 +53,7 @@ func TestStateHandler_GetState(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/state/my-project?name=sequenceName&state=sequenceState&fromTime=2021-05-10T09:51:00.000Z&beforeTime=2021-05-10T09:50:00.000Z", nil),
+			request:    httptest.NewRequest("GET", "/state/my-project?name=sequenceName&state=sequenceState&fromTime=2021-05-10T09:51:00.000Z&beforeTime=2021-05-10T09:50:00.000Z&keptnContext=my-context", nil),
 			wantStatus: http.StatusOK,
 		},
 		{

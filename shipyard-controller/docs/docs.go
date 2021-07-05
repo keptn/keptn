@@ -1075,6 +1075,12 @@ var doc = `{
                         "description": "Pointer to the next set of items",
                         "name": "nextPageKey",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The keptn context",
+                        "name": "keptnContext",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1268,31 +1274,6 @@ var doc = `{
         }
     },
     "definitions": {
-        "models.Approval": {
-            "type": "object",
-            "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
-                "image": {
-                    "description": "image",
-                    "type": "string"
-                },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "tag": {
-                    "description": "tag",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
-                    "type": "string"
-                }
-            }
-        },
         "models.CreateLogsRequest": {
             "type": "object",
             "properties": {
@@ -1383,23 +1364,6 @@ var doc = `{
                 }
             }
         },
-        "models.EventContextInfo": {
-            "type": "object",
-            "properties": {
-                "eventId": {
-                    "description": "ID of the event",
-                    "type": "string"
-                },
-                "keptnContext": {
-                    "description": "Keptn Context ID of the event",
-                    "type": "string"
-                },
-                "time": {
-                    "description": "Time of the event",
-                    "type": "string"
-                }
-            }
-        },
         "models.Events": {
             "type": "object",
             "properties": {
@@ -1407,7 +1371,7 @@ var doc = `{
                     "description": "events",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Event"
+                        "$ref": "#/definitions/models.KeptnContextExtendedCE"
                     }
                 },
                 "nextPageKey": {
@@ -1419,7 +1383,7 @@ var doc = `{
                     "type": "number"
                 },
                 "totalCount": {
-                    "description": "Total number of events",
+                    "description": "Total number of resources",
                     "type": "number"
                 }
             }
@@ -1611,6 +1575,55 @@ var doc = `{
                 }
             }
         },
+        "models.KeptnContextExtendedCE": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "description": "contenttype",
+                    "type": "string"
+                },
+                "data": {
+                    "description": "data\nRequired: true",
+                    "type": "object"
+                },
+                "extensions": {
+                    "description": "extensions",
+                    "type": "object"
+                },
+                "id": {
+                    "description": "id",
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "description": "shkeptncontext",
+                    "type": "string"
+                },
+                "shkeptnspecversion": {
+                    "description": "shkeptnspecversion",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "source\nRequired: true",
+                    "type": "string"
+                },
+                "specversion": {
+                    "description": "specversion",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "time\nFormat: date-time",
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "description": "triggeredid",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type\nRequired: true",
+                    "type": "string"
+                }
+            }
+        },
         "models.KubernetesMetaData": {
             "type": "object",
             "properties": {
@@ -1790,53 +1803,6 @@ var doc = `{
                 }
             }
         },
-        "models.Service": {
-            "type": "object",
-            "properties": {
-                "creationDate": {
-                    "description": "Creation date of the service",
-                    "type": "string"
-                },
-                "deployedImage": {
-                    "description": "Currently deployed image",
-                    "type": "string"
-                },
-                "lastEventTypes": {
-                    "description": "last event types",
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/models.EventContextInfo"
-                    }
-                },
-                "openApprovals": {
-                    "description": "open approvals",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Approval"
-                    }
-                },
-                "serviceName": {
-                    "description": "Service name",
-                    "type": "string"
-                }
-            }
-        },
-        "models.Stage": {
-            "type": "object",
-            "properties": {
-                "services": {
-                    "description": "services",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Service"
-                    }
-                },
-                "stageName": {
-                    "description": "Stage name",
-                    "type": "string"
-                }
-            }
-        },
         "models.Stages": {
             "type": "object",
             "properties": {
@@ -1852,7 +1818,7 @@ var doc = `{
                     "description": "stages",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Stage"
+                        "$ref": "#/definitions/models.ExpandedStage"
                     }
                 },
                 "totalCount": {
@@ -2033,7 +1999,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "1.0",
+	Version:     "develop",
 	Host:        "",
 	BasePath:    "/v1",
 	Schemes:     []string{},
