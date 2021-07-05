@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"github.com/benbjohnson/clock"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
@@ -12,7 +14,7 @@ import (
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
-	Add(event models.DispatcherEvent) error
+	Add(queueItem models.QueueItem) error
 	Run(ctx context.Context)
 }
 
@@ -22,6 +24,7 @@ type SequenceDispatcher struct {
 	sequenceRepo  db.TaskSequenceRepo
 	theClock      clock.Clock
 	syncInterval  time.Duration
+	eventChannel  chan models.Event
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
@@ -30,6 +33,7 @@ func NewSequenceDispatcher(
 	sequenceQueueRepo db.SequenceQueueRepo,
 	sequenceStateRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
+	eventChannel chan models.Event,
 
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
@@ -38,24 +42,15 @@ func NewSequenceDispatcher(
 		sequenceRepo:  sequenceStateRepo,
 		theClock:      clock.New(),
 		syncInterval:  syncInterval,
+		eventChannel:  eventChannel,
 	}
 }
 
-func (sd *SequenceDispatcher) Add(event models.DispatcherEvent) error {
-	ed, err := models.ConvertToEvent(event.Event)
-	if err != nil {
+func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
+	if err := sd.sequenceQueue.QueueSequence(queueItem); err != nil {
 		return err
 	}
-	eventScope, err := models.NewEventScope(*ed)
-	if err != nil {
-		return err
-	}
-
-	return sd.sequenceQueue.QueueSequence(models.QueueItem{
-		Scope:     *eventScope,
-		EventID:   event.Event.ID(),
-		Timestamp: event.TimeStamp,
-	})
+	return sd.dispatchSequence(queueItem)
 }
 
 func (sd *SequenceDispatcher) Run(ctx context.Context) {
@@ -102,7 +97,25 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 		return nil
 	}
 
-	// the sequence can be started now
+	events, err := sd.eventRepo.GetEvents(queuedSequence.Scope.Project, common.EventFilter{
+		ID: &queuedSequence.EventID,
+	}, common.TriggeredEvent)
+
+	if err != nil {
+		return err
+	}
+
+	if events == nil || len(events) == 0 {
+		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queuedSequence.EventID)
+	}
+
+	sequenceTriggeredEvent := events[0]
+
+	sd.eventChannel <- sequenceTriggeredEvent
+
+	if err := sd.sequenceQueue.DeleteQueuedSequences(queuedSequence); err != nil {
+		return err
+	}
 
 	return nil
 }
