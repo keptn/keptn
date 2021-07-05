@@ -1,0 +1,32 @@
+name: Update Docs
+on:
+  push:
+    branches:
+      - "release-*"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch which should be used to generate the new keptn docs (Example: refs/heads/release-0.8.4)'
+        required: true
+        default: ''
+jobs:
+  send_webhook:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Trigger docs auto update in docs repo
+        if: github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          repository: 'keptn/keptn.github.io'
+          event-type: release-push
+          client-payload: '{"ref": "${{ github.ref }}"}'
+
+      - name: Trigger manual docs update in docs repo
+        if: github.event_name == 'workflow_dispatch'
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          repository: 'keptn/keptn.github.io'
+          event-type: release-push
+          client-payload: '{"ref": "${{ github.event.inputs.branch }}"}'
