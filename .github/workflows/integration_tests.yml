@@ -575,7 +575,8 @@ jobs:
 
           # start e2e tests in bridge folder
           cd bridge
-          npm install
+          npm cache clean --force
+          npm ci
           ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL --protractor-config=./e2e/protractor-ci.conf.js
 
           # re-enable basic auth of bridge
