@@ -201,10 +201,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     if (this._evaluationData !== evaluationData) {
       this._evaluationData = evaluationData;
       this._chartSeries = [];
-      this._heatmapSeries = [];
       this._metrics = ['Score'];
       this._heatmapOptions.yAxis[0].categories = ['Score'];
-      this._selectedEvaluationData = null;
       this.evaluationDataChanged();
       this._changeDetectorRef.markForCheck();
     }
@@ -217,6 +215,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((results) => {
+        this._selectedEvaluationData = null;
         if (results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
           this.evaluationData.data.evaluationHistory = [...results.traces || [], ...this.evaluationData.data.evaluationHistory || []].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
           this.updateChartData(this.evaluationData.data.evaluationHistory);
@@ -225,7 +224,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           this.evaluationData.data.service == results.triggerEvent.data.service &&
           this.evaluationData.data.stage == results.triggerEvent.data.stage) {
           this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
-          this._selectedEvaluationData = null;
           this.updateChartData(this.evaluationData.data.evaluationHistory);
         }
       });
@@ -236,7 +234,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this.dataService.loadEvaluationResults(this._evaluationData);
       if (this.isInvalidated)
         this.selectEvaluationData(this._evaluationData);
-      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
+      else if (this._evaluationData.data.evaluationHistory)
         this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
     }
   }
@@ -523,7 +521,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         });
       if(secondaryHighlightIndexes) {
         const index = secondaryHighlightIndexes.find(index => index >= 0);
-        this.comparedIndicatorResults = this._heatmapSeries[0]?.data[index]['evaluation'].data.evaluation.indicatorResults ?? [];
+        this.comparedIndicatorResults = index >= 0 ? this._heatmapSeries[0]?.data[index]['evaluation'].data.evaluation.indicatorResults ?? [] : [];
 
         secondaryHighlightIndexes.forEach(highlightIndex => {
           if (highlightIndex >= 0)

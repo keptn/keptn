@@ -29,9 +29,17 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   @ViewChild('remediationDialog')
   public remediationDialog: TemplateRef<any>;
   public remediationDialogRef: MatDialogRef<any, any>;
+  private _selectedStage: string;
 
   public projectName: string;
-  public selectedStage: string;
+
+  @Input()
+  get selectedStage(): string {
+    return this._selectedStage;
+  }
+  set selectedStage(stageName: string) {
+    this.selectStage(stageName);
+  }
 
   @Input()
   get deployment(): Deployment {
@@ -40,38 +48,35 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
 
   set deployment(deployment: Deployment) {
     if (this._deployment !== deployment) {
-      const selectLast = !!this._deployment;
-      this._deployment = deployment;
       if (deployment) {
-        if (!this._deployment.sequence) {
-          this.loadSequence(selectLast);
+        if (!deployment.sequence) {
+          this.loadSequence(deployment);
         } else {
-          this.selectLastStage();
+          this._deployment = deployment;
         }
       }
     }
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location, private dialog: MatDialog, private clipboard: ClipboardService) {
-
-  }
-
-  ngOnInit(): void {
     this.route.params.pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe(params => {
       this.projectName = params.projectName;
-      this.selectedStage = params.stage;
       this._changeDetectorRef.markForCheck();
     });
   }
 
-  private loadSequence(selectLast: boolean) {
-    if (this.deployment) {
-      this.dataService.getRoot(this.projectName, this.deployment.shkeptncontext).subscribe(sequence => {
-        this.deployment.sequence = sequence;
+  ngOnInit(): void {
+
+  }
+
+  private loadSequence(deployment: Deployment) {
+    if (deployment) {
+      this.dataService.getRoot(this.projectName, deployment.shkeptncontext).subscribe(sequence => {
+        deployment.sequence = sequence;
         const evaluations$ = [];
-        for (const stage of this.deployment.stages) {
+        for (const stage of deployment.stages) {
           if (!stage.evaluation && stage.evaluationContext) {
             evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
           }
@@ -81,28 +86,25 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
           .subscribe((evaluations: Trace[] | null) => {
             if (evaluations) {
               for (const evaluation of evaluations){
-                this.deployment.getStage(evaluation.getStage()).evaluation = evaluation;
+                deployment.getStage(evaluation.getStage()).evaluation = evaluation;
               }
             }
-
-            if (selectLast || !this.selectedStage) {
-              this.selectLastStage();
-            }
+            this._deployment = deployment;
             this._changeDetectorRef.markForCheck();
         });
       });
     }
-  }
-
-  private selectLastStage() {
-    const stages = this.deployment.sequence.getStages();
-    this.selectStage(stages[stages.length - 1]);
+    else {
+      this._deployment = deployment;
+    }
   }
 
   public selectStage(stageName: string) {
-    this.selectedStage = stageName;
-    const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', this.deployment.service, 'context', this.deployment.sequence.shkeptncontext, 'stage', stageName]);
-    this.location.go(routeUrl.toString());
+    this._selectedStage = stageName;
+    if (this.deployment?.sequence) {
+      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', this.deployment.service, 'context', this.deployment.sequence.shkeptncontext, 'stage', stageName]);
+      this.location.go(routeUrl.toString());
+    }
     this._changeDetectorRef.markForCheck();
   }
 
