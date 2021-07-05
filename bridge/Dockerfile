@@ -1,4 +1,4 @@
-FROM node:10-alpine as angularBuilder
+FROM node:14-alpine3.13 as angularBuilder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -16,7 +16,7 @@ RUN npm run build
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:10-alpine
+FROM node:14-alpine3.13
 
 EXPOSE 3000
 
