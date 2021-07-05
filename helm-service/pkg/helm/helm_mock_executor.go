@@ -20,6 +20,9 @@ apiVersion: v1
 kind: Service
 metadata: 
   name: carts
+  labels:
+    app: carts
+    app.kubernetes.io/name: carts
 spec: 
   type: LoadBalancer
   ports: 
@@ -29,6 +32,7 @@ spec:
     targetPort: 8080
   selector: 
     app: carts
+    app.kubernetes.io/name: carts
 `
 
 const userDeployment = `--- 
@@ -110,6 +114,9 @@ kind: Service
 metadata:
   creationTimestamp: null
   name: carts-canary
+  labels:
+    app: carts
+    app.kubernetes.io/name: carts
 spec:
   ports:
   - name: http
@@ -118,6 +125,7 @@ spec:
     targetPort: 8080
   selector:
     app: carts
+    app.kubernetes.io/name: carts
   type: LoadBalancer
 status:
   loadBalancer: {}
@@ -130,6 +138,9 @@ kind: Service
 metadata:
   creationTimestamp: null
   name: carts-primary
+  labels:
+    app: carts-primary
+    app.kubernetes.io/name: carts-primary
 spec:
   ports:
   - name: http
@@ -138,6 +149,7 @@ spec:
     targetPort: 8080
   selector:
     app: carts-primary
+    app.kubernetes.io/name: carts-primary
   type: LoadBalancer
 status:
   loadBalancer: {}
