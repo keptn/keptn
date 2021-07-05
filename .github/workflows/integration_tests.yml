@@ -222,6 +222,7 @@ jobs:
 
       - name: Install and start K3d
         if: env.CLOUD_PROVIDER == 'k3d-on-GHA'
+        timeout-minutes: 10
         env:
           K3D_VERSION: ${{ matrix.PLATFORM_VERSION }}
         run: |
