@@ -102,6 +102,7 @@ func main() {
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
 		sequenceDispatcherChannel,
+		clock.New(),
 	)
 
 	cancelSequenceChannel := make(chan common.SequenceCancellation)

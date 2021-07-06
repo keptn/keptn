@@ -2378,7 +2378,7 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	})
 
 	// invoke the CancelSequence function
-	err := sc.CancelSequence(common.SequenceCancellation{
+	err := sc.cancelSequence(common.SequenceCancellation{
 		KeptnContext: "my-keptn-context-id",
 		Reason:       common.Timeout,
 		LastEvent: models.Event{

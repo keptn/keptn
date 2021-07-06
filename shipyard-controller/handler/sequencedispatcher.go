@@ -34,13 +34,14 @@ func NewSequenceDispatcher(
 	sequenceStateRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
 	eventChannel chan models.Event,
+	theClock clock.Clock,
 
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
 		eventRepo:     eventRepo,
 		sequenceQueue: sequenceQueueRepo,
 		sequenceRepo:  sequenceStateRepo,
-		theClock:      clock.New(),
+		theClock:      theClock,
 		syncInterval:  syncInterval,
 		eventChannel:  eventChannel,
 	}
