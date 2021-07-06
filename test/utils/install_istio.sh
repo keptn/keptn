@@ -4,10 +4,15 @@
 source test/utils.sh
 
 # install istio
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.8.2 sh -
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.9.6 sh -
 cd istio-* || exit
 export PATH=$PWD/bin:$PATH
-istioctl install -y # --set profile=demo
+
+# run istio prechecks
+istioctl x precheck
+
+# install istio onto cluster
+istioctl install -y --verify # --set profile=demo
 
 verify_test_step $? "Failed to install Istio"
 
