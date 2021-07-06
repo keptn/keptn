@@ -70,16 +70,16 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       if (params.shkeptncontext && params.serviceName) {
         const service = project.getServices().find(s => s.serviceName === params.serviceName);
         const paramDeployment = service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
-        const changedDeployment = this.selectedDeployment && service.deployments.filter(deployment => deployment.name === this.selectedDeployment.name); // the context of a deployment may change
+        const changedDeployments = this.selectedDeployment && service.deployments.filter(deployment => deployment.name === this.selectedDeployment.name); // the context of a deployment may change
 
         if (paramDeployment) {
           this.selectedDeployment = paramDeployment;
-        } else if (changedDeployment?.length > 0) {
+        } else if (changedDeployments?.length > 0) {
           let deployment;
-          if (changedDeployment.length === 1) {
-            deployment = changedDeployment[0];
+          if (changedDeployments.length === 1) {
+            deployment = changedDeployments[0];
           } else {
-            deployment = changedDeployment.find(d => d.stages.some(s => this.selectedDeployment.stages.some(sd => s.stageName === sd.stageName)));
+            deployment = changedDeployments.find(d => d.stages.some(s => this.selectedDeployment.stages.some(sd => s.stageName === sd.stageName)));
           }
           if (deployment) {
             this.selectedDeployment = deployment;

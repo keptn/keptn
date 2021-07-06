@@ -47,13 +47,11 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   }
 
   set deployment(deployment: Deployment) {
-    if (this._deployment !== deployment) {
-      if (deployment) {
-        if (!deployment.sequence) {
-          this.loadSequence(deployment);
-        } else {
-          this._deployment = deployment;
-        }
+    if (deployment && this._deployment !== deployment) {
+      if (!deployment.sequence) {
+        this.loadSequence(deployment);
+      } else {
+        this._deployment = deployment;
       }
     }
   }
@@ -72,31 +70,26 @@ export class KtbServiceDetailsComponent implements OnInit, OnDestroy{
   }
 
   private loadSequence(deployment: Deployment) {
-    if (deployment) {
-      this.dataService.getRoot(this.projectName, deployment.shkeptncontext).subscribe(sequence => {
-        deployment.sequence = sequence;
-        const evaluations$ = [];
-        for (const stage of deployment.stages) {
-          if (!stage.evaluation && stage.evaluationContext) {
-            evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
-          }
+    this.dataService.getRoot(this.projectName, deployment.shkeptncontext).subscribe(sequence => {
+      deployment.sequence = sequence;
+      const evaluations$ = [];
+      for (const stage of deployment.stages) {
+        if (!stage.evaluation && stage.evaluationContext) {
+          evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
         }
-        forkJoin(evaluations$)
-          .pipe(defaultIfEmpty(null))
-          .subscribe((evaluations: Trace[] | null) => {
-            if (evaluations) {
-              for (const evaluation of evaluations){
-                deployment.getStage(evaluation.getStage()).evaluation = evaluation;
-              }
+      }
+      forkJoin(evaluations$)
+        .pipe(defaultIfEmpty(null))
+        .subscribe((evaluations: Trace[] | null) => {
+          if (evaluations) {
+            for (const evaluation of evaluations){
+              deployment.getStage(evaluation.getStage()).evaluation = evaluation;
             }
-            this._deployment = deployment;
-            this._changeDetectorRef.markForCheck();
-        });
+          }
+          this._deployment = deployment;
+          this._changeDetectorRef.markForCheck();
       });
-    }
-    else {
-      this._deployment = deployment;
-    }
+    });
   }
 
   public selectStage(stageName: string) {
