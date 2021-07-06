@@ -56,7 +56,7 @@ jobs:
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
           - CLOUD_PROVIDER: "k3d-on-GHA"
-            PLATFORM_VERSION: "v4.4.4" # see https://github.com/rancher/k3d/releases
+            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
