@@ -7,7 +7,7 @@ type ISequenceTriggeredHook interface {
 	OnSequenceTriggered(models.Event)
 }
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/sequncestarted.go . ISequenceStartedHook
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencestarted.go . ISequenceStartedHook
 type ISequenceStartedHook interface {
 	OnSequenceStarted(models.Event)
 }
