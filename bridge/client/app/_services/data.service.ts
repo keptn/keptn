@@ -239,6 +239,7 @@ export class DataService {
                 if (stage) {
                   const existingRemediation = stage.remediations.find(r => r.shkeptncontext === sequence.shkeptncontext);
                   let _resourceContent: Observable<any> = of(null);
+                  let _root: Observable<any> = of(null);
 
                   // update existing remediation
                   if (existingRemediation) {
@@ -247,6 +248,12 @@ export class DataService {
                   else {
                     const remediation = Sequence.fromJSON(sequence);
                     stage.remediations.push(remediation);
+                    if (!remediation.problemTitle) {
+                      _root = this.getRoot(project.projectName, remediation.shkeptncontext).pipe(
+                        map(root => {
+                          remediation.problemTitle = root.getProblemTitle();
+                        }));
+                    }
                   }
 
                   if (!stage?.config) {
@@ -257,7 +264,7 @@ export class DataService {
                       })
                     );
                   }
-                  result = _resourceContent.pipe(switchMap(() => of(deployment)));
+                  result = forkJoin([_root, _resourceContent]).pipe(switchMap(() => of(deployment)));
                 }
               }
             }
@@ -302,7 +309,7 @@ export class DataService {
     });
   }
 
-  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date): void {
+  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
     if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
     }
@@ -320,12 +327,12 @@ export class DataService {
         }),
       ).subscribe(([sequences, totalCount]: [Sequence[], number]) => {
         if (beforeTime) { // indicates that old sequences have been loaded
-          project.sequences = [...project.sequences || [], ...sequences || []];
+          project.sequences = [...project.sequences || [], ...sequences || [], ...(oldSequence ? [oldSequence] : [])];
         }
         else {
           project.sequences = [...sequences || [], ...project.sequences || []];
         }
-        if (!fromTime && !beforeTime && project.sequences.length >= totalCount || beforeTime && totalCount < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
+        if (!fromTime && !beforeTime && project.sequences.length >= totalCount || beforeTime && !fromTime && totalCount < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
           project.allSequencesLoaded = true;
         }
         project.stages.forEach(stage => {
@@ -344,12 +351,12 @@ export class DataService {
     );
   }
 
-  public loadOldSequences(project: Project, fromTime?: Date): void {
-    this.loadSequences(project, fromTime, new Date(project.sequences[project.sequences.length - 1].time));
+  public loadOldSequences(project: Project, fromTime?: Date, oldSequence?: Sequence): void {
+    this.loadSequences(project, fromTime, new Date(project.sequences[project.sequences.length - 1].time), oldSequence);
   }
 
-  public getSequenceWithTraces(projectName: string, shkeptncontext: string): Observable<Sequence> {
-    return this.apiService.getSequences(projectName, 1, null, null, null, null, shkeptncontext).pipe(
+  public getSequenceWithTraces(projectName: string, keptnContext: string): Observable<Sequence> {
+    return this.apiService.getSequences(projectName, 1, null, null, null, null, keptnContext).pipe(
       map(response => response.body.states || []),
       map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)).shift()),
       switchMap(sequence => this.sequenceMapper([sequence])),
@@ -357,10 +364,25 @@ export class DataService {
     );
   }
 
+  public updateSequence(projectName: string, keptnContext: string): void {
+    this.apiService.getSequences(projectName, 1, null, null, null, null, keptnContext).pipe(
+      map(response => response.body.states || []),
+      map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)).shift()),
+    ).subscribe(sequence => {
+      const sequences = this._sequences.getValue();
+      const oldSequence = sequences.find(seq => seq.shkeptncontext === keptnContext);
+      if (oldSequence) {
+        const {traces, ...copySequence} = sequence; // don't overwrite loaded traces
+        Object.assign(oldSequence, copySequence);
+      }
+      this._sequences.next(sequences);
+    });
+  }
+
   public loadUntilRoot(project: Project, shkeptncontext: string): void {
     this.getSequenceWithTraces(project.projectName, shkeptncontext).subscribe((sequence: Sequence) => {
       if (sequence) {
-        this.loadOldSequences(project, new Date(sequence.time));
+        this.loadOldSequences(project, new Date(sequence.time), sequence);
       }
     });
   }

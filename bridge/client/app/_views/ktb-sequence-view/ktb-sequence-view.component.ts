@@ -11,7 +11,7 @@ import {ActivatedRoute, Params, Router} from '@angular/router';
 import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from '@dynatrace/barista-components/quick-filter';
 import {isObject} from '@dynatrace/barista-components/core';
 import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
-import {filter, map, startWith, switchMap, take, takeUntil} from 'rxjs/operators';
+import { filter, map, startWith, switchMap, take, takeUntil, takeWhile } from 'rxjs/operators';
 import * as moment from 'moment';
 import {Stage} from '../../_models/stage';
 import {Project} from '../../_models/project';
@@ -127,12 +127,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       this.dataService.loadSequences(project);
     });
 
-    this._rootsTimer = timer(0, this._tracesTimerInterval * 1000)
+    this._rootsTimer = timer(0, this._tracesTimerInterval)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        // This triggers the subscription for roots$
+        // This triggers the subscription for sequences$
         this.unfinishedSequences.forEach(sequence => {
-          this.dataService.loadTraces(sequence);
+          this.dataService.updateSequence(this.project.projectName, sequence.shkeptncontext);
         });
     });
 
@@ -140,25 +140,27 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     combineLatest([this.route.params, this.sequences$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        take(1)
+        takeWhile( ([params]) => !this.currentSequence && params.shkeptncontext)
       )
       .subscribe(([params, sequences]: [Params, Sequence[]]) => {
-        const sequence = sequences.find(s => s.shkeptncontext === params.shkeptncontext);
-        const stage = params.eventId ? sequence?.traces.find(t => t.id === params.eventId)?.getStage() : params.stage;
-        const eventId = params.eventId;
-        if (sequence) {
-          this.selectSequence({ sequence, stage, eventId });
-        } else if(params.shkeptncontext) {
-          this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+        
+        if(params.shkeptncontext) {
+          const sequence = sequences.find(s => s.shkeptncontext === params.shkeptncontext);
+          const stage = params.eventId ? sequence?.traces.find(t => t.id === params.eventId)?.getStage() : params.stage;
+          const eventId = params.eventId;
+          if (sequence) {
+            this.selectSequence({sequence, stage, eventId});
+          } else if (params.shkeptncontext) {
+            this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
+          }
         }
     });
 
     this.sequences$.subscribe(sequences => {
       this.updateFilterSequence(sequences);
       this.refreshFilterDataSource();
-      // Set unfinished roots so that the traces for updates can be loaded
-      // Also ignore currently selected root, as this is getting already polled
-      this.unfinishedSequences = sequences.filter(sequence => !sequence.isFinished() && sequence !== this.currentSequence);
+      // Set unfinished sequences so that the state updates can be loaded
+      this.unfinishedSequences = sequences.filter(sequence => !sequence.isFinished());
     });
   }
 
