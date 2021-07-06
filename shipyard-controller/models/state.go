@@ -2,6 +2,7 @@ package models
 
 const (
 	SequenceTriggeredState = "triggered"
+	SequenceStartedState   = "started"
 	SequenceFinished       = "finished"
 	TimedOut               = "timedOut"
 )

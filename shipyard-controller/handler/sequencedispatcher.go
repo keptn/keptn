@@ -12,7 +12,7 @@ import (
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
-// IEventDispatcher is responsible for dispatching events to be sent to the event broker
+// ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
 	Run(ctx context.Context)

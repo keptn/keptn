@@ -13,22 +13,22 @@ import (
 )
 
 type SequenceWatcher struct {
-	shipyardController IShipyardController
-	eventRepo          db.EventRepo
-	projectRepo        db.ProjectRepo
-	eventTimeout       time.Duration
-	syncInterval       time.Duration
-	theClock           clock.Clock
+	cancelSequenceChannel chan common.SequenceCancellation
+	eventRepo             db.EventRepo
+	projectRepo           db.ProjectRepo
+	eventTimeout          time.Duration
+	syncInterval          time.Duration
+	theClock              clock.Clock
 }
 
-func NewSequenceWatcher(shipyardController IShipyardController, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(cancelSequenceChannel chan common.SequenceCancellation, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
-		shipyardController: shipyardController,
-		eventRepo:          eventRepo,
-		projectRepo:        projectRepo,
-		eventTimeout:       eventTimeout,
-		syncInterval:       syncInterval,
-		theClock:           theClock,
+		cancelSequenceChannel: cancelSequenceChannel,
+		eventRepo:             eventRepo,
+		projectRepo:           projectRepo,
+		eventTimeout:          eventTimeout,
+		syncInterval:          syncInterval,
+		theClock:              theClock,
 	}
 }
 
@@ -106,14 +106,13 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 			}
 			if len(responseEvents) == 0 {
 				// time out -> tell shipyard controller to complete the task sequence
-				err := sw.shipyardController.CancelSequence(common.SequenceCancellation{
+				sequenceCancellation := common.SequenceCancellation{
 					KeptnContext: event.Shkeptncontext,
 					Reason:       common.Timeout,
 					LastEvent:    event,
-				})
-				if err != nil {
-					log.WithError(err).Errorf("could not cancel sequence with keptnContext %s", event.Shkeptncontext)
 				}
+
+				sw.cancelSequenceChannel <- sequenceCancellation
 				// clean up open .triggered event
 				if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
 					log.WithError(err).Errorf("could not delete event %s", event.ID)

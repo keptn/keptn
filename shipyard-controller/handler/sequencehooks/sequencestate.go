@@ -50,6 +50,10 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 	}
 }
 
+func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
+	smv.updateOverallSequenceState(event, models.SequenceStartedState)
+}
+
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {

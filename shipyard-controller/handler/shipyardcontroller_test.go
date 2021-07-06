@@ -2309,6 +2309,11 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 
 			},
 		},
+		sequenceDispatcher: &fake.ISequenceDispatcherMock{
+			AddFunc: func(queueItem models.QueueItem) error {
+				return nil
+			},
+		},
 	}
 
 	em.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {

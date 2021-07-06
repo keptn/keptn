@@ -13,6 +13,7 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
@@ -40,7 +41,11 @@ import (
 
 const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
+const envVarSequenceDispatchIntervalSec = "SEQUENCE_DISPATCH_INTERVAL_SEC"
+const envVarTaskStartedWaitDuration = "TASK_STARTED_WAIT_DURATION"
+const envVarLogTTL = "LOG_TTL"
 const envVarEventDispatchIntervalSecDefault = "10"
+const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarTaskStartedWaitDurationDefault = "10m"
 
@@ -90,7 +95,17 @@ func main() {
 	stageManager := handler.NewStageManager(createMaterializedView())
 
 	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
-	shipyardController := handler.GetShipyardControllerInstance(eventDispatcher)
+	sequenceDispatcherChannel := make(chan models.Event)
+	sequenceDispatcher := handler.NewSequenceDispatcher(
+		createEventsRepo(),
+		createSequenceQueueRepo(),
+		createTaskSequenceRepo(),
+		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
+		sequenceDispatcherChannel,
+	)
+
+	cancelSequenceChannel := make(chan common.SequenceCancellation)
+	shipyardController := handler.GetShipyardControllerInstance(eventDispatcher, sequenceDispatcher, sequenceDispatcherChannel, cancelSequenceChannel)
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
@@ -126,6 +141,7 @@ func main() {
 
 	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(createStateRepo())
 	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
@@ -133,10 +149,10 @@ func main() {
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
 
-	taskStartedWaitDuration := getDurationFromEnvVar("TASK_STARTED_WAIT_DURATION", envVarTaskStartedWaitDurationDefault)
+	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 
 	watcher := handler.NewSequenceWatcher(
-		shipyardController,
+		cancelSequenceChannel,
 		createEventsRepo(),
 		createProjectRepo(),
 		taskStartedWaitDuration,
@@ -153,7 +169,7 @@ func main() {
 	uniformController.Inject(apiV1)
 
 	logRepo := createLogRepo()
-	err = logRepo.SetupTTLIndex(getDurationFromEnvVar("LOG_TTL", envVarLogsTTLDefault))
+	err = logRepo.SetupTTLIndex(getDurationFromEnvVar(envVarLogTTL, envVarLogsTTLDefault))
 	if err != nil {
 		log.WithError(err).Error("could not setup TTL index for log repo entries")
 	}

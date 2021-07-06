@@ -27,7 +27,6 @@ type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
 	HandleIncomingEvent(event models.Event, waitForCompletion bool) error
-	CancelSequence(cancelRequest common.SequenceCancellation) error
 }
 
 type shipyardController struct {
@@ -37,7 +36,10 @@ type shipyardController struct {
 	eventsDbOperations         db.EventsDbOperations
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
+	startSequenceChan          chan models.Event
+	cancelSequenceChan         chan common.SequenceCancellation
 	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
+	sequenceStartedHooks       []sequencehooks.ISequenceStartedHook
 	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
 	sequenceTaskStartedHooks   []sequencehooks.ISequenceTaskStartedHook
 	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook
@@ -46,7 +48,7 @@ type shipyardController struct {
 	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
 }
 
-func GetShipyardControllerInstance(eventDispatcher IEventDispatcher, sequenceDispatcher ISequenceDispatcher) *shipyardController {
+func GetShipyardControllerInstance(eventDispatcher IEventDispatcher, sequenceDispatcher ISequenceDispatcher, startSequenceChan chan models.Event, cancelSequenceChan chan common.SequenceCancellation) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
 		cbConnectionInstance := db.GetMongoDBConnectionInstance()
@@ -60,13 +62,44 @@ func GetShipyardControllerInstance(eventDispatcher IEventDispatcher, sequenceDis
 			},
 			eventDispatcher:    eventDispatcher,
 			sequenceDispatcher: sequenceDispatcher,
+			startSequenceChan:  startSequenceChan,
+			cancelSequenceChan: cancelSequenceChan,
 		}
 	}
 	return shipyardControllerInstance
 }
 
+func (sc *shipyardController) registerToChannels(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				log.Infof("stop listening to channels")
+				return
+			case startSequenceEvent := <-sc.startSequenceChan:
+				err := sc.startTaskSequence(startSequenceEvent)
+				if err != nil {
+					log.WithError(err).Error("could not start task sequence")
+				}
+				break
+			case cancelSequence := <-sc.cancelSequenceChan:
+				err := sc.cancelSequence(cancelSequence)
+				if err != nil {
+					log.WithError(err).Error("could not cancel sequence")
+					return
+				}
+				break
+			}
+		}
+	}()
+}
+
 func (sc *shipyardController) AddSequenceTriggeredHook(hook sequencehooks.ISequenceTriggeredHook) {
 	sc.sequenceTriggeredHooks = append(sc.sequenceTriggeredHooks, hook)
+}
+
+func (sc *shipyardController) AddSequenceStartedHook(hook sequencehooks.ISequenceStartedHook) {
+	sc.sequenceStartedHooks = append(sc.sequenceStartedHooks, hook)
 }
 
 func (sc *shipyardController) AddSequenceTaskTriggeredHook(hook sequencehooks.ISequenceTaskTriggeredHook) {
@@ -96,6 +129,12 @@ func (sc *shipyardController) AddSequenceTimeoutHook(hook sequencehooks.ISequenc
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
 	for _, hook := range sc.sequenceTriggeredHooks {
 		hook.OnSequenceTriggered(event)
+	}
+}
+
+func (sc *shipyardController) onSequenceStarted(event models.Event) {
+	for _, hook := range sc.sequenceStartedHooks {
+		hook.OnSequenceStarted(event)
 	}
 }
 
@@ -135,7 +174,7 @@ func (sc *shipyardController) onSequenceTimeout(event models.Event) {
 	}
 }
 
-func (sc *shipyardController) CancelSequence(cancelRequest common.SequenceCancellation) error {
+func (sc *shipyardController) cancelSequence(cancelRequest common.SequenceCancellation) error {
 	if cancelRequest.Reason == common.Timeout {
 		log.Infof("sequence %s has been timed out", cancelRequest.KeptnContext)
 		eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
@@ -350,11 +389,11 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		}, taskSequenceName, event.ID)
 	}
 
-	taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
+	//taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
+	//if err != nil {
+	//	log.Error(err.Error())
+	//	return err
+	//}
 
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
@@ -362,15 +401,18 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	eventScope.Stage = stageName
 	// dispatch the task sequence
-	sc.sequenceDispatcher.Add(models.QueueItem{
+	if err := sc.sequenceDispatcher.Add(models.QueueItem{
 		Scope:     *eventScope,
 		EventID:   event.ID,
 		Timestamp: time.Now().UTC(),
-	})
+	}); err != nil {
+		return err
+	}
 
-	sc.onSequenceTriggered(event)
-
-	return sc.proceedTaskSequence(eventScope, taskSequence, []interface{}{}, nil)
+	return sc.startTaskSequence(event) // TODO remove that
+	//sc.onSequenceTriggered(event)
+	//
+	//return sc.proceedTaskSequence(eventScope, taskSequence, []interface{}{}, nil)
 }
 
 func (sc *shipyardController) startTaskSequence(event models.Event) error {
