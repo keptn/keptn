@@ -55,6 +55,9 @@ bridge:
     trustProxy: ""
 
 distributor:
+  metadata:
+    hostname:
+    namespace:
   image:
     repository: docker.io/keptn/distributor
     tag: ""
