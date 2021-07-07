@@ -8,11 +8,12 @@ import {Subject} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ResultTypes} from '../../_models/result-types';
 import {DataService} from '../../_services/data.service';
+import {findAll} from "@angular/compiler-cli/ngcc/src/utils";
 
 @Component({
   selector: 'ktb-sequence-list',
   templateUrl: './ktb-sequence-list.component.html',
-  styleUrls: ['./ktb-sequence-list.component.scss']
+  styleUrls: []
 })
 export class KtbSequenceListComponent implements OnInit, OnDestroy {
   public dataSource: DtTableDataSource<Trace | Sequence> = new DtTableDataSource();
@@ -74,8 +75,19 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
       message = finishedEvent.data.message;
     } else {
       const failedEvent = trace.findTrace(t => t.data.result === ResultTypes.FAILED);
+      let eventState;
+
       if (failedEvent) {
-        message = `${failedEvent.source} ${!failedEvent.isFinished() && !failedEvent.isChanged() ? 'started' : failedEvent.isChanged() ? 'changed' : failedEvent.isFinished() ? `finished with result ${failedEvent.data.result}` : ''}`;
+        if(!failedEvent.isFinished() && !failedEvent.isChanged()) {
+          eventState = 'started';
+        } else if (failedEvent.isChanged()) {
+          eventState = 'changed';
+        } else if (failedEvent.isFinished()) {
+          eventState = `finished with result ${failedEvent.data.result}`;
+        } else {
+          eventState = '';
+        }
+        message = `${failedEvent.source} ${eventState}`
       }
     }
     return message;

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Subject, timer} from 'rxjs';
-import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
+import {map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
 import { Deployment } from 'client/app/_models/deployment';

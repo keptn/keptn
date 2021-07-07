@@ -11,7 +11,7 @@ import {Secret} from "../../_models/secret";
 })
 export class KtbCreateSecretFormComponent implements OnInit {
 
-  public isLoading: Boolean = false;
+  public isLoading: boolean = false;
   public secret: Secret = null;
 
   public secretNamePattern = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";

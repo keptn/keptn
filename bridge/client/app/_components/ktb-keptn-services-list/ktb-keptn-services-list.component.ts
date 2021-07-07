@@ -1,8 +1,7 @@
 import {
-  ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input, OnDestroy,
+  OnDestroy,
   OnInit,
   Output
 } from '@angular/core';

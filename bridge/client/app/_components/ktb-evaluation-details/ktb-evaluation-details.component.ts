@@ -389,13 +389,12 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           data: [...chartSeries].reverse().reduce((r, d, i) => [...r, ...d.data.filter(s => s.indicatorResult).map((s) => {
             const index = this._metrics.indexOf(s.indicatorResult.value.metric);
             const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel());
-            const dataPoint = {
+            return {
               x: x,
               y: index,
               z: s.indicatorResult.score,
               color: s.indicatorResult.value.success ? this._evaluationColor[s.indicatorResult.status] : this._evaluationColor['info']
             };
-            return dataPoint;
           })], [])
         },
       ];
@@ -522,21 +521,21 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           zIndex: 100
         });
       if(secondaryHighlightIndexes) {
-        const index = secondaryHighlightIndexes.find(index => index >= 0);
+        const index = secondaryHighlightIndexes.find(idx => idx >= 0);
         this.comparedIndicatorResults = this._heatmapSeries[0]?.data[index]['evaluation'].data.evaluation.indicatorResults ?? [];
 
-        secondaryHighlightIndexes.forEach(highlightIndex => {
-          if (highlightIndex >= 0)
+        secondaryHighlightIndexes.forEach(secondaryHighlightIndex => {
+          if (secondaryHighlightIndex >= 0)
             plotBands.push({
               className: 'highlight-secondary',
-              from: highlightIndex - 0.5,
-              to: highlightIndex + 0.5,
+              from: secondaryHighlightIndex - 0.5,
+              to: secondaryHighlightIndex + 0.5,
               zIndex: 100,
               events: {
                 click: function () {
-                  let index = this.options.from + 0.5;
+                  let idx = this.options.from + 0.5;
                   setTimeout(() => {
-                    _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+                    _this.selectEvaluationData(_this._heatmapSeries[0].data[idx]['evaluation']);
                   });
                 }
               }

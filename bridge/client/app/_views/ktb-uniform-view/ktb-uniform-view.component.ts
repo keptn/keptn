@@ -6,9 +6,5 @@ import {Component, OnInit} from '@angular/core';
   styleUrls: ['./ktb-uniform-view.component.scss']
 })
 export class KtbUniformViewComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 }
