@@ -6,9 +6,6 @@ import {Observable} from "rxjs";
   providedIn: 'root'
 })
 export class HttpDefaultInterceptor implements HttpInterceptor {
-
-  constructor() { }
-
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const authReq = request.clone({
       headers: request.headers

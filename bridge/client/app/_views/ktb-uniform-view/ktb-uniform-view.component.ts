@@ -1,10 +1,8 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'ktb-uniform-view',
   templateUrl: './ktb-uniform-view.component.html',
   styleUrls: ['./ktb-uniform-view.component.scss']
 })
-export class KtbUniformViewComponent implements OnInit {
-  ngOnInit(): void {}
-}
+export class KtbUniformViewComponent {}

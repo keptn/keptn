@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
 
 import {Trace} from '../../_models/trace';
@@ -9,7 +9,7 @@ import {ResultTypes} from '../../_models/result-types';
   templateUrl: './ktb-evaluation-info.component.html',
   styleUrls: ['./ktb-evaluation-info.component.scss']
 })
-export class KtbEvaluationInfoComponent implements OnInit, OnDestroy {
+export class KtbEvaluationInfoComponent {
   private _evaluationResult: {result: ResultTypes, score: number};
   public isError: boolean;
   public isWarning: boolean;
@@ -33,13 +33,4 @@ export class KtbEvaluationInfoComponent implements OnInit, OnDestroy {
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
   };
-
-  constructor() { }
-
-  ngOnInit() {
-  }
-
-  ngOnDestroy(): void {
-  }
-
 }

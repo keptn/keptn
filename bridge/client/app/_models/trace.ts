@@ -354,7 +354,7 @@ class Trace {
     return this.findTrace(t => t.isRemediationAction());
   }
 
-  getEvaluation(stageName: String): Trace {
+  getEvaluation(stageName: string): Trace {
     return this.findTrace(t => t.isEvaluation() !== null && t.getStage() === stageName);
   }
 

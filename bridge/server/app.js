@@ -103,7 +103,7 @@ if(lookAndFeelUrl) {
 
 const oneWeek = 7 * 24 * 3600000;    // 3600000msec == 1hour
 
-module.exports = (async function (){
+module.exports = (async () => {
   // server static files - Images & CSS
   app.use('/static', express.static(path.join(__dirname, 'views/static'), {maxAge: oneWeek}));
 

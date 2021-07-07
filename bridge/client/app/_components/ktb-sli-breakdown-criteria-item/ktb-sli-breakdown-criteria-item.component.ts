@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 
 @Component({
   selector: 'ktb-sli-breakdown-criteria-item',
@@ -6,7 +6,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} fr
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KtbSliBreakdownCriteriaItemComponent implements OnInit {
+export class KtbSliBreakdownCriteriaItemComponent {
   private _targets: any;
 
   @Input()
@@ -24,8 +24,5 @@ export class KtbSliBreakdownCriteriaItemComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
-
-  ngOnInit(): void {}
-
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 }

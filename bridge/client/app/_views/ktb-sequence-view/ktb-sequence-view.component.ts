@@ -17,7 +17,6 @@ import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import * as moment from 'moment';
 
 import {Root} from '../../_models/root';
-import {Stage} from '../../_models/stage';
 import {Project} from '../../_models/project';
 
 import {DataService} from '../../_services/data.service';
@@ -80,7 +79,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public project$: Observable<Project>;
   public roots$: Observable<Root[]>;
   public currentSequence: Root;
-  public selectedStage: String;
+  public selectedStage: string;
 
   public _filterDataSource = new DtQuickFilterDefaultDataSource(
     this.filterFieldData,

@@ -17,7 +17,7 @@ const HOST = process.env.HOST || '0.0.0.0';
   let app;
 
   try {
-    app = await require('./app');
+    app = require('./app');
   } catch (e) {
     console.log(`Error while starting the application. Cause : ${e}`);
     process.exit(1);
