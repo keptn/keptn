@@ -117,7 +117,7 @@ readinessProbe:
      fieldPath: metadata.name
 - name: K8S_NAMESPACE
 {{- if .Values.distributor.metadata.namespace }}
-  value: .Values.distributor.metadata.namespace
+  value: {{ .Values.distributor.metadata.namespace }}
 {{- else }}
   valueFrom:
     fieldRef:
@@ -125,7 +125,7 @@ readinessProbe:
 {{- end }}
 - name: K8S_NODE_NAME
 {{- if .Values.distributor.metadata.hostname }}
-  value: .Values.distributor.metadata.hostname
+  value: {{ .Values.distributor.metadata.hostname }} 
 {{- else }}
   valueFrom:
     fieldRef:
