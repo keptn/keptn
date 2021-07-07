@@ -186,10 +186,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   filtersChanged(event) {
     this._seqFilters = event.filters;
-    this.sequenceFilters = this._seqFilters.reduce((filters, filter) => {
-      if(!filters[filter[0].name])
-        filters[filter[0].name] = [];
-      filters[filter[0].name].push(filter[1].value);
+    this.sequenceFilters = this._seqFilters.reduce((filters, currentFilter) => {
+      if(!filters[currentFilter[0].name])
+        filters[currentFilter[0].name] = [];
+      filters[currentFilter[0].name].push(currentFilter[1].value);
       return filters;
     }, {});
   }

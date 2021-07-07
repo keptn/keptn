@@ -414,11 +414,11 @@ class Trace {
     return traces.reduce((seq: Trace[], trace: Trace) => {
       let trigger: Trace = null;
       if(trace.triggeredid) {
-        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => t.id == trace.triggeredid), null);
+        trigger = traces.reduce((acc, r) => acc || r.findTrace((t) => t.id == trace.triggeredid), null);
       } else if(trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()), null);
+        trigger = traces.reduce((acc, r) => acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()), null);
       } else if(trace.isFinished()) {
-        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)), null);
+        trigger = traces.reduce((acc, r) => acc || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)), null);
       }
 
       if (trigger) {

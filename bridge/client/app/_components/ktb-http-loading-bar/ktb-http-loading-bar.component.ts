@@ -7,7 +7,7 @@ import {takeUntil} from "rxjs/operators";
 @Component({
   selector: 'ktb-http-loading-bar',
   templateUrl: './ktb-http-loading-bar.component.html',
-  styleUrls: ['./ktb-http-loading-bar.component.scss']
+  styleUrls: []
 })
 export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
 

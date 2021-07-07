@@ -202,7 +202,6 @@ module.exports = (async function (){
       err.message = err.response.data.message;
     res.status(err.status || 500).send(err.message);
     console.error(err);
-    // res.json(err);
   });
 
   return app;

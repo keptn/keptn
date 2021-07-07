@@ -8,7 +8,6 @@ import {Subject} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ResultTypes} from '../../_models/result-types';
 import {DataService} from '../../_services/data.service';
-import {findAll} from "@angular/compiler-cli/ngcc/src/utils";
 
 @Component({
   selector: 'ktb-sequence-list',
