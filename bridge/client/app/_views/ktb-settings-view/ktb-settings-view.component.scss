@@ -1,3 +1,9 @@
 .settings-section {
   max-width: 50%;
+
+  &.settings-actions {
+    button {
+      width: 100%;
+    }
+  }
 }

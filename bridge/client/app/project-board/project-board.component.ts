@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {filter, map, startWith, switchMap, takeUntil, tap} from "rxjs/operators";
 import {Observable, Subject, timer, combineLatest} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -24,6 +24,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _rootEventsTimerInterval = 30;
 
   public error: string = null;
+  public isCreateMode$: Observable<boolean>;
 
   constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService) { }
 
@@ -32,6 +33,10 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       map(params => params.projectName),
       filter(projectName => projectName)
     );
+
+    this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
+      return urlSegment[0].path === 'create';
+    }));
 
     this.project$ = projectName$.pipe(
       switchMap(projectName => this.dataService.getProject(projectName))
@@ -46,7 +51,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         } else {
           this.error = null;
         }
-      }, error => {
+      }, () => {
         this.error = 'projects';
       });
 
@@ -106,6 +111,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }
