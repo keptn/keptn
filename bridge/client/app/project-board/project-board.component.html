@@ -1,4 +1,4 @@
-<div class="container" *ngIf="error">
+<div class="container" *ngIf="error$ | async as error">
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
@@ -24,7 +24,7 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<div class="container" *ngIf="!(isCreateMode$ | async) && !error && (project$ | async) === null">
+<div class="container" *ngIf="!(isCreateMode$ | async) && !(error$ | async) && (project$ | async) === null">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
