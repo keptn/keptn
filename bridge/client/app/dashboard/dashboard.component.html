@@ -1,43 +1,53 @@
-<div class="container" *ngIf="!(projects$ | async)">
-  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" uitestid="keptn-dashboard-loading">
-    <dt-loading-spinner></dt-loading-spinner>
-    <p>Loading ...</p>
-  </div>
+<div class="container" uitestid="keptn-dashboard-projectList">
+  <ng-container *ngIf="projects$ | async as projects">
+    <div *ngIf="!projects" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px" uitestid="keptn-dashboard-loading">
+      <dt-loading-spinner></dt-loading-spinner>
+      <p>Loading ...</p>
+    </div>
+
+    <div fxLayout="row" fxLayoutAlign="start" class="p-3 project-dashboard-actions">
+      <a [routerLink]="'/create/project'"><button dt-button>Create a new project</button></a>
+      <div class="new-project-overlay p-3" *ngIf="projects?.length === 0">
+        <div fxLayout="row">
+          <dt-icon name="information" class="event-icon mr-2"></dt-icon><span>Ready for your automation journey?<br/>Start here by creating your first project.</span>
+        </div>
+      </div>
+    </div>
+
+    <dt-empty-state *ngIf="projects?.length === 0">
+      <dt-empty-state-item>
+        <dt-empty-state-item-img>
+          <img alt="Logo" class="mt-2" [src]="logoInvertedUrl"/>
+        </dt-empty-state-item-img>
+        <dt-empty-state-item-title class="mt-2" aria-level="2">
+          No projects existing
+        </dt-empty-state-item-title>
+        <p>
+          Sorry, no project could be found. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank"
+                                                             rel="noopener noreferrer">
+          Quick Start</a> instructions on
+          how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
+          <ng-container *ngIf="!isQualityGatesOnly">
+            and <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
+          </ng-container>
+          <ng-container *ngIf="isQualityGatesOnly">
+            and <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank">create a service</a>.
+          </ng-container>
+        </p>
+        <button dt-button (click)="loadProjects()">
+          <dt-icon name="refresh"></dt-icon>
+          Retry
+        </button>
+      </dt-empty-state-item>
+    </dt-empty-state>
+
+    <div class="projects-wrapper">
+      <dt-info-group *ngIf="projects.length > 0">
+        <dt-info-group-title>
+          <p><span [textContent]="projects.length"></span>&nbsp;<span i18n>Projects</span></p>
+        </dt-info-group-title>
+      </dt-info-group>
+      <ktb-project-list [projects]="projects"></ktb-project-list>
+    </div>
+  </ng-container>
 </div>
-<div class="container" *ngIf="(projects$ | async)?.length == 0">
-  <dt-empty-state>
-    <dt-empty-state-item>
-      <dt-empty-state-item-img>
-        <img class="mt-2" [src]="logoInvertedUrl"/>
-      </dt-empty-state-item-img>
-      <dt-empty-state-item-title class="mt-2" aria-level="2">
-        No projects existing
-      </dt-empty-state-item-title>
-      <p>
-        Sorry, no project could be found. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">
-        Quick Start</a> instructions on
-        how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
-        <ng-container *ngIf="!isQualityGatesOnly">
-          and <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
-        </ng-container>
-        <ng-container *ngIf="isQualityGatesOnly">
-          and <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank">create a service</a>.
-        </ng-container>
-      </p>
-      <button dt-button (click)="loadProjects()">
-        <dt-icon name="refresh"></dt-icon>
-        Retry
-      </button>
-    </dt-empty-state-item>
-  </dt-empty-state>
-</div>
-<ng-container *ngIf="projects$ | async as projects">
-  <div class="container" *ngIf="projects.length > 0" uitestid="keptn-dashboard-projectList">
-    <dt-info-group>
-      <dt-info-group-title>
-        <p><span [textContent]="projects.length"></span>&nbsp;<span i18n>Projects</span></p>
-      </dt-info-group-title>
-    </dt-info-group>
-    <ktb-project-list [projects]="projects"></ktb-project-list>
-  </div>
-</ng-container>

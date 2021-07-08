@@ -45,23 +45,23 @@
     <dt-menu-group>
       <ng-template #overlay let-data><span>{{data.text}}</span></ng-template>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" routerLinkActive="active" routerLink="./" [routerLinkActiveOptions]= "{exact: true}">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" routerLinkActive="active" routerLink="./" [routerLinkActiveOptions]= "{exact: true}">
         <dt-icon name="environment"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" routerLinkActive="active" routerLink="service">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" routerLinkActive="active" routerLink="service">
         <dt-icon name="services"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [disabled]="(isCreateMode$ | async)" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
         <dt-icon name="hops"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
         <dt-icon name="infrastructure"></dt-icon>
       </button>
 
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
         <dt-icon name="plugin-connection"></dt-icon>
       </button>
     </dt-menu-group>

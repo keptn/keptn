@@ -1,0 +1,28 @@
+@import '../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.projects-wrapper {
+  padding-bottom: 30px;
+}
+
+.project-dashboard-actions {
+  border-top: 1px solid $gray-200;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  box-shadow: 0 0 5px 5px $gray-200;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.new-project-overlay {
+  max-width: 400px;
+  position: absolute;
+  bottom: 20px;
+  left: 190px;
+  background-color: #ffffff;
+  border: 1px solid $primary-color;
+  border-radius: 5px;
+  z-index: 2;
+}
