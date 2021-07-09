@@ -1,0 +1,25 @@
+<h2>Shipyard <ng-container *ngIf="isCreateMode">(mandatory)</ng-container></h2>
+<div class="shipyard-settings" fxLayout="row" fxLayoutAlign=" end">
+  <div fxLayout="column" [ngClass]="{'full-width': isCreateMode}">
+    <p class="mt-0 mb-2">
+      Your project needs a <a [href]="'/manage/shipyard/' | keptnUrl">Shipyard</a>. Add a file from your filesystem or drag & drop it here it add it to your project.
+    </p>
+    <div ktbDragAndDrop (onDropped)="updateFile($event)" (onError)="dropError.innerText = $event" [allowedExtensions]="['yaml', 'yml']">
+      <p>Drag and drop a file here<br/>or</p>
+      <button dt-button (click)="shipyardFileInput.click()">Select a file</button>
+      <input hidden type="file" #shipyardFileInput (change)="updateFile($event.target.files)">
+      <p class="drop-error" #dropError></p>
+    </div>
+
+    <div *ngIf="shipyardFile" fxFlex="row" class="mt-2" fxLayoutAlign="space-between center">
+      <div>{{ shipyardFile.name }}</div>
+      <button dt-icon-button>
+        <dt-icon name="delete" (click)="updateFile(null)"></dt-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="ml-3" *ngIf="!isCreateMode">
+    <button dt-button>Update Shipyard</button>
+  </div>
+</div>

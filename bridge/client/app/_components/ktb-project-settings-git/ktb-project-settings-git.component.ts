@@ -12,6 +12,9 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   public isGitUpstreamInProgress: boolean;
 
   @Input()
+  public isCreateMode: boolean;
+
+  @Input()
   set gitData(gitData: GitData) {
     this.gitUrlControl.setValue(gitData.remoteURI || '');
     this.gitUserControl.setValue(gitData.gitUser || '');
@@ -24,11 +27,14 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   }
 
   @Output()
-  public gitUpstreamSet: EventEmitter<GitData> = new EventEmitter();
+  public onGitUpstreamSubmit: EventEmitter<GitData> = new EventEmitter();
 
-  public gitUrlControl = new FormControl('', [Validators.required]);
-  public gitUserControl = new FormControl('', [Validators.required]);
-  public gitTokenControl = new FormControl('', [Validators.required]);
+  @Output()
+  private onGitDataChanged: EventEmitter<GitData> = new EventEmitter();
+
+  public gitUrlControl = new FormControl('');
+  public gitUserControl = new FormControl('');
+  public gitTokenControl = new FormControl('');
   public gitUpstreamForm = new FormGroup({
     gitUrl: this.gitUrlControl,
     gitUser: this.gitUserControl,
@@ -38,10 +44,19 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    if(!this.isCreateMode) {
+      this.gitUrlControl.setValidators([Validators.required]);
+      this.gitUserControl.setValidators([Validators.required]);
+      this.gitTokenControl.setValidators([Validators.required]);
+    }
   }
 
-  setGitUpstream() {
-    this.gitUpstreamSet.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUrlControl.value, gitToken: this.gitTokenControl.value});
+  public setGitUpstream() {
+    this.onGitUpstreamSubmit.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
+  }
+
+  public onGitUpstreamFormChange() {
+    this.onGitDataChanged.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
   }
 
 }

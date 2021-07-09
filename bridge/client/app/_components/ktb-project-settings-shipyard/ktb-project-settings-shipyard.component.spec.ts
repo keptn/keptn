@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KtbProjectSettingsEditProjectComponent } from './ktb-project-settings-edit-project.component';
+import { KtbProjectSettingsShipyardComponent } from './ktb-project-settings-shipyard.component';
 
 describe('KtbProjectSettingsEditProjectComponent', () => {
-  let component: KtbProjectSettingsEditProjectComponent;
-  let fixture: ComponentFixture<KtbProjectSettingsEditProjectComponent>;
+  let component: KtbProjectSettingsShipyardComponent;
+  let fixture: ComponentFixture<KtbProjectSettingsShipyardComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KtbProjectSettingsEditProjectComponent ]
+      declarations: [ KtbProjectSettingsShipyardComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(KtbProjectSettingsEditProjectComponent);
+    fixture = TestBed.createComponent(KtbProjectSettingsShipyardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
