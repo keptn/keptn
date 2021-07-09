@@ -7,7 +7,7 @@
 
     <div fxLayout="row" fxLayoutAlign="start" class="p-3 project-dashboard-actions">
       <a [routerLink]="'/create/project'"><button dt-button>Create a new project</button></a>
-      <div class="new-project-overlay p-3" *ngIf="projects?.length === 0">
+      <div class="new-project-overlay p-3 animation-pulse" *ngIf="projects?.length === 0">
         <div fxLayout="row">
           <dt-icon name="information" class="event-icon mr-2"></dt-icon><span>Ready for your automation journey?<br/>Start here by creating your first project.</span>
         </div>
@@ -23,20 +23,21 @@
           No projects existing
         </dt-empty-state-item-title>
         <p>
-          Sorry, no project could be found. Check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank"
-                                                             rel="noopener noreferrer">
+          There are no projects available.<br/>
+          Create a new project by using the "Create a new project" button or
+          check out the <a href="https://keptn.sh/docs/quickstart/" target="_blank" rel="noopener noreferrer">
           Quick Start</a> instructions on
           how to <a [href]="'/manage/project/' | keptnUrl" target="_blank">create a project</a>
           <ng-container *ngIf="!isQualityGatesOnly">
-            and <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
+            and to <a [href]="'/manage/service/#onboard-a-service' | keptnUrl" target="_blank">onboard a service</a>.
           </ng-container>
           <ng-container *ngIf="isQualityGatesOnly">
-            and <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank">create a service</a>.
+            and to <a [href]="'/manage/service/#create-a-service' | keptnUrl" target="_blank">create a service</a>.
           </ng-container>
         </p>
         <button dt-button (click)="loadProjects()">
           <dt-icon name="refresh"></dt-icon>
-          Retry
+          Refresh projects
         </button>
       </dt-empty-state-item>
     </dt-empty-state>
