@@ -199,6 +199,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   set evaluationData(evaluationData: Trace) {
     if (this._evaluationData !== evaluationData) {
+      this._selectedEvaluationData = evaluationData.id === this._evaluationData?.id ? this._selectedEvaluationData : null;
       this._evaluationData = evaluationData;
       this._chartSeries = [];
       this._metrics = ['Score'];
@@ -215,17 +216,16 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     this.dataService.evaluationResults
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((results) => {
-        this._selectedEvaluationData = null;
         if (results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
           this.evaluationData.data.evaluationHistory = [...results.traces || [], ...this.evaluationData.data.evaluationHistory || []].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-          this.updateChartData(this.evaluationData.data.evaluationHistory);
         } else if (results.type == "invalidateEvaluation" &&
           this.evaluationData.data.project == results.triggerEvent.data.project &&
           this.evaluationData.data.service == results.triggerEvent.data.service &&
           this.evaluationData.data.stage == results.triggerEvent.data.stage) {
           this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
-          this.updateChartData(this.evaluationData.data.evaluationHistory);
         }
+        this._selectedEvaluationData = this._selectedEvaluationData ? this.evaluationData.data.evaluationHistory.find(h => h.id === this._selectedEvaluationData.id) : null;
+        this.updateChartData(this.evaluationData.data.evaluationHistory);
       });
   }
 
@@ -234,7 +234,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this.dataService.loadEvaluationResults(this._evaluationData);
       if (this.isInvalidated)
         this.selectEvaluationData(this._evaluationData);
-      else if (this._evaluationData.data.evaluationHistory)
+      else if (!this._selectedEvaluationData && this._evaluationData.data.evaluationHistory)
         this.selectEvaluationData(this._evaluationData.data.evaluationHistory.find(h => h.shkeptncontext === this._evaluationData.shkeptncontext));
     }
   }
