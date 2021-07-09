@@ -1,4 +1,4 @@
-package lib
+package events
 
 import (
 	"errors"
@@ -20,10 +20,10 @@ type NatsConnectionHandler struct {
 	mux          sync.Mutex
 }
 
-func NewNatsConnectionHandler(natsUrl string, topics []string) *NatsConnectionHandler {
+func NewNatsConnectionHandler(natsURL string, topics []string) *NatsConnectionHandler {
 	nch := &NatsConnectionHandler{
 		Topics:  topics,
-		NatsURL: natsUrl,
+		NatsURL: natsURL,
 	}
 
 	return nch

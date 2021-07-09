@@ -1,9 +1,38 @@
-package lib
+package events
 
 import (
+	"context"
+	"encoding/json"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	logger "github.com/sirupsen/logrus"
 	"sync"
 )
+
+type ExecutionContext struct {
+	context.Context
+	Wg *sync.WaitGroup
+}
+
+type ceVersion struct {
+	SpecVersion string `json:"specversion"`
+}
+
+func DecodeCloudEvent(data []byte) (*cloudevents.Event, error) {
+	cv := &ceVersion{}
+	if err := json.Unmarshal(data, cv); err != nil {
+		return nil, err
+	}
+
+	event := cloudevents.NewEvent(cv.SpecVersion)
+
+	if err := json.Unmarshal(data, &event); err != nil {
+		logger.Errorf("Could not unmarshal CloudEvent: %v", err)
+		return nil, err
+	}
+
+	return &event, nil
+}
 
 type CloudEventsCache struct {
 	sync.RWMutex

@@ -1,14 +1,13 @@
-package lib_test
+package events
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/distributor/pkg/lib"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestAddEvent(t *testing.T) {
-	cache := lib.NewCloudEventsCache()
+	cache := NewCloudEventsCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t2", "e3")
@@ -20,7 +19,7 @@ func TestAddEvent(t *testing.T) {
 }
 
 func TestAddEventTwice(t *testing.T) {
-	cache := lib.NewCloudEventsCache()
+	cache := NewCloudEventsCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e2")
@@ -29,7 +28,7 @@ func TestAddEventTwice(t *testing.T) {
 }
 
 func TestAddRemoveEvent(t *testing.T) {
-	cache := lib.NewCloudEventsCache()
+	cache := NewCloudEventsCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t1", "e3")
@@ -41,14 +40,13 @@ func TestAddRemoveEvent(t *testing.T) {
 	assert.True(t, cache.Contains("t1", "e2"))
 	assert.True(t, cache.Contains("t1", "e3"))
 
-
 	cache.Remove("t1", "e3")
 	assert.Equal(t, 1, cache.Length("t1"))
 	assert.True(t, cache.Contains("t1", "e2"))
 }
 
 func TestKeep(t *testing.T) {
-	cache := lib.NewCloudEventsCache()
+	cache := NewCloudEventsCache()
 	cache.Add("t1", "e1")
 	cache.Add("t1", "e2")
 	cache.Add("t2", "e3")

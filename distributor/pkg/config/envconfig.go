@@ -2,7 +2,6 @@ package config
 
 import (
 	logger "github.com/sirupsen/logrus"
-	"strings"
 	"time"
 )
 
@@ -51,16 +50,16 @@ func GetPubSubConnectionType(env EnvConfig) ConnectionType {
 	return ConnectionTypeHTTP
 }
 
-func GetPubSubRecipientURL(env EnvConfig) string {
-	recipientService := env.PubSubRecipient
-
-	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
-		recipientService = "http://" + recipientService
-	}
-
-	path := ""
-	if env.PubSubRecipientPath != "" {
-		path = "/" + strings.TrimPrefix(env.PubSubRecipientPath, "/")
-	}
-	return recipientService + ":" + env.PubSubRecipientPort + path
-}
+//func GetPubSubRecipientURL(env EnvConfig) string {
+//	recipientService := env.PubSubRecipient
+//
+//	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
+//		recipientService = "http://" + recipientService
+//	}
+//
+//	path := ""
+//	if env.PubSubRecipientPath != "" {
+//		path = "/" + strings.TrimPrefix(env.PubSubRecipientPath, "/")
+//	}
+//	return recipientService + ":" + env.PubSubRecipientPort + path
+//}
