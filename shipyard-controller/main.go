@@ -107,6 +107,7 @@ func main() {
 
 	cancelSequenceChannel := make(chan common.SequenceCancellation)
 	shipyardController := handler.GetShipyardControllerInstance(context.Background(), eventDispatcher, sequenceDispatcher, sequenceDispatcherChannel, cancelSequenceChannel)
+	sequenceDispatcher.Run(context.Background())
 
 	engine := gin.Default()
 	apiV1 := engine.Group("/v1")
