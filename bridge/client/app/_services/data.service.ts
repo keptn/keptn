@@ -323,7 +323,7 @@ export class DataService {
           return response.body;
         }),
         map(body => {
-          return [body.states.map(sequence => Sequence.fromJSON(sequence)), body.totalCount];
+          return [body.states.map(sequence => Sequence.fromJSON(sequence)), body.totalCount ?? body.states.length];
         }),
       ).subscribe(([sequences, totalCount]: [Sequence[], number]) => {
         if (beforeTime) { // indicates that old sequences have been loaded

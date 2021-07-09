@@ -4,7 +4,7 @@
     <div fxLayout="row" fxLayoutAlign="space-between">
       <div class="text-center pointer stage-item" *ngFor="let stage of currentSequence.getStages(); last as isLast" (click)="selectStage(stage)">
         <div class="stage-info">
-          <dt-icon *ngIf="!currentSequence.isLoading(stage); else showLoading" class="event-icon"
+          <dt-icon *ngIf="!currentSequence.isLoading(stage) || currentSequence.hasPendingApproval(stage); else showLoading" class="event-icon"
                    [name]="currentSequence.getIcon(stage)"
                    [class.error]="currentSequence.isFaulty(stage)"
                    [class.success]="currentSequence.isSuccessful(stage)"

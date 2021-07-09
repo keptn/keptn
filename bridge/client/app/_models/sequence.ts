@@ -32,7 +32,6 @@ export class Sequence {
   time: string;
   problemTitle?: string;
   traces: Trace[] = [];
-  icon?: string;
 
   public static fromJSON(data: any): Sequence {
     return Object.assign(new this(), data);
@@ -124,10 +123,9 @@ export class Sequence {
   }
 
   public getIcon(stageName?: string): string {
-    if (!this.icon) {
-      this.icon = this.state === 'waiting' ? EVENT_ICONS.waiting : EVENT_ICONS[Sequence.getShortType((stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1])?.latestEvent.type)] || DEFAULT_ICON;
-    }
-    return this.icon;
+    return this.state === 'waiting' ? EVENT_ICONS.waiting
+      : EVENT_ICONS[Sequence.getShortType((stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1])?.latestEvent.type)]
+        || DEFAULT_ICON;
   }
 
   public getShortImageName(): string | null {
