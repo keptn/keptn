@@ -37,6 +37,7 @@ import {Trace} from "../../_models/trace";
 export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
+  public comparedIndicatorResults: any[] = [];
   @Input() public showChart = true;
   @Input() public isInvalidated = false;
 
@@ -509,10 +510,10 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   highlightHeatmap() {
     if (this._selectedEvaluationData && !this.isInvalidated) {
-      let _this = this;
-      let highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
-      let secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
-      let plotBands = [];
+      const _this = this;
+      const highlightIndex = this._heatmapOptions.xAxis[0].categories.indexOf(this._selectedEvaluationData.getHeatmapLabel());
+      const secondaryHighlightIndexes = this._selectedEvaluationData?.data.evaluation.comparedEvents?.map(eventId => this._heatmapSeries[0]?.data.findIndex(e => e['evaluation'].id == eventId));
+      const plotBands = [];
       if (highlightIndex >= 0)
         plotBands.push({
           className: 'highlight-primary',
@@ -520,23 +521,31 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
           to: highlightIndex + 0.5,
           zIndex: 100
         });
-      secondaryHighlightIndexes?.forEach(highlightIndex => {
-        if (highlightIndex >= 0)
-          plotBands.push({
-            className: 'highlight-secondary',
-            from: highlightIndex - 0.5,
-            to: highlightIndex + 0.5,
-            zIndex: 100,
-            events: {
-              click: function () {
-                let index = this.options.from + 0.5;
-                setTimeout(() => {
-                  _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
-                });
+      if(secondaryHighlightIndexes) {
+        const index = secondaryHighlightIndexes.find(index => index >= 0);
+        this.comparedIndicatorResults = this._heatmapSeries[0]?.data[index]['evaluation'].data.evaluation.indicatorResults ?? [];
+
+        secondaryHighlightIndexes.forEach(highlightIndex => {
+          if (highlightIndex >= 0)
+            plotBands.push({
+              className: 'highlight-secondary',
+              from: highlightIndex - 0.5,
+              to: highlightIndex + 0.5,
+              zIndex: 100,
+              events: {
+                click: function () {
+                  let index = this.options.from + 0.5;
+                  setTimeout(() => {
+                    _this.selectEvaluationData(_this._heatmapSeries[0].data[index]['evaluation']);
+                  });
+                }
               }
-            }
-          });
-      });
+            });
+        });
+      }
+      else {
+        this.comparedIndicatorResults = [];
+      }
       this._heatmapOptions.xAxis[0].plotBands = plotBands;
       this._selectedEvaluationData.data.evaluation.number_of_missing_comparison_results = this._selectedEvaluationData?.data.evaluation.comparedEvents?.length - (this._heatmapOptions.xAxis[0].plotBands?.length - 1);
     } else {
