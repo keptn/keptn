@@ -9,7 +9,6 @@ const cookieParser = require('cookie-parser');
 const {execSync} = require('child_process');
 const admZip = require('adm-zip');
 const helmet = require("helmet");
-
 const apiRouter = require('./api');
 
 const app = express();
@@ -18,6 +17,10 @@ let apiToken = process.env.API_TOKEN;
 let cliDownloadLink = process.env.CLI_DOWNLOAD_LINK;
 let integrationsPageLink = process.env.INTEGRATIONS_PAGE_LINK;
 let lookAndFeelUrl = process.env.LOOK_AND_FEEL_URL;
+const throttleBucket /* {[ip: string]: number[]} */ = {};
+const requestTimeLimit = 60 * 60 * 1000; // 1 hour
+const requestLimitWithinTime = 10; // 10 requests within {requestTimeLimit}
+const cleanBucketsTimeout = 60 * 60 * 1000; // clean buckets every 1 hour
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
@@ -159,14 +162,37 @@ module.exports = (async function (){
     authType = 'BASIC';
 
     console.error("Installing Basic authentication - please check environment variables!");
+
+    setInterval(cleanIpBuckets, cleanBucketsTimeout);
+
     app.use((req, res, next) => {
       // parse login and password from headers
       const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
       const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+      const userIP = (req.headers['x-forwarded-for'] || req.connection.remoteAddress)?.split(',')[0].trim();
 
+      if (isIPThrottled(userIP)) {
+        console.error("Request limit reached");
+        res.status(401).send('Reached request limit');
+        return;
+      }
       // Verify login and password are set and correct
-      if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
+      else if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
         // Access denied
+
+        // only fill buckets if the user tries to login
+        if (login || password) {
+          if (!throttleBucket[userIP]) {
+            throttleBucket[userIP] = [];
+          }
+          throttleBucket[userIP].push(new Date().getTime());
+
+          // delete old requests. Just keep the latest {requestLimitWithinTime} requests
+          if (throttleBucket[userIP].length > requestLimitWithinTime) {
+            throttleBucket[userIP].shift();
+          }
+        }
+
         console.error("Access denied");
         res.set('WWW-Authenticate', 'Basic realm="Keptn"');
         res.status(401).send('Authentication required.'); // custom message
@@ -208,3 +234,25 @@ module.exports = (async function (){
   return app;
 })();
 
+/**
+ *
+ * @param ip. The IP of the request
+ * @returns true if there are more than {requestLimitWithinTime} requests and the difference between first and last request of an IP is less than {requestTimeLimit}
+ */
+function isIPThrottled(ip) {
+  const ipBucket = throttleBucket[ip];
+  return ipBucket && ipBucket.length >= requestLimitWithinTime && (new Date().getTime() - ipBucket[0]) <= requestTimeLimit;
+}
+
+/**
+ * Delete an IP from the bucket if the last request is older than {requestTimeLimit}
+ */
+function cleanIpBuckets() {
+  for (const ip in throttleBucket) {
+    const ipBucket = throttleBucket[ip];
+    if (ipBucket && (new Date().getTime() - ipBucket[ipBucket.length - 1]) > requestTimeLimit)
+    {
+      delete throttleBucket[ip];
+    }
+  }
+}
