@@ -396,6 +396,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 
 	eventScope.Stage = stageName
 	// dispatch the task sequence
+	sc.onSequenceTriggered(event)
 	if sc.sequenceDispatcher != nil {
 		if err := sc.sequenceDispatcher.Add(models.QueueItem{
 			Scope:   *eventScope,
@@ -428,7 +429,7 @@ func (sc *shipyardController) startTaskSequence(event models.Event) error {
 	if err != nil {
 		return err
 	}
-	sc.onSequenceTriggered(event)
+	sc.onSequenceStarted(event)
 
 	return sc.proceedTaskSequence(eventScope, taskSequence, []interface{}{}, nil)
 }
