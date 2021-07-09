@@ -127,7 +127,9 @@ func TestSequenceWatcher(t *testing.T) {
 		require.Equal(t, "my-keptn-context-2", cancelCall.KeptnContext)
 		require.Equal(t, common.Timeout, cancelCall.Reason)
 
-		require.Len(t, eventRepoMock.DeleteEventCalls(), 1)
+		require.Eventually(t, func() bool {
+			return len(eventRepoMock.DeleteEventCalls()) == 1
+		}, 5*time.Second, 1*time.Second)
 		break
 	case <-time.After(5 * time.Second):
 		t.Error("did not receive expected sequence cancellation")
