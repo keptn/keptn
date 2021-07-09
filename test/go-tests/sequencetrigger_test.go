@@ -4,6 +4,7 @@ import (
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -82,7 +83,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if !IsEqual(t, keptnContextID, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "triggered", state.State, "state.State") {
+		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -130,7 +131,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if !IsEqual(t, state.Shkeptncontext, keptnContextID, "state.Shkeptnkontext") {
 			return false
 		}
-		if !IsEqual(t, state.State, "triggered", "state.State") {
+		if !IsEqual(t, state.State, scmodels.SequenceStartedState, "state.State") {
 			return false
 		}
 
@@ -177,7 +178,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if !IsEqual(t, keptnContextID, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "triggered", state.State, "state.State") {
+		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 

@@ -132,7 +132,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		if !IsEqual(t, *context.KeptnContext, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "triggered", state.State, "state.State") {
+		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -184,7 +184,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		if state.Shkeptncontext != *context.KeptnContext {
 			return false
 		}
-		if state.State != "triggered" {
+		if state.State != scmodels.SequenceStartedState {
 			return false
 		}
 
@@ -259,7 +259,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 		}
 		state := states.States[0]
 
-		if !IsEqual(t, "triggered", state.State, "state.State") {
+		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
