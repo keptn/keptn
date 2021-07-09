@@ -1,4 +1,5 @@
 import {Directive, Output, EventEmitter, HostListener, HostBinding, Input} from '@angular/core';
+import {FormUtils} from "../_utils/form.utils";
 
 @Directive({
   selector: '[ktbDragAndDrop]'
@@ -49,25 +50,14 @@ export class KtbDragAndDropDirective {
       return;
     }
 
-    if (!files[0].type && files[0].size%4096 == 0) {
+    if (!FormUtils.isFile(files[0])) {
       this.onError.emit('Please select only files');
       return;
     }
 
-    if (this.allowedExtensions && this.allowedExtensions.length > 0) {
-      const allowedFiles = [];
-      this.allowedExtensions.forEach(extension => {
-        const fileArray: File[] = Array.from(files);
-        fileArray.forEach(file => {
-          if(file.name.endsWith(extension)) {
-            allowedFiles.push(file);
-          }
-        });
-      });
-      if(allowedFiles.length === 0) {
-        this.onError.emit(`Only ${this.allowedExtensions.join(', ')} files allowed`);
-        return;
-      }
+    if (!FormUtils.isValidFileExtensions(this.allowedExtensions, files)) {
+      this.onError.emit(`Only ${this.allowedExtensions.join(', ')} files allowed`);
+      return;
     }
 
     this.onDropped.emit(files);

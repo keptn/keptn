@@ -7,4 +7,26 @@ export class FormUtils {
       return project ? {projectName: {value: project}} : null;
     }
   }
+
+  public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {
+    if (allowedExtensions && allowedExtensions.length > 0) {
+      const allowedFiles = [];
+      allowedExtensions.forEach(extension => {
+        const fileArray: File[] = Array.from(files);
+        fileArray.forEach(file => {
+          if(file.name.endsWith(extension)) {
+            allowedFiles.push(file);
+          }
+        });
+      });
+      if(allowedFiles.length === 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static isFile(file: File): boolean {
+    return !(!file.type && file.size % 4096 == 0);
+  }
 }

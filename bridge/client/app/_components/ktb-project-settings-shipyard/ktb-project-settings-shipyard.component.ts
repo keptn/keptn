@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {FormUtils} from "../../_utils/form.utils";
 
 @Component({
   selector: 'ktb-project-settings-shipyard',
@@ -6,6 +7,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
   styleUrls: ['./ktb-project-settings-shipyard.component.scss']
 })
 export class KtbProjectSettingsShipyardComponent implements OnInit {
+  public readonly allowedExtensions = ['yaml', 'yml'];
 
   @Input()
   public isCreateMode: boolean;
@@ -13,9 +15,13 @@ export class KtbProjectSettingsShipyardComponent implements OnInit {
   @Output()
   private shipyardFileChanged: EventEmitter<File> = new EventEmitter();
 
+  @ViewChild('dropError')
+  private dropError: ElementRef;
+
   public shipyardFile: File;
 
-  constructor() { }
+  constructor() {
+  }
 
   ngOnInit(): void {
   }
@@ -27,5 +33,22 @@ export class KtbProjectSettingsShipyardComponent implements OnInit {
       this.shipyardFile = null;
     }
     this.shipyardFileChanged.emit(this.shipyardFile);
+  }
+
+  validateAndUpdateFile(files: FileList) {
+    if (files && files.length > 0) {
+      if (!FormUtils.isFile(files[0])) {
+        this.dropError.nativeElement.innerText = 'Please select only files';
+        return;
+      }
+
+      if (!FormUtils.isValidFileExtensions(this.allowedExtensions, files)) {
+        this.dropError.nativeElement.innerText = `Only ${this.allowedExtensions.join(', ')} files allowed`;
+        return;
+      }
+
+      this.dropError.nativeElement.innerText = '';
+      this.updateFile(files);
+    }
   }
 }
