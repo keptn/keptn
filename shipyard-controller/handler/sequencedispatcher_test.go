@@ -124,7 +124,7 @@ func TestSequenceDispatcher(t *testing.T) {
 		KeptnContext:     "my-context-id",
 	})
 
-	// dispatch another task sequence - this one should not start since there is currently
+	// dispatch another task sequence - this one should not start since there is currently another one in progress
 	queueItem2 := models.QueueItem{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
@@ -138,6 +138,12 @@ func TestSequenceDispatcher(t *testing.T) {
 		EventID: "my-event-id-2",
 	}
 	err = sequenceDispatcher.Add(queueItem2)
-	require.Nil(t, err)
 
+	require.Len(t, mockTaskSequenceRepo.GetTaskSequencesCalls(), 2)
+	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Project, queueItem.Scope.Project)
+	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage})
+
+	// GetEvents and DeleteQueuedSequences should not have been called again at this point
+	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
+	require.Len(t, mockSequenceQueueRepo.DeleteQueuedSequencesCalls(), 1)
 }
