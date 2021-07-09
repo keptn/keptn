@@ -426,7 +426,7 @@ class Trace {
       } else if (trace.isSequence()) {
         seq.push(trace);
       } else if(seq.length > 0) {
-        seq[seq.length-1].traces.push(trace);
+        seq.find(s => s.getStage() === trace.getStage())?.traces.push(trace);
       } else {
         seq.push(trace);
       }
