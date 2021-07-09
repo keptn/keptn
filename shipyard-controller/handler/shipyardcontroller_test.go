@@ -2391,3 +2391,21 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.Len(t, fakeTimeoutHook.OnSequenceTimeoutCalls(), 1)
 }
+
+func TestGetShipyardControllerInstance(t *testing.T) {
+	sequenceStartChannel := make(chan models.Event)
+	sequenceCancelChannel := make(chan common.SequenceCancellation)
+	ctx, cancel := context.WithCancel(context.TODO())
+	sc := GetShipyardControllerInstance(
+		ctx,
+		&fake.IEventDispatcherMock{
+			RunFunc: func(ctx context.Context) {
+			},
+		},
+		&fake.ISequenceDispatcherMock{},
+		sequenceStartChannel,
+		sequenceCancelChannel,
+	)
+	require.NotNil(t, sc)
+	cancel()
+}
