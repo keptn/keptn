@@ -48,7 +48,7 @@ type shipyardController struct {
 	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
 }
 
-func GetShipyardControllerInstance(eventDispatcher IEventDispatcher, sequenceDispatcher ISequenceDispatcher, startSequenceChan chan models.Event, cancelSequenceChan chan common.SequenceCancellation) *shipyardController {
+func GetShipyardControllerInstance(ctx context.Context, eventDispatcher IEventDispatcher, sequenceDispatcher ISequenceDispatcher, startSequenceChan chan models.Event, cancelSequenceChan chan common.SequenceCancellation) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
 		cbConnectionInstance := db.GetMongoDBConnectionInstance()
@@ -65,6 +65,7 @@ func GetShipyardControllerInstance(eventDispatcher IEventDispatcher, sequenceDis
 			startSequenceChan:  startSequenceChan,
 			cancelSequenceChan: cancelSequenceChan,
 		}
+		shipyardControllerInstance.registerToChannels(ctx)
 	}
 	return shipyardControllerInstance
 }
@@ -389,30 +390,22 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		}, taskSequenceName, event.ID)
 	}
 
-	//taskSequence, err := sc.getTaskSequenceInStage(stageName, taskSequenceName, shipyard)
-	//if err != nil {
-	//	log.Error(err.Error())
-	//	return err
-	//}
-
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
 
 	eventScope.Stage = stageName
 	// dispatch the task sequence
-	if err := sc.sequenceDispatcher.Add(models.QueueItem{
-		Scope:     *eventScope,
-		EventID:   event.ID,
-		Timestamp: time.Now().UTC(),
-	}); err != nil {
-		return err
+	if sc.sequenceDispatcher != nil {
+		if err := sc.sequenceDispatcher.Add(models.QueueItem{
+			Scope:   *eventScope,
+			EventID: event.ID,
+		}); err != nil {
+			return err
+		}
+		return nil
 	}
-
-	return sc.startTaskSequence(event) // TODO remove that
-	//sc.onSequenceTriggered(event)
-	//
-	//return sc.proceedTaskSequence(eventScope, taskSequence, []interface{}{}, nil)
+	return sc.startTaskSequence(event)
 }
 
 func (sc *shipyardController) startTaskSequence(event models.Event) error {
