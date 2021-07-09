@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
-import {Observable, of} from "rxjs";
+import {noop, Observable, of} from "rxjs";
 import {map} from "rxjs/operators";
 
 import {Resource} from "../_models/resource";
@@ -95,6 +95,17 @@ export class ApiService {
     } else {
       return of(null);
     }
+  }
+
+  public createProject(projectName: string, shipyard: any, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
+    const url = `${this._baseUrl}/controlPlane/v1/project`;
+    return this.http.post<any>(url, {
+      gitRemoteUrl: gitRemoteUrl,
+      gitToken: gitToken,
+      gitUser: gitUser,
+      name: projectName,
+      shipyard: shipyard
+    });
   }
 
   public getProject(projectName: string): Observable<Project> {

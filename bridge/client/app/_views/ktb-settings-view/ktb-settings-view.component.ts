@@ -33,7 +33,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.data.subscribe((data) => {
-      if(data) {
+      if (data) {
         this.isCreateMode = data.isCreateMode;
       }
     });
@@ -72,7 +72,9 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
 
   public setGitUpstream(): void {
     this.isGitUpstreamInProgress = true;
-    this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken).subscribe(success => {
+    this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(success => {
       this.isGitUpstreamInProgress = false;
       if (success) {
         this.toast.create('Git Upstream URL set successfully');
@@ -90,6 +92,19 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   public createProject(): void {
-    // this.isCreatingProjectInProgress = true;
+    this.isCreatingProjectInProgress = true;
+    this.dataService.createProject(
+      this.projectNameControl.value, this.shipyardFile, this.gitData.remoteURI || null, this.gitData.gitToken || null, this.gitData.gitUser || null
+    ).subscribe(
+      () => {
+        this.toast.create('Project successfully created');
+        this.isCreatingProjectInProgress = false;
+        // TODO Success handling -> navigate to project settings without create mode
+      },
+      (err) => {
+        console.log(err);
+        this.toast.create('Project could not be created');
+        this.isCreatingProjectInProgress = false;
+      });
   }
 }
