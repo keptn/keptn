@@ -7,6 +7,7 @@ import (
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
@@ -16,6 +17,14 @@ type EventMatcher struct {
 	Project string
 	Stage   string
 	Service string
+}
+
+func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
+	return &EventMatcher{
+		Project: config.ProjectFilter,
+		Stage:   config.StageFilter,
+		Service: config.ServiceFilter,
+	}
 }
 
 func (ef EventMatcher) Matches(e cloudevents.Event) bool {

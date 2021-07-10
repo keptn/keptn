@@ -58,7 +58,7 @@ func _main(env config.EnvConfig) int {
 		go httpEventPoller.Start(context)
 	} else {
 		logger.Info("Starting Nats event Receiver")
-		natsEventReceiver := events.NewNATSEventReceiver(eventSender, env)
+		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
 		go natsEventReceiver.Start(context)
 	}
 

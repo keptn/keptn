@@ -3,8 +3,6 @@ package events
 import (
 	"context"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/common/sliceutils"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
@@ -21,16 +19,18 @@ type EventReceiver interface {
 // NATSEventReceiver receives events directly from the NATS broker and sends the cloud event to the
 // the keptn service
 type NATSEventReceiver struct {
-	env         config.EnvConfig
-	eventSender EventSender
-	closeChan   chan bool
+	env          config.EnvConfig
+	eventSender  EventSender
+	closeChan    chan bool
+	eventMatcher *EventMatcher
 }
 
-func NewNATSEventReceiver(eventSender EventSender, env config.EnvConfig) *NATSEventReceiver {
+func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
 	return &NATSEventReceiver{
-		env:         env,
-		eventSender: eventSender,
-		closeChan:   make(chan bool),
+		env:          env,
+		eventSender:  eventSender,
+		closeChan:    make(chan bool),
+		eventMatcher: NewEventMatcherFromEnv(env),
 	}
 }
 
@@ -94,8 +94,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 
 // TODO: remove duplication of this method (poller.go)
 func (n *NATSEventReceiver) sendEvent(event cloudevents.Event) error {
-	if !n.matchesFilter(event) {
-		// Do not send cloud event if it does not match the filter
+	if !n.eventMatcher.Matches(event) {
 		return nil
 	}
 
@@ -110,17 +109,4 @@ func (n *NATSEventReceiver) sendEvent(event cloudevents.Event) error {
 	}
 	logger.Infof("sent event %s", event.ID())
 	return nil
-}
-
-func (n *NATSEventReceiver) matchesFilter(e cloudevents.Event) bool {
-	keptnBase := &v0_2_0.EventData{}
-	if err := e.DataAs(keptnBase); err != nil {
-		return true
-	}
-	if n.env.ProjectFilter != "" && !sliceutils.ContainsStr(strings.Split(n.env.ProjectFilter, ","), keptnBase.Project) ||
-		n.env.StageFilter != "" && !sliceutils.ContainsStr(strings.Split(n.env.StageFilter, ","), keptnBase.Stage) ||
-		n.env.ServiceFilter != "" && !sliceutils.ContainsStr(strings.Split(n.env.ServiceFilter, ","), keptnBase.Service) {
-		return false
-	}
-	return true
 }

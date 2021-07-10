@@ -6,8 +6,6 @@ import (
 	"errors"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/common/sliceutils"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
 
@@ -25,20 +23,22 @@ type EventSender interface {
 
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
-	eventSender EventSender
-	ceCache     *CloudEventsCache
-	env         config.EnvConfig
-	httpClient  *http.Client
+	eventSender  EventSender
+	ceCache      *CloudEventsCache
+	env          config.EnvConfig
+	httpClient   *http.Client
+	eventMatcher *EventMatcher
 }
 
 func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
 	cache := NewCloudEventsCache()
+	eventMatcher := NewEventMatcherFromEnv(envConfig)
 	return &Poller{
-		//ceClient:   ceClient,
-		eventSender: eventSender,
-		ceCache:     cache,
-		env:         envConfig,
-		httpClient:  httpClient,
+		eventSender:  eventSender,
+		ceCache:      cache,
+		env:          envConfig,
+		httpClient:   httpClient,
+		eventMatcher: eventMatcher,
 	}
 }
 
@@ -197,8 +197,7 @@ func (p *Poller) getEventsFromEndpoint(endpoint string, token string, topic stri
 }
 
 func (p *Poller) sendEvent(event cloudevents.Event) error {
-	if !p.matchesFilter(event) {
-		// Do not send cloud event if it does not match the filter
+	if !p.eventMatcher.Matches(event) {
 		return nil
 	}
 
@@ -214,17 +213,4 @@ func (p *Poller) sendEvent(event cloudevents.Event) error {
 
 	logger.Infof("sent event %s", event.ID())
 	return nil
-}
-
-func (p *Poller) matchesFilter(e cloudevents.Event) bool {
-	keptnBase := &v0_2_0.EventData{}
-	if err := e.DataAs(keptnBase); err != nil {
-		return true
-	}
-	if p.env.ProjectFilter != "" && !sliceutils.ContainsStr(strings.Split(p.env.ProjectFilter, ","), keptnBase.Project) ||
-		p.env.StageFilter != "" && !sliceutils.ContainsStr(strings.Split(p.env.StageFilter, ","), keptnBase.Stage) ||
-		p.env.ServiceFilter != "" && !sliceutils.ContainsStr(strings.Split(p.env.ServiceFilter, ","), keptnBase.Service) {
-		return false
-	}
-	return true
 }
