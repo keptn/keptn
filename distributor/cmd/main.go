@@ -20,6 +20,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/retry"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
@@ -46,18 +47,18 @@ func main() {
 
 func _main(env config.EnvConfig) int {
 	context := createExecutionContext()
-	ceClient := setupCEClient()
+	eventSender := setupEventSender()
 	httpClient := setupHTTPClient()
 	connectionType := config.GetPubSubConnectionType(env)
 	logger.Infof("Connection type: %s", connectionType)
 	if connectionType == config.ConnectionTypeHTTP {
 		logger.Info("Starting HTTP event poller")
 		httpEventPoller :=
-			events.NewPoller(env, ceClient, httpClient)
+			events.NewPoller(env, eventSender, httpClient)
 		go httpEventPoller.Start(context)
 	} else {
 		logger.Info("Starting Nats event Receiver")
-		natsEventReceiver := events.NewNATSEventReceiver(ceClient, env)
+		natsEventReceiver := events.NewNATSEventReceiver(eventSender, env)
 		go natsEventReceiver.Start(context)
 	}
 
@@ -172,6 +173,13 @@ func setupCEClient() cloudevents.Client {
 		log.Fatalf("failed to create client, %v", err)
 	}
 	return c
+}
+
+func setupEventSender() events.EventSender {
+	ceClient := setupCEClient()
+	return &keptnv2.HTTPEventSender{
+		Client: ceClient,
+	}
 }
 
 //TODO: vvv delete vvv

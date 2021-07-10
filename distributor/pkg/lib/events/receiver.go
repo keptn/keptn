@@ -2,8 +2,6 @@ package events
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -15,18 +13,24 @@ import (
 	"time"
 )
 
-// NATSEventReceiver receives events directly from the NATS broker and sends the cloud
-type NATSEventReceiver struct {
-	env       config.EnvConfig
-	ceClient  cloudevents.Client
-	closeChan chan bool
+// EventReceiver is responsible for receive and process events form Keptn
+type EventReceiver interface {
+	Start(ctx *ExecutionContext)
 }
 
-func NewNATSEventReceiver(ceClient cloudevents.Client, env config.EnvConfig) *NATSEventReceiver {
+// NATSEventReceiver receives events directly from the NATS broker and sends the cloud event to the
+// the keptn service
+type NATSEventReceiver struct {
+	env         config.EnvConfig
+	eventSender EventSender
+	closeChan   chan bool
+}
+
+func NewNATSEventReceiver(eventSender EventSender, env config.EnvConfig) *NATSEventReceiver {
 	return &NATSEventReceiver{
-		env:       env,
-		ceClient:  ceClient,
-		closeChan: make(chan bool),
+		env:         env,
+		eventSender: eventSender,
+		closeChan:   make(chan bool),
 	}
 }
 
@@ -88,6 +92,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 	}()
 }
 
+// TODO: remove duplication of this method (poller.go)
 func (n *NATSEventReceiver) sendEvent(event cloudevents.Event) error {
 	if !n.matchesFilter(event) {
 		// Do not send cloud event if it does not match the filter
@@ -95,15 +100,15 @@ func (n *NATSEventReceiver) sendEvent(event cloudevents.Event) error {
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
-	ctx = cloudevents.ContextWithTarget(ctx, config.GetPubSubRecipientURL(n.env))
+	ctx = cloudevents.ContextWithTarget(ctx, n.env.GetPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
-	if result := n.ceClient.Send(ctx, event); cloudevents.IsUndelivered(result) {
-		fmt.Printf("failed to send: %s\n", result.Error())
-		return errors.New(result.Error())
+	if err := n.eventSender.Send(ctx, event); err != nil {
+		logger.WithError(err).Error("Unable to send event")
+		return err
 	}
-	fmt.Printf("sent: %s\n", event.ID())
+	logger.Infof("sent event %s", event.ID())
 	return nil
 }
 

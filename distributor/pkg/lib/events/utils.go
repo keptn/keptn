@@ -5,9 +5,31 @@ import (
 	"encoding/json"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/sliceutils"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	logger "github.com/sirupsen/logrus"
+	"strings"
 	"sync"
 )
+
+type EventMatcher struct {
+	Project string
+	Stage   string
+	Service string
+}
+
+func (ef EventMatcher) Matches(e cloudevents.Event) bool {
+	keptnBase := &v0_2_0.EventData{}
+	if err := e.DataAs(keptnBase); err != nil {
+		return true
+	}
+	if ef.Project != "" && !sliceutils.ContainsStr(strings.Split(ef.Project, ","), keptnBase.Project) ||
+		ef.Stage != "" && !sliceutils.ContainsStr(strings.Split(ef.Stage, ","), keptnBase.Stage) ||
+		ef.Service != "" && !sliceutils.ContainsStr(strings.Split(ef.Service, ","), keptnBase.Service) {
+		return false
+	}
+	return true
+}
 
 type ExecutionContext struct {
 	context.Context

@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/sliceutils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
+
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -19,20 +19,26 @@ import (
 	"time"
 )
 
-type Poller struct {
-	ceClient   cloudevents.Client
-	ceCache    *CloudEventsCache
-	env        config.EnvConfig
-	httpClient *http.Client
+type EventSender interface {
+	Send(ctx context.Context, event cloudevents.Event) error
 }
 
-func NewPoller(envConfig config.EnvConfig, ceClient cloudevents.Client, httpClient *http.Client) *Poller {
+// Poller polls events from the Keptn API and sends the events directly to the Keptn Service
+type Poller struct {
+	eventSender EventSender
+	ceCache     *CloudEventsCache
+	env         config.EnvConfig
+	httpClient  *http.Client
+}
+
+func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
 	cache := NewCloudEventsCache()
 	return &Poller{
-		ceClient:   ceClient,
-		ceCache:    cache,
-		env:        envConfig,
-		httpClient: httpClient,
+		//ceClient:   ceClient,
+		eventSender: eventSender,
+		ceCache:     cache,
+		env:         envConfig,
+		httpClient:  httpClient,
 	}
 }
 
@@ -42,7 +48,7 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 		return
 	}
 
-	eventEndpoint := config.GetHTTPPollingEndpoint(p.env)
+	eventEndpoint := p.env.GetHTTPPollingEndpoint()
 	topics := strings.Split(p.env.PubSubTopic, ",")
 
 	pollingInterval, err := strconv.ParseInt(p.env.HTTPPollingInterval, 10, 64)
@@ -197,15 +203,16 @@ func (p *Poller) sendEvent(event cloudevents.Event) error {
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
-	ctx = cloudevents.ContextWithTarget(ctx, config.GetPubSubRecipientURL(p.env))
+	ctx = cloudevents.ContextWithTarget(ctx, p.env.GetPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
-	if result := p.ceClient.Send(ctx, event); cloudevents.IsUndelivered(result) {
-		fmt.Printf("failed to send: %s\n", result.Error())
-		return errors.New(result.Error())
+	if err := p.eventSender.Send(ctx, event); err != nil {
+		logger.WithError(err).Error("Unable to send event")
+		return err
 	}
-	fmt.Printf("sent: %s\n", event.ID())
+
+	logger.Infof("sent event %s", event.ID())
 	return nil
 }
 

@@ -17,6 +17,7 @@ import (
 	"time"
 )
 
+// Forwarder receives events directly from the Keptn Service and forwards them to the Keptn API
 type Forwarder struct {
 	EventChannel      chan cloudevents.Event
 	env               config.EnvConfig
@@ -36,7 +37,7 @@ func NewForwarder(env config.EnvConfig, httpClient *http.Client) *Forwarder {
 func (f *Forwarder) Start(ctx *ExecutionContext) error {
 	serverURL := fmt.Sprintf("localhost:%d", f.env.APIProxyPort)
 	mux := http.NewServeMux()
-	mux.Handle(f.env.EventForwardingPath, http.HandlerFunc(f.GotEvent))
+	mux.Handle(f.env.EventForwardingPath, http.HandlerFunc(f.handleEvent))
 	mux.Handle(f.env.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
 
 	svr := &http.Server{
@@ -63,7 +64,7 @@ func (f *Forwarder) Start(ctx *ExecutionContext) error {
 	return nil
 }
 
-func (f *Forwarder) GotEvent(rw http.ResponseWriter, req *http.Request) {
+func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		logger.Errorf("Failed to read body from request: %v", err)
@@ -77,7 +78,8 @@ func (f *Forwarder) GotEvent(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	err = f.gotEvent(*event)
+
+	err = f.forwardEvent(*event)
 	if err != nil {
 		logger.Errorf("Failed to forward CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +87,7 @@ func (f *Forwarder) GotEvent(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (f *Forwarder) gotEvent(event cloudevents.Event) error {
+func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
 	go func() {
 		f.EventChannel <- event
@@ -190,7 +192,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	logger.Infof("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
 
-	proxyScheme, proxyHost, proxyPath := f.getProxyHost(path)
+	proxyScheme, proxyHost, proxyPath := f.env.GetProxyHost(path)
 
 	if proxyScheme == "" || proxyHost == "" {
 		logger.Error("Could not get proxy Host URL - got empty values")
@@ -252,48 +254,4 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 	if _, err := rw.Write(respBytes); err != nil {
 		logger.Errorf("could not send response from API: %v", err)
 	}
-}
-
-func (f *Forwarder) getProxyHost(path string) (string, string, string) {
-	// if the endpoint is empty, redirect to the internal services
-	if f.env.KeptnAPIEndpoint == "" {
-		for key, value := range config.InClusterAPIProxyMappings {
-			if strings.HasPrefix(path, key) {
-				split := strings.Split(strings.TrimPrefix(path, "/"), "/")
-				join := strings.Join(split[1:], "/")
-				return "http", value, join
-			}
-		}
-		return "", "", ""
-	}
-
-	parsedKeptnURL, err := url.Parse(f.env.KeptnAPIEndpoint)
-	if err != nil {
-		return "", "", ""
-	}
-
-	// if the endpoint is not empty, map to the correct api
-	for key, value := range config.ExternalAPIProxyMappings {
-		if strings.HasPrefix(path, key) {
-			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
-			join := strings.Join(split[1:], "/")
-			path = value + "/" + join
-			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
-			if value == "/configuration-service" {
-				splitPath := strings.Split(path, "/resource/")
-				if len(splitPath) > 1 {
-					path = ""
-					for i := 0; i < len(splitPath)-1; i++ {
-						path = splitPath[i] + "/resource/"
-					}
-					path += url.QueryEscape(splitPath[len(splitPath)-1])
-				}
-			}
-			if parsedKeptnURL.Path != "" {
-				path = strings.TrimSuffix(parsedKeptnURL.Path, "/") + path
-			}
-			return parsedKeptnURL.Scheme, parsedKeptnURL.Host, path
-		}
-	}
-	return "", "", ""
 }
