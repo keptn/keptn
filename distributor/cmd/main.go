@@ -181,31 +181,3 @@ func setupEventSender() events.EventSender {
 		Client: ceClient,
 	}
 }
-
-//TODO: vvv delete vvv
-
-func getProxyHost(path string) (string, string, string) {
-	return "", "", ""
-}
-
-func getHTTPPollingEndpoint() string {
-	return ""
-}
-
-func hasEventBeenSent(sentEvents []string, eventID string) bool {
-	return false
-}
-
-func decodeCloudEvent(data []byte) (*cloudevents.Event, error) {
-
-	return nil, nil
-}
-
-func matchesFilter(e cloudevents.Event) bool {
-
-	return true
-}
-
-func pollEventsForTopic(endpoint string, token string, topic string) {
-
-}

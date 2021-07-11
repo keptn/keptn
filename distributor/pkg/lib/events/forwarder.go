@@ -49,6 +49,7 @@ func (f *Forwarder) Start(ctx *ExecutionContext) error {
 			logger.Fatalf("listen:%+s\n", err)
 		}
 	}()
+	logger.Info("started")
 	<-ctx.Done()
 	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer func() {

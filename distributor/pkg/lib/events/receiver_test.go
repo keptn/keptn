@@ -13,7 +13,6 @@ import (
 )
 
 func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
-
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
 	s := RunServerOnPort(TEST_PORT)
 	defer s.Shutdown()
@@ -49,7 +48,7 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 				Wg:      new(sync.WaitGroup)})
 
 			//TODO: remove waiting
-			time.Sleep(2 * time.Second)
+			time.Sleep(4 * time.Second)
 			fmt.Println("sending event")
 			natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
 					"data": "",
@@ -70,7 +69,6 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 				}`))
 
 			assert.Eventually(t, func() bool {
-				fmt.Println(len(tt.eventSender.(*keptnv2.TestSender).SentEvents))
 				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
 			}, time.Second*time.Duration(10), time.Second)
 		})
