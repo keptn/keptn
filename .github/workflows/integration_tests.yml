@@ -486,26 +486,6 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
 
-      - name: Test Sequence Timeout
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_timeout
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceTimeout -v
-
-      - name: Test Sequence Queue
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_queue
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceQueue -v
-
       - name: Test Sequence Loop
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
@@ -684,6 +664,27 @@ jobs:
 #          test/test_self_healing_scaling.sh
 
       # for debugging etc... it makes sense to have the support archive attached as an artifact
+
+      - name: Test Sequence Timeout
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_timeout
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceTimeout -v
+
+      - name: Test Sequence Queue
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_queue
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceQueue -v
+
       - name: keptn generate support-archive
         if: always()
         env:
