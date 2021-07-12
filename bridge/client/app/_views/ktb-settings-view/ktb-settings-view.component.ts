@@ -1,17 +1,20 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Subject} from "rxjs";
 import {DataService} from "../../_services/data.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {filter, map, switchMap, takeUntil} from "rxjs/operators";
 import {DtToast} from "@dynatrace/barista-components/toast";
 import {GitData} from "../../_components/ktb-project-settings-git/ktb-project-settings-git.component";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {FormUtils} from "../../_utils/form.utils";
+import {NotificationType, TemplateRenderedNotifications} from "../../_models/notification";
+import {NotificationsService} from "../../_services/notifications.service";
 
 @Component({
   selector: 'ktb-settings-view',
   templateUrl: './ktb-settings-view.component.html',
-  styleUrls: ['./ktb-settings-view.component.scss']
+  styleUrls: ['./ktb-settings-view.component.scss'],
+  providers: [NotificationsService]
 })
 export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
@@ -28,11 +31,13 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     projectName: this.projectNameControl
   });
 
-  constructor(private route: ActivatedRoute, private dataService: DataService, private toast: DtToast) {
+  constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private toast: DtToast, private notificationsService: NotificationsService) {
   }
 
   ngOnInit(): void {
-    this.route.data.subscribe((data) => {
+    this.route.data.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe((data) => {
       if (data) {
         this.isCreateMode = data.isCreateMode;
       }
@@ -44,7 +49,10 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         filter((projects) => !!projects),
         map((projects) => projects ? projects.map(project => project.projectName) : null)
       ).subscribe((projectNames) => {
-      this.projectNameControl.setValidators([Validators.required, FormUtils.projectNameExistsValidator(projectNames)]);
+        if (this.isCreateMode && projectNames.includes(this.projectName)) {
+          this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
+        }
+        this.projectNameControl.setValidators([Validators.required, FormUtils.projectNameExistsValidator(projectNames)]);
     });
 
     this.route.params.pipe(
@@ -56,6 +64,14 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       this.projectName = project.projectName;
       this.gitData.remoteURI = project.gitRemoteURI;
       this.gitData.gitUser = project.gitUser;
+    });
+
+    this.route.queryParams.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe((queryParams) => {
+      if(queryParams.created) {
+        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, null, true, {projectName: this.projectName, routerLink: `/project/${this.projectName}/service`});
+      }
     });
   }
 
@@ -93,18 +109,21 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
 
   public createProject(): void {
     this.isCreatingProjectInProgress = true;
-    this.dataService.createProject(
-      this.projectNameControl.value, this.shipyardFile, this.gitData.remoteURI || null, this.gitData.gitToken || null, this.gitData.gitUser || null
-    ).subscribe(
-      () => {
-        this.toast.create('Project successfully created');
-        this.isCreatingProjectInProgress = false;
-        // TODO Success handling -> navigate to project settings without create mode
-      },
-      (err) => {
-        console.log(err);
-        this.toast.create('Project could not be created');
-        this.isCreatingProjectInProgress = false;
-      });
+
+    FormUtils.readFileContent(this.shipyardFile).then(fileContent => {
+      const shipyardBase64 = btoa(fileContent);
+      const projectName = this.projectNameControl.value;
+      this.dataService.createProject(
+        projectName, shipyardBase64, this.gitData.remoteURI || null, this.gitData.gitToken || null, this.gitData.gitUser || null
+      ).subscribe(() => {
+          this.projectName = projectName;
+          this.dataService.loadProjects();
+          this.isCreatingProjectInProgress = false;
+        },
+        () => {
+          this.notificationsService.addNotification(NotificationType.Error, 'The project could not be created.', 5000);
+          this.isCreatingProjectInProgress = false;
+        });
+    });
   }
 }

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
-import {noop, Observable, of} from "rxjs";
+import {Observable, of} from "rxjs";
 import {map} from "rxjs/operators";
 
 import {Resource} from "../_models/resource";
@@ -97,7 +97,17 @@ export class ApiService {
     }
   }
 
-  public createProject(projectName: string, shipyard: any, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
+  /**
+   * Creates a new project
+   *
+   * @param projectName - The unique project name - uniqueness is validated by the backend
+   * @param shipyard - The base64 encoded contents of the yaml file
+   * @param gitRemoteUrl (optional) - URL of the Git repository for the keptn configurations
+   * @param gitToken (optional) - The Git token used for access permissions to the repository
+   * @param gitUser (optional) - The username of the Git provider
+   * @returns Observable with type any of the HttpResponse
+   */
+  public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.post<any>(url, {
       gitRemoteUrl: gitRemoteUrl,

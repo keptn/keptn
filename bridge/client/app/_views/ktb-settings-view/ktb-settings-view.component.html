@@ -1,4 +1,5 @@
-<div fxFlexFill>
+<div fxFlexFill fxLayout="column">
+  <ktb-notification-bar></ktb-notification-bar>
   <div class="container" fxFlex fxLayout="column">
     <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
       <h2>Project name (mandatory)</h2>

@@ -16,8 +16,16 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  addNotification(type, message) {
+  addNotification(type, message, time?: number, isTemplateRendered = false, data?: any) {
     let notification = Notification.fromJSON({type, message});
+    notification.isTemplateRendered = isTemplateRendered;
+    notification.data = data || null;
+
+    if(time) {
+      setTimeout(() => {
+        this.removeNotification(notification);
+      }, time);
+    }
 
     // Check if the notification to add already exists
     const duplicateNotifications = this._notifications.getValue().filter(n => n.type === notification.type && n.message === notification.message);

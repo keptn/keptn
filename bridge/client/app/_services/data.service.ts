@@ -84,8 +84,7 @@ export class DataService {
     return this._isQualityGatesOnly.asObservable();
   }
 
-  public createProject(projectName: string, shipyard: any, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
-    // TODO what to send as shipyard? or has there a resource call to be made?
+  public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
     return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
   }
 
