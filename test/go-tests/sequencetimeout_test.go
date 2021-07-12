@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	"time"
 )
 
 const sequenceTimeoutShipyard = `--- 
@@ -92,18 +91,7 @@ func Test_SequenceTimeout(t *testing.T) {
 
 	// wait for the recreated state to be available
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
-	require.Eventually(t, func() bool {
-		states, _, err := GetState(projectName)
-		if err != nil {
-			return false
-		}
-		for _, state := range states.States {
-			if state.Shkeptncontext == *context.KeptnContext && state.State == scmodels.TimedOut {
-				return true
-			}
-		}
-		return false
-	}, 2*time.Minute, 10*time.Second)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut)
 	t.Log("received the expected state!")
 }
 

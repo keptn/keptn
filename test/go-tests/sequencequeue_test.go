@@ -60,14 +60,12 @@ func Test_SequenceQueue(t *testing.T) {
 	context := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	// wait for the recreated state to be available
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
 	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState)
 	t.Log("received the expected state!")
 
 	// trigger a second sequence - this one should stay in 'triggered' state until the previous sequence is finished
 	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceTriggeredState)
 	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceTriggeredState)
 	t.Log("received the expected state!")
 
