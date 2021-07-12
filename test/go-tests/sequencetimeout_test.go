@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 const sequenceTimeoutShipyard = `--- 
@@ -107,6 +108,8 @@ func setShipyardControllerTaskTimeout(t *testing.T, timeoutValue string) error {
 		return err
 	}
 
+	// wait 10s to make sure we wait for the updated pod to be ready
+	<-time.After(10 * time.Second)
 	t.Log("waiting for shipyard controller pod to be ready again")
 	return WaitForPodOfDeployment("shipyard-controller")
 }
