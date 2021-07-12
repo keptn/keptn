@@ -3,7 +3,6 @@ package go_tests
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/imroc/req"
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -75,7 +74,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
-	states, resp, err := getState(projectName)
+	states, resp, err := GetState(projectName)
 
 	// send a delivery.triggered event
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
@@ -110,7 +109,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err = getState(projectName)
+		states, resp, err = GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -170,7 +169,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err = getState(projectName)
+		states, resp, err = GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -206,7 +205,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err = getState(projectName)
+		states, resp, err = GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -253,7 +252,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err = getState(projectName)
+		states, resp, err = GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -309,7 +308,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err = getState(projectName)
+		states, resp, err = GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -348,7 +347,7 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	var copiedState scmodels.SequenceState
 	// wait for the recreated state to be available
 	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
+		states, _, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -368,15 +367,6 @@ func Test_SequenceStateIntegrationTest(t *testing.T) {
 	stagingStage := copiedState.Stages[1]
 	require.Equal(t, keptnv2.GetFinishedEventType("staging.delivery"), stagingStage.LatestEvent.Type)
 
-}
-
-func getState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
-	states := &scmodels.SequenceStates{}
-
-	resp, err := ApiGETRequest("/controlPlane/v1/sequence/" + projectName)
-	err = resp.ToJSON(states)
-
-	return states, resp, err
 }
 
 func copyEventTrace(events []*models.KeptnContextExtendedCE) (string, error) {

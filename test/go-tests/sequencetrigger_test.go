@@ -61,7 +61,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -117,7 +117,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -156,7 +156,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state -> the same sequence in the same stage should have been triggered again
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -222,7 +222,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state -> now the next task should have been triggered again
 	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
+		states, _, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -262,7 +262,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state -> now the sequence should be finished and not re-triggered again
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}

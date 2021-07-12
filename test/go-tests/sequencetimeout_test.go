@@ -50,15 +50,12 @@ func Test_SequenceTimeout(t *testing.T) {
 
 	t.Log("setting TASK_STARTED_WAIT_DURATION of shipyard controller to 10s")
 	// temporarily set the timeout value to a lower value
-	_, err = ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller TASK_STARTED_WAIT_DURATION=10s", GetKeptnNameSpaceFromEnv()))
-	require.Nil(t, err)
-
-	t.Log("restarting shipyard controller pod")
-	err = RestartPod("shipyard-controller")
-	require.Nil(t, err)
-
-	t.Log("waiting for shipyard controller pod to be ready again")
-	err = WaitForPodOfDeployment("shipyard-controller")
+	err = setShipyardControllerTaskTimeout(t, "10s")
+	defer func() {
+		// increase the timeout value again
+		err = setShipyardControllerTaskTimeout(t, "20m")
+		require.Nil(t, err)
+	}()
 	require.Nil(t, err)
 
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
@@ -96,7 +93,7 @@ func Test_SequenceTimeout(t *testing.T) {
 	// wait for the recreated state to be available
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
 	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
+		states, _, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -108,4 +105,20 @@ func Test_SequenceTimeout(t *testing.T) {
 		return false
 	}, 2*time.Minute, 10*time.Second)
 	t.Log("received the expected state!")
+}
+
+func setShipyardControllerTaskTimeout(t *testing.T, timeoutValue string) error {
+	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller TASK_STARTED_WAIT_DURATION=%s", GetKeptnNameSpaceFromEnv(), timeoutValue))
+	if err != nil {
+		return err
+	}
+
+	t.Log("restarting shipyard controller pod")
+	err = RestartPod("shipyard-controller")
+	if err != nil {
+		return err
+	}
+
+	t.Log("waiting for shipyard controller pod to be ready again")
+	return WaitForPodOfDeployment("shipyard-controller")
 }

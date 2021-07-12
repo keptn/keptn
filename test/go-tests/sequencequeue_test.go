@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	"time"
 )
 
 const sequenceQueueShipyard = `--- 
@@ -23,6 +22,14 @@ spec:
   stages: 
     - 
       name: dev
+      sequences: 
+        - 
+          name: delivery
+          tasks: 
+            - 
+              name: mytask
+    - 
+      name: staging
       sequences: 
         - 
           name: delivery
@@ -50,40 +57,18 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Contains(t, output, "created successfully")
 
 	// trigger the task sequence
-	context := triggerSequence(t, projectName, serviceName, "dev.delivery")
+	context := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	// wait for the recreated state to be available
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
-	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
-		if err != nil {
-			return false
-		}
-		for _, state := range states.States {
-			if state.Shkeptncontext == *context.KeptnContext && state.State == scmodels.SequenceStartedState {
-				return true
-			}
-		}
-		return false
-	}, 2*time.Minute, 10*time.Second)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState)
 	t.Log("received the expected state!")
 
 	// trigger a second sequence - this one should stay in 'triggered' state until the previous sequence is finished
-	secondContext := triggerSequence(t, projectName, serviceName, "dev.delivery")
+	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceTriggeredState)
-	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
-		if err != nil {
-			return false
-		}
-		for _, state := range states.States {
-			if state.Shkeptncontext == *secondContext.KeptnContext && state.State == scmodels.SequenceTriggeredState {
-				return true
-			}
-		}
-		return false
-	}, 2*time.Minute, 10*time.Second)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceTriggeredState)
 	t.Log("received the expected state!")
 
 	// check if mytask.triggered has been sent for first sequence - this one should be available
@@ -113,39 +98,50 @@ func Test_SequenceQueue(t *testing.T) {
 	}, source)
 	require.Nil(t, err)
 
-	// now that all taskks for the first sequence have been executed, the second sequence should eventually have the status 'started'
+	// now that all tasks for the first sequence have been executed, the second sequence should eventually have the status 'started'
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
-	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
-		if err != nil {
-			return false
-		}
-		for _, state := range states.States {
-			if state.Shkeptncontext == *secondContext.KeptnContext && state.State == scmodels.SequenceStartedState {
-				return true
-			}
-		}
-		return false
-	}, 2*time.Minute, 10*time.Second)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState)
 	t.Log("received the expected state!")
 
-	// check if mytask.triggered has been sent for second sequence - now it should be available be available
+	// check if mytask.triggered has been sent for second sequence - now it should be available
 	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
 	require.Nil(t, err)
 	require.NotNil(t, triggeredEventOfSecondSequence)
 
+	// test if sequences are triggered correctly after a timeout
+	err = setShipyardControllerTaskTimeout(t, "10s")
+	defer func() {
+		// increase the timeout value again
+		err = setShipyardControllerTaskTimeout(t, "20m")
+		require.Nil(t, err)
+	}()
+	require.Nil(t, err)
+
+	// trigger the first task sequence - this should time out
+	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut)
+	t.Log("received the expected state!")
+
+	// now trigger the second sequence - this should start and a .triggered event for mytask should be sent
+	secondContext = triggerSequence(t, projectName, serviceName, "staging", "delivery")
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *secondContext.KeptnContext, scmodels.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState)
+	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, err)
+	require.NotNil(t, triggeredEventOfSecondSequence)
 }
 
-func triggerSequence(t *testing.T, projectName string, serviceName string, sequenceName string) *models.EventContext {
+func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {
 	source := "golang-test"
-	eventType := keptnv2.GetTriggeredEventType(sequenceName)
+	eventType := keptnv2.GetTriggeredEventType(stageName + "." + sequenceName)
 	t.Log("starting task sequence")
 	resp, err := ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.DeploymentTriggeredEventData{
 			EventData: keptnv2.EventData{
 				Project: projectName,
-				Stage:   "dev",
+				Stage:   stageName,
 				Service: serviceName,
 			},
 		},

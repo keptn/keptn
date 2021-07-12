@@ -52,7 +52,7 @@ func Test_LogForwarding(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
