@@ -23,6 +23,7 @@ func Test_MongoDBTaskSequenceRepoInsertAndRetrieve(t *testing.T) {
 			},
 		},
 		Stage:        "my-stage",
+		Service:      "my-service",
 		KeptnContext: "my-context",
 	}
 

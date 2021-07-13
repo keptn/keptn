@@ -961,6 +961,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		TaskSequenceName: taskSequenceName,
 		TriggeredEventID: event.ID(),
 		Stage:            eventScope.Stage,
+		Service:          eventScope.Service,
 		KeptnContext:     eventScope.KeptnContext,
 		Task:             task,
 	}); err != nil {

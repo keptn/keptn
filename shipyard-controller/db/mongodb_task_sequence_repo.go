@@ -135,5 +135,8 @@ func (mdbrepo *TaskSequenceMongoDBRepo) getTaskSequenceMappingSearchOptions(filt
 	if filter.Stage != "" {
 		searchOptions["stage"] = filter.Stage
 	}
+	if filter.Service != "" {
+		searchOptions["service"] = filter.Service
+	}
 	return searchOptions
 }

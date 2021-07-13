@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/benbjohnson/clock"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -87,13 +88,15 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
 	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
-		Stage: queuedSequence.Scope.Stage,
+		Stage:   queuedSequence.Scope.Stage,
+		Service: queuedSequence.Scope.Service,
 	})
 	if err != nil {
 		return err
 	}
+
 	/// if there is a sequence running in the stage, we cannot trigger this sequence yet
-	if runningSequencesInStage != nil && len(runningSequencesInStage) > 0 {
+	if areSequencesBlockingQueuedSequences(runningSequencesInStage) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
 		return nil
 	}
@@ -119,4 +122,44 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	return nil
+}
+
+func areSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
+	if sequenceTasks == nil || len(sequenceTasks) == 0 {
+		// if there is no sequence currently running, we do not need to block
+		return false
+	}
+
+	tasksGroupedByContext := groupSequenceMappingsByContext(sequenceTasks)
+
+	// do not block if all active sequences are currently handling an approval task
+	for _, tasksOfContext := range tasksGroupedByContext {
+		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
+		if lastTaskOfSequence.Name != keptnv2.ApprovalTaskName {
+			return true
+		}
+	}
+	// if there is a sequence running that is not waiting for an approval, we need to block
+	return false
+}
+
+func groupSequenceMappingsByContext(sequenceTasks []models.TaskSequenceEvent) map[string][]models.TaskSequenceEvent {
+	result := map[string][]models.TaskSequenceEvent{}
+	for index := range sequenceTasks {
+		result[sequenceTasks[index].KeptnContext] = append(result[sequenceTasks[index].KeptnContext], sequenceTasks[index])
+	}
+	return result
+}
+
+func getLastTaskOfSequence(sequenceTasks []models.TaskSequenceEvent) models.Task {
+	lastTask := models.Task{
+		TaskIndex: -1,
+	}
+	for index := range sequenceTasks {
+		if sequenceTasks[index].Task.TaskIndex > lastTask.TaskIndex {
+			lastTask = sequenceTasks[index].Task
+		}
+	}
+
+	return lastTask
 }
