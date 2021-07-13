@@ -53,11 +53,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          readinessProbe:
-            tcpSocket:
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 5
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
