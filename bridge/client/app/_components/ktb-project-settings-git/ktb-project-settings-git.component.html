@@ -22,7 +22,7 @@
         <dt-label>Token</dt-label>
         <input formControlName="gitToken"
                (focus)="gitTokenControl.value.length > 0 && gitTokenControl.value.includes('*********') ? gitTokenControl.setValue('') : null"
-               type="text" dtInput placeholder="Token"/>
+               type="password" dtInput placeholder="Token"/>
         <dt-error>Must not be empty</dt-error>
       </dt-form-field>
     </div>
