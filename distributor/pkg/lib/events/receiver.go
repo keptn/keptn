@@ -41,14 +41,13 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 	}
 	if n.env.PubSubTopic == "" {
 		logger.Warn("No pubsub topic defined. No need to create NATS client connection.")
+		ctx.Wg.Done()
 		return
 	}
-	uptimeTicker := time.NewTicker(10 * time.Second)
-
-	natsURL := n.env.PubSubURL
+	uptimeTicker := time.NewTicker(1 * time.Second)
 
 	topics := strings.Split(n.env.PubSubTopic, ",")
-	nch := NewNatsConnectionHandler(natsURL, topics)
+	nch := NewNatsConnectionHandler(n.env.PubSubURL, topics)
 
 	nch.MessageHandler = n.handleMessage
 

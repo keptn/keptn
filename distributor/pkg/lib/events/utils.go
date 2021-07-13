@@ -45,6 +45,12 @@ type ExecutionContext struct {
 	Wg *sync.WaitGroup
 }
 
+func NewExecutionContext(ctx context.Context, waitGroupCount int) *ExecutionContext {
+	wg := new(sync.WaitGroup)
+	wg.Add(waitGroupCount)
+	return &ExecutionContext{ctx, wg}
+}
+
 type ceVersion struct {
 	SpecVersion string `json:"specversion"`
 }

@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 )
@@ -89,15 +88,17 @@ func Test_PollAndForwardEvents(t *testing.T) {
 
 			poller := NewPoller(tt.args.envConfig, tt.eventSender, &http.Client{})
 
-			go poller.Start(&ExecutionContext{
-				Context: context.TODO(),
-				Wg:      new(sync.WaitGroup),
-			})
+			ctx, cancel := context.WithCancel(context.Background())
+			executionContext := NewExecutionContext(ctx, 1)
+			go poller.Start(executionContext)
 
 			assert.Eventually(t, func() bool {
 				fmt.Println(len(tt.eventSender.(*keptnv2.TestSender).SentEvents))
 				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
 			}, time.Second*time.Duration(5), time.Second)
+
+			cancel()
+			executionContext.Wg.Wait()
 		})
 	}
 }

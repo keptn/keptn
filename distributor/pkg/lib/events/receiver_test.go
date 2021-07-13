@@ -7,7 +7,6 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
 	"time"
 )
@@ -43,12 +42,12 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			receiver := NewNATSEventReceiver(tt.args.envConfig, tt.eventSender)
 
-			go receiver.Start(&ExecutionContext{
-				Context: context.TODO(),
-				Wg:      new(sync.WaitGroup)})
+			ctx, cancel := context.WithCancel(context.Background())
+			executionContext := NewExecutionContext(ctx, 1)
+			go receiver.Start(executionContext)
 
 			//TODO: remove waiting
-			time.Sleep(4 * time.Second)
+			time.Sleep(2 * time.Second)
 			fmt.Println("sending event")
 			natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
 					"data": "",
@@ -71,6 +70,9 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 			assert.Eventually(t, func() bool {
 				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
 			}, time.Second*time.Duration(10), time.Second)
+
+			cancel()
+			executionContext.Wg.Wait()
 		})
 	}
 }

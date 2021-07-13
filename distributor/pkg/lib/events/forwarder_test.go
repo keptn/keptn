@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 	"time"
 )
@@ -44,7 +43,6 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	var env config.EnvConfig
 	envconfig.Process("", &env)
 	env.PubSubURL = natsURL
-	env.APIProxyPort = 12346
 
 	natsClient, err := nats.Connect(natsURL)
 	if err != nil {
@@ -62,16 +60,21 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
 
-	go f.Start(&ExecutionContext{context.TODO(), new(sync.WaitGroup)})
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go f.Start(executionContext)
 
 	//TODO: remove waiting
-	time.Sleep(4 * time.Second)
-	eventFromService(taskStartedEvent, 12346)
-	eventFromService(taskFinishedEvent, 12346)
+	time.Sleep(2 * time.Second)
+	eventFromService(taskStartedEvent)
+	eventFromService(taskFinishedEvent)
 
 	assert.Eventually(t, func() bool {
 		return expectedReceivedMessageCount == 2
 	}, time.Second*time.Duration(10), time.Second)
+
+	cancel()
+	executionContext.Wg.Wait()
 }
 
 func Test_ForwardEventsToKeptnAPI(t *testing.T) {
@@ -82,7 +85,6 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 	var env config.EnvConfig
 	envconfig.Process("", &env)
 	env.KeptnAPIEndpoint = ts.URL
-	env.APIProxyPort = 12345
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
@@ -90,20 +92,23 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
-	go f.Start(&ExecutionContext{context.TODO(), new(sync.WaitGroup)})
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go f.Start(executionContext)
 
 	//TODO: remove waiting
-	time.Sleep(4 * time.Second)
-	eventFromService(taskStartedEvent, 12345)
-	eventFromService(taskFinishedEvent, 12345)
+	time.Sleep(2 * time.Second)
+	eventFromService(taskStartedEvent)
+	eventFromService(taskFinishedEvent)
 
 	assert.Eventually(t, func() bool {
 		return receivedMessageCount == 2
 	}, time.Second*time.Duration(10), time.Second)
+	cancel()
+	executionContext.Wg.Wait()
 }
 
-func eventFromService(event string, port int) {
+func eventFromService(event string) {
 	payload := bytes.NewBuffer([]byte(event))
-	resp, _ := http.Post(fmt.Sprintf("http://127.0.0.1:%d/event", port), "application/cloudevents+json", payload)
-	defer resp.Body.Close()
+	http.Post(fmt.Sprintf("http://127.0.0.1:%d/event", 8081), "application/cloudevents+json", payload)
 }
