@@ -78,8 +78,17 @@ spec:
       containers:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10998
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -310,8 +319,16 @@ spec:
       containers:
         - name: shipyard-controller
           image: {{ .Values.shipyardController.image.repository }}:{{ .Values.shipyardController.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" (dict "port" 8080) | nindent 10 }}
-          {{- include "control-plane.readinessProbe" (dict "port" 8080) | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIGURATION_SERVICE
@@ -458,8 +475,18 @@ spec:
       containers:
         - name: secret-service
           image: {{ .Values.secretService.image.repository }}:{{ .Values.secretService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10998
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /v1/secret
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAMESPACE
@@ -580,8 +607,16 @@ spec:
       containers:
         - name: configuration-service
           image: {{ .Values.configurationService.image.repository }}:{{ .Values.configurationService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10998
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 10998
           imagePullPolicy: IfNotPresent
           env:
             - name: PREFIX_PATH
@@ -678,8 +713,16 @@ spec:
       containers:
         - name: statistics-service
           image: {{ .Values.statisticsService.image.repository }}:{{ .Values.statisticsService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" (dict "port" 8080) | nindent 10 }}
-          {{- include "control-plane.readinessProbe" (dict "port" 8080) | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
           imagePullPolicy: IfNotPresent
           env:
             - name: AGGREGATION_INTERVAL_SECONDS
@@ -794,8 +837,17 @@ spec:
       containers:
         - name: approval-service
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
-          {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10998
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

@@ -52,7 +52,7 @@ spec:
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
-                  fieldPath: metadata.namespace                  
+                  fieldPath: metadata.namespace
       serviceAccountName: keptn-api-service
 ---
 apiVersion: v1
