@@ -538,7 +538,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: test/test_quality_gates_backwards_compatibility.sh
+        run: cd test/go-tests && go test -run Test_QualityGates -v
 
       - name: Test Self Healing
         # do not run this test for the airgapped scenario
@@ -549,7 +549,7 @@ jobs:
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
           UNLEASH_SERVICE_VERSION: "release-0.3.0"
-        run: test/test_self_healing.sh
+        run: cd test/go-tests && go test -run Test_SelfHealing -v
 
       - name: Bridge E2E Tests (Protractor, Selenium)
         # do not run this test for the airgapped scenario
@@ -592,9 +592,7 @@ jobs:
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-          PROJECT: "musicshop"
-          DYNATRACE_SLI_SERVICE_VERSION: "release-0.8.0"
-        run: test/test_delivery_assistant.sh
+        run: cd test/go-tests && go test -run Test_DeliveryAssistant -v
 
       - name: Test User Managed Delivery
         id: test_user_managed_delivery

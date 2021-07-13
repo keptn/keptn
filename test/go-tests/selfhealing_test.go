@@ -70,7 +70,7 @@ func Test_SelfHealing(t *testing.T) {
 	require.Nil(t, err)
 
 	// trigger a remediation - this should fail because no remediation.yaml is available yet
-	t.Log("triggering a remedation with no remediation.yaml")
+	t.Log("triggering a remediation with no remediation.yaml")
 	remediationFinishedEvent := performRemediation(t, projectName, serviceName)
 
 	require.Equal(t, "shipyard-controller", *remediationFinishedEvent.Source)
