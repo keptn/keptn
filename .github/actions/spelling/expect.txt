@@ -55,6 +55,7 @@ benbjohnson
 bestpractices
 Bitbucket
 blog
+bmizerany
 bookinfo
 bookratings
 boop
@@ -140,6 +141,7 @@ creds
 criticalevent
 cron
 css
+csv
 cta
 Ctl
 ctx
@@ -158,7 +160,6 @@ ded
 deeb
 deletecollection
 Deliv
-depd
 dependabot
 depl
 deploymentdescriptions
@@ -170,7 +171,6 @@ dest
 destinationrule
 devkit
 devstorage
-devtools
 dirname
 distractor
 distributorversion
@@ -183,8 +183,8 @@ dompurify
 downlevel
 Downloader
 dpl
-dracula
 dropdown
+dropdownclosed
 dst
 dvcm
 dynatrace
@@ -209,7 +209,6 @@ envsubst
 eofline
 epochconverter
 eql
-ermin
 errorable
 errored
 Errorf
@@ -237,6 +236,7 @@ expr
 expressjs
 externallink
 Fairwinds
+Falsy
 Fatalf
 Fatalln
 favicon
@@ -276,6 +276,7 @@ Getenv
 getpostman
 GFzc
 ghodss
+GHSA
 gitcommit
 github
 githubusercontent
@@ -421,6 +422,7 @@ keptnapimodels
 keptncommon
 KEPTNCONFIG
 keptncontrib
+keptndeps
 keptndev
 keptnevents
 keptnexamples
@@ -471,7 +473,6 @@ linuxunix
 loadbalancer
 loadgen
 localhost
-lodash
 Logf
 logmanager
 logrus
@@ -500,7 +501,6 @@ microsoft
 Microtasks
 middleware
 minikube
-minimist
 minishfit
 minishift
 minwidth
@@ -520,7 +520,6 @@ mousemove
 mozilla
 mptr
 mtls
-muratovic
 musicshop
 mutex
 myapp
@@ -554,12 +553,10 @@ newratings
 NEWVAL
 nginx
 nginxinc
-ngrx
 ngx
 nightlies
 nindent
 nobreak
-nodemon
 nodeport
 nokubectl
 nolint
@@ -674,7 +671,6 @@ remediations
 removerow
 replicacount
 repolink
-resolv
 restapi
 resultdirectory
 reviewdog
@@ -701,7 +697,8 @@ rxjs
 scc
 scopesrepository
 screenshot
-scrollbars
+scrollable
+scrollbar
 scss
 sdk
 secondstage
@@ -715,8 +712,14 @@ selfmon
 selfmonitoring
 selfservice
 semver
+sequencefinished
 sequencehooks
 sequencestaterepo
+sequencetaskfinished
+sequencetaskstarted
+sequencetasktriggered
+sequencetimeout
+sequencetriggered
 serr
 serrors
 serviceaccount
@@ -728,6 +731,7 @@ servicetype
 serviceutils
 shellcheck
 shellscripts
+shipyardcontroller
 shipyardversion
 shirtshop
 shkeptncontext
@@ -756,6 +760,7 @@ specversion
 spf
 Sprintf
 src
+srs
 ssh
 ssl
 Sta'lone
@@ -784,6 +789,7 @@ Submatch
 submatches
 submenu
 subrequest
+subsequencefinished
 sudo
 sutils
 svcs
@@ -817,6 +823,7 @@ tls
 TLSCA
 tmp
 tmpfile
+tmpl
 todo
 tokenizer
 TOKENLEN
@@ -832,7 +839,6 @@ triggerid
 trunc
 tsc
 tsconfig
-tslib
 tslint
 TSN
 ttl
@@ -856,6 +862,7 @@ uniformintegrationmanager
 uniformrepo
 uninstall
 uninstalling
+uniq
 unixtimestamp
 unmarshal
 unmarshaling
