@@ -4,7 +4,9 @@
 
     <ng-container *ngIf="notification.isTemplateRendered">
       <p *ngIf="notification.message === notificationTypes.CREATE_PROJECT" class="m-0" fxFlex>
-        Your project {{ notification.data?.projectName }} was created successfully. Go to <a [routerLink]="notification.data?.routerLink">services</a> to create your first service.
+<!--        Used with implementation of #4500 -->
+<!--        Your project {{ notification.data?.projectName }} was created successfully. Go to <a [routerLink]="notification.data?.routerLink">services</a> to create your first service.-->
+        Your project {{ notification.data?.projectName }} was created successfully. Consult the <a [href]="'/manage/service' | keptnUrl" target="_blank">docs</a> on how to create and onboard a service.
       </p>
     </ng-container>
 
