@@ -35,8 +35,11 @@ spec:
         - name: lighthouse-service
           image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
-
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

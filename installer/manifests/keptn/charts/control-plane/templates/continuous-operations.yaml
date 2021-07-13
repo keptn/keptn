@@ -36,7 +36,11 @@ spec:
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
-        {{- include "control-plane.readinessProbe" . | nindent 8 }}
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         resources:

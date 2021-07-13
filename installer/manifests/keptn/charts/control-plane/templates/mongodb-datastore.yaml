@@ -37,7 +37,12 @@ spec:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
         {{- include "control-plane.livenessProbe" . | nindent 8 }}
-        {{- include "control-plane.readinessProbe" . | nindent 8 }}
+        readinessProbe:
+          httpGet:
+            path: /event
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

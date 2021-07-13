@@ -79,7 +79,11 @@ spec:
         - name: api-service
           image: {{ .Values.apiService.image.repository }}:{{ .Values.apiService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -459,7 +463,12 @@ spec:
         - name: secret-service
           image: {{ .Values.secretService.image.repository }}:{{ .Values.secretService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          readinessProbe:
+            httpGet:
+              path: /v1/secret
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAMESPACE
@@ -795,7 +804,11 @@ spec:
         - name: approval-service
           image: {{ .Values.approvalService.image.repository }}:{{ .Values.approvalService.image.tag | default .Chart.AppVersion }}
           {{- include "control-plane.livenessProbe" . | nindent 10 }}
-          {{- include "control-plane.readinessProbe" . | nindent 10 }}
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

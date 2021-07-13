@@ -52,8 +52,19 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 10998
+            initialDelaySeconds: 0
+            periodSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
         - name: distributor
-          image: keptn/distributor:0.8.3
+          image: keptn/distributor:0.8.4
           ports:
             - containerPort: 8080
           resources:
@@ -66,7 +77,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 10998
+              port: 10999
             initialDelaySeconds: 5
             periodSeconds: 5
           env:

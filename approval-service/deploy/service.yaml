@@ -44,12 +44,23 @@ spec:
           value: 'http://event-broker/keptn'
         - name: DATASTORE
           value: 'http://mongodb-datastore:8080'
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10998
+          initialDelaySeconds: 0
+          periodSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
       - name: distributor
         image: keptn/distributor:0.8.4
         livenessProbe:
           httpGet:
             path: /health
-            port: 10998
+            port: 10999
           initialDelaySeconds: 5
           periodSeconds: 5
         imagePullPolicy: Always

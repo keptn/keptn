@@ -1,4 +1,4 @@
-    
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -46,8 +46,19 @@ spec:
             value: 'http://configuration-service:8080'
           - name: ENVIRONMENT
             value: 'production'
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10998
+          initialDelaySeconds: 0
+          periodSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptn/distributor:0.8.4
         imagePullPolicy: Always
         ports:
           - containerPort: 8080
@@ -58,6 +69,12 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10999
+          initialDelaySeconds: 5
+          periodSeconds: 5
         env:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'
