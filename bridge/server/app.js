@@ -17,10 +17,10 @@ let apiToken = process.env.API_TOKEN;
 let cliDownloadLink = process.env.CLI_DOWNLOAD_LINK;
 let integrationsPageLink = process.env.INTEGRATIONS_PAGE_LINK;
 let lookAndFeelUrl = process.env.LOOK_AND_FEEL_URL;
+const requestTimeLimit = (+process.env.REQUEST_TIME_LIMIT || 60) * 60 * 1000; // x minutes
+const requestsWithinTime = +process.env.REQUESTS_WITHIN_TIME || 10; // x requests within {requestTimeLimit}
+const cleanBucketsInterval = (+process.env.CLEAN_BUCKET_INTERVAL || 60) * 60 * 1000; // clean buckets every x minutes
 const throttleBucket /* {[ip: string]: number[]} */ = {};
-const requestTimeLimit = 60 * 60 * 1000; // 1 hour
-const requestLimitWithinTime = 10; // 10 requests within {requestTimeLimit}
-const cleanBucketsTimeout = 60 * 60 * 1000; // clean buckets every 1 hour
 
 if(!apiToken) {
   console.log("API_TOKEN was not provided. Fetching from kubectl.");
@@ -163,7 +163,7 @@ module.exports = (async function (){
 
     console.error("Installing Basic authentication - please check environment variables!");
 
-    setInterval(cleanIpBuckets, cleanBucketsTimeout);
+    setInterval(cleanIpBuckets, cleanBucketsInterval);
 
     app.use((req, res, next) => {
       // parse login and password from headers
@@ -173,7 +173,7 @@ module.exports = (async function (){
 
       if (isIPThrottled(userIP)) {
         console.error("Request limit reached");
-        res.status(401).send('Reached request limit');
+        res.status(429).send('Reached request limit');
         return;
       }
       // Verify login and password are set and correct
@@ -188,7 +188,7 @@ module.exports = (async function (){
           throttleBucket[userIP].push(new Date().getTime());
 
           // delete old requests. Just keep the latest {requestLimitWithinTime} requests
-          if (throttleBucket[userIP].length > requestLimitWithinTime) {
+          if (throttleBucket[userIP].length > requestsWithinTime) {
             throttleBucket[userIP].shift();
           }
         }
@@ -241,7 +241,7 @@ module.exports = (async function (){
  */
 function isIPThrottled(ip) {
   const ipBucket = throttleBucket[ip];
-  return ipBucket && ipBucket.length >= requestLimitWithinTime && (new Date().getTime() - ipBucket[0]) <= requestTimeLimit;
+  return ipBucket && ipBucket.length >= requestsWithinTime && (new Date().getTime() - ipBucket[0]) <= requestTimeLimit;
 }
 
 /**
