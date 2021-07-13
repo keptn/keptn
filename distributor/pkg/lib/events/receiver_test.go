@@ -48,7 +48,6 @@ func Test_ReceiveFromNATSAndForwardEvent(t *testing.T) {
 
 			//TODO: remove waiting
 			time.Sleep(2 * time.Second)
-			fmt.Println("sending event")
 			natsPublisher.Publish("sh.keptn.event.task.triggered", []byte(`{
 					"data": "",
 					"id": "6de83495-4f83-481c-8dbe-fcceb2e0243b",

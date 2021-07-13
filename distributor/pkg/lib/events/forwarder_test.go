@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -106,6 +107,48 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 	}, time.Second*time.Duration(10), time.Second)
 	cancel()
 	executionContext.Wg.Wait()
+}
+
+func Test_APIProxy(t *testing.T) {
+	proxyEndpointCalled := 0
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+			proxyEndpointCalled++
+		}))
+
+	var env config.EnvConfig
+	envconfig.Process("", &env)
+	env.KeptnAPIEndpoint = ""
+	config.InClusterAPIProxyMappings["/testpath"] = strings.TrimPrefix(ts.URL, "http://")
+
+	f := &Forwarder{
+		EventChannel:      make(chan cloudevents.Event),
+		env:               env,
+		httpClient:        &http.Client{},
+		pubSubConnections: map[string]*cenats.Sender{},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	executionContext := NewExecutionContext(ctx, 1)
+	go f.Start(executionContext)
+
+	//TODO: remove wait
+	time.Sleep(2 * time.Second)
+	callFromService()
+
+	assert.Eventually(t, func() bool {
+		return proxyEndpointCalled == 1
+	}, time.Second*time.Duration(10), time.Second)
+
+	cancel()
+	executionContext.Wg.Wait()
+}
+
+func callFromService() {
+	_, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/testpath", 8081))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func eventFromService(event string) {
