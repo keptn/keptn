@@ -176,7 +176,7 @@ export class DataService {
         map(project => Project.fromJSON(project))
       ).subscribe((project: Project) => {
         const projects = this._projects.getValue();
-        const existingProject = projects.find(p => p.projectName === project.projectName);
+        const existingProject = projects?.find(p => p.projectName === project.projectName);
         if (existingProject){
           Object.assign(existingProject, project);
           this._projects.next(projects);

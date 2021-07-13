@@ -22,6 +22,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public project$: Observable<Project>;
   public contextId: string;
   private _rootEventsTimerInterval = 30;
+  private readonly _projectTimerInterval = 30_000;
 
   public error: string = null;
 
@@ -32,6 +33,16 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       map(params => params.projectName),
       filter(projectName => projectName)
     );
+
+    const timer$ = projectName$.pipe(
+      switchMap((projectName) => timer(0, this._projectTimerInterval).pipe(map(() => projectName))),
+      takeUntil(this.unsubscribe$)
+    );
+    timer$.subscribe(projectName => {
+      this.dataService.loadProject(projectName);
+      // this is on project-board level because we need the project in environment, service, sequence and settings screen
+      // sequence screen because there is a check for the latest deployment context (lastEventTypes)
+    });
 
     this.project$ = projectName$.pipe(
       switchMap(projectName => this.dataService.getProject(projectName))
