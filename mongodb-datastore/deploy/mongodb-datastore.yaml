@@ -59,12 +59,6 @@ spec:
             secretKeyRef:
                 name: mongodb-credentials
                 key: password
-        readinessProbe:
-          httpGet:
-            path: /event
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
       - name: distributor
         image: keptn/distributor:latest
         imagePullPolicy: Always
