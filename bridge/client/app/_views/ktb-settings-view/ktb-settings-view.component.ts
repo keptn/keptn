@@ -18,7 +18,7 @@ import {NotificationsService} from "../../_services/notifications.service";
 })
 export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  private projectName: string;
+  public projectName: string;
 
   public isCreateMode: boolean;
   public isGitUpstreamInProgress: boolean;
