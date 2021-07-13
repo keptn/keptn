@@ -50,9 +50,8 @@ spec:
             initialDelaySeconds: 0
             periodSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 10998
+            tcpSocket:
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:

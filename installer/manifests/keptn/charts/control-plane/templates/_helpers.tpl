@@ -62,24 +62,6 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "control-plane.livenessProbe" -}}
-livenessProbe:
-  httpGet:
-    path: /health
-    port: {{.port | default 10998}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 10}}
-  periodSeconds: 5
-{{- end }}
-
-{{- define "control-plane.readinessProbe" -}}
-readinessProbe:
-  httpGet:
-    path: /health
-    port: {{.port | default 10998}}
-  initialDelaySeconds: {{.initialDelaySeconds | default 5}}
-  periodSeconds: 5
-{{- end }}
-
 {{- define "control-plane.dist.livenessProbe" -}}
 livenessProbe:
   httpGet:
@@ -116,11 +98,19 @@ readinessProbe:
     fieldRef:
      fieldPath: metadata.name
 - name: K8S_NAMESPACE
+{{- if .Values.distributor.metadata.namespace }}
+  value: .Values.distributor.metadata.namespace
+{{- else }}
   valueFrom:
     fieldRef:
       fieldPath: metadata.namespace
+{{- end }}
 - name: K8S_NODE_NAME
+{{- if .Values.distributor.metadata.hostname }}
+  value: .Values.distributor.metadata.hostname
+{{- else }}
   valueFrom:
     fieldRef:
       fieldPath: spec.nodeName
+{{- end }}
 {{- end }}

@@ -44,7 +44,7 @@
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
                     <ng-container *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment">
-                      <a *ngIf="deployment.getFinishedEvent()?.getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+                      <a *ngIf="deployment.getFinishedEvent()?.getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" [title]="'View ' + deployment.getService() + ' in ' + selectedStage.stageName" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
                     </ng-container>
                   </div>
                 </dt-info-group-title>
