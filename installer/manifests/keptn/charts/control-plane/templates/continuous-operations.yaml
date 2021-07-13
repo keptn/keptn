@@ -35,11 +35,16 @@ spec:
       - name: remediation-service
         image: {{ .Values.remediationService.image.repository }}:{{ .Values.remediationService.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
-        {{- include "control-plane.livenessProbe" . | nindent 8 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10998
+          initialDelaySeconds: 10
+          periodSeconds: 5
         readinessProbe:
           tcpSocket:
             port: 8080
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 5
         ports:
         - containerPort: 8080

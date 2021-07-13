@@ -36,12 +36,17 @@ spec:
       containers:
       - name: mongodb-datastore
         image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
-        {{- include "control-plane.livenessProbe" . | nindent 8 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10998
+          initialDelaySeconds: 10
+          periodSeconds: 5
         readinessProbe:
           httpGet:
             path: /event
             port: 8080
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 5
         imagePullPolicy: IfNotPresent
         ports:
