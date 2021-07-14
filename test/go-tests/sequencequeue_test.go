@@ -15,7 +15,7 @@ import (
 )
 
 const sequenceQueueShipyard = `--- 
-apiVersion: spec.keptn.sh/0.2.0
+apiVersion: spec.keptn.sh/0.2.2
 kind: Shipyard
 metadata: 
   name: shipyard-sockshop
@@ -29,17 +29,16 @@ spec:
           tasks: 
             - 
               name: mytask
-
-		-
+        - 
           name: delivery-with-approval
-		  tasks:
-		    -
-			  name: approval
-			  properties:
-			    pass: "manual"
-                warning: "manual"
-			-
-			  name: mytask
+          tasks: 
+            - 
+              name: approval
+              properties: 
+                pass: manual
+                warning: manual
+            - 
+              name: mytask
     - 
       name: staging
       sequences: 
@@ -52,6 +51,7 @@ spec:
 func Test_SequenceQueue(t *testing.T) {
 	projectName := "sequence-queue"
 	serviceName := "my-service"
+
 	sequenceStateShipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard)
 	require.Nil(t, err)
 	defer os.Remove(sequenceStateShipyardFilePath)
