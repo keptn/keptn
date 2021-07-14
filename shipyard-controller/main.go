@@ -94,7 +94,7 @@ func main() {
 
 	stageManager := handler.NewStageManager(createMaterializedView())
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
+	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), createTaskSequenceRepo(), eventSender, time.Duration(eventDispatcherSyncInterval)*time.Second)
 	sequenceDispatcherChannel := make(chan models.Event)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),

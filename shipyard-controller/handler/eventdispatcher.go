@@ -75,6 +75,8 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 				// in all other cases, return the error
 				return err
 			}
+		} else {
+			return nil
 		}
 	}
 
@@ -136,6 +138,7 @@ func (e *EventDispatcher) dispatchEvents() {
 
 		eventScope, err := models.NewEventScope(triggeredEvent)
 		if err != nil {
+			log.WithError(err).Error("could not determine scope of event")
 			continue
 		}
 

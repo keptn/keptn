@@ -325,8 +325,9 @@ func Test_getEventScope(t *testing.T) {
 
 func Test_eventManager_handleStartedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo db.ProjectRepo
-		eventRepo   db.EventRepo
+		projectRepo      db.ProjectRepo
+		eventRepo        db.EventRepo
+		taskSequenceRepo db.TaskSequenceRepo
 	}
 	type args struct {
 		event models.Event
@@ -360,6 +361,11 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						return nil
 					},
 				},
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+					return []models.TaskSequenceEvent{
+						{},
+					}, nil
+				}},
 			},
 			args: args{
 				event: fake.GetTestStartedEvent(),
@@ -385,6 +391,11 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 						return nil
 					},
 				},
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+					return []models.TaskSequenceEvent{
+						{},
+					}, nil
+				}},
 			},
 			args: args{
 				event: fake.GetTestStartedEventWithUnmatchedTriggeredID(),
@@ -396,8 +407,9 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo: tt.fields.projectRepo,
-				eventRepo:   tt.fields.eventRepo,
+				projectRepo:      tt.fields.projectRepo,
+				eventRepo:        tt.fields.eventRepo,
+				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
 			err := em.handleStartedEvent(tt.args.event)
 			if (err != nil) != tt.wantErr {
@@ -412,8 +424,9 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 
 func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	type fields struct {
-		projectRepo db.ProjectRepo
-		eventRepo   db.EventRepo
+		projectRepo      db.ProjectRepo
+		eventRepo        db.EventRepo
+		taskSequenceRepo db.TaskSequenceRepo
 	}
 	type args struct {
 		event models.Event
@@ -425,7 +438,7 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "received started event with no matching triggered event",
+			name: "received finished event with no matching triggered event",
 			fields: fields{
 				projectRepo: nil,
 				eventRepo: &db_mock.EventRepoMock{
@@ -444,6 +457,11 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 						return nil
 					},
 				},
+				taskSequenceRepo: &db_mock.TaskSequenceRepoMock{GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+					return []models.TaskSequenceEvent{
+						{},
+					}, nil
+				}},
 			},
 			args: args{
 				event: fake.GetTestFinishedEventWithUnmatchedSource(),
@@ -454,8 +472,9 @@ func Test_eventManager_handleFinishedEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			em := &shipyardController{
-				projectRepo: tt.fields.projectRepo,
-				eventRepo:   tt.fields.eventRepo,
+				projectRepo:      tt.fields.projectRepo,
+				eventRepo:        tt.fields.eventRepo,
+				taskSequenceRepo: tt.fields.taskSequenceRepo,
 			}
 			if err := em.handleFinishedEvent(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("handleFinishedEvent() error = %v, wantErr %v", err, tt.wantErr)
