@@ -32,7 +32,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public serviceName: string;
   public selectedDeployment: Deployment;
   public isQualityGatesOnly: boolean;
-  private _projectTimerInterval = 30 * 1000;
   public selectedStage: string;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
@@ -55,11 +54,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       switchMap(params => this.dataService.getProject(params.projectName)),
       takeUntil(this.unsubscribe$)
       );
-
-    const timer$ = params$.pipe(
-      switchMap((params) => timer(0, this._projectTimerInterval).pipe(map(() => params.projectName))),
-      takeUntil(this.unsubscribe$)
-    );
 
     params$.pipe(take(1)).subscribe(params => {
       this.serviceName = params.serviceName;
@@ -99,10 +93,6 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       this.dataService.loadOpenRemediations(project);
       this.project = project;
       this._changeDetectorRef.markForCheck();
-    });
-
-    timer$.subscribe(projectName => {
-      this.dataService.loadProject(projectName);
     });
   }
 
