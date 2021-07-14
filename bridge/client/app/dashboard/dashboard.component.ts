@@ -9,7 +9,7 @@ import {DtOverlay} from "@dynatrace/barista-components/overlay";
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: []
 })
 export class DashboardComponent implements OnInit, OnDestroy{
   public projects$: Observable<Project[]>;

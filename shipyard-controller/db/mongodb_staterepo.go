@@ -113,8 +113,8 @@ func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bso
 		"project": filter.Project,
 	}
 
-	if filter.Shkeptncontext != "" {
-		searchOptions["shkeptncontext"] = filter.Shkeptncontext
+	if filter.KeptnContext != "" {
+		searchOptions["shkeptncontext"] = filter.KeptnContext
 	}
 
 	if filter.Name != "" {
@@ -176,8 +176,8 @@ func (mdbrepo *MongoDBStateRepo) DeleteSequenceStates(filter models.StateFilter)
 	if filter.Project == "" {
 		return errors.New("project must be set")
 	}
-	if filter.Shkeptncontext == "" {
-		return errors.New("shkeptncontext must be set")
+	if filter.KeptnContext == "" {
+		return errors.New("keptnContext must be set")
 	}
 	err := mdbrepo.DBConnection.EnsureDBConnection()
 	if err != nil {

@@ -123,8 +123,21 @@ func TestMongoDBStateRepo_FindSequenceStates(t *testing.T) {
 	err = mdbrepo.CreateSequenceState(state3)
 	require.Nil(t, err)
 
-	// Find by project name
+	// Find by keptn context
 	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:      "my-project",
+			KeptnContext: "my-context",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(1), states.TotalCount)
+	require.Equal(t, 1, len(states.States))
+	require.Equal(t, state, states.States[0])
+
+	// Find by project name
+	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project: "my-project",
 		},
@@ -222,9 +235,9 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	// first, delete any entries that might have been inserted previously
 	err := mdbrepo.DeleteSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: "my-project",
+			Project:      "my-project",
+			KeptnContext: "my-context",
 		},
-		Shkeptncontext: "my-context",
 	})
 	require.Nil(t, err)
 
@@ -233,9 +246,9 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 
 	states, err := mdbrepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: "my-project",
+			Project:      "my-project",
+			KeptnContext: "my-context",
 		},
-		Shkeptncontext: "my-context",
 	})
 
 	require.Nil(t, err)
@@ -255,9 +268,9 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	// fetch the state again
 	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: "my-project",
+			Project:      "my-project",
+			KeptnContext: "my-context",
 		},
-		Shkeptncontext: "my-context",
 	})
 
 	require.Nil(t, err)
@@ -269,17 +282,17 @@ func TestMongoDBStateRepo_StateRepoInsertAndRetrieve(t *testing.T) {
 	// delete the state
 	err = mdbrepo.DeleteSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: state.Project,
+			Project:      state.Project,
+			KeptnContext: "my-context",
 		},
-		Shkeptncontext: state.Shkeptncontext,
 	})
 	require.Nil(t, err)
 
 	states, err = mdbrepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project: "my-project",
+			Project:      "my-project",
+			KeptnContext: "my-context",
 		},
-		Shkeptncontext: "my-context",
 	})
 	require.Nil(t, err)
 	require.Equal(t, int64(0), states.TotalCount)

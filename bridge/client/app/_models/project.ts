@@ -25,8 +25,8 @@ export class Project {
       return this.services;
     } else if(!this.services && !stage) {
       this.services = [];
-      this.stages.forEach((stage: Stage) => {
-        this.services = this.services.concat(stage.services.filter(s => !this.services.some(ss => ss.serviceName == s.serviceName)));
+      this.stages.forEach((currentStage: Stage) => {
+        this.services = this.services.concat(currentStage.services.filter(s => !this.services.some(ss => ss.serviceName == s.serviceName)));
       });
       return this.services;
     } else {
@@ -52,11 +52,11 @@ export class Project {
   }
 
   getLatestDeploymentTrace(service: Service, stage?: Stage): Trace {
-    let currentService = this.getService(service.serviceName);
+    const currentService = this.getService(service.serviceName);
 
     return currentService.roots
-      ?.find(r => r.shkeptncontext == currentService.lastEventTypes[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
-      ?.findTrace(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
+      ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
+      ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {

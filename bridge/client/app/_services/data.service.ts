@@ -136,8 +136,7 @@ export class DataService {
     return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(() => {
       this.loadProjects();
       return true;
-    }), catchError((err) => {
-      console.log(err.error);
+    }), catchError(() => {
       return of(false);
     }));
   }
@@ -181,7 +180,7 @@ export class DataService {
         map(project => Project.fromJSON(project))
       ).subscribe((project: Project) => {
         const projects = this._projects.getValue();
-        const existingProject = projects.find(p => p.projectName === project.projectName);
+        const existingProject = projects?.find(p => p.projectName === project.projectName);
         if (existingProject){
           Object.assign(existingProject, project);
           this._projects.next(projects);
@@ -364,8 +363,8 @@ export class DataService {
           .subscribe(project => {
             project.stages.filter(s => root.getStages().includes(s.stageName)).forEach(stage => {
               stage.services.filter(s => root.getService() == s.serviceName).forEach(service => {
-                service.openApprovals = service.roots.reduce((openApprovals, root) => {
-                  const approval = root.getPendingApproval(stage.stageName);
+                service.openApprovals = service.roots.reduce((openApprovals, currentRoot) => {
+                  const approval = currentRoot.getPendingApproval(stage.stageName);
                   if(approval) {
                     openApprovals.push(approval);
                   }

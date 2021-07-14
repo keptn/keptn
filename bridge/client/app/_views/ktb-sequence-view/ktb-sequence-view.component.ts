@@ -12,12 +12,11 @@ import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} fr
 import {isObject} from '@dynatrace/barista-components/core';
 
 import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
-import {filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
 
 import * as moment from 'moment';
 
 import {Root} from '../../_models/root';
-import {Stage} from '../../_models/stage';
 import {Project} from '../../_models/project';
 
 import {DataService} from '../../_services/data.service';
@@ -80,7 +79,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public project$: Observable<Project>;
   public roots$: Observable<Root[]>;
   public currentSequence: Root;
-  public selectedStage: String;
+  public selectedStage: string;
 
   public _filterDataSource = new DtQuickFilterDefaultDataSource(
     this.filterFieldData,
@@ -112,11 +111,13 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         filter(project => !!project && !!project.getServices() && !!project.stages)
       )
       .subscribe(project => {
-        this.currentSequence = null;
-        this.selectedStage = null;
+        if(project.projectName !== this.project?.projectName) {
+          this.currentSequence = null;
+          this.selectedStage = null;
+          this.updateFilterDataSource(project);
+          this.dataService.loadRoots(project);
+        }
         this.project = project;
-        this.updateFilterDataSource(project);
-        this.dataService.loadRoots(project);
         this._changeDetectorRef.markForCheck();
       });
 
@@ -186,10 +187,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
 
   filtersChanged(event) {
     this._seqFilters = event.filters;
-    this.sequenceFilters = this._seqFilters.reduce((filters, filter) => {
-      if(!filters[filter[0].name])
-        filters[filter[0].name] = [];
-      filters[filter[0].name].push(filter[1].value);
+    this.sequenceFilters = this._seqFilters.reduce((filters, currentFilter) => {
+      if(!filters[currentFilter[0].name])
+        filters[currentFilter[0].name] = [];
+      filters[currentFilter[0].name].push(currentFilter[1].value);
       return filters;
     }, {});
   }

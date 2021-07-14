@@ -46,15 +46,8 @@ spec:
           value: 'http://mongodb-datastore:8080'
       - name: distributor
         image: keptn/distributor:0.8.4
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 10998
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        imagePullPolicy: Always
         ports:
-          - containerPort: 8080
+          - containerPort: 8081
         resources:
           requests:
             memory: "32Mi"

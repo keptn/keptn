@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {catchError, filter, map, startWith, switchMap, takeUntil, tap} from "rxjs/operators";
 import {Observable, Subject, timer, combineLatest, BehaviorSubject, of} from "rxjs";
+
 import {ActivatedRoute, Router} from "@angular/router";
 
 import {Project} from "../_models/project";
@@ -22,6 +23,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public project$: Observable<Project>;
   public contextId: string;
   private _rootEventsTimerInterval = 30;
+  private readonly _projectTimerInterval = 30_000;
 
   private _errorSubject: BehaviorSubject<string> = new BehaviorSubject<string>(null);
   public error$: Observable<string> = this._errorSubject.asObservable();
@@ -38,6 +40,16 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
       return urlSegment[0].path === 'create';
     }));
+
+    const timer$ = projectName$.pipe(
+      switchMap((projectName) => timer(0, this._projectTimerInterval).pipe(map(() => projectName))),
+      takeUntil(this.unsubscribe$)
+    );
+    timer$.subscribe(projectName => {
+      this.dataService.loadProject(projectName);
+      // this is on project-board level because we need the project in environment, service, sequence and settings screen
+      // sequence screen because there is a check for the latest deployment context (lastEventTypes)
+    });
 
     this.project$ = projectName$.pipe(
       switchMap(projectName => {return this.dataService.getProject(projectName)}),

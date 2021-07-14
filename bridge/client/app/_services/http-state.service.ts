@@ -7,7 +7,5 @@ import {HttpState} from "../_models/http-progress-state";
   providedIn: 'root'
 })
 export class HttpStateService {
-
   public state = new BehaviorSubject<HttpState>({} as HttpState);
-  constructor() { }
 }

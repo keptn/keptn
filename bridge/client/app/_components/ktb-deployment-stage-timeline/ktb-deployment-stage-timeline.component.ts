@@ -11,8 +11,6 @@ export class KtbDeploymentStageTimelineComponent {
   @Input() selectedStage: string;
   @Output() selectedStageChange: EventEmitter<string> = new EventEmitter<string>();
 
-  constructor() { }
-
   public selectStage(stage: string): void {
     if (this.selectedStage !== stage) {
       this.selectedStage = stage;

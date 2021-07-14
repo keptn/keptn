@@ -58,7 +58,7 @@ function isAuthenticated(req) {
 function setAuthenticatedSession(req, principal, logoutHint) {
 
   if (!principal) {
-    throw 'Invalid session initialisation. Principal is mandatory.';
+    throw Error('Invalid session initialisation. Principal is mandatory.');
   }
 
   req.session.authenticated = true;

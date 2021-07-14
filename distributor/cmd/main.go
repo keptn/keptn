@@ -63,6 +63,8 @@ var env config.EnvConfig
 
 var ceClient cloudevents.Client
 
+const xTokenHeader = "x-token"
+
 func main() {
 	if err := envconfig.Process("", &env); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
@@ -151,8 +153,8 @@ func shallRegister(env config.EnvConfig) bool {
 
 func createUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
-		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
-		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, xTokenHeader, nil, "http")
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, xTokenHeader, nil, "http")
 		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
@@ -268,7 +270,7 @@ func APIProxyHandler(rw http.ResponseWriter, req *http.Request) {
 
 	if env.KeptnAPIToken != "" {
 		logger.Debug("Adding x-token header to HTTP request")
-		forwardReq.Header.Add("x-token", env.KeptnAPIToken)
+		forwardReq.Header.Add(xTokenHeader, env.KeptnAPIToken)
 	}
 
 	client := getHTTPClient()
@@ -416,7 +418,7 @@ func forwardEventToAPI(event cloudevents.Event) error {
 
 	if env.KeptnAPIToken != "" {
 		logger.Debug("Adding x-token header to HTTP request")
-		req.Header.Add("x-token", env.KeptnAPIToken)
+		req.Header.Add(xTokenHeader, env.KeptnAPIToken)
 	}
 
 	client := getHTTPClient()
@@ -586,7 +588,7 @@ func getEventsFromEndpoint(endpoint string, token string, topic string) ([]*kept
 		}
 		req.Header.Set("Content-Type", "application/json")
 		if token != "" {
-			req.Header.Add("x-token", token)
+			req.Header.Add(xTokenHeader, token)
 		}
 
 		resp, err := httpClient.Do(req)

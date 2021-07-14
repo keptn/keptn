@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.0
 	github.com/go-openapi/swag v0.19.14
 	github.com/go-openapi/validate v0.20.2
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/keptn/go-utils v0.8.5
 	github.com/keptn/kubernetes-utils v0.8.4-0.20210630130009-8242bbef5723

@@ -354,7 +354,7 @@ class Trace {
     return this.findTrace(t => t.isRemediationAction());
   }
 
-  getEvaluation(stageName: String): Trace {
+  getEvaluation(stageName: string): Trace {
     return this.findTrace(t => t.isEvaluation() !== null && t.getStage() === stageName);
   }
 
@@ -414,11 +414,11 @@ class Trace {
     return traces.reduce((seq: Trace[], trace: Trace) => {
       let trigger: Trace = null;
       if(trace.triggeredid) {
-        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => t.id == trace.triggeredid), null);
+        trigger = traces.reduce((acc, r) => acc || r.findTrace((t) => t.id == trace.triggeredid), null);
       } else if(trace.isProblem() && trace.isProblemResolvedOrClosed()) {
-        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()), null);
+        trigger = traces.reduce((acc, r) => acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()), null);
       } else if(trace.isFinished()) {
-        trigger = traces.reduce((trigger, r) => trigger || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)), null);
+        trigger = traces.reduce((acc, r) => acc || r.findTrace((t) => !t.triggeredid && t.type.slice(0, -8) === trace.type.slice(0, -9)), null);
       }
 
       if (trigger) {
@@ -426,7 +426,9 @@ class Trace {
       } else if (trace.isSequence()) {
         seq.push(trace);
       } else if(seq.length > 0) {
-        seq[seq.length-1].traces.push(trace);
+        seq.reduce((lastSeq, s) => {
+         return s.getStage() === trace.getStage() ? s : lastSeq
+        }, null)?.traces.push(trace);
       } else {
         seq.push(trace);
       }
