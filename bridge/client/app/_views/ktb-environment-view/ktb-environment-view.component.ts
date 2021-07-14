@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {filter, map, startWith, switchMap, takeUntil} from "rxjs/operators";
 import {Observable, Subject, timer} from "rxjs";
 import {ActivatedRoute} from "@angular/router";

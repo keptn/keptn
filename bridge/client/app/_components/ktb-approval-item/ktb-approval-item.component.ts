@@ -47,9 +47,4 @@ export class KtbApprovalItemComponent {
     this.dataService.sendApprovalEvent(approval, result);
     this.approvalResult = result;
   }
-
-  public getDeploymentEvaluation(project: Project): Trace | undefined {
-    return this.isSequence ? project.getDeploymentEvaluationOfSequence(this.event) : project.getDeploymentEvaluation(this.event);
-  }
-
 }

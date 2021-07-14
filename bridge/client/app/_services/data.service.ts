@@ -14,6 +14,9 @@ import {UniformRegistrationLog} from '../_models/uniform-registration-log';
 import {Secret} from '../_models/secret';
 import { Root } from '../_models/root';
 import { DateUtil } from '../_utils/date.utils';
+import { HttpResponse } from '@angular/common/http';
+import { SequenceResult } from '../_models/sequence-result';
+import { EventResult } from '../_models/event-result';
 
 @Injectable({
   providedIn: 'root'
@@ -317,22 +320,16 @@ export class DataService {
     this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
       .pipe(
         map(response => {
-          const lastUpdated = moment(response.headers.get('date'));
-          const lastEvent = response.body.states[0] ? moment(response.body.states[0]?.time) : null;
-          this._sequencesLastUpdated[project.projectName] = (lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+          this.updateSequencesUpdated(response, project.projectName);
           return response.body;
         }),
         map(body => {
           return [body.states.map(sequence => Sequence.fromJSON(sequence)), body.totalCount ?? body.states.length];
         }),
       ).subscribe(([sequences, totalCount]: [Sequence[], number]) => {
-        if (beforeTime) { // indicates that old sequences have been loaded
-          project.sequences = [...project.sequences || [], ...sequences || [], ...(oldSequence ? [oldSequence] : [])];
-        }
-        else {
-          project.sequences = [...sequences || [], ...project.sequences || []];
-        }
-        if (!fromTime && !beforeTime && project.sequences.length >= totalCount || beforeTime && !fromTime && totalCount < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE) {
+        this.addNewSequences(project, sequences, !!beforeTime, oldSequence);
+
+        if (this.allSequencesLoaded(project.sequences.length, totalCount, fromTime, beforeTime)) {
           project.allSequencesLoaded = true;
         }
         project.stages.forEach(stage => {
@@ -340,6 +337,31 @@ export class DataService {
         });
         this._sequences.next(project.sequences);
     });
+  }
+
+  private addNewSequences(project: Project, newSequences: Sequence[], areOldSequences: boolean, oldSequence?: Sequence) {
+    if (areOldSequences) {
+      project.sequences = [...project.sequences || [], ...newSequences || [], ...(oldSequence ? [oldSequence] : [])];
+    }
+    else {
+      project.sequences = [...newSequences || [], ...project.sequences || []];
+    }
+  }
+
+  private updateSequencesUpdated(response: HttpResponse<SequenceResult>, projectName: string): void {
+    const lastUpdated = moment(response.headers.get('date'));
+    const lastEvent = response.body.states[0] ? moment(response.body.states[0]?.time) : null;
+    this._sequencesLastUpdated[projectName] = (lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+  }
+
+  private updateTracesUpdated(response: HttpResponse<EventResult>, keptnContext: string) {
+    const lastUpdated = moment(response.headers.get('date'));
+    const lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
+    this._tracesLastUpdated[keptnContext] = (lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+  }
+
+  private allSequencesLoaded(sequences: number, totalCount: number, fromTime?: Date, beforeTime?: Date): boolean {
+    return fromTime && !beforeTime && sequences >= totalCount || beforeTime && !fromTime && totalCount < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE;
   }
 
   public getRoot(projectName: string, shkeptncontext: string): Observable<Root> {
@@ -418,9 +440,7 @@ export class DataService {
     this.apiService.getTraces(sequence.shkeptncontext, sequence.project, fromTime?.toISOString())
       .pipe(
         map(response => {
-          const lastUpdated = moment(response.headers.get('date'));
-          const lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
-          this._tracesLastUpdated[sequence.shkeptncontext] = (lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+          this.updateTracesUpdated(response, sequence.shkeptncontext);
           return response.body;
         }),
         map(result => result.events || []),
@@ -525,9 +545,7 @@ export class DataService {
           return this.apiService.getTraces(sequence.shkeptncontext, sequence.project)
             .pipe(
               map(response => {
-                const lastUpdated = moment(response.headers.get('date'));
-                const lastEvent = response.body.events[0] ? moment(response.body.events[0]?.time) : null;
-                this._tracesLastUpdated[sequence.shkeptncontext] = (lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+                this.updateTracesUpdated(response, sequence.shkeptncontext);
                 return response.body;
               }),
               map(result => result.events || []),

@@ -3,7 +3,6 @@ import {Trace} from './trace';
 import { Deployment } from './deployment';
 import {EventTypes} from './event-types';
 import {Sequence} from './sequence';
-import {EvaluationResult} from './evaluation-result';
 
 export class Service {
   serviceName: string;

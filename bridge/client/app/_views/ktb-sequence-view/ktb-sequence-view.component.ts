@@ -11,9 +11,8 @@ import {ActivatedRoute, Params, Router} from '@angular/router';
 import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} from '@dynatrace/barista-components/quick-filter';
 import {isObject} from '@dynatrace/barista-components/core';
 import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
-import { filter, map, startWith, switchMap, take, takeUntil, takeWhile } from 'rxjs/operators';
+import { filter, map, startWith, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
 import * as moment from 'moment';
-import {Stage} from '../../_models/stage';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
 import {DateUtil} from '../../_utils/date.utils';
@@ -146,7 +145,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
         takeWhile( ([params]) => !this.currentSequence && params.shkeptncontext)
       )
       .subscribe(([params, sequences]: [Params, Sequence[]]) => {
-        
+
         if(params.shkeptncontext) {
           const sequence = sequences.find(s => s.shkeptncontext === params.shkeptncontext);
           const stage = params.eventId ? sequence?.traces.find(t => t.id === params.eventId)?.getStage() : params.stage;

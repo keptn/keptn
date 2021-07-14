@@ -98,16 +98,10 @@ export class Project {
     return service.roots.find(root => root.shkeptncontext === event.shkeptncontext);
   }
 
-  getDeploymentEvaluation(trace: Trace): Trace {
+  getDeploymentEvaluation(trace: Trace, isSequence: boolean): Trace {
     const service = this.getServices().find(s => s.serviceName === trace.data.service);
-    const root = this.getRootEvent(service, trace);
+    const root = (isSequence ? this.getSequence : this.getRootEvent)(service, trace);
     return root?.findLastTrace(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
-  }
-
-  getDeploymentEvaluationOfSequence(trace: Trace): Trace {
-    const service = this.getServices().find(s => s.serviceName === trace.data.service);
-    const sequence = this.getSequence(service, trace);
-    return sequence?.findLastTrace(t => t.isEvaluation() && t.isFinished())?.getFinishedEvent();
   }
 
   private setDeployments() {

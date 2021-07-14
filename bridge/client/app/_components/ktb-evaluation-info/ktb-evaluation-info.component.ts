@@ -10,7 +10,7 @@ import {EvaluationResult} from '../../_models/evaluation-result';
   templateUrl: './ktb-evaluation-info.component.html',
   styleUrls: ['./ktb-evaluation-info.component.scss']
 })
-export class KtbEvaluationInfoComponent implements OnInit, OnDestroy {
+export class KtbEvaluationInfoComponent {
   private _evaluationResult: EvaluationResult;
   public isError: boolean;
   public isWarning: boolean;

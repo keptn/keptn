@@ -123,9 +123,15 @@ export class Sequence {
   }
 
   public getIcon(stageName?: string): string {
-    return this.state === 'waiting' ? EVENT_ICONS.waiting
-      : EVENT_ICONS[Sequence.getShortType((stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1])?.latestEvent.type)]
-        || DEFAULT_ICON;
+    let icon;
+    if (this.state === 'waiting') {
+      icon = EVENT_ICONS.waiting;
+    }
+    else {
+      const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
+      icon = EVENT_ICONS[Sequence.getShortType(stage?.latestEvent.type)] || DEFAULT_ICON;
+    }
+    return icon;
   }
 
   public getShortImageName(): string | null {
