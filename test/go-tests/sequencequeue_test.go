@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
+	"sync"
 	"testing"
 	"time"
 )
@@ -212,6 +213,22 @@ func Test_SequenceQueue(t *testing.T) {
 		}
 		return true
 	}, 1*time.Minute, 10*time.Second)
+
+	// Scenario 4: start a couple of task sequences and verify their completion
+
+	verifySequenceCompletion := func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		context = triggerSequence(t, projectName, serviceName, "staging", "evaluation")
+		VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceFinished)
+	}
+	nrOfSequences := 100
+	var wg sync.WaitGroup
+	wg.Add(nrOfSequences)
+
+	for i := 0; i < nrOfSequences; i++ {
+		go verifySequenceCompletion(&wg)
+	}
+	wg.Wait()
 }
 
 func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {

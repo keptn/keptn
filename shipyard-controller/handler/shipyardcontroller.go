@@ -936,6 +936,8 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventScope, taskSequenceName string, task models.Task, eventHistory []interface{}) error {
+	common.LockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service)
+	defer common.UnlockServiceInStageOfProject(eventScope.Project, eventScope.Stage, eventScope.Service)
 	eventPayload := map[string]interface{}{}
 
 	eventPayload["project"] = eventScope.Project
