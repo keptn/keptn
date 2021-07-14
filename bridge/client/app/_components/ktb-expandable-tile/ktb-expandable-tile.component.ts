@@ -4,7 +4,6 @@ import {
   Component,
   Directive,
   Input,
-  OnInit,
   ViewEncapsulation
 } from '@angular/core';
 
@@ -37,7 +36,7 @@ export class KtbExpandableTileHeader {}
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbExpandableTileComponent implements OnInit {
+export class KtbExpandableTileComponent {
 
   private _error = false;
   private _success = false;
@@ -127,9 +126,6 @@ export class KtbExpandableTileComponent implements OnInit {
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }
-
-  ngOnInit() {
-  }
 
   toggle() {
     this.expanded = !this.expanded;

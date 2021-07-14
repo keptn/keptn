@@ -6,7 +6,7 @@ import {Subject} from "rxjs";
 @Component({
   selector: 'ktb-no-service-info',
   templateUrl: './ktb-no-service-info.component.html',
-  styleUrls: ['./ktb-no-service-info.component.scss']
+  styleUrls: []
 })
 export class KtbNoServiceInfoComponent implements OnInit, OnDestroy {
   private unsubscribe$: Subject<void> = new Subject();

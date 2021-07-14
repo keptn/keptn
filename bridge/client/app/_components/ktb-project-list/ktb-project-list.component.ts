@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input} from '@angular/core';
 import {Project} from "../../_models/project";
 
 @Component({
@@ -6,7 +6,7 @@ import {Project} from "../../_models/project";
   templateUrl: './ktb-project-list.component.html',
   styleUrls: ['./ktb-project-list.component.scss']
 })
-export class KtbProjectListComponent implements OnInit {
+export class KtbProjectListComponent {
 
   public _projects: Project[];
 
@@ -22,7 +22,4 @@ export class KtbProjectListComponent implements OnInit {
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef) { }
-
-  ngOnInit() {
-  }
 }

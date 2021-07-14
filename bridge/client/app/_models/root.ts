@@ -116,7 +116,7 @@ export class Root extends Trace {
     return this.data.service;
   }
 
-  getEvaluation(stageName: String): Trace {
+  getEvaluation(stageName: string): Trace {
     return this.findLastTrace(trace => trace.type == EventTypes.EVALUATION_TRIGGERED && trace.data.stage == stageName && trace.traces.some(t => t.type == EventTypes.EVALUATION_STARTED));
   }
 

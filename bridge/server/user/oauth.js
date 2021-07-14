@@ -37,8 +37,8 @@ module.exports = (async () => {
   const discoveryEndpoint = process.env.OAUTH_DISCOVERY;
 
   if (!discoveryEndpoint) {
-    throw 'OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-    ' Please check your environment variables.';
+    throw Error('OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+    ' Please check your environment variables.');
   }
 
   const discoveryResp = await axios({
@@ -47,15 +47,15 @@ module.exports = (async () => {
   })
 
   if (discoveryResp.status !== 200) {
-    throw `Invalid oauth service discovery response. Received status : ${discoveryResp.statusText}.`;
+    throw Error(`Invalid oauth service discovery response. Received status : ${discoveryResp.statusText}.`);
   }
 
   if (!discoveryResp.data.hasOwnProperty(AUTHORIZATION)) {
-    throw 'OAuth service discovery must contain the authorization endpoint.';
+    throw Error('OAuth service discovery must contain the authorization endpoint.');
   }
 
   if (!discoveryResp.data.hasOwnProperty(TOKEN_DECISION)) {
-    throw 'OAuth service discovery must contain the token_decision endpoint.';
+    throw Error('OAuth service discovery must contain the token_decision endpoint.');
   }
 
   const authorizationEndpoint = discoveryResp.data[AUTHORIZATION];

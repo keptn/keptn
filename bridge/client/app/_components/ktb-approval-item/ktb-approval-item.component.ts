@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, Input} from '@angular/core';
 import { Trace } from '../../_models/trace';
 import {Observable} from "rxjs";
 import {Project} from "../../_models/project";
