@@ -118,7 +118,7 @@ func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri stri
 	if existingProject.GitRemoteURI != uri || existingProject.GitUser != user {
 		existingProject.GitRemoteURI = uri
 		existingProject.GitUser = user
-		if err := m.updateProject(existingProject); err != nil {
+		if err := m.UpdateProject(existingProject); err != nil {
 			log.Errorf("could not update upstream credentials of project %s: %s", projectName, err.Error())
 			return err
 		}
@@ -141,24 +141,6 @@ func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
 		return err
 	}
 	fmt.Println("Deleted project " + projectName)
-	return nil
-}
-
-func (m *MongoDBProjectsRepo) updateProject(project *models.ExpandedProject) error {
-	err := m.DBConnection.EnsureDBConnection()
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	prjInterface := transformProjectToInterface(project)
-	projectCollection := m.getProjectsCollection()
-	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
-	if err != nil {
-		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
-		return err
-	}
 	return nil
 }
 

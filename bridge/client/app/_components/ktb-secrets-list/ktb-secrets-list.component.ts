@@ -1,10 +1,8 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute} from '@angular/router';
-import {DtSort, DtTableDataSource} from "@dynatrace/barista-components/table";
-import {Observable, Subject} from "rxjs";
-import {UniformRegistration} from "../../_models/uniform-registration";
-import {takeUntil} from "rxjs/operators";
+import {DtTableDataSource} from "@dynatrace/barista-components/table";
+import {Subject} from "rxjs";
 import {Secret} from "../../_models/secret";
 
 @Component({
