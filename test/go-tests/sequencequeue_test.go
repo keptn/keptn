@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 const sequenceQueueShipyard = `--- 
@@ -28,6 +29,17 @@ spec:
           tasks: 
             - 
               name: mytask
+
+		-
+          name: delivery-with-approval
+		  tasks:
+		    -
+			  name: approval
+			  properties:
+			    pass: "manual"
+                warning: "manual"
+			-
+			  name: mytask
     - 
       name: staging
       sequences: 
@@ -56,10 +68,13 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
+	// ------------------------------------
+	// Scenario 1: make sure sequences are queued correctly
+	// ------------------------------------
 	// trigger the task sequence
 	context := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
-	// wait for the recreated state to be available
+	// wait for the sequence state to be available
 	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState)
 	t.Log("received the expected state!")
 
@@ -106,7 +121,10 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, triggeredEventOfSecondSequence)
 
-	// test if sequences are triggered correctly after a timeout
+	// ------------------------------------
+	// Scenario 2: test if sequences are triggered correctly after a timeout
+	// ------------------------------------
+
 	err = setShipyardControllerTaskTimeout(t, "10s")
 	defer func() {
 		// increase the timeout value again
@@ -117,7 +135,6 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// trigger the first task sequence - this should time out
 	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
 	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut)
 	t.Log("received the expected state!")
 
@@ -128,6 +145,73 @@ func Test_SequenceQueue(t *testing.T) {
 	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("mytask"))
 	require.Nil(t, err)
 	require.NotNil(t, triggeredEventOfSecondSequence)
+
+	// ------------------------------------
+	// Scenario 3: special case approval: once an approval has been triggered, another sequence should take over
+	// ------------------------------------
+
+	// increase the task timeout again
+	err = setShipyardControllerTaskTimeout(t, "20m")
+	require.Nil(t, err)
+	t.Log("starting delivery-with-approval sequence")
+	context = triggerSequence(t, projectName, serviceName, "dev", "delivery-with-approval")
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState)
+
+	// check if approval.triggered has been sent for sequence - now it should be available
+	approvalTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
+	require.Nil(t, err)
+	require.NotNil(t, triggeredEventOfSecondSequence)
+
+	// send the approval.started event to make sure the sequence will not be cancelled due to a timeout
+	approvalTriggeredCE := keptnv2.ToCloudEvent(*approvalTriggeredEvent)
+	keptnHandler, err := keptnv2.NewKeptn(&approvalTriggeredCE, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+
+	_, err = keptnHandler.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// now let's trigger the other sequence
+	secondContext = triggerSequence(t, projectName, serviceName, "dev", "delivery")
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState)
+
+	// check if approval.triggered has been sent for sequence - now it should be available
+	myTaskTriggeredEvent, err := GetLatestEventOfType(*secondContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, err)
+	require.NotNil(t, myTaskTriggeredEvent)
+
+	myTaskCE := keptnv2.ToCloudEvent(*myTaskTriggeredEvent)
+	secondKeptnHandler, err := keptnv2.NewKeptn(&myTaskCE, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+
+	// send the mytask.started event
+	_, err = secondKeptnHandler.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// now let's send the approval.finished event - the next task should now be queued until the other sequence has been finished
+	_, err = keptnHandler.SendTaskFinishedEvent(&keptnv2.EventData{Result: keptnv2.ResultPass, Status: keptnv2.StatusSucceeded}, source)
+	require.Nil(t, err)
+
+	// wait a bit to make sure mytask.triggered of first sequence is not sent
+	<-time.After(10 * time.Second)
+	myTaskTriggeredEventOfFirstSequence, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
+	require.Nil(t, err)
+	require.Nil(t, myTaskTriggeredEventOfFirstSequence)
+
+	// now let's finish mytask of the second sequence
+	_, err = secondKeptnHandler.SendTaskFinishedEvent(&keptnv2.EventData{Status: keptnv2.StatusSucceeded, Result: keptnv2.ResultPass}, source)
+	require.Nil(t, err)
+
+	// this should have completed the task sequence
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceFinished)
+
+	// now the mytask.triggered event for the second sequence should eventually become available
+	require.Eventually(t, func() bool {
+		event, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
+		if err != nil || event == nil {
+			return false
+		}
+		return true
+	}, 1*time.Minute, 10*time.Second)
 }
 
 func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {
