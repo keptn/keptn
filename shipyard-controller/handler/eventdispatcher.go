@@ -66,7 +66,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 		return err
 	}
 
-	if e.theClock.Now().UTC().After(event.TimeStamp) {
+	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
 		// try to send event immediately
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
@@ -164,9 +164,30 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	}
 	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
 	/// if there is another sequence running in the stage, we cannot send the event
-	if areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
-		log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service)
-		return errOtherActiveSequencesRunning
+	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
+
+	for _, tasksOfContext := range tasksGroupedByContext {
+		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
+		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
+			// if there is a sequence running that is not waiting for an approval, we need to block
+			// check if the item is still in the queue - if yes, this is not a reason to block
+			queuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
+			if err != nil {
+				log.Debugf("could not fetch event queue: %s", err.Error())
+			}
+			eventFoundInQueue := false
+			for _, event := range queuedEvents {
+				if event.EventID == lastTaskOfSequence.TriggeredEventID {
+					eventFoundInQueue = true
+					continue
+				}
+			}
+			if eventFoundInQueue {
+				continue
+			}
+			log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s - blocked by event %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service, lastTaskOfSequence.TriggeredEventID)
+			return errOtherActiveSequencesRunning
+		}
 	}
 
 	return e.eventSender.SendEvent(event.Event)

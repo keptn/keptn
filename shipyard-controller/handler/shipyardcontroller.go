@@ -408,8 +408,9 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	sc.onSequenceTriggered(event)
 	if sc.sequenceDispatcher != nil {
 		if err := sc.sequenceDispatcher.Add(models.QueueItem{
-			Scope:   *eventScope,
-			EventID: event.ID,
+			Scope:     *eventScope,
+			EventID:   event.ID,
+			Timestamp: time.Now().UTC(),
 		}); err != nil {
 			return err
 		}
@@ -616,7 +617,7 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		log.Infof("Retrieving all .triggered events of project %s with filter: %s", project.ProjectName, printObject(filter))
+		//log.Infof("Retrieving all .triggered events of project %s with filter: %s", project.ProjectName, printObject(filter))
 		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
@@ -626,7 +627,7 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 }
 
 func (sc *shipyardController) GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error) {
-	log.Infof("Retrieving all .triggered events with filter: %s", printObject(filter))
+	//log.Infof("Retrieving all .triggered events with filter: %s", printObject(filter))
 	return sc.eventRepo.GetEvents(project, filter, common.TriggeredEvent)
 }
 
@@ -920,7 +921,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
 
-	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event})
+	return common.SendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
@@ -932,7 +933,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 		sc.onSubSequenceFinished(*toEvent)
 	}
 
-	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event})
+	return common.SendEvent(event)
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventScope, taskSequenceName string, task models.Task, eventHistory []interface{}) error {
@@ -978,18 +979,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		return err
 	}
 
-	if err := sc.taskSequenceRepo.CreateTaskSequenceMapping(eventScope.Project, models.TaskSequenceEvent{
-		TaskSequenceName: taskSequenceName,
-		TriggeredEventID: event.ID(),
-		Stage:            eventScope.Stage,
-		Service:          eventScope.Service,
-		KeptnContext:     eventScope.KeptnContext,
-		Task:             task,
-	}); err != nil {
-		log.Errorf("Could not store mapping between eventID and task: %s", err.Error())
-		return err
-	}
-
 	sendTaskTimestamp := time.Now().UTC()
 	if task.TriggeredAfter != "" {
 		if duration, err := time.ParseDuration(task.TriggeredAfter); err == nil {
@@ -1002,7 +991,18 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 	}
 	storeEvent.Time = timeutils.GetKeptnTimeStamp(sendTaskTimestamp)
 	sc.onSequenceTaskTriggered(*storeEvent)
-	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: sendTaskTimestamp, Event: event})
+	if err := sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: sendTaskTimestamp, Event: event}); err != nil {
+		return err
+	}
+
+	return sc.taskSequenceRepo.CreateTaskSequenceMapping(eventScope.Project, models.TaskSequenceEvent{
+		TaskSequenceName: taskSequenceName,
+		TriggeredEventID: event.ID(),
+		Stage:            eventScope.Stage,
+		Service:          eventScope.Service,
+		KeptnContext:     eventScope.KeptnContext,
+		Task:             task,
+	})
 }
 
 // GetCachedShipyard returns the shipyard that is stored for the project in the materialized view, instead of pulling it from the upstream

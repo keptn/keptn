@@ -87,7 +87,6 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
-
 	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
 		Stage:   queuedSequence.Scope.Stage,
 		Service: queuedSequence.Scope.Service,
@@ -135,7 +134,7 @@ func areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequen
 
 	for _, tasksOfContext := range tasksGroupedByContext {
 		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
-		if lastTaskOfSequence.Name != keptnv2.ApprovalTaskName {
+		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
 			// if there is a sequence running that is not waiting for an approval, we need to block
 			return true
 		}
@@ -152,13 +151,13 @@ func groupSequenceMappingsByContext(sequenceTasks []models.TaskSequenceEvent) ma
 	return result
 }
 
-func getLastTaskOfSequence(sequenceTasks []models.TaskSequenceEvent) models.Task {
-	lastTask := models.Task{
-		TaskIndex: -1,
+func getLastTaskOfSequence(sequenceTasks []models.TaskSequenceEvent) models.TaskSequenceEvent {
+	lastTask := models.TaskSequenceEvent{
+		Task: models.Task{TaskIndex: -1},
 	}
 	for index := range sequenceTasks {
-		if sequenceTasks[index].Task.TaskIndex > lastTask.TaskIndex {
-			lastTask = sequenceTasks[index].Task
+		if sequenceTasks[index].Task.TaskIndex > lastTask.Task.TaskIndex {
+			lastTask = sequenceTasks[index]
 		}
 	}
 
