@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -14,7 +16,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"time"
 )
 
 const maxRepoReadRetries = 30
@@ -42,7 +43,7 @@ type shipyardController struct {
 	sequenceTaskFinishedHooks  []sequencehooks.ISequenceTaskFinishedHook
 	subSequenceFinishedHooks   []sequencehooks.ISubSequenceFinishedHook
 	sequenceFinishedHooks      []sequencehooks.ISequenceFinishedHook
-	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
+	sequenceTimeoutHooks       []sequencehooks.ISequenceTimeoutHook
 }
 
 func GetShipyardControllerInstance(eventDispatcher IEventDispatcher) *shipyardController {
@@ -88,7 +89,7 @@ func (sc *shipyardController) AddSequenceFinishedHook(hook sequencehooks.ISequen
 }
 
 func (sc *shipyardController) AddSequenceTimeoutHook(hook sequencehooks.ISequenceTimeoutHook) {
-	sc.sequenceTimoutHooks = append(sc.sequenceTimoutHooks, hook)
+	sc.sequenceTimeoutHooks = append(sc.sequenceTimeoutHooks, hook)
 }
 
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
@@ -128,7 +129,7 @@ func (sc *shipyardController) onSequenceFinished(event models.Event) {
 }
 
 func (sc *shipyardController) onSequenceTimeout(event models.Event) {
-	for _, hook := range sc.sequenceTimoutHooks {
+	for _, hook := range sc.sequenceTimeoutHooks {
 		hook.OnSequenceTimeout(event)
 	}
 }
