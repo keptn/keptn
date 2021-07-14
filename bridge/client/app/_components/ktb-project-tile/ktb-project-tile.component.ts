@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy} from '@angular/core';
 import {Project} from "../../_models/project";
 import {filter, takeUntil} from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
@@ -10,7 +10,7 @@ import {Subject} from 'rxjs';
   templateUrl: './ktb-project-tile.component.html',
   styleUrls: ['./ktb-project-tile.component.scss']
 })
-export class KtbProjectTileComponent implements OnInit, OnDestroy {
+export class KtbProjectTileComponent implements OnDestroy {
 
   public _project: Project;
   public supportedShipyardVersion: string;
@@ -35,9 +35,6 @@ export class KtbProjectTileComponent implements OnInit, OnDestroy {
       ).subscribe(keptnInfo => {
         this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
       });
-  }
-
-  ngOnInit() {
   }
 
   ngOnDestroy(): void {

@@ -2,7 +2,6 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit
 import {filter, map, startWith, switchMap, takeUntil} from "rxjs/operators";
 import {Observable, Subject, timer} from "rxjs";
 import {ActivatedRoute} from "@angular/router";
-
 import {Project} from '../../_models/project';
 import {DataService} from "../../_services/data.service";
 

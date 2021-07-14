@@ -1,7 +1,4 @@
 import {ChangeDetectorRef, Component, Input, Output, EventEmitter} from '@angular/core';
-import {Root} from '../../_models/root';
-import {ActivatedRoute} from '@angular/router';
-import {Subject} from 'rxjs';
 import {Sequence} from '../../_models/sequence';
 
 @Component({
@@ -11,15 +8,15 @@ import {Sequence} from '../../_models/sequence';
 })
 export class KtbSequenceTimelineComponent{
   private _currentSequence: Sequence;
-  public _selectedStage: String;
+  public _selectedStage: string;
 
-  @Output() selectedStageChange: EventEmitter<String> = new EventEmitter();
+  @Output() selectedStageChange: EventEmitter<string> = new EventEmitter();
 
   @Input()
-  get selectedStage(): String {
+  get selectedStage(): string {
     return this._selectedStage;
   }
-  set selectedStage(stage: String) {
+  set selectedStage(stage: string) {
     if(this._selectedStage !== stage) {
       this._selectedStage = stage;
     }
@@ -35,13 +32,13 @@ export class KtbSequenceTimelineComponent{
     }
   }
 
-  selectStage(stage: String) {
+  selectStage(stage: string) {
     if (this.selectedStage !== stage) {
       this.stageChanged(stage);
     }
   }
 
-  stageChanged(stageName: String) {
+  stageChanged(stageName: string) {
     this.selectedStage = stageName;
     this._changeDetectorRef.markForCheck();
     this.selectedStageChange.emit(stageName);

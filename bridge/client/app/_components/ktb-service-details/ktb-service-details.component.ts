@@ -11,7 +11,7 @@ import {
 import {Deployment} from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {defaultIfEmpty, filter, takeUntil} from 'rxjs/operators';
+import {defaultIfEmpty, takeUntil} from 'rxjs/operators';
 import {forkJoin, Subject} from 'rxjs';
 import {Trace} from '../../_models/trace';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';

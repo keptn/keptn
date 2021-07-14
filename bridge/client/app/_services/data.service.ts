@@ -133,10 +133,10 @@ export class DataService {
   }
 
   public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<boolean> {
-    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(res => {
+    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(() => {
       this.loadProjects();
       return true;
-    }), catchError((err) => {
+    }), catchError(() => {
       return of(false);
     }));
   }
@@ -199,7 +199,7 @@ export class DataService {
         )
       ).subscribe((projects: Project[]) => {
       this._projects.next(projects);
-    }, (err) => {
+    }, () => {
       this._projects.next([]);
     });
   }
@@ -480,7 +480,7 @@ export class DataService {
     return this.apiService.getEvaluationResult(shkeptncontext)
       .pipe(
         map(result => result.events || []),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(t => true))
+        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(() => true))
       );
   }
 
@@ -552,8 +552,8 @@ export class DataService {
   private stageRootMapper(stage: Stage, project: Project) {
     stage.services.forEach(service => {
       service.roots = project.roots.filter(s => s.getService() === service.serviceName && s.getStages().includes(stage.stageName));
-      service.openApprovals = service.roots.reduce((openApprovals, root) => {
-        const approval = root.getPendingApproval(stage.stageName);
+      service.openApprovals = service.roots.reduce((openApprovals, currentRoot) => {
+        const approval = currentRoot.getPendingApproval(stage.stageName);
         if (approval) {
           openApprovals.push(approval);
         }

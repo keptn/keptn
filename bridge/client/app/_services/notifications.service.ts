@@ -10,8 +10,6 @@ export class NotificationsService {
 
   private _notifications = new BehaviorSubject<Notification[]>([]);
 
-  constructor() { }
-
   get notifications(): Observable<Notification[]> {
     return this._notifications.asObservable();
   }

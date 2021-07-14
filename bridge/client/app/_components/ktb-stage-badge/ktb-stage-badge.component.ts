@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 import {Trace} from '../../_models/trace';
 import {Stage} from '../../_models/stage';
@@ -9,7 +9,7 @@ import {EvaluationResult} from '../../_models/evaluation-result';
   templateUrl: './ktb-stage-badge.component.html',
   styleUrls: ['./ktb-stage-badge.component.scss'],
 })
-export class KtbStageBadgeComponent implements OnInit, OnDestroy {
+export class KtbStageBadgeComponent {
 
   @Input() public evaluation: Trace;
   @Input() public evaluationResult: EvaluationResult;
@@ -20,13 +20,4 @@ export class KtbStageBadgeComponent implements OnInit, OnDestroy {
   @Input() public warning = false;
   @Input() public success = false;
   @Input() public highlight = false;
-
-  constructor() { }
-
-  ngOnInit() {
-  }
-
-  ngOnDestroy(): void {
-  }
-
 }

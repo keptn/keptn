@@ -29,7 +29,7 @@ import {Subject} from 'rxjs';
 export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
 
   public _tasks: Trace[] = [];
-  public _stage: String;
+  public _stage: string;
   public _focusedEventId: string;
   private readonly unsubscribe$ = new Subject<void>();
 
@@ -46,10 +46,10 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
   }
 
   @Input()
-  get stage(): String {
+  get stage(): string {
     return this._stage;
   }
-  set stage(value: String) {
+  set stage(value: string) {
     if (this._stage !== value) {
       this._stage = value;
       this._changeDetectorRef.markForCheck();
@@ -109,7 +109,7 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
       this.focusedEventId = this.tasks.slice().reverse().find(t => t.getStage() == this.stage)?.id;
   }
 
-  getTasksByStage(tasks: Trace[], stage: String) {
+  getTasksByStage(tasks: Trace[], stage: string) {
     return tasks.filter(t => t.data?.stage === stage);
   }
 

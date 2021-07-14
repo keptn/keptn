@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Directive, OnInit, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Directive, ViewEncapsulation} from '@angular/core';
 
 @Directive({
   selector: `ktb-horizontal-separator-title, [ktb-horizontal-separator-title], [ktbHorizontalSeparatorTitle]`,
@@ -17,11 +17,4 @@ export class KtbHorizontalSeparatorTitle {}
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbHorizontalSeparatorComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit() {
-  }
-
-}
+export class KtbHorizontalSeparatorComponent {}

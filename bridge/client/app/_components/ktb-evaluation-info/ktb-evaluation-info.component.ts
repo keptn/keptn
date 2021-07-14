@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
 
 import {Trace} from '../../_models/trace';
@@ -34,13 +34,4 @@ export class KtbEvaluationInfoComponent implements OnInit, OnDestroy {
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
   };
-
-  constructor() { }
-
-  ngOnInit() {
-  }
-
-  ngOnDestroy(): void {
-  }
-
 }

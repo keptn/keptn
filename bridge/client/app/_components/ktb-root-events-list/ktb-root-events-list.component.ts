@@ -77,7 +77,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectEvent(sequence: Sequence, stage?: String) {
+  selectEvent(sequence: Sequence, stage?: string) {
     this.selectedEvent = sequence;
     this.selectedEventChange.emit({ sequence, stage });
   }
