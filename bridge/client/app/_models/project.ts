@@ -25,8 +25,8 @@ export class Project {
       return this.services;
     } else if(!this.services && !stage) {
       this.services = [];
-      this.stages.forEach((stage: Stage) => {
-        this.services = this.services.concat(stage.services.filter(s => !this.services.some(ss => ss.serviceName == s.serviceName)));
+      this.stages.forEach((currentStage: Stage) => {
+        this.services = this.services.concat(currentStage.services.filter(s => !this.services.some(ss => ss.serviceName == s.serviceName)));
       });
       return this.services;
     } else {

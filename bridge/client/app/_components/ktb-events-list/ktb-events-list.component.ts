@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewEncapsulation} from '@angular/core';
 import {Trace} from "../../_models/trace";
 import {Router} from "@angular/router";
 import {Location} from "@angular/common";
@@ -14,7 +14,7 @@ import {Location} from "@angular/common";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbEventsListComponent implements OnInit {
+export class KtbEventsListComponent {
 
   public _events: Trace[] = [];
   public _focusedEventId: string;
@@ -42,9 +42,6 @@ export class KtbEventsListComponent implements OnInit {
   }
 
   constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
-
-  ngOnInit() {
-  }
 
   identifyEvent(index, item) {
     return item ? item.time : null;

@@ -4,7 +4,6 @@ import {
   Component,
   Directive,
   Input,
-  OnInit,
   ViewEncapsulation
 } from '@angular/core';
 
@@ -37,7 +36,7 @@ export class KtbSelectableTileHeader {}
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSelectableTileComponent implements OnInit {
+export class KtbSelectableTileComponent {
 
   private _selected = false;
   private _disabled = false;
@@ -114,9 +113,5 @@ export class KtbSelectableTileComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) { }
-
-  ngOnInit() {
-  }
-
+  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
 }

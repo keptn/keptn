@@ -8,7 +8,7 @@ import {Service} from '../../_models/service';
 import {Root} from '../../_models/root';
 
 import {DataService} from '../../_services/data.service';
-import {filter, takeUntil} from 'rxjs/operators';
+import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 
 @Component({

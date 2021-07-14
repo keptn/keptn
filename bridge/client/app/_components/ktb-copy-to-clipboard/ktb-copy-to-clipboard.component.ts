@@ -2,9 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Directive,
   Input,
-  OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {Platform} from '@angular/cdk/platform';

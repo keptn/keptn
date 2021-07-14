@@ -7,10 +7,10 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, forkJoin, Subject, timer } from 'rxjs';
-import { map, switchMap, take, takeUntil } from 'rxjs/operators';
-import { Project } from '../../_models/project';
-import { DataService } from '../../_services/data.service';
+import { combineLatest, Subject } from 'rxjs';
+import { switchMap, take, takeUntil} from 'rxjs/operators';
+import {Project} from '../../_models/project';
+import {DataService} from '../../_services/data.service';
 import { Deployment } from 'client/app/_models/deployment';
 import { Location } from '@angular/common';
 

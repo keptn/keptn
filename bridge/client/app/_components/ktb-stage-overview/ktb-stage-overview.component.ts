@@ -131,8 +131,8 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
   }
 
   private getServicesOfFilter(event: any): string[] {
-    return event.filters.reduce((services, filter) => {
-      services.push(filter[1].name);
+    return event.filters.reduce((services, currentFilter) => {
+      services.push(currentFilter[1].name);
       return services;
     }, []);
   }

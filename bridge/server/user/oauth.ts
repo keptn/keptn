@@ -33,7 +33,7 @@ async function oauthRouter() {
   const discoveryEndpoint = process.env.OAUTH_DISCOVERY;
 
   if (!discoveryEndpoint) {
-    throw Error ('OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+    throw Error('OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
     ' Please check your environment variables.');
   }
 

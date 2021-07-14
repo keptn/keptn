@@ -13,7 +13,7 @@ export class ClipboardService {
   copy(serializable: JsonSerializable, label = 'value'): void {
     const value = this.stringify(serializable);
     if (navigator && 'clipboard' in navigator && typeof navigator.clipboard.writeText === 'function') {
-      void navigator.clipboard.writeText(value);
+      navigator.clipboard.writeText(value);
     } else {
       const textarea = document.createElement('textarea');
       textarea.value = value;

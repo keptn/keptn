@@ -9,7 +9,7 @@ import {DtToast} from "@dynatrace/barista-components/toast";
 @Component({
   selector: 'ktb-settings-view',
   templateUrl: './ktb-settings-view.component.html',
-  styleUrls: ['./ktb-settings-view.component.scss']
+  styleUrls: []
 })
 export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
