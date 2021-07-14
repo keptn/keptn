@@ -4,22 +4,22 @@
     <p class="mt-0 mb-2">
       Your project needs a <a [href]="'/manage/shipyard/' | keptnUrl">Shipyard</a>. Add a file from your filesystem or drag & drop it here it add it to your project.
     </p>
-    <div ktbDragAndDrop (onDropped)="updateFile($event)" (onError)="dropError.innerText = $event" [allowedExtensions]="this.allowedExtensions">
+    <div ktbDragAndDrop (onDropped)="updateFile($event)" (onError)="handleDragAndDropError($event)" [allowedExtensions]="this.allowedExtensions">
       <p>Drag and drop a file here<br/>or</p>
       <button dt-button (click)="shipyardFileInput.click()">Select a file</button>
-      <input hidden type="file" #shipyardFileInput (change)="validateAndUpdateFile($event.target.files)">
+      <input id="shipyard-file-input" hidden type="file" #shipyardFileInput (change)="validateAndUpdateFile($event.target.files)">
       <p class="drop-error" #dropError></p>
     </div>
 
     <div *ngIf="shipyardFile" fxFlex="row" class="mt-2" fxLayoutAlign="space-between center">
-      <div>{{ shipyardFile.name }}</div>
-      <button dt-icon-button>
-        <dt-icon name="delete" (click)="updateFile(null)"></dt-icon>
+      <div class="shipyard-file-name">{{ shipyardFile.name }}</div>
+      <button dt-icon-button class="shipyard-delete-button" (click)="updateFile(null)">
+        <dt-icon name="delete"></dt-icon>
       </button>
     </div>
   </div>
 
   <div class="ml-3" *ngIf="!isCreateMode">
-    <button dt-button [disabled]="!shipyardFile">Update Shipyard</button>
+    <button class="shipyard-upload-button" dt-button [disabled]="!shipyardFile">Update Shipyard</button>
   </div>
 </div>

@@ -1,5 +1,5 @@
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {FormUtils} from "../../_utils/form.utils";
+import {FormUtils} from '../../_utils/form.utils';
 
 @Component({
   selector: 'ktb-project-settings-shipyard',
@@ -13,17 +13,21 @@ export class KtbProjectSettingsShipyardComponent implements OnInit {
   public isCreateMode: boolean;
 
   @Output()
-  private shipyardFileChanged: EventEmitter<File> = new EventEmitter();
+  public shipyardFileChanged: EventEmitter<File> = new EventEmitter();
 
   @ViewChild('dropError')
   private dropError: ElementRef;
 
-  public shipyardFile: File;
+  public shipyardFile: File | null;
 
   constructor() {
   }
 
   ngOnInit(): void {
+  }
+
+  public handleDragAndDropError(error: string) {
+    this.dropError.nativeElement.innerText = error;
   }
 
   public updateFile(files: FileList) {
@@ -35,7 +39,7 @@ export class KtbProjectSettingsShipyardComponent implements OnInit {
     this.shipyardFileChanged.emit(this.shipyardFile);
   }
 
-  validateAndUpdateFile(files: FileList) {
+  public validateAndUpdateFile(files: FileList) {
     if (files && files.length > 0) {
       if (!FormUtils.isFile(files[0])) {
         this.dropError.nativeElement.innerText = 'Please select only files';

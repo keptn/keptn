@@ -14,7 +14,7 @@ function MockDataTransfer(files) {
   this.effectAllowed = 'all';
   this.items = [];
   this.types = ['Files'];
-  this.getData = function() {
+  this.getData = () => {
     return files;
   };
   this.files = [... files];

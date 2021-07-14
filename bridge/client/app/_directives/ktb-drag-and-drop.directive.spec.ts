@@ -1,5 +1,5 @@
-import { KtbDragAndDropDirective } from './ktb-drag-and-drop.directive';
-import {TestUtils} from "../_utils/test.utils";
+import {KtbDragAndDropDirective} from './ktb-drag-and-drop.directive';
+import {TestUtils} from '../_utils/test.utils';
 
 describe('KtbDragAndDropDirective', () => {
   let directive: KtbDragAndDropDirective;
@@ -17,11 +17,11 @@ describe('KtbDragAndDropDirective', () => {
     directive.multiple = false;
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml'), new File(['test'], 'test2.yaml')]);
 
-    //when
+    // when
     const emitSpy = spyOn(directive.onError, 'emit');
     directive.onDrop(event);
 
-    //then
+    // then
     expect(emitSpy).toHaveBeenCalled();
     expect(emitSpy.calls.mostRecent().args[0]).toEqual('Please select only one file');
   });
@@ -31,11 +31,11 @@ describe('KtbDragAndDropDirective', () => {
     directive.multiple = true;
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml'), new File(['test'], 'test2.yaml')]);
 
-    //when
+    // when
     const emitSpy = spyOn(directive.onDropped, 'emit');
     directive.onDrop(event);
 
-    //then
+    // then
     expect(emitSpy).toHaveBeenCalled();
     expect(emitSpy.calls.mostRecent().args[0].length).toEqual(2);
     expect(emitSpy.calls.mostRecent().args[0][0].name).toEqual('test1.yaml');
@@ -49,55 +49,55 @@ describe('KtbDragAndDropDirective', () => {
     });
     const event = TestUtils.createNewDropEventWithFiles([file]);
 
-    //when
+    // when
     const emitSpy = spyOn(directive.onError, 'emit');
     directive.onDrop(event);
 
-    //then
+    // then
     expect(emitSpy).toHaveBeenCalled();
     expect(emitSpy.calls.mostRecent().args[0]).toEqual('Please select only files');
   });
 
   it('should allow only a predefined set of file extensions when given', () => {
     // given
-    const allowedExtensions =  ['yaml', 'yml'];
+    const allowedExtensions = ['yaml', 'yml'];
     directive.allowedExtensions = allowedExtensions;
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.pdf')]);
 
-    //when
+    // when
     const emitSpy = spyOn(directive.onError, 'emit');
     directive.onDrop(event);
 
-    //then
+    // then
     expect(emitSpy).toHaveBeenCalled();
     expect(emitSpy.calls.mostRecent().args[0]).toEqual(`Only ${allowedExtensions.join(', ')} files allowed`);
   });
 
   it('should should allow only a predefined set of file extensions also for multiple files', () => {
     // given
-    const allowedExtensions =  ['yaml', 'yml'];
+    const allowedExtensions = ['yaml', 'yml'];
     directive.allowedExtensions = allowedExtensions;
     directive.multiple = true;
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.pdf'), new File(['test'], 'test2.png')]);
 
-    //when
+    // when
     const emitSpy = spyOn(directive.onError, 'emit');
     directive.onDrop(event);
 
-    //then
+    // then
     expect(emitSpy).toHaveBeenCalled();
     expect(emitSpy.calls.mostRecent().args[0]).toEqual(`Only ${allowedExtensions.join(', ')} files allowed`);
   });
 
   it('should allow all file extensions when not set', () => {
-    //given
+    // given
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.jpeg')]);
 
-    //when
+    // when
     const emitSpy = spyOn(directive.onDropped, 'emit');
     directive.onDrop(event);
 
-    //then
+    // then
     expect(emitSpy).toHaveBeenCalled();
     expect(emitSpy.calls.mostRecent().args[0].length).toEqual(1);
     expect(emitSpy.calls.mostRecent().args[0][0].name).toEqual('test.jpeg');
