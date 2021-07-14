@@ -101,9 +101,10 @@ import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-se
 import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 
 import { AppInitService } from "./_services/app.init";
-import {KtbSecretsListComponent} from "./_components/ktb-secrets-list/ktb-secrets-list.component";
-import {KtbCreateSecretFormComponent} from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
+import { KtbSecretsListComponent } from "./_components/ktb-secrets-list/ktb-secrets-list.component";
+import { KtbCreateSecretFormComponent } from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
+import { KtbSequenceStateListComponent } from "./_components/ktb-sequence-state-list/ktb-sequence-state-list.component";
 
 registerLocaleData(localeEn, 'en');
 
@@ -154,6 +155,7 @@ export function init_app(appLoadService: AppInitService) {
     KeptnUrlPipe,
     KtbSliBreakdownCriteriaItemComponent,
     KtbServicesListComponent,
+    KtbSequenceStateListComponent,
     KtbUserComponent,
     KtbUniformViewComponent,
     KtbKeptnServicesListComponent,
