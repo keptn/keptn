@@ -9,7 +9,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.6.4
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.7
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/keptn/go-utils v0.8.5
