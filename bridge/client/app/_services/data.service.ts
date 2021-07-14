@@ -31,6 +31,7 @@ export class DataService {
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<any>(null);
   protected _changedDeployments = new BehaviorSubject<Deployment[]>([]);
+  protected _sequences = new BehaviorSubject<Sequence[]>(null);
   protected _rootsLastUpdated: { [key: string]: Date } = {};
   protected _sequencesLastUpdated: { [key: string]: Date } = {};
   protected _tracesLastUpdated: { [key: string]: Date } = {};
@@ -85,6 +86,10 @@ export class DataService {
 
   get changedDeployments(): Observable<Deployment[]> {
     return this._changedDeployments.asObservable();
+  }
+
+  get sequences(): Observable<Sequence[]> {
+    return this._sequences.asObservable();
   }
 
   get isQualityGatesOnly(): Observable<boolean> {
@@ -182,6 +187,7 @@ export class DataService {
     this.apiService.setVersionCheck(enabled);
     this.loadKeptnInfo();
   }
+
 
   public loadProject(projectName: string) {
     this.apiService.getProject(projectName)
@@ -540,6 +546,23 @@ export class DataService {
       )
       .subscribe(taskNames => {
       this._taskNames.next(taskNames);
+    });
+  }
+
+  public loadSequences(project: Project, pageSize: number) {
+    this.apiService.getSequences(project.projectName, null, null, null, null, pageSize)
+      .pipe(
+        map(response => response.body),
+        map(sequenceResult => sequenceResult.states),
+        map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)).sort((sA, sB) => moment(sA.time).isBefore(sB.time) ? -1 : 1))
+      ).subscribe((newSequenceStates: Sequence[]) => {
+      project.sequenceStates = project.sequenceStates.map(sequence => newSequenceStates.find(s => s.shkeptncontext == sequence.shkeptncontext) || sequence);
+      newSequenceStates.forEach(sequenceState => {
+        if(project.sequenceStates.length == 0 || moment(sequenceState.time).isAfter(project.sequenceStates[0].time))
+          project.sequenceStates.unshift(sequenceState);
+      });
+
+      this._sequences.next(newSequenceStates);
     });
   }
 

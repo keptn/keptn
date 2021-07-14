@@ -7,7 +7,7 @@ import { Deployment } from './deployment';
 import {EventTypes} from "./event-types";
 import moment from 'moment';
 import {DeploymentStage} from './deployment-stage';
-import {Sequence} from './sequence';
+import {Sequence} from "./sequence";
 
 export class Project {
   projectName: string;
@@ -22,21 +22,10 @@ export class Project {
   roots: Root[] = [];
   sequences: Sequence[] = [];
 
-  static fromJSON(data: any) {
-    const project = Object.assign(new this(), data);
-    project.stages = project.stages.map(stage => {
-      stage.services = stage.services.map(service => {
-        service.stage = stage.stageName;
-        return Service.fromJSON(service);
-      });
-      return Stage.fromJSON(stage);
-    });
-    project.setDeployments();
-    return project;
-  }
+  sequenceStates: Sequence[];
 
-  getServices(byStage?: Stage): Service[] {
-    if (this.services && !byStage) {
+  getServices(stage?: Stage): Service[] {
+    if(this.services && !stage) {
       return this.services;
     } else if (!this.services && !byStage) {
       this.services = [];
@@ -162,5 +151,19 @@ export class Project {
       }
       return stages;
     }, [null]);
+  }
+
+  static fromJSON(data: any) {
+    const project = Object.assign(new this(), data);
+    project.stages = project.stages.map(stage => {
+      stage.services = stage.services.map(service => {
+        service.stage = stage.stageName;
+        return Service.fromJSON(service);
+      });
+      return Stage.fromJSON(stage);
+    });
+    project.setDeployments();
+    project.sequenceStates = [];
+    return project;
   }
 }
