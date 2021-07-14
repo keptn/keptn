@@ -4,7 +4,7 @@
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
         <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [class.highlight]="_event.isApproval()" [name]="_event.getIcon()"></dt-icon>
         <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
-        <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+        <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank" [title]="'View ' + _event.getService() + ' in ' + _event.getStage()"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
       </div>
       <div *ngIf="_event.data.canary">
         <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
@@ -19,8 +19,8 @@
     <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-event-item-contextButtons">
       <div fxLayout="row" fxLayoutAlign="start start">
         <p *ngIf="showTime" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
-        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished() || showChartLink"><dt-icon name="chart-bar"></dt-icon></button>
-        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-payload" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
+        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" title="Evaluation board" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished() || showChartLink"><dt-icon name="chart-bar"></dt-icon></button>
+        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-payload" title="Event payload" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
       </div>
     </div>
   </div>

@@ -138,6 +138,12 @@ func (c *GeneratedChartGenerator) generateServices(svc *corev1.Service, project 
 	if _, ok := servicePrimary.Spec.Selector["app.kubernetes.io/name"]; ok {
 		servicePrimary.Spec.Selector["app.kubernetes.io/name"] = servicePrimary.Spec.Selector["app.kubernetes.io/name"] + "-primary"
 	}
+	if _, ok := servicePrimary.ObjectMeta.Labels["app"]; ok {
+		servicePrimary.ObjectMeta.Labels["app"] = servicePrimary.ObjectMeta.Labels["app"] + "-primary"
+	}
+	if _, ok := servicePrimary.ObjectMeta.Labels["app.kubernetes.io/name"]; ok {
+		servicePrimary.ObjectMeta.Labels["app.kubernetes.io/name"] = servicePrimary.ObjectMeta.Labels["app.kubernetes.io/name"] + "-primary"
+	}
 	resetService(servicePrimary)
 	data, err = yaml.Marshal(servicePrimary)
 	if err != nil {

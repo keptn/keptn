@@ -1,4 +1,4 @@
-    
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -47,7 +47,7 @@ spec:
           - name: ENVIRONMENT
             value: 'production'
       - name: distributor
-        image: keptn/distributor:latest
+        image: keptn/distributor:0.8.4
         imagePullPolicy: Always
         ports:
           - containerPort: 8080

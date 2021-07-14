@@ -67,6 +67,10 @@ To enable it within your Kubernetes cluster, we recommend first creating a secre
 kubectl -n keptn scale deployment bridge --replicas=0
 kubectl -n keptn scale deployment bridge --replicas=1
 ```
+#### Throttling
+Per default login attempts are throttled to 10 requests within 60 minutes. This behavior can be adjusted with the following environment variables:
+* `REQUESTS_WITHIN_TIME` - how many login attempts in which timespan `REQUEST_TIME_LIMIT` (in minutes) are allowed per IP.
+* `CLEAN_BUCKET_INTERVAL` - the interval (in minutes) the saved login attempts should be checked and deleted if the last request of an IP is older than `REQUEST_TIME_LIMIT` minutes. Default is 60 minutes.
 
 ### Custom Look And Feel
 

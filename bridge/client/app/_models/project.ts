@@ -52,11 +52,11 @@ export class Project {
   }
 
   getLatestDeploymentTrace(service: Service, stage?: Stage): Trace {
-    let currentService = this.getService(service.serviceName);
+    const currentService = this.getService(service.serviceName);
 
     return currentService.roots
-      ?.find(r => r.shkeptncontext == currentService.lastEventTypes[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
-      ?.findTrace(trace => stage ? trace.isDeployment() == stage.stageName : !!trace.isDeployment());
+      ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
+      ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {

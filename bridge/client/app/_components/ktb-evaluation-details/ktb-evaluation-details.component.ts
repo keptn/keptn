@@ -199,12 +199,11 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   set evaluationData(evaluationData: Trace) {
     if (this._evaluationData !== evaluationData) {
+      this._selectedEvaluationData = evaluationData.id === this._evaluationData?.id ? this._selectedEvaluationData : null;
       this._evaluationData = evaluationData;
       this._chartSeries = [];
-      this._heatmapSeries = [];
       this._metrics = ['Score'];
       this._heatmapOptions.yAxis[0].categories = ['Score'];
-      this._selectedEvaluationData = null;
       this.evaluationDataChanged();
       this._changeDetectorRef.markForCheck();
     }
@@ -219,15 +218,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       .subscribe((results) => {
         if (results.type == "evaluationHistory" && results.triggerEvent == this.evaluationData) {
           this.evaluationData.data.evaluationHistory = [...results.traces || [], ...this.evaluationData.data.evaluationHistory || []].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-          this.updateChartData(this.evaluationData.data.evaluationHistory);
         } else if (results.type == "invalidateEvaluation" &&
           this.evaluationData.data.project == results.triggerEvent.data.project &&
           this.evaluationData.data.service == results.triggerEvent.data.service &&
           this.evaluationData.data.stage == results.triggerEvent.data.stage) {
           this.evaluationData.data.evaluationHistory = this.evaluationData.data.evaluationHistory.filter(e => e.id != results.triggerEvent.id);
-          this._selectedEvaluationData = null;
-          this.updateChartData(this.evaluationData.data.evaluationHistory);
         }
+        this._selectedEvaluationData = this._selectedEvaluationData ? this.evaluationData.data.evaluationHistory.find(h => h.id === this._selectedEvaluationData.id) : null;
+        this.updateChartData(this.evaluationData.data.evaluationHistory);
       });
   }
 
@@ -522,7 +520,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         });
       if(secondaryHighlightIndexes) {
         const index = secondaryHighlightIndexes.find(idx => idx >= 0);
-        this.comparedIndicatorResults = this._heatmapSeries[0]?.data[index]['evaluation'].data.evaluation.indicatorResults ?? [];
+        this.comparedIndicatorResults = index >= 0 ? this._heatmapSeries[0]?.data[index]['evaluation'].data.evaluation.indicatorResults ?? [] : [];
 
         secondaryHighlightIndexes.forEach(secondaryHighlightIndex => {
           if (secondaryHighlightIndex >= 0)

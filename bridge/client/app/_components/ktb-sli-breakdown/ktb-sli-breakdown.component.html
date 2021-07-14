@@ -82,12 +82,15 @@
 
   <ng-container dtColumnDef="score" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Score</dt-header-cell>
-    <dt-cell *dtCellDef="let row">
+    <dt-cell *dtCellDef="let row" [dtOverlay]="scoreOverlay">
       <ng-container *ngIf="toSliResult(row) as result">
         <span *ngIf="result.success" [class.error]="result.result === 'fail'" [class.warning]="result.result === 'warning'"
               [textContent]="result.score"></span>
       </ng-container>
     </dt-cell>
+    <ng-template #scoreOverlay>
+      The score represents the portion an SLI contributes to the overall evaluation result between 0 and 100
+    </ng-template>
   </ng-container>
 
 
