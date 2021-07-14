@@ -47,7 +47,20 @@ spec:
           name: delivery
           tasks: 
             - 
-              name: mytask`
+              name: mytask
+    - 
+      name: qg
+      sequences: 
+        - 
+          name: evaluation
+          tasks: 
+            - 
+              name: approval
+              properties: 
+                pass: automatic
+                warning: automatic
+            - 
+              name: evaluation`
 
 func Test_SequenceQueue(t *testing.T) {
 	projectName := "sequence-queue"
@@ -214,12 +227,14 @@ func Test_SequenceQueue(t *testing.T) {
 		return true
 	}, 1*time.Minute, 10*time.Second)
 
+	// ----------------------------
 	// Scenario 4: start a couple of task sequences and verify their completion
+	// ----------------------------
 
 	verifySequenceCompletion := func(wg *sync.WaitGroup) {
 		defer wg.Done()
-		context = triggerSequence(t, projectName, serviceName, "staging", "evaluation")
-		VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceFinished)
+		context := triggerSequence(t, projectName, serviceName, "qg", "evaluation")
+		VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceFinished)
 	}
 	nrOfSequences := 100
 	var wg sync.WaitGroup
@@ -242,6 +257,7 @@ func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequence
 				Project: projectName,
 				Stage:   stageName,
 				Service: serviceName,
+				Result:  keptnv2.ResultPass,
 			},
 		},
 		ID:                 uuid.NewString(),
