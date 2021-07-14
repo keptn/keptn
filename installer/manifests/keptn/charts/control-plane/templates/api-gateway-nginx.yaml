@@ -306,13 +306,13 @@ spec:
               path: /nginx-health
               port: 8080
             initialDelaySeconds: 15
-            periodSeconds: 10
+            periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /nginx-health
               port: 8080
             initialDelaySeconds: 10
-            periodSeconds: 10
+            periodSeconds: 5
           volumeMounts:
             - mountPath: /etc/nginx/nginx.conf # mount api-nginx-config volume to /etc/nginx
               subPath: nginx.conf

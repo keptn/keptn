@@ -10,12 +10,20 @@
       </div>
     </div>
   </div>
-  <div class="m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
+  <div class="chart-container m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
     <dt-chart class="mr-2" #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'" uitestid="keptn-evaluation-details-chartHeatmap"
               [options]="_heatmapOptions"
               [series]="_heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
+
+    <button dt-button variant="secondary" class="button-show-more-slo" *ngIf="!isHeatmapExtended && isHeatmapExtendable && _comparisonView == 'heatmap'" (click)="toggleHeatmap()">
+      <dt-icon name="sorter2-down"></dt-icon> Show all SLIs
+    </button>
+    <button dt-button variant="secondary" class="button-show-more-slo" *ngIf="isHeatmapExtended && isHeatmapExtendable && _comparisonView == 'heatmap'" (click)="toggleHeatmap()">
+      <dt-icon name="sorter2-up"></dt-icon> Collapse to 10 SLIs
+    </button>
+
     <dt-chart *ngIf="showChart && _comparisonView == 'chart'" uitestid="keptn-evaluation-details-chartSeries"
               [options]="_chartOptions"
               [series]="_chartSeries"
@@ -91,7 +99,11 @@
         <p class="m-0" *ngIf="_selectedEvaluationData.data.result != _selectedEvaluationData.data.evaluation.result" [textContent]="_selectedEvaluationData.data.evaluation.result"></p>
       </dt-consumption-label>
     </dt-consumption>
-    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults" [score]="_selectedEvaluationData.data.evaluation.score" [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults"></ktb-sli-breakdown>
+    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults"
+                       [comparedIndicatorResults]="comparedIndicatorResults"
+                       [score]="_selectedEvaluationData.data.evaluation.score"
+                       [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults">
+    </ktb-sli-breakdown>
   </div>
 </div>
 <ng-template #sloDialog let-data>

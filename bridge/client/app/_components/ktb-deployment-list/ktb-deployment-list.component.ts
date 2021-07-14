@@ -34,6 +34,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   public loading = false;
 
   @Output() selectedDeploymentChange: EventEmitter<Deployment> = new EventEmitter();
+  @Output() selectedStageChange: EventEmitter<string> = new EventEmitter();
 
   @Input()
   get service(): Service {
@@ -78,27 +79,6 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
 
     combineLatest([params$, project$]).subscribe(([params, project]) => {
       this.projectName = project.projectName;
-      if (params.shkeptncontext && this.service.serviceName === params.serviceName) {
-        const paramDeployment = this.service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
-        const changedDeployment = this.selectedDeployment && this.service.deployments.filter(deployment => deployment.name === this.selectedDeployment.name); // the context of a deployment may change
-
-        if (paramDeployment) {
-          this.selectDeployment(paramDeployment, !params.stage);
-        } else if (changedDeployment?.length > 0) {
-          let deployment;
-          if (changedDeployment.length === 1) {
-            deployment = changedDeployment[0];
-          } else {
-            deployment = changedDeployment.find(d => d.stages.some(s => this.selectedDeployment.stages.some(sd => s.stageName === sd.stageName)));
-          }
-          if (deployment) {
-            this.selectDeployment(deployment, true);
-          }
-        } else {
-          const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', params.serviceName]);
-          this.location.go(routeUrl.toString());
-        }
-      }
       this.minPageSize = this.service.deployments.length;
       this.updateDataSource();
     });
@@ -110,23 +90,20 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.markForCheck();
   }
 
-  public selectDeployment(deployment: Deployment, redirect = true): void {
-    if (this.selectedDeployment?.shkeptncontext !== deployment.shkeptncontext) {
+  public selectDeployment(deployment: Deployment, stageName?: string): void {
+    if (this.selectedDeployment?.shkeptncontext !== deployment.shkeptncontext || stageName) {
       this.selectedDeployment = deployment;
-
-      if (redirect) {
-        const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', deployment.service, 'context', deployment.shkeptncontext]);
-        this.location.go(routeUrl.toString());
-      }
       this.selectedDeploymentChange.emit(this.selectedDeployment);
+      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', deployment.service, 'context', deployment.shkeptncontext, ...(stageName ? ['stage', stageName] : [])]);
+      this.location.go(routeUrl.toString());
+      this.selectedStageChange.emit(stageName || deployment.stages[deployment.stages.length - 1].stageName);
       this._changeDetectorRef.markForCheck();
     }
   }
 
   public selectStage(deployment: Deployment, stageName: string, $event) {
     $event.stopPropagation();
-    this.selectDeployment(deployment, false);
-    this.router.navigate(['/', 'project', this.projectName, 'service', this.service.serviceName, 'context', deployment.shkeptncontext, 'stage', stageName]);
+    this.selectDeployment(deployment, stageName);
     this._changeDetectorRef.markForCheck();
   }
 

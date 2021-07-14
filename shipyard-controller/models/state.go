@@ -3,6 +3,7 @@ package models
 const (
 	SequenceTriggeredState = "triggered"
 	SequenceFinished       = "finished"
+	TimedOut               = "timedOut"
 )
 
 type GetSequenceStateParams struct {
@@ -41,11 +42,15 @@ type GetSequenceStateParams struct {
 	  In: query
 	*/
 	BeforeTime string `form:"beforeTime" json:"beforeTime"`
+
+	/** Keptn context
+	  In: query
+	*/
+	KeptnContext string `form:"keptnContext" json:"keptnContext"`
 }
 
 type StateFilter struct {
 	GetSequenceStateParams
-	Shkeptncontext string
 }
 
 type SequenceStateEvaluation struct {

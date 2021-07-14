@@ -70,7 +70,7 @@ export class Project {
     const currentService = this.getService(service.serviceName);
 
     return currentService.roots
-      ?.find(r => r.shkeptncontext === currentService.lastEventTypes[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
+      ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
       ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
   }
 
@@ -78,7 +78,7 @@ export class Project {
     const currentService = this.getService(service.serviceName);
 
     return currentService.sequences
-      ?.find(r => r.shkeptncontext === currentService.lastEventTypes[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
+      ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
       ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
   }
 

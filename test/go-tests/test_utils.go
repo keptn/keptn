@@ -182,6 +182,10 @@ func RestartPod(deploymentName string) error {
 	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
 }
 
+func WaitForPodOfDeployment(deploymentName string) error {
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+}
+
 func CreateTmpShipyardFile(shipyardContent string) (string, error) {
 	return CreateTmpFile("shipyard-*.yaml", shipyardContent)
 }

@@ -13,7 +13,7 @@
           </div>
         </div>
       </dt-info-group-title>
-      <p class="m-0" *ngIf="root.data.configurationChange?.values"><span class="bold">Artifact: </span><span [textContent]="root.data.configurationChange.values.image"></span></p>
+      <p class="m-0" *ngIf="root.data.configurationChange?.values"><span class="bold">Artifact: </span><span [textContent]="root.getConfigurationChangeImage()"></span></p>
       <p class="m-0 mb-3"><span class="bold">Context: </span><span [textContent]="root.shkeptncontext"></span></p>
     </dt-info-group>
     <div *ngFor="let evaluation of evaluations;">

@@ -55,6 +55,9 @@ bridge:
     trustProxy: ""
 
 distributor:
+  metadata:
+    hostname:
+    namespace:
   image:
     repository: docker.io/keptn/distributor
     tag: ""
@@ -63,6 +66,8 @@ shipyardController:
   image:
     repository: docker.io/keptn/shipyard-controller
     tag: ""
+  config:
+    taskStartedWaitDuration: "10m"
 
 secretService:
   image:

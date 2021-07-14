@@ -30,11 +30,11 @@
         <div class="task-buttons" fxLayout="row" fxLayoutAlign="start start">
           <ng-container *ngIf="_task.isDeployment() && _task.isFinished()">
             <a *ngFor="let deploymentURIPublic of _task.getFinishedEvent().data?.deployment?.deploymentURIsPublic" [href]="deploymentURIPublic" target="_blank">
-              <button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button>
+              <button dt-icon-button variant="nested" [title]="'View ' + _task.getService() + ' in ' + _task.getStage()"><dt-icon name="externallink"></dt-icon></button>
             </a>
           </ng-container>
-          <button dt-icon-button variant="nested" [routerLink]="['/evaluation', _task.shkeptncontext, _task.getStage()]" *ngIf="_task.isEvaluation() && _task.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
-          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event, _task)"><dt-icon name="coding"></dt-icon></button>
+          <button dt-icon-button variant="nested" title="Evaluation board" [routerLink]="['/evaluation', _task.shkeptncontext, _task.getStage()]" *ngIf="_task.isEvaluation() && _task.isFinished()"><dt-icon name="chart-bar"></dt-icon></button>
+          <button dt-icon-button variant="nested" title="Event payload" (click)="showEventPayloadDialog($event, _task)"><dt-icon name="coding"></dt-icon></button>
         </div>
       </div>
     </div>
@@ -87,7 +87,7 @@
           <pre class="m-0 small overflow-auto" *ngIf="subTask.data.message" [textContent]="subTask.data.message"></pre>
         </div>
         <div fxLayout="column" fxLayoutAlign="start end">
-          <button dt-icon-button variant="nested" (click)="showEventPayloadDialog($event, subTask)"><dt-icon name="coding"></dt-icon></button>
+          <button dt-icon-button variant="nested" title="Event payload" (click)="showEventPayloadDialog($event, subTask)"><dt-icon name="coding"></dt-icon></button>
         </div>
       </div>
     </ng-template>

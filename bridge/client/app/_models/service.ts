@@ -11,7 +11,7 @@ export class Service {
   stage: string;
   allDeploymentsLoaded = false;
   deployments: Deployment[] = [];
-  lastEventTypes: {[key: string]: {eventId: string, keptnContext: string, time: number}};
+  lastEventTypes?: {[key: string]: {eventId: string, keptnContext: string, time: number}};
 
   sequences: Sequence[] = [];
   roots: Root[] = [];

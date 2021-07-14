@@ -26,8 +26,8 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "return 500 in case of an error",
 			fields: fields{
-				ShipyardController: &fake.ShipyardController{
-					HandleIncomingEventFunc: func(event models.Event) error {
+				ShipyardController: &fake.IShipyardControllerMock{
+					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
 						return errors.New("")
 					},
 				},
@@ -38,8 +38,8 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "return 400 on invalid event payload",
 			fields: fields{
-				ShipyardController: &fake.ShipyardController{
-					HandleIncomingEventFunc: func(event models.Event) error {
+				ShipyardController: &fake.IShipyardControllerMock{
+					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
 						return errNoMatchingEvent
 					},
 				},
