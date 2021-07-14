@@ -48,10 +48,11 @@ func Test_SequenceTimeout(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
-	setShipyardControllerTaskTimeout(t, "10s")
+	err = setShipyardControllerTaskTimeout(t, "10s")
 	defer func() {
-		setShipyardControllerTaskTimeout(t, "20m")
+		_ = setShipyardControllerTaskTimeout(t, "20m")
 	}()
+	require.Nil(t, err)
 
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
 
@@ -90,8 +91,6 @@ func Test_SequenceTimeout(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut)
 	t.Log("received the expected state!")
 }
-
-
 
 func setShipyardControllerTaskTimeout(t *testing.T, timeoutValue string) error {
 	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller TASK_STARTED_WAIT_DURATION=%s", GetKeptnNameSpaceFromEnv(), timeoutValue))
