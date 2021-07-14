@@ -10,7 +10,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/go-utils v0.8.6-0.20210713144415-b56c91afd065
 	github.com/keptn/kubernetes-utils v0.8.4-0.20210630130009-8242bbef5723
 	github.com/kinbiko/jsonassert v1.0.1
 	github.com/stretchr/testify v1.7.0
