@@ -32,7 +32,7 @@ type SequenceDispatcher struct {
 func NewSequenceDispatcher(
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
-	sequenceStateRepo db.TaskSequenceRepo,
+	sequenceRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
 	eventChannel chan models.Event,
 	theClock clock.Clock,
@@ -41,7 +41,7 @@ func NewSequenceDispatcher(
 	return &SequenceDispatcher{
 		eventRepo:     eventRepo,
 		sequenceQueue: sequenceQueueRepo,
-		sequenceRepo:  sequenceStateRepo,
+		sequenceRepo:  sequenceRepo,
 		theClock:      theClock,
 		syncInterval:  syncInterval,
 		eventChannel:  eventChannel,
@@ -87,6 +87,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
+
 	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
 		Stage:   queuedSequence.Scope.Stage,
 		Service: queuedSequence.Scope.Service,
@@ -96,7 +97,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	/// if there is a sequence running in the stage, we cannot trigger this sequence yet
-	if areSequencesBlockingQueuedSequences(runningSequencesInStage) {
+	if areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
 		return nil
 	}
@@ -124,7 +125,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	return nil
 }
 
-func areSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
+func areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
 	if sequenceTasks == nil || len(sequenceTasks) == 0 {
 		// if there is no sequence currently running, we do not need to block
 		return false
@@ -132,14 +133,14 @@ func areSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEven
 
 	tasksGroupedByContext := groupSequenceMappingsByContext(sequenceTasks)
 
-	// do not block if all active sequences are currently handling an approval task
 	for _, tasksOfContext := range tasksGroupedByContext {
 		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
 		if lastTaskOfSequence.Name != keptnv2.ApprovalTaskName {
+			// if there is a sequence running that is not waiting for an approval, we need to block
 			return true
 		}
 	}
-	// if there is a sequence running that is not waiting for an approval, we need to block
+	// do not block if all active sequences are currently handling an approval task
 	return false
 }
 

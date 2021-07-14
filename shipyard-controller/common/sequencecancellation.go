@@ -14,3 +14,9 @@ type SequenceCancellation struct {
 	Reason       SequenceCancellationReason
 	LastEvent    models.Event
 }
+
+type SequencePauseRequest struct {
+	KeptnContext string
+	Stage        string
+	Project      string
+}

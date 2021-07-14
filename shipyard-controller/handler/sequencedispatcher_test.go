@@ -99,7 +99,7 @@ func TestSequenceDispatcher(t *testing.T) {
 	require.Nil(t, err)
 	require.Len(t, mockTaskSequenceRepo.GetTaskSequencesCalls(), 1)
 	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[0].Project, queueItem.Scope.Project)
-	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[0].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage})
+	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[0].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
 
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
 	require.Equal(t, mockEventRepo.GetEventsCalls()[0].Project, queueItem.Scope.Project)
@@ -121,7 +121,14 @@ func TestSequenceDispatcher(t *testing.T) {
 		TaskSequenceName: "delivery",
 		TriggeredEventID: "my-event-id",
 		Stage:            "my-stage",
+		Service:          "my-service",
 		KeptnContext:     "my-context-id",
+		Task: models.Task{
+			Task: keptnv2.Task{
+				Name: "my-task",
+			},
+			TaskIndex: 1,
+		},
 	})
 
 	// dispatch another task sequence - this one should not start since there is currently another one in progress
@@ -141,7 +148,7 @@ func TestSequenceDispatcher(t *testing.T) {
 
 	require.Len(t, mockTaskSequenceRepo.GetTaskSequencesCalls(), 2)
 	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Project, queueItem.Scope.Project)
-	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage})
+	require.Equal(t, mockTaskSequenceRepo.GetTaskSequencesCalls()[1].Filter, models.TaskSequenceEvent{Stage: queueItem.Scope.Stage, Service: queueItem.Scope.Service})
 
 	// GetEvents and DeleteQueuedSequences should not have been called again at this point
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)

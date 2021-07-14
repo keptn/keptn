@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -12,6 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"time"
 )
+
+var errOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
@@ -26,6 +29,7 @@ type IEventDispatcher interface {
 type EventDispatcher struct {
 	eventRepo      db.EventRepo
 	eventQueueRepo db.EventQueueRepo
+	sequenceRepo   db.TaskSequenceRepo
 	eventSender    keptncommon.EventSender
 	theClock       clock.Clock
 	syncInterval   time.Duration
@@ -35,6 +39,7 @@ type EventDispatcher struct {
 func NewEventDispatcher(
 	eventRepo db.EventRepo,
 	eventQueueRepo db.EventQueueRepo,
+	sequenceRepo db.TaskSequenceRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
 
@@ -42,6 +47,7 @@ func NewEventDispatcher(
 	return &EventDispatcher{
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
+		sequenceRepo:   sequenceRepo,
 		eventSender:    eventSender,
 		theClock:       clock.New(),
 		syncInterval:   syncInterval,
@@ -51,11 +57,6 @@ func NewEventDispatcher(
 // Add adds a DispatcherEvent to the event queue
 func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 
-	if e.theClock.Now().UTC().After(event.TimeStamp) {
-		// send event immediately
-		return e.eventSender.SendEvent(event.Event)
-	}
-
 	ed, err := models.ConvertToEvent(event.Event)
 	if err != nil {
 		return err
@@ -63,6 +64,18 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 	eventScope, err := models.NewEventScope(*ed)
 	if err != nil {
 		return err
+	}
+
+	if e.theClock.Now().UTC().After(event.TimeStamp) {
+		// try to send event immediately
+		if err := e.tryToSendEvent(*eventScope, event); err != nil {
+			// if the event cannot be sent because it is blocked by other sequences,
+			// we'll add it to the queue and try to send it again later
+			if err != errOtherActiveSequencesRunning {
+				// in all other cases, return the error
+				return err
+			}
+		}
 	}
 
 	return e.eventQueueRepo.QueueEvent(models.QueueItem{
@@ -121,7 +134,12 @@ func (e *EventDispatcher) dispatchEvents() {
 		// set the time of the cloud event to the current time since it is being sent now
 		ce.SetTime(e.theClock.Now().UTC())
 
-		if err := e.eventSender.SendEvent(*ce); err != nil {
+		eventScope, err := models.NewEventScope(triggeredEvent)
+		if err != nil {
+			continue
+		}
+
+		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce}); err != nil {
 			log.Errorf("could not send CloudEvent: %s", err.Error())
 			continue
 		}
@@ -131,5 +149,32 @@ func (e *EventDispatcher) dispatchEvents() {
 			continue
 		}
 	}
+}
 
+func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
+	runningSequencesInStage, err := e.sequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{
+		Stage:   eventScope.Stage,
+		Service: eventScope.Service,
+	})
+	if err != nil {
+		return err
+	}
+	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
+	/// if there is another sequence running in the stage, we cannot send the event
+	if areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
+		log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service)
+		return errOtherActiveSequencesRunning
+	}
+
+	return e.eventSender.SendEvent(event.Event)
+}
+
+func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {
+	result := []models.TaskSequenceEvent{}
+	for index := range sequenceTasks {
+		if sequenceTasks[index].KeptnContext != keptnContext {
+			result = append(result, sequenceTasks[index])
+		}
+	}
+	return result
 }

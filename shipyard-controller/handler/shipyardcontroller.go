@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-const maxRepoReadRetries = 30
+const maxRepoReadRetries = 5
 
 var errNoMatchingEvent = errors.New("no matching event found")
 var shipyardControllerInstance *shipyardController
@@ -240,6 +240,7 @@ func (sc *shipyardController) HandleIncomingEvent(event models.Event, waitForCom
 		return err
 	}
 	done := make(chan error, 0)
+
 	switch statusType {
 	case string(common.TriggeredEvent):
 		go func() {
@@ -288,6 +289,14 @@ func (sc *shipyardController) handleStartedEvent(event models.Event) error {
 		return err
 	}
 	log.Infof("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
+
+	log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
+	taskContext, err := sc.getTaskSequenceContext(eventScope)
+	if err != nil {
+		return err
+	} else if taskContext == nil {
+		return fmt.Errorf("no sequence context for event with scope %v found", eventScope)
+	}
 
 	triggeredEventType, err := keptnv2.ReplaceEventTypeKind(*event.Type, string(common.TriggeredEvent))
 	if err != nil {
@@ -449,6 +458,15 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 	}
 	log.Infof("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
 
+	// get the taskSequence related to the triggeredID and proceed with the next task
+	log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
+	taskContext, err := sc.getTaskSequenceContext(eventScope)
+	if err != nil {
+		return err
+	} else if taskContext == nil {
+		return fmt.Errorf("no task sequence context for event with scope %v found", eventScope)
+	}
+
 	startedEvents, err := sc.retrieveStartedEventsForTriggeredID(eventScope)
 
 	if err != nil {
@@ -514,21 +532,6 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 			return err
 		}
 
-		// get the taskSequence related to the triggeredID and proceed with the next task
-		log.Infof("Retrieving task sequence related to triggeredID %s", event.Triggeredid)
-		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: event.Triggeredid})
-		if err != nil {
-			msg := "Could not retrieve task sequence associated to eventID " + event.Triggeredid + ": " + err.Error()
-			log.Error(msg)
-			return errors.New(msg)
-		}
-
-		if taskContexts == nil || len(taskContexts) == 0 {
-			log.Infof("No task event associated with eventID %s found", event.Triggeredid)
-			return nil
-		}
-
-		taskContext := taskContexts[0]
 		log.Infof("Task sequence related to eventID %s: %s.%s", event.Triggeredid, taskContext.Stage, taskContext.TaskSequenceName)
 		log.Info("Trying to fetch shipyard and get next task")
 		shipyard, err := sc.getCachedShipyard(eventScope.Project)
@@ -545,9 +548,25 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 
 		sc.onSequenceTaskFinished(event)
 
-		return sc.proceedTaskSequence(eventScope, sequence, finishedEventsData, &taskContext)
+		return sc.proceedTaskSequence(eventScope, sequence, finishedEventsData, taskContext)
 	}
 	return nil
+}
+
+func (sc *shipyardController) getTaskSequenceContext(eventScope *models.EventScope) (*models.TaskSequenceEvent, error) {
+	taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: eventScope.TriggeredID})
+	if err != nil {
+		msg := "Could not retrieve task sequence associated to eventID " + eventScope.TriggeredID + ": " + err.Error()
+		log.Error(msg)
+		return nil, errors.New(msg)
+	}
+
+	if taskContexts == nil || len(taskContexts) == 0 {
+		log.Infof("No task event associated with eventID %s found", eventScope.TriggeredID)
+		return nil, nil
+	}
+	taskContext := taskContexts[0]
+	return &taskContext, nil
 }
 
 func (sc *shipyardController) gatherFinishedEventsData(eventScope *models.EventScope) ([]interface{}, error) {

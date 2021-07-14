@@ -1,6 +1,8 @@
 package sequencehooks
 
-import "github.com/keptn/keptn/shipyard-controller/models"
+import (
+	"github.com/keptn/keptn/shipyard-controller/models"
+)
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetriggered.go . ISequenceTriggeredHook
 type ISequenceTriggeredHook interface {
