@@ -30,7 +30,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   public onGitUpstreamSubmit: EventEmitter<GitData> = new EventEmitter();
 
   @Output()
-  private onGitDataChanged: EventEmitter<GitData> = new EventEmitter();
+  public onGitDataChanged: EventEmitter<GitData> = new EventEmitter();
 
   public gitUrlControl = new FormControl('');
   public gitUserControl = new FormControl('');
