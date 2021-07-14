@@ -2,7 +2,6 @@ import { Router } from 'express';
 import axios from 'axios';
 import * as https from 'https';
 import { currentPrincipal } from '../user/session.js';
-import { Agent } from 'https';
 
 const router = Router();
 
@@ -19,7 +18,7 @@ function apiRouter(params:
   const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
 
   // accepts self-signed ssl certificate
-  const agent: Agent = new https.Agent({
+  const agent = new https.Agent({
     rejectUnauthorized: false
   });
 

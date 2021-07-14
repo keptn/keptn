@@ -102,7 +102,7 @@ function getLogoutHint(req: Request) {
  * Destroy the session comes with this request
  */
 function removeSession(req: Request) {
-  req.session.destroy(() => {});
+  req.session.destroy(console.error);
 }
 
 function sessionRouter(app: Express)  {

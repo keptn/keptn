@@ -20,6 +20,10 @@ let apiToken: string | undefined = process.env.API_TOKEN;
 let cliDownloadLink: string | undefined = process.env.CLI_DOWNLOAD_LINK;
 let integrationsPageLink: string | undefined = process.env.INTEGRATIONS_PAGE_LINK;
 const lookAndFeelUrl: string | undefined = process.env.LOOK_AND_FEEL_URL;
+const requestTimeLimit = (+(process.env.REQUEST_TIME_LIMIT || 60)) * 60 * 1000; // x minutes
+const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x requests within {requestTimeLimit}
+const cleanBucketsInterval = (+(process.env.CLEAN_BUCKET_INTERVAL || 60)) * 60 * 1000; // clean buckets every x minutes
+const throttleBucket: {[ip: string]: number[]} = {};
 
 try {
   console.log('Installing default Look-and-Feel');
@@ -76,9 +80,10 @@ if (lookAndFeelUrl) {
         try {
           await unlink(destFile);
         }
-        catch (err){
-          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+        catch (error){
+          console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
         }
+        console.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
       });
     }).on('error', (err) => {
       file.end();
@@ -165,14 +170,35 @@ async function init(): Promise<Express> {
     authType = 'BASIC';
 
     console.error('Installing Basic authentication - please check environment variables!');
+
+    setInterval(cleanIpBuckets, cleanBucketsInterval);
+
     app.use((req, res, next) => {
       // parse login and password from headers
       const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
       const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+      let userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      userIP = userIP instanceof Array ? userIP[0] : userIP;
 
-      // Verify login and password are set and correct
-      if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
-        // Access denied
+      if (userIP && isIPThrottled(userIP)) {
+        console.error('Request limit reached');
+        res.status(429).send('Reached request limit');
+        return;
+      }
+      else if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
+        // only fill buckets if the user tries to login
+        if (userIP && (login || password)) {
+          if (!throttleBucket[userIP]) {
+            throttleBucket[userIP] = [];
+          }
+          throttleBucket[userIP].push(new Date().getTime());
+
+          // delete old requests. Just keep the latest {requestLimitWithinTime} requests
+          if (throttleBucket[userIP].length > requestsWithinTime) {
+            throttleBucket[userIP].shift();
+          }
+        }
+
         console.error('Access denied');
         res.set('WWW-Authenticate', 'Basic realm="Keptn"');
         res.status(401).send('Authentication required.'); // custom message
@@ -211,6 +237,30 @@ async function init(): Promise<Express> {
   });
 
   return app;
+}
+
+/**
+ *
+ * @param ip. The IP of the request
+ * @returns true if there are more than {requestLimitWithinTime} requests
+ *          and the difference between first and last request of an IP is less than {requestTimeLimit}
+ */
+function isIPThrottled(ip: string) {
+  const ipBucket = throttleBucket[ip];
+  return ipBucket && ipBucket.length >= requestsWithinTime && (new Date().getTime() - ipBucket[0]) <= requestTimeLimit;
+}
+
+/**
+ * Delete an IP from the bucket if the last request is older than {requestTimeLimit}
+ */
+function cleanIpBuckets() {
+  for (const ip of Object.keys(throttleBucket)) {
+    const ipBucket = throttleBucket[ip];
+    if (ipBucket && (new Date().getTime() - ipBucket[ipBucket.length - 1]) > requestTimeLimit)
+    {
+      delete throttleBucket[ip];
+    }
+  }
 }
 
 export { init };
