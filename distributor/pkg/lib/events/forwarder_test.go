@@ -133,7 +133,7 @@ func Test_APIProxy(t *testing.T) {
 
 	//TODO: remove wait
 	time.Sleep(2 * time.Second)
-	callFromService()
+	apiCallFromService()
 
 	assert.Eventually(t, func() bool {
 		return proxyEndpointCalled == 1
@@ -143,12 +143,9 @@ func Test_APIProxy(t *testing.T) {
 	executionContext.Wg.Wait()
 }
 
-func callFromService() {
-	_, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/testpath", 8081))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+func apiCallFromService() {
+	http.Get(fmt.Sprintf("http://127.0.0.1:%d/testpath", 8081))
+
 }
 
 func eventFromService(event string) {

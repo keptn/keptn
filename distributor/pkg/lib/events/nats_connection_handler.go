@@ -2,7 +2,7 @@ package events
 
 import (
 	"errors"
-	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 
@@ -35,7 +35,7 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 	for _, sub := range nch.Subscriptions {
 		// Unsubscribe
 		_ = sub.Unsubscribe()
-		fmt.Println("Unsubscribed from NATS topic: " + sub.Subject)
+		logger.Infof("Unsubscribed from NATS topic: %s", sub.Subject)
 	}
 	nch.NatsConnection.Close()
 	nch.Subscriptions = nch.Subscriptions[:0]
@@ -56,22 +56,22 @@ func (nch *NatsConnectionHandler) SubscribeToTopics() error {
 		nch.RemoveAllSubscriptions()
 		nch.mux.Lock()
 		defer nch.mux.Unlock()
-		fmt.Println("Connecting to NATS server at " + nch.NatsURL + "...")
+		logger.Infof("Connecting to NATS server at %s ...", nch.NatsURL)
 		nch.NatsConnection, err = nats.Connect(nch.NatsURL)
 
 		if err != nil {
 			return errors.New("failed to create NATS connection: " + err.Error())
 		}
 
-		fmt.Println("Connected to NATS server")
+		logger.Info("Connected to NATS server")
 
 		for _, topic := range nch.Topics {
-			fmt.Println("Subscribing to topic " + topic + "...")
+			logger.Infof("Subscribing to topic %s ...", topic)
 			sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
 			if err != nil {
 				return errors.New("failed to subscribe to topic: " + err.Error())
 			}
-			fmt.Println("Subscribed to topic " + topic)
+			logger.Infof("Subscribed to topic %s", topic)
 			nch.Subscriptions = append(nch.Subscriptions, sub)
 		}
 	}

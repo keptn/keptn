@@ -3,7 +3,6 @@ package events
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -93,7 +92,6 @@ func Test_PollAndForwardEvents(t *testing.T) {
 			go poller.Start(executionContext)
 
 			assert.Eventually(t, func() bool {
-				fmt.Println(len(tt.eventSender.(*keptnv2.TestSender).SentEvents))
 				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
 			}, time.Second*time.Duration(5), time.Second)
 
