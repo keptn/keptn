@@ -89,13 +89,13 @@ func Test_SequenceQueue(t *testing.T) {
 	context := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	// wait for the sequence state to be available
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState, 2*time.Minute)
 	t.Log("received the expected state!")
 
 	// trigger a second sequence - this one should stay in 'triggered' state until the previous sequence is finished
 	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceTriggeredState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceTriggeredState, 2*time.Minute)
 	t.Log("received the expected state!")
 
 	// check if mytask.triggered has been sent for first sequence - this one should be available
@@ -127,7 +127,7 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// now that all tasks for the first sequence have been executed, the second sequence should eventually have the status 'started'
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState, 2*time.Minute)
 	t.Log("received the expected state!")
 
 	// check if mytask.triggered has been sent for second sequence - now it should be available
@@ -149,13 +149,13 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// trigger the first task sequence - this should time out
 	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut, 2*time.Minute)
 	t.Log("received the expected state!")
 
 	// now trigger the second sequence - this should start and a .triggered event for mytask should be sent
 	secondContext = triggerSequence(t, projectName, serviceName, "staging", "delivery")
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *secondContext.KeptnContext, scmodels.SequenceStartedState)
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState, 2*time.Minute)
 	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("mytask"))
 	require.Nil(t, err)
 	require.NotNil(t, triggeredEventOfSecondSequence)
@@ -169,7 +169,7 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 	t.Log("starting delivery-with-approval sequence")
 	context = triggerSequence(t, projectName, serviceName, "dev", "delivery-with-approval")
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState, 2*time.Minute)
 
 	// check if approval.triggered has been sent for sequence - now it should be available
 	approvalTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
@@ -186,7 +186,7 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// now let's trigger the other sequence
 	secondContext = triggerSequence(t, projectName, serviceName, "dev", "delivery")
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState, 2*time.Minute)
 
 	// check if approval.triggered has been sent for sequence - now it should be available
 	myTaskTriggeredEvent, err := GetLatestEventOfType(*secondContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
@@ -216,7 +216,7 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 
 	// this should have completed the task sequence
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceFinished)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceFinished, 2*time.Minute)
 
 	// now the mytask.triggered event for the second sequence should eventually become available
 	require.Eventually(t, func() bool {
@@ -234,9 +234,9 @@ func Test_SequenceQueue(t *testing.T) {
 	verifySequenceCompletion := func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		context := triggerSequence(t, projectName, serviceName, "qg", "evaluation")
-		VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceFinished)
+		VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceFinished, 5*time.Minute)
 	}
-	nrOfSequences := 100
+	nrOfSequences := 10
 	var wg sync.WaitGroup
 	wg.Add(nrOfSequences)
 
@@ -244,6 +244,7 @@ func Test_SequenceQueue(t *testing.T) {
 		go verifySequenceCompletion(&wg)
 	}
 	wg.Wait()
+
 }
 
 func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {

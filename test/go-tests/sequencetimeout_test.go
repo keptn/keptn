@@ -88,7 +88,7 @@ func Test_SequenceTimeout(t *testing.T) {
 
 	// wait for the recreated state to be available
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut, 2*time.Minute)
 	t.Log("received the expected state!")
 }
 
