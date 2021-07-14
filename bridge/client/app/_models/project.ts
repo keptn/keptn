@@ -5,7 +5,7 @@ import {Trace} from "./trace";
 import {Root} from "./root";
 import { Deployment } from './deployment';
 import {EventTypes} from "./event-types";
-import * as moment from 'moment';
+import moment from 'moment';
 import {DeploymentStage} from './deployment-stage';
 
 export class Project {

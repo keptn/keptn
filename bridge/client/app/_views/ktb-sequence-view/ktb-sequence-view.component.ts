@@ -14,7 +14,7 @@ import {isObject} from '@dynatrace/barista-components/core';
 import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
 import {filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 
-import * as moment from 'moment';
+import moment from 'moment';
 
 import {Root} from '../../_models/root';
 import {Stage} from '../../_models/stage';

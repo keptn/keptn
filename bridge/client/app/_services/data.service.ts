@@ -11,7 +11,7 @@ import {EventTypes} from "../_models/event-types";
 import {ApiService} from "./api.service";
 import {DateUtil} from "../_utils/date.utils";
 
-import * as moment from 'moment';
+import moment from 'moment';
 import {Deployment} from '../_models/deployment';
 import {Sequence} from '../_models/sequence';
 import {UniformRegistration} from "../_models/uniform-registration";

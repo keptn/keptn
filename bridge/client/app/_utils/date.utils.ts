@@ -1,4 +1,4 @@
-import * as moment from "moment";
+import moment from "moment";
 import {Trace} from "../_models/trace";
 import {Injectable} from "@angular/core";
 

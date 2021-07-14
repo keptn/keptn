@@ -1,11 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const axios = require('axios');
-const sessionAuthentication = require('./session').setAuthenticatedSession;
-const removeSession = require('./session').removeSession;
-const isAuthenticated = require('./session').isAuthenticated;
-const getLogoutHint = require('./session').getLogoutHint;
+import { Router, Request, Response } from 'express';
+import axios from 'axios';
+import { sessionAuthentication, removeSession, isAuthenticated, getLogoutHint } from './session.js';
 
+const router = Router();
 const AUTHORIZATION = 'authorization';
 const AUTH_URL = 'authorization_url';
 const TOKEN_DECISION = 'token_decision';
@@ -13,7 +10,6 @@ const USER = 'user';
 const LOGOUT_HINT = 'logout_hint';
 const RP_LOGOUT = 'rp_logout';
 const LOGOUT_URL = 'logout_path';
-
 const prefixPath = process.env.PREFIX_PATH;
 
 /**
@@ -22,7 +18,7 @@ const prefixPath = process.env.PREFIX_PATH;
  * If PREFIX_PATH is defined, root location is set to <PREFIX_PATH>/bridge. Otherwise, root is set to / .
  *
  * Redirection to / will be either handled by Nginx (ex:- generic keptn deployment) OR the Express layer (ex:- local bridge development).
- * */
+ */
 function getRootLocation() {
   if (prefixPath !== undefined) {
     return `${prefixPath}/bridge`;
@@ -31,31 +27,31 @@ function getRootLocation() {
   return '/';
 }
 
-module.exports = (async () => {
+async function oauthRouter() {
   console.log('Enabling OAuth for bridge.');
 
   const discoveryEndpoint = process.env.OAUTH_DISCOVERY;
 
   if (!discoveryEndpoint) {
-    throw 'OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
-    ' Please check your environment variables.';
+    throw Error ('OAUTH_DISCOVERY must be defined when oauth based login (OAUTH_ENABLED) is activated.' +
+    ' Please check your environment variables.');
   }
 
   const discoveryResp = await axios({
     method: 'get',
     url: discoveryEndpoint,
-  })
+  });
 
   if (discoveryResp.status !== 200) {
-    throw `Invalid oauth service discovery response. Received status : ${discoveryResp.statusText}.`;
+    throw Error(`Invalid oauth service discovery response. Received status : ${discoveryResp.statusText}.`);
   }
 
   if (!discoveryResp.data.hasOwnProperty(AUTHORIZATION)) {
-    throw 'OAuth service discovery must contain the authorization endpoint.';
+    throw Error('OAuth service discovery must contain the authorization endpoint.');
   }
 
   if (!discoveryResp.data.hasOwnProperty(TOKEN_DECISION)) {
-    throw 'OAuth service discovery must contain the token_decision endpoint.';
+    throw Error('OAuth service discovery must contain the token_decision endpoint.');
   }
 
   const authorizationEndpoint = discoveryResp.data[AUTHORIZATION];
@@ -64,7 +60,7 @@ module.exports = (async () => {
   console.log(`Using authorization endpoint : ${authorizationEndpoint}.`);
   console.log(`Using token decision endpoint : ${tokenDecisionEndpoint}.`);
 
-  let logoutEndpoint;
+  let logoutEndpoint = '';
 
   if (discoveryResp.data.hasOwnProperty(RP_LOGOUT)) {
     logoutEndpoint = discoveryResp.data[RP_LOGOUT];
@@ -74,14 +70,14 @@ module.exports = (async () => {
   /**
    * Router level middleware for login
    */
-  router.get('/login', async (req, res, next) => {
+  router.get('/login', async (req: Request, res: Response) => {
 
     let authResponse;
     try {
       authResponse = await axios({
         method: 'get',
         url: authorizationEndpoint,
-      })
+      });
     } catch (err) {
       console.log(`Error while handling the login request. Cause : ${err.message}`);
       return res.render('error',
@@ -109,7 +105,7 @@ module.exports = (async () => {
   /**
    * Router level middleware for redirect handling
    */
-  router.get('/oauth/redirect', async (req, res, next) => {
+  router.get('/oauth/redirect', async (req: Request, res: Response) => {
     const authCode = req.query.code;
     const state = req.query.state;
 
@@ -117,10 +113,10 @@ module.exports = (async () => {
       return res.redirect(getRootLocation());
     }
 
-    let tokensPayload = {
+    const tokensPayload = {
       code: authCode,
-      state: state,
-    }
+      state,
+    };
 
     let tokenDecision;
 
@@ -137,12 +133,13 @@ module.exports = (async () => {
       console.log(`Error while handling the redirect. Cause : ${err.message}`);
 
       if (err.response !== undefined && err.response.status === 403) {
-        let response = {
+        const response = {
           title: 'Permission denied',
+          message: ''
         };
 
         if (err.response.data.hasOwnProperty('message')) {
-          response.message = err.response.data['message'];
+          response.message = err.response.data.message;
         } else {
           response.message = 'User is not allowed access the instance.';
         }
@@ -165,7 +162,7 @@ module.exports = (async () => {
   /**
    * Router level middleware for logout
    */
-  router.get('/logout', async (req, res) => {
+  router.get('/logout', async (req: Request, res: Response) => {
     if (!isAuthenticated(req)) {
       // Session is not authenticated, redirect to root
       return res.redirect(getRootLocation());
@@ -183,7 +180,7 @@ module.exports = (async () => {
 
     try {
       logoutResponse = await axios({
-        method: "post",
+        method: 'post',
         url: logoutEndpoint,
         headers: {
           'Content-Type': 'application/json'
@@ -222,4 +219,7 @@ module.exports = (async () => {
   });
 
   return router;
-})();
+}
+
+const authRouter = oauthRouter();
+export { authRouter as oauthRouter };

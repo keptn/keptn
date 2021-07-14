@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 import {EventTypes} from "./event-types";
 import {ResultTypes} from "./result-types";
