@@ -27,6 +27,7 @@
       true,
       "element",
       "app",
+      "ktb",
       "kebab-case"
     ],
     "eofline": true,
