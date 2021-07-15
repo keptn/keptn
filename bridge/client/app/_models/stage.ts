@@ -1,23 +1,19 @@
-import {Service} from "./service";
+import {Service} from './service';
 
 export class Stage {
   stageName: string;
   parentStages: string[];
   services: Service[];
 
-  public getOpenApprovals() {
-    return this.services.reduce((openApprovals, service) => [...openApprovals, ...service.getOpenApprovals()], []);
+  static fromJSON(data: any) {
+    return Object.assign(new this(), data);
   }
 
-  public servicesWithOpenApprovals() {
+  public servicesWithOpenApprovals(): Service[] {
     return this.services.filter(s => s.getOpenApprovals().length > 0);
   }
 
   public getOpenProblems() {
     return this.services.reduce((openProblems, service) => [...openProblems, ...service.getOpenProblems()], []);
-  }
-
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
   }
 }

@@ -3,29 +3,31 @@
   <ng-container dtColumnDef="time" dtColumnAlign="text" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>Started at</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ng-container *ngIf="isRemediation(row), else trace">
+      <ng-container *ngIf="isRemediation(row) as sequence, else trace">
         <div fxLayout="row" fxLayoutAlign="start center">
-          <button *ngIf="row.state === 'triggered', else finished" class="m-0 p-0" dt-button disabled variant="nested">
+          <button *ngIf="sequence.isLoading(), else finished" class="m-0 p-0" dt-button disabled variant="nested">
             <dt-loading-spinner aria-label="Remediation is running..."></dt-loading-spinner>
           </button>
           <ng-template #finished>
-            <dt-icon name="criticalevent" [class]="row.isFaulty(this.stage) ? 'error' : 'success'" class="event-icon"></dt-icon>
+            <dt-icon name="criticalevent" [class]="sequence.isFaulty(this.stage) ? 'error' : 'success'" class="event-icon"></dt-icon>
           </ng-template>
-          <span [textContent]="row.time | amDateFormat:dateUtil.getDateTimeFormat()"></span>
+          <span [textContent]="sequence.time | amDateFormat:dateUtil.getDateTimeFormat()"></span>
         </div>
       </ng-container>
       <ng-template #trace>
-        <dt-icon *ngIf="!row.isLoading() || row.isApproval() || row.getLastTrace().isApproval()" class="event-icon"
-                 [class.error]="row.isFaulty()"
-                 [class.success]="row.isSuccessful()"
-                 [class.highlight]="row.isApproval() || row.getLastTrace().isApproval()"
-                 [name]="row.isFinished() ? row.getIcon() : row.getLastTrace().getIcon()"></dt-icon>
-        <ng-container *ngIf="row.isLoading()">
-          <button class="m-0 p-0" dt-button disabled variant="nested">
-            <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-          </button>
+        <ng-container *ngIf="isTrace(row) as trace">
+          <dt-icon *ngIf="!trace.isLoading() || trace.isApproval() || trace.getLastTrace().isApproval()" class="event-icon"
+                   [class.error]="trace.isFaulty()"
+                   [class.success]="trace.isSuccessful()"
+                   [class.highlight]="trace.isApproval() || trace.getLastTrace().isApproval()"
+                   [name]="trace.isFinished() ? trace.getIcon() : trace.getLastTrace().getIcon()"></dt-icon>
+          <ng-container *ngIf="trace.isLoading()">
+            <button class="m-0 p-0" dt-button disabled variant="nested">
+              <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+            </button>
+          </ng-container>
+          <span [textContent]="trace.time | amCalendar:dateUtil.getCalendarFormats()"></span>
         </ng-container>
-        <span [textContent]="row.time | amCalendar:dateUtil.getCalendarFormats()"></span>
       </ng-template>
     </dt-cell>
   </ng-container>
@@ -33,14 +35,18 @@
   <ng-container dtColumnDef="sequence" dtColumnAlign="text" dtColumnProportion="1">
     <dt-header-cell *dtHeaderCellDef>Sequence</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <a *ngIf="isRemediation(row)" [textContent]="row.name" [routerLink]="getRemediationLink(row)"></a>
-      <a *ngIf="!isRemediation(row)" [textContent]="row.getLabel()" [routerLink]="getSequenceLink(row)"></a>
+      <a *ngIf="isRemediation(row) as sequence" [textContent]="sequence.name" [routerLink]="getRemediationLink(sequence)"></a>
+      <a *ngIf="isTrace(row) as trace" [textContent]="trace.getLabel()" [routerLink]="getSequenceLink(trace)"></a>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="message" dtColumnAlign="text" dtColumnProportion="4">
     <dt-header-cell *dtHeaderCellDef>Message</dt-header-cell>
-    <dt-cell *dtCellDef="let row" [textContent]="isRemediation(row) ? row.problemTitle : getTraceMessage(row)">
+    <dt-cell *dtCellDef="let row">
+      <span *ngIf="isRemediation(row) as sequence, else traceMessage" [textContent]="sequence.problemTitle"></span>
+      <ng-template #traceMessage>
+        <span [textContent]="getTraceMessage(row)"></span>
+      </ng-template>
     </dt-cell>
   </ng-container>
 

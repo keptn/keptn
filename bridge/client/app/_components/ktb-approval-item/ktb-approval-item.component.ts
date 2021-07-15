@@ -21,6 +21,8 @@ export class KtbApprovalItemComponent {
     pinnable: true
   };
 
+  @Input() isSequence = false;
+
   @Input()
   get event(): Trace {
     return this._event;
@@ -45,5 +47,4 @@ export class KtbApprovalItemComponent {
     this.dataService.sendApprovalEvent(approval, result);
     this.approvalResult = result;
   }
-
 }

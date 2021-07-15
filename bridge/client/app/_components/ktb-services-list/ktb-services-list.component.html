@@ -22,7 +22,7 @@
 
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="row.getRecentSequence() as currentSequence">
+          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="row.getRecentRoot() as currentSequence">
             <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(row.stage).isLoading() || currentSequence.hasPendingApproval(row.stage); else showLoading" class="event-icon"
                      [name]="currentSequence.getFirstTraceOfStage(row.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
                      [class.error]="currentSequence.isFaulty(row.stage)"

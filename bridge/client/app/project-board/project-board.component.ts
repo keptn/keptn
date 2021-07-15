@@ -1,7 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {catchError, filter, map, startWith, switchMap, takeUntil, tap} from "rxjs/operators";
 import {Observable, Subject, timer, combineLatest, BehaviorSubject, of} from "rxjs";
-
 import {ActivatedRoute, Router} from "@angular/router";
 
 import {Project} from "../_models/project";
@@ -64,16 +63,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this._errorSubject.next('projects');
         return of(null);
       }));
-
-    timer(0, this._rootEventsTimerInterval*1000)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.project$),
-        filter(project => !!project && !!project.getServices()),
-        takeUntil(this.unsubscribe$)
-      ).subscribe(project => {
-        this.dataService.loadRoots(project);
-      });
 
     if (this.route.snapshot.url[0].path === 'trace') {
       const shkeptncontext$ = this.route.params.pipe(map(params => params.shkeptncontext));
