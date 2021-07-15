@@ -101,13 +101,13 @@ func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformInte
 	}
 
 	if params.Project != "" {
-		searchOptions["subscription.filter.project"] = params.Project
+		searchOptions["subscriptions.filter.project"] = params.Project
 	}
 	if params.Stage != "" {
-		searchOptions["subscription.filter.stage"] = params.Stage
+		searchOptions["subscriptions.filter.stage"] = params.Stage
 	}
 	if params.Service != "" {
-		searchOptions["subscription.filter.service"] = params.Service
+		searchOptions["subscriptions.filter.service"] = params.Service
 	}
 
 	return searchOptions

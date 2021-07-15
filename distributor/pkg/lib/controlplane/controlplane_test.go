@@ -30,13 +30,14 @@ func TestControlPlaneRegister(t *testing.T) {
 					DeploymentName: "k8s-deployment",
 				},
 			},
-			Subscription: models.Subscription{
+			Subscriptions: []models.Subscription{{
 				Topics: []string{},
 				Filter: models.SubscriptionFilter{
-					Project: "p-filter",
-					Stage:   "s-filter",
-					Service: "sv-filter",
+					Project: []string{"p-filter"},
+					Stage:   []string{"s-filter"},
+					Service: []string{"sv-filter"},
 				},
+			},
 			},
 		}, data)
 		rw.Write([]byte(`{"id": "abcde"}`))

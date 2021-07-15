@@ -11,30 +11,64 @@ import (
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	integration1 := models.Integration{
-		ID:   "my-integration-id-1",
-		Name: "my-integration",
-		Subscription: []keptnmodels.Subscription{
+		ID:   "i1",
+		Name: "integration1",
+		Subscriptions: []keptnmodels.Subscription{
 			{
 				Topics: []string{"sh.keptn.event.test.triggered"},
 				Status: "active",
 				Filter: keptnmodels.SubscriptionFilter{
-					Project: "my-project",
-					Service: []string{"my-service", "my-other-service"},
-					Stage:   []string{"my-stage", "my-other-stage"},
+					Project: []string{"pr1"},
+					Service: []string{"sv1", "sv2"},
+					Stage:   []string{"st1", "st2"},
 				},
 			},
 		},
 	}
 
 	integration2 := models.Integration{
-		ID:   "my-integration-id-2",
-		Name: "my-integration2",
-		Subscription: []keptnmodels.Subscription{
+		ID:   "i2",
+		Name: "integration2",
+		Subscriptions: []keptnmodels.Subscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
 				Filter: keptnmodels.SubscriptionFilter{
-					Project: "my-project-2",
+					Project: []string{"pr1"},
+					Service: []string{"sv1", "sv2"},
+					Stage:   []string{"st1", "st2"},
+				},
+			},
+		},
+	}
+
+	integration3 := models.Integration{
+		ID:   "i3",
+		Name: "integration3",
+		Subscriptions: []keptnmodels.Subscription{
+			{
+				Topics: []string{"sh.keptn.event.deployment.triggered"},
+				Status: "active",
+				Filter: keptnmodels.SubscriptionFilter{
+					Project: []string{"pr1"},
+					Service: []string{"sv1", "sv2"},
+					Stage:   []string{"st1"},
+				},
+			},
+		},
+	}
+
+	integration4 := models.Integration{
+		ID:   "i4",
+		Name: "integraiton4",
+		Subscriptions: []keptnmodels.Subscription{
+			{
+				Topics: []string{"sh.keptn.event.deployment.triggered"},
+				Status: "active",
+				Filter: keptnmodels.SubscriptionFilter{
+					Project: []string{"pr1"},
+					Service: []string{"sv1"},
+					Stage:   []string{"st1"},
 				},
 			},
 		},
@@ -52,19 +86,26 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	err = mdbrepo.CreateOrUpdateUniformIntegration(integration2)
 	require.Nil(t, err)
 
+	err = mdbrepo.CreateOrUpdateUniformIntegration(integration3)
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(integration4)
+	require.Nil(t, err)
 	// check if we can query the newly created entities
 
 	// first, without any filter
 	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{})
 
 	require.Nil(t, err)
-	require.Len(t, integrations, 2)
+	require.Len(t, integrations, 4)
 	require.EqualValues(t, integration1, integrations[0])
 	require.EqualValues(t, integration2, integrations[1])
+	require.EqualValues(t, integration3, integrations[2])
+	require.EqualValues(t, integration4, integrations[3])
 
 	// now, let's filter by id
 	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
-		ID: "my-integration-id-1",
+		ID: "i1",
 	})
 
 	require.Nil(t, err)
@@ -73,12 +114,39 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	// filter by project
 	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
-		Project: "my-project-2",
+		Project: "pr1",
 	})
 
 	require.Nil(t, err)
-	require.Len(t, integrations, 1)
-	require.EqualValues(t, integration2, integrations[0])
+	require.Len(t, integrations, 4)
+	require.EqualValues(t, integration1, integrations[0])
+	require.EqualValues(t, integration2, integrations[1])
+	require.EqualValues(t, integration3, integrations[2])
+	require.EqualValues(t, integration4, integrations[3])
+
+	// filter by project and service
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+		Project: "pr1",
+		Service: "sv2",
+	})
+
+	require.Nil(t, err)
+	require.Len(t, integrations, 3)
+	require.EqualValues(t, integration1, integrations[0])
+	require.EqualValues(t, integration2, integrations[1])
+	require.EqualValues(t, integration3, integrations[2])
+
+	// filter by project, service and stage
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+		Project: "pr1",
+		Service: "sv1",
+		Stage:   "st2",
+	})
+
+	require.Nil(t, err)
+	require.Len(t, integrations, 2)
+	require.EqualValues(t, integration1, integrations[0])
+	require.EqualValues(t, integration2, integrations[1])
 
 	// update the first entity
 	integration1.MetaData.Hostname = "my-host-name"
@@ -89,7 +157,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	// retrieve it again
 	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
-		ID: "my-integration-id-1",
+		ID: "i1",
 	})
 
 	require.Nil(t, err)
@@ -97,7 +165,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.EqualValues(t, integration1, integrations[0])
 
 	// delete the integration
-	err = mdbrepo.DeleteUniformIntegration("my-integration-id-1")
+	err = mdbrepo.DeleteUniformIntegration("i1")
 	require.Nil(t, err)
 
 	// try to retrieve it again
