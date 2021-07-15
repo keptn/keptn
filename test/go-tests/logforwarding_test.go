@@ -87,25 +87,24 @@ func Test_LogForwarding(t *testing.T) {
 
 	require.NotEmpty(t, t, integrationID)
 
-	var logs *models.GetLogsResponse
+	var contextLogEntry *models.LogEntry
 	require.Eventually(t, func() bool {
-		logs, _, err = getLogs(integrationID)
-		if len(logs.Logs) == 0 {
+		logs, _, err := getLogs(integrationID)
+		if len(logs.Logs) == 0 || err != nil {
 			t.Log("error logs of lighthouse service not available yet... retrying in 10s")
 			return false
 		}
 		t.Log("received logs of lighthouse service")
-		return true
+		for _, log := range logs.Logs {
+			if log.KeptnContext == keptnContextID {
+				contextLogEntry = &log
+				return true
+			}
+		}
+		return false
 	}, 100*time.Second, 10*time.Second)
 
 	// check if log entry for our task sequence context is available
-	var contextLogEntry *models.LogEntry
-	for _, log := range logs.Logs {
-		if log.KeptnContext == keptnContextID {
-			contextLogEntry = &log
-			break
-		}
-	}
 
 	require.NotEmpty(t, contextLogEntry)
 	t.Logf("received expected error log entry: %v", contextLogEntry)
