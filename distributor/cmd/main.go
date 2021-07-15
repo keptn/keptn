@@ -27,6 +27,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"sync"
@@ -52,6 +53,10 @@ func _main(env config.EnvConfig) int {
 	connectionType := config.GetPubSubConnectionType(env)
 	logger.Infof("Connection type: %s", connectionType)
 	if connectionType == config.ConnectionTypeHTTP {
+		err := env.ValidateKeptnAPIEndpointURL()
+		if err != nil {
+			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
+		}
 		logger.Info("Starting HTTP event poller")
 		httpEventPoller :=
 			events.NewPoller(env, eventSender, httpClient)
@@ -147,8 +152,13 @@ func shallRegister(env config.EnvConfig) bool {
 
 func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
-		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
-		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, "http")
+		scheme := "http" // default
+		parsed, _ := url.Parse(env.KeptnAPIEndpoint)
+		if parsed.Scheme != "" {
+			scheme = parsed.Scheme
+		}
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, scheme)
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, scheme)
 		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)

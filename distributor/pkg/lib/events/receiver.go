@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// EventReceiver is responsible for receive and process events form Keptn
+// EventReceiver is responsible for receive and process events from Keptn
 type EventReceiver interface {
 	Start(ctx *ExecutionContext)
 }
