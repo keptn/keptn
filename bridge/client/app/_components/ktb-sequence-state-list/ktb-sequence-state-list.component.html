@@ -35,10 +35,6 @@
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="3">
         <dt-cell *dtCellDef="let row">
           <p class="m-0 small nobreak" [textContent]="row.time | amCalendar:dateUtil.getCalendarFormats()"></p>
-          <!--div *ngIf="row.roots">
-            <ktb-evaluation-info [evaluation]="row.getRecentEvaluation()"></ktb-evaluation-info>
-          </div>
-          <p class="m-0" *ngIf="!row.roots">-</p-->
         </dt-cell>
       </ng-container>
       <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
