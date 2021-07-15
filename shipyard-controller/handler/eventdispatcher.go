@@ -142,7 +142,7 @@ func (e *EventDispatcher) dispatchEvents() {
 			continue
 		}
 
-		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce}); err != nil {
+		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce, TimeStamp: time.Now().UTC()}); err != nil {
 			log.Errorf("could not send CloudEvent: %s", err.Error())
 			continue
 		}
@@ -176,8 +176,8 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 				log.Debugf("could not fetch event queue: %s", err.Error())
 			}
 			eventFoundInQueue := false
-			for _, event := range queuedEvents {
-				if event.EventID == lastTaskOfSequence.TriggeredEventID {
+			for _, queueEvent := range queuedEvents {
+				if queueEvent.EventID == lastTaskOfSequence.TriggeredEventID && queueEvent.Timestamp.Before(event.TimeStamp) {
 					eventFoundInQueue = true
 					continue
 				}

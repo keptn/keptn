@@ -555,19 +555,23 @@ func (sc *shipyardController) handleFinishedEvent(event models.Event) error {
 }
 
 func (sc *shipyardController) getTaskSequenceContext(eventScope *models.EventScope) (*models.TaskSequenceEvent, error) {
-	taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: eventScope.TriggeredID})
-	if err != nil {
-		msg := "Could not retrieve task sequence associated to eventID " + eventScope.TriggeredID + ": " + err.Error()
-		log.Error(msg)
-		return nil, errors.New(msg)
-	}
+	for i := 0; i <= maxRepoReadRetries; i++ {
+		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: eventScope.TriggeredID})
+		if err != nil {
+			msg := "Could not retrieve task sequence associated to eventID " + eventScope.TriggeredID + ": " + err.Error()
+			log.Error(msg)
+			return nil, errors.New(msg)
+		}
 
-	if taskContexts == nil || len(taskContexts) == 0 {
-		log.Infof("No task event associated with eventID %s found", eventScope.TriggeredID)
-		return nil, nil
+		if taskContexts == nil || len(taskContexts) == 0 {
+			log.Infof("No task event associated with eventID %s found", eventScope.TriggeredID)
+			<-time.After(2 * time.Second)
+		} else {
+			taskContext := taskContexts[0]
+			return &taskContext, nil
+		}
 	}
-	taskContext := taskContexts[0]
-	return &taskContext, nil
+	return nil, nil
 }
 
 func (sc *shipyardController) gatherFinishedEventsData(eventScope *models.EventScope) ([]interface{}, error) {
