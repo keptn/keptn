@@ -168,25 +168,21 @@ export class ApiService {
       .get<ServiceResult>(url);
   }
 
-  public getOpenRemediations(projectName: string): Observable<HttpResponse<SequenceResult>> {
-    return this.getSequences(projectName, 'remediation', 'triggered');
+  public getOpenRemediations(projectName: string, pageSize: number): Observable<HttpResponse<SequenceResult>> {
+    return this.getSequences(projectName, pageSize, 'remediation', 'triggered');
   }
 
-  public getSequences(projectName: string, sequenceName?: string, state?: string, fromTime?: string, beforeTime?: string): Observable<HttpResponse<SequenceResult>> {
+  public getSequences(projectName: string, pageSize: number, sequenceName?: string, state?: string, fromTime?: string, beforeTime?: string, keptnContext?: string): Observable<HttpResponse<SequenceResult>> {
     const url = `${this._baseUrl}/controlPlane/v1/sequence/${projectName}`;
-    const params: any = {};
-    if (sequenceName) {
-      params.name = sequenceName;
-    }
-    if (state) {
-      params.state = state;
-    }
-    if (fromTime) {
-      params.fromTime = fromTime;
-    }
-    if (beforeTime) {
-      params.beforeTime = beforeTime;
-    }
+    const params: any = {
+      pageSize,
+      ...(sequenceName && {name: sequenceName}),
+      ...(state && {state}),
+      ...(fromTime && {fromTime}),
+      ...(beforeTime && {beforeTime}),
+      ...(keptnContext && {keptnContext})
+    };
+
     return this.http
       .get<SequenceResult>(url, { params, observe: 'response' });
   }

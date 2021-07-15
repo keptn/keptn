@@ -14,6 +14,7 @@ import {RootEvents} from "./_mockData/roots.mock";
 import {Traces} from "./_mockData/traces.mock";
 import {Evaluations} from "./_mockData/evaluations.mock";
 import {Trace} from "../_models/trace";
+import {Sequence} from '../_models/sequence';
 
 @Injectable({
   providedIn: 'root'
@@ -37,10 +38,10 @@ export class DataServiceMock extends DataService {
   }
 
   public loadRoots(project: Project) {
-    project.sequences = [...RootEvents || [], ...project.sequences || []].sort(DateUtil.compareTraceTimesAsc);
+    project.roots = [...RootEvents || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
     project.stages.forEach(stage => {
       stage.services.forEach(service => {
-        service.roots = project.sequences.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
+        service.roots = project.roots.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
         service.openApprovals = service.roots.reduce((openApprovals, root) => {
           const approval = root.getPendingApproval(stage.stageName);
           if(approval) {
@@ -50,12 +51,12 @@ export class DataServiceMock extends DataService {
         }, []);
       });
     });
-    this._roots.next(project.sequences);
+    this._roots.next(project.roots);
   }
 
-  public loadTraces(root: Root) {
-    root.traces = [...Traces || [], ...root.traces || []];
-    this._roots.next([...this._roots.getValue()]);
+  public loadTraces(sequence: Sequence) {
+    sequence.traces = [...Traces || [], ...sequence.traces || []];
+    this._sequences.next([...this._sequences.getValue()]);
   }
 
   public loadTracesByContext(shkeptncontext: string) {
@@ -64,7 +65,7 @@ export class DataServiceMock extends DataService {
 
   public loadEvaluationResults(event: Trace) {
     this._evaluationResults.next({
-      type: "evaluationHistory",
+      type: 'evaluationHistory',
       triggerEvent: event,
       traces: Evaluations
     });

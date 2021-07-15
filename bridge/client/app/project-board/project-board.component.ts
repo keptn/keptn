@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, startWith, switchMap, takeUntil, tap} from "rxjs/operators";
+import {filter, map, switchMap, takeUntil, tap} from "rxjs/operators";
 import {Observable, Subject, timer, combineLatest} from "rxjs";
 import {ActivatedRoute, Router} from "@angular/router";
 
@@ -59,16 +59,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         }
       }, error => {
         this.error = 'projects';
-      });
-
-    timer(0, this._rootEventsTimerInterval*1000)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.project$),
-        filter(project => !!project && !!project.getServices()),
-        takeUntil(this.unsubscribe$)
-      ).subscribe(project => {
-        this.dataService.loadRoots(project);
       });
 
     if (this.route.snapshot.url[0].path === 'trace') {
