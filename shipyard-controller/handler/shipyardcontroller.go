@@ -925,7 +925,7 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
 	}
 
-	return common.SendEvent(event)
+	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event}, true)
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
@@ -937,7 +937,7 @@ func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.E
 		sc.onSubSequenceFinished(*toEvent)
 	}
 
-	return common.SendEvent(event)
+	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event}, true)
 }
 
 func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventScope, taskSequenceName string, task models.Task, eventHistory []interface{}) error {
@@ -995,7 +995,7 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 	}
 	storeEvent.Time = timeutils.GetKeptnTimeStamp(sendTaskTimestamp)
 	sc.onSequenceTaskTriggered(*storeEvent)
-	if err := sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: sendTaskTimestamp, Event: event}); err != nil {
+	if err := sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: sendTaskTimestamp, Event: event}, false); err != nil {
 		return err
 	}
 

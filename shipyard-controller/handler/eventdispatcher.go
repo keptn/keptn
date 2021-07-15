@@ -19,7 +19,7 @@ var errOtherActiveSequencesRunning = errors.New("other sequences are currently r
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
 type IEventDispatcher interface {
-	Add(event models.DispatcherEvent) error
+	Add(event models.DispatcherEvent, skipQueue bool) error
 	Run(ctx context.Context)
 }
 
@@ -55,7 +55,7 @@ func NewEventDispatcher(
 }
 
 // Add adds a DispatcherEvent to the event queue
-func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
+func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) error {
 
 	ed, err := models.ConvertToEvent(event.Event)
 	if err != nil {
@@ -66,6 +66,9 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 		return err
 	}
 
+	if skipQueue {
+		return e.eventSender.SendEvent(event.Event)
+	}
 	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
 		// try to send event immediately
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {

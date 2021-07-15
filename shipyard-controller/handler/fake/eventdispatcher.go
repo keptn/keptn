@@ -52,7 +52,7 @@ type IEventDispatcherMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent) error {
+func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent, skipQueue bool) error {
 	if mock.AddFunc == nil {
 		panic("IEventDispatcherMock.AddFunc: method is nil but IEventDispatcher.Add was just called")
 	}

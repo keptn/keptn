@@ -62,7 +62,7 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 	event.Shkeptncontext = "my-context-id"
 	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
 
-	dispatcher.Add(dispatcherEvent)
+	dispatcher.Add(dispatcherEvent, false)
 	require.Equal(t, 1, len(eventSender.SentEvents))
 }
 
@@ -75,6 +75,9 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{
 		QueueEventFunc: func(item models.QueueItem) error {
 			return nil
+		},
+		GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
+			return nil, nil
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
@@ -118,7 +121,7 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 	event.Shkeptncontext = "my-context-id"
 	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeBefore}
 
-	dispatcher.Add(dispatcherEvent)
+	dispatcher.Add(dispatcherEvent, false)
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 1)
 }
@@ -155,7 +158,7 @@ func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 	event, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).Build()
 	dispatcherEvent := models.DispatcherEvent{keptnv2.ToCloudEvent(event), timeAfter}
 
-	dispatcher.Add(dispatcherEvent)
+	dispatcher.Add(dispatcherEvent, false)
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Equal(t, 1, len(eventQueueRepo.QueueEventCalls()))
 }
@@ -226,9 +229,9 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		syncInterval:   10 * time.Second,
 	}
 
-	dispatcher.Add(dispatcherEvent1)
-	dispatcher.Add(dispatcherEvent2)
-	dispatcher.Add(dispatcherEvent3)
+	dispatcher.Add(dispatcherEvent1, false)
+	dispatcher.Add(dispatcherEvent2, false)
+	dispatcher.Add(dispatcherEvent3, false)
 
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Equal(t, 3, len(eventQueueRepo.QueueEventCalls()))
@@ -318,9 +321,9 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 		syncInterval:   10 * time.Second,
 	}
 
-	dispatcher.Add(dispatcherEvent1)
-	dispatcher.Add(dispatcherEvent2)
-	dispatcher.Add(dispatcherEvent3)
+	dispatcher.Add(dispatcherEvent1, false)
+	dispatcher.Add(dispatcherEvent2, false)
+	dispatcher.Add(dispatcherEvent3, false)
 	dispatcher.Run(context.Background())
 
 	clock.Add(10 * time.Second)
