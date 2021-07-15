@@ -50,7 +50,7 @@ export class DataService {
   }
 
   get taskNames(): Observable<string[]> {
-    return  this._taskNames.asObservable();
+    return this._taskNames.asObservable();
   }
 
   get taskNamesTriggered(): Observable<string[]> {
@@ -201,6 +201,15 @@ export class DataService {
           projects.map(project => Project.fromJSON(project))
         )
       ).subscribe((projects: Project[]) => {
+      const existingProjects = this._projects.getValue();
+      projects = projects.map(project => {
+        const existingProject = existingProjects?.find(p => p.projectName === project.projectName);
+        if (existingProject) {
+          return Object.assign(existingProject, project);
+        } else {
+          return project;
+        }
+      });
       this._projects.next(projects);
     }, () => {
       this._projects.next([]);
@@ -312,12 +321,12 @@ export class DataService {
     });
   }
 
-  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
+  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence, pageSize?: number): void {
     if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
     }
     this._sequencesLastUpdated[project.projectName] = new Date();
-    this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
+    this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : pageSize || this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
       .pipe(
         map(response => {
           this.updateSequencesUpdated(response, project.projectName);
