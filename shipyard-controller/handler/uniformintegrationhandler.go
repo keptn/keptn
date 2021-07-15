@@ -45,9 +45,6 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	integrationID := keptnmodels.IntegrationID{
 		Name:      integration.Name,
 		Namespace: integration.MetaData.KubernetesMetaData.Namespace,
-		Project:   integration.Subscription.Filter.Project,
-		Stage:     integration.Subscription.Filter.Stage,
-		Service:   integration.Subscription.Filter.Service,
 	}
 
 	hash, err := integrationID.Hash()

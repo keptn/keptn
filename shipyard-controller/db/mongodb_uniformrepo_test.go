@@ -13,11 +13,15 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration1 := models.Integration{
 		ID:   "my-integration-id-1",
 		Name: "my-integration",
-		Subscription: keptnmodels.Subscription{
-			Topics: []string{"sh.keptn.event.test.triggered"},
-			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{
-				Project: "my-project",
+		Subscription: []keptnmodels.Subscription{
+			{
+				Topics: []string{"sh.keptn.event.test.triggered"},
+				Status: "active",
+				Filter: keptnmodels.SubscriptionFilter{
+					Project: "my-project",
+					Service: []string{"my-service", "my-other-service"},
+					Stage:   []string{"my-stage", "my-other-stage"},
+				},
 			},
 		},
 	}
@@ -25,11 +29,13 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration2 := models.Integration{
 		ID:   "my-integration-id-2",
 		Name: "my-integration2",
-		Subscription: keptnmodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: keptnmodels.SubscriptionFilter{
-				Project: "my-project-2",
+		Subscription: []keptnmodels.Subscription{
+			{
+				Topics: []string{"sh.keptn.event.deployment.triggered"},
+				Status: "active",
+				Filter: keptnmodels.SubscriptionFilter{
+					Project: "my-project-2",
+				},
 			},
 		},
 	}
