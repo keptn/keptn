@@ -18,5 +18,5 @@
     <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
   </dt-tag-list>
   <p class="small">Recent sequences:</p>
-  <ktb-sequence-state-list [sequenceStates]="project.sequenceStates"></ktb-sequence-state-list>
+  <ktb-sequence-state-list [sequenceStates]="project.getSequenceStates()"></ktb-sequence-state-list>
 </dt-tile>
