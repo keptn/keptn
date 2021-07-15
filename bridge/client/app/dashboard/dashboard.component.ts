@@ -30,7 +30,7 @@ export class DashboardComponent implements OnInit, OnDestroy{
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((projects) => {
         projects.forEach(project => {
-          this.dataService.loadSequences(project, this._sequencePageSize);
+          this.dataService.loadSequences(project, null, null, null, this._sequencePageSize);
         });
       });
 

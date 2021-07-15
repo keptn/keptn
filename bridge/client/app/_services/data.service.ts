@@ -31,7 +31,6 @@ export class DataService {
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<any>(null);
   protected _changedDeployments = new BehaviorSubject<Deployment[]>([]);
-  protected _sequences = new BehaviorSubject<Sequence[]>(null);
   protected _rootsLastUpdated: { [key: string]: Date } = {};
   protected _sequencesLastUpdated: { [key: string]: Date } = {};
   protected _tracesLastUpdated: { [key: string]: Date } = {};
@@ -327,12 +326,12 @@ export class DataService {
     });
   }
 
-  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
+  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence, pageSize?: number): void {
     if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
     }
     this._sequencesLastUpdated[project.projectName] = new Date();
-    this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
+    this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : pageSize || this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
       .pipe(
         map(response => {
           this.updateSequencesUpdated(response, project.projectName);
@@ -550,23 +549,6 @@ export class DataService {
       )
       .subscribe(taskNames => {
       this._taskNames.next(taskNames);
-    });
-  }
-
-  public loadSequences(project: Project, pageSize: number) {
-    this.apiService.getSequences(project.projectName, null, null, null, null, pageSize)
-      .pipe(
-        map(response => response.body),
-        map(sequenceResult => sequenceResult.states),
-        map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)).sort((sA, sB) => moment(sA.time).isBefore(sB.time) ? -1 : 1))
-      ).subscribe((newSequenceStates: Sequence[]) => {
-      project.sequenceStates = project.getSequenceStates().map(sequence => newSequenceStates.find(s => s.shkeptncontext == sequence.shkeptncontext) || sequence);
-      newSequenceStates.forEach(sequenceState => {
-        if (project.getSequenceStates().length == 0 || moment(sequenceState.time).isAfter(project.getSequenceStates()[0].time))
-          project.getSequenceStates().unshift(sequenceState);
-      });
-
-      this._sequences.next(newSequenceStates);
     });
   }
 

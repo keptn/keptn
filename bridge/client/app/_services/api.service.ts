@@ -193,7 +193,7 @@ export class ApiService {
     return this.getSequences(projectName, pageSize, 'remediation', 'triggered');
   }
 
-  public getSequences(projectName: string, pageSize: number, sequenceName?: string, state?: string, fromTime?: string, beforeTime?: string, keptnContext?: string, pageSize?: number): Observable<HttpResponse<SequenceResult>> {
+  public getSequences(projectName: string, pageSize: number, sequenceName?: string, state?: string, fromTime?: string, beforeTime?: string, keptnContext?: string): Observable<HttpResponse<SequenceResult>> {
     const url = `${this._baseUrl}/controlPlane/v1/sequence/${projectName}`;
     const params: any = {
       pageSize,
@@ -201,8 +201,7 @@ export class ApiService {
       ...(state && {state}),
       ...(fromTime && {fromTime}),
       ...(beforeTime && {beforeTime}),
-      ...(keptnContext && {keptnContext}),
-      ...(pageSize && {pageSize})
+      ...(keptnContext && {keptnContext})
     };
 
     return this.http

@@ -1,4 +1,10 @@
 import {ResultTypes} from './result-types';
+import {Trace} from './trace';
+import {EventTypes} from './event-types';
+import {EvaluationResult} from './evaluation-result';
+import {EVENT_ICONS} from './event-icons';
+
+const DEFAULT_ICON = 'information';
 
 export class Sequence {
   name: string;
@@ -27,7 +33,7 @@ export class Sequence {
   problemTitle?: string;
   traces: Trace[] = [];
 
-  static fromJSON(data: any): Sequence {
+  public static fromJSON(data: any): Sequence {
     return Object.assign(new this(), data);
   }
 
@@ -132,10 +138,6 @@ export class Sequence {
     return this.name;
   }
 
-  public getStatusLabel(): string {
-    return this.state;
-  }
-
   public getShortImageName(): string | null {
     return this.stages[0]?.image?.split('/').pop();
   }
@@ -158,13 +160,5 @@ export class Sequence {
 
   private getFirstTrace(): Trace | null {
     return this.traces[0];
-  }
-
-  public getStage(stageName: string) {
-    return this.stages.find(stage => stage.name === stageName);
-  }
-
-  static fromJSON(data: any): Sequence {
-    return Object.assign(new this(), data);
   }
 }
