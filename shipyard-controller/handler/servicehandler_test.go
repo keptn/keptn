@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/gin-gonic/gin"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
@@ -21,7 +21,7 @@ func TestServiceHandler_CreateService(t *testing.T) {
 	testServiceName := "my-service"
 	type fields struct {
 		serviceManager IServiceManager
-		EventSender    keptncommon.EventSender
+		EventSender    common.EventSender
 	}
 	tests := []struct {
 		name                          string
@@ -206,7 +206,7 @@ func stringp(s string) *string {
 func TestServiceHandler_DeleteService(t *testing.T) {
 	type fields struct {
 		serviceManager IServiceManager
-		EventSender    keptncommon.EventSender
+		EventSender    common.EventSender
 	}
 	type args struct {
 		c *gin.Context
@@ -308,7 +308,7 @@ func TestServiceHandler_DeleteService(t *testing.T) {
 func TestServiceHandler_GetService(t *testing.T) {
 	type fields struct {
 		serviceManager IServiceManager
-		EventSender    keptncommon.EventSender
+		EventSender    common.EventSender
 	}
 	tests := []struct {
 		name                       string
@@ -460,7 +460,7 @@ func TestServiceHandler_GetService(t *testing.T) {
 func TestServiceHandler_GetServices(t *testing.T) {
 	type fields struct {
 		serviceManager IServiceManager
-		EventSender    keptncommon.EventSender
+		EventSender    common.EventSender
 	}
 	tests := []struct {
 		name                       string

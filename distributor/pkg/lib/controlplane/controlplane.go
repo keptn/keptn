@@ -62,6 +62,28 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 	} else {
 		location = env.Location
 	}
+
+	var stageFilter []string
+	if env.StageFilter == "" {
+		stageFilter = []string{}
+	} else {
+		stageFilter = strings.Split(env.StageFilter, ",")
+	}
+
+	var serviceFilter []string
+	if env.ServiceFilter == "" {
+		serviceFilter = []string{}
+	} else {
+		serviceFilter = strings.Split(env.ServiceFilter, ",")
+	}
+
+	var projectFilter []string
+	if env.ProjectFilter == "" {
+		projectFilter = []string{}
+	} else {
+		projectFilter = strings.Split(env.ProjectFilter, ",")
+	}
+
 	return models.Integration{
 		Name: env.K8sDeploymentName,
 		MetaData: models.MetaData{
@@ -75,13 +97,14 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 				DeploymentName: env.K8sDeploymentName,
 			},
 		},
-		Subscription: models.Subscription{
+		Subscriptions: []models.Subscription{{
 			Topics: topics,
 			Filter: models.SubscriptionFilter{
-				Project: env.ProjectFilter,
-				Stage:   env.StageFilter,
-				Service: env.ServiceFilter,
+				Project: projectFilter,
+				Stage:   stageFilter,
+				Service: serviceFilter,
 			},
+		},
 		},
 	}
 }

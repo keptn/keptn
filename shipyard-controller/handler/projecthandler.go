@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -23,10 +22,10 @@ type IProjectHandler interface {
 
 type ProjectHandler struct {
 	ProjectManager IProjectManager
-	EventSender    keptn.EventSender
+	EventSender    common.EventSender
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender keptn.EventSender) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager: projectManager,
 		EventSender:    eventSender,

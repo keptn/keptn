@@ -1,7 +1,15 @@
 package common
 
+import (
+	"github.com/cloudevents/sdk-go/v2/event"
+)
+
 // EventStatus indicates the status type of an event, i.e. 'triggered', 'started', or 'finished'
 type EventStatus string
+
+type EventSender interface {
+	SendEvent(eventMoqParam event.Event) error
+}
 
 const (
 	// TriggeredEvent describes a 'triggered' event

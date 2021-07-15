@@ -75,7 +75,6 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 }
 
 func TestUniformIntegrationHandler_Register(t *testing.T) {
-
 	myValidIntegration := &models.Integration{
 		ID:   "my-id",
 		Name: "my-name",
@@ -85,9 +84,11 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				Namespace: "my-namespace",
 			},
 		},
-		Subscription: keptnmodels.Subscription{
-			Topics: []string{
-				"sh.keptn.event.test.triggered",
+		Subscriptions: []keptnmodels.Subscription{
+			{
+				Topics: []string{
+					"sh.keptn.event.test.triggered",
+				},
 			},
 		},
 	}
@@ -99,14 +100,15 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		MetaData: keptnmodels.MetaData{
 			DistributorVersion: "0.8.3",
 		},
-		Subscription: keptnmodels.Subscription{
-			Topics: []string{
-				"sh.keptn.event.test.triggered",
+		Subscriptions: []keptnmodels.Subscription{
+			{
+				Topics: []string{
+					"sh.keptn.event.test.triggered",
+				},
 			},
 		},
 	}
 	invalidPayload, _ := json.Marshal(myInvalidIntegration)
-
 	type fields struct {
 		integrationManager *fake.IUniformIntegrationManagerMock
 	}
@@ -183,7 +185,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				require.NotEmpty(t, tt.fields.integrationManager.RegisterCalls())
 				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.RegisterCalls()[0].Integration.Name)
 				require.Equal(t, tt.wantIntegration.MetaData, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData)
-				require.Equal(t, tt.wantIntegration.Subscription, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscription)
+				require.Equal(t, tt.wantIntegration.Subscriptions, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions)
 			}
 		})
 	}
