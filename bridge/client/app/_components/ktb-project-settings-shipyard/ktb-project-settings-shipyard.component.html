@@ -4,7 +4,7 @@
     <p class="mt-0 mb-2">
       Your project needs a <a [href]="'/manage/shipyard/' | keptnUrl">Shipyard</a>. Add a file from your filesystem or drag & drop it here it add it to your project.
     </p>
-    <div ktbDragAndDrop (onDropped)="updateFile($event)" (onError)="handleDragAndDropError($event)" [allowedExtensions]="this.allowedExtensions">
+    <div ktbDragAndDrop (dropped)="updateFile($event)" (dropError)="handleDragAndDropError($event)" [allowedExtensions]="this.allowedExtensions">
       <p>Drag and drop a file here<br/>or</p>
       <button dt-button (click)="shipyardFileInput.click()">Select a file</button>
       <input id="shipyard-file-input" hidden type="file" #shipyardFileInput (change)="validateAndUpdateFile($event.target.files)">

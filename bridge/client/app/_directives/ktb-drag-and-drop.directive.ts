@@ -1,5 +1,5 @@
 import {Directive, Output, EventEmitter, HostListener, HostBinding, Input} from '@angular/core';
-import {FormUtils} from "../_utils/form.utils";
+import {FormUtils} from '../_utils/form.utils';
 
 @Directive({
   selector: '[ktbDragAndDrop]'
@@ -8,16 +8,16 @@ export class KtbDragAndDropDirective {
   private readonly BASE_STYLE_CLASS = 'ktb-drag-and-drop p-3 pb-4';
 
   @Input()
-  multiple: boolean = false;
+  multiple = false;
 
   @Input()
   allowedExtensions: string[];
 
   @Output()
-  onDropped: EventEmitter<FileList> = new EventEmitter();
+  dropped: EventEmitter<FileList> = new EventEmitter();
 
   @Output()
-  onError: EventEmitter<string> = new EventEmitter();
+  dropError: EventEmitter<string> = new EventEmitter();
 
   @HostBinding('class')
   private styleClass = this.BASE_STYLE_CLASS;
@@ -45,23 +45,23 @@ export class KtbDragAndDropDirective {
     const files: FileList = evt.dataTransfer.files;
     this.styleClass = this.BASE_STYLE_CLASS;
 
-    if(!this.multiple && files.length > 1) {
-      this.onError.emit('Please select only one file');
+    if (!this.multiple && files.length > 1) {
+      this.dropError.emit('Please select only one file');
       return;
     }
 
     if (!FormUtils.isFile(files[0])) {
-      this.onError.emit('Please select only files');
+      this.dropError.emit('Please select only files');
       return;
     }
 
     if (!FormUtils.isValidFileExtensions(this.allowedExtensions, files)) {
-      this.onError.emit(`Only ${this.allowedExtensions.join(', ')} files allowed`);
+      this.dropError.emit(`Only ${this.allowedExtensions.join(', ')} files allowed`);
       return;
     }
 
-    this.onDropped.emit(files);
-    this.onError.emit('');
+    this.dropped.emit(files);
+    this.dropError.emit('');
   }
 
   constructor() {}

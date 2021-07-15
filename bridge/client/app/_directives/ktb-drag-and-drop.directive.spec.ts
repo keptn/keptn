@@ -15,10 +15,10 @@ describe('KtbDragAndDropDirective', () => {
   it('should allow only one file when multiple is false', () => {
     // given
     directive.multiple = false;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml'), new File(['test'], 'test2.yaml')]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml', {type: 'some'}), new File(['test'], 'test2.yaml', {type: 'some'})]);
 
     // when
-    const emitSpy = spyOn(directive.onError, 'emit');
+    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
     directive.onDrop(event);
 
     // then
@@ -29,10 +29,10 @@ describe('KtbDragAndDropDirective', () => {
   it('should allow more than one file when multiple is true', () => {
     // given
     directive.multiple = true;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml'), new File(['test'], 'test2.yaml')]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml', {type: 'some'}), new File(['test'], 'test2.yaml', {type: 'some'})]);
 
     // when
-    const emitSpy = spyOn(directive.onDropped, 'emit');
+    const emitSpy = spyOn(directive.dropped, 'emit').and.callThrough();
     directive.onDrop(event);
 
     // then
@@ -50,7 +50,7 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([file]);
 
     // when
-    const emitSpy = spyOn(directive.onError, 'emit');
+    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
     directive.onDrop(event);
 
     // then
@@ -65,7 +65,7 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.png', {type: 'image/png'})]);
 
     // when
-    const emitSpy = spyOn(directive.onError, 'emit');
+    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
     directive.onDrop(event);
 
     // then
@@ -81,7 +81,7 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.pdf', {type: 'document/pdf'}), new File(['test'], 'test2.png', {type: 'image/png'})]);
 
     // when
-    const emitSpy = spyOn(directive.onError, 'emit');
+    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
     directive.onDrop(event);
 
     // then
@@ -91,10 +91,10 @@ describe('KtbDragAndDropDirective', () => {
 
   it('should allow all file extensions when not set', () => {
     // given
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.jpeg')]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.jpeg', {type: 'image/jpeg'})]);
 
     // when
-    const emitSpy = spyOn(directive.onDropped, 'emit');
+    const emitSpy = spyOn(directive.dropped, 'emit').and.callThrough();
     directive.onDrop(event);
 
     // then
