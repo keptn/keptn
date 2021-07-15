@@ -156,6 +156,7 @@ func main() {
 	watcher := handler.NewSequenceWatcher(
 		cancelSequenceChannel,
 		createEventsRepo(),
+		createEventQueueRepo(),
 		createProjectRepo(),
 		taskStartedWaitDuration,
 		1*time.Minute,

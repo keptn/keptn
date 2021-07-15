@@ -978,11 +978,6 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		return err
 	}
 
-	if err := sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent); err != nil {
-		log.Errorf("Could not store event: %s", err.Error())
-		return err
-	}
-
 	sendTaskTimestamp := time.Now().UTC()
 	if task.TriggeredAfter != "" {
 		if duration, err := time.ParseDuration(task.TriggeredAfter); err == nil {
@@ -994,6 +989,12 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 		log.Infof("queueing %s event with ID %s to be sent at %s", event.Type(), event.ID(), sendTaskTimestamp.String())
 	}
 	storeEvent.Time = timeutils.GetKeptnTimeStamp(sendTaskTimestamp)
+
+	if err := sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent); err != nil {
+		log.Errorf("Could not store event: %s", err.Error())
+		return err
+	}
+
 	sc.onSequenceTaskTriggered(*storeEvent)
 	if err := sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: sendTaskTimestamp, Event: event}, false); err != nil {
 		return err

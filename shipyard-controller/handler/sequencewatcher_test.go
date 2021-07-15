@@ -90,6 +90,12 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
+	eventQueueMock := &db_mock.EventQueueRepoMock{
+		GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
+			return nil, nil
+		},
+	}
+
 	projectRepoMock := &db_mock.ProjectRepoMock{
 		GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
 			return []*models.ExpandedProject{
@@ -105,6 +111,7 @@ func TestSequenceWatcher(t *testing.T) {
 	watcher := handler.NewSequenceWatcher(
 		cancelSequenceChannel,
 		eventRepoMock,
+		eventQueueMock,
 		projectRepoMock,
 		10*time.Minute,
 		1*time.Minute,

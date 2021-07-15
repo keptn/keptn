@@ -60,6 +60,8 @@ spec:
                 pass: automatic
                 warning: automatic
             - 
+              name: mytask
+            - 
               name: evaluation`
 
 func Test_SequenceQueue(t *testing.T) {
@@ -231,20 +233,48 @@ func Test_SequenceQueue(t *testing.T) {
 	// Scenario 4: start a couple of task sequences and verify their completion
 	// ----------------------------
 
-	verifySequenceCompletion := func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		context := triggerSequence(t, projectName, serviceName, "qg", "evaluation")
-		VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceFinished, 5*time.Minute)
-	}
 	nrOfSequences := 10
 	var wg sync.WaitGroup
 	wg.Add(nrOfSequences)
 
 	for i := 0; i < nrOfSequences; i++ {
-		go verifySequenceCompletion(&wg)
+		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg)
 	}
 	wg.Wait()
+}
 
+func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	context := triggerSequence(t, projectName, serviceName, stageName, "evaluation")
+	source := "golang-test"
+
+	var taskTriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event, err := GetLatestEventOfType(*context.KeptnContext, projectName, "qg", keptnv2.GetTriggeredEventType("mytask"))
+		if err != nil || event == nil {
+			return false
+		}
+		taskTriggeredEvent = event
+		return true
+	}, 5*time.Minute, 10*time.Second)
+	require.NotNil(t, taskTriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+
+	// send started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// send finished event with result=fail
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Status: keptnv2.StatusSucceeded,
+		Result: keptnv2.ResultPass,
+	}, source)
+	require.Nil(t, err)
+	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceFinished, 5*time.Minute)
 }
 
 func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {

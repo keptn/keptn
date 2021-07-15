@@ -105,6 +105,29 @@ func (m *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
 	return nil
 }
 
+func (m *MongoDBEventQueueRepo) IsEventInQueue(eventID string) (bool, error) {
+	err := m.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return false, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
+
+	if collection == nil {
+		return false, errors.New("could not retrieve collection")
+	}
+
+	searchOptions := bson.M{"eventID": eventID}
+
+	queueItems, err := getQueueItemsFromCollection(collection, ctx, searchOptions)
+	if err != nil {
+		return false, err
+	}
+	return queueItems != nil && len(queueItems) > 1, nil
+}
+
 // DeleteQueuedEvent deletes a queue item from the collection
 func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) error {
 	err := m.DBConnection.EnsureDBConnection()

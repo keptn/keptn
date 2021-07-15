@@ -15,16 +15,18 @@ import (
 type SequenceWatcher struct {
 	cancelSequenceChannel chan common.SequenceCancellation
 	eventRepo             db.EventRepo
+	eventQueueRepo        db.EventQueueRepo
 	projectRepo           db.ProjectRepo
 	eventTimeout          time.Duration
 	syncInterval          time.Duration
 	theClock              clock.Clock
 }
 
-func NewSequenceWatcher(cancelSequenceChannel chan common.SequenceCancellation, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(cancelSequenceChannel chan common.SequenceCancellation, eventRepo db.EventRepo, eventQueueRepo db.EventQueueRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
 		cancelSequenceChannel: cancelSequenceChannel,
 		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
 		projectRepo:           projectRepo,
 		eventTimeout:          eventTimeout,
 		syncInterval:          syncInterval,
@@ -95,6 +97,13 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 		timeOut := eventSentTime.Add(sw.eventTimeout)
 		now := sw.theClock.Now().UTC()
 		if now.After(timeOut) {
+			isItemInQueue, err := sw.eventQueueRepo.IsEventInQueue(event.ID)
+			if err != nil {
+				log.WithError(err).Error("could not check if item is still in queue")
+			} else if isItemInQueue {
+				log.Info("triggered event is still in queue")
+				continue
+			}
 			// check if an event that reacted to the .triggered event has been received in the meantime
 			responseEvents, err := sw.eventRepo.GetEvents(project, common.EventFilter{
 				TriggeredID:  &event.ID,
