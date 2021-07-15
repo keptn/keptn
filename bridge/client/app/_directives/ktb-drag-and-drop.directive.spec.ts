@@ -62,7 +62,7 @@ describe('KtbDragAndDropDirective', () => {
     // given
     const allowedExtensions = ['yaml', 'yml'];
     directive.allowedExtensions = allowedExtensions;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.pdf')]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.png', {type: 'image/png'})]);
 
     // when
     const emitSpy = spyOn(directive.onError, 'emit');
@@ -78,7 +78,7 @@ describe('KtbDragAndDropDirective', () => {
     const allowedExtensions = ['yaml', 'yml'];
     directive.allowedExtensions = allowedExtensions;
     directive.multiple = true;
-    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.pdf'), new File(['test'], 'test2.png')]);
+    const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.pdf', {type: 'document/pdf'}), new File(['test'], 'test2.png', {type: 'image/png'})]);
 
     // when
     const emitSpy = spyOn(directive.onError, 'emit');

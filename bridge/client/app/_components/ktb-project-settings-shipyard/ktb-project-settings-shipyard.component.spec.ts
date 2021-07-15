@@ -100,7 +100,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   it('should show an error when the file selected by the file input has not the right file extension', () => {
     // given
     const errorContainer = fixture.nativeElement.querySelector('p.drop-error');
-    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png')]).dataTransfer.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer.files;
 
     // when
     component.validateAndUpdateFile(fileList);
@@ -112,7 +112,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
   it('should update the files when dropped handler is called', () => {
     // given
-    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png')]).dataTransfer.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer.files;
 
     // when
     component.updateFile(fileList);
