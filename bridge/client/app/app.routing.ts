@@ -21,7 +21,11 @@ const routingConfiguration: ExtraOptions = {
 const routes: Routes = [
   {path: '', pathMatch: 'full', redirectTo: 'dashboard'},
   {path: 'dashboard', component: DashboardComponent},
-  {path: 'project/:projectName', component: ProjectBoardComponent, children: [
+  {path: 'create', component: ProjectBoardComponent, children: [
+      {path: 'project', component: KtbSettingsViewComponent, data: {isCreateMode: true}}
+    ]},
+  {
+    path: 'project/:projectName', component: ProjectBoardComponent, children: [
       {path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent},
       {path: 'uniform', component: KtbUniformViewComponent, children: [
           {path: 'services', component: KtbKeptnServicesListComponent},
@@ -30,7 +34,7 @@ const routes: Routes = [
           {path: '', pathMatch: 'full', redirectTo: 'services'}
       ]},
       {path: 'integration', component: KtbIntegrationViewComponent},
-      {path: 'settings', component: KtbSettingsViewComponent},
+      {path: 'settings', component: KtbSettingsViewComponent, data: {isCreateMode: false}},
       {path: 'service', component: KtbServiceViewComponent},
       {path: 'sequence', component: KtbSequenceViewComponent},
       {path: 'service/:serviceName', component: KtbServiceViewComponent},

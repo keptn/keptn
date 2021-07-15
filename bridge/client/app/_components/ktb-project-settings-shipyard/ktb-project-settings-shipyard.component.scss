@@ -1,0 +1,7 @@
+.shipyard-settings > div:first-of-type {
+  width: calc(100% - 172px);
+
+  &.full-width {
+    width: 100%;
+  }
+}

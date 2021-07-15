@@ -91,6 +91,10 @@ export class DataService {
     return this._isQualityGatesOnly.asObservable();
   }
 
+  public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
+    return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
+  }
+
   public getProject(projectName): Observable<Project> {
     return this.projects.pipe(
       map(projects => projects ? projects.find(project => {
