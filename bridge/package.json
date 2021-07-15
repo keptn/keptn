@@ -63,7 +63,7 @@
     "moment": "^2.29.1",
     "ngx-moment": "^3.5.0",
     "normalize.css": "^8.0.1",
-    "rxjs": "^6.6.3",
+    "rxjs": "^6.6.7",
     "semver": "^7.3.2",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
