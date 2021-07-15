@@ -35,6 +35,8 @@ type ProjectManager struct {
 	ProjectMaterializedView db.ProjectsDBOperations
 	TaskSequenceRepository  db.TaskSequenceRepo
 	EventRepository         db.EventRepo
+	SequenceQueueRepo       db.SequenceQueueRepo
+	EventQueueRepo          db.EventQueueRepo
 }
 
 var nilRollback = func() error {
@@ -46,13 +48,17 @@ func NewProjectManager(
 	secretStore common.SecretStore,
 	dbProjectsOperations db.ProjectsDBOperations,
 	taskSequenceRepo db.TaskSequenceRepo,
-	eventRepo db.EventRepo) *ProjectManager {
+	eventRepo db.EventRepo,
+	sequenceQueueRepo db.SequenceQueueRepo,
+	eventQueueRepo db.EventQueueRepo) *ProjectManager {
 	projectUpdater := &ProjectManager{
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
 		ProjectMaterializedView: dbProjectsOperations,
 		TaskSequenceRepository:  taskSequenceRepo,
 		EventRepository:         eventRepo,
+		SequenceQueueRepo:       sequenceQueueRepo,
+		EventQueueRepo:          eventQueueRepo,
 	}
 	return projectUpdater
 }
@@ -320,6 +326,22 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 
 	if err := pm.ProjectMaterializedView.DeleteProject(projectName); err != nil {
 		log.Errorf("could not delete project: %s", err.Error())
+	}
+
+	if err := pm.SequenceQueueRepo.DeleteQueuedSequences(models.QueueItem{Scope: models.EventScope{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+		},
+	}}); err != nil {
+		log.Errorf("could ot delete queued sequences: %s", err.Error())
+	}
+
+	if err := pm.EventQueueRepo.DeleteQueuedEvents(models.EventScope{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+		},
+	}); err != nil {
+		log.Errorf("could not delete queued events: %s", err.Error())
 	}
 
 	return nil, resultMessage.String()

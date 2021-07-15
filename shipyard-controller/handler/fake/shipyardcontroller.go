@@ -15,9 +15,6 @@ import (
 //
 // 		// make and configure a mocked handler.IShipyardController
 // 		mockedIShipyardController := &IShipyardControllerMock{
-// 			CancelSequenceFunc: func(cancelRequest handler.SequenceCancellation) error {
-// 				panic("mock out the CancelSequence method")
-// 			},
 // 			GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]models.Event, error) {
 // 				panic("mock out the GetAllTriggeredEvents method")
 // 			},
@@ -34,9 +31,6 @@ import (
 //
 // 	}
 type IShipyardControllerMock struct {
-	// CancelSequenceFunc mocks the CancelSequence method.
-	CancelSequenceFunc func(cancelRequest common.SequenceCancellation) error
-
 	// GetAllTriggeredEventsFunc mocks the GetAllTriggeredEvents method.
 	GetAllTriggeredEventsFunc func(filter common.EventFilter) ([]models.Event, error)
 
@@ -48,11 +42,6 @@ type IShipyardControllerMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// CancelSequence holds details about calls to the CancelSequence method.
-		CancelSequence []struct {
-			// CancelRequest is the cancelRequest argument value.
-			CancelRequest common.SequenceCancellation
-		}
 		// GetAllTriggeredEvents holds details about calls to the GetAllTriggeredEvents method.
 		GetAllTriggeredEvents []struct {
 			// Filter is the filter argument value.
@@ -73,41 +62,9 @@ type IShipyardControllerMock struct {
 			WaitForCompletion bool
 		}
 	}
-	lockCancelSequence              sync.RWMutex
 	lockGetAllTriggeredEvents       sync.RWMutex
 	lockGetTriggeredEventsOfProject sync.RWMutex
 	lockHandleIncomingEvent         sync.RWMutex
-}
-
-// CancelSequence calls CancelSequenceFunc.
-func (mock *IShipyardControllerMock) CancelSequence(cancelRequest common.SequenceCancellation) error {
-	if mock.CancelSequenceFunc == nil {
-		panic("IShipyardControllerMock.CancelSequenceFunc: method is nil but IShipyardController.CancelSequence was just called")
-	}
-	callInfo := struct {
-		CancelRequest common.SequenceCancellation
-	}{
-		CancelRequest: cancelRequest,
-	}
-	mock.lockCancelSequence.Lock()
-	mock.calls.CancelSequence = append(mock.calls.CancelSequence, callInfo)
-	mock.lockCancelSequence.Unlock()
-	return mock.CancelSequenceFunc(cancelRequest)
-}
-
-// CancelSequenceCalls gets all the calls that were made to CancelSequence.
-// Check the length with:
-//     len(mockedIShipyardController.CancelSequenceCalls())
-func (mock *IShipyardControllerMock) CancelSequenceCalls() []struct {
-	CancelRequest common.SequenceCancellation
-} {
-	var calls []struct {
-		CancelRequest common.SequenceCancellation
-	}
-	mock.lockCancelSequence.RLock()
-	calls = mock.calls.CancelSequence
-	mock.lockCancelSequence.RUnlock()
-	return calls
 }
 
 // GetAllTriggeredEvents calls GetAllTriggeredEventsFunc.

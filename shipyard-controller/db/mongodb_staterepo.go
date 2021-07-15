@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -100,7 +101,8 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	for cur.Next(ctx) {
 		sequenceState := &models.SequenceState{}
 		if err := cur.Decode(sequenceState); err != nil {
-			// TODO log
+			log.WithError(err).Error("could not decode sequence state")
+			continue
 		}
 		states = append(states, *sequenceState)
 	}

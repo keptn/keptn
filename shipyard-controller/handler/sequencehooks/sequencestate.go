@@ -50,6 +50,10 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 	}
 }
 
+func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
+	smv.updateOverallSequenceState(event, models.SequenceStartedState)
+}
+
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
@@ -123,7 +127,7 @@ func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(event models
 
 	return smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project:        eventScope.Project,
+			Project:      eventScope.Project,
 			KeptnContext: eventScope.KeptnContext,
 		},
 	})
@@ -199,7 +203,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 
 	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project:        eventScope.Project,
+			Project:      eventScope.Project,
 			KeptnContext: eventScope.KeptnContext,
 		},
 	})
@@ -207,6 +211,9 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		return models.SequenceState{}, fmt.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
 	}
 
+	if len(states.States) == 0 {
+		return models.SequenceState{}, fmt.Errorf("could not find sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+	}
 	state := states.States[0]
 
 	eventData := &keptnv2.EventData{}
@@ -225,7 +232,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		if stage.Name == eventScope.Stage {
 			stageFound = true
 			state.Stages[index].LatestEvent = newLastEvent
-
+			state.Stages[index].State = getStageState(eventScope.Stage, newLastEvent.Type)
 			if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
 				state.Stages[index].LatestFailedEvent = newLastEvent
 			}
@@ -235,6 +242,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		newStage := models.SequenceStateStage{
 			Name:        eventScope.Stage,
 			LatestEvent: newLastEvent,
+			State:       getStageState(eventScope.Stage, newLastEvent.Type),
 		}
 		if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
 			newStage.LatestFailedEvent = newLastEvent
@@ -242,4 +250,19 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		state.Stages = append(state.Stages, newStage)
 	}
 	return state, nil
+}
+
+func getStageState(stageName, eventType string) string {
+	stageState := models.SequenceTriggeredState
+	// check if this event was a <stage>.<sequence>.finished event - if yes, mark the stage as completed
+	if keptnv2.IsSequenceEventType(eventType) {
+		eventStageName, _, _, err := keptnv2.ParseSequenceEventType(eventType)
+		if err != nil {
+			return stageState
+		}
+		if stageName == eventStageName {
+			stageState = models.SequenceFinished
+		}
+	}
+	return stageState
 }

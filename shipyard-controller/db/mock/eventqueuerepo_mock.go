@@ -24,6 +24,9 @@ import (
 // 			GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
 // 				panic("mock out the GetQueuedEvents method")
 // 			},
+// 			IsEventInQueueFunc: func(eventID string) (bool, error) {
+// 				panic("mock out the IsEventInQueue method")
+// 			},
 // 			QueueEventFunc: func(item models.QueueItem) error {
 // 				panic("mock out the QueueEvent method")
 // 			},
@@ -42,6 +45,9 @@ type EventQueueRepoMock struct {
 
 	// GetQueuedEventsFunc mocks the GetQueuedEvents method.
 	GetQueuedEventsFunc func(timestamp time.Time) ([]models.QueueItem, error)
+
+	// IsEventInQueueFunc mocks the IsEventInQueue method.
+	IsEventInQueueFunc func(eventID string) (bool, error)
 
 	// QueueEventFunc mocks the QueueEvent method.
 	QueueEventFunc func(item models.QueueItem) error
@@ -63,6 +69,11 @@ type EventQueueRepoMock struct {
 			// Timestamp is the timestamp argument value.
 			Timestamp time.Time
 		}
+		// IsEventInQueue holds details about calls to the IsEventInQueue method.
+		IsEventInQueue []struct {
+			// EventID is the eventID argument value.
+			EventID string
+		}
 		// QueueEvent holds details about calls to the QueueEvent method.
 		QueueEvent []struct {
 			// Item is the item argument value.
@@ -72,6 +83,7 @@ type EventQueueRepoMock struct {
 	lockDeleteQueuedEvent  sync.RWMutex
 	lockDeleteQueuedEvents sync.RWMutex
 	lockGetQueuedEvents    sync.RWMutex
+	lockIsEventInQueue     sync.RWMutex
 	lockQueueEvent         sync.RWMutex
 }
 
@@ -165,6 +177,37 @@ func (mock *EventQueueRepoMock) GetQueuedEventsCalls() []struct {
 	mock.lockGetQueuedEvents.RLock()
 	calls = mock.calls.GetQueuedEvents
 	mock.lockGetQueuedEvents.RUnlock()
+	return calls
+}
+
+// IsEventInQueue calls IsEventInQueueFunc.
+func (mock *EventQueueRepoMock) IsEventInQueue(eventID string) (bool, error) {
+	if mock.IsEventInQueueFunc == nil {
+		panic("EventQueueRepoMock.IsEventInQueueFunc: method is nil but EventQueueRepo.IsEventInQueue was just called")
+	}
+	callInfo := struct {
+		EventID string
+	}{
+		EventID: eventID,
+	}
+	mock.lockIsEventInQueue.Lock()
+	mock.calls.IsEventInQueue = append(mock.calls.IsEventInQueue, callInfo)
+	mock.lockIsEventInQueue.Unlock()
+	return mock.IsEventInQueueFunc(eventID)
+}
+
+// IsEventInQueueCalls gets all the calls that were made to IsEventInQueue.
+// Check the length with:
+//     len(mockedEventQueueRepo.IsEventInQueueCalls())
+func (mock *EventQueueRepoMock) IsEventInQueueCalls() []struct {
+	EventID string
+} {
+	var calls []struct {
+		EventID string
+	}
+	mock.lockIsEventInQueue.RLock()
+	calls = mock.calls.IsEventInQueue
+	mock.lockIsEventInQueue.RUnlock()
 	return calls
 }
 
