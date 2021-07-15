@@ -4,9 +4,9 @@ type ConnectionType string
 
 var ConnectionTypeToLocation = map[ConnectionType]string{ConnectionTypeNATS: "control-plane", ConnectionTypeHTTP: "remote-execution-plane"}
 
-const mongoDbUrl =       "/mongodb-datastore"
+const mongoDbUrl = "/mongodb-datastore"
 const configServiceUrl = "/configuration-service"
-const controlPlaneUrl =  "/controlPlane"
+const controlPlaneUrl = "/controlPlane"
 
 var InClusterAPIProxyMappings = map[string]string{
 	mongoDbUrl:       "mongodb-datastore:8080",
