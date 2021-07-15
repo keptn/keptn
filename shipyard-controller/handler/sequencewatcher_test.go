@@ -94,6 +94,9 @@ func TestSequenceWatcher(t *testing.T) {
 		GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
 			return nil, nil
 		},
+		IsEventInQueueFunc: func(eventID string) (bool, error) {
+			return false, nil
+		},
 	}
 
 	projectRepoMock := &db_mock.ProjectRepoMock{
