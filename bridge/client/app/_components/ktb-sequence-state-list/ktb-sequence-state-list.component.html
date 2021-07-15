@@ -18,16 +18,16 @@
             <dt-icon *ngIf="!row.isLoading() || row.hasPendingApproval(); else showLoading" class="event-icon"
                      [name]="row.getIcon()"
                      [class.success]="row.isSuccessful()"
-                     [class.error]="row.isProblem() && row.isFaulty() && !row.isSuccessful()"
+                     [class.error]="row.isFaulty()"
                      [class.highlight]="row.hasPendingApproval()"></dt-icon>
             <ng-template #showLoading>
               <button class="m-0 p-0" dt-button disabled variant="nested">
                 <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
               </button>
             </ng-template>
-            <a [routerLink]="getSequenceLink(row)" class="m-0" [class.error]="row.isProblem() && row.isFaulty() && !row.isSuccessful()">
+            <a [routerLink]="getSequenceLink(row)" class="m-0" [class.error]="row.isFaulty()">
               <span class="bold" [textContent]="row.getLabel()"></span>&nbsp;
-              <span [textContent]="row.getStatusLabel()"></span>
+              <span [textContent]="row.getStatus()"></span>
             </a>
           </div>
         </dt-cell>
