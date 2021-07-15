@@ -12,7 +12,7 @@ import {DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig} fr
 import {isObject} from '@dynatrace/barista-components/core';
 import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
 import { filter, map, startWith, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
-import * as moment from 'moment';
+import moment from 'moment';
 import {Project} from '../../_models/project';
 import {DataService} from '../../_services/data.service';
 import {DateUtil} from '../../_utils/date.utils';

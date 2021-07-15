@@ -1,16 +1,17 @@
-const express = require('express');
-const axios = require('axios');
-const https = require('https');
-const currentPrincipal = require('../user/session').getCurrentPrincipal;
+import { Router } from 'express';
+import axios from 'axios';
+import * as https from 'https';
+import { currentPrincipal } from '../user/session.js';
 
-const router = express.Router();
+const router = Router();
 
-module.exports = (params) => {
+function apiRouter(params:
+                     {apiUrl: string | undefined, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string}
+                   ): Router {
   // fetch parameters for bridgeInfo endpoint
   const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
-
-  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== "false";
-  const showApiToken = process.env.SHOW_API_TOKEN !== "false";
+  const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
+  const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
   const bridgeVersion = process.env.VERSION;
   const projectsPageSize = process.env.PROJECTS_PAGE_SIZE;
   const servicesPageSize = process.env.SERVICES_PAGE_SIZE;
@@ -23,6 +24,7 @@ module.exports = (params) => {
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
+    const user = currentPrincipal(req);
     const bridgeInfo = {
       bridgeVersion,
       keptnInstallationType,
@@ -32,14 +34,9 @@ module.exports = (params) => {
       showApiToken,
       projectsPageSize,
       servicesPageSize,
-      authType
+      authType,
+      ... user && {user}
     };
-
-    const user = currentPrincipal(req)
-
-    if (user !== undefined) {
-      bridgeInfo.user = user;
-    }
 
     try {
       return res.json(bridgeInfo);
@@ -50,6 +47,7 @@ module.exports = (params) => {
 
   router.get('/integrationsPage', async (req, res, next) => {
     try {
+      // @ts-ignore
       const result = await axios({
         method: req.method,
         url: `${integrationsPageLink}`,
@@ -63,6 +61,7 @@ module.exports = (params) => {
 
   router.get('/swagger-ui/swagger.yaml', async (req, res, next) => {
     try {
+      // @ts-ignore
       const result = await axios({
         method: req.method,
         url: `${apiUrl}${req.url}`,
@@ -79,6 +78,7 @@ module.exports = (params) => {
 
   router.get('/version.json', async (req, res, next) => {
     try {
+      // @ts-ignore
       const result = await axios({
         method: req.method,
         url: `https://get.keptn.sh/version.json`,
@@ -96,10 +96,11 @@ module.exports = (params) => {
 
   router.all('*', async (req, res, next) => {
     try {
+      // @ts-ignore
       const result = await axios({
         method: req.method,
         url: `${apiUrl}${req.url}`,
-        ...req.method!='GET' && { data: req.body },
+        ...req.method !== 'GET' && { data: req.body },
         headers: {
           'x-token': apiToken,
           'Content-Type': 'application/json'
@@ -114,4 +115,6 @@ module.exports = (params) => {
   });
 
   return router;
-};
+}
+
+export { apiRouter };

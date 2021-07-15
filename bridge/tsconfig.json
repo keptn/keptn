@@ -11,6 +11,8 @@
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2015",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "typeRoots": [
       "node_modules/@types"
     ],
