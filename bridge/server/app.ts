@@ -232,7 +232,7 @@ async function init(): Promise<Express> {
     if (err.response?.data?.message) {
       err.message = err.response.data.message;
     }
-    res.status(err.status || 500).send(err.message);
+    res.status(err.response?.status || 500).send(err.message);
     console.error(err);
   });
 
