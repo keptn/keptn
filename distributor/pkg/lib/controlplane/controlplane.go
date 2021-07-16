@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	logger "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 )
@@ -82,6 +83,11 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 		projectFilter = []string{}
 	} else {
 		projectFilter = strings.Split(env.ProjectFilter, ",")
+	}
+
+	if env.K8sNodeName == "" {
+		logger.Warn("K8S_NODE_NAME is not set. Using default value: 'keptn-node'")
+		env.K8sNodeName = "keptn-node"
 	}
 
 	return models.Integration{
