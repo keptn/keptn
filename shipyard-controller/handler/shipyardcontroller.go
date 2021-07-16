@@ -882,31 +882,10 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 	eventPayload["stage"] = eventScope.Stage
 	eventPayload["service"] = eventScope.Service
 
-	var mergedPayload interface{}
-	if inputEvent != nil {
-		marshal, err := json.Marshal(inputEvent.Data)
-		if err != nil {
-			return fmt.Errorf("could not marshal input event: %s ", err.Error())
-		}
-		tmp := map[string]interface{}{}
-		if err := json.Unmarshal(marshal, &tmp); err != nil {
-			return fmt.Errorf("could not convert input event: %s ", err.Error())
-		}
-		mergedPayload = common.Merge(eventPayload, tmp)
+	mergedPayload, err2 := sc.getMergedPayloadForSequenceTriggeredEvent(inputEvent, eventPayload, eventHistory)
+	if err2 != nil {
+		return err2
 	}
-	if eventHistory != nil {
-		for index := range eventHistory {
-			if mergedPayload == nil {
-				mergedPayload = common.Merge(eventPayload, eventHistory[index])
-			} else {
-				mergedPayload = common.Merge(mergedPayload, eventHistory[index])
-			}
-		}
-	}
-
-	// make sure to have empty state/result
-	eventPayload["result"] = ""
-	eventPayload["status"] = ""
 
 	eventType := eventScope.Stage + "." + taskSequenceName
 
@@ -926,6 +905,31 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 	}
 
 	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event}, true)
+}
+
+func (sc *shipyardController) getMergedPayloadForSequenceTriggeredEvent(inputEvent *models.Event, eventPayload map[string]interface{}, eventHistory []interface{}) (interface{}, error) {
+	var mergedPayload interface{}
+	if inputEvent != nil {
+		marshal, err := json.Marshal(inputEvent.Data)
+		if err != nil {
+			return nil, fmt.Errorf("could not marshal input event: %s ", err.Error())
+		}
+		tmp := map[string]interface{}{}
+		if err := json.Unmarshal(marshal, &tmp); err != nil {
+			return nil, fmt.Errorf("could not convert input event: %s ", err.Error())
+		}
+		mergedPayload = common.Merge(eventPayload, tmp)
+	}
+	if eventHistory != nil {
+		for index := range eventHistory {
+			if mergedPayload == nil {
+				mergedPayload = common.Merge(eventPayload, eventHistory[index])
+			} else {
+				mergedPayload = common.Merge(mergedPayload, eventHistory[index])
+			}
+		}
+	}
+	return mergedPayload, nil
 }
 
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {

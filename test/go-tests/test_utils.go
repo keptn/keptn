@@ -259,16 +259,20 @@ func StringArr(el ...string) []string {
 	return el
 }
 
-func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *models.EventContext, desiredState string, timeout time.Duration) {
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredState)
+func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *models.EventContext, timeout time.Duration, desiredStates []string) {
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
 	require.Eventually(t, func() bool {
 		states, _, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
 		for _, state := range states.States {
-			if state.Shkeptncontext == *context.KeptnContext && state.State == desiredState {
-				return true
+			if state.Shkeptncontext == *context.KeptnContext {
+				for _, desiredState := range desiredStates {
+					if state.State == desiredState {
+						return true
+					}
+				}
 			}
 		}
 		return false

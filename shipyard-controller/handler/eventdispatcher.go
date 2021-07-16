@@ -165,6 +165,14 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	if err != nil {
 		return err
 	}
+	if e.isCurrentEventBlockedByOtherTasks(eventScope, runningSequencesInStage, event) {
+		return errOtherActiveSequencesRunning
+	}
+
+	return e.eventSender.SendEvent(event.Event)
+}
+
+func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
 	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
 	/// if there is another sequence running in the stage, we cannot send the event
 	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
@@ -174,26 +182,26 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
 			// if there is a sequence running that is not waiting for an approval, we need to block
 			// check if the item is still in the queue - if yes, this is not a reason to block
-			queuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
+			otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 			if err != nil {
 				log.Debugf("could not fetch event queue: %s", err.Error())
+				return true
 			}
 			eventFoundInQueue := false
-			for _, queueEvent := range queuedEvents {
-				if queueEvent.EventID == lastTaskOfSequence.TriggeredEventID && queueEvent.Timestamp.Before(event.TimeStamp) {
+			for _, otherEvent := range otherQueuedEvents {
+				if otherEvent.EventID == lastTaskOfSequence.TriggeredEventID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
 					eventFoundInQueue = true
-					continue
+					break
 				}
 			}
 			if eventFoundInQueue {
 				continue
 			}
 			log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s - blocked by event %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service, lastTaskOfSequence.TriggeredEventID)
-			return errOtherActiveSequencesRunning
+			return true
 		}
 	}
-
-	return e.eventSender.SendEvent(event.Event)
+	return false
 }
 
 func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {

@@ -8,6 +8,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -91,13 +92,13 @@ func Test_SequenceQueue(t *testing.T) {
 	context := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
 	// wait for the sequence state to be available
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})
 	t.Log("received the expected state!")
 
 	// trigger a second sequence - this one should stay in 'triggered' state until the previous sequence is finished
 	secondContext := triggerSequence(t, projectName, serviceName, "dev", "delivery")
 
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceTriggeredState, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceTriggeredState})
 	t.Log("received the expected state!")
 
 	// check if mytask.triggered has been sent for first sequence - this one should be available
@@ -129,7 +130,7 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// now that all tasks for the first sequence have been executed, the second sequence should eventually have the status 'started'
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.SequenceStartedState)
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
 	t.Log("received the expected state!")
 
 	// check if mytask.triggered has been sent for second sequence - now it should be available
@@ -151,13 +152,13 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// trigger the first task sequence - this should time out
 	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.TimedOut, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.TimedOut})
 	t.Log("received the expected state!")
 
 	// now trigger the second sequence - this should start and a .triggered event for mytask should be sent
 	secondContext = triggerSequence(t, projectName, serviceName, "staging", "delivery")
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *secondContext.KeptnContext, scmodels.SequenceStartedState)
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
 	triggeredEventOfSecondSequence, err = GetLatestEventOfType(*secondContext.KeptnContext, projectName, "staging", keptnv2.GetTriggeredEventType("mytask"))
 	require.Nil(t, err)
 	require.NotNil(t, triggeredEventOfSecondSequence)
@@ -171,7 +172,7 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 	t.Log("starting delivery-with-approval sequence")
 	context = triggerSequence(t, projectName, serviceName, "dev", "delivery-with-approval")
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceStartedState, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
 	// check if approval.triggered has been sent for sequence - now it should be available
 	approvalTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
@@ -188,7 +189,7 @@ func Test_SequenceQueue(t *testing.T) {
 
 	// now let's trigger the other sequence
 	secondContext = triggerSequence(t, projectName, serviceName, "dev", "delivery")
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceStartedState, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
 	// check if approval.triggered has been sent for sequence - now it should be available
 	myTaskTriggeredEvent, err := GetLatestEventOfType(*secondContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("mytask"))
@@ -218,7 +219,7 @@ func Test_SequenceQueue(t *testing.T) {
 	require.Nil(t, err)
 
 	// this should have completed the task sequence
-	VerifySequenceEndsUpInState(t, projectName, secondContext, scmodels.SequenceFinished, 2*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, secondContext, 2*time.Minute, []string{scmodels.SequenceFinished})
 
 	// now the mytask.triggered event for the second sequence should eventually become available
 	require.Eventually(t, func() bool {
@@ -238,12 +239,45 @@ func Test_SequenceQueue(t *testing.T) {
 	wg.Add(nrOfSequences)
 
 	for i := 0; i < nrOfSequences; i++ {
-		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg)
+		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg, []string{scmodels.SequenceFinished})
 	}
 	wg.Wait()
+
+	// ----------------------------
+	// Scenario 5: start a couple of task sequences and verify their completion this time we randomly shut down the shipyard controller and the mongodb
+	// ----------------------------
+
+	err = setShipyardControllerTaskTimeout(t, "10s")
+	defer func() {
+		// increase the timeout value again
+		err = setShipyardControllerTaskTimeout(t, "20m")
+		require.Nil(t, err)
+	}()
+	require.Nil(t, err)
+
+	var wg2 sync.WaitGroup
+	wg2.Add(nrOfSequences + 2)
+
+	for i := 0; i < nrOfSequences; i++ {
+		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg, []string{scmodels.SequenceFinished, scmodels.TimedOut})
+	}
+
+	// during the task sequence executions, randomly shut down the shipyard controller and mongodb pods
+	go randomPodShutdown(t, "shipyard-controller", &wg2)
+	go randomPodShutdown(t, "mongodb", &wg2)
+
+	wg2.Wait()
 }
 
-func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup) {
+func randomPodShutdown(t *testing.T, deploymentName string, wg2 *sync.WaitGroup) {
+	defer wg2.Done()
+	restartTime := time.Duration(rand.Int63nRange(5, 30)) * time.Second
+	<-time.After(restartTime)
+	t.Logf("restarting %s pod", deploymentName)
+	_ = RestartPod(deploymentName)
+}
+
+func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup, allowedStates []string) {
 	defer wg.Done()
 	context := triggerSequence(t, projectName, serviceName, stageName, "evaluation")
 	source := "golang-test"
@@ -274,7 +308,8 @@ func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, 
 		Result: keptnv2.ResultPass,
 	}, source)
 	require.Nil(t, err)
-	VerifySequenceEndsUpInState(t, projectName, context, scmodels.SequenceFinished, 5*time.Minute)
+	VerifySequenceEndsUpInState(t, projectName, context, 5*time.Minute, allowedStates)
+	t.Logf("Sequence %s has been finished!", *context.KeptnContext)
 }
 
 func triggerSequence(t *testing.T, projectName, serviceName, stageName, sequenceName string) *models.EventContext {
