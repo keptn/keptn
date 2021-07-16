@@ -20,7 +20,10 @@ var setConfigCmd = &cobra.Command{
 	Short: "Sets flags of the CLI configuration",
 	Long: `Sets flags of the CLI configuration, which is stored in $HOME/.keptn/config.
 
-*	This command takes a key and a new value as arguments. 
+This command takes a key and a new value as arguments and applies them to the local keptn CLI configuration
+Supported keys:
+ * AutomaticVersionCheck: true|false
+ * KubeContextCheck: true|false
 `,
 	Example:      `keptn set config AutomaticVersionCheck false`,
 	SilenceUsage: true,
@@ -33,7 +36,6 @@ var setConfigCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		cliConfig, err := configMng.LoadCLIConfig()
 		if err != nil {
 			return err
