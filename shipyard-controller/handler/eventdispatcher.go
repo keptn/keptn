@@ -180,21 +180,7 @@ func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.Ev
 	for _, tasksOfContext := range tasksGroupedByContext {
 		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
 		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
-			// if there is a sequence running that is not waiting for an approval, we need to block
-			// check if the item is still in the queue - if yes, this is not a reason to block
-			otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
-			if err != nil {
-				log.Debugf("could not fetch event queue: %s", err.Error())
-				return true
-			}
-			eventFoundInQueue := false
-			for _, otherEvent := range otherQueuedEvents {
-				if otherEvent.EventID == lastTaskOfSequence.TriggeredEventID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
-					eventFoundInQueue = true
-					break
-				}
-			}
-			if eventFoundInQueue {
+			if e.isCurrentEventOverrulingOtherEvent(lastTaskOfSequence, queuedEvent) {
 				continue
 			}
 			log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s - blocked by event %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service, lastTaskOfSequence.TriggeredEventID)
@@ -202,6 +188,22 @@ func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.Ev
 		}
 	}
 	return false
+}
+
+func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
+	otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
+	if err != nil {
+		log.Debugf("could not fetch event queue: %s", err.Error())
+		return true
+	}
+	eventFoundInQueue := false
+	for _, otherEvent := range otherQueuedEvents {
+		if otherEvent.EventID == lastTaskOfSequence.TriggeredEventID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
+			eventFoundInQueue = true
+			break
+		}
+	}
+	return eventFoundInQueue
 }
 
 func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {

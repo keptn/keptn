@@ -8,7 +8,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/util/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -242,39 +241,6 @@ func Test_SequenceQueue(t *testing.T) {
 		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg, []string{scmodels.SequenceFinished})
 	}
 	wg.Wait()
-
-	// ----------------------------
-	// Scenario 5: start a couple of task sequences and verify their completion this time we randomly shut down the shipyard controller and the mongodb
-	// ----------------------------
-
-	err = setShipyardControllerTaskTimeout(t, "10s")
-	defer func() {
-		// increase the timeout value again
-		err = setShipyardControllerTaskTimeout(t, "20m")
-		require.Nil(t, err)
-	}()
-	require.Nil(t, err)
-
-	var wg2 sync.WaitGroup
-	wg2.Add(nrOfSequences + 2)
-
-	for i := 0; i < nrOfSequences; i++ {
-		go executeSequenceAndVerifyCompletion(t, projectName, serviceName, "qg", &wg, []string{scmodels.SequenceFinished, scmodels.TimedOut})
-	}
-
-	// during the task sequence executions, randomly shut down the shipyard controller and mongodb pods
-	go randomPodShutdown(t, "shipyard-controller", &wg2)
-	go randomPodShutdown(t, "mongodb", &wg2)
-
-	wg2.Wait()
-}
-
-func randomPodShutdown(t *testing.T, deploymentName string, wg2 *sync.WaitGroup) {
-	defer wg2.Done()
-	restartTime := time.Duration(rand.Int63nRange(5, 30)) * time.Second
-	<-time.After(restartTime)
-	t.Logf("restarting %s pod", deploymentName)
-	_ = RestartPod(deploymentName)
 }
 
 func executeSequenceAndVerifyCompletion(t *testing.T, projectName, serviceName, stageName string, wg *sync.WaitGroup, allowedStates []string) {

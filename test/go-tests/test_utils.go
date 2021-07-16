@@ -267,16 +267,23 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 			return false
 		}
 		for _, state := range states.States {
-			if state.Shkeptncontext == *context.KeptnContext {
-				for _, desiredState := range desiredStates {
-					if state.State == desiredState {
-						return true
-					}
-				}
+			if doesSequenceHaveOneOfTheDesiredStates(state, context, desiredStates) {
+				return true
 			}
 		}
 		return false
 	}, timeout, 10*time.Second)
+}
+
+func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context *models.EventContext, desiredStates []string) bool {
+	if state.Shkeptncontext == *context.KeptnContext {
+		for _, desiredState := range desiredStates {
+			if state.State == desiredState {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
