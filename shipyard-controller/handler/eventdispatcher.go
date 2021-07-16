@@ -194,16 +194,16 @@ func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence 
 	otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
 	if err != nil {
 		log.Debugf("could not fetch event queue: %s", err.Error())
-		return true
+		return false
+	} else if len(otherQueuedEvents) == 0 {
+		return false
 	}
-	eventFoundInQueue := false
 	for _, otherEvent := range otherQueuedEvents {
 		if otherEvent.EventID == lastTaskOfSequence.TriggeredEventID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
-			eventFoundInQueue = true
-			break
+			return true
 		}
 	}
-	return eventFoundInQueue
+	return false
 }
 
 func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {
