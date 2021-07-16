@@ -178,9 +178,9 @@ func getCurrentContextFromKubeConfig() {
 	fileContent, err := fileutils.ReadFile(kubeconfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error()+"\n")
-		fmt.Println("Hint: you can disable this check via 'keptn set config KubeContextCheck true'")
-	} else if err = yaml.Unmarshal(fileContent, &kubeConfigFile); err != nil {
 		fmt.Println("Hint: If you don't have 'kubectl' installed you can disable this check via 'keptn-local set config KubeContextCheck false'")
+	} else if err = yaml.Unmarshal(fileContent, &kubeConfigFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error()+"\n")
 	}
 }
 
