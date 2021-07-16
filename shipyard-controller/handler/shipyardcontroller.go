@@ -881,14 +881,13 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 	eventPayload["project"] = eventScope.Project
 	eventPayload["stage"] = eventScope.Stage
 	eventPayload["service"] = eventScope.Service
+	eventPayload["result"] = ""
+	eventPayload["status"] = ""
 
 	mergedPayload, err := sc.getMergedPayloadForSequenceTriggeredEvent(inputEvent, eventPayload, eventHistory)
 	if err != nil {
 		return err
 	}
-
-	eventPayload["result"] = ""
-	eventPayload["status"] = ""
 
 	eventType := eventScope.Stage + "." + taskSequenceName
 
