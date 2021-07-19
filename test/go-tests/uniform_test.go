@@ -27,6 +27,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 		},
 	}
 
+	// Scenario 1: Simple API Test (create, read, delete)
 	// register the integration at the shipyard controller
 	resp, err := ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
 
@@ -68,6 +69,8 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Nil(t, err)
 	require.Empty(t, integrations)
 
+	// Scenario 2: Check automatic TTL expiration of Uniform Integration
+	setShipyardControllerEnvVar(t, "UNIFORM_INTEGRATION_TTL", "1m")
 	// re-register the integration
 	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
 

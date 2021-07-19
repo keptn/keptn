@@ -93,7 +93,11 @@ func Test_SequenceTimeout(t *testing.T) {
 }
 
 func setShipyardControllerTaskTimeout(t *testing.T, timeoutValue string) error {
-	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller TASK_STARTED_WAIT_DURATION=%s", GetKeptnNameSpaceFromEnv(), timeoutValue))
+	return setShipyardControllerEnvVar(t, "TASK_STARTED_WAIT_DURATION", timeoutValue)
+}
+
+func setShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
+	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
 	if err != nil {
 		return err
 	}
