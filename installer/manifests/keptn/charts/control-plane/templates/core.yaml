@@ -357,6 +357,8 @@ spec:
               value: {{ .Values.keptnSpecVersion }}
             - name: TASK_STARTED_WAIT_DURATION
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
+            - name: UNIFORM_TTL
+              value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
           ports:
             - containerPort: 8080
           resources:
