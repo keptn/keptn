@@ -110,7 +110,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 			return false
 		}
 		return true
-	}, 2*time.Minute, 10*time.Second)
+	}, 3*time.Minute, 10*time.Second)
 }
 
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
