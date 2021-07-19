@@ -48,7 +48,7 @@ const envVarLogTTL = "LOG_TTL"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
-const envVarUniformTTLDefault = "2m"
+const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
 
 func main() {
