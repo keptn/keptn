@@ -118,9 +118,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MAX_AUTH_REQUESTS_PER_SECOND
-              value: {{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1"}}
+              value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
             - name: MAX_AUTH_REQUESTS_BURST
-              value: {{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}
+              value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
