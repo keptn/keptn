@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 
 @Component({
   selector: 'ktb-project-settings-git',
@@ -27,10 +27,10 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   }
 
   @Output()
-  public onGitUpstreamSubmit: EventEmitter<GitData> = new EventEmitter();
+  public gitUpstreamSubmit: EventEmitter<GitData> = new EventEmitter();
 
   @Output()
-  public onGitDataChanged: EventEmitter<GitData> = new EventEmitter();
+  public gitDataChanged: EventEmitter<GitData> = new EventEmitter();
 
   public gitUrlControl = new FormControl('');
   public gitUserControl = new FormControl('');
@@ -41,10 +41,8 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     gitToken: this.gitTokenControl
   });
 
-  constructor() { }
-
   ngOnInit(): void {
-    if(!this.isCreateMode) {
+    if (!this.isCreateMode) {
       this.gitUrlControl.setValidators([Validators.required]);
       this.gitUserControl.setValidators([Validators.required]);
       this.gitTokenControl.setValidators([Validators.required]);
@@ -52,11 +50,11 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   }
 
   public setGitUpstream() {
-    this.onGitUpstreamSubmit.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
+    this.gitUpstreamSubmit.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
   }
 
   public onGitUpstreamFormChange() {
-    this.onGitDataChanged.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
+    this.gitDataChanged.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
   }
 
 }

@@ -187,7 +187,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     };
 
     // when
-    const spy = spyOn(component.onGitDataChanged, 'emit');
+    const spy = spyOn(component.gitDataChanged, 'emit');
     component.gitUrlControl.setValue('https://some-other-repo.git', {emitEvent: true});
     component.onGitUpstreamFormChange();
 

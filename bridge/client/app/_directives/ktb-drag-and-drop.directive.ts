@@ -63,6 +63,4 @@ export class KtbDragAndDropDirective {
     this.dropped.emit(files);
     this.dropError.emit('');
   }
-
-  constructor() {}
 }

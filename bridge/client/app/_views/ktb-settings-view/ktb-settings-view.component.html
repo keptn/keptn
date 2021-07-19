@@ -16,8 +16,8 @@
         [isCreateMode]="isCreateMode"
         [gitData]="gitData"
         [isGitUpstreamInProgress]="isGitUpstreamInProgress"
-        (onGitDataChanged)="updateGitData($event)"
-        (onGitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
+        (gitDataChanged)="updateGitData($event)"
+        (gitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
     </div>
     <div class="mb-3 settings-section" *ngIf="isCreateMode">
       <ktb-project-settings-shipyard (shipyardFileChanged)="shipyardFile=$event" [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>

@@ -1,16 +1,16 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {catchError, filter, map, startWith, switchMap, takeUntil, tap} from "rxjs/operators";
-import {Observable, Subject, timer, combineLatest, BehaviorSubject, of} from "rxjs";
-import {ActivatedRoute, Router} from "@angular/router";
+import {catchError, filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {Observable, Subject, timer, combineLatest, BehaviorSubject, of} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
 
-import {Project} from "../_models/project";
-import {Trace} from "../_models/trace";
+import {Project} from '../_models/project';
+import {Trace} from '../_models/trace';
 
-import {DataService} from "../_services/data.service";
-import {environment} from "../../environments/environment";
+import {DataService} from '../_services/data.service';
+import {environment} from '../../environments/environment';
 
 @Component({
-  selector: 'app-project-board',
+  selector: 'ktb-project-board',
   templateUrl: './project-board.component.html',
   styleUrls: ['./project-board.component.scss']
 })
@@ -21,7 +21,6 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
   public project$: Observable<Project>;
   public contextId: string;
-  private _rootEventsTimerInterval = 30;
   private readonly _projectTimerInterval = 30_000;
 
   private _errorSubject: BehaviorSubject<string> = new BehaviorSubject<string>(null);
@@ -51,7 +50,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     });
 
     this.project$ = projectName$.pipe(
-      switchMap(projectName => {return this.dataService.getProject(projectName)}),
+      switchMap(projectName => this.dataService.getProject(projectName)),
       tap(project => {
         if (project === undefined) {
           this._errorSubject.next('project');
@@ -80,14 +79,14 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.unsubscribe$)
         ).subscribe(([traces, eventselector]) => {
-          if(traces.length > 0) {
-            if(eventselector) {
-              let trace = traces.find((t: Trace) => t.data.stage == eventselector && !!t.getProject() && !!t.getService());
+          if (traces.length > 0) {
+            if (eventselector) {
+              let trace = traces.find((t: Trace) => t.data.stage === eventselector && !!t.getProject() && !!t.getService());
               if (trace) {
-                this.router.navigate(['/project', trace.getProject(),'sequence', trace.shkeptncontext, 'stage', trace.getStage()]);
+                this.router.navigate(['/project', trace.getProject(), 'sequence', trace.shkeptncontext, 'stage', trace.getStage()]);
               } else {
-                trace = traces.reverse().find((t: Trace) => t.type == eventselector && !!t.getProject() && !!t.getService());
-                if(trace) {
+                trace = traces.reverse().find((t: Trace) => t.type === eventselector && !!t.getProject() && !!t.getService());
+                if (trace) {
                   this.router.navigate(['/project', trace.getProject(), 'sequence', trace.shkeptncontext, 'event', trace.id]);
                 } else {
                   this._errorSubject.next('trace');
@@ -95,7 +94,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               }
             } else {
               const trace = traces.find((t: Trace) => !!t.getProject() && !!t.getService());
-              this.router.navigate(['/project', trace.getProject(),'sequence', trace.shkeptncontext]);
+              this.router.navigate(['/project', trace.getProject(), 'sequence', trace.shkeptncontext]);
             }
           } else {
             this._errorSubject.next('trace');

@@ -9,10 +9,10 @@ import {ApiService} from '../_services/api.service';
 import {EventTypes} from '../_models/event-types';
 import {DataService} from '../_services/data.service';
 import {Deployment} from '../_models/deployment';
-import {environment} from "../../environments/environment";
+import {environment} from '../../environments/environment';
 
 @Component({
-  selector: 'app-project-board',
+  selector: 'ktb-evaluation-board',
   templateUrl: './evaluation-board.component.html',
   styleUrls: ['./evaluation-board.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

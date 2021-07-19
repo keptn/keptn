@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {FormUtils} from '../../_utils/form.utils';
 
 @Component({
@@ -6,7 +6,7 @@ import {FormUtils} from '../../_utils/form.utils';
   templateUrl: './ktb-project-settings-shipyard.component.html',
   styleUrls: ['./ktb-project-settings-shipyard.component.scss']
 })
-export class KtbProjectSettingsShipyardComponent implements OnInit {
+export class KtbProjectSettingsShipyardComponent {
   public readonly allowedExtensions = ['yaml', 'yml'];
 
   @Input()
@@ -19,12 +19,6 @@ export class KtbProjectSettingsShipyardComponent implements OnInit {
   private dropError: ElementRef;
 
   public shipyardFile: File | null;
-
-  constructor() {
-  }
-
-  ngOnInit(): void {
-  }
 
   public handleDragAndDropError(error: string) {
     this.dropError.nativeElement.innerText = error;
