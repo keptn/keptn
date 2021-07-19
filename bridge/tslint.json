@@ -20,13 +20,12 @@
     "directive-selector": [
       true,
       "attribute",
-      "app",
+      "ktb",
       "camelCase"
     ],
     "component-selector": [
       true,
       "element",
-      "app",
       "ktb",
       "kebab-case"
     ],

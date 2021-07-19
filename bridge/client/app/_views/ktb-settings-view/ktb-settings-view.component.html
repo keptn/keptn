@@ -1,31 +1,40 @@
-<div fxFlexFill>
+<div fxFlexFill fxLayout="column">
+  <ktb-notification-bar></ktb-notification-bar>
   <div class="container" fxFlex fxLayout="column">
-    <div class="mb-3 settings-section" fxFlex fxLayout="column">
-      <h2>Git upstream repository</h2>
-      <p class="mt-0 mb-3">Instructions, how to set your Git provider can be found in the
-        <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>
-      </p>
-      <form [formGroup]="gitUpstreamForm" class="mb-3" fxLayout="row" fxLayoutAlign="none end">
-        <dt-form-field class="mr-3">
-          <dt-label>Git remote URL</dt-label>
-          <input formControlName="gitUrl" type="text" required dtInput placeholder="https://git-repo.com/repo.git"/>
-          <dt-error>Must not be empty</dt-error>
-        </dt-form-field>
-        <dt-form-field class="mr-3">
-          <dt-label>Git user</dt-label>
-          <input formControlName="gitUser" type="text" required dtInput placeholder="Username"/>
-          <dt-error>Must not be empty</dt-error>
-        </dt-form-field>
-        <dt-form-field class="mr-3">
-          <dt-label>Token</dt-label>
-          <input formControlName="gitToken" (focus)="gitTokenControl.value.length > 0 && gitTokenControl.value.includes('*********') ? gitTokenControl.setValue('') : null" type="text" dtInput placeholder="Token"/>
-          <dt-error>Must not be empty</dt-error>
-        </dt-form-field>
-        <button [disabled]="gitUpstreamForm.invalid || !gitUpstreamForm.dirty || isGitUpstreamInProgress" (click)="setGitUpstream()" dt-button>
-          <dt-loading-spinner *ngIf="isGitUpstreamInProgress" aria-label="Setting Git upstream URL"></dt-loading-spinner>
-          Set Git upstream
-        </button>
-      </form>
+    <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
+      <h2>Project name *</h2>
+      <dt-form-field>
+        <input type="text" formControlName="projectName" required dtInput placeholder="e.g. sockshop"/>
+        <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and hyphens</dt-hint>
+        <dt-error>
+          <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
+          <ng-container *ngIf="projectNameControl.hasError('projectName')">Project name already exists</ng-container>
+          <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter and contain only lower case letters, numbers and hyphens</ng-container>
+        </dt-error>
+      </dt-form-field>
+    </div>
+    <div class="mb-3 settings-section">
+      <ktb-project-settings-git
+        [isCreateMode]="isCreateMode"
+        [gitData]="gitData"
+        [isGitUpstreamInProgress]="isGitUpstreamInProgress"
+        (gitDataChanged)="updateGitData($event)"
+        (gitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
+    </div>
+    <div class="mb-3 settings-section" *ngIf="isCreateMode">
+      <ktb-project-settings-shipyard (shipyardFileChanged)="shipyardFile=$event" [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>
+    </div>
+    <div class="mt-3 settings-section settings-actions">
+      <button *ngIf="isCreateMode"
+              [disabled]="!shipyardFile || projectNameForm.invalid || !isGitFormValid() || isCreatingProjectInProgress"
+              (click)="createProject()"
+              dt-button>
+        <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
+        Create project
+      </button>
+      <div class="mt-2">
+        * fields are required
+      </div>
     </div>
     <div class="mb-3 settings-section">
       <h2>Danger Zone</h2>

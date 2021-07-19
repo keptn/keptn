@@ -6,7 +6,7 @@
       No integrations available.
     </div>
 
-    <dt-table [dataSource]="uniformRegistrations" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0">
+    <dt-table uitestid="keptn-uniform-integrations-table" [dataSource]="uniformRegistrations" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0">
       <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
         <dt-cell *dtCellDef="let row" [textContent]="row.name || 'n/a'"></dt-cell>

@@ -317,6 +317,28 @@ pre.code {
   }
 }
 
+.ktb-drag-and-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  border: 1px solid $link-icon-color;
+  border-radius: 5px;
+  background-color: transparent;
+  text-align: center;
+  position: relative;
+
+  p.drop-error {
+    position: absolute;
+    bottom: -6px;
+    color: $error-color;
+  }
+
+  &.drag-over {
+    background-color: $gray-200;
+  }
+}
+
 [fxFLex] {
   min-height: 0;
 }

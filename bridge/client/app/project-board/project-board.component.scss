@@ -56,19 +56,28 @@
     border-radius: 0;
   }
 
-  .dt-menu-item.active,
-  .dt-menu-item:hover,
-  .dt-menu-item:active {
-    background: $gray-700 !important;
+  button.dt-menu-item.dt-button-nested:disabled,
+  button.dt-menu-item.dt-button-nested:disabled:hover {
+    background: $gray-640;
+    cursor: default;
+    .dt-button-icon .dt-icon svg {
+      fill: $gray-500;
+    }
   }
 
-  .dt-menu-item.dt-button-nested .dt-button-icon .dt-icon svg,
-  .dt-menu-item:hover.dt-button-nested .dt-button-icon .dt-icon svg,
-  .dt-menu-item:active.dt-button-nested .dt-button-icon .dt-icon svg{
+  button.dt-menu-item.dt-button-nested.active:not([disabled]),
+  button.dt-menu-item.dt-button-nested:hover:not([disabled]),
+  button.dt-menu-item.dt-button-nested:active:not([disabled]) {
+    background: $gray-700!important;
+  }
+
+  button.dt-menu-item.dt-button-nested .dt-button-icon .dt-icon svg,
+  button.dt-menu-item.dt-button-nested:hover .dt-button-icon .dt-icon svg,
+  button.dt-menu-item.dt-button-nested:active .dt-button-icon .dt-icon svg{
     fill: #ffffff;
   }
 
-  .dt-menu-item.dt-button-nested .dt-button-icon {
+  button.dt-menu-item.dt-button-nested .dt-button-icon {
     margin-top: 0;
     height: 30px;
     width: 30px;
