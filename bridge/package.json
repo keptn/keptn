@@ -43,7 +43,7 @@
     "@angular/platform-browser": "^11.2.8",
     "@angular/platform-browser-dynamic": "^11.2.8",
     "@angular/router": "^11.2.8",
-    "@dynatrace/barista-components": "^9.6.0",
+    "@dynatrace/barista-components": "^9.8.1",
     "@dynatrace/barista-fonts": ">= 1.0.0 < 2",
     "@dynatrace/barista-icons": "^7.5.0",
     "@ngrx/core": "^1.2.0",
