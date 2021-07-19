@@ -1,34 +1,64 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Subject} from "rxjs";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {DataService} from "../../_services/data.service";
-import {ActivatedRoute} from "@angular/router";
-import {filter, map, switchMap, takeUntil} from "rxjs/operators";
-import {DtToast} from "@dynatrace/barista-components/toast";
+import {Subject} from 'rxjs';
+import {DataService} from '../../_services/data.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
+import {DtToast} from '@dynatrace/barista-components/toast';
+import {GitData} from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {FormUtils} from '../../_utils/form.utils';
+import {NotificationType, TemplateRenderedNotifications} from '../../_models/notification';
+import {NotificationsService} from '../../_services/notifications.service';
 
 @Component({
   selector: 'ktb-settings-view',
   templateUrl: './ktb-settings-view.component.html',
-  styleUrls: []
+  styleUrls: ['./ktb-settings-view.component.scss'],
+  providers: [NotificationsService]
 })
 export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  private projectName: string;
+  public projectName: string;
 
-  public gitUrlControl = new FormControl('', [Validators.required]);
-  public gitUserControl = new FormControl('', [Validators.required]);
-  public gitTokenControl = new FormControl('', [Validators.required]);
-  public gitUpstreamForm = new FormGroup({
-    gitUrl: this.gitUrlControl,
-    gitUser: this.gitUserControl,
-    gitToken: this.gitTokenControl
+  public isCreateMode: boolean;
+  public isGitUpstreamInProgress: boolean;
+  public isCreatingProjectInProgress: boolean;
+  public shipyardFile: File;
+  public gitData: GitData = {};
+
+  public projectNameControl = new FormControl('');
+  public projectNameForm = new FormGroup({
+    projectName: this.projectNameControl
   });
-  public isGitUpstreamInProgress = false;
 
-  constructor(private route: ActivatedRoute, private dataService: DataService, private toast: DtToast) {
+  constructor(private route: ActivatedRoute, private router: Router, private dataService: DataService, private toast: DtToast, private notificationsService: NotificationsService) {
   }
 
   ngOnInit(): void {
+    this.route.data.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe((data) => {
+      if (data) {
+        this.isCreateMode = data.isCreateMode;
+      }
+    });
+
+    this.dataService.projects
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter((projects) => !!projects),
+        map((projects) => projects ? projects.map(project => project.projectName) : null)
+      ).subscribe((projectNames) => {
+        if (this.isCreateMode && projectNames.includes(this.projectName)) {
+          this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
+        }
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.projectNameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*')
+        ]);
+    });
+
     this.route.params.pipe(
       map(params => params.projectName),
       switchMap(projectName => this.dataService.getProject(projectName)),
@@ -36,24 +66,35 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       filter(project => !!project)
     ).subscribe(project => {
       this.projectName = project.projectName;
-      this.gitUrlControl.setValue(project.gitRemoteURI);
-      this.gitUserControl.setValue(project.gitUser);
+      this.gitData.remoteURI = project.gitRemoteURI;
+      this.gitData.gitUser = project.gitUser;
+    });
 
-      if (project.gitRemoteURI && project.gitUser) {
-        this.gitTokenControl.setValue('***********************');
-      } else {
-        this.gitTokenControl.setValue('');
+    this.route.queryParams.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe((queryParams) => {
+      if (queryParams.created) {
+        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, null, true, {projectName: this.projectName, routerLink: `/project/${this.projectName}/service`});
       }
     });
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
-  setGitUpstream() {
+  public updateGitData(gitData: GitData): void {
+    this.gitData.remoteURI = gitData.remoteURI;
+    this.gitData.gitUser = gitData.gitUser;
+    this.gitData.gitToken = gitData.gitToken;
+  }
+
+  public setGitUpstream(): void {
     this.isGitUpstreamInProgress = true;
-    this.dataService.setGitUpstreamUrl(this.projectName, this.gitUrlControl.value, this.gitUserControl.value, this.gitTokenControl.value).subscribe(success => {
+    this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(success => {
       this.isGitUpstreamInProgress = false;
       if (success) {
         this.toast.create('Git Upstream URL set successfully');
@@ -63,4 +104,30 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  public isGitFormValid(): boolean {
+    if (!this.gitData.remoteURI && !this.gitData.gitUser && !this.gitData.gitToken) {
+      return true;
+    }
+    return this.gitData.remoteURI.length > 0 && this.gitData.gitUser.length > 0 && this.gitData.gitToken.length > 0;
+  }
+
+  public createProject(): void {
+    this.isCreatingProjectInProgress = true;
+
+    FormUtils.readFileContent(this.shipyardFile).then(fileContent => {
+      const shipyardBase64 = btoa(fileContent);
+      const projectName = this.projectNameControl.value;
+      this.dataService.createProject(
+        projectName, shipyardBase64, this.gitData.remoteURI || null, this.gitData.gitToken || null, this.gitData.gitUser || null
+      ).subscribe(() => {
+          this.projectName = projectName;
+          this.dataService.loadProjects();
+          this.isCreatingProjectInProgress = false;
+        },
+        () => {
+          this.notificationsService.addNotification(NotificationType.Error, 'The project could not be created.', 5000);
+          this.isCreatingProjectInProgress = false;
+        });
+    });
+  }
 }
