@@ -190,4 +190,21 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     expect(div).toBeFalsy();
     expect(component.shipyardFile).toBeNull();
   });
+
+  it('should have a different file selected after a file was deleted and re-added', () => {
+    // given
+    component.shipyardFile = new File(['test content'], 'test1.yaml');
+
+    // when
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('.shipyard-delete-button');
+    button.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    component.shipyardFile = new File(['test content'], 'test2.yaml');
+    fixture.detectChanges();
+
+    // then
+    const div = fixture.nativeElement.querySelector('.shipyard-file-name');
+    expect(div.innerText).toEqual('test2.yaml');
+  });
 });

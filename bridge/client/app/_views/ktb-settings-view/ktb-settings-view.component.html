@@ -2,9 +2,8 @@
   <ktb-notification-bar></ktb-notification-bar>
   <div class="container" fxFlex fxLayout="column">
     <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
-      <h2>Project name (mandatory)</h2>
+      <h2>Project name *</h2>
       <dt-form-field>
-        <dt-label>Project name</dt-label>
         <input type="text" formControlName="projectName" required dtInput placeholder="e.g. sockshop"/>
         <dt-error>
           <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
@@ -31,6 +30,9 @@
         <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
         Create project
       </button>
+      <div class="mt-2">
+        * fields are required
+      </div>
     </div>
   </div>
 </div>
