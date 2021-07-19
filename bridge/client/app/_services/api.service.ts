@@ -1,25 +1,25 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders, HttpResponse} from "@angular/common/http";
-import {Observable, of} from "rxjs";
-import {map} from "rxjs/operators";
+import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
+import {Observable, of} from 'rxjs';
+import {map} from 'rxjs/operators';
 
-import {Resource} from "../_models/resource";
-import {Stage} from "../_models/stage";
-import {ProjectResult} from "../_models/project-result";
-import {ServiceResult} from "../_models/service-result";
-import {EventResult} from "../_models/event-result";
-import {Trace} from "../_models/trace";
-import {ApprovalStates} from "../_models/approval-states";
-import {EventTypes} from "../_models/event-types";
+import {Resource} from '../_models/resource';
+import {Stage} from '../_models/stage';
+import {ProjectResult} from '../_models/project-result';
+import {ServiceResult} from '../_models/service-result';
+import {EventResult} from '../_models/event-result';
+import {Trace} from '../_models/trace';
+import {ApprovalStates} from '../_models/approval-states';
+import {EventTypes} from '../_models/event-types';
 import {Metadata} from '../_models/metadata';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
 import moment from 'moment';
 import {SequenceResult} from '../_models/sequence-result';
 import {Project} from '../_models/project';
-import {UniformRegistration} from "../_models/uniform-registration";
-import {UniformRegistrationLogResponse} from "../_models/uniform-registration-log";
-import {Secret} from "../_models/secret";
+import {UniformRegistration} from '../_models/uniform-registration';
+import {UniformRegistrationLogResponse} from '../_models/uniform-registration-log';
+import {Secret} from '../_models/secret';
 
 @Injectable({
   providedIn: 'root'
@@ -52,24 +52,24 @@ export class ApiService {
   }
 
   public getKeptnInfo(): Observable<any> {
-    let url = `${this._baseUrl}/bridgeInfo`;
+    const url = `${this._baseUrl}/bridgeInfo`;
     return this.http
-      .get<any>(url)
+      .get<any>(url);
   }
 
   public getKeptnVersion(): Observable<any> {
-    let url = `${this._baseUrl}/swagger-ui/swagger.yaml`;
+    const url = `${this._baseUrl}/swagger-ui/swagger.yaml`;
     return this.http
       .get<any>(url, { headers: new HttpHeaders({'Access-Control-Allow-Origin': '*'}) })
       .pipe(
         map(res => res.toString()),
-        map(res => res.substring(res.lastIndexOf("version: ")+9)),
-        map(res => res.substring(0, res.indexOf("\n"))),
+        map(res => res.substring(res.lastIndexOf('version: ') + 9)),
+        map(res => res.substring(0, res.indexOf('\n'))),
       );
   }
 
   public getIntegrationsPage(): Observable<any> {
-    let url = `${this._baseUrl}/integrationsPage`;
+    const url = `${this._baseUrl}/integrationsPage`;
     return this.http
       .get<any>(url, { responseType: 'text' as 'json' });
   }
@@ -88,13 +88,18 @@ export class ApiService {
   }
 
   public getAvailableVersions(): Observable<any> {
-    if(this.isVersionCheckEnabled()) {
-      let url = `${this._baseUrl}/version.json`;
+    if (this.isVersionCheckEnabled()) {
+      const url = `${this._baseUrl}/version.json`;
       return this.http
         .get<any>(url);
     } else {
       return of(null);
     }
+  }
+
+  public deleteProject(projectName: string): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
+    return this.http.delete<any>(url);
   }
 
   public getProject(projectName: string): Observable<Project> {
@@ -105,8 +110,9 @@ export class ApiService {
 
   public getProjects(pageSize?: number): Observable<ProjectResult> {
     let url = `${this._baseUrl}/controlPlane/v1/project?disableUpstreamSync=true`;
-    if(pageSize)
+    if (pageSize) {
       url += `&pageSize=${pageSize}`;
+    }
     return this.http
       .get<ProjectResult>(url);
   }
@@ -141,7 +147,7 @@ export class ApiService {
   }
 
   public getProjectResources(projectName): Observable<Resource[]> {
-    let url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
+    const url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;
     return this.http
       .get<Resource[]>(url);
   }
@@ -157,13 +163,13 @@ export class ApiService {
   }
 
   public getStages(projectName): Observable<Stage[]> {
-    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage`;
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.http
       .get<Stage[]>(url);
   }
 
   public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
-    let url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service?pageSize=${pageSize}`;
     return this.http
       .get<ServiceResult>(url);
   }
@@ -208,10 +214,12 @@ export class ApiService {
 
   public getTraces(contextId: string, projectName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
     let url = `${this._baseUrl}/mongodb-datastore/event?pageSize=100&keptnContext=${contextId}`;
-    if(projectName)
+    if (projectName) {
       url += `&project=${projectName}`;
-    if(fromTime)
+    }
+    if (fromTime) {
       url += `&fromTime=${fromTime}`;
+    }
     return this.http
       .get<EventResult>(url, { observe: 'response' });
   }
@@ -222,8 +230,9 @@ export class ApiService {
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, source: string, fromTime?: string) {
     let url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}?filter=data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}&excludeInvalidated=true&limit=50`;
-    if(fromTime)
+    if (fromTime) {
       url += `&fromTime=${fromTime}`;
+    }
     return this.http
       .get<EventResult>(url);
   }
@@ -238,8 +247,8 @@ export class ApiService {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put(url, {
       gitRemoteURL: gitUrl,
-      gitToken: gitToken,
-      gitUser: gitUser,
+      gitToken,
+      gitUser,
       name: projectName
     });
   }
@@ -266,20 +275,20 @@ export class ApiService {
   }
 
   public sendEvaluationInvalidated(evaluation: Trace, reason: string) {
-    let url = `${this._baseUrl}/v1/event`;
+    const url = `${this._baseUrl}/v1/event`;
 
     return this.http
       .post<any>(url, {
-        "shkeptncontext": evaluation.shkeptncontext,
-        "type": EventTypes.EVALUATION_INVALIDATED,
-        "triggeredid": evaluation.triggeredid,
-        "source": "https://github.com/keptn/keptn/bridge#evaluation.invalidated",
-        "data": {
-          "project": evaluation.data.project,
-          "stage": evaluation.data.stage,
-          "service": evaluation.data.service,
-          "evaluation": {
-            "reason": reason
+        shkeptncontext: evaluation.shkeptncontext,
+        type: EventTypes.EVALUATION_INVALIDATED,
+        triggeredid: evaluation.triggeredid,
+        source: 'https://github.com/keptn/keptn/bridge#evaluation.invalidated',
+        data: {
+          project: evaluation.data.project,
+          stage: evaluation.data.stage,
+          service: evaluation.data.service,
+          evaluation: {
+            reason
           }
         }
       });
