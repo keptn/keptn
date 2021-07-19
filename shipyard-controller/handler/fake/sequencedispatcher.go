@@ -9,13 +9,13 @@ import (
 	"sync"
 )
 
-// IEventDispatcherMock is a mock implementation of handler.IEventDispatcher.
+// ISequenceDispatcherMock is a mock implementation of handler.ISequenceDispatcher.
 //
-// 	func TestSomethingThatUsesIEventDispatcher(t *testing.T) {
+// 	func TestSomethingThatUsesISequenceDispatcher(t *testing.T) {
 //
-// 		// make and configure a mocked handler.IEventDispatcher
-// 		mockedIEventDispatcher := &IEventDispatcherMock{
-// 			AddFunc: func(event models.DispatcherEvent) error {
+// 		// make and configure a mocked handler.ISequenceDispatcher
+// 		mockedISequenceDispatcher := &ISequenceDispatcherMock{
+// 			AddFunc: func(queueItem models.QueueItem) error {
 // 				panic("mock out the Add method")
 // 			},
 // 			RunFunc: func(ctx context.Context)  {
@@ -23,13 +23,13 @@ import (
 // 			},
 // 		}
 //
-// 		// use mockedIEventDispatcher in code that requires handler.IEventDispatcher
+// 		// use mockedISequenceDispatcher in code that requires handler.ISequenceDispatcher
 // 		// and then make assertions.
 //
 // 	}
-type IEventDispatcherMock struct {
+type ISequenceDispatcherMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(event models.DispatcherEvent) error
+	AddFunc func(queueItem models.QueueItem) error
 
 	// RunFunc mocks the Run method.
 	RunFunc func(ctx context.Context)
@@ -38,8 +38,8 @@ type IEventDispatcherMock struct {
 	calls struct {
 		// Add holds details about calls to the Add method.
 		Add []struct {
-			// Event is the event argument value.
-			Event models.DispatcherEvent
+			// QueueItem is the queueItem argument value.
+			QueueItem models.QueueItem
 		}
 		// Run holds details about calls to the Run method.
 		Run []struct {
@@ -52,29 +52,29 @@ type IEventDispatcherMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *IEventDispatcherMock) Add(event models.DispatcherEvent, skipQueue bool) error {
+func (mock *ISequenceDispatcherMock) Add(queueItem models.QueueItem) error {
 	if mock.AddFunc == nil {
-		panic("IEventDispatcherMock.AddFunc: method is nil but IEventDispatcher.Add was just called")
+		panic("ISequenceDispatcherMock.AddFunc: method is nil but ISequenceDispatcher.Add was just called")
 	}
 	callInfo := struct {
-		Event models.DispatcherEvent
+		QueueItem models.QueueItem
 	}{
-		Event: event,
+		QueueItem: queueItem,
 	}
 	mock.lockAdd.Lock()
 	mock.calls.Add = append(mock.calls.Add, callInfo)
 	mock.lockAdd.Unlock()
-	return mock.AddFunc(event)
+	return mock.AddFunc(queueItem)
 }
 
 // AddCalls gets all the calls that were made to Add.
 // Check the length with:
-//     len(mockedIEventDispatcher.AddCalls())
-func (mock *IEventDispatcherMock) AddCalls() []struct {
-	Event models.DispatcherEvent
+//     len(mockedISequenceDispatcher.AddCalls())
+func (mock *ISequenceDispatcherMock) AddCalls() []struct {
+	QueueItem models.QueueItem
 } {
 	var calls []struct {
-		Event models.DispatcherEvent
+		QueueItem models.QueueItem
 	}
 	mock.lockAdd.RLock()
 	calls = mock.calls.Add
@@ -83,9 +83,9 @@ func (mock *IEventDispatcherMock) AddCalls() []struct {
 }
 
 // Run calls RunFunc.
-func (mock *IEventDispatcherMock) Run(ctx context.Context) {
+func (mock *ISequenceDispatcherMock) Run(ctx context.Context) {
 	if mock.RunFunc == nil {
-		panic("IEventDispatcherMock.RunFunc: method is nil but IEventDispatcher.Run was just called")
+		panic("ISequenceDispatcherMock.RunFunc: method is nil but ISequenceDispatcher.Run was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
@@ -100,8 +100,8 @@ func (mock *IEventDispatcherMock) Run(ctx context.Context) {
 
 // RunCalls gets all the calls that were made to Run.
 // Check the length with:
-//     len(mockedIEventDispatcher.RunCalls())
-func (mock *IEventDispatcherMock) RunCalls() []struct {
+//     len(mockedISequenceDispatcher.RunCalls())
+func (mock *ISequenceDispatcherMock) RunCalls() []struct {
 	Ctx context.Context
 } {
 	var calls []struct {

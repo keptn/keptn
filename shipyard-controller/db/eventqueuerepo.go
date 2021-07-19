@@ -10,6 +10,7 @@ import (
 type EventQueueRepo interface {
 	QueueEvent(item models.QueueItem) error
 	GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error)
+	IsEventInQueue(eventID string) (bool, error)
 	DeleteQueuedEvent(eventID string) error
 	DeleteQueuedEvents(scope models.EventScope) error
 }

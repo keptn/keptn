@@ -48,10 +48,11 @@ func Test_SequenceTimeout(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
-	setShipyardControllerTimeout(t, "10s")
+	err = setShipyardControllerTaskTimeout(t, "10s")
 	defer func() {
-		setShipyardControllerTimeout(t, "20m")
+		_ = setShipyardControllerTaskTimeout(t, "20m")
 	}()
+	require.Nil(t, err)
 
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
 
@@ -87,34 +88,24 @@ func Test_SequenceTimeout(t *testing.T) {
 
 	// wait for the recreated state to be available
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, scmodels.TimedOut)
-	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
-		if err != nil {
-			return false
-		}
-		for _, state := range states.States {
-			if state.Shkeptncontext == *context.KeptnContext && state.State == scmodels.TimedOut {
-				return true
-			}
-		}
-		return false
-	}, 2*time.Minute, 10*time.Second)
+	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.TimedOut})
 	t.Log("received the expected state!")
 }
 
-func setShipyardControllerTimeout(t *testing.T, timeoutValue string) {
-	t.Log("setting TASK_STARTED_WAIT_DURATION of shipyard controller to 10s")
-	// temporarily set the timeout value to a lower value
+func setShipyardControllerTaskTimeout(t *testing.T, timeoutValue string) error {
 	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller TASK_STARTED_WAIT_DURATION=%s", GetKeptnNameSpaceFromEnv(), timeoutValue))
-	require.Nil(t, err)
+	if err != nil {
+		return err
+	}
 
 	t.Log("restarting shipyard controller pod")
 	err = RestartPod("shipyard-controller")
-	require.Nil(t, err)
+	if err != nil {
+		return err
+	}
 
-	// wait a bit to make sure we are waiting for the correct pod to be started
+	// wait 10s to make sure we wait for the updated pod to be ready
 	<-time.After(10 * time.Second)
 	t.Log("waiting for shipyard controller pod to be ready again")
-	err = WaitForPodOfDeployment("shipyard-controller")
-	require.Nil(t, err)
+	return WaitForPodOfDeployment("shipyard-controller")
 }

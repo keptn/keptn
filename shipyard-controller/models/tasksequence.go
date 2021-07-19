@@ -8,6 +8,7 @@ type TaskSequenceEvent struct {
 	TriggeredEventID string `json:"triggeredEventID" bson:"triggeredEventID"`
 	Task             Task   `json:"task" bson:"task"`
 	Stage            string `json:"stage" bson:"stage"`
+	Service          string `json:"service" bson:"service"`
 	KeptnContext     string `json:"keptnContext" bson:"keptnContext"`
 }
 

@@ -1,6 +1,9 @@
 package common
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 var mutex = &sync.Mutex{}
 
@@ -33,4 +36,24 @@ func UnlockProject(project string) {
 		Unlock()
 	}
 	projectLocks[project].Unlock()
+}
+
+func LockServiceInStageOfProject(project, stage, service string) {
+	lockKey := fmt.Sprintf("%s.%s.%s", project, stage, service)
+	if projectLocks[lockKey] == nil {
+		Lock()
+		projectLocks[lockKey] = &sync.Mutex{}
+		Unlock()
+	}
+	projectLocks[lockKey].Lock()
+}
+
+func UnlockServiceInStageOfProject(project, stage, service string) {
+	lockKey := fmt.Sprintf("%s.%s.%s", project, stage, service)
+	if projectLocks[lockKey] == nil {
+		Lock()
+		projectLocks[lockKey] = &sync.Mutex{}
+		Unlock()
+	}
+	projectLocks[lockKey].Unlock()
 }
