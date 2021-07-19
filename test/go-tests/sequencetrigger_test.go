@@ -4,6 +4,7 @@ import (
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -60,7 +61,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -82,7 +83,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if !IsEqual(t, keptnContextID, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "triggered", state.State, "state.State") {
+		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -116,7 +117,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -130,7 +131,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if !IsEqual(t, state.Shkeptncontext, keptnContextID, "state.Shkeptnkontext") {
 			return false
 		}
-		if !IsEqual(t, state.State, "triggered", "state.State") {
+		if !IsEqual(t, state.State, scmodels.SequenceStartedState, "state.State") {
 			return false
 		}
 
@@ -155,7 +156,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state -> the same sequence in the same stage should have been triggered again
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -177,7 +178,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 		if !IsEqual(t, keptnContextID, state.Shkeptncontext, "state.Shkeptncontext") {
 			return false
 		}
-		if !IsEqual(t, "triggered", state.State, "state.State") {
+		if !IsEqual(t, scmodels.SequenceStartedState, state.State, "state.State") {
 			return false
 		}
 
@@ -221,7 +222,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state -> now the next task should have been triggered again
 	require.Eventually(t, func() bool {
-		states, _, err := getState(projectName)
+		states, _, err := GetState(projectName)
 		if err != nil {
 			return false
 		}
@@ -261,7 +262,7 @@ func Test_SequenceLoopIntegrationTest(t *testing.T) {
 
 	// verify state -> now the sequence should be finished and not re-triggered again
 	require.Eventually(t, func() bool {
-		states, resp, err := getState(projectName)
+		states, resp, err := GetState(projectName)
 		if err != nil {
 			return false
 		}

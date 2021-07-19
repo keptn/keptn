@@ -10,12 +10,15 @@ import (
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	scmodels "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/kubernetes-utils/pkg"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -254,4 +257,40 @@ func IsEqual(t *testing.T, expected, actual interface{}, property string) bool {
 
 func StringArr(el ...string) []string {
 	return el
+}
+
+func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *models.EventContext, timeout time.Duration, desiredStates []string) {
+	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
+	require.Eventually(t, func() bool {
+		states, _, err := GetState(projectName)
+		if err != nil {
+			return false
+		}
+		for _, state := range states.States {
+			if doesSequenceHaveOneOfTheDesiredStates(state, context, desiredStates) {
+				return true
+			}
+		}
+		return false
+	}, timeout, 10*time.Second)
+}
+
+func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context *models.EventContext, desiredStates []string) bool {
+	if state.Shkeptncontext == *context.KeptnContext {
+		for _, desiredState := range desiredStates {
+			if state.State == desiredState {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
+	states := &scmodels.SequenceStates{}
+
+	resp, err := ApiGETRequest("/controlPlane/v1/sequence/" + projectName)
+	err = resp.ToJSON(states)
+
+	return states, resp, err
 }

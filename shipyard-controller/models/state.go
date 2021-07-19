@@ -2,8 +2,10 @@ package models
 
 const (
 	SequenceTriggeredState = "triggered"
+	SequenceStartedState   = "started"
 	SequenceFinished       = "finished"
 	TimedOut               = "timedOut"
+	Paused                 = "paused"
 )
 
 type GetSequenceStateParams struct {
@@ -67,6 +69,7 @@ type SequenceStateEvent struct {
 type SequenceStateStage struct {
 	Name              string                   `json:"name" bson:"name"`
 	Image             string                   `json:"image,omitempty" bson:"image"`
+	State             string                   `json:"state" bson:"state"`
 	LatestEvaluation  *SequenceStateEvaluation `json:"latestEvaluation,omitempty" bson:"latestEvaluation"`
 	LatestEvent       *SequenceStateEvent      `json:"latestEvent,omitempty" bson:"latestEvent"`
 	LatestFailedEvent *SequenceStateEvent      `json:"latestFailedEvent,omitempty" bson:"latestFailedEvent"`

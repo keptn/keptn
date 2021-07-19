@@ -23,8 +23,8 @@ import (
 // 			DeleteTaskSequenceMappingFunc: func(keptnContext string, project string, stage string, taskSequenceName string) error {
 // 				panic("mock out the DeleteTaskSequenceMapping method")
 // 			},
-// 			GetTaskSequenceFunc: func(project string, triggeredID string) (*models.TaskSequenceEvent, error) {
-// 				panic("mock out the GetTaskSequence method")
+// 			GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+// 				panic("mock out the GetTaskSequences method")
 // 			},
 // 		}
 //
@@ -42,8 +42,8 @@ type TaskSequenceRepoMock struct {
 	// DeleteTaskSequenceMappingFunc mocks the DeleteTaskSequenceMapping method.
 	DeleteTaskSequenceMappingFunc func(keptnContext string, project string, stage string, taskSequenceName string) error
 
-	// GetTaskSequenceFunc mocks the GetTaskSequence method.
-	GetTaskSequenceFunc func(project string, triggeredID string) (*models.TaskSequenceEvent, error)
+	// GetTaskSequencesFunc mocks the GetTaskSequences method.
+	GetTaskSequencesFunc func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -70,18 +70,18 @@ type TaskSequenceRepoMock struct {
 			// TaskSequenceName is the taskSequenceName argument value.
 			TaskSequenceName string
 		}
-		// GetTaskSequence holds details about calls to the GetTaskSequence method.
-		GetTaskSequence []struct {
+		// GetTaskSequences holds details about calls to the GetTaskSequences method.
+		GetTaskSequences []struct {
 			// Project is the project argument value.
 			Project string
-			// TriggeredID is the triggeredID argument value.
-			TriggeredID string
+			// Filter is the filter argument value.
+			Filter models.TaskSequenceEvent
 		}
 	}
 	lockCreateTaskSequenceMapping    sync.RWMutex
 	lockDeleteTaskSequenceCollection sync.RWMutex
 	lockDeleteTaskSequenceMapping    sync.RWMutex
-	lockGetTaskSequence              sync.RWMutex
+	lockGetTaskSequences             sync.RWMutex
 }
 
 // CreateTaskSequenceMapping calls CreateTaskSequenceMappingFunc.
@@ -193,37 +193,37 @@ func (mock *TaskSequenceRepoMock) DeleteTaskSequenceMappingCalls() []struct {
 	return calls
 }
 
-// GetTaskSequence calls GetTaskSequenceFunc.
-func (mock *TaskSequenceRepoMock) GetTaskSequence(project string, triggeredID string) (*models.TaskSequenceEvent, error) {
-	if mock.GetTaskSequenceFunc == nil {
-		panic("TaskSequenceRepoMock.GetTaskSequenceFunc: method is nil but TaskSequenceRepo.GetTaskSequence was just called")
+// GetTaskSequences calls GetTaskSequencesFunc.
+func (mock *TaskSequenceRepoMock) GetTaskSequences(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
+	if mock.GetTaskSequencesFunc == nil {
+		panic("TaskSequenceRepoMock.GetTaskSequencesFunc: method is nil but TaskSequenceRepo.GetTaskSequences was just called")
 	}
 	callInfo := struct {
-		Project     string
-		TriggeredID string
+		Project string
+		Filter  models.TaskSequenceEvent
 	}{
-		Project:     project,
-		TriggeredID: triggeredID,
+		Project: project,
+		Filter:  filter,
 	}
-	mock.lockGetTaskSequence.Lock()
-	mock.calls.GetTaskSequence = append(mock.calls.GetTaskSequence, callInfo)
-	mock.lockGetTaskSequence.Unlock()
-	return mock.GetTaskSequenceFunc(project, triggeredID)
+	mock.lockGetTaskSequences.Lock()
+	mock.calls.GetTaskSequences = append(mock.calls.GetTaskSequences, callInfo)
+	mock.lockGetTaskSequences.Unlock()
+	return mock.GetTaskSequencesFunc(project, filter)
 }
 
-// GetTaskSequenceCalls gets all the calls that were made to GetTaskSequence.
+// GetTaskSequencesCalls gets all the calls that were made to GetTaskSequences.
 // Check the length with:
-//     len(mockedTaskSequenceRepo.GetTaskSequenceCalls())
-func (mock *TaskSequenceRepoMock) GetTaskSequenceCalls() []struct {
-	Project     string
-	TriggeredID string
+//     len(mockedTaskSequenceRepo.GetTaskSequencesCalls())
+func (mock *TaskSequenceRepoMock) GetTaskSequencesCalls() []struct {
+	Project string
+	Filter  models.TaskSequenceEvent
 } {
 	var calls []struct {
-		Project     string
-		TriggeredID string
+		Project string
+		Filter  models.TaskSequenceEvent
 	}
-	mock.lockGetTaskSequence.RLock()
-	calls = mock.calls.GetTaskSequence
-	mock.lockGetTaskSequence.RUnlock()
+	mock.lockGetTaskSequences.RLock()
+	calls = mock.calls.GetTaskSequences
+	mock.lockGetTaskSequences.RUnlock()
 	return calls
 }

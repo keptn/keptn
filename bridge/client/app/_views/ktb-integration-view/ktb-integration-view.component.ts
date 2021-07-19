@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {filter, takeUntil} from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
 import {Subject, timer} from 'rxjs';
-import * as moment from 'moment';
+import moment from 'moment';
 import {ClipboardService} from '../../_services/clipboard.service';
 import {ApiService} from "../../_services/api.service";
 

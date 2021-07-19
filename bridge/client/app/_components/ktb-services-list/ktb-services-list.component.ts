@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy,
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   Input,
   OnDestroy,
@@ -61,7 +61,7 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     return DEFAULT_PAGE_SIZE;
   }
 
-  constructor(public dataService: DataService, public dateUtil: DateUtil) { }
+  constructor(public dataService: DataService, public dateUtil: DateUtil, private _changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.dataService.roots
@@ -74,6 +74,7 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
   updateDataSource() {
     this.services.sort(this.compare());
     this.dataSource = new DtTableDataSource(this.services.slice(0, this.pageSize));
+    this._changeDetectorRef.markForCheck();
   }
 
   private compare() {

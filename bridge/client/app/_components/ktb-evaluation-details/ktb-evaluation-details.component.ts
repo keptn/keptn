@@ -15,7 +15,7 @@ noData(Highcharts);
 Heatmap(Highcharts);
 Treemap(Highcharts);
 
-import * as moment from 'moment';
+import moment from 'moment';
 import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {DtChart, DtChartSeriesVisibilityChangeEvent} from "@dynatrace/barista-components/chart";

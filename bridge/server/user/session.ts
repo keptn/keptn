@@ -1,15 +1,22 @@
-const express = require('express');
-const router = express.Router();
-const expressSession = require('express-session');
-const memoryStore = require('memorystore')(expressSession);
-const random = require('crypto-random-string');
+import { Router, Request, Express } from 'express';
+import expressSession from 'express-session';
+import mS from 'memorystore';
+import random from 'crypto-random-string';
 
-const CHECK_PERIOD = 600000; // check every 10 minutes
-const SESSION_TIME = 1200000; // max age is 20 minutes
+declare module 'express-session' {
+  export interface SessionData {
+    authenticated: boolean;
+    principal: any;
+    logoutHint: any;
+  }
+}
+const memoryStore = mS(expressSession);
+const router = Router();
+const CHECK_PERIOD = 600_000; // check every 10 minutes
+const SESSION_TIME = 1_200_000; // max age is 20 minutes
 const COOKIE_LENGTH = 10;
 const COOKIE_NAME = 'KTSESSION';
 const DEFAULT_TRUST_PROXY = 1;
-
 const SESSION_SECRET = random({length: 200});
 
 /**
@@ -29,19 +36,19 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   genid: () => {
-    return random({length: COOKIE_LENGTH, type: 'url-safe'})
+    return random({length: COOKIE_LENGTH, type: 'url-safe'});
   },
   store: new memoryStore({
     checkPeriod: CHECK_PERIOD,
     ttl: SESSION_TIME
   }),
-}
+};
 
 /**
  * Filter for for authenticated sessions. Must be enforced by endpoints that require session authentication.
  */
-function isAuthenticated(req) {
-  if (req.session !== undefined && req.session.authenticated) {
+function isAuthenticated(req: Request) {
+  if (req.session.authenticated) {
     return true;
   }
 
@@ -55,7 +62,7 @@ function isAuthenticated(req) {
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function setAuthenticatedSession(req, principal, logoutHint) {
+function setAuthenticatedSession(req: Request, principal: any, logoutHint: any) {
 
   if (!principal) {
     throw Error('Invalid session initialisation. Principal is mandatory.');
@@ -72,7 +79,7 @@ function setAuthenticatedSession(req, principal, logoutHint) {
 /**
  * Returns the current principal if session is authenticated. Otherwise returns undefined
  */
-function getCurrentPrincipal(req) {
+function getCurrentPrincipal(req: Request) {
   if (req.session !== undefined && req.session.authenticated) {
     return req.session.principal;
   }
@@ -83,7 +90,7 @@ function getCurrentPrincipal(req) {
 /**
  * Returns the logout hint bound to this session
  */
-function getLogoutHint(req) {
+function getLogoutHint(req: Request) {
   if (req.session !== undefined && req.session.logoutHint) {
     return req.session.logoutHint;
   }
@@ -94,11 +101,11 @@ function getLogoutHint(req) {
 /**
  * Destroy the session comes with this request
  */
-function removeSession(req) {
-  req.session.destroy();
+function removeSession(req: Request) {
+  req.session.destroy(console.error);
 }
 
-module.exports = (app) => {
+function sessionRouter(app: Express)  {
   console.log('Enabling sessions for bridge.');
 
   if (process.env.SECURE_COOKIE === 'true') {
@@ -109,7 +116,7 @@ module.exports = (app) => {
 
     if (trustProxy) {
       console.log('Using trust proxy hops value : ' + trustProxy);
-      app.set('trust proxy', parseInt(trustProxy));
+      app.set('trust proxy', +trustProxy);
     } else {
       console.log('Using default trust proxy hops value : ' + DEFAULT_TRUST_PROXY);
       app.set('trust proxy', DEFAULT_TRUST_PROXY);
@@ -119,11 +126,12 @@ module.exports = (app) => {
   // Register session middleware
   router.use(expressSession(sessionConfig));
 
-  return router
+  return router;
 }
 
-module.exports.isAuthenticated = isAuthenticated;
-module.exports.setAuthenticatedSession = setAuthenticatedSession;
-module.exports.removeSession = removeSession;
-module.exports.getCurrentPrincipal = getCurrentPrincipal;
-module.exports.getLogoutHint = getLogoutHint;
+export { sessionRouter };
+export { isAuthenticated };
+export { setAuthenticatedSession as sessionAuthentication };
+export { removeSession };
+export { getLogoutHint };
+export { getCurrentPrincipal as currentPrincipal };

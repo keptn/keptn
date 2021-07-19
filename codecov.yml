@@ -27,6 +27,7 @@ ignore:
   - "**/*.sh"         # ignore shell scripts
 
 comment:
+  layout: "diff, files"
   show_carryforward_flags: true # see https://docs.codecov.io/docs/carryforward-flags
 
 github_checks:

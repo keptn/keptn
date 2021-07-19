@@ -14,7 +14,7 @@ import {EventTypes} from "../_models/event-types";
 import {Metadata} from '../_models/metadata';
 import {TaskNames} from '../_models/task-names.mock';
 import {Deployment} from '../_models/deployment';
-import * as moment from 'moment';
+import moment from 'moment';
 import {SequenceResult} from '../_models/sequence-result';
 import {Project} from '../_models/project';
 import {UniformRegistration} from "../_models/uniform-registration";
