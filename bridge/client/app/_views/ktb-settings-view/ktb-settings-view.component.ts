@@ -1,14 +1,14 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Subject} from "rxjs";
-import {DataService} from "../../_services/data.service";
-import {ActivatedRoute, Router} from "@angular/router";
-import {filter, map, switchMap, takeUntil} from "rxjs/operators";
-import {DtToast} from "@dynatrace/barista-components/toast";
-import {GitData} from "../../_components/ktb-project-settings-git/ktb-project-settings-git.component";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {FormUtils} from "../../_utils/form.utils";
-import {NotificationType, TemplateRenderedNotifications} from "../../_models/notification";
-import {NotificationsService} from "../../_services/notifications.service";
+import {Subject} from 'rxjs';
+import {DataService} from '../../_services/data.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
+import {DtToast} from '@dynatrace/barista-components/toast';
+import {GitData} from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {FormUtils} from '../../_utils/form.utils';
+import {NotificationType, TemplateRenderedNotifications} from '../../_models/notification';
+import {NotificationsService} from '../../_services/notifications.service';
 
 @Component({
   selector: 'ktb-settings-view',
@@ -52,7 +52,11 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         if (this.isCreateMode && projectNames.includes(this.projectName)) {
           this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
         }
-        this.projectNameControl.setValidators([Validators.required, FormUtils.projectNameExistsValidator(projectNames)]);
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.projectNameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*')
+        ]);
     });
 
     this.route.params.pipe(
@@ -69,7 +73,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     this.route.queryParams.pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe((queryParams) => {
-      if(queryParams.created) {
+      if (queryParams.created) {
         this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, null, true, {projectName: this.projectName, routerLink: `/project/${this.projectName}/service`});
       }
     });

@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbSettingsViewComponent } from './ktb-settings-view.component';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {DataService} from "../../_services/data.service";
-import {DataServiceMock} from "../../_services/data.service.mock";
-import {of} from "rxjs";
-import {ActivatedRoute, Router} from "@angular/router";
+import {AppModule} from '../../app.module';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {DataService} from '../../_services/data.service';
+import {DataServiceMock} from '../../_services/data.service.mock';
+import {of} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
 
 describe('KtbSettingsViewComponent - Create', () => {
   let component: KtbSettingsViewComponent;
@@ -50,11 +50,11 @@ describe('KtbSettingsViewComponent - Create', () => {
   it('should have a validation error if project name already exists in projects', async () => {
     // given
 
-    //when
+    // when
     await dataService.loadProjects();
     component.projectNameControl.setValue('sockshop');
 
-    //then
+    // then
     expect(component.projectNameControl.hasError('projectName')).toBeTrue();
   });
 
@@ -63,12 +63,12 @@ describe('KtbSettingsViewComponent - Create', () => {
     component.isCreateMode = true;
     component.projectName = 'sockshop';
 
-    //when
+    // when
     const router = TestBed.inject(Router);
     const routeSpy = spyOn(router, 'navigate');
     await dataService.loadProjects();
 
-    //then
+    // then
     expect(routeSpy).toHaveBeenCalled();
   });
 });
@@ -114,15 +114,15 @@ describe('KtbSettingsViewComponent - Edit', () => {
       remoteURI: 'https://test.git',
       gitUser: 'username',
       gitToken: 'token'
-    }
+    };
     component.projectName = 'sockshop';
 
-    //when
+    // when
     const spy = spyOn(dataService, 'setGitUpstreamUrl').and.callThrough();
     component.updateGitData(gitData);
     component.setGitUpstream();
 
-    //then
+    // then
     expect(spy).toHaveBeenCalled();
   });
 
@@ -134,7 +134,38 @@ describe('KtbSettingsViewComponent - Edit', () => {
     expect(component.projectName).toEqual('sockshop');
   });
 
+  it('should have an pattern validation error when project name does not match: first letter lowercase, only lowercase, numbers and hyphens allowed', () => {
+    // given
+    component.isCreateMode = true;
 
+    component.projectNameControl.setValue('Sockshop');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.hasError('pattern'));
+
+    component.projectNameControl.setValue('1ockshop');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.hasError('pattern'));
+
+    component.projectNameControl.setValue('-ockshop');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.hasError('pattern'));
+
+    component.projectNameControl.setValue('$ockshop');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.hasError('pattern'));
+
+    component.projectNameControl.setValue('soCkshop');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.hasError('pattern'));
+
+    component.projectNameControl.setValue('sock_shop');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.hasError('pattern'));
+
+    component.projectNameControl.setValue('sockshop-1');
+    component.projectNameForm.updateValueAndValidity();
+    expect(component.projectNameForm.errors).toBeNull();
+  });
 
 });
 
