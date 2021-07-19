@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -13,10 +14,12 @@ import (
 	"time"
 )
 
+var errOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
+
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
 type IEventDispatcher interface {
-	Add(event models.DispatcherEvent) error
+	Add(event models.DispatcherEvent, skipQueue bool) error
 	Run(ctx context.Context)
 }
 
@@ -26,6 +29,7 @@ type IEventDispatcher interface {
 type EventDispatcher struct {
 	eventRepo      db.EventRepo
 	eventQueueRepo db.EventQueueRepo
+	sequenceRepo   db.TaskSequenceRepo
 	eventSender    keptncommon.EventSender
 	theClock       clock.Clock
 	syncInterval   time.Duration
@@ -35,6 +39,7 @@ type EventDispatcher struct {
 func NewEventDispatcher(
 	eventRepo db.EventRepo,
 	eventQueueRepo db.EventQueueRepo,
+	sequenceRepo db.TaskSequenceRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
 
@@ -42,6 +47,7 @@ func NewEventDispatcher(
 	return &EventDispatcher{
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
+		sequenceRepo:   sequenceRepo,
 		eventSender:    eventSender,
 		theClock:       clock.New(),
 		syncInterval:   syncInterval,
@@ -49,12 +55,7 @@ func NewEventDispatcher(
 }
 
 // Add adds a DispatcherEvent to the event queue
-func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
-
-	if e.theClock.Now().UTC().After(event.TimeStamp) {
-		// send event immediately
-		return e.eventSender.SendEvent(event.Event)
-	}
+func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) error {
 
 	ed, err := models.ConvertToEvent(event.Event)
 	if err != nil {
@@ -63,6 +64,23 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent) error {
 	eventScope, err := models.NewEventScope(*ed)
 	if err != nil {
 		return err
+	}
+
+	if skipQueue {
+		return e.eventSender.SendEvent(event.Event)
+	}
+	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
+		// try to send event immediately
+		if err := e.tryToSendEvent(*eventScope, event); err != nil {
+			// if the event cannot be sent because it is blocked by other sequences,
+			// we'll add it to the queue and try to send it again later
+			if err != errOtherActiveSequencesRunning {
+				// in all other cases, return the error
+				return err
+			}
+		} else {
+			return nil
+		}
 	}
 
 	return e.eventQueueRepo.QueueEvent(models.QueueItem{
@@ -121,7 +139,13 @@ func (e *EventDispatcher) dispatchEvents() {
 		// set the time of the cloud event to the current time since it is being sent now
 		ce.SetTime(e.theClock.Now().UTC())
 
-		if err := e.eventSender.SendEvent(*ce); err != nil {
+		eventScope, err := models.NewEventScope(triggeredEvent)
+		if err != nil {
+			log.WithError(err).Error("could not determine scope of event")
+			continue
+		}
+
+		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce, TimeStamp: time.Now().UTC()}); err != nil {
 			log.Errorf("could not send CloudEvent: %s", err.Error())
 			continue
 		}
@@ -131,5 +155,63 @@ func (e *EventDispatcher) dispatchEvents() {
 			continue
 		}
 	}
+}
 
+func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
+	runningSequencesInStage, err := e.sequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{
+		Stage:   eventScope.Stage,
+		Service: eventScope.Service,
+	})
+	if err != nil {
+		return err
+	}
+	if e.isCurrentEventBlockedByOtherTasks(eventScope, runningSequencesInStage, event) {
+		return errOtherActiveSequencesRunning
+	}
+
+	return e.eventSender.SendEvent(event.Event)
+}
+
+func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
+	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
+	/// if there is another sequence running in the stage, we cannot send the event
+	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
+
+	for _, tasksOfContext := range tasksGroupedByContext {
+		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
+		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
+			if e.isCurrentEventOverrulingOtherEvent(lastTaskOfSequence, queuedEvent) {
+				continue
+			}
+			log.Infof("event %s cannot be sent because there are other sequences running in stage %s for service %s - blocked by event %s", eventScope.KeptnContext, eventScope.Stage, eventScope.Service, lastTaskOfSequence.TriggeredEventID)
+			return true
+		}
+	}
+	return false
+}
+
+func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
+	otherQueuedEvents, err := e.eventQueueRepo.GetQueuedEvents(e.theClock.Now().UTC())
+	if err != nil {
+		log.Debugf("could not fetch event queue: %s", err.Error())
+		return false
+	} else if len(otherQueuedEvents) == 0 {
+		return false
+	}
+	for _, otherEvent := range otherQueuedEvents {
+		if otherEvent.EventID == lastTaskOfSequence.TriggeredEventID && otherEvent.Timestamp.Before(queuedEvent.TimeStamp) {
+			return true
+		}
+	}
+	return false
+}
+
+func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {
+	result := []models.TaskSequenceEvent{}
+	for index := range sequenceTasks {
+		if sequenceTasks[index].KeptnContext != keptnContext {
+			result = append(result, sequenceTasks[index])
+		}
+	}
+	return result
 }
