@@ -49,7 +49,6 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.NotEmpty(t, integrations)
 	require.Len(t, integrations, 1)
 	require.Equal(t, uniformIntegration.Name, integrations[0].Name)
-	require.Equal(t, uniformIntegration.MetaData, integrations[0].MetaData)
 	require.Equal(t, uniformIntegration.MetaData.DistributorVersion, integrations[0].MetaData.DistributorVersion)
 	require.Equal(t, uniformIntegration.MetaData.KubernetesMetaData, integrations[0].MetaData.KubernetesMetaData)
 	require.Equal(t, uniformIntegration.Subscription, integrations[0].Subscription)
