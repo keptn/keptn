@@ -50,6 +50,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
               private dialog: MatDialog,
               private router: Router,
               private notificationsService: NotificationsService) {
+  }
 
   ngOnInit(): void {
     this.route.data.pipe(
@@ -66,14 +67,14 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         filter((projects) => !!projects),
         map((projects) => projects ? projects.map(project => project.projectName) : null)
       ).subscribe((projectNames) => {
-        if (this.isCreateMode && projectNames.includes(this.projectName)) {
-          this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
-        }
-        this.projectNameControl.setValidators([
-          Validators.required,
-          FormUtils.projectNameExistsValidator(projectNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*')
-        ]);
+      if (this.isCreateMode && projectNames.includes(this.projectName)) {
+        this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
+      }
+      this.projectNameControl.setValidators([
+        Validators.required,
+        FormUtils.projectNameExistsValidator(projectNames),
+        Validators.pattern('[a-z]([a-z]|[0-9]|-)*')
+      ]);
     });
 
     this.route.params.pipe(
@@ -91,7 +92,10 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     ).subscribe((queryParams) => {
       if (queryParams.created) {
-        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, null, true, {projectName: this.projectName, routerLink: `/project/${this.projectName}/service`});
+        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, null, true, {
+          projectName: this.projectName,
+          routerLink: `/project/${this.projectName}/service`
+        });
       }
 
       this.deletionConfirmationControl.setValidators([Validators.required, Validators.pattern(this.projectName)]);
@@ -130,6 +134,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         this.router.navigate(['/', 'dashboard']);
       });
 
+
     this.dataService.deleteProject(this.projectName)
       .pipe(take(1))
       .subscribe(() => {
@@ -139,19 +144,20 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         this.isDeleteProjectInProgress = false;
         this.deletionError = 'Project could not be deleted: ' + err.message;
       });
-    
-    public setGitUpstream(): void {
+  }
+
+  public setGitUpstream(): void {
     this.isGitUpstreamInProgress = true;
     this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(success => {
-      this.isGitUpstreamInProgress = false;
-      if (success) {
-        this.toast.create('Git Upstream URL set successfully');
-      } else {
-        this.toast.create('Git Upstream URL could not be set');
-      }
-    });
+        this.isGitUpstreamInProgress = false;
+        if (success) {
+          this.toast.create('Git Upstream URL set successfully');
+        } else {
+          this.toast.create('Git Upstream URL could not be set');
+        }
+      });
   }
 
   public isGitFormValid(): boolean {
