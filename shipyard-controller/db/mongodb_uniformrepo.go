@@ -87,7 +87,7 @@ func (mdbrepo *MongoDBUniformRepo) SetupTTLIndex(duration time.Duration) error {
 	}
 	defer cancel()
 
-	return SetupTTLIndex(ctx, "lastseen", duration, collection)
+	return SetupTTLIndex(ctx, "metadata.lastseen", duration, collection)
 }
 
 func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformIntegrationParams) bson.M {
