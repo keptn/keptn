@@ -4,7 +4,7 @@
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="3" uitestid="keptn-sequence-states-list-container">
         <dt-cell *dtCellDef="let row">
           <div class="mt-1 mb-1">
-            <p class="m-0 small nobreak">
+            <p class="m-0 mb-1 small nobreak">
               <a [routerLink]="getServiceLink(row)" [textContent]="row.service"></a> in
             </p>
             <ng-container *ngIf="row.getLastStage() as stage">
@@ -16,7 +16,7 @@
           </div>
         </dt-cell>
       </ng-container>
-      <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="5">
+      <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="4">
         <dt-cell *dtCellDef="let row">
           <div class="mt-1 mb-1" fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start center">
             <dt-icon *ngIf="!row.isLoading() || row.hasPendingApproval(); else showLoading" class="event-icon"
@@ -36,7 +36,7 @@
           </div>
         </dt-cell>
       </ng-container>
-      <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="3">
+      <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <p class="m-0 small nobreak" [textContent]="row.time | amCalendar:dateUtil.getCalendarFormats()"></p>
         </dt-cell>
