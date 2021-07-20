@@ -97,16 +97,16 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	event := &models.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
 		return
 	}
 	keptnEvent := &keptnmodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, keptnEvent); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
 		return
 	}
 	if err := keptnEvent.Validate(); err != nil {
-		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
 		return
 	}
 
