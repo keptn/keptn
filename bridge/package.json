@@ -94,7 +94,7 @@
     "typescript": "^4.1.5"
   },
   "resolutions": {
-    "minimist": "~1.2.5",
+    "minimist": "1.2.5",
     "css-what": "~5.0.1",
     "glob-parent": "~5.1.2"
   }
