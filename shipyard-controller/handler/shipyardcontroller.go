@@ -46,6 +46,8 @@ type shipyardController struct {
 	subSequenceFinishedHooks   []sequencehooks.ISubSequenceFinishedHook
 	sequenceFinishedHooks      []sequencehooks.ISequenceFinishedHook
 	sequenceTimoutHooks        []sequencehooks.ISequenceTimeoutHook
+	sequencePausedHooks        []sequencehooks.ISequencePausedHook
+	sequenceResumedHooks       []sequencehooks.ISequenceResumedHook
 }
 
 func GetShipyardControllerInstance(ctx context.Context, eventDispatcher IEventDispatcher, sequenceDispatcher ISequenceDispatcher, startSequenceChan chan models.Event, cancelSequenceChan chan common.SequenceCancellation) *shipyardController {
@@ -127,6 +129,14 @@ func (sc *shipyardController) AddSequenceTimeoutHook(hook sequencehooks.ISequenc
 	sc.sequenceTimoutHooks = append(sc.sequenceTimoutHooks, hook)
 }
 
+func (sc *shipyardController) AddSequencePausedHook(hook sequencehooks.ISequencePausedHook) {
+	sc.sequencePausedHooks = append(sc.sequencePausedHooks, hook)
+}
+
+func (sc *shipyardController) AddSequenceResumedHook(hook sequencehooks.ISequenceResumedHook) {
+	sc.sequenceResumedHooks = append(sc.sequenceResumedHooks, hook)
+}
+
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
 	for _, hook := range sc.sequenceTriggeredHooks {
 		hook.OnSequenceTriggered(event)
@@ -175,6 +185,24 @@ func (sc *shipyardController) onSequenceTimeout(event models.Event) {
 	}
 }
 
+func (sc *shipyardController) onSequencePaused(pause models.EventScope) {
+	for _, hook := range sc.sequencePausedHooks {
+		hook.OnSequencePaused(pause)
+	}
+}
+
+func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
+	for _, hook := range sc.sequenceResumedHooks {
+		hook.OnSequenceResumed(resume)
+	}
+}
+
+func (sc *shipyardController) pauseSequence(pauseRequest models.EventScope) error {
+	// TODO inform event dispatcher about paused sequence (to mark the matching items in the event queue)
+	// TODO call onSequencePause hook
+	return nil
+}
+
 func (sc *shipyardController) cancelSequence(cancelRequest common.SequenceCancellation) error {
 	if cancelRequest.Reason == common.Timeout {
 		log.Infof("sequence %s has been timed out", cancelRequest.KeptnContext)
@@ -202,6 +230,7 @@ func (sc *shipyardController) cancelSequence(cancelRequest common.SequenceCancel
 		if err != nil {
 			return err
 		}
+		// TODO inform event dispatcher about cancelled sequence to clear the queue for the given context
 		if taskSequenceTriggeredEvent != nil {
 			if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
 				return err

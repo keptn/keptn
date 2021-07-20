@@ -13,4 +13,7 @@ type EventQueueRepo interface {
 	IsEventInQueue(eventID string) (bool, error)
 	DeleteQueuedEvent(eventID string) error
 	DeleteQueuedEvents(scope models.EventScope) error
+	CreateOrUpdateEventQueueState(state models.EventQueueSequenceState) error
+	GetEventQueueSequenceStates(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error)
+	DeleteEventQueueStates(state models.EventQueueSequenceState) error
 }

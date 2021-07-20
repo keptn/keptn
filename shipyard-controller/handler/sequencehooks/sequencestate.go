@@ -1,6 +1,7 @@
 package sequencehooks
 
 import (
+	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -51,7 +52,12 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
-	smv.updateOverallSequenceState(event, models.SequenceStartedState)
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.WithError(err).Errorf("could not determine event scope of event")
+		return
+	}
+	smv.updateOverallSequenceState(*eventScope, models.SequenceStartedState)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
@@ -116,38 +122,88 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
-	smv.updateOverallSequenceState(event, models.SequenceFinished)
-}
-
-func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(event models.Event) (*models.SequenceStates, error) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		return nil, fmt.Errorf("could not determine event scope: %s", err.Error())
+		log.WithError(err).Errorf("could not determine event scope of event")
+		return
 	}
-
-	return smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
-		GetSequenceStateParams: models.GetSequenceStateParams{
-			Project:      eventScope.Project,
-			KeptnContext: eventScope.KeptnContext,
-		},
-	})
+	smv.updateOverallSequenceState(*eventScope, models.SequenceFinished)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
-	smv.updateOverallSequenceState(event, models.TimedOut)
+	eventScope, err := models.NewEventScope(event)
+	if err != nil {
+		log.WithError(err).Errorf("could not determine event scope of event")
+		return
+	}
+	smv.updateOverallSequenceState(*eventScope, models.TimedOut)
 }
 
-func (smv *SequenceStateMaterializedView) updateOverallSequenceState(event models.Event, status string) {
-	states, err := smv.findSequenceStateForEvent(event)
+func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventScope) {
+	if pause.Stage == "" {
+		smv.updateOverallSequenceState(pause, models.SequencePaused)
+	} else {
+		smv.updateSequenceStateInStage(pause, models.SequencePaused)
+	}
+}
+
+func (smv *SequenceStateMaterializedView) OnSequenceResumed(resume models.EventScope) {
+	if resume.Stage == "" {
+		smv.updateOverallSequenceState(resume, models.SequenceStartedState)
+	} else {
+		smv.updateSequenceStateInStage(resume, models.SequenceStartedState)
+	}
+}
+
+func (smv *SequenceStateMaterializedView) findSequenceStateForEvent(eventScope models.EventScope) (*models.SequenceState, error) {
+	return smv.findSequenceState(eventScope.Project, eventScope.KeptnContext)
+}
+
+func (smv *SequenceStateMaterializedView) findSequenceState(project, keptnContext string) (*models.SequenceState, error) {
+	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
+		GetSequenceStateParams: models.GetSequenceStateParams{
+			Project:      project,
+			KeptnContext: keptnContext,
+		},
+	})
 	if err != nil {
-		log.Errorf("could not fetch sequence state for keptnContext %s: %s", event.Shkeptncontext, err.Error())
-		return
+		return nil, err
+	}
+	if len(states.States) == 0 {
+		return nil, errors.New("no state found")
 	}
 
 	state := states.States[0]
+	return &state, nil
+}
+
+func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope models.EventScope, status string) {
+	state, err := smv.findSequenceStateForEvent(eventScope)
+	if err != nil {
+		log.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		return
+	}
 
 	state.State = status
-	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
+	if err := smv.SequenceStateRepo.UpdateSequenceState(*state); err != nil {
+		log.Errorf("could not update sequence state: %s", err.Error())
+	}
+}
+
+func (smv *SequenceStateMaterializedView) updateSequenceStateInStage(eventScope models.EventScope, status string) {
+	state, err := smv.findSequenceState(eventScope.Project, eventScope.KeptnContext)
+	if err != nil {
+		log.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		return
+	}
+
+	for index := range state.Stages {
+		if state.Stages[index].Name == eventScope.Stage {
+			state.Stages[index].State = status
+			break
+		}
+	}
+	if err := smv.SequenceStateRepo.UpdateSequenceState(*state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
 }

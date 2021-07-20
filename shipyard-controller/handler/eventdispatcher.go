@@ -15,6 +15,7 @@ import (
 )
 
 var errOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
+var errSequencePaused = errors.New("sequence is paused")
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
@@ -42,7 +43,6 @@ func NewEventDispatcher(
 	sequenceRepo db.TaskSequenceRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
-
 ) IEventDispatcher {
 	return &EventDispatcher{
 		eventRepo:      eventRepo,
@@ -74,7 +74,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		if err := e.tryToSendEvent(*eventScope, event); err != nil {
 			// if the event cannot be sent because it is blocked by other sequences,
 			// we'll add it to the queue and try to send it again later
-			if err != errOtherActiveSequencesRunning {
+			if err != errOtherActiveSequencesRunning && err != errSequencePaused {
 				// in all other cases, return the error
 				return err
 			}
@@ -88,6 +88,30 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 		EventID:   event.Event.ID(),
 		Timestamp: event.TimeStamp,
 	})
+}
+
+func (e *EventDispatcher) OnSequenceFinished(event models.Event) error {
+	return e.eventQueueRepo.DeleteQueuedEvents(models.EventScope{KeptnContext: event.Shkeptncontext})
+}
+
+func (e *EventDispatcher) OnSequencePaused(pause models.EventScope) {
+	err := e.eventQueueRepo.CreateOrUpdateEventQueueState(models.EventQueueSequenceState{
+		State: models.SequencePaused,
+		Scope: pause,
+	})
+	if err != nil {
+		log.WithError(err).Error("could not set sequence state to 'paused'")
+	}
+}
+
+func (e *EventDispatcher) OnSequenceResumed(resume models.EventScope) {
+	err := e.eventQueueRepo.CreateOrUpdateEventQueueState(models.EventQueueSequenceState{
+		State: models.SequenceStartedState,
+		Scope: resume,
+	})
+	if err != nil {
+		log.WithError(err).Error("could not set sequence state to 'started'")
+	}
 }
 
 // Run starts the event dispatcher loop which will periodically fetch (queued) events
@@ -158,6 +182,10 @@ func (e *EventDispatcher) dispatchEvents() {
 }
 
 func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
+	if e.isSequenceOfEventPaused(eventScope) {
+		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
+		return errSequencePaused
+	}
 	runningSequencesInStage, err := e.sequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{
 		Stage:   eventScope.Stage,
 		Service: eventScope.Service,
@@ -172,12 +200,45 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	return e.eventSender.SendEvent(event.Event)
 }
 
+func (e *EventDispatcher) isSequenceOfEventPaused(eventScope models.EventScope) bool {
+
+	states, err := e.eventQueueRepo.GetEventQueueSequenceStates(models.EventQueueSequenceState{Scope: models.EventScope{KeptnContext: eventScope.KeptnContext}})
+	if err != nil {
+		return false
+	} else if len(states) == 0 {
+		log.Infof("no state for sequence %s found", eventScope.KeptnContext)
+		return false
+	}
+
+	for _, state := range states {
+		if state.Scope.Stage == "" && state.State == models.SequencePaused {
+			// if the overall state is set to 'paused', this means that all stages are paused
+			return true
+		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
+			// if not the overall state is 'paused', but specifically for this stage, we return true as well
+			return true
+		}
+	}
+
+	return false
+}
+
 func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
 	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
 	/// if there is another sequence running in the stage, we cannot send the event
 	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
 
-	for _, tasksOfContext := range tasksGroupedByContext {
+	for otherKeptnContext, tasksOfContext := range tasksGroupedByContext {
+		// if the other sequence is currently paused, it should not block the current event
+		if e.isSequenceOfEventPaused(models.EventScope{
+			KeptnContext: otherKeptnContext,
+			EventData: keptnv2.EventData{
+				Project: eventScope.Project,
+				Stage:   eventScope.Stage,
+			},
+		}) {
+			continue
+		}
 		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
 		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
 			if e.isCurrentEventOverrulingOtherEvent(lastTaskOfSequence, queuedEvent) {
