@@ -3,12 +3,9 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
-  OnDestroy,
-  OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {DtTableDataSource} from "@dynatrace/barista-components/table";
-import {Subject} from "rxjs";
 
 import {DateUtil} from "../../_utils/date.utils";
 import {DataService} from "../../_services/data.service";
