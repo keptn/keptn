@@ -46,7 +46,7 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, models.Error{
 			Code:    400,
-			Message: common.Stringp("Invalid request format"),
+			Message: common.Stringp(invalidRequestFormatMsg),
 		})
 	}
 
