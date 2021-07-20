@@ -210,7 +210,8 @@ export class DataService {
       projects = projects.map(project => {
         const existingProject = existingProjects?.find(p => p.projectName === project.projectName);
         if (existingProject) {
-          return Object.assign(existingProject, project);
+          const {roots, sequences, ...copyProject} = project;
+          return Object.assign(existingProject, copyProject);
         } else {
           return project;
         }
