@@ -10,13 +10,9 @@ import {
 import {DtTableDataSource} from "@dynatrace/barista-components/table";
 import {Subject} from "rxjs";
 
-import {Service} from "../../_models/service";
 import {DateUtil} from "../../_utils/date.utils";
 import {DataService} from "../../_services/data.service";
-import {takeUntil} from "rxjs/operators";
-import {Root} from "../../_models/root";
 import {Sequence} from "../../_models/sequence";
-import {Trace} from "../../_models/trace";
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -53,12 +49,6 @@ export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
 
   ngOnInit() {
-    this.dataService.roots
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(roots => {
-        this.updateDataSource();
-        this._changeDetectorRef.markForCheck();
-      });
   }
 
   updateDataSource() {
