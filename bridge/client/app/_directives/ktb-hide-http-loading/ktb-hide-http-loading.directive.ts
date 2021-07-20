@@ -1,8 +1,8 @@
 import {Directive, Input, OnDestroy, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
-import {HttpStateService} from "../../_services/http-state.service";
-import {HttpProgressState, HttpState} from "../../_models/http-progress-state";
-import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import {HttpStateService} from '../../_services/http-state.service';
+import {HttpProgressState, HttpState} from '../../_models/http-progress-state';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Directive({
   selector: '[ktbHideHttpLoading]'
@@ -12,12 +12,13 @@ export class KtbHideHttpLoadingDirective implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   public filterBy: string | null = null;
-  private showTimer;
+  private showTimer?: ReturnType<typeof setTimeout>;
 
   @Input() set ktbHideHttpLoading(filterBy: string) {
     this.filterBy = filterBy;
   }
 
+  // tslint:disable-next-line:no-any
   constructor(private httpStateService: HttpStateService, private templateRef: TemplateRef<any>, private viewContainer: ViewContainerRef) { }
 
   ngOnInit(): void {
@@ -25,8 +26,8 @@ export class KtbHideHttpLoadingDirective implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((progress: HttpState) => {
         if (progress && progress.url) {
-          if(!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
-            if(progress.state === HttpProgressState.start) {
+          if (!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
+            if (progress.state === HttpProgressState.start) {
               this.hideElement();
             } else {
               this.showElement();
@@ -44,12 +45,15 @@ export class KtbHideHttpLoadingDirective implements OnInit, OnDestroy {
   }
 
   hideElement() {
-    clearTimeout(this.showTimer);
+    if (this.showTimer) {
+      clearTimeout(this.showTimer);
+    }
     this.viewContainer.clear();
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

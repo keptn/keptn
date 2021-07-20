@@ -1,5 +1,5 @@
-import {Root} from "../../_models/root";
-import {Trace} from "../../_models/trace";
+import {Root} from '../../_models/root';
+import {Trace} from '../../_models/trace';
 
 const rootsData = [
   {
@@ -33331,15 +33331,15 @@ const rootsData = [
 ];
 
 const RootEvents = rootsData.map(root => {
-  function tracesMapper(trace) {
-    trace.traces.forEach(t => {
+  tracesMapper(root);
+  return Root.fromJSON(root);
+
+  function tracesMapper(trace: any) {
+    trace.traces.forEach((t: Trace) => {
       tracesMapper(t);
     });
     trace.traces = Trace.traceMapper(trace.traces);
   }
-
-  tracesMapper(root);
-  return Root.fromJSON(root);
 });
 
 export {RootEvents};

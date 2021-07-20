@@ -6,14 +6,13 @@ import {
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
-import {DtTableDataSource} from "@dynatrace/barista-components/table";
-import {Subject} from "rxjs";
-
-import {Service} from "../../_models/service";
-import {DateUtil} from "../../_utils/date.utils";
-import {DataService} from "../../_services/data.service";
-import {takeUntil} from "rxjs/operators";
-import {Root} from "../../_models/root";
+import {DtTableDataSource} from '@dynatrace/barista-components/table';
+import {Subject} from 'rxjs';
+import {Service} from '../../_models/service';
+import {DateUtil} from '../../_utils/date.utils';
+import {DataService} from '../../_services/data.service';
+import {takeUntil} from 'rxjs/operators';
+import {Root} from '../../_models/root';
 
 const DEFAULT_PAGE_SIZE = 3;
 
@@ -34,7 +33,7 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   public _services: Service[] = [];
   public _pageSize: number = DEFAULT_PAGE_SIZE;
-  public dataSource: DtTableDataSource<Service>;
+  public dataSource: DtTableDataSource<Service> = new DtTableDataSource<Service>();
 
   @Input()
   get services(): Service[] {
@@ -77,34 +76,42 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
   }
 
   private compare() {
-    return (a, b) => {
-      if (!a.getRecentRoot())
+    return (a: Service, b: Service) => {
+      if (!a.getRecentRoot()) {
         return 1;
-      else if (!b.getRecentRoot())
+      }
+      else if (!b.getRecentRoot()) {
         return -1;
-      else
+      }
+      else {
         return DateUtil.compareTraceTimesAsc(a.getRecentRoot().getLastTrace(), b.getRecentRoot().getLastTrace());
+      }
     };
   }
 
   toggleAllServices() {
-    if(this.services.length > this.pageSize) {
+    if (this.services.length > this.pageSize) {
       this.pageSize = this.services.length;
-    } else if(this.pageSize > DEFAULT_PAGE_SIZE) {
+    } else if (this.pageSize > DEFAULT_PAGE_SIZE) {
       this.pageSize = DEFAULT_PAGE_SIZE;
     }
   }
 
   getServiceLink(service: Service) {
-    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage]
+    return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
   }
 
   getSequenceLink(sequence: Root, service: Service) {
     return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 
+  public toService(row: Service): Service {
+    return row;
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

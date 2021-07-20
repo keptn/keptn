@@ -32,11 +32,8 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                 1000
               );
             }
-
-            return of(undefined);
           }
-
-          if (error.error instanceof ErrorEvent) {
+          else if (error.error instanceof ErrorEvent) {
             // A client-side or network error occurred. Handle it accordingly.
             console.error('An error occurred:', error.error.message);
             this.toast.create(`${error.error.message}`);

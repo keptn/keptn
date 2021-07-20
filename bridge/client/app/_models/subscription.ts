@@ -1,14 +1,14 @@
 export class Subscription {
-  public event: string;
+  public event!: string;
   public stages: string[] = [];
   public services: string[] = [];
   public parameters: {key: string, value: string, visible: boolean}[] = [];
-  public name: string;
+  public name!: string;
   public expanded = false;
-  private filter = [];
+  private filter: any[] = [];
 
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
+  static fromJSON(data: unknown) {
+    return Object.assign(new this(), data);
   }
 
   public addParameter() {
@@ -19,6 +19,7 @@ export class Subscription {
     this.parameters.splice(index, 1);
   }
 
+  // tslint:disable-next-line:no-any
   public getFilter(data: any): any {
     const filter = [
       ...this.stages.map(stage => {

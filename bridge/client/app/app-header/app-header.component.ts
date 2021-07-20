@@ -1,17 +1,18 @@
 import semver from 'semver';
-
-import {DOCUMENT} from "@angular/common";
+import {DOCUMENT} from '@angular/common';
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {NavigationEnd, Router, RoutesRecognized} from '@angular/router';
-import {Title} from "@angular/platform-browser";
-import {Observable, Subject} from 'rxjs';
-import {filter, map, takeUntil} from 'rxjs/operators';
-
+import {Title} from '@angular/platform-browser';
+import {Observable, Subject, of} from 'rxjs';
+import {filter, takeUntil} from 'rxjs/operators';
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
 import {NotificationsService} from '../_services/notifications.service';
 import {NotificationType} from '../_models/notification';
-import {environment} from "../../environments/environment";
+import {environment} from '../../environments/environment';
+import { KeptnInfo } from '../_models/keptn-info';
+import { DtSwitchChange } from '@dynatrace/barista-components/switch';
+import { VersionInfo } from '../_models/keptn-versions';
 
 @Component({
   selector: 'app-header',
@@ -21,36 +22,31 @@ import {environment} from "../../environments/environment";
 export class AppHeaderComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-
-  public projects: Observable<Project[]>;
-  public project: Observable<Project>;
+  public projects: Observable<Project[] | undefined>;
+  public project$: Observable<Project | undefined> = of(undefined);
   public projectBoardView = '';
   public appTitle = environment?.config?.appTitle;
   public logoUrl = environment?.config?.logoUrl;
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
-
-  public keptnInfo: any;
-  public versionCheckDialogState: string | null;
+  public keptnInfo?: KeptnInfo;
+  public versionCheckDialogState: string | null = null;
   public versionCheckReference = '/reference/version_check/';
 
-  constructor(@Inject(DOCUMENT) private _document: HTMLDocument, private router: Router, private dataService: DataService, private notificationsService: NotificationsService, private titleService: Title) {}
+  constructor(@Inject(DOCUMENT) private _document: HTMLDocument, private router: Router, private dataService: DataService,
+              private notificationsService: NotificationsService, private titleService: Title) {
+    this.projects = this.dataService.projects;
+  }
 
   ngOnInit() {
-    this.projects = this.dataService.projects;
     this.titleService.setTitle(this.appTitle);
     this.setAppFavicon(this.logoInvertedUrl);
 
     this.router.events
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(event => {
-        if(event instanceof RoutesRecognized) {
-          let projectName = event.state.root.children[0].params['projectName'];
-          this.project = this.dataService.projects.pipe(
-            filter(projects => !!projects),
-            map(projects => projects.find(p => {
-              return p.projectName === projectName;
-            }))
-          );
+        if (event instanceof RoutesRecognized) {
+          const projectName = event.state.root.children[0].params.projectName;
+          this.project$ = this.dataService.getProject(projectName);
         } else if (event instanceof NavigationEnd) {
           // catch url change and update projectBoardView for the project picker
           const pieces = event.url.split('/');
@@ -63,14 +59,17 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       });
 
     this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(keptnInfo => {
+      .pipe(
+        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
+        takeUntil(this.unsubscribe$)
+      ).subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
-        } else if (keptnInfo.bridgeInfo.enableVersionCheckFeature && keptnInfo.versionCheckEnabled) {
-          keptnInfo.keptnVersionInvalid = !this.doVersionCheck(
+        } else if (keptnInfo.bridgeInfo.enableVersionCheckFeature && keptnInfo.versionCheckEnabled && keptnInfo.availableVersions) {
+          keptnInfo.keptnVersionInvalid = !semver.valid(keptnInfo.keptnVersion);
+          keptnInfo.bridgeVersionInvalid = !semver.valid(keptnInfo.bridgeInfo.bridgeVersion);
+          this.doVersionCheck(
             keptnInfo.bridgeInfo.bridgeVersion,
             keptnInfo.keptnVersion,
             keptnInfo.availableVersions.bridge,
@@ -89,26 +88,26 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     return ['/project', projectName, this.projectBoardView];
   }
 
-  doVersionCheck(bridgeVersion, cliVersion, availableBridgeVersions, availableCliVersions): boolean {
-    if (!semver.valid(bridgeVersion) || !semver.valid(cliVersion))
-      return false;
+  doVersionCheck(bridgeVersion: string | undefined,
+                 cliVersion: string,
+                 availableBridgeVersions: VersionInfo,
+                 availableCliVersions: VersionInfo) {
+    if (semver.valid(bridgeVersion) && semver.valid(cliVersion)) {
+      const latestVersion = availableCliVersions.stable[availableCliVersions.stable.length - 1];
+      const bridgeVersionsString = this.buildVersionString(this.getNewerVersions(availableBridgeVersions, bridgeVersion));
+      const cliVersionsString = this.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
 
-    const latestVersion = availableCliVersions.stable[availableCliVersions.stable.length - 1];
-    const bridgeVersionsString = this.buildVersionString(this.getNewerVersions(availableBridgeVersions, bridgeVersion));
-    const cliVersionsString = this.buildVersionString(this.getNewerVersions(availableCliVersions, cliVersion));
-
-    if (bridgeVersionsString || cliVersionsString) {
-      let versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${cliVersionsString && bridgeVersionsString ? 'and' : ''}
+      if (bridgeVersionsString || cliVersionsString) {
+        const versionMessage = `New ${cliVersionsString ? ' Keptn CLI ' + cliVersionsString : ''} ${cliVersionsString && bridgeVersionsString ? 'and' : ''}
                             ${bridgeVersionsString ? ' Keptn Bridge ' + bridgeVersionsString : ''} available. For details how to upgrade visit
                             <a href="https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(latestVersion)}.x/operate/upgrade/" target="_blank">
                             https://keptn.sh/docs/${semver.major(latestVersion)}.${semver.minor(latestVersion)}.x/operate/upgrade/</a>`;
-      this.notificationsService.addNotification(NotificationType.Info, versionMessage);
+        this.notificationsService.addNotification(NotificationType.Info, versionMessage);
+      }
     }
-
-    return true;
   }
 
-  private buildVersionString(versions) {
+  private buildVersionString(versions: VersionInfo) {
     if (versions.stable.length > 0) {
       return versions.stable.join(', ');
     } else if (versions.prerelease.length > 0) {
@@ -118,46 +117,43 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  private getNewerVersions(availableVersions, currentVersion) {
-    const newerVersions = {
+  private getNewerVersions(availableVersions: VersionInfo, currentVersion?: string): VersionInfo {
+    const newerVersions: VersionInfo = {
       stable: [],
       prerelease: []
-    }
+    };
+    if (currentVersion) {
+      newerVersions.stable = availableVersions.stable.filter((stableVersion: string) => semver.lt(currentVersion, stableVersion));
 
-    newerVersions.stable = availableVersions.stable.filter((stableVersion) => {
-      if (semver.lt(currentVersion, stableVersion)) {
-        return stableVersion;
+      // It is only necessary to check prerelease versions when no stable update is available
+      if (newerVersions.stable.length === 0) {
+        newerVersions.prerelease = availableVersions.prerelease
+                                  .filter((prereleaseVersion: string) => semver.lt(currentVersion, prereleaseVersion));
       }
-    });
-
-    // It is only necessary to check prerelease versions when no stable update is available
-    if (newerVersions.stable.length === 0) {
-      newerVersions.prerelease = availableVersions.prerelease.filter((prereleaseVersion) => {
-        if (semver.lt(currentVersion, prereleaseVersion)) {
-          return prereleaseVersion;
-        }
-      });
     }
 
     return newerVersions;
   }
 
   showVersionCheckInfoDialog() {
-    if (this.keptnInfo.bridgeInfo.enableVersionCheckFeature)
+    if (this.keptnInfo?.bridgeInfo.enableVersionCheckFeature) {
       this.versionCheckDialogState = 'info';
+    }
   }
 
   acceptVersionCheck(accepted: boolean): void {
     this.dataService.setVersionCheck(accepted);
-    if (accepted)
+    if (accepted) {
       this.versionCheckDialogState = 'success';
+    }
 
     setTimeout(() => {
       this.versionCheckDialogState = null;
     }, accepted ? 2000 : 0);
   }
 
-  versionCheckClicked(event) {
+  // tslint:disable-next-line:no-any
+  versionCheckClicked(event: DtSwitchChange<any>) {
     this.dataService.setVersionCheck(event.checked);
   }
 
@@ -167,6 +163,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

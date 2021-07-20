@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from "rxjs";
 
-import {Notification} from "../_models/notification";
+import { Notification, NotificationType } from "../_models/notification";
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +14,8 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  addNotification(type, message) {
-    let notification = Notification.fromJSON({type, message});
+  addNotification(type: NotificationType, message: string) {
+    const notification = new Notification(type, message);
 
     // Check if the notification to add already exists
     const duplicateNotifications = this._notifications.getValue().filter(n => n.type === notification.type && n.message === notification.message);
@@ -26,7 +26,7 @@ export class NotificationsService {
     }
   }
 
-  removeNotification(notification) {
-    this._notifications.next(this._notifications.getValue().filter(n => n != notification));
+  removeNotification(notification: Notification) {
+    this._notifications.next(this._notifications.getValue().filter(n => n !== notification));
   }
 }

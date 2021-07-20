@@ -1,27 +1,25 @@
 export class Secret {
   name: string;
   scope: string;
-  data: [{
+  data: {
     key: string;
     value: string;
-  }];
+  }[] = [];
 
   constructor() {
-    this.scope = "keptn-default";
+    this.scope = 'keptn-default';
+    this.name = '';
   }
 
-  addData() {
-    if(!this.data)
-      this.data = [{ key: "", value: "" }];
-    else
-      this.data.push({ key: "", value: "" });
+  static fromJSON(data: unknown) {
+    return Object.assign(new this(), data);
   }
 
-  removeData(index) {
-    this.data.splice(index, 1);
+  addData(): void {
+    this.data.push({key: '', value: ''});
   }
 
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
+  removeData(index: number): void {
+    this.data?.splice(index, 1);
   }
 }

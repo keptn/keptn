@@ -6,13 +6,8 @@ enum NotificationType {
 }
 
 class Notification {
-  type: NotificationType;
-  message: string;
-
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
+  constructor(public type: NotificationType, public message: string ) {
   }
-
 }
 
-export {Notification, NotificationType}
+export {Notification, NotificationType};

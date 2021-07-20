@@ -7,6 +7,6 @@ import {UniformRegistrationLog} from "../../_models/uniform-registration-log";
   styleUrls: ['./ktb-uniform-registration-logs.component.scss']
 })
 export class KtbUniformRegistrationLogsComponent {
-  @Input() logs: UniformRegistrationLog[];
-  @Input() projectName: string;
+  @Input() logs: UniformRegistrationLog[] = [];
+  @Input() projectName?: string;
 }

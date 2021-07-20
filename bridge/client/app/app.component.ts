@@ -1,9 +1,9 @@
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Component, OnInit} from '@angular/core';
-import {filter, take} from "rxjs/operators";
-import {DataService} from "./_services/data.service";
+import {filter, take} from 'rxjs/operators';
+import {DataService} from './_services/data.service';
 
-declare var dT_;
+declare var dT_: any;
 
 @Component({
   selector: 'app-root',
@@ -13,7 +13,9 @@ declare var dT_;
 export class AppComponent implements OnInit {
 
   constructor(private http: HttpClient, private dataService: DataService) {
-    if(typeof dT_!='undefined' && dT_.initAngularNg){dT_.initAngularNg(http, HttpHeaders);}
+    if (typeof dT_ !== 'undefined' && dT_.initAngularNg) {
+      dT_.initAngularNg(http, HttpHeaders);
+    }
   }
 
   ngOnInit(): void {
@@ -21,9 +23,8 @@ export class AppComponent implements OnInit {
     this.dataService.keptnInfo
       .pipe(filter(keptnInfo => !!keptnInfo))
       .pipe(take(1))
-      .subscribe(keptnInfo => {
+      .subscribe(() => {
         this.dataService.loadProjects();
       });
   }
-
 }

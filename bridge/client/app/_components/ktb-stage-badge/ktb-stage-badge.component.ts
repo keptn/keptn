@@ -11,11 +11,11 @@ import {EvaluationResult} from '../../_models/evaluation-result';
 })
 export class KtbStageBadgeComponent {
 
-  @Input() public evaluation: Trace;
-  @Input() public evaluationResult: EvaluationResult;
-  @Input() public stage: Stage;
-  @Input() public isSelected: boolean | undefined = undefined;
-  @Input() public fill: boolean | undefined = undefined;
+  @Input() public evaluation?: Trace;
+  @Input() public evaluationResult?: EvaluationResult;
+  @Input() public stage?: Stage;
+  @Input() public isSelected?: boolean = undefined;
+  @Input() public fill?: boolean = undefined;
   @Input() public error = false;
   @Input() public warning = false;
   @Input() public success = false;

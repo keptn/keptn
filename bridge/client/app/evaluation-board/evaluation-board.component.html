@@ -3,13 +3,13 @@
     <dt-icon name="left"></dt-icon>
     Go back
   </button>
-  <div *ngIf="evaluations" class="evaluation-board" fxLayout="column">
+  <div *ngIf="evaluations && root" class="evaluation-board" fxLayout="column">
     <dt-info-group>
       <dt-info-group-title>
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
           <div fxLayout="row" fxLayoutAlign="start center">
             <button dt-icon-button disabled variant="nested" *ngIf="root.isFaulty()"><dt-icon name="criticalevent"></dt-icon></button>
-            <p [textContent]="root.getShortImageName() || root.getService()"></p>
+            <p [textContent]="root.getShortImageName() || root.service"></p>
           </div>
         </div>
       </dt-info-group-title>
@@ -21,8 +21,8 @@
         <span [textContent]="evaluation.data.stage"></span>
       </p>
       <div class="mb-2">
-        <button *ngIf="getDeployment(evaluation.data.stage)?.shkeptncontext as shkeptncontext" dt-button variant="secondary" [routerLink]="['/project', root.getProject(), 'service', root.getService(), 'context',  shkeptncontext, 'stage', evaluation.data.stage]">View service details</button>
-        <button class="ml-3" dt-button variant="secondary" [routerLink]="['/project', root.getProject(), 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]">View sequence details</button>
+        <button *ngIf="evaluation.data.stage && getDeployment(evaluation.data.stage)?.shkeptncontext as shkeptncontext" dt-button variant="secondary" [routerLink]="getServiceDetailsLink(shkeptncontext, evaluation.data.stage)">View service details</button>
+        <button class="ml-3" dt-button variant="secondary" [routerLink]="['/project', root.project, 'sequence', root.shkeptncontext, 'stage', evaluation.data.stage]">View sequence details</button>
       </div>
       <ktb-event-item [event]="evaluation">
         <ktb-event-item-detail>

@@ -1,4 +1,4 @@
-<div class="ktb-stage-overview" fxFlex fxLayout="column">
+<div class="ktb-stage-overview" fxFlex fxLayout="column" *ngIf="project as project">
   <div class="container">
     <p><span [textContent]="project.stages.length"></span> Stages</p>
     <dt-filter-field

@@ -1,3 +1,5 @@
+import { KeptnInfo as ki } from '../../_models/keptn-info';
+
 export const KeptnInfo = {
   "availableVersions": {
     "cli": {
@@ -68,8 +70,9 @@ export const KeptnInfo = {
     "cliDownloadLink": "https://github.com/keptn/keptn/releases",
     "enableVersionCheckFeature": true,
     "showApiToken": true,
-    "authCommand": "keptn auth --endpoint=http://localhost:3000/api --api-token=TOKEN"
+    "authType": "BASIC"
   },
+  "authCommand": "keptn auth --endpoint=http://localhost:3000/api --api-token=TOKEN",
   "keptnVersion": "0.8.1-dev-PR-3529",
   "versionCheckEnabled": true,
   "metadata": {
@@ -81,4 +84,4 @@ export const KeptnInfo = {
   },
   "keptnVersionInvalid": false,
   "bridgeVersionInvalid": true
-};
+} as ki;

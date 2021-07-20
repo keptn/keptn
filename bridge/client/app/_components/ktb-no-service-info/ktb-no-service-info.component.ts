@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {takeUntil} from "rxjs/operators";
-import {DataService} from "../../_services/data.service";
-import {Subject} from "rxjs";
+import {takeUntil} from 'rxjs/operators';
+import {DataService} from '../../_services/data.service';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'ktb-no-service-info',
@@ -10,14 +10,16 @@ import {Subject} from "rxjs";
 })
 export class KtbNoServiceInfoComponent implements OnInit, OnDestroy {
   private unsubscribe$: Subject<void> = new Subject();
-  public isQualityGatesOnly: boolean;
+  public isQualityGatesOnly = false;
 
   constructor(private dataService: DataService) { }
 
   ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(
       takeUntil(this.unsubscribe$)
-    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
+    ).subscribe(isQualityGatesOnly => {
+      this.isQualityGatesOnly = isQualityGatesOnly;
+    });
   }
 
   ngOnDestroy() {

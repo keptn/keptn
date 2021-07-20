@@ -24,7 +24,7 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<div class="container" *ngIf="!error && (project$ | async) === null">
+<div class="container" *ngIf="!error && (project$ | async) === undefined">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>

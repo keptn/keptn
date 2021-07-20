@@ -1,9 +1,8 @@
 import marked, { Renderer } from 'marked';
 import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';
-
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChange, ViewEncapsulation} from '@angular/core';
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 
 @Component({
   selector: 'ktb-markdown',
@@ -18,9 +17,9 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 })
 export class KtbMarkdownComponent implements OnChanges {
 
-  @Input() markdown: string;
-  @Input() html: string;
-  public safeHtml: SafeHtml;
+  @Input() markdown?: string;
+  @Input() html?: string;
+  public safeHtml?: SafeHtml;
   private md: any;
 
   static highlightCode(code: string, language: string): string {
@@ -33,9 +32,9 @@ export class KtbMarkdownComponent implements OnChanges {
     return `<code class="hljs ${language}">${result}</code>`;
   }
 
-  static addTargetAndNoopener(node) {
+  static addTargetAndNoopener(node: Element) {
     // set all elements owning href to target=_blank and rel=noopener
-    if ('href' in node) {
+    if (node instanceof HTMLLinkElement) {
       node.setAttribute('target', '_blank');
       node.setAttribute('rel', 'noopener');
     }

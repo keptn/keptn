@@ -9,32 +9,32 @@
     <dt-table [dataSource]="uniformRegistrations" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0">
       <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="row.name || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="toRegistration(row).name || 'n/a'"></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="version" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell *dtHeaderCellDef>Version</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.integrationversion || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="toRegistration(row).metadata.integrationversion || 'n/a'"></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="host" dtColumnAlign="text" dtColumnProportion="3" >
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.hostname || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="toRegistration(row).metadata.hostname || 'n/a'"></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="namespace" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Namespace</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.kubernetesmetadata.namespace || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="toRegistration(row).metadata.kubernetesmetadata.namespace || 'n/a'"></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="location" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Location</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="row.metadata.location || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [textContent]="toRegistration(row).metadata.location || 'n/a'"></dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
         <dt-header-cell *dtHeaderCellDef>Active Subscriptions</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [innerHtml]="row.subscription.topics ? formatSubscriptions(row.subscription.topics) : 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [innerHtml]="toRegistration(row).subscription.topics ? formatSubscriptions(toRegistration(row).subscription.topics) : 'n/a'"></dt-cell>
       </ng-container>
 
       <dt-header-row

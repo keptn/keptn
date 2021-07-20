@@ -31,7 +31,7 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<ng-container *ngIf="projects$ | async as projects">
+<ng-container *ngIf="(projects$ | async) as projects">
   <div class="container" *ngIf="projects.length > 0" uitestid="keptn-dashboard-projectList">
     <dt-info-group>
       <dt-info-group-title>

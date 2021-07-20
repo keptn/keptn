@@ -11,9 +11,9 @@ import {takeUntil} from 'rxjs/operators';
   styleUrls: []
 })
 export class DashboardComponent implements OnInit, OnDestroy{
-  public projects$: Observable<Project[]>;
+  public projects$: Observable<Project[] | undefined>;
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
-  public isQualityGatesOnly: boolean;
+  public isQualityGatesOnly = false;
 
   private readonly _projectTimerInterval = 30 * 1000;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
@@ -27,7 +27,9 @@ export class DashboardComponent implements OnInit, OnDestroy{
   public ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(
       takeUntil(this.unsubscribe$)
-    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
+    ).subscribe(isQualityGatesOnly => {
+      this.isQualityGatesOnly = isQualityGatesOnly;
+    });
 
     // If we don't run this outside angular e2e tests will fail
     // because Protractor waits for async tasks to complete - in case of timer they do not finish so the tests time out

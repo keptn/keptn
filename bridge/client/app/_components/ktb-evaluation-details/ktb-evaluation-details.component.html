@@ -17,10 +17,10 @@
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
 
-    <button dt-button variant="secondary" class="button-show-more-slo" *ngIf="!isHeatmapExtended && isHeatmapExtendable && _comparisonView == 'heatmap'" (click)="toggleHeatmap()">
+    <button dt-button variant="secondary" class="button-show-more-slo" *ngIf="!isHeatmapExtended && isHeatmapExtendable && _comparisonView === 'heatmap'" (click)="toggleHeatmap()">
       <dt-icon name="sorter2-down"></dt-icon> Show all SLIs
     </button>
-    <button dt-button variant="secondary" class="button-show-more-slo" *ngIf="isHeatmapExtended && isHeatmapExtendable && _comparisonView == 'heatmap'" (click)="toggleHeatmap()">
+    <button dt-button variant="secondary" class="button-show-more-slo" *ngIf="isHeatmapExtended && isHeatmapExtendable && _comparisonView === 'heatmap'" (click)="toggleHeatmap()">
       <dt-icon name="sorter2-up"></dt-icon> Collapse to 10 SLIs
     </button>
 
@@ -30,7 +30,7 @@
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
       <dt-chart-tooltip>
         <ng-template let-tooltip>
-          <p>SLO evaluation of <span [textContent]="tooltip.points[0].point.evaluationData.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltip.points[0].point.evaluationData.time | amDateFormat:dateUtil.getDateTimeFormat()"></span></p>
+          <p *ngIf="getEvaluationFromPoint(tooltip.points) as tooltipEvaluation">SLO evaluation of <span [textContent]="tooltipEvaluation.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltipEvaluation.time | amDateFormat:dateUtil.getDateTimeFormat()"></span></p>
           <dt-key-value-list style="min-width: 100px;">
             <dt-key-value-list-item *ngFor="let data of filterPoints(tooltip.points)">
               <dt-key-value-list-key>
@@ -48,63 +48,65 @@
   <div *ngIf="isInvalidated">
     <p class="m-0 error">This evaluation result has been invalidated.</p>
   </div>
-  <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData" (click)="$event.stopPropagation();" uitestid="keptn-evaluation-details-selected">
+  <ng-container *ngIf="_selectedEvaluationData as _selectedEvaluationData">
+  <div class="mt-1 mb-1" *ngIf="_selectedEvaluationData.data.evaluation as evaluation" (click)="$event.stopPropagation();" uitestid="keptn-evaluation-details-selected">
     <div fxLayout="row">
       <div fxFlex></div>
       <div fxLayout="row" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-selected-contextButtons">
-        <button dt-button variant="secondary" (click)="showSloDialog()" *ngIf="_selectedEvaluationData.data.evaluation.sloFileContentParsed"><dt-icon name="services"></dt-icon> Show SLO</button>
+        <button dt-button variant="secondary" (click)="showSloDialog()" *ngIf="evaluation.sloFileContentParsed"><dt-icon name="services"></dt-icon> Show SLO</button>
         <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">Ignore for comparison</button>
       </div>
     </div>
-    <dt-consumption [max]="_selectedEvaluationData.data.evaluation.indicatorResults ? 100 : 0" [value]="_selectedEvaluationData.data.evaluation.score" [color]="_evaluationState[_selectedEvaluationData.data.result]">
+    <dt-consumption [max]="evaluation.indicatorResults ? 100 : 0" [value]="evaluation.score" [color]="_evaluationState.get(_selectedEvaluationData.data.result)">
       <dt-consumption-icon aria-label="Test">
         <dt-icon name="summary"></dt-icon>
       </dt-consumption-icon>
-      <dt-consumption-title>Evaluation of <span [textContent]="_selectedEvaluationData.data.teststrategy"></span> test on <span [textContent]="_selectedEvaluationData.getStage()"></span></dt-consumption-title>
+      <dt-consumption-title>Evaluation of <span [textContent]="_selectedEvaluationData.data.teststrategy"></span> test on <span [textContent]="_selectedEvaluationData.stage"></span></dt-consumption-title>
       <dt-consumption-count>
         <p class="m-0">
-          <span class="error" *ngIf="_selectedEvaluationData.isFailed()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluation.score | number:'1.0-0'"></span></span>
-          <span class="small" *ngIf="(_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()) && _selectedEvaluationData.data.evaluation.score_warning">
+          <span class="error" *ngIf="_selectedEvaluationData.isFailed()"><span class="bold" [textContent]="evaluation.score | number:'1.0-0'"></span></span>
+          <span class="small" *ngIf="(_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()) && evaluation.score_warning">
             <span *ngIf="_selectedEvaluationData.isFailed()"> < </span>
-            <span [textContent]="_selectedEvaluationData.data.evaluation.score_warning"></span>
+            <span [textContent]="evaluation.score_warning"></span>
             <span *ngIf="_selectedEvaluationData.isWarning()"> <= </span>
           </span>
-          <span class="warning" *ngIf="_selectedEvaluationData.isWarning()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluation.score | number:'1.0-0'"></span></span>
-          <span class="small" *ngIf="!(_selectedEvaluationData.isFailed() && _selectedEvaluationData.data.evaluation.score_warning) && _selectedEvaluationData.data.evaluation.score_pass">
+          <span class="warning" *ngIf="_selectedEvaluationData.isWarning()"><span class="bold" [textContent]="evaluation.score | number:'1.0-0'"></span></span>
+          <span class="small" *ngIf="!(_selectedEvaluationData.isFailed() && evaluation.score_warning) && evaluation.score_pass">
             <span *ngIf="_selectedEvaluationData.isFailed() || _selectedEvaluationData.isWarning()"> < </span>
-            <span [textContent]="_selectedEvaluationData.data.evaluation.score_pass"></span>
+            <span [textContent]="evaluation.score_pass"></span>
             <span *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"> <= </span>
           </span>
-          <span class="success" *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"><span class="bold" [textContent]="_selectedEvaluationData.data.evaluation.score | number:'1.0-0'"></span></span>
+          <span class="success" *ngIf="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()"><span class="bold" [textContent]="evaluation.score | number:'1.0-0'"></span></span>
           <span class="small ml-2">Result: <span [class.error]="_selectedEvaluationData.isFailed()" [class.warning]="_selectedEvaluationData.isWarning()" [class.success]="!_selectedEvaluationData.isFailed() && !_selectedEvaluationData.isWarning()" [textContent]="_selectedEvaluationData.data.result"></span></span>
         </p>
       </dt-consumption-count>
       <dt-consumption-label>
-        <p class="m-0 small"><span class="bold">Evaluation timeframe: </span><span [textContent]="_selectedEvaluationData.data.evaluation.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="_selectedEvaluationData.data.evaluation.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="dateUtil.getDurationFormatted(_selectedEvaluationData.data.evaluation.timeStart, _selectedEvaluationData.data.evaluation.timeEnd)"></span>)</p>
-        <p class="m-0" *ngIf="_selectedEvaluationData.data.result == _selectedEvaluationData.data.evaluation.result && _selectedEvaluationData.data.evaluation.comparedEvents?.length > 0">
+        <p class="m-0 small"><span class="bold">Evaluation timeframe: </span><span [textContent]="evaluation.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="evaluation.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="dateUtil.getDurationFormatted(evaluation.timeStart, evaluation.timeEnd)"></span>)</p>
+        <p class="m-0" *ngIf="_selectedEvaluationData.data.result === evaluation.result && evaluation.comparedEvents?.length > 0">
           Compared with last
-          <span *ngIf="_selectedEvaluationData.data.evaluation.compare_with == 'several_results'" [textContent]="_selectedEvaluationData.data.evaluation.comparedEvents?.length + ' '"></span>
-          <span *ngIf="_selectedEvaluationData.data.evaluation.include_result_with_score == 'pass'">passed</span>
-          <span *ngIf="_selectedEvaluationData.data.evaluation.include_result_with_score == 'pass_or_warn'">passed or warned</span>
-          evaluation<span *ngIf="_selectedEvaluationData.data.evaluation.compare_with == 'several_results'">s</span>.
-          <span *ngIf="_selectedEvaluationData.data.evaluation.number_of_missing_comparison_results == 1">
-            <span [textContent]="_selectedEvaluationData.data.evaluation.number_of_missing_comparison_results"></span>
+          <span *ngIf="evaluation.compare_with == 'several_results'" [textContent]="evaluation.comparedEvents?.length + ' '"></span>
+          <span *ngIf="evaluation.include_result_with_score == 'pass'">passed</span>
+          <span *ngIf="evaluation.include_result_with_score == 'pass_or_warn'">passed or warned</span>
+          evaluation<span *ngIf="evaluation.compare_with == 'several_results'">s</span>.
+          <span *ngIf="evaluation.number_of_missing_comparison_results == 1">
+            <span [textContent]="evaluation.number_of_missing_comparison_results"></span>
             result is not showing up in the Heatmap, because it has been either invalidated or is older.
           </span>
-          <span *ngIf="_selectedEvaluationData.data.evaluation.number_of_missing_comparison_results > 1">
-            <span [textContent]="_selectedEvaluationData.data.evaluation.number_of_missing_comparison_results"></span>
+          <span *ngIf="evaluation.number_of_missing_comparison_results > 1">
+            <span [textContent]="evaluation.number_of_missing_comparison_results"></span>
             results are not showing up in the Heatmap, because they have been either invalidated or are older results.
           </span>
         </p>
-        <p class="m-0" *ngIf="_selectedEvaluationData.data.result != _selectedEvaluationData.data.evaluation.result" [textContent]="_selectedEvaluationData.data.evaluation.result"></p>
+        <p class="m-0" *ngIf="_selectedEvaluationData.data.result !== evaluation.result" [textContent]="evaluation.result"></p>
       </dt-consumption-label>
     </dt-consumption>
-    <ktb-sli-breakdown *ngIf="_selectedEvaluationData.data.evaluation.indicatorResults"
+    <ktb-sli-breakdown *ngIf="evaluation.indicatorResults"
                        [comparedIndicatorResults]="comparedIndicatorResults"
-                       [score]="_selectedEvaluationData.data.evaluation.score"
-                       [indicatorResults]="_selectedEvaluationData.data.evaluation.indicatorResults">
+                       [score]="evaluation.score"
+                       [indicatorResults]="evaluation.indicatorResults">
     </ktb-sli-breakdown>
   </div>
+  </ng-container>
 </div>
 <ng-template #sloDialog let-data>
   <h1 mat-dialog-title>SLO</h1>

@@ -1,6 +1,6 @@
-import {Service} from "./service";
+import {Service} from './service';
 
-export class ServiceResult {
+export interface ServiceResult {
   services: Service[];
   totalCount: number;
 }

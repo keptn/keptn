@@ -1,7 +1,6 @@
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-
-import {AppModule} from "../app.module";
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {AppModule} from '../app.module';
 import {DataServiceMock} from './data.service.mock';
 
 describe('MockDataService', () => {
@@ -17,7 +16,7 @@ describe('MockDataService', () => {
     const service: DataServiceMock = TestBed.get(DataServiceMock);
     service.loadProjects();
     service.projects.subscribe(projects => {
-      expect(projects.length).toBe(2);
+      expect(projects?.length).toBe(2);
     });
   });
 });

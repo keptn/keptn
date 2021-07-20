@@ -10,17 +10,23 @@
     "module": "es2020",
     "moduleResolution": "node",
     "importHelpers": true,
+    "strict": true,
     "target": "es2015",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
     "typeRoots": [
       "node_modules/@types"
     ],
+    "noImplicitReturns": true,
     "lib": [
       "es2018",
       "dom"
     ]
   },
+  "exclude": [
+    "node_modules"
+  ],
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true

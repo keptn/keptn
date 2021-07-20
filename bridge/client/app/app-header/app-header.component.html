@@ -7,7 +7,7 @@
     <p class="m-2">/</p>
     <p class="m-0">
       <!-- Show projects picker -->
-      <dt-select uitestid="keptn-nav-projectSelect" id="projectSelect" placeholder="Choose project" aria-label="Choose project" [value]="(project | async)?.projectName">
+      <dt-select uitestid="keptn-nav-projectSelect" id="projectSelect" placeholder="Choose project" aria-label="Choose project" [value]="(project$ | async)?.projectName">
         <dt-option *ngFor="let project of projects | async"
                    [routerLink]="getRouterLink(project.projectName)"
                    [value]="project.projectName" [textContent]="project.projectName"></dt-option>
@@ -22,33 +22,33 @@
 </dt-top-bar-navigation>
 <dt-context-dialog #dialog aria-label="User menu" ariaLabelClose="Close user menu">
   <h3 class="m-0">Get started</h3>
-  <div class="mt-1" *ngIf="keptnInfo?.bridgeInfo?.showApiToken" uitestid="keptn-nav-showApiLink">
-    <a uitestid="keptn-nav-openKeptnApi" class="mt-1 mb-2" [href]="keptnInfo.bridgeInfo.apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a>
+  <div class="mt-1" *ngIf="keptnInfo?.bridgeInfo.showApiToken && keptnInfo?.bridgeInfo.apiUrl as apiUrl" uitestid="keptn-nav-showApiLink">
+    <a uitestid="keptn-nav-openKeptnApi" class="mt-1 mb-2" [href]="apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a>
   </div>
-  <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" uitestid="keptn-nav-showDownloadLink">
+  <div class="mt-1" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo.cliDownloadLink as downloadLink" uitestid="keptn-nav-showDownloadLink">
     <div fxFlex>
       <p class="m-0 mr-2 nobreak">
-        <a uitestid="keptn-nav-downloadKeptnCli" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></p>
+        <a uitestid="keptn-nav-downloadKeptnCli" [attr.href]="downloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></p>
     </div>
   </div>
-  <div class="mt-2 mb-2" *ngIf="keptnInfo?.bridgeInfo?.showApiToken" uitestid="keptn-nav-showApiToken">
+  <div class="mt-2 mb-2" *ngIf="keptnInfo?.bridgeInfo.showApiToken && keptnInfo as keptnInfo" uitestid="keptn-nav-showApiToken">
     <div class="mt-1" uitestid="keptn-nav-copyKeptnApiToken">
       <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.apiToken" [label]="'Keptn API token'"></ktb-copy-to-clipboard>
     </div>
     <div class="mt-1" uitestid="keptn-nav-copyKeptnAuthCommand">
-      <ktb-copy-to-clipboard [value]="keptnInfo.bridgeInfo.authCommand" [label]="'keptn auth command'"></ktb-copy-to-clipboard>
+      <ktb-copy-to-clipboard [value]="keptnInfo.authCommand" [label]="'keptn auth command'"></ktb-copy-to-clipboard>
     </div>
   </div>
   <hr/>
-  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && keptnInfo?.versionCheckEnabled === false">
+  <div class="mt-2 mb-3" fxLayout="row" fxLayoutAlign="flex-start center" *ngIf="keptnInfo?.bridgeInfo.enableVersionCheckFeature && keptnInfo?.versionCheckEnabled === false">
     <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
     <p class="small m-0">Automatic version and security check disabled</p>
   </div>
   <div class="mt-3 mb-2" fxLayout="column" fxLayoutAlign="flex-end end" uitestid="keptn-nav-versionInfo">
     <p class="small m-0">Keptn version: <span [textContent]="keptnInfo?.keptnVersion"></span><span *ngIf="keptnInfo?.keptnVersionInvalid">*</span></p>
-    <p class="small m-0">Bridge version: <span [textContent]="keptnInfo?.bridgeInfo?.bridgeVersion"></span><span *ngIf="keptnInfo?.bridgeVersionInvalid">*</span></p>
+    <p class="small m-0">Bridge version: <span [textContent]="keptnInfo?.bridgeInfo.bridgeVersion"></span><span *ngIf="keptnInfo?.bridgeVersionInvalid">*</span></p>
   </div>
-  <div *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature" uitestid="keptn-nav-versionCheck">
+  <div *ngIf="keptnInfo?.bridgeInfo.enableVersionCheckFeature && keptnInfo as keptnInfo" uitestid="keptn-nav-versionCheck">
     <div class="mt-3" fxLayout="row" fxLayoutAlign="flex-start" *ngIf="keptnInfo.keptnVersionInvalid || keptnInfo.bridgeVersionInvalid">
       <div>
         <dt-icon class="error mr-1" [name]="'criticalevent'"></dt-icon>
@@ -62,7 +62,7 @@
         <p class="m-0">Version check</p>
       </div>
       <div>
-        <dt-switch (change)="versionCheckClicked($event)" [checked]="keptnInfo?.versionCheckEnabled !== false"></dt-switch>
+        <dt-switch (change)="versionCheckClicked($event)" [checked]="keptnInfo.versionCheckEnabled !== false"></dt-switch>
       </div>
     </div>
     <p class="m-0 mt-2 small">By enabling this feature (recommended), Keptn will notify about new versions and security patches for Keptn and therefore collect statistical data. Details can be found at <a [href]="versionCheckReference | keptnUrl" target="_blank" [textContent]="versionCheckReference | keptnUrl"></a></p>

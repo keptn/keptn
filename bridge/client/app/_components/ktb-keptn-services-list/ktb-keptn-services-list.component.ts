@@ -5,13 +5,13 @@ import {
   OnInit,
   Output
 } from '@angular/core';
-import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {UniformRegistration} from "../../_models/uniform-registration";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
-import {DataService} from "../../_services/data.service";
-import {ActivatedRoute} from "@angular/router";
-import {switchMap, takeUntil} from "rxjs/operators";
-import {UniformRegistrationLog} from "../../_models/uniform-registration-log";
+import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
+import {UniformRegistration} from '../../_models/uniform-registration';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {DataService} from '../../_services/data.service';
+import {ActivatedRoute} from '@angular/router';
+import {switchMap, takeUntil} from 'rxjs/operators';
+import {UniformRegistrationLog} from '../../_models/uniform-registration-log';
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -27,11 +27,11 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   private selectedUniformRegistrationId$ = new Subject<string>();
   private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
 
-  public selectedUniformRegistration: UniformRegistration;
+  public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
   public isLoadingLogs = false;
 
-  public projectName: string;
+  public projectName: string | null = null;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
@@ -53,8 +53,12 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       })
     ).subscribe((uniformRegLogs) => {
       uniformRegLogs.sort((a, b) => {
-        if (a.time.valueOf() > b.time.valueOf()) return -1;
-        if (a.time.valueOf() < b.time.valueOf()) return 1;
+        if (a.time.valueOf() > b.time.valueOf()) {
+          return -1;
+        }
+        if (a.time.valueOf() < b.time.valueOf()) {
+          return 1;
+        }
         return 0;
       });
       this.isLoadingLogs = false;
@@ -83,17 +87,22 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     return subscriptions.join('<br/>');
   }
 
-  public sortData(sortEvent) {
-    if(this.uniformRegistrations.data) {
+  public sortData(sortEvent: DtSortEvent) {
+    if (this.uniformRegistrations.data) {
       const isAscending = sortEvent.direction === 'asc';
       const data: UniformRegistration[] = this.uniformRegistrations.data.slice();
 
-      data.sort((a, b) => {
+      data.sort((a: UniformRegistration, b: UniformRegistration) => {
         switch (sortEvent.active) {
-          case 'name': return this.compare(a.name, b.name, isAscending);
-          case 'host': return (this.compare(a.metadata.hostname, b.metadata.hostname, isAscending) || this.compare(a.name, b.name, true));
-          case 'namespace': return this.compare(a.metadata.kubernetesmetadata.namespace, b.metadata.kubernetesmetadata.namespace, isAscending) || this.compare(a.name, b.name, true);
-          case 'location': return this.compare(a.metadata.location, b.metadata.location, isAscending) || this.compare(a.name, b.name, true);
+          case 'host':
+            return (this.compare(a.metadata.hostname, b.metadata.hostname, isAscending) || this.compare(a.name, b.name, true));
+          case 'namespace':
+            return this.compare(a.metadata.kubernetesmetadata.namespace, b.metadata.kubernetesmetadata.namespace, isAscending) || this.compare(a.name, b.name, true);
+          case 'location':
+            return this.compare(a.metadata.location, b.metadata.location, isAscending) || this.compare(a.name, b.name, true);
+          case 'name':
+          default:
+            return this.compare(a.name, b.name, isAscending);
         }
       });
 
@@ -101,6 +110,10 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     } else {
       this.uniformRegistrations.data = [];
     }
+  }
+
+  public toRegistration(row: UniformRegistration): UniformRegistration {
+    return row;
   }
 
   private compare(a: string, b: string, isAsc: boolean): number {

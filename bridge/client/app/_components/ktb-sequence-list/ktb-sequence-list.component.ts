@@ -19,10 +19,10 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   private unsubscribe$: Subject<void> = new Subject<void>();
   private _sequences: Trace[] = [];
   private _remediations: Sequence[] = [];
-  private projectName: string;
+  private projectName?: string;
 
-  @Input() stage: string;
-  @Input() shkeptncontext: string;
+  @Input() stage?: string;
+  @Input() shkeptncontext?: string;
   @Input()
   get sequences() {
     return this._sequences;
@@ -48,7 +48,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dataService.changedDeployments.pipe(takeUntil(this.unsubscribe$)).subscribe((deployments) => {
-      if (deployments.some(d => d.shkeptncontext === this.shkeptncontext && d.hasStage(this.stage))) {
+      if (this.stage && deployments.some(d => d.shkeptncontext === this.shkeptncontext && d.hasStage(this.stage as string))) {
         this.updateDataSource();
       }
     });
@@ -60,7 +60,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   }
 
   private updateDataSource(): void {
-    this.dataSource.data = [...this.remediations || [], ...this.sequences];
+    this.dataSource.data = [...this.remediations, ...this.sequences];
   }
 
   public isRemediation(row: Sequence | Trace): Sequence | null {
@@ -85,7 +85,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
       let eventState;
 
       if (failedEvent) {
-        if(!failedEvent.isFinished() && !failedEvent.isChanged()) {
+        if (!failedEvent.isFinished() && !failedEvent.isChanged()) {
           eventState = 'started';
         } else if (failedEvent.isChanged()) {
           eventState = 'changed';
@@ -94,22 +94,26 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
         } else {
           eventState = '';
         }
-        message = `${failedEvent.source} ${eventState}`
+        message = `${failedEvent.source} ${eventState}`;
       }
     }
     return message;
   }
 
   public getRemediationLink(remediation: Sequence): string[] {
-    return ['/', 'project', this.projectName, 'sequence', remediation.shkeptncontext, 'event', remediation.getStage(this.stage).latestEvent.id];
+    const eventId = this.stage ? remediation.getStage(this.stage)?.latestEvent?.id : undefined;
+    return this.projectName && this.stage && eventId
+      ? ['/', 'project', this.projectName, 'sequence', remediation.shkeptncontext, 'event', eventId]
+      : [];
   }
 
   public getSequenceLink(trace: Trace): string[] {
-    return ['/', 'project', this.projectName, 'sequence', trace.shkeptncontext, 'event', trace.id];
+    return this.projectName ? ['/', 'project', this.projectName, 'sequence', trace.shkeptncontext, 'event', trace.id] : [];
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }
