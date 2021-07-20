@@ -107,16 +107,16 @@ export class ApiService {
    * @param gitRemoteUrl (optional) - URL of the Git repository for the keptn configurations
    * @param gitToken (optional) - The Git token used for access permissions to the repository
    * @param gitUser (optional) - The username of the Git provider
-   * @returns Observable with type any of the HttpResponse
+   * @returns Observable with type unknown of the HttpResponse
    */
-  public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<any> {
+  public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
-    return this.http.post<any>(url, {
-      gitRemoteUrl: gitRemoteUrl,
-      gitToken: gitToken,
-      gitUser: gitUser,
+    return this.http.post<unknown>(url, {
+      gitRemoteUrl,
+      gitToken,
+      gitUser,
       name: projectName,
-      shipyard: shipyard
+      shipyard
     });
   }
 

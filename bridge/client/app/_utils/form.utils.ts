@@ -1,11 +1,11 @@
-import {AbstractControl, ValidatorFn} from "@angular/forms";
+import {AbstractControl, ValidatorFn} from '@angular/forms';
 
 export class FormUtils {
   public static projectNameExistsValidator(projectNames: string[]): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: any } | null => {
+    return (control: AbstractControl): { projectName: {value: boolean }} | null => {
       const project = projectNames.includes(control.value);
       return project ? {projectName: {value: project}} : null;
-    }
+    };
   }
 
   public static isValidFileExtensions(allowedExtensions: string[], files: FileList): boolean {
@@ -14,12 +14,12 @@ export class FormUtils {
       allowedExtensions.forEach(extension => {
         const fileArray: File[] = Array.from(files);
         fileArray.forEach(file => {
-          if(file.name.endsWith(extension)) {
+          if (file.name.endsWith(extension)) {
             allowedFiles.push(file);
           }
         });
       });
-      if(allowedFiles.length === 0) {
+      if (allowedFiles.length === 0) {
         return false;
       }
     }
@@ -27,11 +27,11 @@ export class FormUtils {
   }
 
   public static isFile(file: File): boolean {
-    return !(!file.type && file.size % 4096 == 0);
+    return !(!file.type && file.size % 4096 === 0);
   }
 
-  public static readFileContent(file: File): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  public static readFileContent(file: File): Promise<string | undefined> {
+    return new Promise<string | undefined>((resolve, reject) => {
       if (!file) {
         resolve('');
       }
@@ -39,7 +39,7 @@ export class FormUtils {
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          const text = reader.result.toString();
+          const text = reader.result?.toString();
           resolve(text);
         } catch (e) {
           reject(e);

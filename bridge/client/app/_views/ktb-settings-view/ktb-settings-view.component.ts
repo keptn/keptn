@@ -19,7 +19,7 @@ import { Project } from '../../_models/project';
 })
 export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  private projectName?: string;
+  public projectName?: string;
   public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
@@ -116,19 +116,21 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     if (this.shipyardFile) {
       this.isCreatingProjectInProgress = true;
       FormUtils.readFileContent(this.shipyardFile).then(fileContent => {
-        const shipyardBase64 = btoa(fileContent);
-        const projectName = this.projectNameControl.value;
-        this.dataService.createProject(
-          projectName, shipyardBase64, this.gitData.remoteURI, this.gitData.gitToken, this.gitData.gitUser
-        ).subscribe(() => {
-            this.projectName = projectName;
-            this.dataService.loadProjects();
-            this.isCreatingProjectInProgress = false;
-          },
-          () => {
-            this.notificationsService.addNotification(NotificationType.Error, 'The project could not be created.', 5000);
-            this.isCreatingProjectInProgress = false;
-          });
+        if (fileContent) {
+          const shipyardBase64 = btoa(fileContent);
+          const projectName = this.projectNameControl.value;
+          this.dataService.createProject(
+            projectName, shipyardBase64, this.gitData.remoteURI, this.gitData.gitToken, this.gitData.gitUser
+          ).subscribe(() => {
+              this.projectName = projectName;
+              this.dataService.loadProjects();
+              this.isCreatingProjectInProgress = false;
+            },
+            () => {
+              this.notificationsService.addNotification(NotificationType.Error, 'The project could not be created.', 5000);
+              this.isCreatingProjectInProgress = false;
+            });
+        }
       });
     }
   }
