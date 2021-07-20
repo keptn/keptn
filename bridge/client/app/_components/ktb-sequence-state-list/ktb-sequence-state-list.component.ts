@@ -57,7 +57,7 @@ export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
   }
 
   updateDataSource() {
-    this.dataSource.data = this.sequenceStates.slice(0, this.PAGE_SIZE) || [];
+    this.dataSource = new DtTableDataSource(this.sequenceStates.slice(0, this.PAGE_SIZE) || []);
   }
 
   getServiceLink(sequence: Sequence) {
