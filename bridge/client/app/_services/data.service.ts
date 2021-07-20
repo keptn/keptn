@@ -328,7 +328,7 @@ export class DataService {
   }
 
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence, pageSize?: number): void {
-    if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
+    if (!beforeTime && !fromTime && !pageSize) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
     }
     this._sequencesLastUpdated[project.projectName] = new Date();
