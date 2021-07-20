@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Input,
+  Input, OnDestroy, OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {DtTableDataSource} from "@dynatrace/barista-components/table";
@@ -10,6 +10,8 @@ import {DtTableDataSource} from "@dynatrace/barista-components/table";
 import {DateUtil} from "../../_utils/date.utils";
 import {DataService} from "../../_services/data.service";
 import {Sequence} from "../../_models/sequence";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -22,7 +24,9 @@ import {Sequence} from "../../_models/sequence";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceStateListComponent {
+export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
+
+  private readonly unsubscribe$ = new Subject<void>();
 
   public _sequenceStates: Sequence[] = [];
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
@@ -43,6 +47,15 @@ export class KtbSequenceStateListComponent {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
 
+  ngOnInit() {
+    this.dataService.sequences
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(sequences => {
+        this.updateDataSource();
+        this._changeDetectorRef.markForCheck();
+      });
+  }
+
   updateDataSource() {
     this.dataSource.data = this.sequenceStates.slice(0, this.PAGE_SIZE) || [];
   }
@@ -53,6 +66,11 @@ export class KtbSequenceStateListComponent {
 
   getSequenceLink(sequence: Sequence) {
     return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete()
   }
 
 }
