@@ -134,10 +134,6 @@ export class Sequence {
     return icon;
   }
 
-  public getLabel(): string {
-    return this.name;
-  }
-
   public getShortImageName(): string | null {
     return this.stages[0]?.image?.split('/').pop();
   }

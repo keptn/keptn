@@ -3,7 +3,7 @@ import {Observable, Subject, timer} from 'rxjs';
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
 import {environment} from '../../environments/environment';
-import {filter, takeUntil} from 'rxjs/operators';
+import {takeUntil} from 'rxjs/operators';
 import {DtOverlay} from '@dynatrace/barista-components/overlay';
 
 @Component({
@@ -13,7 +13,6 @@ import {DtOverlay} from '@dynatrace/barista-components/overlay';
 })
 export class DashboardComponent implements OnInit, OnDestroy{
   public projects$: Observable<Project[]>;
-  private readonly _sequencePageSize = 5;
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public isQualityGatesOnly: boolean;
 
@@ -21,19 +20,10 @@ export class DashboardComponent implements OnInit, OnDestroy{
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
 
   constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay) {
-    this.projects$ = this.dataService.projects;
   }
 
   public ngOnInit(): void {
-    this.projects$
-      .pipe(filter(projects => !!projects))
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((projects) => {
-        projects.forEach(project => {
-          this.dataService.loadSequences(project, null, null, null, this._sequencePageSize);
-        });
-      });
-
+    this.projects$ = this.dataService.projects;
     this.dataService.isQualityGatesOnly.pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe(isQualityGatesOnly => { this.isQualityGatesOnly = isQualityGatesOnly; });

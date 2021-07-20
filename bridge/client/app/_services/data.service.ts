@@ -327,12 +327,12 @@ export class DataService {
     });
   }
 
-  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence, pageSize?: number): void {
-    if (!beforeTime && !fromTime && !pageSize) { // set fromTime if it isn't loadOldSequences
+  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
+    if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
     }
     this._sequencesLastUpdated[project.projectName] = new Date();
-    this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : pageSize || this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
+    this.apiService.getSequences(project.projectName, beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE, null, null, fromTime?.toISOString(), beforeTime?.toISOString())
       .pipe(
         map(response => {
           this.updateSequencesUpdated(response, project.projectName);
@@ -352,6 +352,14 @@ export class DataService {
         });
         this._sequences.next(project.sequences);
     });
+  }
+
+  public loadLatestSequences(project: Project, pageSize: number): Observable<Sequence[]> {
+    return this.apiService.getSequences(project.projectName, pageSize, null, null, null, null)
+      .pipe(
+        map(response => response.body),
+        map(body => body.states.map(sequence => Sequence.fromJSON(sequence))),
+      );
   }
 
   private addNewSequences(project: Project, newSequences: Sequence[], areOldSequences: boolean, oldSequence?: Sequence) {

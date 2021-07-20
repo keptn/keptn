@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Input, OnDestroy, OnInit,
+  Input, OnDestroy,
   ViewEncapsulation
 } from '@angular/core';
 import {DtTableDataSource} from "@dynatrace/barista-components/table";
@@ -10,8 +10,8 @@ import {DtTableDataSource} from "@dynatrace/barista-components/table";
 import {DateUtil} from "../../_utils/date.utils";
 import {DataService} from "../../_services/data.service";
 import {Sequence} from "../../_models/sequence";
-import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import {Subscription, timer} from "rxjs";
+import {Project} from "../../_models/project";
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -24,16 +24,31 @@ import {takeUntil} from "rxjs/operators";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
-
-  private readonly unsubscribe$ = new Subject<void>();
-
-  public _sequenceStates: Sequence[] = [];
+export class KtbSequenceStateListComponent implements OnDestroy {
+  private _project: Project;
+  private _sequenceStates: Sequence[] = [];
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
+
+  private _timerInterval = 30;
+  private _timer: Subscription = Subscription.EMPTY;
 
   public PAGE_SIZE = 5;
 
   @Input()
+  get project(): Project {
+    return this._project;
+  }
+  set project(value: Project) {
+    if(this._project !== value) {
+      this._project = value;
+      this._timer.unsubscribe();
+      this._timer = timer(0, this._timerInterval * 1000)
+        .subscribe(() => {
+          this.loadLatestSequences();
+        });
+    }
+  }
+
   get sequenceStates(): Sequence[] {
     return this._sequenceStates;
   }
@@ -47,12 +62,10 @@ export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
 
-  ngOnInit() {
-    this.dataService.sequences
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(sequences => {
-        this.updateDataSource();
-        this._changeDetectorRef.markForCheck();
+  loadLatestSequences() {
+    this.dataService.loadLatestSequences(this.project, this.PAGE_SIZE)
+      .subscribe((sequences: Sequence[]) => {
+        this.sequenceStates = sequences;
       });
   }
 
@@ -69,8 +82,7 @@ export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete()
+    this._timer.unsubscribe();
   }
 
 }

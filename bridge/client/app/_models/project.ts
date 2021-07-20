@@ -163,8 +163,4 @@ export class Project {
       return stages;
     }, [null]);
   }
-
-  public getLatestSequences(): Sequence[] {
-    return this.sequences.slice(0,5) || [];
-  }
 }
