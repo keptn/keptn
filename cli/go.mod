@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/go-utils v0.8.6-0.20210720145525-6bb5ac02cb04
 	github.com/keptn/kubernetes-utils v0.8.4-0.20210630130009-8242bbef5723
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-homedir v1.1.0

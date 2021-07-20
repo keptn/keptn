@@ -15,7 +15,7 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/martian v2.1.0+incompatible
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/go-utils v0.8.6-0.20210720145525-6bb5ac02cb04
 	github.com/keptn/kubernetes-utils v0.8.4-0.20210630130009-8242bbef5723
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
