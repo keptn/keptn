@@ -3,12 +3,16 @@
     <dt-table [dataSource]="dataSource">
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="3" uitestid="keptn-sequence-states-list-container">
         <dt-cell *dtCellDef="let row">
-          <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
-            <p class="m-0 nobreak">
-              <a [routerLink]="getServiceLink(row)" [textContent]="row.service"></a>
-              in
-              <span [textContent]="row.getLastStage()"></span>
+          <div class="mt-1 mb-1">
+            <p class="m-0 small nobreak">
+              <a [routerLink]="getServiceLink(row)" [textContent]="row.service"></a> in
             </p>
+            <ng-container *ngIf="row.getLastStage() as stage">
+              <ktb-stage-badge [stage]="stage" [evaluationResult]="row.getEvaluation(stage)"
+                               [success]="row.isSuccessful(stage)"
+                               [error]="row.isFaulty(stage)" [class.warning]="row.isWarning(stage)"
+                               [highlight]="row.hasPendingApproval(stage)"></ktb-stage-badge>
+            </ng-container>
           </div>
         </dt-cell>
       </ng-container>
@@ -25,7 +29,7 @@
                 <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
               </button>
             </ng-template>
-            <a [routerLink]="getSequenceLink(row)" class="m-0" [class.error]="row.isFaulty()">
+            <a [routerLink]="getSequenceLink(row)" class="m-0 small" [class.error]="row.isFaulty()">
               <span class="bold" [textContent]="row.getLabel()"></span>&nbsp;
               <span [textContent]="row.getStatus()"></span>
             </a>
