@@ -9,7 +9,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
-	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -20,12 +19,6 @@ func TestSequenceWatcher(t *testing.T) {
 	theClock := clock.NewMock()
 
 	nowTimeStamp := timeutils.GetKeptnTimeStamp(theClock.Now().UTC())
-
-	shipyardControllerMock := &fake.IShipyardControllerMock{
-		CancelSequenceFunc: func(cancelRequest common.SequenceCancellation) error {
-			return nil
-		},
-	}
 
 	openTriggeredEvents := []models.Event{
 		{
@@ -97,6 +90,15 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
+	eventQueueMock := &db_mock.EventQueueRepoMock{
+		GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
+			return nil, nil
+		},
+		IsEventInQueueFunc: func(eventID string) (bool, error) {
+			return false, nil
+		},
+	}
+
 	projectRepoMock := &db_mock.ProjectRepoMock{
 		GetProjectsFunc: func() ([]*models.ExpandedProject, error) {
 			return []*models.ExpandedProject{
@@ -107,9 +109,12 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
+	cancelSequenceChannel := make(chan common.SequenceCancellation)
+
 	watcher := handler.NewSequenceWatcher(
-		shipyardControllerMock,
+		cancelSequenceChannel,
 		eventRepoMock,
+		eventQueueMock,
 		projectRepoMock,
 		10*time.Minute,
 		1*time.Minute,
@@ -122,22 +127,23 @@ func TestSequenceWatcher(t *testing.T) {
 	// check after 2 minutes - no sequence should have been timed out yet
 	theClock.Add(2 * time.Minute)
 
-	require.Empty(t, shipyardControllerMock.CancelSequenceCalls())
+	require.Empty(t, cancelSequenceChannel)
 
 	// wait another 10 minutes - now the sequence "my-keptn-context-2" should have been cancelled
 	theClock.Add(10 * time.Minute)
-	require.Eventually(t, func() bool {
-		if len(shipyardControllerMock.CancelSequenceCalls()) == 1 {
-			return true
-		}
-		return false
-	}, 10*time.Second, 1*time.Second)
-	require.Len(t, shipyardControllerMock.CancelSequenceCalls(), 1)
-	cancelCall := shipyardControllerMock.CancelSequenceCalls()[0]
-	require.Equal(t, "my-keptn-context-2", cancelCall.CancelRequest.KeptnContext)
-	require.Equal(t, common.Timeout, cancelCall.CancelRequest.Reason)
 
-	require.Len(t, eventRepoMock.DeleteEventCalls(), 1)
+	select {
+	case cancelCall := <-cancelSequenceChannel:
+		require.Equal(t, "my-keptn-context-2", cancelCall.KeptnContext)
+		require.Equal(t, common.Timeout, cancelCall.Reason)
 
+		require.Eventually(t, func() bool {
+			return len(eventRepoMock.DeleteEventCalls()) == 1
+		}, 5*time.Second, 1*time.Second)
+		break
+	case <-time.After(5 * time.Second):
+		t.Error("did not receive expected sequence cancellation")
+		break
+	}
 	cancel()
 }

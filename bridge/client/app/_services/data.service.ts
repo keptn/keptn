@@ -100,6 +100,10 @@ export class DataService {
     );
   }
 
+  public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<unknown> {
+    return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
+  }
+
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
     return this.apiService.getUniformRegistrations();
   }
@@ -188,7 +192,8 @@ export class DataService {
         const projects = this._projects.getValue();
         const existingProject = projects?.find(p => p.projectName === project.projectName);
         if (existingProject){
-          Object.assign(existingProject, project);
+          const {roots, sequences, ...copyProject} = project;
+          Object.assign(existingProject, copyProject);
           this._projects.next(projects);
         }
     });

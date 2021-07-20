@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // QueueItem is a type used to persist events that are queued for dispatching
 type QueueItem struct {

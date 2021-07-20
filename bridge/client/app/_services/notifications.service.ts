@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from "rxjs";
-
-import { Notification, NotificationType } from "../_models/notification";
+import {BehaviorSubject, Observable} from 'rxjs';
+import { Notification, NotificationType } from '../_models/notification';
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +13,17 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  addNotification(type: NotificationType, message: string) {
+  // tslint:disable-next-line:no-any
+  addNotification(type: NotificationType, message: string, time?: number, isTemplateRendered = false, data?: any) {
     const notification = new Notification(type, message);
+    notification.isTemplateRendered = isTemplateRendered;
+    notification.data = data || null;
+
+    if (time) {
+      setTimeout(() => {
+        this.removeNotification(notification);
+      }, time);
+    }
 
     // Check if the notification to add already exists
     const duplicateNotifications = this._notifications.getValue().filter(n => n.type === notification.type && n.message === notification.message);

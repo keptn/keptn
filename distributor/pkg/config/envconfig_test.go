@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/kelseyhightower/envconfig"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
@@ -220,4 +221,16 @@ func Test_getPubSubRecipientURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_ValidateKeptnAPIEndpointURL(t *testing.T) {
+	// valid
+	config := EnvConfig{KeptnAPIEndpoint: "http:1.2.3.4.nip.io/some-path"}
+	assert.Nil(t, config.ValidateKeptnAPIEndpointURL())
+	// not valid
+	config = EnvConfig{KeptnAPIEndpoint: "d"}
+	assert.NotNil(t, config.ValidateKeptnAPIEndpointURL())
+	// not given
+	config = EnvConfig{KeptnAPIEndpoint: ""}
+	assert.Nil(t, config.ValidateKeptnAPIEndpointURL())
 }

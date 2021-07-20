@@ -13,22 +13,24 @@ import (
 )
 
 type SequenceWatcher struct {
-	shipyardController IShipyardController
-	eventRepo          db.EventRepo
-	projectRepo        db.ProjectRepo
-	eventTimeout       time.Duration
-	syncInterval       time.Duration
-	theClock           clock.Clock
+	cancelSequenceChannel chan common.SequenceCancellation
+	eventRepo             db.EventRepo
+	eventQueueRepo        db.EventQueueRepo
+	projectRepo           db.ProjectRepo
+	eventTimeout          time.Duration
+	syncInterval          time.Duration
+	theClock              clock.Clock
 }
 
-func NewSequenceWatcher(shipyardController IShipyardController, eventRepo db.EventRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(cancelSequenceChannel chan common.SequenceCancellation, eventRepo db.EventRepo, eventQueueRepo db.EventQueueRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
-		shipyardController: shipyardController,
-		eventRepo:          eventRepo,
-		projectRepo:        projectRepo,
-		eventTimeout:       eventTimeout,
-		syncInterval:       syncInterval,
-		theClock:           theClock,
+		cancelSequenceChannel: cancelSequenceChannel,
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		projectRepo:           projectRepo,
+		eventTimeout:          eventTimeout,
+		syncInterval:          syncInterval,
+		theClock:              theClock,
 	}
 }
 
@@ -95,6 +97,13 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 		timeOut := eventSentTime.Add(sw.eventTimeout)
 		now := sw.theClock.Now().UTC()
 		if now.After(timeOut) {
+			isItemInQueue, err := sw.eventQueueRepo.IsEventInQueue(event.ID)
+			if err != nil {
+				log.WithError(err).Error("could not check if item is still in queue")
+			} else if isItemInQueue {
+				log.Info("triggered event is still in queue")
+				continue
+			}
 			// check if an event that reacted to the .triggered event has been received in the meantime
 			responseEvents, err := sw.eventRepo.GetEvents(project, common.EventFilter{
 				TriggeredID:  &event.ID,
@@ -106,14 +115,13 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 			}
 			if len(responseEvents) == 0 {
 				// time out -> tell shipyard controller to complete the task sequence
-				err := sw.shipyardController.CancelSequence(common.SequenceCancellation{
+				sequenceCancellation := common.SequenceCancellation{
 					KeptnContext: event.Shkeptncontext,
 					Reason:       common.Timeout,
 					LastEvent:    event,
-				})
-				if err != nil {
-					log.WithError(err).Errorf("could not cancel sequence with keptnContext %s", event.Shkeptncontext)
 				}
+
+				sw.cancelSequenceChannel <- sequenceCancellation
 				// clean up open .triggered event
 				if err := sw.eventRepo.DeleteEvent(project, event.ID, common.TriggeredEvent); err != nil {
 					log.WithError(err).Errorf("could not delete event %s", event.ID)

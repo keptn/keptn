@@ -5,9 +5,18 @@ enum NotificationType {
   Error = 'error'
 }
 
+enum TemplateRenderedNotifications {
+  CREATE_PROJECT = 'message_create_project'
+}
+
 class Notification {
-  constructor(public type: NotificationType, public message: string ) {
+  isTemplateRendered?: boolean;
+  // tslint:disable-next-line:no-any
+  data?: any;
+
+  constructor(public type: NotificationType, public message: string) {
   }
 }
 
-export {Notification, NotificationType};
+export {Notification, NotificationType, TemplateRenderedNotifications};
+

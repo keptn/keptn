@@ -4,9 +4,9 @@
   "scripts": {
     "start": "cd ./server && npm run start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
-    "start:prod": "npm run build && npm run start:server:dev",
-    "start:server:dev": "cd ./server && npm run dev",
+    "start:prod": "npm run build && npm run start",
     "start:client:dev": "ng build --watch",
+    "start:server:dev": "cd ./server && npm run dev",
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "ng test",
@@ -92,11 +92,12 @@
     "npm-run-all": "^4.1.5",
     "protractor": "~7.0.0",
     "puppeteer": "^10.0.0",
+    "ts-node": "^10.1.0",
     "tslint": "~6.1.0",
     "typescript": "^4.1.5"
   },
   "resolutions": {
-    "minimist": "~1.2.5",
+    "minimist": "1.2.5",
     "css-what": "~5.0.1",
     "glob-parent": "~5.1.2"
   }

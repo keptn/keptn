@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
-import {Observable, Subject, timer, combineLatest} from 'rxjs';
+import { catchError, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { Observable, Subject, timer, combineLatest, BehaviorSubject, of } from 'rxjs';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import {Project} from '../_models/project';
 import {Trace} from '../_models/trace';
@@ -8,7 +8,7 @@ import {DataService} from '../_services/data.service';
 import {environment} from '../../environments/environment';
 
 @Component({
-  selector: 'app-project-board',
+  selector: 'ktb-project-board',
   templateUrl: './project-board.component.html',
   styleUrls: ['./project-board.component.scss']
 })
@@ -19,7 +19,9 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public project$: Observable<Project | undefined>;
   public contextId?: string;
   private readonly _projectTimerInterval = 30_000;
-  public error?: string;
+  private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
+  public error$: Observable<string | undefined> = this._errorSubject.asObservable();
+  public isCreateMode$: Observable<boolean>;
 
   constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService) {
     const projectName$ = this.route.paramMap.pipe(
@@ -38,24 +40,26 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     });
 
     this.project$ = projectName$.pipe(
-      switchMap(projectName => this.dataService.getProject(projectName))
+      switchMap(projectName => this.dataService.getProject(projectName)),
+      tap(project => {
+        if (project === undefined) {
+          this._errorSubject.next('project');
+        } else {
+          this._errorSubject.next(undefined);
+        }
+      }),
+      catchError(() => {
+        this._errorSubject.next('projects');
+        return of(undefined);
+      })
     );
+    this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
+      return urlSegment[0].path === 'create';
+    }));
+
   }
 
   ngOnInit() {
-    this.project$
-      .pipe(
-        takeUntil(this.unsubscribe$)
-      ).subscribe((project: Project | undefined) => {
-        if (project === undefined) {
-          this.error = 'project';
-        } else {
-          this.error = undefined;
-        }
-      }, () => {
-        this.error = 'projects';
-      });
-
     if (this.route.snapshot.url[0].path === 'trace') {
       const shkeptncontext$ = this.route.paramMap.pipe(map((params: ParamMap) => params.get('shkeptncontext')));
       const eventselector$ = this.route.paramMap.pipe(map((params: ParamMap) => params.get('eventselector')));
@@ -84,7 +88,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
                 if (trace) {
                   this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'event', trace.id]);
                 } else {
-                  this.error = 'trace';
+                  this._errorSubject.next('trace');
                 }
               }
             } else {
@@ -94,7 +98,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               }
             }
           } else {
-            this.error = 'trace';
+            this._errorSubject.next('trace');
           }
         });
     }

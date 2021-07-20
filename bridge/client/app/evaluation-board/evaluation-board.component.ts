@@ -14,7 +14,7 @@ import { DateUtil } from '../_utils/date.utils';
 import { Project } from '../_models/project';
 
 @Component({
-  selector: 'app-project-board',
+  selector: 'ktb-evaluation-board',
   templateUrl: './evaluation-board.component.html',
   styleUrls: ['./evaluation-board.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

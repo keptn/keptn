@@ -1,8 +1,15 @@
 import marked, { Renderer } from 'marked';
 import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChange, ViewEncapsulation} from '@angular/core';
-import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChange,
+  ViewEncapsulation
+} from '@angular/core';
+import {SafeHtml} from '@angular/platform-browser';
 
 @Component({
   selector: 'ktb-markdown',
@@ -16,11 +23,10 @@ import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbMarkdownComponent implements OnChanges {
-
   @Input() markdown?: string;
   @Input() html?: string;
   public safeHtml?: SafeHtml;
-  private md: any;
+  private readonly md: typeof marked;
 
   static highlightCode(code: string, language: string): string {
     if (!(language && hljs.getLanguage(language))) {
@@ -40,7 +46,7 @@ export class KtbMarkdownComponent implements OnChanges {
     }
   }
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor() {
     const renderer = new Renderer();
     renderer.code = KtbMarkdownComponent.highlightCode;
     DOMPurify.addHook('afterSanitizeAttributes', KtbMarkdownComponent.addTargetAndNoopener);
@@ -49,13 +55,11 @@ export class KtbMarkdownComponent implements OnChanges {
 
   markdownToSafeHtml(value: string): SafeHtml {
     const html = this.md(value);
-    const safeHtml = DOMPurify.sanitize(html);
-    return this.sanitizer.bypassSecurityTrustHtml(safeHtml);
+    return DOMPurify.sanitize(html);
   }
 
   htmlToSafeHtml(value: string): SafeHtml {
-    const safeHtml = DOMPurify.sanitize(value);
-    return this.sanitizer.bypassSecurityTrustHtml(safeHtml);
+    return DOMPurify.sanitize(value);
   }
 
   ngOnChanges(changes: { [propKey: string]: SimpleChange }) {

@@ -10,6 +10,8 @@ import {RootEvents} from './_mockData/roots.mock';
 import {Traces} from './_mockData/traces.mock';
 import {Evaluations} from './_mockData/evaluations.mock';
 import {Trace} from '../_models/trace';
+import {map} from 'rxjs/operators';
+import {Observable, of} from 'rxjs';
 import {Sequence} from '../_models/sequence';
 
 @Injectable({
@@ -31,6 +33,13 @@ export class DataServiceMock extends DataService {
 
   public loadProject(projectName: string) {
     this._projects.next([...Projects]);
+  }
+
+  public getProject(projectName: string): Observable<Project | undefined> {
+    this.loadProjects();
+    return this._projects.pipe(map(projects => {
+      return projects?.find(project => project.projectName === projectName);
+    }));
   }
 
   public loadRoots(project: Project) {
@@ -67,5 +76,9 @@ export class DataServiceMock extends DataService {
     });
   }
 
+  public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<boolean> {
+    this.loadProjects();
+    return of(true);
+  }
 }
 
