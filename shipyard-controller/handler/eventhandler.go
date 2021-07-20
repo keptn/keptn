@@ -93,18 +93,6 @@ func (eh *EventHandler) GetTriggeredEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-// HandleEvent godoc
-// @Summary Handle event
-// @Description Handle incoming cloud event
-// @Tags Events
-// @Security ApiKeyAuth
-// @Accept  json
-// @Produce  json
-// @Param   event     body    models.Event     true        "Event type"
-// @Success 200 "ok"
-// @Failure 400 {object} models.Error "Invalid payload"
-// @Failure 500 {object} models.Error "Internal error"
-// @Router /event [post]
 func (eh *EventHandler) HandleEvent(c *gin.Context) {
 	event := &models.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
