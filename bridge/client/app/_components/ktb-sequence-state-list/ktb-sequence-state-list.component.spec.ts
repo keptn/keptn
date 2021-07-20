@@ -33,7 +33,7 @@ describe('KtbSequenceStateListComponent', () => {
 
   it('should set datasource', () => {
     // given
-    component.sequenceStates = [{
+    component.sequenceStates = [Sequence.fromJSON({
       "name": "delivery",
       "service": "carts",
       "project": "sockshop",
@@ -42,30 +42,21 @@ describe('KtbSequenceStateListComponent', () => {
       "state": "triggered",
       "stages": [{
         "image": "docker.io/keptnexamples/carts:0.12.1",
-        "latestEvaluation": {"result": ResultTypes.PASSED, "score": 0} as EvaluationResult,
+        "latestEvaluation": {"result": ResultTypes.PASSED, "score": 0},
         "latestEvent": {
           "type": "sh.keptn.event.dev.delivery.finished",
           "id": "2b2ef01f-4663-4588-9d52-1480fd67e249",
           "time": "2021-07-20T08:37:27.134Z"
         },
         "name": "dev"
-      }, {
-        "image": "docker.io/keptnexamples/carts:0.12.1",
-        "latestEvaluation": {"result": ResultTypes.PASSED, "score": 0} as EvaluationResult,
-        "latestEvent": {
-          "type": "sh.keptn.event.release.started",
-          "id": "73597657-14c7-4865-bc23-82064ea42532",
-          "time": "2021-07-20T08:38:37.221Z"
-        },
-        "name": "staging"
       }]
-    }];
+    })];
 
     // when
     fixture.detectChanges();
 
     // then
-    expect(component.dataSource.data.length).toEqual(4);
+    expect(component.dataSource.data.length).toEqual(1);
   });
 
   afterEach(() => {
