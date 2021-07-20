@@ -25,9 +25,7 @@ import {Sequence} from "../../_models/sequence";
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
-
-  private readonly unsubscribe$ = new Subject<void>();
+export class KtbSequenceStateListComponent {
 
   public _sequenceStates: Sequence[] = [];
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
@@ -48,9 +46,6 @@ export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
 
-  ngOnInit() {
-  }
-
   updateDataSource() {
     this.dataSource.data = this.sequenceStates.slice(0, this.PAGE_SIZE) || [];
   }
@@ -61,11 +56,6 @@ export class KtbSequenceStateListComponent implements OnInit, OnDestroy {
 
   getSequenceLink(sequence: Sequence) {
     return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete()
   }
 
 }
