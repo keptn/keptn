@@ -5,11 +5,15 @@
       <h2>Project name *</h2>
       <dt-form-field>
         <input type="text" formControlName="projectName" required dtInput placeholder="e.g. sockshop"/>
-        <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and hyphens</dt-hint>
+        <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
+          hyphens.
+        </dt-hint>
         <dt-error>
           <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
           <ng-container *ngIf="projectNameControl.hasError('projectName')">Project name already exists</ng-container>
-          <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter and contain only lower case letters, numbers and hyphens</ng-container>
+          <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
+            hyphens.
+          </ng-container>
         </dt-error>
       </dt-form-field>
     </div>
@@ -22,21 +26,22 @@
         (gitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
     </div>
     <div class="mb-3 settings-section" *ngIf="isCreateMode">
-      <ktb-project-settings-shipyard (shipyardFileChanged)="shipyardFile=$event" [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>
+      <ktb-project-settings-shipyard (shipyardFileChanged)="shipyardFile=$event"
+                                     [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>
     </div>
-    <div class="mt-3 settings-section settings-actions">
-      <button *ngIf="isCreateMode"
-              [disabled]="!shipyardFile || projectNameForm.invalid || !isGitFormValid() || isCreatingProjectInProgress"
-              (click)="createProject()"
-              dt-button>
+    <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
+      <button
+        [disabled]="!shipyardFile || projectNameForm.invalid || !isGitFormValid() || isCreatingProjectInProgress"
+        (click)="createProject()"
+        dt-button>
         <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
         Create project
       </button>
       <div class="mt-2">
-        * fields are required
+        <span class="small">* fields are required</span>
       </div>
     </div>
-    <div class="mb-3 settings-section">
+    <div class="mb-3 settings-section settings-section-bottom" *ngIf="!isCreateMode">
       <h2>Danger Zone</h2>
       <div class="danger-zone p-3">
         <h4 class="pt-0 mt-0">Delete project</h4>
@@ -52,14 +57,19 @@
 <ng-template #deleteProjectDialog let-data>
   <div class="mb-3" fxLayout="row" fxLayoutAlign="space-between center">
     <div class="bold">Are you absolutely sure?</div>
-    <button dt-icon-button variant="nested" (click)="deletionDialogRef.close()"><dt-icon name="abort"></dt-icon></button>
+    <button dt-icon-button variant="nested" (click)="deletionDialogRef.close()">
+      <dt-icon name="abort"></dt-icon>
+    </button>
   </div>
   <div class="mt-3" fxLayout="column" fxLayoutAlign="stretch" [formGroup]="deletionConfirmationForm">
-    <div class="mb-1">This action cannot be undone. This will permanently delete the <span class="bold">{{data.projectName}}</span> project.</div>
+    <div class="mb-1">This action cannot be undone. This will permanently delete the <span
+      class="bold">{{data.projectName}}</span> project.
+    </div>
     <div class="mb-3">Please type in <span class="bold">{{data.projectName}}</span> to confirm deletion.</div>
     <div class="mb-2">
       <dt-form-field>
-        <input [formControl]="deletionConfirmationControl" class="wide-input" type="text" dtInput [placeholder]="data.projectName" />
+        <input [formControl]="deletionConfirmationControl" class="wide-input" type="text" dtInput
+               [placeholder]="data.projectName"/>
       </dt-form-field>
     </div>
     <button dt-button class="danger-button" (click)="deleteProject()" [disabled]="deletionConfirmationForm.invalid">

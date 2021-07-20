@@ -113,39 +113,6 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     this.gitData.gitToken = gitData.gitToken;
   }
 
-  public openProjectDeletionDialog() {
-    this.deletionDialogRef = this.dialog.open(this.deleteProjectDialog, {
-      data: {projectName: this.projectName},
-      autoFocus: false
-    });
-    this.deletionDialogRef.afterClosed().subscribe(() => {
-      this.deletionConfirmationControl.setValue('');
-      this.deletionConfirmationForm.markAsUntouched();
-      this.deletionConfirmationForm.updateValueAndValidity();
-    });
-  }
-
-  public deleteProject() {
-    this.isDeleteProjectInProgress = true;
-    this.deletionError = '';
-    this.dataService.projects
-      .pipe(take(1))
-      .subscribe(() => {
-        this.router.navigate(['/', 'dashboard']);
-      });
-
-
-    this.dataService.deleteProject(this.projectName)
-      .pipe(take(1))
-      .subscribe(() => {
-        this.deletionDialogRef.close();
-        this.dataService.loadProjects();
-      }, (err) => {
-        this.isDeleteProjectInProgress = false;
-        this.deletionError = 'Project could not be deleted: ' + err.message;
-      });
-  }
-
   public setGitUpstream(): void {
     this.isGitUpstreamInProgress = true;
     this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
@@ -185,5 +152,38 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
           this.isCreatingProjectInProgress = false;
         });
     });
+  }
+
+  public openProjectDeletionDialog() {
+    this.deletionDialogRef = this.dialog.open(this.deleteProjectDialog, {
+      data: {projectName: this.projectName},
+      autoFocus: false
+    });
+    this.deletionDialogRef.afterClosed().subscribe(() => {
+      this.deletionConfirmationControl.setValue('');
+      this.deletionConfirmationForm.markAsUntouched();
+      this.deletionConfirmationForm.updateValueAndValidity();
+    });
+  }
+
+  public deleteProject() {
+    this.isDeleteProjectInProgress = true;
+    this.deletionError = '';
+    this.dataService.projects
+      .pipe(take(1))
+      .subscribe(() => {
+        this.router.navigate(['/', 'dashboard']);
+      });
+
+
+    this.dataService.deleteProject(this.projectName)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.deletionDialogRef.close();
+        this.dataService.loadProjects();
+      }, (err) => {
+        this.isDeleteProjectInProgress = false;
+        this.deletionError = 'Project could not be deleted: ' + err.message;
+      });
   }
 }
