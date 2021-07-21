@@ -17,4 +17,6 @@
   <dt-tag-list aria-label="stages" uitestid="keptn-project-tile-stagesTags">
     <dt-tag *ngFor="let stage of project.stages" [textContent]="stage.stageName"></dt-tag>
   </dt-tag-list>
+  <p class="small">Recent sequences:</p>
+  <ktb-sequence-state-list [project]="project"></ktb-sequence-state-list>
 </dt-tile>
