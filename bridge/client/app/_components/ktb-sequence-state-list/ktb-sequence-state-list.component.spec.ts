@@ -16,7 +16,6 @@ describe('KtbSequenceStateListComponent', () => {
       declarations: [KtbSequenceStateListComponent],
       imports: [
         AppModule,
-        HttpClientTestingModule,
       ],
     }).compileComponents();
   });
