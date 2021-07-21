@@ -1,24 +1,23 @@
-import {Injectable} from '@angular/core';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import {Observable, of} from 'rxjs';
-import {map} from 'rxjs/operators';
-import {Resource} from '../_models/resource';
-import {Stage} from '../_models/stage';
-import {ProjectResult} from '../_models/project-result';
-import {ServiceResult} from '../_models/service-result';
-import {EventResult} from '../_models/event-result';
-import {Trace} from '../_models/trace';
-import {ApprovalStates} from '../_models/approval-states';
-import {EventTypes} from '../_models/event-types';
-import {Metadata} from '../_models/metadata';
-import {TaskNames} from '../_models/task-names.mock';
-import {Deployment} from '../_models/deployment';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { Resource } from '../_models/resource';
+import { Stage } from '../_models/stage';
+import { ProjectResult } from '../_models/project-result';
+import { ServiceResult } from '../_models/service-result';
+import { EventResult } from '../_models/event-result';
+import { Trace } from '../_models/trace';
+import { ApprovalStates } from '../_models/approval-states';
+import { EventTypes } from '../_models/event-types';
+import { Metadata } from '../_models/metadata';
+import { TaskNames } from '../_models/task-names.mock';
+import { Deployment } from '../_models/deployment';
 import moment from 'moment';
-import {SequenceResult} from '../_models/sequence-result';
-import {Project} from '../_models/project';
-import {UniformRegistration} from '../_models/uniform-registration';
-import {UniformRegistrationLogResponse} from '../_models/uniform-registration-log';
-import {Secret} from '../_models/secret';
+import { SequenceResult } from '../_models/sequence-result';
+import { Project } from '../_models/project';
+import { UniformRegistration } from '../_models/uniform-registration';
+import { UniformRegistrationLogResponse } from '../_models/uniform-registration-log';
+import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
 
@@ -43,13 +42,13 @@ export class ApiService {
     return this._baseUrl;
   }
 
-  public get environmentFilter(): {[projectName: string]: {services: string[]}} {
+  public get environmentFilter(): { [projectName: string]: { services: string[] } } {
     const item = localStorage.getItem(this.ENVIRONMENT_FILTER_COOKIE);
     const filter = item ? JSON.parse(item) : {};
     return filter instanceof Array ? {} : filter; // old format was an array
   }
 
-  public set environmentFilter(filter: {[projectName: string]: {services: string[]}}) {
+  public set environmentFilter(filter: { [projectName: string]: { services: string[] } }) {
     localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(filter));
   }
 
@@ -62,7 +61,7 @@ export class ApiService {
   public getIntegrationsPage(): Observable<string> {
     const url = `${this._baseUrl}/integrationsPage`;
     return this.http
-      .get<string>(url, { responseType: 'text' as 'json' });
+      .get<string>(url, {responseType: 'text' as 'json'});
   }
 
   public isVersionCheckEnabled(): boolean | undefined {
@@ -123,7 +122,7 @@ export class ApiService {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     const params = {
       disableUpstreamSync: 'true',
-      ... pageSize && {pageSize: pageSize.toString()}
+      ...pageSize && {pageSize: pageSize.toString()}
     };
 
     return this.http
@@ -140,9 +139,9 @@ export class ApiService {
     return this.http.get<UniformRegistrationLogResponse>(url);
   }
 
-  public getSecrets(): Observable<{Secrets: Secret[]}> {
+  public getSecrets(): Observable<{ Secrets: Secret[] }> {
     const url = `${this._baseUrl}/secrets/v1/secret`;
-    return this.http.get<{Secrets: Secret[]}>(url);
+    return this.http.get<{ Secrets: Secret[] }>(url);
   }
 
   public addSecret(secret: Secret): Observable<object> {
@@ -175,7 +174,7 @@ export class ApiService {
       .get<Resource>(url);
   }
 
-  public getTaskNames(projectName: string): Observable<string[]>{
+  public getTaskNames(projectName: string): Observable<string[]> {
     return of(TaskNames);
   }
 
@@ -211,7 +210,7 @@ export class ApiService {
     };
 
     return this.http
-      .get<SequenceResult>(url, { params, observe: 'response' });
+      .get<SequenceResult>(url, {params, observe: 'response'});
   }
 
   public getRoots(projectName: string, pageSize: number, serviceName?: string, fromTime?: string,
@@ -221,14 +220,14 @@ export class ApiService {
       root: 'true',
       pageSize: pageSize.toString(),
       project: projectName,
-      ... serviceName && {serviceName},
-      ... fromTime && {fromTime},
-      ... beforeTime && {beforeTime},
-      ... keptnContext && {keptnContext},
+      ...serviceName && {serviceName},
+      ...fromTime && {fromTime},
+      ...beforeTime && {beforeTime},
+      ...keptnContext && {keptnContext},
     };
 
     return this.http
-      .get<EventResult>(url, { params, observe: 'response'});
+      .get<EventResult>(url, {params, observe: 'response'});
   }
 
   public getTraces(keptnContext: string, projectName?: string, fromTime?: string): Observable<HttpResponse<EventResult>> {
@@ -236,12 +235,12 @@ export class ApiService {
     const params = {
       pageSize: '100',
       keptnContext,
-      ... projectName && {project: projectName},
-      ... fromTime && {fromTime}
+      ...projectName && {project: projectName},
+      ...fromTime && {fromTime}
     };
 
     return this.http
-      .get<EventResult>(url, { params, observe: 'response'});
+      .get<EventResult>(url, {params, observe: 'response'});
   }
 
   public getDeploymentsOfService(projectName: string, serviceName: string): Observable<Deployment[]> {
@@ -254,7 +253,7 @@ export class ApiService {
       filter: `data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}`,
       excludeInvalidated: 'true',
       limit: '50',
-      ... fromTime && {fromTime}
+      ...fromTime && {fromTime}
     };
     return this.http
       .get<EventResult>(url, {params});

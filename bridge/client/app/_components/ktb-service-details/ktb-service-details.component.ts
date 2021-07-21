@@ -11,7 +11,7 @@ import {Deployment} from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {takeUntil} from 'rxjs/operators';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
+import { forkJoin, Observable, Subject } from 'rxjs';
 import {Trace} from '../../_models/trace';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {ClipboardService} from '../../_services/clipboard.service';

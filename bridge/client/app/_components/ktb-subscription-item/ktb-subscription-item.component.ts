@@ -7,6 +7,7 @@ import {Project} from '../../_models/project';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import {Subject} from 'rxjs';
 import {ProjectMock} from '../../_models/project.mock';
+import { DtAutoComplete } from '../../_models/dt-filter';
 
 @Component({
   selector: 'ktb-subscription-item[subscription]',
@@ -77,7 +78,9 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
     };
   }
 
-  filterChanged(subscription: Subscription, event: DtFilterFieldChangeEvent<any>) {
+  // tslint:disable-next-line:no-any
+  filterChanged(subscription: Subscription, event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
+    event = event as DtFilterFieldChangeEvent<DtAutoComplete>;
     const result = event.filters.reduce((filters: {Stages: string[], Services: string[]}, filter) => {
       filters[filter[0].name as 'Stages' | 'Services'].push(filter[1].name);
       return filters;

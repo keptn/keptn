@@ -1,17 +1,11 @@
-import {
-  Component,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output
-} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
-import {UniformRegistration} from '../../_models/uniform-registration';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute} from '@angular/router';
-import {switchMap, takeUntil} from 'rxjs/operators';
-import {UniformRegistrationLog} from '../../_models/uniform-registration-log';
+import { UniformRegistration } from '../../_models/uniform-registration';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { DataService } from '../../_services/data.service';
+import { ActivatedRoute } from '@angular/router';
+import { switchMap, takeUntil } from 'rxjs/operators';
+import { UniformRegistrationLog } from '../../_models/uniform-registration-log';
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -19,14 +13,11 @@ import {UniformRegistrationLog} from '../../_models/uniform-registration-log';
   styleUrls: ['./ktb-keptn-services-list.component.scss']
 })
 export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
-
   private readonly unsubscribe$ = new Subject<void>();
-
-  public uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
-
   private selectedUniformRegistrationId$ = new Subject<string>();
   private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
 
+  public uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
   public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
   public isLoadingLogs = false;
@@ -52,15 +43,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
         return this.dataService.getUniformRegistrationLogs(uniformRegistrationId);
       })
     ).subscribe((uniformRegLogs) => {
-      uniformRegLogs.sort((a, b) => {
-        if (a.time.valueOf() > b.time.valueOf()) {
-          return -1;
-        }
-        if (a.time.valueOf() < b.time.valueOf()) {
-          return 1;
-        }
-        return 0;
-      });
+      uniformRegLogs.sort(this.sortLogs);
       this.isLoadingLogs = false;
       this.uniformRegistrationLogsSubject.next(uniformRegLogs);
     });
@@ -69,6 +52,17 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       .subscribe((uniformRegistrations) => {
         this.uniformRegistrations.data = uniformRegistrations;
       });
+  }
+
+  private sortLogs(a: UniformRegistrationLog, b: UniformRegistrationLog): number {
+    let status = 0;
+    if (a.time.valueOf() > b.time.valueOf()) {
+      status = -1;
+    }
+    else if (a.time.valueOf() < b.time.valueOf()) {
+      status = 1;
+    }
+    return status;
   }
 
   ngOnDestroy(): void {

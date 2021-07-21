@@ -17,6 +17,7 @@ import {Service} from '../../_models/service';
 import {Root} from '../../_models/root';
 import {filter, takeUntil, tap} from 'rxjs/operators';
 import {Subject, Subscription, timer} from 'rxjs';
+import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
 
 @Component({
   selector: 'ktb-stage-overview[project]',
@@ -24,12 +25,12 @@ import {Subject, Subscription, timer} from 'rxjs';
   styleUrls: ['./ktb-stage-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
 export class KtbStageOverviewComponent implements OnInit, OnDestroy {
   public _project?: Project;
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
-  // tslint:disable-next-line:no-any
-  public filter: any[] = [];
+  public filter: DtFilterArray[] = [];
   private filteredServices: string[] = [];
   private globalFilter: {[projectName: string]: {services: string[]}} = {};
   private unfinishedRoots: Root[] = [];
@@ -95,7 +96,7 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
               name: service.serviceName
             };
           }) ?? []
-        }
+        } as DtAutoComplete
       ]
     };
     this.globalFilter = this.apiService.environmentFilter;
@@ -114,7 +115,7 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
             // @ts-ignore
             this._dataSource.data.autocomplete[0],
             {name: service}
-          ];
+          ] as DtFilterArray;
         }
       )
     ];
@@ -123,7 +124,7 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
   }
 
   // tslint:disable-next-line:no-any
-  public filterChanged(event: DtFilterFieldChangeEvent<any>) {
+  public filterChanged(event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
     if (this.project) {
       this.globalFilter[this.project.projectName] = {services: this.filteredServices};
@@ -143,13 +144,12 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
           : roots?.filter(root => root.service ? this.filteredServices.includes(root.service) : false);
   }
 
-  // tslint:disable-next-line:no-any
-  private getServicesOfFilter(event: DtFilterFieldChangeEvent<any>): string[] {
-    // tslint:disable-next-line:no-any
-    return event.filters.reduce((services: string[], currentFilter: any) => {
-      services.push(currentFilter[1].name);
-      return services;
-    }, []);
+  private getServicesOfFilter(event: DtFilterFieldChangeEvent<DtFilter>): string[] {
+    const services: string[] = [];
+    for (const currentFilter of event.filters) {
+      services.push((currentFilter as DtFilterArray)[1].name);
+    }
+    return services;
   }
 
   public trackStage(index: number, stage: string[] | null): string | undefined {
