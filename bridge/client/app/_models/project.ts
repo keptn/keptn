@@ -1,4 +1,4 @@
-import semver from 'semver';
+import * as semver from 'semver';
 import {Stage} from "./stage";
 import {Service} from "./service";
 import {Trace} from "./trace";

@@ -1,5 +1,5 @@
-import marked, { Renderer } from 'marked';
-import DOMPurify from 'dompurify';
+import * as marked from 'marked';
+import * as DOMPurify from 'dompurify';
 import * as hljs from 'highlight.js';
 
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChange, ViewEncapsulation} from '@angular/core';
@@ -42,7 +42,7 @@ export class KtbMarkdownComponent implements OnChanges {
   }
 
   constructor(private sanitizer: DomSanitizer) {
-    const renderer = new Renderer();
+    const renderer = new marked.Renderer();
     renderer.code = KtbMarkdownComponent.highlightCode;
     DOMPurify.addHook('afterSanitizeAttributes', KtbMarkdownComponent.addTargetAndNoopener);
     this.md = marked.setOptions({ renderer });
