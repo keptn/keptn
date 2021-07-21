@@ -53,7 +53,7 @@ export class DataService {
   }
 
   get taskNames(): Observable<string[]> {
-    return  this._taskNames.asObservable();
+    return this._taskNames.asObservable();
   }
 
   get taskNamesTriggered(): Observable<string[]> {
@@ -206,6 +206,16 @@ export class DataService {
           projects.map(project => Project.fromJSON(project))
         )
       ).subscribe((projects: Project[]) => {
+      const existingProjects = this._projects.getValue();
+      projects = projects.map(project => {
+        const existingProject = existingProjects?.find(p => p.projectName === project.projectName);
+        if (existingProject) {
+          const {roots, sequences, ...copyProject} = project;
+          return Object.assign(existingProject, copyProject);
+        } else {
+          return project;
+        }
+      });
       this._projects.next(projects);
     }, () => {
       this._projects.next([]);
@@ -344,6 +354,14 @@ export class DataService {
         });
         this._sequences.next(project.sequences);
     });
+  }
+
+  public loadLatestSequences(project: Project, pageSize: number): Observable<Sequence[]> {
+    return this.apiService.getSequences(project.projectName, pageSize, null, null, null, null)
+      .pipe(
+        map(response => response.body),
+        map(body => body.states.map(sequence => Sequence.fromJSON(sequence))),
+      );
   }
 
   private addNewSequences(project: Project, newSequences: Sequence[], areOldSequences: boolean, oldSequence?: Sequence): void {

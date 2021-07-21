@@ -7,8 +7,6 @@ import {ProblemStates} from './problem-states';
 import {DateUtil} from '../_utils/date.utils';
 import { IndicatorResult } from './indicator-result';
 
-const DEFAULT_ICON = 'information';
-
 class Trace {
   traces: Trace[] = [];
   id!: string;
@@ -345,8 +343,8 @@ class Trace {
   }
 
   getIcon(): string {
-    if (!this.icon) {
-      this.icon = EVENT_ICONS[this.getShortType()] || DEFAULT_ICON;
+    if(!this.icon) {
+      this.icon = EVENT_ICONS[this.getShortType()] || EVENT_ICONS.default;
     }
     return this.icon;
   }

@@ -103,6 +103,7 @@ import { AppInitService } from './_services/app.init';
 import {KtbSecretsListComponent} from './_components/ktb-secrets-list/ktb-secrets-list.component';
 import {KtbCreateSecretFormComponent} from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
+import { KtbSequenceStateListComponent } from "./_components/ktb-sequence-state-list/ktb-sequence-state-list.component";
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop.directive';
@@ -156,6 +157,7 @@ export function init_app(appLoadService: AppInitService) {
     KeptnUrlPipe,
     KtbSliBreakdownCriteriaItemComponent,
     KtbServicesListComponent,
+    KtbSequenceStateListComponent,
     KtbUserComponent,
     KtbUniformViewComponent,
     KtbKeptnServicesListComponent,
