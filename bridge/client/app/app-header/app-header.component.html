@@ -45,7 +45,7 @@
     <p class="small m-0">Automatic version and security check disabled</p>
   </div>
   <div class="mt-3 mb-2" fxLayout="column" fxLayoutAlign="flex-end end" uitestid="keptn-nav-versionInfo">
-    <p class="small m-0">Keptn version: <span [textContent]="keptnInfo?.keptnVersion"></span><span *ngIf="keptnInfo?.keptnVersionInvalid">*</span></p>
+    <p class="small m-0">Keptn version: <span [textContent]="keptnInfo?.metadata.keptnversion"></span><span *ngIf="keptnInfo?.keptnVersionInvalid">*</span></p>
     <p class="small m-0">Bridge version: <span [textContent]="keptnInfo?.bridgeInfo.bridgeVersion"></span><span *ngIf="keptnInfo?.bridgeVersionInvalid">*</span></p>
   </div>
   <div *ngIf="keptnInfo?.bridgeInfo.enableVersionCheckFeature && keptnInfo as keptnInfo" uitestid="keptn-nav-versionCheck">

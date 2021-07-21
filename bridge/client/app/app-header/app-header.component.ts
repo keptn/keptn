@@ -67,11 +67,11 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
         if (keptnInfo.versionCheckEnabled === undefined) {
           this.showVersionCheckInfoDialog();
         } else if (keptnInfo.bridgeInfo.enableVersionCheckFeature && keptnInfo.versionCheckEnabled && keptnInfo.availableVersions) {
-          keptnInfo.keptnVersionInvalid = !semver.valid(keptnInfo.keptnVersion);
+          keptnInfo.keptnVersionInvalid = !semver.valid(keptnInfo.metadata.keptnversion);
           keptnInfo.bridgeVersionInvalid = !semver.valid(keptnInfo.bridgeInfo.bridgeVersion);
           this.doVersionCheck(
             keptnInfo.bridgeInfo.bridgeVersion,
-            keptnInfo.keptnVersion,
+            keptnInfo.metadata.keptnversion,
             keptnInfo.availableVersions.bridge,
             keptnInfo.availableVersions.cli);
         }

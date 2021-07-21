@@ -70,12 +70,7 @@ export class KtbServiceDetailsComponent implements OnDestroy{
     if (this.projectName) {
       this.dataService.getRoot(this.projectName, deployment.shkeptncontext).subscribe(sequence => {
         deployment.sequence = sequence;
-        const evaluations$: Observable<Trace | undefined>[] = [of(undefined)];
-        for (const stage of deployment.stages) {
-          if (!stage.evaluation && stage.evaluationContext) {
-            evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
-          }
-        }
+        const evaluations$: Observable<Trace | undefined>[] = this.fetchEvaluations(deployment);
         if (evaluations$.length !== 0) {
           forkJoin(evaluations$)
             .subscribe((evaluations: (Trace | undefined)[]) => {
@@ -91,6 +86,16 @@ export class KtbServiceDetailsComponent implements OnDestroy{
         }
       });
     }
+  }
+
+  private fetchEvaluations(deployment: Deployment) {
+    const evaluations$: Observable<Trace | undefined>[] = [];
+    for (const stage of deployment.stages) {
+      if (!stage.evaluation && stage.evaluationContext) {
+        evaluations$.push(this.dataService.getEvaluationResult(stage.evaluationContext));
+      }
+    }
+    return evaluations$;
   }
 
   private setEvaluation(deployment: Deployment, evaluation: Trace | undefined) {

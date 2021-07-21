@@ -3,7 +3,7 @@
     <p>Integrate Keptn using the <a [href]="'/reference/cli/' | keptnUrl">Keptn CLI</a> or <a [href]="'/reference/api/' | keptnUrl">Keptn API</a>.</p>
     <h2>Keptn CLI</h2>
     <ol>
-      <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo.bridgeInfo.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
+      <li><a *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink" [attr.href]="keptnInfo?.bridgeInfo?.cliDownloadLink" rel="noopener noreferrer" target="_blank">Download Keptn CLI</a></li>
       <li>Authenticate CLI with: <a [href]="'/reference/cli/commands/keptn_auth/' | keptnUrl" rel="noopener noreferrer" target="_blank">keptn auth</a></li>
     </ol>
     <p class="bold mt-2" *ngIf="useCaseExamples.cli.length > 0">Use Cases:</p>
@@ -17,7 +17,7 @@
     </ul>
     <h2>Keptn API</h2>
     <ol>
-      <ng-container *ngIf="keptnInfo?.bridgeInfo?.showApiToken; else noApiToken">
+      <ng-container *ngIf="keptnInfo && keptnInfo.bridgeInfo && keptnInfo.bridgeInfo.showApiToken; else noApiToken">
         <li><a href="javascript:void(0);" (click)="copyApiToken()">Copy API token to clipboard</a></li>
         <li>Access <a [href]="keptnInfo.bridgeInfo.apiUrl" rel="noopener noreferrer" target="_blank">Keptn API</a></li>
       </ng-container>

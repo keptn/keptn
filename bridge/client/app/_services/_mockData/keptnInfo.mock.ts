@@ -73,7 +73,6 @@ export const KeptnInfo = {
     "authType": "BASIC"
   },
   "authCommand": "keptn auth --endpoint=http://localhost:3000/api --api-token=TOKEN",
-  "keptnVersion": "0.8.1-dev-PR-3529",
   "versionCheckEnabled": true,
   "metadata": {
     "bridgeversion": "docker.io/keptn/bridge2:0.8.1-dev-PR-3611.202103251226",

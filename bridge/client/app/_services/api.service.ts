@@ -59,16 +59,6 @@ export class ApiService {
       .get<KeptnInfoResult>(url);
   }
 
-  public getKeptnVersion(): Observable<string> {
-    const url = `${this._baseUrl}/swagger-ui/swagger.yaml`;
-    return this.http
-      .get<string>(url, { headers: new HttpHeaders({'Access-Control-Allow-Origin': '*'}) })
-      .pipe(
-        map(res => res.substring(res.lastIndexOf('version: ') + 9)),
-        map(res => res.substring(0, res.indexOf('\n'))),
-      );
-  }
-
   public getIntegrationsPage(): Observable<string> {
     const url = `${this._baseUrl}/integrationsPage`;
     return this.http

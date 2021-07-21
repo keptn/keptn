@@ -14,15 +14,15 @@ export class DateUtil {
     return DateUtil.compareTraceTimesDesc(a, b, -1);
   }
 
-  static compareTraceTimesDesc(a: Trace, b: Trace, direction = 1): number {
+  static compareTraceTimesDesc(a?: Trace, b?: Trace, direction = 1): number {
     let result;
-    if (a.time && b.time) {
+    if (a?.time && b?.time) {
       result = new Date(a.time).getTime() - new Date(b.time).getTime();
     }
-    else if (a.time && !b.time) {
+    else if (a?.time && !b?.time) {
       result = 1;
     }
-    else if (!a.time && b.time) {
+    else if (!a?.time && b?.time) {
       result = -1;
     }
     else {

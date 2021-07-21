@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Observable, of, throwError} from 'rxjs';
+import {Observable, throwError} from 'rxjs';
 import {catchError, retryWhen} from 'rxjs/operators';
 import {genericRetryStrategy} from './http-generic-retry-strategy';
 import {DtToast} from '@dynatrace/barista-components/toast';

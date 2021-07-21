@@ -1,5 +1,4 @@
-import * as Highcharts from 'highcharts';
-import { SeriesHeatmapDataOptions } from 'highcharts';
+import Highcharts, { SeriesHeatmapDataOptions } from 'highcharts';
 import { Trace } from './trace';
 
 export type HeatmapData = (Omit<SeriesHeatmapDataOptions, 'y'> & {y: number, evaluation?: Trace});

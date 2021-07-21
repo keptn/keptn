@@ -5,6 +5,7 @@ import {Subject, timer} from 'rxjs';
 import moment from 'moment';
 import {ClipboardService} from '../../_services/clipboard.service';
 import {ApiService} from '../../_services/api.service';
+import { KeptnInfo } from '../../_models/keptn-info';
 
 @Component({
   selector: 'ktb-integration-view',
@@ -16,7 +17,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   private _rootEventsTimerInterval = 30_000;
 
   public currentTime: string = this.getCurrentTime();
-  public keptnInfo: any;
+  public keptnInfo?: KeptnInfo;
   public integrationsExternalDetails?: string;
   public useCaseExamples: {cli: {label: string, code: string}[], api: {label: string, code: string}[]} = {
     cli: [],
@@ -27,7 +28,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
+      .pipe(filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo))
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
@@ -123,7 +124,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   }
 
   copyApiToken() {
-    this.clipboard.copy(this.keptnInfo.bridgeInfo.apiToken, 'API token');
+    this.clipboard.copy(this.keptnInfo?.bridgeInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {

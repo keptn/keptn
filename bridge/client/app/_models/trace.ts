@@ -60,7 +60,7 @@ class Trace {
     evaluation?: {
       comparedEvents?: string[];
       indicatorResults: IndicatorResult[];
-      result: string;
+      result: ResultTypes;
       score: number;
       sloFileContent: string;
       timeEnd: Date;
@@ -119,10 +119,6 @@ class Trace {
 
     const plainEvent = JSON.parse(JSON.stringify(data));
     const trace: Trace = Object.assign(new this(), data, { plainEvent });
-
-    // if (trace?.evaluationHistory?.length > 0) {
-    //   trace.evaluationHistory = trace.evaluationHistory.map(t => Trace.fromJSON(t));
-    // }// TODO: Where does this come from? It comes from the mock for 10 SLIs (ktb-evaluation-details.component.spec.ts)
 
     if (trace.data?.evaluationHistory?.length) {
       trace.data.evaluationHistory = trace.data.evaluationHistory.map(t => Trace.fromJSON(t));
@@ -324,7 +320,6 @@ class Trace {
   }
 
   getLabel(): string {
-    // TODO: use translation file; see also EVENT_LABELS in event-labels.ts
     if (!this.label) {
       this.label = this.getShortType();
     }

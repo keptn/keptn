@@ -1,5 +1,4 @@
-import * as Highcharts from 'highcharts';
-import { NavigatorXAxisPlotBandsOptions, PointClickEventObject, SeriesHeatmapDataOptions } from 'highcharts';
+import Highcharts, { NavigatorXAxisPlotBandsOptions, PointClickEventObject, SeriesHeatmapDataOptions } from 'highcharts';
 import moment from 'moment';
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -77,8 +76,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   public _evaluationState: Map<ResultTypes, string> = new Map<ResultTypes, string>([
     [ResultTypes.PASSED, 'recovered'],
     [ResultTypes.WARNING, 'warning'],
-    [ResultTypes.FAILED, 'error'],
-    // ['failed', 'error'] TODO: Why is this here? Was this different some time ago?
+    [ResultTypes.FAILED, 'error']
   ]);
 
   public _evaluationData?: Trace;
@@ -282,76 +280,12 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   updateChartData(evaluationHistory: Trace[]) {
-    const chartSeries: EvaluationChartItem[] = [];
-
     if (!this._selectedEvaluationData && evaluationHistory) {
       this.selectEvaluationData(evaluationHistory.find(h => h.id === this._evaluationData?.id));
     }
 
     if (this.showChart) {
-      evaluationHistory.forEach((evaluation) => {
-        const scoreData = {
-          y: evaluation.data.evaluation?.score ?? 0,
-          evaluationData: evaluation,
-          color: this._evaluationColor[evaluation.data.evaluation?.result ?? 'info'],
-          name: evaluation.getChartLabel(),
-        };
-
-        let indicatorScoreSeriesColumn = chartSeries.find(series => series.name === 'Score' && series.type === 'column');
-        let indicatorScoreSeriesLine = chartSeries.find(series => series.name === 'Score' && series.type === 'line');
-        if (!indicatorScoreSeriesColumn) {
-          indicatorScoreSeriesColumn = {
-            metricName: 'Score',
-            name: 'Score',
-            type: 'column',
-            data: [],
-            cursor: 'pointer',
-            turboThreshold: 0
-          };
-          chartSeries.push(indicatorScoreSeriesColumn);
-        }
-        if (!indicatorScoreSeriesLine) {
-          indicatorScoreSeriesLine = {
-            name: 'Score',
-            metricName: 'Score',
-            type: 'line',
-            data: [],
-            cursor: 'pointer',
-            visible: false,
-            turboThreshold: 0
-          };
-          chartSeries.push(indicatorScoreSeriesLine);
-        }
-
-        indicatorScoreSeriesColumn.data.push(scoreData);
-        indicatorScoreSeriesLine.data.push(scoreData);
-
-        if (evaluation.data.evaluation?.indicatorResults) {
-          evaluation.data.evaluation.indicatorResults.forEach((indicatorResult: IndicatorResult) => {
-            const indicatorData = {
-              y: indicatorResult.value.value,
-              indicatorResult,
-              evaluationData: evaluation,
-              name: evaluation.getChartLabel(),
-            };
-
-            let indicatorChartSeries = chartSeries.find(series => series.metricName === indicatorResult.value.metric);
-            if (!indicatorChartSeries) {
-              indicatorChartSeries = {
-                metricName: indicatorResult.value.metric,
-                name: this.getLastDisplayName(evaluationHistory, indicatorResult.value.metric),
-                type: 'line',
-                yAxis: 1,
-                data: [],
-                visible: false,
-                turboThreshold: 0
-              };
-              chartSeries.push(indicatorChartSeries);
-            }
-            indicatorChartSeries.data.push(indicatorData);
-          });
-        }
-      });
+      const chartSeries = this.getChartSeries(evaluationHistory);
       chartSeries.sort((seriesA, seriesB) => {
         let status;
         if (seriesA.name === 'Score' && seriesB.name === 'Score') {
@@ -370,85 +304,13 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
       // @ts-ignore
       this._chartOptions.xAxis.categories = this._heatmapOptions.xAxis[0].categories;
-      this._heatmapSeriesReduced = [
-        {
-          name: 'Score',
-          type: 'heatmap',
-          rowsize: 0.85,
-          turboThreshold: 0,
-          data: []
-        },
-        {
-          name: 'SLOs',
-          type: 'heatmap',
-          turboThreshold: 0,
-          data: []
-        }
-      ];
+      this.setHeatmapData(chartSeries);
 
-      this._heatmapSeriesFull = [
-        {
-          name: 'Score',
-          type: 'heatmap',
-          rowsize: 0.85,
-          turboThreshold: 0,
-          data: chartSeries.find(series => series.name === 'Score')?.data.filter(s => s.evaluationData).map(s => {
-            // tslint:disable:no-non-null-assertion
-            const index = this._metrics.indexOf('Score');
-            const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData!.getHeatmapLabel());
-            const dataPoint = {
-              x,
-              y: index,
-              z: s.y,
-              evaluation: s.evaluationData,
-              color: this._evaluationColor[s.evaluationData!.data.result ?? 'info']
-            };
-            const reducedDataPoint = {...dataPoint};
-            reducedDataPoint.y = 9;
-            this._heatmapSeriesReduced[0].data.push(reducedDataPoint);
-            return dataPoint;
-            // tslint:enable:no-non-null-assertion
-          }) ?? []
-        },
-        {
-          name: 'SLOs',
-          type: 'heatmap',
-          turboThreshold: 0,
-          data: [...chartSeries].reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map(s => {
-            // tslint:disable:no-non-null-assertion
-            const index = this._metrics.indexOf(s.indicatorResult!.value.metric);
-            const x = s.evaluationData ? this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel()) : -1;
-            return {
-              x,
-              y: index,
-              z: s.indicatorResult!.score,
-              color: s.indicatorResult!.value.success ? this._evaluationColor[s.indicatorResult!.status] : this._evaluationColor.info
-            };
-            // tslint:enable:no-non-null-assertion
-          })], [] as HeatmapData[])
-        },
-      ];
-
-      if (this._heatmapSeriesFull[1].data && this._heatmapSeriesFull[1].data.length > 0) {
-        const minIdx = ((this._heatmapSeriesFull[1].data[this._heatmapSeriesFull[1].data.length - 1] as SeriesHeatmapDataOptions)
-                        .y ?? 0
-                      ) - 8;
-        const reduced: HeatmapData[] = [];
-        this._heatmapSeriesFull[1].data.forEach(series => {
-          if (series.y >= minIdx) {
-            const srs = {...series};
-            srs.y = (srs.y - minIdx);
-            reduced.push(srs);
-          }
-        });
-        this._heatmapSeriesReduced[1].data = reduced;
+      if (this._heatmapSeriesFull[1].data.length > 0) {
+        this.setHeatmapReducedSLO();
       }
 
-      chartSeries.forEach(item => {
-        item.data.forEach(data => {
-          data.x = data.evaluationData ? this._heatmapOptions.xAxis[0].categories.indexOf(data.evaluationData.getHeatmapLabel()) : -1;
-        });
-      });
+      this.setSeriesXAxis(chartSeries);
       this._chartSeries = chartSeries;
 
       if (this.isHeatmapExtendable) {
@@ -460,6 +322,158 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
     this.highlightHeatmap();
     this._changeDetectorRef.detectChanges();
+  }
+
+  private setHeatmapReducedSLO() {
+    const minIdx = ((this._heatmapSeriesFull[1].data[this._heatmapSeriesFull[1].data.length - 1] as SeriesHeatmapDataOptions)
+        .y ?? 0
+    ) - 8;
+    const reduced: HeatmapData[] = [];
+    for (const series of this._heatmapSeriesFull[1].data) {
+      if (series.y >= minIdx) {
+        const srs = {...series};
+        srs.y = (srs.y - minIdx);
+        reduced.push(srs);
+      }
+    }
+    this._heatmapSeriesReduced[1].data = reduced;
+  }
+
+  private setSeriesXAxis(chartSeries: EvaluationChartItem[]): void {
+    for (const item of chartSeries) {
+      for (const data of item.data) {
+        data.x = data.evaluationData ? this._heatmapOptions.xAxis[0].categories.indexOf(data.evaluationData.getHeatmapLabel()) : -1;
+      }
+    }
+  }
+
+  private setHeatmapData(chartSeries: EvaluationChartItem[]): void {
+    this._heatmapSeriesReduced = [
+      {
+        name: 'Score',
+        type: 'heatmap',
+        rowsize: 0.85,
+        turboThreshold: 0,
+        data: []
+      },
+      {
+        name: 'SLOs',
+        type: 'heatmap',
+        turboThreshold: 0,
+        data: []
+      }
+    ];
+
+    this._heatmapSeriesFull = [
+      {
+        name: 'Score',
+        type: 'heatmap',
+        rowsize: 0.85,
+        turboThreshold: 0,
+        data: chartSeries.find(series => series.name === 'Score')?.data.filter(s => s.evaluationData).map(s => {
+          // tslint:disable:no-non-null-assertion
+          const index = this._metrics.indexOf('Score');
+          const x = this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData!.getHeatmapLabel());
+          const dataPoint = {
+            x,
+            y: index,
+            z: s.y,
+            evaluation: s.evaluationData,
+            color: this._evaluationColor[s.evaluationData!.data.result ?? 'info']
+          };
+          const reducedDataPoint = {...dataPoint};
+          reducedDataPoint.y = 9;
+          this._heatmapSeriesReduced[0].data.push(reducedDataPoint);
+          return dataPoint;
+          // tslint:enable:no-non-null-assertion
+        }) ?? []
+      },
+      {
+        name: 'SLOs',
+        type: 'heatmap',
+        turboThreshold: 0,
+        data: [...chartSeries].reverse().reduce((r, d) => [...r, ...d.data.filter(s => s.indicatorResult).map(s => {
+          // tslint:disable:no-non-null-assertion
+          const index = this._metrics.indexOf(s.indicatorResult!.value.metric);
+          const x = s.evaluationData ? this._heatmapOptions.xAxis[0].categories.indexOf(s.evaluationData.getHeatmapLabel()) : -1;
+          return {
+            x,
+            y: index,
+            z: s.indicatorResult!.score,
+            color: s.indicatorResult!.value.success ? this._evaluationColor[s.indicatorResult!.status] : this._evaluationColor.info
+          };
+          // tslint:enable:no-non-null-assertion
+        })], [] as HeatmapData[])
+      },
+    ];
+  }
+
+  private getChartSeries(evaluationHistory: Trace[]): EvaluationChartItem[] {
+    const chartSeries: EvaluationChartItem[] = [];
+    for (const evaluation of evaluationHistory) {
+      const scoreData = {
+        y: evaluation.data.evaluation?.score ?? 0,
+        evaluationData: evaluation,
+        color: this._evaluationColor[evaluation.data.evaluation?.result ?? 'info'],
+        name: evaluation.getChartLabel(),
+      };
+
+      let indicatorScoreSeriesColumn = chartSeries.find(series => series.name === 'Score' && series.type === 'column');
+      let indicatorScoreSeriesLine = chartSeries.find(series => series.name === 'Score' && series.type === 'line');
+      if (!indicatorScoreSeriesColumn) {
+        indicatorScoreSeriesColumn = {
+          metricName: 'Score',
+          name: 'Score',
+          type: 'column',
+          data: [],
+          cursor: 'pointer',
+          turboThreshold: 0
+        };
+        chartSeries.push(indicatorScoreSeriesColumn);
+      }
+      if (!indicatorScoreSeriesLine) {
+        indicatorScoreSeriesLine = {
+          name: 'Score',
+          metricName: 'Score',
+          type: 'line',
+          data: [],
+          cursor: 'pointer',
+          visible: false,
+          turboThreshold: 0
+        };
+        chartSeries.push(indicatorScoreSeriesLine);
+      }
+
+      indicatorScoreSeriesColumn.data.push(scoreData);
+      indicatorScoreSeriesLine.data.push(scoreData);
+
+      if (evaluation.data.evaluation?.indicatorResults) {
+        evaluation.data.evaluation.indicatorResults.forEach((indicatorResult: IndicatorResult) => {
+          const indicatorData = {
+            y: indicatorResult.value.value,
+            indicatorResult,
+            evaluationData: evaluation,
+            name: evaluation.getChartLabel(),
+          };
+
+          let indicatorChartSeries = chartSeries.find(series => series.metricName === indicatorResult.value.metric);
+          if (!indicatorChartSeries) {
+            indicatorChartSeries = {
+              metricName: indicatorResult.value.metric,
+              name: this.getLastDisplayName(evaluationHistory, indicatorResult.value.metric),
+              type: 'line',
+              yAxis: 1,
+              data: [],
+              visible: false,
+              turboThreshold: 0
+            };
+            chartSeries.push(indicatorChartSeries);
+          }
+          indicatorChartSeries.data.push(indicatorData);
+        });
+      }
+    }
+    return chartSeries;
   }
 
   private getLastDisplayName(evaluationHistory: Trace[], metric: string): string {
@@ -489,22 +503,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         this._metrics.unshift(series.metricName);
       }
       if (series.name === 'Score') {
-        this._heatmapOptions.xAxis[0].categories = series.data
-          .sort((a, b) => moment(a.evaluationData?.time).unix() - moment(b.evaluationData?.time).unix())
-          .map((item, index, items) => {
-            const duplicateItems = items.filter(c => c.evaluationData?.getHeatmapLabel() === item.evaluationData?.getHeatmapLabel());
-            if (duplicateItems.length > 1) {
-              item.label = `${item.evaluationData?.getHeatmapLabel()} (${duplicateItems.indexOf(item) + 1})`;
-            }
-            else {
-              item.label = item.evaluationData?.getHeatmapLabel();
-            }
-            return item;
-          })
-          .map((item) => {
-            item.evaluationData?.setHeatmapLabel(item.label ?? '');
-            return item.evaluationData?.getHeatmapLabel() ?? '';
-          });
+        this.updateHeatmapScore(series);
       }
     });
 
@@ -519,6 +518,25 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this.isHeatmapExtended = true;
     }
     this._updateHeatmapExtension();
+  }
+
+  private updateHeatmapScore(series: EvaluationChartItem) {
+    this._heatmapOptions.xAxis[0].categories = series.data
+      .sort((a, b) => DateUtil.compareTraceTimesDesc(a.evaluationData, b.evaluationData))
+      .map((item, index, items) => {
+        const duplicateItems = items.filter(c => c.evaluationData?.getHeatmapLabel() === item.evaluationData?.getHeatmapLabel());
+        if (duplicateItems.length > 1) {
+          item.label = `${item.evaluationData?.getHeatmapLabel()} (${duplicateItems.indexOf(item) + 1})`;
+        }
+        else {
+          item.label = item.evaluationData?.getHeatmapLabel();
+        }
+        return item;
+      })
+      .map((item) => {
+        item.evaluationData?.setHeatmapLabel(item.label ?? '');
+        return item.evaluationData?.getHeatmapLabel() ?? '';
+      });
   }
 
 

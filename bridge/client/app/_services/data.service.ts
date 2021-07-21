@@ -155,7 +155,6 @@ export class DataService {
     this.apiService.getKeptnInfo().subscribe((bridgeInfo: KeptnInfoResult) => {
       forkJoin({
         availableVersions: bridgeInfo.enableVersionCheckFeature ? this.apiService.getAvailableVersions() : of(undefined),
-        keptnVersion: this.apiService.getKeptnVersion(),
         versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
         metadata: this.apiService.getMetadata()
       }).subscribe((result) => {
@@ -362,6 +361,12 @@ export class DataService {
     this._sequencesLastUpdated[projectName] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
   }
 
+  private updateRootsUpdated(response: HttpResponse<EventResult>, keptnContext: string): void {
+    const lastUpdated = moment(response.headers.get('date'));
+    const lastEvent = response.body?.events[0] ? moment(response.body?.events[0]?.time) : null;
+    this._rootsLastUpdated[keptnContext] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+  }
+
   private updateTracesUpdated(response: HttpResponse<EventResult>, keptnContext: string): void {
     const lastUpdated = moment(response.headers.get('date'));
     const lastEvent = response.body?.events[0] ? moment(response.body.events[0]?.time) : null;
@@ -426,9 +431,7 @@ export class DataService {
       this.apiService.getTraces(root.shkeptncontext, projectName, fromTime?.toISOString())
         .pipe(
           map(response => {
-            const lastUpdated = moment(response.headers.get('date'));
-            const lastEvent = response.body?.events[0] ? moment(response.body?.events[0]?.time) : null;
-            this._rootsLastUpdated[root.shkeptncontext] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
+            this.updateRootsUpdated(response, root.shkeptncontext);
             return response.body;
           }),
           map(result => result?.events || []),

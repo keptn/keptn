@@ -36,45 +36,49 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        map(params => params.shkeptncontext),
+        filter((params: {shkeptncontext: string | undefined, eventselector: string | undefined}):
+                params is {shkeptncontext: string, eventselector: string | undefined} => !!params.shkeptncontext)
+      )
       .subscribe(params => {
-        if (params.shkeptncontext) {
-          this.contextId = params.shkeptncontext;
-          if (this.contextId) {
-            this.apiService.getTraces(this.contextId)
-              .pipe(
-                map(response => response.body),
-                map(result => result?.events || []),
-                map(traces => traces.map(trace => Trace.fromJSON(trace)).sort((a, b) => DateUtil.compareTraceTimesDesc(a, b))),
-                takeUntil(this.unsubscribe$)
-              ).subscribe((traces: Trace[]) => {
-                if (traces.length > 0) {
-                  this.root = Root.fromJSON(traces[0]);
-                  this.root.traces = traces;
-                  this.evaluations = traces.filter(t => t.type === EventTypes.EVALUATION_FINISHED
-                                      && (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector));
-                  const serviceName = this.root.service;
-                  if (this.root.project && serviceName) {
-                    this.dataService.getProject(this.root.project)
-                      .pipe(
-                        takeUntil(this.unsubscribe$),
-                        filter((project: Project | undefined): project is Project => !!project)
-                      )
-                      .subscribe(project => {
-                        this.deployments = project.getService(serviceName)?.deployments ?? [];
-                        this._changeDetectorRef.markForCheck();
-                      });
-                  }
-                } else {
-                  this.error = 'contextError';
-                  this._changeDetectorRef.markForCheck();
-                }
-              }, () => {
-                this.error = 'error';
-                this._changeDetectorRef.markForCheck();
-              });
-          }
-        }
+        this.contextId = params.shkeptncontext;
+        this.apiService.getTraces(this.contextId)
+          .pipe(
+            map(response => response.body?.events || []),
+            map(traces => traces.map(trace => Trace.fromJSON(trace)).sort(DateUtil.compareTraceTimesDesc)),
+            takeUntil(this.unsubscribe$)
+          ).subscribe((traces: Trace[]) => {
+            if (traces.length > 0) {
+              this.root = Root.fromJSON(traces[0]);
+              this.root.traces = traces;
+              this.evaluations = traces.filter(t => t.type === EventTypes.EVALUATION_FINISHED
+                                  && (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector));
+              const serviceName = this.root.service;
+              if (this.root.project && serviceName) {
+                this.setDeployments(this.root.project, serviceName);
+              }
+            } else {
+              this.error = 'contextError';
+              this._changeDetectorRef.markForCheck();
+            }
+          }, () => {
+            this.error = 'error';
+            this._changeDetectorRef.markForCheck();
+          });
+      });
+  }
+
+  private setDeployments(projectName: string, serviceName: string): void {
+    this.dataService.getProject(projectName)
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter((project: Project | undefined): project is Project => !!project)
+      )
+      .subscribe(project => {
+        this.deployments = project.getService(serviceName)?.deployments ?? [];
+        this._changeDetectorRef.markForCheck();
       });
   }
 

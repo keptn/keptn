@@ -13,7 +13,7 @@ export class Project {
   projectName!: string;
   gitUser?: string;
   gitRemoteURI?: string;
-  shipyardVersion?: string; // TODO: can this be undefined?
+  shipyardVersion?: string;
   allSequencesLoaded = false;
   stages: Stage[] = [];
   services?: Service[];
@@ -102,7 +102,10 @@ export class Project {
 
   getDeploymentEvaluation(trace: Trace, isSequence: boolean): Trace | undefined {
     const service = this.getServices().find(s => s.serviceName === trace.data.service);
-    const root = service ? (isSequence ? this.getSequence : this.getRootEvent)(service, trace) : undefined;
+    let root: Sequence | Root | undefined;
+    if (service) {
+      root = (isSequence ? this.getSequence : this.getRootEvent)(service, trace);
+    }
     return root?.findLastTrace(t => !!(t.isEvaluation() && t.isFinished()))?.getFinishedEvent();
   }
 

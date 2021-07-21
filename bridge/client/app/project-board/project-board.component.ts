@@ -40,7 +40,16 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     });
 
     this.project$ = projectName$.pipe(
-      switchMap(projectName => this.dataService.getProject(projectName)),
+      switchMap(projectName => this.dataService.getProject(projectName))
+    );
+    this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
+      return urlSegment[0].path === 'create';
+    }));
+
+  }
+
+  ngOnInit() {
+    this.project$.pipe(
       tap(project => {
         if (project === undefined) {
           this._errorSubject.next('project');
@@ -51,21 +60,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       catchError(() => {
         this._errorSubject.next('projects');
         return of(undefined);
-      })
-    );
-    this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
-      return urlSegment[0].path === 'create';
-    }));
-
-  }
-
-  ngOnInit() {
+      }));
     if (this.route.snapshot.url[0].path === 'trace') {
       const shkeptncontext$ = this.route.paramMap.pipe(map((params: ParamMap) => params.get('shkeptncontext')));
       const eventselector$ = this.route.paramMap.pipe(map((params: ParamMap) => params.get('eventselector')));
       const traces$ = shkeptncontext$.pipe(
         tap((shkeptncontext: string | null) => {
-          this.contextId = shkeptncontext ? shkeptncontext : undefined;
+          this.contextId = shkeptncontext ?? undefined;
           if (shkeptncontext) {
             this.dataService.loadTracesByContext(shkeptncontext);
           }
@@ -84,7 +85,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
               if (trace) {
                 this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'stage', trace.stage]);
               } else {
-                trace = traces.reverse().find((t: Trace) => t.type === eventselector && !!t.project && !!t.service);
+                trace = [...traces].reverse().find((t: Trace) => t.type === eventselector && !!t.project && !!t.service);
                 if (trace) {
                   this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'event', trace.id]);
                 } else {
