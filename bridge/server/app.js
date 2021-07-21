@@ -198,7 +198,7 @@ module.exports = (async function (){
     // render the error page
     if(err.response && err.response.data && err.response.data.message)
       err.message = err.response.data.message;
-    res.status(err.response === null || err.response == undefined ? 500 : err.response.status).send(err.message);
+    res.status(err.response && err.response.status ? err.response.status : 500).send(err.message);
     console.error(err);
     // res.json(err);
   });
