@@ -2,6 +2,7 @@ package config
 
 import (
 	logger "github.com/sirupsen/logrus"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -51,7 +52,82 @@ func GetPubSubConnectionType(env EnvConfig) ConnectionType {
 	return ConnectionTypeHTTP
 }
 
-func GetPubSubRecipientURL(env EnvConfig) string {
+func (env *EnvConfig) ValidateKeptnAPIEndpointURL() error {
+	if env.KeptnAPIEndpoint != "" {
+		_, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func (env *EnvConfig) GetProxyHost(path string) (string, string, string) {
+	// if the endpoint is empty, redirect to the internal services
+	if env.KeptnAPIEndpoint == "" {
+		for key, value := range InClusterAPIProxyMappings {
+			if strings.HasPrefix(path, key) {
+				split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+				join := strings.Join(split[1:], "/")
+				return "http", value, join
+			}
+		}
+		return "", "", ""
+	}
+
+	parsedKeptnURL, err := url.Parse(env.KeptnAPIEndpoint)
+	if err != nil {
+		return "", "", ""
+	}
+
+	// if the endpoint is not empty, map to the correct api
+	for key, value := range ExternalAPIProxyMappings {
+		if strings.HasPrefix(path, key) {
+			split := strings.Split(strings.TrimPrefix(path, "/"), "/")
+			join := strings.Join(split[1:], "/")
+			path = value + "/" + join
+			// special case: configuration service /resource requests with nested resource URIs need to have an escaped '/' - see https://github.com/keptn/keptn/issues/2707
+			if value == "/configuration-service" {
+				splitPath := strings.Split(path, "/resource/")
+				if len(splitPath) > 1 {
+					path = ""
+					for i := 0; i < len(splitPath)-1; i++ {
+						path = splitPath[i] + "/resource/"
+					}
+					path += url.QueryEscape(splitPath[len(splitPath)-1])
+				}
+			}
+			if parsedKeptnURL.Path != "" {
+				path = strings.TrimSuffix(parsedKeptnURL.Path, "/") + path
+			}
+			return parsedKeptnURL.Scheme, parsedKeptnURL.Host, path
+		}
+	}
+	return "", "", ""
+}
+
+func (env *EnvConfig) GetHTTPPollingEndpoint() string {
+	endpoint := env.KeptnAPIEndpoint
+	if endpoint == "" {
+		if endpoint == "" {
+			return DefaultEventsEndpoint
+		}
+	} else {
+		endpoint = strings.TrimSuffix(env.KeptnAPIEndpoint, "/") + "/controlPlane/v1/event/triggered"
+	}
+
+	parsedURL, _ := url.Parse(endpoint)
+
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "http"
+	}
+	if parsedURL.Path == "" {
+		parsedURL.Path = "v1/event/triggered"
+	}
+
+	return parsedURL.String()
+}
+
+func (env *EnvConfig) GetPubSubRecipientURL() string {
 	recipientService := env.PubSubRecipient
 
 	if !strings.HasPrefix(recipientService, "https://") && !strings.HasPrefix(recipientService, "http://") {
