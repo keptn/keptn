@@ -155,7 +155,7 @@ describe('KtbDeletionDialogComponent', () => {
     const spy = spyOn(component.dialogRef, 'close').and.callThrough();
 
     // when
-    eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS, error: null});
+    eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
 
     // then
     expect(spy).toHaveBeenCalled();

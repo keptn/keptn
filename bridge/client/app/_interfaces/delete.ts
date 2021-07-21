@@ -18,7 +18,7 @@ export interface DeletionTriggeredEvent {
 }
 
 export interface DeletionProgressEvent {
-  result: DeleteResult | null;
+  result?: DeleteResult;
   isInProgress: boolean;
-  error: string | null;
+  error?: string;
 }

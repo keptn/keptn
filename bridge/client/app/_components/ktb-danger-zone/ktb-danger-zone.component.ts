@@ -6,7 +6,7 @@ import {DeleteData} from '../../_interfaces/delete';
 @Component({
   selector: 'ktb-danger-zone',
   templateUrl: './ktb-danger-zone.component.html',
-  styleUrls: []
+  styleUrls: ['./ktb-danger-zone.component.scss']
 })
 export class KtbDangerZoneComponent {
   @Input() data: DeleteData;

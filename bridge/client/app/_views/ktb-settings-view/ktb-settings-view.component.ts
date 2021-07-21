@@ -161,7 +161,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   public deleteProject(projectName) {
-    this.eventService.deletionProgressEvent.next({error: null, isInProgress: true, result: null});
+    this.eventService.deletionProgressEvent.next({isInProgress: true});
 
     this.dataService.projects
       .pipe(take(1))
@@ -173,7 +173,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(() => {
         this.dataService.loadProjects();
-        this.eventService.deletionProgressEvent.next({error: null, isInProgress: false, result: DeleteResult.SUCCESS});
+        this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
       }, (err) => {
         const deletionError = 'Project could not be deleted: ' + err.message;
         this.eventService.deletionProgressEvent.next({error: deletionError, isInProgress: false, result: DeleteResult.ERROR});
