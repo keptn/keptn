@@ -1,4 +1,4 @@
-package lib
+package controlplane
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
