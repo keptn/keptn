@@ -8,6 +8,4 @@ import {DeletionProgressEvent, DeletionTriggeredEvent} from '../_interfaces/dele
 export class EventService {
   public deletionTriggeredEvent = new Subject<DeletionTriggeredEvent>();
   public deletionProgressEvent = new Subject<DeletionProgressEvent>();
-
-  constructor() { }
 }

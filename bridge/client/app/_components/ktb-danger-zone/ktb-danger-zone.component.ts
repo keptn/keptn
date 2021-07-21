@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {KtbDeletionDialogComponent} from '../_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import {DeleteData} from '../../_interfaces/delete';
@@ -8,15 +8,12 @@ import {DeleteData} from '../../_interfaces/delete';
   templateUrl: './ktb-danger-zone.component.html',
   styleUrls: []
 })
-export class KtbDangerZoneComponent implements OnInit {
+export class KtbDangerZoneComponent {
   @Input() data: DeleteData;
 
   public deletionDialogRef: MatDialogRef<any>;
 
   constructor(public dialog: MatDialog) { }
-
-  ngOnInit(): void {
-  }
 
   public openDeletionDialog() {
     const data = {
