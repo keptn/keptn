@@ -150,6 +150,10 @@ func main() {
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
+	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequencePausedHook(eventDispatcher)
+	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceResumedHook(eventDispatcher)
 
 	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 

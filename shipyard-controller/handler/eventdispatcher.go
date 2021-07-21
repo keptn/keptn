@@ -43,7 +43,7 @@ func NewEventDispatcher(
 	sequenceRepo db.TaskSequenceRepo,
 	eventSender keptncommon.EventSender,
 	syncInterval time.Duration,
-) IEventDispatcher {
+) *EventDispatcher {
 	return &EventDispatcher{
 		eventRepo:      eventRepo,
 		eventQueueRepo: eventQueueRepo,
