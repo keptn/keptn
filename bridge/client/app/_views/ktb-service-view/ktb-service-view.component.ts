@@ -4,14 +4,15 @@ import {
   Component,
   OnDestroy,
   OnInit,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {Subject, timer} from 'rxjs';
-import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
-import {Project} from '../../_models/project';
-import {DataService} from '../../_services/data.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest, forkJoin, Subject, timer } from 'rxjs';
+import { map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { Project } from '../../_models/project';
+import { DataService } from '../../_services/data.service';
 import { Deployment } from 'client/app/_models/deployment';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'ktb-service-view',
@@ -32,8 +33,9 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public selectedDeployment: Deployment;
   public isQualityGatesOnly: boolean;
   private _projectTimerInterval = 30 * 1000;
+  public selectedStage: string;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
 
   ngOnInit() {
     this.dataService.keptnInfo
@@ -66,6 +68,32 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     params$.subscribe(params => {
       this.serviceName ??= params.serviceName;
       this._changeDetectorRef.markForCheck();
+    });
+
+    combineLatest([params$, project$]).pipe(take(1)).subscribe(([params, project]) => {
+      if (params.shkeptncontext && params.serviceName) {
+        const service = project.getServices().find(s => s.serviceName === params.serviceName);
+        const paramDeployment = service.deployments.find(deployment => deployment.shkeptncontext === params.shkeptncontext);
+        const changedDeployments = this.selectedDeployment && service.deployments.filter(deployment => deployment.name === this.selectedDeployment.name); // the context of a deployment may change
+
+        if (paramDeployment) {
+          this.selectedDeployment = paramDeployment;
+        } else if (changedDeployments?.length > 0) {
+          let deployment;
+          if (changedDeployments.length === 1) {
+            deployment = changedDeployments[0];
+          } else {
+            deployment = changedDeployments.find(d => d.stages.some(s => this.selectedDeployment.stages.some(sd => s.stageName === sd.stageName)));
+          }
+          if (deployment) {
+            this.selectedDeployment = deployment;
+          }
+        } else {
+          const routeUrl = this.router.createUrlTree(['/project', project.projectName, 'service', params.serviceName]);
+          this.location.go(routeUrl.toString());
+        }
+        this.selectedStage = params.stage;
+      }
     });
 
     project$.subscribe(project => {
