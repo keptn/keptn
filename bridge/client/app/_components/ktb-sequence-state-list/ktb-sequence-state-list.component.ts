@@ -1,17 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input, OnDestroy,
-  ViewEncapsulation
-} from '@angular/core';
-import {DtTableDataSource} from "@dynatrace/barista-components/table";
-
-import {DateUtil} from "../../_utils/date.utils";
-import {DataService} from "../../_services/data.service";
-import {Sequence} from "../../_models/sequence";
-import {Subscription, timer} from "rxjs";
-import {Project} from "../../_models/project";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { DtTableDataSource } from '@dynatrace/barista-components/table';
+import { DateUtil } from '../../_utils/date.utils';
+import { DataService } from '../../_services/data.service';
+import { Sequence } from '../../_models/sequence';
+import { Subscription, timer } from 'rxjs';
+import { Project } from '../../_models/project';
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -25,7 +18,7 @@ import {Project} from "../../_models/project";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSequenceStateListComponent implements OnDestroy {
-  private _project: Project;
+  private _project?: Project;
   private _sequenceStates: Sequence[] = [];
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
 
@@ -35,11 +28,12 @@ export class KtbSequenceStateListComponent implements OnDestroy {
   public PAGE_SIZE = 5;
 
   @Input()
-  get project(): Project {
+  get project(): Project | undefined {
     return this._project;
   }
-  set project(value: Project) {
-    if(this._project !== value) {
+
+  set project(value: Project | undefined) {
+    if (this._project !== value) {
       this._project = value;
       this._timer.unsubscribe();
       this._timer = timer(0, this._timerInterval * 1000)
@@ -52,6 +46,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
   get sequenceStates(): Sequence[] {
     return this._sequenceStates;
   }
+
   set sequenceStates(value: Sequence[]) {
     if (this._sequenceStates !== value) {
       this._sequenceStates = value;
@@ -60,13 +55,16 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) {
+  }
 
   loadLatestSequences() {
-    this.dataService.loadLatestSequences(this.project, this.PAGE_SIZE)
-      .subscribe((sequences: Sequence[]) => {
-        this.sequenceStates = sequences;
-      });
+    if (this.project) {
+      this.dataService.loadLatestSequences(this.project, this.PAGE_SIZE)
+        .subscribe((sequences: Sequence[]) => {
+          this.sequenceStates = sequences;
+        });
+    }
   }
 
   updateDataSource() {

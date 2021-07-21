@@ -357,10 +357,10 @@ export class DataService {
   }
 
   public loadLatestSequences(project: Project, pageSize: number): Observable<Sequence[]> {
-    return this.apiService.getSequences(project.projectName, pageSize, null, null, null, null)
+    return this.apiService.getSequences(project.projectName, pageSize)
       .pipe(
         map(response => response.body),
-        map(body => body.states.map(sequence => Sequence.fromJSON(sequence))),
+        map(body => body?.states.map(sequence => Sequence.fromJSON(sequence)) ?? []),
       );
   }
 
