@@ -52,6 +52,15 @@ func GetPubSubConnectionType(env EnvConfig) ConnectionType {
 	return ConnectionTypeHTTP
 }
 
+func (env *EnvConfig) ValidateKeptnAPIEndpointURL() error {
+	if env.KeptnAPIEndpoint != "" {
+		_, err := url.ParseRequestURI(env.KeptnAPIEndpoint)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 func (env *EnvConfig) GetProxyHost(path string) (string, string, string) {
 	// if the endpoint is empty, redirect to the internal services
 	if env.KeptnAPIEndpoint == "" {
