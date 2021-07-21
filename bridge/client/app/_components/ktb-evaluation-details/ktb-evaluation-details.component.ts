@@ -527,8 +527,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   }
 
   private updateHeatmapScore(series: EvaluationChartItem) {
+    series.data.sort(this.compareSeriesData);
     this._heatmapOptions.xAxis[0].categories = series.data
-      .sort(this.compareSeriesData)
       .map((item, index, items) => {
         const duplicateItems = items.filter(c => c.evaluationData?.getHeatmapLabel() === item.evaluationData?.getHeatmapLabel());
         if (duplicateItems.length > 1) {
