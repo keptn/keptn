@@ -1,0 +1,25 @@
+<div class="mb-3" fxLayout="row" fxLayoutAlign="space-between center">
+  <div class="bold">Are you absolutely sure?</div>
+  <button dt-icon-button variant="nested" (click)="dialogRef.close()">
+    <dt-icon name="abort"></dt-icon>
+  </button>
+</div>
+<div class="mt-3" fxLayout="column" fxLayoutAlign="stretch" [formGroup]="deletionConfirmationForm">
+  <div class="mb-1">This action cannot be undone. This will permanently delete the <span
+    class="bold">{{data.name}}</span> {{data.type}}.
+  </div>
+  <div class="mb-3">Please type in <span class="bold">{{data.name}}</span> to confirm deletion.</div>
+  <div class="mb-2">
+    <dt-form-field>
+      <input autofocus [formControl]="deletionConfirmationControl" class="wide-input" type="text" dtInput
+             [placeholder]="data.name"/>
+    </dt-form-field>
+  </div>
+  <button dt-button class="danger-button" (click)="deleteProject()" [disabled]="deletionConfirmationForm.invalid">
+    I understand the consequences, delete this {{data.type}}
+    <dt-loading-spinner *ngIf="isDeleteProjectInProgress$ | async"></dt-loading-spinner>
+  </button>
+  <div class="mt-3" *ngIf="deletionError$ | async as error">
+    <span class="error">{{ error }}</span>
+  </div>
+</div>

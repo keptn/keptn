@@ -5,11 +5,13 @@ import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {DtToast} from '@dynatrace/barista-components/toast';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {MatDialog} from '@angular/material/dialog';
 import {GitData} from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import {FormUtils} from '../../_utils/form.utils';
 import {NotificationType, TemplateRenderedNotifications} from '../../_models/notification';
 import {NotificationsService} from '../../_services/notifications.service';
+import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
+import {EventService} from '../../_services/event.service';
 
 @Component({
   selector: 'ktb-settings-view',
@@ -21,9 +23,10 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public projectName: string;
 
-
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog: TemplateRef<MatDialog>;
+
+  public projectDeletionData: DeleteData;
 
   public isCreateMode: boolean;
   public isGitUpstreamInProgress: boolean;
@@ -36,20 +39,12 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     projectName: this.projectNameControl
   });
 
-  public deletionConfirmationControl = new FormControl('');
-  public deletionConfirmationForm = new FormGroup({
-    deletionConfirmation: this.deletionConfirmationControl
-  });
-  public deletionDialogRef: MatDialogRef<any>;
-  public isDeleteProjectInProgress = false;
-  public deletionError = '';
-
   constructor(private route: ActivatedRoute,
               private dataService: DataService,
               private toast: DtToast,
-              private dialog: MatDialog,
               private router: Router,
-              private notificationsService: NotificationsService) {
+              private notificationsService: NotificationsService,
+              private eventService: EventService) {
   }
 
   ngOnInit(): void {
@@ -86,6 +81,11 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       this.projectName = project.projectName;
       this.gitData.remoteURI = project.gitRemoteURI;
       this.gitData.gitUser = project.gitUser;
+
+      this.projectDeletionData = {
+        type: DeleteType.PROJECT,
+        name: this.projectName
+      };
     });
 
     this.route.queryParams.pipe(
@@ -97,8 +97,14 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
           routerLink: `/project/${this.projectName}/service`
         });
       }
+    });
 
-      this.deletionConfirmationControl.setValidators([Validators.required, Validators.pattern(this.projectName)]);
+    this.eventService.deletionTriggeredEvent.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(data => {
+      if (data.type === DeleteType.PROJECT) {
+        this.deleteProject(data.name);
+      }
     });
   }
 
@@ -154,36 +160,23 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  public openProjectDeletionDialog() {
-    this.deletionDialogRef = this.dialog.open(this.deleteProjectDialog, {
-      data: {projectName: this.projectName},
-      autoFocus: false
-    });
-    this.deletionDialogRef.afterClosed().subscribe(() => {
-      this.deletionConfirmationControl.setValue('');
-      this.deletionConfirmationForm.markAsUntouched();
-      this.deletionConfirmationForm.updateValueAndValidity();
-    });
-  }
+  public deleteProject(projectName) {
+    this.eventService.deletionProgressEvent.next({error: null, isInProgress: true, result: null});
 
-  public deleteProject() {
-    this.isDeleteProjectInProgress = true;
-    this.deletionError = '';
     this.dataService.projects
       .pipe(take(1))
       .subscribe(() => {
         this.router.navigate(['/', 'dashboard']);
       });
 
-
-    this.dataService.deleteProject(this.projectName)
+    this.dataService.deleteProject(projectName)
       .pipe(take(1))
       .subscribe(() => {
-        this.deletionDialogRef.close();
         this.dataService.loadProjects();
+        this.eventService.deletionProgressEvent.next({error: null, isInProgress: false, result: DeleteResult.SUCCESS});
       }, (err) => {
-        this.isDeleteProjectInProgress = false;
-        this.deletionError = 'Project could not be deleted: ' + err.message;
+        const deletionError = 'Project could not be deleted: ' + err.message;
+        this.eventService.deletionProgressEvent.next({error: deletionError, isInProgress: false, result: DeleteResult.ERROR});
       });
   }
 }

@@ -100,13 +100,16 @@ import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deploymen
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
 import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 
-import { AppInitService } from "./_services/app.init";
-import {KtbSecretsListComponent} from "./_components/ktb-secrets-list/ktb-secrets-list.component";
-import {KtbCreateSecretFormComponent} from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
+import { AppInitService } from './_services/app.init';
+import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
+import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop.directive';
+import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
+import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
+import { EventService } from './_services/event.service';
 
 registerLocaleData(localeEn, 'en');
 
@@ -173,6 +176,8 @@ export function init_app(appLoadService: AppInitService) {
     KtbProjectSettingsGitComponent,
     KtbProjectSettingsShipyardComponent,
     KtbDragAndDropDirective,
+    KtbDangerZoneComponent,
+    KtbDeletionDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -225,6 +230,7 @@ export function init_app(appLoadService: AppInitService) {
     ReactiveFormsModule
   ],
   providers: [
+    EventService,
     AppInitService,
     {
       provide: APP_INITIALIZER,

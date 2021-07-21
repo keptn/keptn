@@ -167,31 +167,14 @@ describe('KtbSettingsViewComponent - Edit', () => {
     expect(component.projectNameForm.errors).toBeNull();
   });
 
-  it('should open the deletion dialog', () => {
-    // given
-    component.isCreateMode = false;
-    fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('.danger-button');
-
-    // when
-    button.click();
-    fixture.detectChanges();
-
-    // then
-    expect(component.deletionDialogRef.getState()).toEqual(0);
-  });
-
   it('should delete a project and navigate to dashboard', () => {
     // given
     component.projectName = 'sockshop';
-    const button = fixture.nativeElement.querySelector('.danger-button');
-    button.click();
-    fixture.detectChanges();
 
     // when
     const router = TestBed.inject(Router);
     const routeSpy = spyOn(router, 'navigate');
-    component.deleteProject();
+    component.deleteProject('sockshop');
 
     // then
     expect(routeSpy).toHaveBeenCalled();

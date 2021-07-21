@@ -1,13 +1,5 @@
-@import '../../../variables';
-@import '~@dynatrace/barista-components/core/src/style/variables';
-
 .settings-section {
   width: 50%;
-}
-
-.danger-zone {
-  border: 1px solid $error-color;
-  border-radius: $border-radius;
 }
 
 .settings-section-bottom {
