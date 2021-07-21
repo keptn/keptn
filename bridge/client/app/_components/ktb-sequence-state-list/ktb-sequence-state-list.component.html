@@ -3,7 +3,7 @@
     <dt-table [dataSource]="dataSource">
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="3" uitestid="keptn-sequence-states-list-container">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="toSequence(row) as sequence">
+          <ng-container *ngIf="row | toType : SequenceClass as sequence">
             <div class="mt-1 mb-1">
               <p class="m-0 mb-1 small nobreak">
                 <a [routerLink]="getServiceLink(sequence)" [textContent]="sequence.service"></a> in
@@ -20,7 +20,7 @@
       </ng-container>
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="4">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="toSequence(row) as sequence">
+          <ng-container *ngIf="row | toType : SequenceClass as sequence">
             <div class="mt-1 mb-1" fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start center">
               <dt-icon *ngIf="!sequence.isLoading() || sequence.hasPendingApproval(); else showLoading" class="event-icon"
                        [name]="sequence.getIcon()"
@@ -42,7 +42,7 @@
       </ng-container>
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="toSequence(row) as sequence">
+          <ng-container *ngIf="row | toType : SequenceClass as sequence">
             <p class="m-0 small" [textContent]="toDate(sequence.time) | amCalendar:dateUtil.getCalendarFormats()"></p>
           </ng-container>
         </dt-cell>

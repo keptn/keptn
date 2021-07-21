@@ -30,6 +30,7 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   public _selectedDeployment?: Deployment;
   public dataSource = new DtTableDataSource<Deployment>();
   public loading = false;
+  public DeploymentClass = Deployment;
 
   @Output() selectedDeploymentChange: EventEmitter<Deployment> = new EventEmitter();
   @Output() selectedStageChange: EventEmitter<string> = new EventEmitter();
@@ -102,10 +103,6 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     $event.stopPropagation();
     this.selectDeployment(deployment, stageName);
     this._changeDetectorRef.markForCheck();
-  }
-
-  public toDeployment(row: Deployment): Deployment {
-    return row;
   }
 
   ngOnDestroy(): void {

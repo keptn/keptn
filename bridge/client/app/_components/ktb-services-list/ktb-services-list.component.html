@@ -4,7 +4,7 @@
 
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="toService(row) as service">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
             <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.getOpenProblems().length > 0" class="m-0 overflow-ellipsis">
               <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext, else serviceContent">
                 <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
@@ -24,7 +24,7 @@
 
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="toService(row) as service">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
             <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="service.getRecentRoot() as currentSequence">
               <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(service.stage).isLoading() || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
                        [name]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
@@ -45,7 +45,7 @@
 
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="toService(row) as service">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
             <div *ngIf="service.roots">
               <ktb-evaluation-info [evaluation]="service.getRecentEvaluation()"></ktb-evaluation-info>
             </div>

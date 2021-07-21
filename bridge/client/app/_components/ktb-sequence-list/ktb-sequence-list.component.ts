@@ -71,10 +71,6 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
     return row instanceof Trace ? row : null;
   }
 
-  public toSequence(row: Sequence): Sequence {
-    return  row;
-  }
-
   public getTraceMessage(trace: Trace): string {
     let message = '';
     const finishedEvent = trace.getFinishedEvent();

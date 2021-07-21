@@ -21,6 +21,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
   private _project?: Project;
   private _sequenceStates: Sequence[] = [];
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
+  public SequenceClass = Sequence;
 
   private _timerInterval = 30;
   private _timer: Subscription = Subscription.EMPTY;
@@ -77,10 +78,6 @@ export class KtbSequenceStateListComponent implements OnDestroy {
 
   getSequenceLink(sequence: Sequence) {
     return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
-  }
-
-  public toSequence(row: Sequence): Sequence {
-    return row;
   }
 
   public toDate(time: string): Date {

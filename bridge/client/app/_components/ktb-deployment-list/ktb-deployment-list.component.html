@@ -1,7 +1,7 @@
 <dt-table [dataSource]="dataSource" interactiveRows>
   <ng-container dtColumnDef="version" dtColumnProportion="1">
     <dt-cell *dtCellDef="let row" uitestid="keptn-deployment-list-serviceVersion">
-      <ng-container *ngIf="toDeployment(row) as deployment">
+      <ng-container *ngIf="row | toType : DeploymentClass as deployment">
         <span [textContent]="deployment.name"></span>
       </ng-container>
     </dt-cell>
@@ -9,7 +9,7 @@
 
   <ng-container dtColumnDef="stages" dtColumnProportion="2" dtColumnAlign="number">
     <dt-cell *dtCellDef="let row">
-      <ng-container *ngIf="toDeployment(row) as deployment">
+      <ng-container *ngIf="row | toType : DeploymentClass as deployment">
         <dt-tag-list aria-label="fetch-info" *ngFor="let stage of deployment.stages" uitestid="keptn-deployment-list-stages">
           <dt-tag>
             <a href="javascript:void(0)" (click)="selectStage(deployment, stage.stageName, $event)">
@@ -22,5 +22,5 @@
     </dt-cell>
   </ng-container>
 
-  <dt-row *dtRowDef="let row; columns: ['version', 'stages']" (click)="selectDeployment(row)" [class.active]="selectedDeployment?.shkeptncontext === toDeployment(row).shkeptncontext"></dt-row>
+  <dt-row *dtRowDef="let row; columns: ['version', 'stages']" (click)="selectDeployment(row)" [class.active]="selectedDeployment?.shkeptncontext === (row | toType : DeploymentClass).shkeptncontext"></dt-row>
 </dt-table>

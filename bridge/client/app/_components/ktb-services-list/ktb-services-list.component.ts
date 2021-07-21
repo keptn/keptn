@@ -30,7 +30,7 @@ const DEFAULT_PAGE_SIZE = 3;
 export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-
+  public ServiceClass = Service;
   public _services: Service[] = [];
   public _pageSize: number = DEFAULT_PAGE_SIZE;
   public dataSource: DtTableDataSource<Service> = new DtTableDataSource<Service>();
@@ -104,10 +104,6 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   getSequenceLink(sequence: Root, service: Service) {
     return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
-  }
-
-  public toService(row: Service): Service {
-    return row;
   }
 
   ngOnDestroy(): void {
