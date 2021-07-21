@@ -14,6 +14,7 @@ import {DataService} from '../../_services/data.service';
 import {Subject} from 'rxjs';
 import {Project} from '../../_models/project';
 import {Sequence} from '../../_models/sequence';
+import { Trace } from '../../_models/trace';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -28,12 +29,12 @@ import {Sequence} from '../../_models/sequence';
 })
 export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public project: Project;
+  public project?: Project;
   public _events: Sequence[] = [];
-  public _selectedEvent: Sequence = null;
+  public _selectedEvent?: Sequence;
   public loading = true;
 
-  @Output() readonly selectedEventChange = new EventEmitter<any>();
+  @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence, stage?: string }>();
 
   @Input()
   get events(): Sequence[] {
@@ -47,17 +48,18 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   }
 
   @Input()
-  get selectedEvent(): Sequence {
+  get selectedEvent(): Sequence | undefined {
     return this._selectedEvent;
   }
-  set selectedEvent(value: Sequence) {
+  set selectedEvent(value: Sequence | undefined) {
     if (this._selectedEvent !== value) {
       this._selectedEvent = value;
       this._changeDetectorRef.markForCheck();
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil, private route: ActivatedRoute, private dataService: DataService) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil,
+              private route: ActivatedRoute, private dataService: DataService) { }
 
   ngOnInit() {
     this.route.params.pipe(
@@ -82,14 +84,16 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     this.selectedEventChange.emit({ sequence, stage });
   }
 
-  identifyEvent(index, item) {
+  identifyEvent(index: number, item: Trace) {
     return item?.time;
   }
 
   loadOldSequences() {
-    this.loading = true;
-    this._changeDetectorRef.markForCheck();
-    this.dataService.loadOldSequences(this.project);
+    if (this.project) {
+      this.loading = true;
+      this._changeDetectorRef.markForCheck();
+      this.dataService.loadOldSequences(this.project);
+    }
   }
 
   ngOnDestroy(): void {

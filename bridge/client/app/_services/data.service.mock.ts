@@ -1,20 +1,17 @@
 import {Injectable} from '@angular/core';
-
-import {DataService} from "./data.service";
-import {ApiService} from "./api.service";
-
-import {Root} from "../_models/root";
-import {Project} from "../_models/project";
-import {DateUtil} from "../_utils/date.utils";
-
-import {KeptnInfo} from "./_mockData/keptnInfo.mock";
-import {Projects} from "./_mockData/projects.mock";
-import {RootEvents} from "./_mockData/roots.mock";
-import {Traces} from "./_mockData/traces.mock";
-import {Evaluations} from "./_mockData/evaluations.mock";
-import {Trace} from "../_models/trace";
-import {map} from "rxjs/operators";
-import {Observable, of} from "rxjs";
+import {DataService} from './data.service';
+import {ApiService} from './api.service';
+import {Root} from '../_models/root';
+import {Project} from '../_models/project';
+import {DateUtil} from '../_utils/date.utils';
+import {KeptnInfo} from './_mockData/keptnInfo.mock';
+import {Projects} from './_mockData/projects.mock';
+import {RootEvents} from './_mockData/roots.mock';
+import {Traces} from './_mockData/traces.mock';
+import {Evaluations} from './_mockData/evaluations.mock';
+import {Trace} from '../_models/trace';
+import {map} from 'rxjs/operators';
+import {Observable, of} from 'rxjs';
 import {Sequence} from '../_models/sequence';
 
 @Injectable({
@@ -34,14 +31,14 @@ export class DataServiceMock extends DataService {
     this._projects.next(Projects);
   }
 
-  public loadProject(projectName) {
+  public loadProject(projectName: string) {
     this._projects.next([...Projects]);
   }
 
-  public getProject(projectName): Observable<Project> {
+  public getProject(projectName: string): Observable<Project | undefined> {
     this.loadProjects();
     return this._projects.pipe(map(projects => {
-      return projects.find(project => project.projectName === projectName);
+      return projects?.find(project => project.projectName === projectName);
     }));
   }
 
@@ -49,10 +46,10 @@ export class DataServiceMock extends DataService {
     project.roots = [...RootEvents || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
     project.stages.forEach(stage => {
       stage.services.forEach(service => {
-        service.roots = project.roots.filter(s => s.getService() == service.serviceName && s.getStages().includes(stage.stageName));
-        service.openApprovals = service.roots.reduce((openApprovals, root) => {
+        service.roots = project.roots.filter(s => s.service === service.serviceName && s.getStages().includes(stage.stageName));
+        service.openApprovals = service.roots.reduce((openApprovals: Trace[], root: Root) => {
           const approval = root.getPendingApproval(stage.stageName);
-          if(approval) {
+          if (approval) {
             openApprovals.push(approval);
           }
           return openApprovals;
@@ -64,7 +61,7 @@ export class DataServiceMock extends DataService {
 
   public loadTraces(sequence: Sequence) {
     sequence.traces = [...Traces || [], ...sequence.traces || []];
-    this._sequences.next([...this._sequences.getValue()]);
+    this._sequences.next([...this._sequences.getValue() || []]);
   }
 
   public loadTracesByContext(shkeptncontext: string) {
@@ -75,7 +72,7 @@ export class DataServiceMock extends DataService {
     this._evaluationResults.next({
       type: 'evaluationHistory',
       triggerEvent: event,
-      traces: Evaluations
+      traces: [Evaluations]
     });
   }
 

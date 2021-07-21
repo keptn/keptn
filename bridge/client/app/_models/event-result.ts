@@ -1,6 +1,6 @@
-import {Trace} from "./trace";
+import {Trace} from './trace';
 
-export class EventResult {
+export interface EventResult {
   events: Trace[];
   totalCount: number;
 }

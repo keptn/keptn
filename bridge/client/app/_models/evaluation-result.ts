@@ -1,6 +1,6 @@
 import {ResultTypes} from './result-types';
 
-export class EvaluationResult {
-  public result: ResultTypes;
-  public score: number;
+export interface EvaluationResult {
+  result: ResultTypes;
+  score: number;
 }

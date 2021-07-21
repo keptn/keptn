@@ -1,14 +1,10 @@
 import {ChangeDetectorRef, Component, Directive, Input, TemplateRef, ViewChild} from '@angular/core';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
-
-import {Observable} from "rxjs";
-import {map} from "rxjs/operators";
-
-import {Project} from "../../_models/project";
+import { Observable, of } from 'rxjs';
+import {Project} from '../../_models/project';
 import {Trace} from '../../_models/trace';
-
 import {ClipboardService} from '../../_services/clipboard.service';
-import {DataService} from "../../_services/data.service";
+import {DataService} from '../../_services/data.service';
 import {DateUtil} from '../../_utils/date.utils';
 
 @Directive({
@@ -25,23 +21,25 @@ export class KtbEventItemDetail {
 })
 export class KtbEventItemComponent {
 
-  public project$: Observable<Project>;
-  public _event: Trace;
+  public project$: Observable<Project | undefined> = of(undefined);
+  public _event?: Trace;
 
   @ViewChild('eventPayloadDialog')
-  public eventPayloadDialog: TemplateRef<any>;
-  public eventPayloadDialogRef: MatDialogRef<any, any>;
+  // tslint:disable-next-line:no-any
+  public eventPayloadDialog?: TemplateRef<any>;
+  // tslint:disable-next-line:no-any
+  public eventPayloadDialogRef?: MatDialogRef<any, any>;
 
   @Input() public showChartLink = false;
   @Input() public showTime = true;
   @Input() public showLabels = true;
 
   @Input()
-  get event(): Trace {
+  get event(): Trace | undefined {
     return this._event;
   }
 
-  set event(value: Trace) {
+  set event(value: Trace | undefined) {
     if (this._event !== value) {
       this._event = value;
       this.changeDetectorRef.markForCheck();
@@ -53,15 +51,15 @@ export class KtbEventItemComponent {
               private dialog: MatDialog,
               private clipboard: ClipboardService,
               public dateUtil: DateUtil) {
-    this.project$ = this.dataService.projects.pipe(
-      map(projects => projects ? projects.find(project => {
-        return project.projectName === this._event.getProject();
-      }) : null)
-    );
+    if (this._event?.project) {
+      this.project$ = this.dataService.getProject(this._event?.project);
+    }
   }
 
   showEventPayloadDialog() {
-    this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog, {data: this._event.plainEvent});
+    if (this.eventPayloadDialog && this._event) {
+      this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog, {data: this._event.plainEvent});
+    }
   }
 
   closeEventPayloadDialog() {
@@ -76,6 +74,7 @@ export class KtbEventItemComponent {
 
   isUrl(value: string): boolean {
     try {
+      // tslint:disable-next-line:no-unused-expression
       new URL(value);
     } catch (_) {
       return false;

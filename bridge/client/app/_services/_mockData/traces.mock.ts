@@ -1,4 +1,4 @@
-import {Trace} from "../../_models/trace";
+import {Trace} from '../../_models/trace';
 
 export const traceData = [
   {
@@ -2135,16 +2135,17 @@ export const traceData = [
   }
 ];
 
-const Traces = traceData.map(trace => {
-  function tracesMapper(trace) {
-    trace.traces.forEach(t => {
+const Traces = traceData.map(data => {
+  tracesMapper(data);
+  return Trace.fromJSON(data);
+
+  // tslint:disable-next-line:no-any
+  function tracesMapper(trace: any) {
+    trace.traces.forEach((t: Trace) => {
       tracesMapper(t);
     });
     trace.traces = Trace.traceMapper(trace.traces);
   }
-
-  tracesMapper(trace);
-  return Trace.fromJSON(trace);
 });
 
 export {Traces};

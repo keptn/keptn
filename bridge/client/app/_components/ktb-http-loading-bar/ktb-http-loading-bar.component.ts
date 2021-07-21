@@ -1,8 +1,8 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {HttpStateService} from "../../_services/http-state.service";
-import {HttpProgressState, HttpState} from "../../_models/http-progress-state";
-import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import {HttpStateService} from '../../_services/http-state.service';
+import {HttpProgressState, HttpState} from '../../_models/http-progress-state';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'ktb-http-loading-bar',
@@ -13,8 +13,8 @@ export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
 
-  private hideLoadingTimer;
-  private animateLoadingBarInterval;
+  private hideLoadingTimer?: ReturnType<typeof setTimeout>;
+  private animateLoadingBarInterval?: ReturnType<typeof setInterval>;
 
   public loading = false;
   @Input() public filterBy: string | null = null;
@@ -30,29 +30,35 @@ export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((progress: HttpState) => {
         if (progress && progress.url) {
-          if(!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
-            if(progress.state === HttpProgressState.start)
+          if (!this.filterBy || progress.url.indexOf(this.filterBy) !== -1) {
+            if (progress.state === HttpProgressState.start) {
               this.showLoadingBar();
-            else
+            }
+            else {
               this.hideLoadingBar();
+            }
           }
         }
       });
   }
 
   showLoadingBar() {
-    if(this.loading && !this.hideLoadingTimer)
-      return;
-    clearTimeout(this.hideLoadingTimer);
-    this.loading = true;
-    this.animateLoadingBarInterval = setInterval(() => this.animateLoadingBar(), 500);
+    if (!this.loading) {
+      if (this.hideLoadingTimer) {
+        clearTimeout(this.hideLoadingTimer);
+      }
+      this.loading = true;
+      this.animateLoadingBarInterval = setInterval(() => this.animateLoadingBar(), 500);
+    }
   }
 
   hideLoadingBar() {
-    if(!this.loading)
-      return;
-    clearInterval(this.animateLoadingBarInterval);
-    this.hideLoadingTimer = setTimeout(() => this.resetValues(), 500);
+    if (this.loading) {
+      if (this.animateLoadingBarInterval) {
+        clearInterval(this.animateLoadingBarInterval);
+      }
+      this.hideLoadingTimer = setTimeout(() => this.resetValues(), 500);
+    }
   }
 
   resetValues() {
@@ -62,16 +68,20 @@ export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
   }
 
   animateLoadingBar() {
-    if(this.align == 'start') {
-      if(this.value < 100)
+    if (this.align === 'start') {
+      if (this.value < 100) {
         this.value = 100;
-      else
+      }
+      else {
         this.align = 'end';
+      }
     } else {
-      if(this.value > 0)
+      if (this.value > 0) {
         this.value = 0;
-      else
+      }
+      else {
         this.align = 'start';
+      }
     }
   }
 

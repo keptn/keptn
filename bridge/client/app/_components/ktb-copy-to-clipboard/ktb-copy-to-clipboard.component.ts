@@ -8,7 +8,7 @@ import {
 import {Platform} from '@angular/cdk/platform';
 
 @Component({
-  selector: 'ktb-copy-to-clipboard',
+  selector: 'ktb-copy-to-clipboard[value][label]',
   templateUrl: './ktb-copy-to-clipboard.component.html',
   styleUrls: ['./ktb-copy-to-clipboard.component.scss'],
   host: {
@@ -21,10 +21,10 @@ import {Platform} from '@angular/cdk/platform';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbCopyToClipboardComponent {
-  @Input() public value: string;
-  @Input() public label: string;
+  @Input() public value?: string;
+  @Input() public label?: string;
 
-  public visible: boolean = false;
+  public visible = false;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public platform: Platform) {}
 

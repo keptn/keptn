@@ -4,7 +4,7 @@ import { mergeMap } from 'rxjs/operators';
 export interface RetryParams {
   maxAttempts?: number;
   scalingDuration?: number;
-  shouldRetry?: ({ status: number }) => boolean;
+  shouldRetry?: ({status}: {status: number}) => boolean;
 }
 
 /**
@@ -24,8 +24,11 @@ export const genericRetryStrategy = (params: RetryParams = {}) => (attempts: Obs
   mergeMap((error, i) => {
     const { maxAttempts, scalingDuration, shouldRetry } = { ...defaultParams, ...params };
     const retryAttempt = i + 1;
-    if (retryAttempt > maxAttempts || !shouldRetry(error))
+    // @ts-ignore
+    if (retryAttempt > maxAttempts || !shouldRetry(error)) {
       return throwError(error);
+    }
+    // @ts-ignore
     return timer(retryAttempt * scalingDuration);
   })
 );

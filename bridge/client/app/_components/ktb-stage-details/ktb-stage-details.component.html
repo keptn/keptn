@@ -1,5 +1,5 @@
 <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
-  <ng-container *ngIf="selectedStage">
+  <ng-container *ngIf="selectedStage && project as project">
     <ng-container *ngIf="filterRoots(project.getLatestFailedRootEvents(selectedStage)) as failedRootEvents">
       <ng-container *ngIf="filterRoots(project.getLatestProblemEvents(selectedStage)) as problemEvents">
         <h2 [textContent]="selectedStage.stageName"></h2>
@@ -44,7 +44,7 @@
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
                     <ng-container *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment">
-                      <a *ngIf="deployment.getFinishedEvent()?.getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" [title]="'View ' + deployment.getService() + ' in ' + selectedStage.stageName" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+                      <a *ngIf="deployment.getFinishedEvent()?.getDeploymentUrl()" [href]="deployment.getFinishedEvent().getDeploymentUrl()" [title]="'View ' + deployment.service + ' in ' + selectedStage.stageName" target="_blank"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
                     </ng-container>
                   </div>
                 </dt-info-group-title>
@@ -84,9 +84,11 @@
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
                   </ng-template>
                 </dt-tag-list>
-                <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.getProject(), 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
+                <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.project, 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               </div>
-              <p class="m-0" *ngIf="failedRootEvent?.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage.stageName)?.isDirectDeployment()">Rollback to <span *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.</p>
+              <p class="m-0" *ngIf="failedRootEvent.isDeployment() && !failedRootEvent.getDeploymentDetails(selectedStage.stageName)?.isDirectDeployment()">
+                Rollback to <span *ngIf="project.getLatestDeploymentTrace(service, selectedStage) as deployment" [textContent]="deployment.getShortImageName()"></span> performed.
+              </p>
             </ng-container>
             <div *ngIf="service.getOpenApprovals().length > 0; else noOutOfSyncDeployments">
               <p class="m-0">Deployable artifacts for <span [textContent]="service.serviceName"></span> service</p>

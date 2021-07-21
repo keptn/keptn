@@ -5,41 +5,40 @@ import {EventTypes} from './event-types';
 import {Sequence} from './sequence';
 
 export class Service {
-  serviceName: string;
-  deployedImage: string;
-  stage: string;
+  serviceName!: string;
+  deployedImage?: string;
+  stage!: string;
   allDeploymentsLoaded = false;
   deployments: Deployment[] = [];
   lastEventTypes?: {[key: string]: {eventId: string, keptnContext: string, time: number}};
-
   sequences: Sequence[] = [];
   roots: Root[] = [];
   openApprovals: Trace[] = [];
 
-  static fromJSON(data: any) {
+  static fromJSON(data: unknown) {
     return Object.assign(new this(), data);
   }
 
-  get deploymentContext(): string {
+  get deploymentContext(): string | undefined {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext ?? this.evaluationContext;
   }
 
-  get deploymentTime(): number {
+  get deploymentTime(): number | undefined {
     return this.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.time || this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.time;
   }
 
-  get evaluationContext(): string {
+  get evaluationContext(): string | undefined {
     return this.lastEventTypes?.[EventTypes.EVALUATION_FINISHED]?.keptnContext;
   }
-  public getShortImageName() {
-    return this.deployedImage?.split('/').pop().split(':').find(() => true);
+  public getShortImageName(): string | undefined {
+    return this.deployedImage?.split('/').pop()?.split(':').find(() => true);
   }
 
-  getImageName(): string {
+  getImageName(): string | undefined {
     return this.deployedImage?.split('/').pop();
   }
 
-  getImageVersion(): string {
+  getImageVersion(): string | undefined {
     return this.deployedImage?.split(':').pop();
   }
 
@@ -47,7 +46,7 @@ export class Service {
     return this.openApprovals || [];
   }
 
-  getOpenProblems(): Trace[] {
+  getOpenProblems(): Root[] {
     // show running remediation or last faulty remediation
     return this.roots?.filter((root, index) => root.isRemediation() && (!root.isFinished() || root.isFaulty() && index === 0)) || [];
   }
@@ -56,7 +55,7 @@ export class Service {
     return this.roots[0];
   }
 
-  getRecentEvaluation(): Trace {
+  getRecentEvaluation(): Trace | undefined {
     return this.getRecentRoot()?.getEvaluation(this.stage);
   }
 

@@ -1,8 +1,9 @@
-import {Project} from "../../_models/project";
-import {Service} from "../../_models/service";
-import {Stage} from "../../_models/stage";
+import {Project} from '../../_models/project';
+import {Service} from '../../_models/service';
+import {Stage} from '../../_models/stage';
 
-let projectsData = [
+// tslint:disable-next-line:no-any
+const projectsData: any = [
   {
     "creationDate": "1614603785739925270",
     "gitRemoteURI": "https://github.com/Kirdock/keptn-dynatrace",
@@ -1175,8 +1176,7 @@ let projectsData = [
   }
 ];
 
-const Projects = projectsData.map(project => {
-  // @ts-ignore
+const Projects = projectsData.map((project: Project) => {
   project.stages = project.stages.map(stage => {
     stage.services = stage.services.map(service => {
       return Service.fromJSON(service);

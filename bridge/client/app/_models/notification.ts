@@ -10,15 +10,13 @@ enum TemplateRenderedNotifications {
 }
 
 class Notification {
-  type: NotificationType;
-  message: string;
   isTemplateRendered?: boolean;
+  // tslint:disable-next-line:no-any
   data?: any;
 
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
+  constructor(public type: NotificationType, public message: string) {
   }
-
 }
 
-export {Notification, NotificationType, TemplateRenderedNotifications}
+export {Notification, NotificationType, TemplateRenderedNotifications};
+

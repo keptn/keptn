@@ -7,13 +7,13 @@
     <div ktbDragAndDrop (dropped)="updateFile($event)" (dropError)="handleDragAndDropError($event)" [allowedExtensions]="this.allowedExtensions">
       <p>Drag and drop a file here<br/>or</p>
       <button dt-button (click)="shipyardFileInput.click()">Select a file</button>
-      <input id="shipyard-file-input" hidden type="file" #shipyardFileInput (change)="validateAndUpdateFile($event.target.files)">
+      <input id="shipyard-file-input" hidden type="file" #shipyardFileInput (change)="validateAndUpdateFile(shipyardFileInput.files)">
       <p class="drop-error" #dropError></p>
     </div>
 
     <div *ngIf="shipyardFile" fxFlex="row" class="mt-2" fxLayoutAlign="space-between center">
       <div class="shipyard-file-name">{{ shipyardFile.name }}</div>
-      <button dt-icon-button class="shipyard-delete-button" (click)="updateFile(null)">
+      <button dt-icon-button class="shipyard-delete-button" (click)="updateFile(undefined)">
         <dt-icon name="delete"></dt-icon>
       </button>
     </div>

@@ -62,7 +62,7 @@ function isAuthenticated(req: Request) {
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function setAuthenticatedSession(req: Request, principal: any, logoutHint: any) {
+function setAuthenticatedSession(req: Request, principal: string, logoutHint: any) {
 
   if (!principal) {
     throw Error('Invalid session initialisation. Principal is mandatory.');
@@ -79,7 +79,7 @@ function setAuthenticatedSession(req: Request, principal: any, logoutHint: any) 
 /**
  * Returns the current principal if session is authenticated. Otherwise returns undefined
  */
-function getCurrentPrincipal(req: Request) {
+function getCurrentPrincipal(req: Request): string | undefined {
   if (req.session !== undefined && req.session.authenticated) {
     return req.session.principal;
   }
@@ -90,12 +90,8 @@ function getCurrentPrincipal(req: Request) {
 /**
  * Returns the logout hint bound to this session
  */
-function getLogoutHint(req: Request) {
-  if (req.session !== undefined && req.session.logoutHint) {
-    return req.session.logoutHint;
-  }
-
-  return undefined;
+function getLogoutHint(req: Request): string | undefined {
+  return req.session?.logoutHint;
 }
 
 /**
