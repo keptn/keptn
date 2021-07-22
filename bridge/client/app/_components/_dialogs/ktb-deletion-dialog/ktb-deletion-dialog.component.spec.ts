@@ -65,34 +65,13 @@ describe('KtbDeletionDialogComponent', () => {
   it('should be an invalid form when name and input do not match', () => {
     // given
     const input = component.deletionConfirmationControl;
+    const values = ['sock', '$ock', '1', 'Sockshop', 'sockshoP', 'sOckshop', ''];
 
-    input.setValue('sock');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
-
-    input.setValue('$ock');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
-
-    input.setValue('1');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
-
-    input.setValue('Sockshop');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
-
-    input.setValue('sockshoP');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
-
-    input.setValue('sOckshop');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
-
-    input.setValue('');
-    component.deletionConfirmationForm.updateValueAndValidity();
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
+    values.forEach(val => {
+      input.setValue(val);
+      component.deletionConfirmationForm.updateValueAndValidity();
+      expect(component.deletionConfirmationForm.invalid).toBeTrue();
+    });
   });
 
   it('should have a disabled button when form is invalid', () => {
@@ -106,6 +85,29 @@ describe('KtbDeletionDialogComponent', () => {
 
     // then
     const button = fixture.nativeElement.querySelector('.danger-button');
+    expect(button.disabled).toBeTrue();
+  });
+
+  it('should have a disabled button when input was first valid and then is invalid', () => {
+    // given
+    const input = component.deletionConfirmationControl;
+
+    // when
+    input.setValue('sockshop');
+    component.deletionConfirmationForm.updateValueAndValidity();
+    fixture.detectChanges();
+
+    // then
+    let button = fixture.nativeElement.querySelector('.danger-button');
+    expect(button.disabled).toBeFalse();
+
+    // when
+    input.setValue('sock');
+    component.deletionConfirmationForm.updateValueAndValidity();
+    fixture.detectChanges();
+
+    // then
+    button = fixture.nativeElement.querySelector('.danger-button');
     expect(button.disabled).toBeTrue();
   });
 

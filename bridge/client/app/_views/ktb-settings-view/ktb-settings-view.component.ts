@@ -22,13 +22,12 @@ import { Project } from '../../_models/project';
 })
 export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public projectName?: string;
 
   @ViewChild('deleteProjectDialog')
-  private deleteProjectDialog: TemplateRef<MatDialog>;
+  private deleteProjectDialog?: TemplateRef<MatDialog>;
 
-  public projectDeletionData: DeleteData;
-
+  public projectName?: string;
+  public projectDeletionData?: DeleteData;
   public isCreateMode = false;
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
@@ -93,6 +92,8 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     ).subscribe((queryParams) => {
       if (queryParams.created) {
         this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {projectName: this.projectName, routerLink: `/project/${this.projectName}/service`});
+        // Remove query param for not showing notification on reload
+        this.router.navigate(['/', 'project', this.projectName, 'settings']);
       }
     });
 
@@ -162,7 +163,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  public deleteProject(projectName) {
+  public deleteProject(projectName: string) {
     this.eventService.deletionProgressEvent.next({isInProgress: true});
 
     this.dataService.projects
