@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import {UniformRegistrationLog} from "../../_models/uniform-registration-log";
+import { Component, Input } from '@angular/core';
+import { UniformRegistrationLog } from '../../_models/uniform-registration-log';
 
 @Component({
   selector: 'ktb-uniform-registration-logs',
