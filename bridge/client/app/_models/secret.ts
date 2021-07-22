@@ -4,19 +4,23 @@ export class Secret {
   data: {
     key: string;
     value: string;
-  }[] = [];
+  }?];
 
   constructor() {
     this.scope = 'keptn-default';
-    this.name = '';
+    this.data = [];
   }
 
   static fromJSON(data: unknown) {
     return Object.assign(new this(), data);
   }
 
-  addData(): void {
-    this.data.push({key: '', value: ''});
+  setName(name: string): void {
+    this.name = name;
+  }
+
+  addData(key: string, value: string): void {
+    this.data?.push({ key, value });
   }
 
   removeData(index: number): void {
