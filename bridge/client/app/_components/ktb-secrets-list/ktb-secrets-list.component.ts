@@ -1,9 +1,9 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute} from '@angular/router';
-import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Subject} from 'rxjs';
-import {Secret} from '../../_models/secret';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { DataService } from '../../_services/data.service';
+import { ActivatedRoute } from '@angular/router';
+import { DtTableDataSource } from '@dynatrace/barista-components/table';
+import { Subject } from 'rxjs';
+import { Secret } from '../../_models/secret';
 
 @Component({
   selector: 'ktb-secrets-view',
@@ -46,7 +46,10 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
         this.closeConfirmationDialogTimeout = setTimeout(() => {
           this.closeConfirmationDialog();
         }, 2000);
-        this.tableEntries.data = this.tableEntries.data.slice(this.tableEntries.data.indexOf(secret), 1);
+
+        const data = this.tableEntries.data;
+        data.splice(data.findIndex((s: Secret) => s.name === secret.name), 1);
+        this.tableEntries = new DtTableDataSource(data);
       });
   }
 
