@@ -8,6 +8,7 @@
       ]
     },
     "array-type": false,
+    "no-any": true,
     "arrow-parens": false,
     "arrow-return-shorthand": true,
     "deprecation": {

@@ -3,26 +3,27 @@ import {DataService} from '../_services/data.service';
 import semver from 'semver';
 import {Observable} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
+import { KeptnInfo } from '../_models/keptn-info';
 
 @Pipe({
   name: 'keptnUrl'
 })
 export class KeptnUrlPipe implements PipeTransform {
-  private static _version: Observable<any>;
+  private static _version: Observable<KeptnInfo | undefined>;
   private static version: string;
 
 
-  constructor(dataservice: DataService) {
+  constructor(dataService: DataService) {
     if (!KeptnUrlPipe._version) {
-      KeptnUrlPipe._version = dataservice.keptnInfo;
+      KeptnUrlPipe._version = dataService.keptnInfo;
       KeptnUrlPipe._version
         .pipe(
-          filter(info => !!info && !!info.metadata),
+          filter((info: KeptnInfo | undefined): info is KeptnInfo => !!info?.metadata),
           take(1)
         )
         .subscribe(info => {
-          const vers = info.metadata.keptnversion;
-          KeptnUrlPipe.version = `${semver.major(vers)}.${semver.minor(vers)}.x`;
+          const version = info.metadata.keptnversion;
+          KeptnUrlPipe.version = `${semver.major(version)}.${semver.minor(version)}.x`;
         });
     }
   }

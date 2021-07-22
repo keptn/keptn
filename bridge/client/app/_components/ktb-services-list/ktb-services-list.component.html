@@ -4,47 +4,53 @@
 
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
-          <p [class.highlight]="row.getOpenApprovals().length > 0" [class.error]="row.getOpenProblems().length > 0" class="m-0 overflow-ellipsis">
-            <a [routerLink]="getServiceLink(row)" *ngIf="row.deploymentContext, else serviceContent">
-              <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
-            </a>
-            <ng-template #serviceContent>
-              <span [textContent]="row.getShortImageName() || row.serviceName" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: row.getShortImageName() || row.serviceName}}"></span>
-              <ng-container *ngIf="row.getImageVersion()">
-                <br>
-                <span [textContent]="row.getImageVersion()" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: row.getImageVersion()}}"></span>
-              </ng-container>
-            </ng-template>
-            <ng-template #overlay let-data><span [textContent]="data.text"></span></ng-template>
-          </p>
+          <ng-container *ngIf="row | toType : ServiceClass as service">
+            <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.getOpenProblems().length > 0" class="m-0 overflow-ellipsis">
+              <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext, else serviceContent">
+                <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
+              </a>
+              <ng-template #serviceContent>
+                <span [textContent]="service.getShortImageName() || service.serviceName" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: service.getShortImageName() || service.serviceName}}"></span>
+                <ng-container *ngIf="service.getImageVersion()">
+                  <br>
+                  <span [textContent]="service.getImageVersion()" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: service.getImageVersion()}}"></span>
+                </ng-container>
+              </ng-template>
+              <ng-template #overlay let-data><span [textContent]="data.text"></span></ng-template>
+            </p>
+          </ng-container>
         </dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="row.getRecentRoot() as currentSequence">
-            <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(row.stage).isLoading() || currentSequence.hasPendingApproval(row.stage); else showLoading" class="event-icon"
-                     [name]="currentSequence.getFirstTraceOfStage(row.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
-                     [class.error]="currentSequence.isFaulty(row.stage)"
-                     [class.success]="currentSequence.getFirstTraceOfStage(row.stage).isFinished() && !currentSequence.isFaulty(row.stage)"
-                     [class.highlight]="currentSequence.hasPendingApproval(row.stage)"></dt-icon>
-            <ng-template #showLoading>
-              <button class="m-0 p-0" dt-button disabled variant="nested">
-                <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-              </button>
-            </ng-template>
-            <a class="m-0" [routerLink]="getSequenceLink(currentSequence, row)" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" uitestid="keptn-services-list-jumpToSequence" [textContent]="currentSequence.getLabel()"></a>
-          </div>
-          <p class="m-0" *ngIf="!row.roots">-</p>
+          <ng-container *ngIf="row | toType : ServiceClass as service">
+            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="service.getRecentRoot() as currentSequence">
+              <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(service.stage).isLoading() || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
+                       [name]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
+                       [class.error]="currentSequence.isFaulty(service.stage)"
+                       [class.success]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() && !currentSequence.isFaulty(service.stage)"
+                       [class.highlight]="currentSequence.hasPendingApproval(service.stage)"></dt-icon>
+              <ng-template #showLoading>
+                <button class="m-0 p-0" dt-button disabled variant="nested">
+                  <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+                </button>
+              </ng-template>
+              <a class="m-0" [routerLink]="getSequenceLink(currentSequence, service)" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" uitestid="keptn-services-list-jumpToSequence" [textContent]="currentSequence.getLabel()"></a>
+            </div>
+            <p class="m-0" *ngIf="!service.roots">-</p>
+          </ng-container>
         </dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
-          <div *ngIf="row.roots">
-            <ktb-evaluation-info [evaluation]="row.getRecentEvaluation()"></ktb-evaluation-info>
-          </div>
-          <p class="m-0" *ngIf="!row.roots">-</p>
+          <ng-container *ngIf="row | toType : ServiceClass as service">
+            <div *ngIf="service.roots">
+              <ktb-evaluation-info [evaluation]="service.getRecentEvaluation()"></ktb-evaluation-info>
+            </div>
+            <p class="m-0" *ngIf="!service.roots">-</p>
+          </ng-container>
         </dt-cell>
       </ng-container>
 

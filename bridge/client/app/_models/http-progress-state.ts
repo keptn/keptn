@@ -3,7 +3,7 @@ export enum HttpProgressState {
   end
 }
 
-export class HttpState {
+export interface HttpState {
   url: string;
   state: HttpProgressState;
 }

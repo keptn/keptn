@@ -7,26 +7,26 @@ import {Sequence} from '../../_models/sequence';
   styleUrls: ['./ktb-sequence-timeline.component.scss']
 })
 export class KtbSequenceTimelineComponent{
-  private _currentSequence: Sequence;
-  public _selectedStage: string;
+  private _currentSequence?: Sequence;
+  public _selectedStage?: string;
 
   @Output() selectedStageChange: EventEmitter<string> = new EventEmitter();
 
   @Input()
-  get selectedStage(): string {
+  get selectedStage(): string | undefined {
     return this._selectedStage;
   }
-  set selectedStage(stage: string) {
-    if(this._selectedStage !== stage) {
+  set selectedStage(stage: string | undefined) {
+    if (this._selectedStage !== stage) {
       this._selectedStage = stage;
     }
   }
 
   @Input()
-  get currentSequence(): Sequence {
+  get currentSequence(): Sequence | undefined {
     return this._currentSequence;
   }
-  set currentSequence(sequence: Sequence) {
+  set currentSequence(sequence: Sequence | undefined) {
     if (this._currentSequence !== sequence) {
       this._currentSequence = sequence;
     }

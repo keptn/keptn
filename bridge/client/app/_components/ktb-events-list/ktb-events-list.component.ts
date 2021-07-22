@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewEncapsulation} from '@angular/core';
-import {Trace} from "../../_models/trace";
-import {Router} from "@angular/router";
-import {Location} from "@angular/common";
+import {Trace} from '../../_models/trace';
+import {Router} from '@angular/router';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'ktb-events-list',
@@ -17,7 +17,8 @@ import {Location} from "@angular/common";
 export class KtbEventsListComponent {
 
   public _events: Trace[] = [];
-  public _focusedEventId: string;
+  public _focusedEventId?: string;
+  private currentScrollElement?: HTMLDivElement;
 
   @Input()
   get events(): Trace[] {
@@ -31,10 +32,10 @@ export class KtbEventsListComponent {
   }
 
   @Input()
-  get focusedEventId(): string {
+  get focusedEventId(): string | undefined {
     return this._focusedEventId;
   }
-  set focusedEventId(value: string) {
+  set focusedEventId(value: string | undefined) {
     if (this._focusedEventId !== value) {
       this._focusedEventId = value;
       this._changeDetectorRef.markForCheck();
@@ -43,13 +44,12 @@ export class KtbEventsListComponent {
 
   constructor(private router: Router, private location: Location, private _changeDetectorRef: ChangeDetectorRef) { }
 
-  identifyEvent(index, item) {
+  identifyEvent(index: number, item: Trace) {
     return item ? item.time : null;
   }
 
-  private currentScrollElement;
-  scrollIntoView(element) {
-    if(element != this.currentScrollElement) {
+  scrollIntoView(element: HTMLDivElement) {
+    if (element !== this.currentScrollElement) {
       this.currentScrollElement = element;
       setTimeout(() => {
         element.scrollIntoView({ behavior: 'smooth' });
@@ -58,14 +58,14 @@ export class KtbEventsListComponent {
     return true;
   }
 
-  focusEvent(event) {
-    if(event.getProject() && event.getService()) {
-      let routeUrl = this.router.createUrlTree(['/project', event.getProject(), event.getService(), event.shkeptncontext, event.id]);
+  focusEvent(event: Trace) {
+    if (event.project && event.service) {
+      const routeUrl = this.router.createUrlTree(['/project', event.project, event.service, event.shkeptncontext, event.id]);
       this.location.go(routeUrl.toString());
     }
   }
 
-  isInvalidated(event) {
-    return !!this.events.find(e => e.isEvaluationInvalidation() && e.triggeredid == event.id);
+  isInvalidated(event: Trace) {
+    return !!this.events.find(e => e.isEvaluationInvalidation() && e.triggeredid === event.id);
   }
 }

@@ -37,8 +37,8 @@ describe('KtbDragAndDropDirective', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0].length).toEqual(2);
-    expect(emitSpy.calls.mostRecent().args[0][0].name).toEqual('test1.yaml');
+    expect(emitSpy.calls.mostRecent().args[0]?.length).toEqual(2);
+    expect(emitSpy.calls.mostRecent().args[0]?.[0].name).toEqual('test1.yaml');
   });
 
   it('should allow only files and not directories', () => {
@@ -99,7 +99,7 @@ describe('KtbDragAndDropDirective', () => {
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0].length).toEqual(1);
-    expect(emitSpy.calls.mostRecent().args[0][0].name).toEqual('test.jpeg');
+    expect(emitSpy.calls.mostRecent().args[0]?.length).toEqual(1);
+    expect(emitSpy.calls.mostRecent().args[0]?.[0].name).toEqual('test.jpeg');
   });
 });

@@ -10,31 +10,33 @@ export class KtbProjectSettingsShipyardComponent {
   public readonly allowedExtensions = ['yaml', 'yml'];
 
   @Input()
-  public isCreateMode: boolean;
+  public isCreateMode = false;
 
   @Output()
-  public shipyardFileChanged: EventEmitter<File> = new EventEmitter();
+  public shipyardFileChanged: EventEmitter<File | undefined> = new EventEmitter();
 
   @ViewChild('dropError')
-  private dropError: ElementRef;
+  private dropError?: ElementRef;
 
-  public shipyardFile: File | null;
+  public shipyardFile?: File;
 
   public handleDragAndDropError(error: string) {
-    this.dropError.nativeElement.innerText = error;
+    if (this.dropError) {
+      this.dropError.nativeElement.innerText = error;
+    }
   }
 
-  public updateFile(files: FileList) {
+  public updateFile(files?: FileList) {
     if (files) {
       this.shipyardFile = files[0];
     } else {
-      this.shipyardFile = null;
+      this.shipyardFile = undefined;
     }
     this.shipyardFileChanged.emit(this.shipyardFile);
   }
 
-  public validateAndUpdateFile(files: FileList) {
-    if (files && files.length > 0) {
+  public validateAndUpdateFile(files?: FileList) {
+    if (files?.length && this.dropError) {
       if (!FormUtils.isFile(files[0])) {
         this.dropError.nativeElement.innerText = 'Please select only files';
         return;

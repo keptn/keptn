@@ -2127,8 +2127,8 @@ describe('Trace', () => {
     expect(rootTraces[0].isFaulty()).toBe(false);
     expect(rootTraces[0].isWarning()).toBe(false);
     expect(rootTraces[0].isSuccessful()).toBe(false);
-    expect(rootTraces[0].getProject()).toBe('sockshop');
-    expect(rootTraces[0].getService()).toBe('carts');
+    expect(rootTraces[0].project).toBe('sockshop');
+    expect(rootTraces[0].service).toBe('carts');
 
     expect(rootTraces[1].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
     expect(rootTraces[1].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
@@ -2137,8 +2137,8 @@ describe('Trace', () => {
     expect(rootTraces[1].isFaulty()).toBe(false);
     expect(rootTraces[1].isWarning()).toBe(false);
     expect(rootTraces[1].isSuccessful()).toBe(false);
-    expect(rootTraces[1].getProject()).toBe('sockshop');
-    expect(rootTraces[1].getService()).toBe('carts');
+    expect(rootTraces[1].project).toBe('sockshop');
+    expect(rootTraces[1].service).toBe('carts');
 
     expect(rootTraces[2].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
     expect(rootTraces[2].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
@@ -2147,8 +2147,8 @@ describe('Trace', () => {
     expect(rootTraces[2].isFaulty()).toBe(false);
     expect(rootTraces[2].isWarning()).toBe(false);
     expect(rootTraces[2].isSuccessful()).toBe(false);
-    expect(rootTraces[2].getProject()).toBe('sockshop');
-    expect(rootTraces[2].getService()).toBe('carts');
+    expect(rootTraces[2].project).toBe('sockshop');
+    expect(rootTraces[2].service).toBe('carts');
 
     expect(rootTraces[8].type).toBe('sh.keptn.event.dev.artifact-delivery.triggered');
     expect(rootTraces[8].getLabel()).toBe('artifact-delivery', 'Label for trace "sh.keptn.event.dev.artifact-delivery.triggered" should be "artifact-delivery"');
@@ -2157,8 +2157,8 @@ describe('Trace', () => {
     expect(rootTraces[8].isFaulty()).toBe(false);
     expect(rootTraces[8].isWarning()).toBe(false);
     expect(rootTraces[8].isSuccessful()).toBe(false);
-    expect(rootTraces[8].getProject()).toBe('keptn');
-    expect(rootTraces[8].getService()).toBe('control-plane');
+    expect(rootTraces[8].project).toBe('keptn');
+    expect(rootTraces[8].service).toBe('control-plane');
 
     expect(evaluationTraces[0].type).toBe('sh.keptn.event.evaluation.finished');
     expect(evaluationTraces[0].getLabel()).toBe('evaluation', 'Label for trace "sh.keptn.event.evaluation.finished" should be "evaluation"');
@@ -2166,7 +2166,7 @@ describe('Trace', () => {
     expect(evaluationTraces[0].isFaulty()).toBe(false);
     expect(evaluationTraces[0].isWarning()).toBe(false);
     expect(evaluationTraces[0].isSuccessful(evaluationTraces[0].data.stage)).toBe(true, 'Successful evaluation should return true');
-    expect(evaluationTraces[0].getProject()).toBe('sockshop');
-    expect(evaluationTraces[0].getService()).toBe('carts');
+    expect(evaluationTraces[0].project).toBe('sockshop');
+    expect(evaluationTraces[0].service).toBe('carts');
   }));
 });

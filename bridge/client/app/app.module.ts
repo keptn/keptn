@@ -99,18 +99,18 @@ import { KtbSettingsViewComponent } from './_views/ktb-settings-view/ktb-setting
 import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deployment-stage-timeline/ktb-deployment-stage-timeline.component';
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
 import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
-
-import { AppInitService } from "./_services/app.init";
-import { KtbSecretsListComponent } from "./_components/ktb-secrets-list/ktb-secrets-list.component";
-import { KtbCreateSecretFormComponent } from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
+import { AppInitService } from './_services/app.init';
+import {KtbSecretsListComponent} from './_components/ktb-secrets-list/ktb-secrets-list.component';
+import {KtbCreateSecretFormComponent} from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
-import { KtbSequenceStateListComponent } from "./_components/ktb-sequence-state-list/ktb-sequence-state-list.component";
+import { KtbSequenceStateListComponent } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.component';
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop.directive';
 import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
 import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { EventService } from './_services/event.service';
+import { ToType } from './_pipes/to-type';
 
 registerLocaleData(localeEn, 'en');
 
@@ -180,6 +180,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
     KtbDeletionDialogComponent,
+    ToType,
   ],
   imports: [
     BrowserModule,

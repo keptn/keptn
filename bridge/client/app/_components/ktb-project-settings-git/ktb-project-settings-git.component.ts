@@ -9,10 +9,10 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 export class KtbProjectSettingsGitComponent implements OnInit {
 
   @Input()
-  public isGitUpstreamInProgress: boolean;
+  public isGitUpstreamInProgress = false;
 
   @Input()
-  public isCreateMode: boolean;
+  public isCreateMode = false;
 
   @Input()
   set gitData(gitData: GitData) {

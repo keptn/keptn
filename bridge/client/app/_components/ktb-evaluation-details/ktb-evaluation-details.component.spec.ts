@@ -1,11 +1,11 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbEvaluationDetailsComponent } from './ktb-evaluation-details.component';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {EvaluationsTop10} from "../../_services/_mockData/evaluations-top10.mock";
-import {DataServiceMock} from "../../_services/data.service.mock";
-import {Evaluations} from "../../_services/_mockData/evaluations.mock";
+import {AppModule} from '../../app.module';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {EvaluationsTop10} from '../../_services/_mockData/evaluations-top10.mock';
+import {DataServiceMock} from '../../_services/data.service.mock';
+import {Evaluations} from '../../_services/_mockData/evaluations.mock';
+import { Trace } from '../../_models/trace';
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbEvaluationDetailsComponent;
@@ -34,10 +34,10 @@ describe('KtbEvaluationDetailsComponent', () => {
     // given
     component.evaluationData = EvaluationsTop10;
 
-    //when
-    component.updateChartData(component.evaluationData.data.evaluationHistory);
+    // when
+    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
 
-    //then
+    // then
     expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(10);
   });
 
@@ -45,10 +45,10 @@ describe('KtbEvaluationDetailsComponent', () => {
     // given
     component.evaluationData = EvaluationsTop10;
 
-    //when
-    component.updateChartData(component.evaluationData.data.evaluationHistory);
+    // when
+    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
 
-    //then
+    // then
     expect(component.isHeatmapExtendable).toBeTruthy();
   });
 
@@ -57,7 +57,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     component.evaluationData = Evaluations;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory);
+    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
 
     // then
     expect(component.isHeatmapExtendable).toBeFalsy();
@@ -68,7 +68,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     component.evaluationData = EvaluationsTop10;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory);
+    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
     fixture.detectChanges();
     const evaluationPage = fixture.nativeElement;
     const button = evaluationPage.querySelector('button.button-show-more-slo');
@@ -81,11 +81,11 @@ describe('KtbEvaluationDetailsComponent', () => {
     // given
     component.evaluationData = EvaluationsTop10;
 
-    //when
-    component.updateChartData(component.evaluationData.data.evaluationHistory);
+    // when
+    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
     component.toggleHeatmap();
 
-    //then
+    // then
     expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(17);
   });
 

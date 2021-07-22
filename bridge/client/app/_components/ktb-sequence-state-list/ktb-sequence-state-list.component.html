@@ -3,10 +3,10 @@
     <dt-table [dataSource]="dataSource">
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="3" uitestid="keptn-sequence-states-list-container">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row as sequence">
+          <ng-container *ngIf="row | toType : SequenceClass as sequence">
             <div class="mt-1 mb-1">
               <p class="m-0 mb-1 small nobreak">
-                <a [routerLink]="getServiceLink(row)" [textContent]="sequence.service"></a> in
+                <a [routerLink]="getServiceLink(sequence)" [textContent]="sequence.service"></a> in
               </p>
               <ng-container *ngIf="sequence.getLastStage() as stage">
                 <ktb-stage-badge [stage]="stage" [evaluationResult]="sequence.getEvaluation(stage)"
@@ -20,7 +20,7 @@
       </ng-container>
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="4">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row as sequence">
+          <ng-container *ngIf="row | toType : SequenceClass as sequence">
             <div class="mt-1 mb-1" fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start center">
               <dt-icon *ngIf="!sequence.isLoading() || sequence.hasPendingApproval(); else showLoading" class="event-icon"
                        [name]="sequence.getIcon()"
@@ -32,7 +32,7 @@
                   <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
                 </button>
               </ng-template>
-              <a [routerLink]="getSequenceLink(row)" class="m-0 small" [class.error]="sequence.isFaulty()">
+              <a [routerLink]="getSequenceLink(sequence)" class="m-0 small" [class.error]="sequence.isFaulty()">
                 <span class="bold" [textContent]="sequence.name"></span>&nbsp;
                 <span [textContent]="sequence.getStatus()"></span>
               </a>
@@ -42,8 +42,8 @@
       </ng-container>
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row as sequence">
-            <p class="m-0 small" [textContent]="sequence.time | amCalendar:dateUtil.getCalendarFormats()"></p>
+          <ng-container *ngIf="row | toType : SequenceClass as sequence">
+            <p class="m-0 small" [textContent]="toDate(sequence.time) | amCalendar:dateUtil.getCalendarFormats()"></p>
           </ng-container>
         </dt-cell>
       </ng-container>

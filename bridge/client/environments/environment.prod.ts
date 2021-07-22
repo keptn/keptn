@@ -2,9 +2,9 @@ import {DynamicEnvironment} from "./environment.dynamic";
 
 class Environment extends DynamicEnvironment {
 
-  public appTitle: string;
-  public logoUrl: string;
-  public logoInvertedUrl: string;
+  public appTitle?: string;
+  public logoUrl?: string;
+  public logoInvertedUrl?: string;
   public production: boolean;
   public appConfigUrl: string;
 

@@ -193,7 +193,7 @@ describe('KtbProjectSettingsGitComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy.calls.mostRecent().args[0].remoteURI).toEqual('https://some-other-repo.git');
-    expect(spy.calls.mostRecent().args[0].gitUser).toEqual('username');
+    expect(spy.calls.mostRecent().args[0]?.remoteURI).toEqual('https://some-other-repo.git');
+    expect(spy.calls.mostRecent().args[0]?.gitUser).toEqual('username');
   });
 });

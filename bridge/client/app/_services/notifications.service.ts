@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from "rxjs";
-
-import {Notification} from "../_models/notification";
+import {BehaviorSubject, Observable} from 'rxjs';
+import { Notification, NotificationType } from '../_models/notification';
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +13,13 @@ export class NotificationsService {
     return this._notifications.asObservable();
   }
 
-  addNotification(type, message, time?: number, isTemplateRendered = false, data?: any) {
-    let notification = Notification.fromJSON({type, message});
+  // tslint:disable-next-line:no-any
+  addNotification(type: NotificationType, message: string, time?: number, isTemplateRendered = false, data?: any) {
+    const notification = new Notification(type, message);
     notification.isTemplateRendered = isTemplateRendered;
     notification.data = data || null;
 
-    if(time) {
+    if (time) {
       setTimeout(() => {
         this.removeNotification(notification);
       }, time);
@@ -34,7 +34,7 @@ export class NotificationsService {
     }
   }
 
-  removeNotification(notification) {
-    this._notifications.next(this._notifications.getValue().filter(n => n != notification));
+  removeNotification(notification: Notification) {
+    this._notifications.next(this._notifications.getValue().filter(n => n !== notification));
   }
 }

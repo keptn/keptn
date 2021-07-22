@@ -1,6 +1,6 @@
 export class TestUtils {
   public static createNewDropEventWithFiles(files: File[]): DragEvent {
-    const dataTransfer: DataTransfer = new MockDataTransfer(files);
+    const dataTransfer: DataTransfer = MockDataTransfer(files);
     const event = new DragEvent('drop');
     Object.defineProperty(event.constructor.prototype, 'dataTransfer', {
       value: dataTransfer
@@ -9,13 +9,19 @@ export class TestUtils {
   }
 }
 
-function MockDataTransfer(files) {
-  this.dropEffect = 'all';
-  this.effectAllowed = 'all';
-  this.items = [];
-  this.types = ['Files'];
-  this.getData = () => {
-    return files;
+function MockDataTransfer(files: File[]): DataTransfer {
+  return {
+    // @ts-ignore
+    dropEffect: 'all',
+    effectAllowed: 'all',
+    // @ts-ignore
+    items: [],
+    types: ['Files'],
+    // @ts-ignore
+    getData() {
+      return files;
+    },
+    // @ts-ignore
+    files: [...files]
   };
-  this.files = [... files];
 }
