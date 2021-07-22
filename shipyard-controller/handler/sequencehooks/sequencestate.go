@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+const eventScopeErrorMessage = "could not determine event scope of event"
+const sequenceStateRetrievalErrorMsg = "could not fetch sequence state for keptnContext %s: %s"
+
 type SequenceStateMaterializedView struct {
 	SequenceStateRepo db.SequenceStateRepo
 }
@@ -54,7 +57,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		log.WithError(err).Errorf("could not determine event scope of event")
+		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
 	smv.updateOverallSequenceState(*eventScope, models.SequenceStartedState)
@@ -124,7 +127,7 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		log.WithError(err).Errorf("could not determine event scope of event")
+		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
 	smv.updateOverallSequenceState(*eventScope, models.SequenceFinished)
@@ -133,7 +136,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
-		log.WithError(err).Errorf("could not determine event scope of event")
+		log.WithError(err).Errorf(eventScopeErrorMessage)
 		return
 	}
 	smv.updateOverallSequenceState(*eventScope, models.TimedOut)
@@ -180,7 +183,7 @@ func (smv *SequenceStateMaterializedView) findSequenceState(project, keptnContex
 func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope models.EventScope, status string) {
 	state, err := smv.findSequenceStateForEvent(eventScope)
 	if err != nil {
-		log.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		log.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
 		return
 	}
 
@@ -193,7 +196,7 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 func (smv *SequenceStateMaterializedView) updateSequenceStateInStage(eventScope models.EventScope, status string) {
 	state, err := smv.findSequenceState(eventScope.Project, eventScope.KeptnContext)
 	if err != nil {
-		log.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		log.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
 		return
 	}
 
@@ -264,7 +267,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		},
 	})
 	if err != nil {
-		return models.SequenceState{}, fmt.Errorf("could not fetch sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		return models.SequenceState{}, fmt.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
 	}
 
 	if len(states.States) == 0 {

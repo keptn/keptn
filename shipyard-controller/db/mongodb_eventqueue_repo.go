@@ -18,6 +18,9 @@ const eventQueueCollectionName = "shipyard-controller-event-queue"
 // eventQueueSequenceStateCollectionName contains information on whether a task sequence is currently paused and thus outgoing events should be blocked
 const eventQueueSequenceStateCollectionName = "shipyard-controller-event-queue-sequence-state"
 
+const keptnContextScope = "scope.keptnContext"
+const stageScope = "scope.stage"
+
 // MongoDBEventQueueRepo retrieves and stores events in a mongodb collection
 type MongoDBEventQueueRepo struct {
 	DBConnection *MongoDBConnection
@@ -99,13 +102,13 @@ func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) erro
 
 	searchOptions := bson.M{}
 	if scope.KeptnContext != "" {
-		searchOptions["scope.keptnContext"] = scope.KeptnContext
+		searchOptions[keptnContextScope] = scope.KeptnContext
 	}
 	if scope.Project != "" {
 		searchOptions["scope.project"] = scope.Project
 	}
 	if scope.Stage != "" {
-		searchOptions["scope.stage"] = scope.Stage
+		searchOptions[stageScope] = scope.Stage
 	}
 	if scope.Service != "" {
 		searchOptions["scope.service"] = scope.Service
@@ -130,12 +133,12 @@ func (m *MongoDBEventQueueRepo) CreateOrUpdateEventQueueState(state models.Event
 	var filter bson.D
 	if state.Scope.Stage == "" {
 		filter = bson.D{
-			{"scope.keptnContext", state.Scope.KeptnContext},
+			{keptnContextScope, state.Scope.KeptnContext},
 		}
 	} else {
 		filter = bson.D{
-			{"scope.keptnContext", state.Scope.KeptnContext},
-			{"scope.Stage", state.Scope.Stage},
+			{keptnContextScope, state.Scope.KeptnContext},
+			{stageScope, state.Scope.Stage},
 		}
 	}
 	update := bson.D{{"$set", state}}
@@ -153,10 +156,10 @@ func (m *MongoDBEventQueueRepo) GetEventQueueSequenceStates(filter models.EventQ
 
 	searchOptions := bson.M{}
 	if filter.Scope.KeptnContext != "" {
-		searchOptions["scope.keptnContext"] = filter.Scope.KeptnContext
+		searchOptions[keptnContextScope] = filter.Scope.KeptnContext
 	}
 	if filter.Scope.Stage != "" {
-		searchOptions["scope.stage"] = filter.Scope.Stage
+		searchOptions[stageScope] = filter.Scope.Stage
 	}
 	cur, err := collection.Find(ctx, searchOptions)
 	if err != nil && err == mongo.ErrNoDocuments {
@@ -191,10 +194,10 @@ func (m *MongoDBEventQueueRepo) DeleteEventQueueStates(filter models.EventQueueS
 
 	searchOptions := bson.M{}
 	if filter.Scope.KeptnContext != "" {
-		searchOptions["scope.keptnContext"] = filter.Scope.KeptnContext
+		searchOptions[keptnContextScope] = filter.Scope.KeptnContext
 	}
 	if filter.Scope.Stage != "" {
-		searchOptions["scope.stage"] = filter.Scope.Stage
+		searchOptions[stageScope] = filter.Scope.Stage
 	}
 
 	_, err = collection.DeleteMany(ctx, searchOptions)
