@@ -82,10 +82,17 @@ jobs:
       RUN_QUALITY_GATES_TEST: ${{ matrix.RUN_QUALITY_GATES_TEST }}
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
+      GO_VERSION: ^1.16
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
     steps:
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
       - name: Check out code.
         uses: actions/checkout@v2.3.4
 
