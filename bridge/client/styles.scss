@@ -102,6 +102,39 @@ a:hover {
   color: $primary-color;
 }
 
+button.dt-button-primary.danger-button:not([disabled]),
+button.dt-button-primary.error-button:not([disabled]) {
+  background-color: $error-color;
+  border-color: $error-color;
+
+  &:hover:not([disabled]) {
+    background-color: $error-color-hover;
+    border-color: $error-color-hover;
+  }
+
+  &:active:not([disabled]) {
+    background-color: $error-color-active;
+    border-color: $error-color-active;
+  }
+}
+
+button.dt-button-secondary.danger-button:not([disabled]),
+button.dt-button-secondary.error-button:not([disabled]) {
+  border-color: $error-color;
+  color: $error-color;
+
+  &:hover:not([disabled]) {
+    border-color: $error-color-hover;
+    color: $error-color-hover;
+  }
+
+  &:active:not([disabled]) {
+    border-color: $error-color-active;
+    color: $error-color-active;
+  }
+}
+
+
 .m-0 {
   margin: 0 !important;
 }

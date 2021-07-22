@@ -52,6 +52,7 @@ export class ApiService {
     localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(filter));
   }
 
+
   public getKeptnInfo(): Observable<KeptnInfoResult> {
     const url = `${this._baseUrl}/bridgeInfo`;
     return this.http
@@ -78,6 +79,7 @@ export class ApiService {
     localStorage.setItem(this.VERSION_CHECK_COOKIE, JSON.stringify({enabled, time: moment().valueOf()}));
   }
 
+
   public getAvailableVersions(): Observable<KeptnVersions | undefined> {
     if (this.isVersionCheckEnabled()) {
       const url = `${this._baseUrl}/version.json`;
@@ -88,6 +90,11 @@ export class ApiService {
     }
   }
 
+  public deleteProject(projectName: string): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
+    return this.http.delete<any>(url);
+  }
+  
   /**
    * Creates a new project
    *
@@ -124,7 +131,6 @@ export class ApiService {
       disableUpstreamSync: 'true',
       ...pageSize && {pageSize: pageSize.toString()}
     };
-
     return this.http
       .get<ProjectResult>(url, {params});
   }
@@ -161,6 +167,7 @@ export class ApiService {
   public getMetadata(): Observable<Metadata> {
     return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
+
 
   public getProjectResources(projectName: string): Observable<Resource[]> {
     const url = `${this._baseUrl}/configuration-service/v1/project/${projectName}/resource`;

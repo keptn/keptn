@@ -42,6 +42,10 @@ export class DataServiceMock extends DataService {
     }));
   }
 
+  public deleteProject(projectName: string): Observable<object> {
+    return of({});
+  }
+
   public loadRoots(project: Project) {
     project.roots = [...RootEvents || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
     project.stages.forEach(stage => {
