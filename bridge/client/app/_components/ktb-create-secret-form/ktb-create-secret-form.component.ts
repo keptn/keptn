@@ -9,7 +9,7 @@ import { Secret } from '../../_models/secret';
   templateUrl: './ktb-create-secret-form.component.html',
   styleUrls: ['./ktb-create-secret-form.component.scss']
 })
-export class KtbCreateSecretFormComponent implements OnInit {
+export class KtbCreateSecretFormComponent {
 
   public isLoading = false;
 
@@ -29,14 +29,11 @@ export class KtbCreateSecretFormComponent implements OnInit {
   constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private fb: FormBuilder) {
   }
 
-  ngOnInit(): void {
-  }
-
-  get data() {
+  get data(): FormArray | null {
     return this.createSecretForm.get('data') as FormArray;
   }
 
-  public createSecret() {
+  public createSecret(): void {
     if (this.createSecretForm.valid) {
       this.isLoading = true;
 
@@ -56,14 +53,14 @@ export class KtbCreateSecretFormComponent implements OnInit {
     }
   }
 
-  public addPair() {
+  public addPair(): void {
     this.data.push(this.fb.group({
       key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
       value: ['', [Validators.required]]
     }));
   }
 
-  public removePair(index) {
+  public removePair(index): void {
     this.data.removeAt(index);
   }
 
