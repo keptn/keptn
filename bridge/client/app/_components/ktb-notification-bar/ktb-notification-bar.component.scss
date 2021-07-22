@@ -12,6 +12,19 @@
 }
 
 :host ::ng-deep {
+  .dt-button.dt-button-nested.dt-icon-button:active:not([disabled]),
+  .dt-button.dt-button-nested.dt-icon-button:hover:not([disabled]) {
+    background: transparent;
+    svg {
+      fill: $gray-300;
+    }
+  }
+
+  .dt-icon-button {
+    margin-top: 7px;
+    margin-right: 7px;
+  }
+
   .info-note,
   .error-note,
   .success-note {
