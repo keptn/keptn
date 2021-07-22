@@ -1,7 +1,7 @@
 class KeyValuePair {
   key: string;
   value: string;
-};
+}
 
 export class Secret {
   name: string;
