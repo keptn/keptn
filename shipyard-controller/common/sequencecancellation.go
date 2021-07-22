@@ -2,15 +2,21 @@ package common
 
 import "github.com/keptn/keptn/shipyard-controller/models"
 
-type SequenceCancellationReason int
+type SequenceTimeout struct {
+	KeptnContext string
+	LastEvent    models.Event
+}
+
+type SequenceControlState string
 
 const (
-	// there will be more reasons added later
-	Timeout SequenceCancellationReason = iota
+	PauseSequence  SequenceControlState = "pause"
+	ResumeSequence SequenceControlState = "resume"
+	AbortSequence  SequenceControlState = "abort"
 )
 
-type SequenceCancellation struct {
+type SequenceControl struct {
+	State        SequenceControlState
 	KeptnContext string
-	Reason       SequenceCancellationReason
-	LastEvent    models.Event
+	Stage        string
 }

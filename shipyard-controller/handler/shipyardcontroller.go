@@ -37,7 +37,8 @@ type shipyardController struct {
 	eventDispatcher            IEventDispatcher
 	sequenceDispatcher         ISequenceDispatcher
 	startSequenceChan          chan models.Event
-	cancelSequenceChan         chan common.SequenceCancellation
+	sequenceTimeoutChan        chan common.SequenceTimeout
+	sequenceControlChan        chan common.SequenceControl
 	sequenceTriggeredHooks     []sequencehooks.ISequenceTriggeredHook
 	sequenceStartedHooks       []sequencehooks.ISequenceStartedHook
 	sequenceTaskTriggeredHooks []sequencehooks.ISequenceTaskTriggeredHook
@@ -50,7 +51,14 @@ type shipyardController struct {
 	sequenceResumedHooks       []sequencehooks.ISequenceResumedHook
 }
 
-func GetShipyardControllerInstance(ctx context.Context, eventDispatcher IEventDispatcher, sequenceDispatcher ISequenceDispatcher, startSequenceChan chan models.Event, cancelSequenceChan chan common.SequenceCancellation) *shipyardController {
+func GetShipyardControllerInstance(
+	ctx context.Context,
+	eventDispatcher IEventDispatcher,
+	sequenceDispatcher ISequenceDispatcher,
+	startSequenceChan chan models.Event,
+	cancelSequenceChan chan common.SequenceTimeout,
+	sequenceControlChan chan common.SequenceControl,
+) *shipyardController {
 	if shipyardControllerInstance == nil {
 		eventDispatcher.Run(context.Background())
 		cbConnectionInstance := db.GetMongoDBConnectionInstance()
@@ -62,10 +70,11 @@ func GetShipyardControllerInstance(ctx context.Context, eventDispatcher IEventDi
 				ProjectRepo:     db.NewMongoDBProjectsRepo(cbConnectionInstance),
 				EventsRetriever: db.NewMongoDBEventsRepo(cbConnectionInstance),
 			},
-			eventDispatcher:    eventDispatcher,
-			sequenceDispatcher: sequenceDispatcher,
-			startSequenceChan:  startSequenceChan,
-			cancelSequenceChan: cancelSequenceChan,
+			eventDispatcher:     eventDispatcher,
+			sequenceDispatcher:  sequenceDispatcher,
+			startSequenceChan:   startSequenceChan,
+			sequenceControlChan: sequenceControlChan,
+			sequenceTimeoutChan: cancelSequenceChan,
 		}
 		shipyardControllerInstance.registerToChannels(ctx)
 	}
@@ -85,14 +94,22 @@ func (sc *shipyardController) registerToChannels(ctx context.Context) {
 					log.WithError(err).Error("could not start task sequence")
 				}
 				break
-			case cancelSequence := <-sc.cancelSequenceChan:
-				err := sc.cancelSequence(cancelSequence)
+			case timeoutSequence := <-sc.sequenceTimeoutChan:
+				err := sc.timeoutSequence(timeoutSequence)
 				if err != nil {
 					log.WithError(err).Error("could not cancel sequence")
 					return
 				}
 				break
+			case controlSequence := <-sc.sequenceControlChan:
+				err := sc.controlSequence(controlSequence)
+				if err != nil {
+					log.WithError(err).Error("could not control sequence state")
+					return
+				}
+				break
 			}
+
 		}
 	}()
 }
@@ -197,44 +214,64 @@ func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
 	}
 }
 
+func (sc *shipyardController) controlSequence(control common.SequenceControl) error {
+	switch control.State {
+	case common.AbortSequence:
+		// TODO implement
+	case common.PauseSequence:
+		sc.onSequencePaused(models.EventScope{
+			EventData: keptnv2.EventData{
+				Stage: control.Stage,
+			},
+			KeptnContext: control.KeptnContext,
+		})
+	case common.ResumeSequence:
+		sc.onSequenceResumed(models.EventScope{
+			EventData: keptnv2.EventData{
+				Stage: control.Stage,
+			},
+			KeptnContext: control.KeptnContext,
+		})
+	}
+	return nil
+}
+
 func (sc *shipyardController) pauseSequence(pauseRequest models.EventScope) error {
 	// TODO inform event dispatcher about paused sequence (to mark the matching items in the event queue)
 	// TODO call onSequencePause hook
 	return nil
 }
 
-func (sc *shipyardController) cancelSequence(cancelRequest common.SequenceCancellation) error {
-	if cancelRequest.Reason == common.Timeout {
-		log.Infof("sequence %s has been timed out", cancelRequest.KeptnContext)
-		eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
-		if err != nil {
+func (sc *shipyardController) timeoutSequence(cancelRequest common.SequenceTimeout) error {
+	log.Infof("sequence %s has been timed out", cancelRequest.KeptnContext)
+	eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
+	if err != nil {
+		return err
+	}
+
+	eventScope.Status = keptnv2.StatusErrored
+	eventScope.Result = keptnv2.ResultFailed
+	eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *cancelRequest.LastEvent.Type)
+
+	taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: cancelRequest.LastEvent.ID})
+	if err != nil {
+		return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID, err.Error())
+	}
+
+	if taskContexts == nil || len(taskContexts) == 0 {
+		log.Infof("No task event associated with eventID %s found", cancelRequest.LastEvent.ID)
+		return nil
+	}
+	taskContext := taskContexts[0]
+	sc.onSequenceTimeout(cancelRequest.LastEvent)
+	taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskContext.TaskSequenceName)
+	if err != nil {
+		return err
+	}
+	// TODO inform event dispatcher about cancelled sequence to clear the queue for the given context
+	if taskSequenceTriggeredEvent != nil {
+		if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
 			return err
-		}
-
-		eventScope.Status = keptnv2.StatusErrored
-		eventScope.Result = keptnv2.ResultFailed
-		eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *cancelRequest.LastEvent.Type)
-
-		taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: cancelRequest.LastEvent.ID})
-		if err != nil {
-			return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID, err.Error())
-		}
-
-		if taskContexts == nil || len(taskContexts) == 0 {
-			log.Infof("No task event associated with eventID %s found", cancelRequest.LastEvent.ID)
-			return nil
-		}
-		taskContext := taskContexts[0]
-		sc.onSequenceTimeout(cancelRequest.LastEvent)
-		taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskContext.TaskSequenceName)
-		if err != nil {
-			return err
-		}
-		// TODO inform event dispatcher about cancelled sequence to clear the queue for the given context
-		if taskSequenceTriggeredEvent != nil {
-			if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

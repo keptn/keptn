@@ -52,7 +52,7 @@ func (sh *ServiceHandler) CreateService(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := common.ValidateCreateServiceParams(createServiceParams); err != nil {
+	if err := createServiceParams.Validate(); err != nil {
 		SetBadRequestErrorResponse(err, c)
 		return
 	}

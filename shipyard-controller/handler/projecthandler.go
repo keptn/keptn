@@ -134,7 +134,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := common.ValidateCreateProjectParams(createProjectParams); err != nil {
+	if err := createProjectParams.Validate(); err != nil {
 		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}
@@ -187,7 +187,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return
 	}
-	if err := common.ValidateUpdateProjectParams(params); err != nil {
+	if err := params.Validate(); err != nil {
 		SetBadRequestErrorResponse(err, c, "Could not validate payload")
 		return
 	}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/benbjohnson/clock"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -495,4 +496,111 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	}, 5*time.Second, 1*time.Second)
 	require.Equal(t, 1, len(eventQueueRepo.DeleteQueuedEventCalls()))
 	require.Equal(t, event3.ID, eventQueueRepo.DeleteQueuedEventCalls()[0].EventID)
+}
+
+func TestEventDispatcher_OnSequencePaused(t *testing.T) {
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
+			return nil
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventQueueRepo: eventQueueRepo,
+	}
+
+	dispatcher.OnSequencePaused(models.EventScope{KeptnContext: "my-context"})
+
+	require.Len(t, eventQueueRepo.CreateOrUpdateEventQueueStateCalls(), 1)
+
+	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
+	require.Equal(t, models.SequencePaused, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
+}
+
+func TestEventDispatcher_OnSequenceResumed(t *testing.T) {
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
+			return nil
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventQueueRepo: eventQueueRepo,
+	}
+
+	dispatcher.OnSequenceResumed(models.EventScope{KeptnContext: "my-context"})
+
+	require.Len(t, eventQueueRepo.CreateOrUpdateEventQueueStateCalls(), 1)
+
+	require.Equal(t, "my-context", eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.Scope.KeptnContext)
+	require.Equal(t, models.SequenceStartedState, eventQueueRepo.CreateOrUpdateEventQueueStateCalls()[0].State.State)
+}
+
+func TestEventDispatcher_OnSequenceFinished(t *testing.T) {
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
+			return nil
+		},
+		DeleteQueuedEventsFunc: func(scope models.EventScope) error {
+			return nil
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventQueueRepo: eventQueueRepo,
+	}
+
+	dispatcher.OnSequenceFinished(models.Event{Shkeptncontext: "my-context"})
+
+	require.Len(t, eventQueueRepo.DeleteEventQueueStatesCalls(), 1)
+	require.Len(t, eventQueueRepo.DeleteQueuedEventsCalls(), 1)
+
+	require.Equal(t, "my-context", eventQueueRepo.DeleteEventQueueStatesCalls()[0].State.Scope.KeptnContext)
+	require.Equal(t, "my-context", eventQueueRepo.DeleteQueuedEventsCalls()[0].Scope.KeptnContext)
+}
+
+func TestEventDispatcher_OnSequenceTimeout(t *testing.T) {
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
+			return nil
+		},
+		DeleteQueuedEventsFunc: func(scope models.EventScope) error {
+			return nil
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventQueueRepo: eventQueueRepo,
+	}
+
+	dispatcher.OnSequenceTimeout(models.Event{Shkeptncontext: "my-context"})
+
+	require.Len(t, eventQueueRepo.DeleteEventQueueStatesCalls(), 1)
+	require.Len(t, eventQueueRepo.DeleteQueuedEventsCalls(), 1)
+
+	require.Equal(t, "my-context", eventQueueRepo.DeleteEventQueueStatesCalls()[0].State.Scope.KeptnContext)
+	require.Equal(t, "my-context", eventQueueRepo.DeleteQueuedEventsCalls()[0].Scope.KeptnContext)
+}
+
+func TestEventDispatcher_OnSequenceFinished_DeletingStateFailsButDeletingQueueShouldBeCalled(t *testing.T) {
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
+			return errors.New("oops")
+		},
+		DeleteQueuedEventsFunc: func(scope models.EventScope) error {
+			return nil
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventQueueRepo: eventQueueRepo,
+	}
+
+	dispatcher.OnSequenceFinished(models.Event{Shkeptncontext: "my-context"})
+
+	require.Len(t, eventQueueRepo.DeleteEventQueueStatesCalls(), 1)
+	require.Len(t, eventQueueRepo.DeleteQueuedEventsCalls(), 1)
+
+	require.Equal(t, "my-context", eventQueueRepo.DeleteEventQueueStatesCalls()[0].State.Scope.KeptnContext)
+	require.Equal(t, "my-context", eventQueueRepo.DeleteQueuedEventsCalls()[0].Scope.KeptnContext)
 }

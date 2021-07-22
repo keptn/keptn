@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
 
@@ -12,7 +13,8 @@ type IStateHandler interface {
 }
 
 type StateHandler struct {
-	StateRepo db.SequenceStateRepo
+	StateRepo          db.SequenceStateRepo
+	shipyardController IShipyardController
 }
 
 func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
@@ -56,4 +58,32 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, states)
+}
+
+// ControlSequenceState godoc
+// @Summary Pause/Resume/Abort a task sequence
+// @Description Pause/Resume/Abort a task sequence, either for a specific stage, or for all stages involved in the sequence
+// @Tags Sequence
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     		path    string  false   "The project name"
+// @Param   keptnContext		path	string	false	"The keptnContext ID of the sequence"
+// @Param   sequenceControl     body    operations.SequenceControlCommand true "Sequence Control Command"
+// @Success 200 {object} operations.SequenceControlResponse	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /sequence/{project}/{keptnContext}/control [post]
+func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
+	//projectName := c.Param("project")
+	//keptnContext := c.Param("keptnContext")
+
+	params := &operations.SequenceControlCommand{}
+	if err := c.ShouldBindJSON(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+	}
+
+	// TODO inform shipyard controller about the sequence control
+	// (either via channel or by adding an appropriate method to the IShipyardController interface)
+	//sh.shipyardController
 }

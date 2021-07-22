@@ -56,7 +56,6 @@ func NewEventDispatcher(
 
 // Add adds a DispatcherEvent to the event queue
 func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) error {
-
 	ed, err := models.ConvertToEvent(event.Event)
 	if err != nil {
 		return err
@@ -90,8 +89,12 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 	})
 }
 
-func (e *EventDispatcher) OnSequenceFinished(event models.Event) error {
-	return e.eventQueueRepo.DeleteQueuedEvents(models.EventScope{KeptnContext: event.Shkeptncontext})
+func (e *EventDispatcher) OnSequenceFinished(event models.Event) {
+	e.cleanupQueueOfSequence(event)
+}
+
+func (e *EventDispatcher) OnSequenceTimeout(event models.Event) {
+	e.cleanupQueueOfSequence(event)
 }
 
 func (e *EventDispatcher) OnSequencePaused(pause models.EventScope) {
@@ -265,6 +268,19 @@ func (e *EventDispatcher) isCurrentEventOverrulingOtherEvent(lastTaskOfSequence 
 		}
 	}
 	return false
+}
+
+func (e *EventDispatcher) cleanupQueueOfSequence(event models.Event) {
+	err := e.eventQueueRepo.DeleteEventQueueStates(models.EventQueueSequenceState{Scope: models.EventScope{
+		KeptnContext: event.Shkeptncontext,
+	}})
+	if err != nil {
+		log.WithError(err).Errorf("could not clear event queue states for context %s", event.Shkeptncontext)
+	}
+	err = e.eventQueueRepo.DeleteQueuedEvents(models.EventScope{KeptnContext: event.Shkeptncontext})
+	if err != nil {
+		log.WithError(err).Errorf("could not clear event queue for context %s", event.Shkeptncontext)
+	}
 }
 
 func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.TaskSequenceEvent) []models.TaskSequenceEvent {

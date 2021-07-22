@@ -105,8 +105,16 @@ func main() {
 		clock.New(),
 	)
 
-	cancelSequenceChannel := make(chan common.SequenceCancellation)
-	shipyardController := handler.GetShipyardControllerInstance(context.Background(), eventDispatcher, sequenceDispatcher, sequenceDispatcherChannel, cancelSequenceChannel)
+	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
+	sequenceControlChannel := make(chan common.SequenceControl)
+	shipyardController := handler.GetShipyardControllerInstance(
+		context.Background(),
+		eventDispatcher,
+		sequenceDispatcher,
+		sequenceDispatcherChannel,
+		sequenceTimeoutChannel,
+		sequenceControlChannel,
+	)
 	sequenceDispatcher.Run(context.Background())
 
 	engine := gin.Default()
@@ -150,6 +158,7 @@ func main() {
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequencePausedHook(eventDispatcher)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
@@ -158,7 +167,7 @@ func main() {
 	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 
 	watcher := handler.NewSequenceWatcher(
-		cancelSequenceChannel,
+		sequenceTimeoutChannel,
 		createEventsRepo(),
 		createEventQueueRepo(),
 		createProjectRepo(),

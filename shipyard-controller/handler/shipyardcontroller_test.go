@@ -2392,9 +2392,8 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	})
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceCancellation{
+	err := sc.timeoutSequence(common.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
-		Reason:       common.Timeout,
 		LastEvent: models.Event{
 			Data: keptnv2.EventData{
 				Project: "my-project",
@@ -2413,7 +2412,8 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 
 func TestGetShipyardControllerInstance(t *testing.T) {
 	sequenceStartChannel := make(chan models.Event)
-	sequenceCancelChannel := make(chan common.SequenceCancellation)
+	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
+	sequenceControlChannel := make(chan common.SequenceControl)
 	ctx, cancel := context.WithCancel(context.TODO())
 	sc := GetShipyardControllerInstance(
 		ctx,
@@ -2423,7 +2423,8 @@ func TestGetShipyardControllerInstance(t *testing.T) {
 		},
 		&fake.ISequenceDispatcherMock{},
 		sequenceStartChannel,
-		sequenceCancelChannel,
+		sequenceTimeoutChannel,
+		sequenceControlChannel,
 	)
 	require.NotNil(t, sc)
 	cancel()
