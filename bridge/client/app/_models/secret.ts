@@ -1,10 +1,12 @@
+class KeyValuePair {
+  key: string;
+  value: string;
+};
+
 export class Secret {
   name: string;
   scope: string;
-  data: {
-    key: string;
-    value: string;
-  }?];
+  data: KeyValuePair[];
 
   constructor() {
     this.scope = 'keptn-default';
@@ -21,6 +23,10 @@ export class Secret {
 
   addData(key: string, value: string): void {
     this.data?.push({ key, value });
+  }
+
+  getData(index: number): KeyValuePair {
+    return this.data[index];
   }
 
   removeData(index: number): void {
