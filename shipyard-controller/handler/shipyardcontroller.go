@@ -21,6 +21,7 @@ const maxRepoReadRetries = 30
 var errNoMatchingEvent = errors.New("no matching event found")
 var shipyardControllerInstance *shipyardController
 
+//go:generate moq -pkg fake -skip-ensure -out ./fake/shipyardcontroller.go . IShipyardController
 type IShipyardController interface {
 	GetAllTriggeredEvents(filter common.EventFilter) ([]models.Event, error)
 	GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error)
