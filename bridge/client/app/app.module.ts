@@ -107,6 +107,9 @@ import { KtbSequenceStateListComponent } from './_components/ktb-sequence-state-
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
 import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop.directive';
+import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
+import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
+import { EventService } from './_services/event.service';
 import { ToType } from './_pipes/to-type';
 
 registerLocaleData(localeEn, 'en');
@@ -175,6 +178,8 @@ export function init_app(appLoadService: AppInitService) {
     KtbProjectSettingsGitComponent,
     KtbProjectSettingsShipyardComponent,
     KtbDragAndDropDirective,
+    KtbDangerZoneComponent,
+    KtbDeletionDialogComponent,
     ToType,
   ],
   imports: [
@@ -228,6 +233,7 @@ export function init_app(appLoadService: AppInitService) {
     ReactiveFormsModule
   ],
   providers: [
+    EventService,
     AppInitService,
     {
       provide: APP_INITIALIZER,

@@ -167,6 +167,18 @@ describe('KtbSettingsViewComponent - Edit', () => {
     expect(component.projectNameForm.errors).toBeNull();
   });
 
+  it('should delete a project and navigate to dashboard', () => {
+    // given
+    component.projectName = 'sockshop';
+
+    // when
+    const router = TestBed.inject(Router);
+    const routeSpy = spyOn(router, 'navigate');
+    component.deleteProject('sockshop');
+
+    // then
+    expect(routeSpy).toHaveBeenCalled();
+  });
 });
 
 

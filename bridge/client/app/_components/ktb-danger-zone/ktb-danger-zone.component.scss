@@ -1,0 +1,7 @@
+@import '../../../variables';
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
+.danger-zone {
+  border: 1px solid $error-color;
+  border-radius: $border-radius;
+}

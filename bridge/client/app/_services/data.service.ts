@@ -183,6 +183,10 @@ export class DataService {
     this.loadKeptnInfo();
   }
 
+  public deleteProject(projectName: string): Observable<object> {
+    return this.apiService.deleteProject(projectName);
+  }
+
   public loadProject(projectName: string): void {
     this.apiService.getProject(projectName)
       .pipe(
