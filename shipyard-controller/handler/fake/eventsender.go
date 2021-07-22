@@ -4,6 +4,7 @@
 package fake
 
 import (
+	"context"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"sync"
 )
@@ -14,6 +15,9 @@ import (
 //
 // 		// make and configure a mocked handler.IEventSender
 // 		mockedIEventSender := &IEventSenderMock{
+// 			SendFunc: func(ctx context.Context, eventMoqParam event.Event) error {
+// 				panic("mock out the Send method")
+// 			},
 // 			SendEventFunc: func(eventMoqParam event.Event) error {
 // 				panic("mock out the SendEvent method")
 // 			},
@@ -24,18 +28,64 @@ import (
 //
 // 	}
 type IEventSenderMock struct {
+	// SendFunc mocks the Send method.
+	SendFunc func(ctx context.Context, eventMoqParam event.Event) error
+
 	// SendEventFunc mocks the SendEvent method.
 	SendEventFunc func(eventMoqParam event.Event) error
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Send holds details about calls to the Send method.
+		Send []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// EventMoqParam is the eventMoqParam argument value.
+			EventMoqParam event.Event
+		}
 		// SendEvent holds details about calls to the SendEvent method.
 		SendEvent []struct {
 			// EventMoqParam is the eventMoqParam argument value.
 			EventMoqParam event.Event
 		}
 	}
+	lockSend      sync.RWMutex
 	lockSendEvent sync.RWMutex
+}
+
+// Send calls SendFunc.
+func (mock *IEventSenderMock) Send(ctx context.Context, eventMoqParam event.Event) error {
+	if mock.SendFunc == nil {
+		panic("IEventSenderMock.SendFunc: method is nil but IEventSender.Send was just called")
+	}
+	callInfo := struct {
+		Ctx           context.Context
+		EventMoqParam event.Event
+	}{
+		Ctx:           ctx,
+		EventMoqParam: eventMoqParam,
+	}
+	mock.lockSend.Lock()
+	mock.calls.Send = append(mock.calls.Send, callInfo)
+	mock.lockSend.Unlock()
+	return mock.SendFunc(ctx, eventMoqParam)
+}
+
+// SendCalls gets all the calls that were made to Send.
+// Check the length with:
+//     len(mockedIEventSender.SendCalls())
+func (mock *IEventSenderMock) SendCalls() []struct {
+	Ctx           context.Context
+	EventMoqParam event.Event
+} {
+	var calls []struct {
+		Ctx           context.Context
+		EventMoqParam event.Event
+	}
+	mock.lockSend.RLock()
+	calls = mock.calls.Send
+	mock.lockSend.RUnlock()
+	return calls
 }
 
 // SendEvent calls SendEventFunc.

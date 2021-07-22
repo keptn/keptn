@@ -26,20 +26,32 @@ func TestEventHandler_HandleEvent(t *testing.T) {
 		{
 			name: "return 500 in case of an error",
 			fields: fields{
-				ShipyardController: &fake.ShipyardController{
-					HandleIncomingEventFunc: func(event models.Event) error {
+				ShipyardController: &fake.IShipyardControllerMock{
+					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
 						return errors.New("")
 					},
 				},
 			},
-			payload:          []byte(`{"specversion": "1.0"}`),
+			payload:          []byte(`{"specversion": "1.0", "id": "my-id", "type": "my-type", "time": "2021-01-02T15:04:05.000Z", "source":"my-source"}`),
 			expectStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "return 400 on invalid event payload (missing event type)",
+			fields: fields{
+				ShipyardController: &fake.IShipyardControllerMock{
+					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
+						return errors.New("")
+					},
+				},
+			},
+			payload:          []byte(`{"specversion": "1.0", "id": "my-id", "time": "2021-01-02T15:04:05.000Z", "source":"my-source"}`),
+			expectStatusCode: http.StatusBadRequest,
 		},
 		{
 			name: "return 400 on invalid event payload",
 			fields: fields{
-				ShipyardController: &fake.ShipyardController{
-					HandleIncomingEventFunc: func(event models.Event) error {
+				ShipyardController: &fake.IShipyardControllerMock{
+					HandleIncomingEventFunc: func(event models.Event, waitForCompletion bool) error {
 						return errNoMatchingEvent
 					},
 				},

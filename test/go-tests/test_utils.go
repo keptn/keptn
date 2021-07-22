@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2"
@@ -25,6 +26,10 @@ const (
 )
 
 type APIEventSender struct {
+}
+
+func (sender *APIEventSender) Send(ctx context.Context, event v2.Event) error {
+	return sender.SendEvent(event)
 }
 
 func (sender *APIEventSender) SendEvent(event v2.Event) error {
