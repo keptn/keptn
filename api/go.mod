@@ -13,11 +13,12 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/uuid v1.3.0
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.5
-	github.com/keptn/kubernetes-utils v0.8.4-0.20210630130009-8242bbef5723
+	github.com/keptn/go-utils v0.8.5-0.20210722073718-9fca6045a376
+	github.com/keptn/kubernetes-utils v0.8.3
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	gopkg.in/yaml.v2 v2.4.0
+	helm.sh/helm/v3 v3.6.1 // indirect
 	k8s.io/api v0.21.3
 	k8s.io/apimachinery v0.21.3
 	k8s.io/client-go v0.21.3
