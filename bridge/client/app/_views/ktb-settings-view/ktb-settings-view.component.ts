@@ -1,17 +1,17 @@
-import {Component, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {Subject} from 'rxjs';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import {filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
-import {DtToast} from '@dynatrace/barista-components/toast';
-import {MatDialog} from '@angular/material/dialog';
-import {GitData} from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
-import {FormUtils} from '../../_utils/form.utils';
-import {NotificationType, TemplateRenderedNotifications} from '../../_models/notification';
-import {NotificationsService} from '../../_services/notifications.service';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs';
+import { DataService } from '../../_services/data.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { DtToast } from '@dynatrace/barista-components/toast';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { GitData } from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
+import { FormUtils } from '../../_utils/form.utils';
+import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
+import { NotificationsService } from '../../_services/notifications.service';
 import { DeleteData, DeleteResult, DeleteType } from '../../_interfaces/delete';
-import {EventService} from '../../_services/event.service';
+import { EventService } from '../../_services/event.service';
 import { Project } from '../../_models/project';
 
 @Component({
@@ -61,14 +61,14 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         filter((projects: Project[] | undefined): projects is Project[] => !!projects),
         map((projects: Project[]) => projects.map(project => project.projectName))
       ).subscribe((projectNames) => {
-        if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
-          this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
-        }
-        this.projectNameControl.setValidators([
-          Validators.required,
-          FormUtils.projectNameExistsValidator(projectNames),
-          Validators.pattern('[a-z]([a-z]|[0-9]|-)*')
-        ]);
+      if (this.isCreateMode && this.projectName && projectNames.includes(this.projectName)) {
+        this.router.navigate(['/', 'project', this.projectName, 'settings'], {queryParams: {created: true}});
+      }
+      this.projectNameControl.setValidators([
+        Validators.required,
+        FormUtils.projectNameExistsValidator(projectNames),
+        Validators.pattern('[a-z]([a-z]|[0-9]|-)*')
+      ]);
     });
 
     this.route.params.pipe(
@@ -91,7 +91,10 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     ).subscribe((queryParams) => {
       if (queryParams.created) {
-        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {projectName: this.projectName, routerLink: `/project/${this.projectName}/service`});
+        this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {
+          projectName: this.projectName,
+          routerLink: `/project/${this.projectName}/service`
+        });
         // Remove query param for not showing notification on reload
         this.router.navigate(['/', 'project', this.projectName, 'settings']);
       }
@@ -122,13 +125,13 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       this.isGitUpstreamInProgress = true;
       this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(success => {
+        .subscribe(() => {
           this.isGitUpstreamInProgress = false;
-          if (success) {
-            this.toast.create('Git Upstream URL set successfully');
-          } else {
-            this.toast.create('Git Upstream URL could not be set');
-          }
+          this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
+        }, (err) => {
+          console.log(err);
+          this.isGitUpstreamInProgress = false;
+          this.notificationsService.addNotification(NotificationType.Error, `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`);
         });
     }
   }
@@ -179,7 +182,11 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
       }, (err) => {
         const deletionError = 'Project could not be deleted: ' + err.message;
-        this.eventService.deletionProgressEvent.next({error: deletionError, isInProgress: false, result: DeleteResult.ERROR});
+        this.eventService.deletionProgressEvent.next({
+          error: deletionError,
+          isInProgress: false,
+          result: DeleteResult.ERROR
+        });
       });
   }
 }

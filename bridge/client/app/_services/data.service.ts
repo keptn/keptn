@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, forkJoin, from, Observable, Subject, of} from 'rxjs';
-import { catchError, map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
+import { map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import {Trace} from '../_models/trace';
 import {Stage} from '../_models/stage';
 import {Project} from '../_models/project';
@@ -140,12 +140,9 @@ export class DataService {
     return this._tracesLastUpdated[sequence.shkeptncontext];
   }
 
-  public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<boolean> {
-    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(map(() => {
+  public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<unknown> {
+    return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(tap(() => {
       this.loadProjects();
-      return true;
-    }), catchError(() => {
-      return of(false);
     }));
   }
 
