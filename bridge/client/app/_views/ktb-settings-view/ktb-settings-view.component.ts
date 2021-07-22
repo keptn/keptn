@@ -4,12 +4,12 @@ import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
 import {DtToast} from '@dynatrace/barista-components/toast';
-import {GitData} from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {FormUtils} from '../../_utils/form.utils';
 import {NotificationType, TemplateRenderedNotifications} from '../../_models/notification';
 import {NotificationsService} from '../../_services/notifications.service';
 import { Project } from '../../_models/project';
+import { GitData } from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
+import { FormUtils } from '../../_utils/form.utils';
 
 @Component({
   selector: 'ktb-settings-view',
@@ -94,13 +94,13 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       this.isGitUpstreamInProgress = true;
       this.dataService.setGitUpstreamUrl(this.projectName, this.gitData.remoteURI, this.gitData.gitUser, this.gitData.gitToken)
         .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(success => {
+        .subscribe(() => {
           this.isGitUpstreamInProgress = false;
-          if (success) {
-            this.toast.create('Git Upstream URL set successfully');
-          } else {
-            this.toast.create('Git Upstream URL could not be set');
-          }
+          this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
+        }, (err) => {
+          console.log(err);
+          this.isGitUpstreamInProgress = false;
+          this.notificationsService.addNotification(NotificationType.Error, `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`);
         });
     }
   }
