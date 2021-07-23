@@ -48,7 +48,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
         }, 2000);
 
         const data = this.tableEntries.data;
-        data.splice(data.findIndex((s: Secret) => s.name === secret.name), 1);
+        data.splice(data.findIndex(s => s.name === secret.name), 1);
         this.tableEntries = new DtTableDataSource(data);
       });
   }
