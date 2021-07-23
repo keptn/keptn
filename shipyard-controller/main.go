@@ -202,7 +202,10 @@ func main() {
 	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
-	engine.Run()
+	err = engine.Run()
+	if err != nil {
+		log.WithError(err).Error("could not start API server")
+	}
 }
 
 func createMaterializedView() *db.ProjectsMaterializedView {

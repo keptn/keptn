@@ -47,6 +47,12 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
+	mockEventQueueRepo := &db_mock.EventQueueRepoMock{
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
+	}
+
 	mockSequenceQueueRepo := &db_mock.SequenceQueueRepoMock{
 		QueueSequenceFunc: func(item models.QueueItem) error {
 			mockQueue = append(mockQueue, item)
@@ -71,7 +77,7 @@ func TestSequenceDispatcher(t *testing.T) {
 		},
 	}
 
-	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, startSequenceChannel, theClock)
+	sequenceDispatcher := handler.NewSequenceDispatcher(mockEventRepo, mockEventQueueRepo, mockSequenceQueueRepo, mockTaskSequenceRepo, 10*time.Second, startSequenceChannel, theClock)
 	sequenceDispatcher.Run(context.Background())
 
 	// check if repos are queried
