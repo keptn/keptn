@@ -15,7 +15,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   private closeConfirmationDialogTimeout?: ReturnType<typeof setTimeout>;
 
-  public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
+  public tableEntries: DtTableDataSource<Secret> = new DtTableDataSource();
   public currentSecret?: Secret;
 
   public deleteSecretDialogState: string | null = null;
@@ -47,8 +47,8 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
           this.closeConfirmationDialog();
         }, 2000);
 
-        const data = this.tableEntries.data;
-        data.splice(data.findIndex(s => s.name === secret.name), 1);
+        const data: Secret[] = this.tableEntries.data;
+        data.splice(data.findIndex((s: Secret) => s.name === secret.name), 1);
         this.tableEntries = new DtTableDataSource(data);
       });
   }
