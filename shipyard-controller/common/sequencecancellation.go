@@ -19,4 +19,5 @@ type SequenceControl struct {
 	State        SequenceControlState
 	KeptnContext string
 	Stage        string
+	Project      string
 }

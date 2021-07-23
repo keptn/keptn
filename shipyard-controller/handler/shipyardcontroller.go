@@ -217,7 +217,7 @@ func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
 func (sc *shipyardController) controlSequence(control common.SequenceControl) error {
 	switch control.State {
 	case common.AbortSequence:
-		// TODO implement - largely the same logic as in timeoutSequence(), but we don't have to reference a specific task
+		return sc.cancelSequence(control)
 	case common.PauseSequence:
 		sc.onSequencePaused(models.EventScope{
 			EventData: keptnv2.EventData{
@@ -233,6 +233,47 @@ func (sc *shipyardController) controlSequence(control common.SequenceControl) er
 			KeptnContext: control.KeptnContext,
 		})
 	}
+	return nil
+}
+
+func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) error {
+	sequences, err := sc.taskSequenceRepo.GetTaskSequences(cancel.Project,
+		models.TaskSequenceEvent{
+			KeptnContext: cancel.KeptnContext,
+			Stage:        cancel.Stage,
+		})
+
+	if err != nil {
+		return err
+	}
+	if len(sequences) == 0 {
+		return fmt.Errorf("could not find open sequence events for sequence %s", cancel.KeptnContext)
+	}
+	lastTaskOfSequence := getLastTaskOfSequence(sequences)
+
+	sequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(models.EventScope{
+		EventData: keptnv2.EventData{
+			Project: cancel.Project,
+			Stage:   cancel.Stage,
+		},
+		KeptnContext: cancel.KeptnContext,
+	}, lastTaskOfSequence.TaskSequenceName)
+
+	if sequenceTriggeredEvent != nil {
+		sc.onSequenceFinished(*sequenceTriggeredEvent)
+		scope, err := models.NewEventScope(*sequenceTriggeredEvent)
+		if err != nil {
+			return err
+		}
+
+		scope.Result = keptnv2.ResultPass
+		scope.Status = keptnv2.StatusUnknown // TODO: check which states should be set in case of cancellation
+
+		if err := sc.completeTaskSequence(scope, lastTaskOfSequence.TaskSequenceName, sequenceTriggeredEvent.ID); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -258,11 +299,10 @@ func (sc *shipyardController) timeoutSequence(timeout common.SequenceTimeout) er
 	}
 	taskContext := taskContexts[0]
 	sc.onSequenceTimeout(timeout.LastEvent)
-	taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskContext.TaskSequenceName)
+	taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(*eventScope, taskContext.TaskSequenceName)
 	if err != nil {
 		return err
 	}
-	// TODO inform event dispatcher about cancelled sequence to clear the queue for the given context
 	if taskSequenceTriggeredEvent != nil {
 		if err := sc.completeTaskSequence(eventScope, taskContext.TaskSequenceName, taskSequenceTriggeredEvent.ID); err != nil {
 			return err
@@ -733,7 +773,7 @@ func (sc *shipyardController) proceedTaskSequence(eventScope *models.EventScope,
 // this function retrieves the .triggered event for the task sequence and appends its properties to the existing .finished events
 // this ensures that all parameters set in the .triggered event are received by all execution plane services, instead of just the first one
 func (sc *shipyardController) appendTriggerEventProperties(eventScope *models.EventScope, taskSequence *keptnv2.Sequence, eventHistory []interface{}) (*models.Event, []interface{}, error) {
-	inputEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskSequence.Name)
+	inputEvent, err := sc.getTaskSequenceTriggeredEvent(*eventScope, taskSequence.Name)
 
 	if err != nil {
 		log.Errorf("Could not load event that triggered task sequence %s.%s with KeptnContext %s", eventScope.Stage, taskSequence.Name, eventScope.KeptnContext)
@@ -753,7 +793,7 @@ func (sc *shipyardController) appendTriggerEventProperties(eventScope *models.Ev
 	return inputEvent, eventHistory, nil
 }
 
-func (sc *shipyardController) getTaskSequenceTriggeredEvent(eventScope *models.EventScope, taskSequenceName string) (*models.Event, error) {
+func (sc *shipyardController) getTaskSequenceTriggeredEvent(eventScope models.EventScope, taskSequenceName string) (*models.Event, error) {
 	events, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
 		Type:         keptnv2.GetTriggeredEventType(eventScope.Stage + "." + taskSequenceName),
 		Stage:        &eventScope.Stage,

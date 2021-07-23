@@ -81,6 +81,7 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Router /sequence/{project}/{keptnContext}/control [post]
 func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 	keptnContext := c.Param("keptnContext")
+	project := c.Param("project")
 
 	params := &operations.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
@@ -89,12 +90,13 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 
 	// TODO: inform shipyard controller about the sequence control
 	// TODO: we decided to communicate these kind of things via channels, which is fine for the SequenceDispatcher and SequenceWatcher for starting and timing out sequences
-	// TODO: in this case, I'm not sure I like it - should we add a ControlSequence to the ShipyardController interface?
+	// TODO: in this case, I'm not sure I like it - should we add a ControlSequence() method to the ShipyardController interface?
 	// (either via channel or by adding an appropriate method to the IShipyardController interface)
 	sh.sequenceControlChan <- common.SequenceControl{
 		State:        params.State,
 		KeptnContext: keptnContext,
 		Stage:        params.Stage,
+		Project:      project,
 	}
 
 	c.JSON(http.StatusOK, operations.SequenceControlResponse{})
