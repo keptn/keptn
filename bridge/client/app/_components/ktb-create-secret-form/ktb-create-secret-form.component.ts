@@ -54,14 +54,14 @@ export class KtbCreateSecretFormComponent {
   }
 
   public addPair(): void {
-    this.data.push(this.fb.group({
+    this.data?.push(this.fb.group({
       key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
       value: ['', [Validators.required]]
     }));
   }
 
-  public removePair(index): void {
-    this.data.removeAt(index);
+  public removePair(index: number): void {
+    this.data?.removeAt(index);
   }
 
   public getFormControl(controlName: string): AbstractControl | null {
