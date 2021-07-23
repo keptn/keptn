@@ -38,9 +38,9 @@ export class KtbCreateSecretFormComponent {
       this.isLoading = true;
 
       const secret: Secret = new Secret();
-      secret.setName(this.createSecretForm.get('name').value);
-      for (const dataGroup of this.data.controls) {
-        secret.addData(dataGroup.get('key').value, dataGroup.get('value').value);
+      secret.setName(this.createSecretForm.get('name')?.value);
+      for (const dataGroup of this.data?.controls) {
+        secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
       }
 
       this.dataService.addSecret(secret)
