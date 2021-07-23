@@ -185,7 +185,7 @@ func (e *EventDispatcher) dispatchEvents() {
 }
 
 func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
-	if e.isSequenceOfEventPaused(eventScope) {
+	if e.eventQueueRepo.IsSequenceOfEventPaused(eventScope) {
 		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
 		return errSequencePaused
 	}
@@ -203,29 +203,6 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 	return e.eventSender.SendEvent(event.Event)
 }
 
-func (e *EventDispatcher) isSequenceOfEventPaused(eventScope models.EventScope) bool {
-
-	states, err := e.eventQueueRepo.GetEventQueueSequenceStates(models.EventQueueSequenceState{Scope: models.EventScope{KeptnContext: eventScope.KeptnContext}})
-	if err != nil {
-		return false
-	} else if len(states) == 0 {
-		log.Infof("no state for sequence %s found", eventScope.KeptnContext)
-		return false
-	}
-
-	for _, state := range states {
-		if state.Scope.Stage == "" && state.State == models.SequencePaused {
-			// if the overall state is set to 'paused', this means that all stages are paused
-			return true
-		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
-			// if not the overall state is 'paused', but specifically for this stage, we return true as well
-			return true
-		}
-	}
-
-	return false
-}
-
 func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
 	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
 	/// if there is another sequence running in the stage, we cannot send the event
@@ -233,7 +210,7 @@ func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.Ev
 
 	for otherKeptnContext, tasksOfContext := range tasksGroupedByContext {
 		// if the other sequence is currently paused, it should not block the current event
-		if e.isSequenceOfEventPaused(models.EventScope{
+		if e.eventQueueRepo.IsSequenceOfEventPaused(models.EventScope{
 			KeptnContext: otherKeptnContext,
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,

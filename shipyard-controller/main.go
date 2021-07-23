@@ -98,6 +98,7 @@ func main() {
 	sequenceDispatcherChannel := make(chan models.Event)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
+		createEventQueueRepo(),
 		createSequenceQueueRepo(),
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
@@ -145,7 +146,7 @@ func main() {
 	evaluationController := controller.NewEvaluationController(evaluationHandler)
 	evaluationController.Inject(apiV1)
 
-	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()))
+	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()), sequenceControlChannel)
 	stateController := controller.NewStateController(stateHandler)
 	stateController.Inject(apiV1)
 

@@ -25,6 +25,9 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediately(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
 		GetTaskSequencesFunc: func(project string, filter models.TaskSequenceEvent) ([]models.TaskSequenceEvent, error) {
@@ -78,15 +81,8 @@ func Test_WhenTimeOfEventIsOlder_EventIsSentImmediatelyButSequenceIsPaused(t *te
 
 	eventRepo := &db_mock.EventRepoMock{}
 	eventQueueRepo := &db_mock.EventQueueRepoMock{
-		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
-			return []models.EventQueueSequenceState{
-				{
-					Scope: models.EventScope{
-						KeptnContext: "my-context-id",
-					},
-					State: models.SequencePaused,
-				},
-			}, nil
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return true
 		},
 		QueueEventFunc: func(item models.QueueItem) error {
 			return nil
@@ -154,6 +150,9 @@ func Test_EventIsSentImmediatelyButOtherSequenceIsRunning(t *testing.T) {
 		},
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
+		},
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return false
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
@@ -234,6 +233,12 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 				}, nil
 			}
 			return nil, nil
+		},
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			if eventScope.KeptnContext == "my-other-context-id" {
+				return true
+			}
+			return false
 		},
 	}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
@@ -344,6 +349,9 @@ func Test_WhenSyncTimeElapses_EventsAreDispatched(t *testing.T) {
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
 	}
 	eventSender := &fake.EventSender{}
 	sequenceRepo := &db_mock.TaskSequenceRepoMock{
@@ -431,6 +439,9 @@ func Test_WhenAnEventCouldNotBeFetched_NextEventIsProcessed(t *testing.T) {
 	eventQueueRepo := &db_mock.EventQueueRepoMock{
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
+		},
+		IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+			return false
 		},
 	}
 	eventSender := &fake.EventSender{}

@@ -92,6 +92,28 @@ func (m *MongoDBEventQueueRepo) IsEventInQueue(eventID string) (bool, error) {
 	return queueItems != nil && len(queueItems) > 0, nil
 }
 
+func (m *MongoDBEventQueueRepo) IsSequenceOfEventPaused(eventScope models.EventScope) bool {
+	states, err := m.GetEventQueueSequenceStates(models.EventQueueSequenceState{Scope: models.EventScope{KeptnContext: eventScope.KeptnContext}})
+	if err != nil {
+		return false
+	} else if len(states) == 0 {
+		log.Infof("no state for sequence %s found", eventScope.KeptnContext)
+		return false
+	}
+
+	for _, state := range states {
+		if state.Scope.Stage == "" && state.State == models.SequencePaused {
+			// if the overall state is set to 'paused', this means that all stages are paused
+			return true
+		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
+			// if not the overall state is 'paused', but specifically for this stage, we return true as well
+			return true
+		}
+	}
+
+	return false
+}
+
 // DeleteQueuedEvents deletes all matching queue items from the collection
 func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) error {
 	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueCollectionName)

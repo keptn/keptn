@@ -36,6 +36,9 @@ import (
 // 			IsEventInQueueFunc: func(eventID string) (bool, error) {
 // 				panic("mock out the IsEventInQueue method")
 // 			},
+// 			IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+// 				panic("mock out the IsSequenceOfEventPaused method")
+// 			},
 // 			QueueEventFunc: func(item models.QueueItem) error {
 // 				panic("mock out the QueueEvent method")
 // 			},
@@ -66,6 +69,9 @@ type EventQueueRepoMock struct {
 
 	// IsEventInQueueFunc mocks the IsEventInQueue method.
 	IsEventInQueueFunc func(eventID string) (bool, error)
+
+	// IsSequenceOfEventPausedFunc mocks the IsSequenceOfEventPaused method.
+	IsSequenceOfEventPausedFunc func(eventScope models.EventScope) bool
 
 	// QueueEventFunc mocks the QueueEvent method.
 	QueueEventFunc func(item models.QueueItem) error
@@ -107,6 +113,11 @@ type EventQueueRepoMock struct {
 			// EventID is the eventID argument value.
 			EventID string
 		}
+		// IsSequenceOfEventPaused holds details about calls to the IsSequenceOfEventPaused method.
+		IsSequenceOfEventPaused []struct {
+			// EventScope is the eventScope argument value.
+			EventScope models.EventScope
+		}
 		// QueueEvent holds details about calls to the QueueEvent method.
 		QueueEvent []struct {
 			// Item is the item argument value.
@@ -120,6 +131,7 @@ type EventQueueRepoMock struct {
 	lockGetEventQueueSequenceStates   sync.RWMutex
 	lockGetQueuedEvents               sync.RWMutex
 	lockIsEventInQueue                sync.RWMutex
+	lockIsSequenceOfEventPaused       sync.RWMutex
 	lockQueueEvent                    sync.RWMutex
 }
 
@@ -337,6 +349,37 @@ func (mock *EventQueueRepoMock) IsEventInQueueCalls() []struct {
 	mock.lockIsEventInQueue.RLock()
 	calls = mock.calls.IsEventInQueue
 	mock.lockIsEventInQueue.RUnlock()
+	return calls
+}
+
+// IsSequenceOfEventPaused calls IsSequenceOfEventPausedFunc.
+func (mock *EventQueueRepoMock) IsSequenceOfEventPaused(eventScope models.EventScope) bool {
+	if mock.IsSequenceOfEventPausedFunc == nil {
+		panic("EventQueueRepoMock.IsSequenceOfEventPausedFunc: method is nil but EventQueueRepo.IsSequenceOfEventPaused was just called")
+	}
+	callInfo := struct {
+		EventScope models.EventScope
+	}{
+		EventScope: eventScope,
+	}
+	mock.lockIsSequenceOfEventPaused.Lock()
+	mock.calls.IsSequenceOfEventPaused = append(mock.calls.IsSequenceOfEventPaused, callInfo)
+	mock.lockIsSequenceOfEventPaused.Unlock()
+	return mock.IsSequenceOfEventPausedFunc(eventScope)
+}
+
+// IsSequenceOfEventPausedCalls gets all the calls that were made to IsSequenceOfEventPaused.
+// Check the length with:
+//     len(mockedEventQueueRepo.IsSequenceOfEventPausedCalls())
+func (mock *EventQueueRepoMock) IsSequenceOfEventPausedCalls() []struct {
+	EventScope models.EventScope
+} {
+	var calls []struct {
+		EventScope models.EventScope
+	}
+	mock.lockIsSequenceOfEventPaused.RLock()
+	calls = mock.calls.IsSequenceOfEventPaused
+	mock.lockIsSequenceOfEventPaused.RUnlock()
 	return calls
 }
 

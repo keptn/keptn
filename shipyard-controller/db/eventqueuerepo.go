@@ -11,6 +11,7 @@ type EventQueueRepo interface {
 	QueueEvent(item models.QueueItem) error
 	GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error)
 	IsEventInQueue(eventID string) (bool, error)
+	IsSequenceOfEventPaused(eventScope models.EventScope) bool
 	DeleteQueuedEvent(eventID string) error
 	DeleteQueuedEvents(scope models.EventScope) error
 	CreateOrUpdateEventQueueState(state models.EventQueueSequenceState) error

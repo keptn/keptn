@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
@@ -13,12 +14,16 @@ type IStateHandler interface {
 }
 
 type StateHandler struct {
-	StateRepo          db.SequenceStateRepo
-	shipyardController IShipyardController
+	StateRepo           db.SequenceStateRepo
+	shipyardController  IShipyardController
+	sequenceControlChan chan common.SequenceControl
 }
 
-func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
-	return &StateHandler{StateRepo: stateRepo}
+func NewStateHandler(stateRepo db.SequenceStateRepo, sequenceControlChan chan common.SequenceControl) *StateHandler {
+	return &StateHandler{
+		StateRepo:           stateRepo,
+		sequenceControlChan: sequenceControlChan,
+	}
 }
 
 // GetState godoc
@@ -75,15 +80,22 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /sequence/{project}/{keptnContext}/control [post]
 func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
-	//projectName := c.Param("project")
-	//keptnContext := c.Param("keptnContext")
+	keptnContext := c.Param("keptnContext")
 
 	params := &operations.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 	}
 
-	// TODO inform shipyard controller about the sequence control
+	// TODO: inform shipyard controller about the sequence control
+	// TODO: we decided to communicate these kind of things via channels, which is fine for the SequenceDispatcher and SequenceWatcher for starting and timing out sequences
+	// TODO: in this case, I'm not sure I like it - should we add a ControlSequence to the ShipyardController interface?
 	// (either via channel or by adding an appropriate method to the IShipyardController interface)
-	//sh.shipyardController
+	sh.sequenceControlChan <- common.SequenceControl{
+		State:        params.State,
+		KeptnContext: keptnContext,
+		Stage:        params.Stage,
+	}
+
+	c.JSON(http.StatusOK, operations.SequenceControlResponse{})
 }

@@ -217,7 +217,7 @@ func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
 func (sc *shipyardController) controlSequence(control common.SequenceControl) error {
 	switch control.State {
 	case common.AbortSequence:
-		// TODO implement
+		// TODO implement - largely the same logic as in timeoutSequence(), but we don't have to reference a specific task
 	case common.PauseSequence:
 		sc.onSequencePaused(models.EventScope{
 			EventData: keptnv2.EventData{
@@ -236,34 +236,28 @@ func (sc *shipyardController) controlSequence(control common.SequenceControl) er
 	return nil
 }
 
-func (sc *shipyardController) pauseSequence(pauseRequest models.EventScope) error {
-	// TODO inform event dispatcher about paused sequence (to mark the matching items in the event queue)
-	// TODO call onSequencePause hook
-	return nil
-}
-
-func (sc *shipyardController) timeoutSequence(cancelRequest common.SequenceTimeout) error {
-	log.Infof("sequence %s has been timed out", cancelRequest.KeptnContext)
-	eventScope, err := models.NewEventScope(cancelRequest.LastEvent)
+func (sc *shipyardController) timeoutSequence(timeout common.SequenceTimeout) error {
+	log.Infof("sequence %s has been timed out", timeout.KeptnContext)
+	eventScope, err := models.NewEventScope(timeout.LastEvent)
 	if err != nil {
 		return err
 	}
 
 	eventScope.Status = keptnv2.StatusErrored
 	eventScope.Result = keptnv2.ResultFailed
-	eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *cancelRequest.LastEvent.Type)
+	eventScope.Message = fmt.Sprintf("sequence timed out while waiting for task %s to receive a correlating .started or .finished event", *timeout.LastEvent.Type)
 
-	taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: cancelRequest.LastEvent.ID})
+	taskContexts, err := sc.taskSequenceRepo.GetTaskSequences(eventScope.Project, models.TaskSequenceEvent{TriggeredEventID: timeout.LastEvent.ID})
 	if err != nil {
-		return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", cancelRequest.LastEvent.ID, err.Error())
+		return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", timeout.LastEvent.ID, err.Error())
 	}
 
 	if taskContexts == nil || len(taskContexts) == 0 {
-		log.Infof("No task event associated with eventID %s found", cancelRequest.LastEvent.ID)
+		log.Infof("No task event associated with eventID %s found", timeout.LastEvent.ID)
 		return nil
 	}
 	taskContext := taskContexts[0]
-	sc.onSequenceTimeout(cancelRequest.LastEvent)
+	sc.onSequenceTimeout(timeout.LastEvent)
 	taskSequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(eventScope, taskContext.TaskSequenceName)
 	if err != nil {
 		return err

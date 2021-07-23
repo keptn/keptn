@@ -20,17 +20,19 @@ type ISequenceDispatcher interface {
 }
 
 type SequenceDispatcher struct {
-	eventRepo     db.EventRepo
-	sequenceQueue db.SequenceQueueRepo
-	sequenceRepo  db.TaskSequenceRepo
-	theClock      clock.Clock
-	syncInterval  time.Duration
-	eventChannel  chan models.Event
+	eventRepo      db.EventRepo
+	eventQueueRepo db.EventQueueRepo
+	sequenceQueue  db.SequenceQueueRepo
+	sequenceRepo   db.TaskSequenceRepo
+	theClock       clock.Clock
+	syncInterval   time.Duration
+	eventChannel   chan models.Event
 }
 
 // NewSequenceDispatcher creates a new SequenceDispatcher
 func NewSequenceDispatcher(
 	eventRepo db.EventRepo,
+	eventQueueRepo db.EventQueueRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
 	sequenceRepo db.TaskSequenceRepo,
 	syncInterval time.Duration,
@@ -39,12 +41,13 @@ func NewSequenceDispatcher(
 
 ) ISequenceDispatcher {
 	return &SequenceDispatcher{
-		eventRepo:     eventRepo,
-		sequenceQueue: sequenceQueueRepo,
-		sequenceRepo:  sequenceRepo,
-		theClock:      theClock,
-		syncInterval:  syncInterval,
-		eventChannel:  eventChannel,
+		eventRepo:      eventRepo,
+		eventQueueRepo: eventQueueRepo,
+		sequenceQueue:  sequenceQueueRepo,
+		sequenceRepo:   sequenceRepo,
+		theClock:       theClock,
+		syncInterval:   syncInterval,
+		eventChannel:   eventChannel,
 	}
 }
 
@@ -96,7 +99,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	}
 
 	/// if there is a sequence running in the stage, we cannot trigger this sequence yet
-	if areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
+	if sd.areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
 		return nil
 	}
@@ -124,7 +127,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 	return nil
 }
 
-func areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
+func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
 	if sequenceTasks == nil || len(sequenceTasks) == 0 {
 		// if there is no sequence currently running, we do not need to block
 		return false
@@ -134,6 +137,15 @@ func areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequen
 
 	for _, tasksOfContext := range tasksGroupedByContext {
 		lastTaskOfSequence := getLastTaskOfSequence(tasksOfContext)
+		// first, check if the other sequence is currently paused
+		if sd.eventQueueRepo.IsSequenceOfEventPaused(
+			models.EventScope{
+				KeptnContext: lastTaskOfSequence.KeptnContext,
+				EventData:    keptnv2.EventData{Stage: lastTaskOfSequence.Stage},
+			}) {
+			// if it is indeed paused, no need to consider it
+			continue
+		}
 		if lastTaskOfSequence.Task.Name != keptnv2.ApprovalTaskName {
 			// if there is a sequence running that is not waiting for an approval, we need to block
 			return true

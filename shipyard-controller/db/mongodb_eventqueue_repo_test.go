@@ -98,7 +98,8 @@ func TestMongoDBEventQueueRepo_InsertAndRetrieveSequenceState(t *testing.T) {
 	myStateWithStage := models.EventQueueSequenceState{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
-				Stage: "my-stage",
+				Stage:  "my-stage",
+				Status: models.SequencePaused,
 			},
 			KeptnContext: "my-context",
 		},
@@ -133,11 +134,20 @@ func TestMongoDBEventQueueRepo_InsertAndRetrieveSequenceState(t *testing.T) {
 	require.NotNil(t, err)
 	require.Empty(t, states)
 
+	// check if pause state is correctly interpreted
+	paused := repo.IsSequenceOfEventPaused(models.EventScope{KeptnContext: "my-context"})
+
+	require.True(t, paused)
+
 	// test updating a state
 	myState.State = models.SequenceFinished
 	err = repo.CreateOrUpdateEventQueueState(myState)
 
 	require.Nil(t, err)
+
+	paused = repo.IsSequenceOfEventPaused(models.EventScope{KeptnContext: "my-context"})
+
+	require.False(t, paused)
 
 	states, err = repo.GetEventQueueSequenceStates(models.EventQueueSequenceState{Scope: models.EventScope{KeptnContext: "my-context"}})
 
