@@ -29,7 +29,7 @@ export class KtbCreateSecretFormComponent {
   constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private fb: FormBuilder) {
   }
 
-  get data(): FormArray | null {
+  get data(): FormArray {
     return this.createSecretForm.get('data') as FormArray;
   }
 
