@@ -54,7 +54,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   }
 
   closeConfirmationDialog() {
-    this.deleteSecretDialogState = null;
+    this.deleteSecretDialogState = undefined;
   }
 
   public toSecret(row: Secret): Secret {
