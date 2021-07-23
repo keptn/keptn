@@ -1,11 +1,11 @@
 class KeyValuePair {
-  key: string;
-  value: string;
+  key!: string;
+  value!: string;
 }
 
 export class Secret {
-  name: string;
-  scope: string;
+  name!: string;
+  scope!: string;
   data: KeyValuePair[];
 
   constructor() {
