@@ -1,4 +1,4 @@
-FROM node:14-alpine3.13 as angularBuilder
+FROM node:14-alpine3.13 as bridgeBuilder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -9,37 +9,46 @@ WORKDIR /usr/src/app
 # copy package.json only to install angular dependencies first
 COPY package.json package-lock.json /usr/src/app/
 RUN npm install
-
 COPY . /usr/src/app
-
 RUN npm run build
+
+FROM node:14-alpine3.13 as bridgeServerBuilder
+
+ARG version=develop
+ENV VERSION="${version}"
+
+# Prepare app directory
+WORKDIR /usr/src/app/server
+
+# copy package.json only to install angular dependencies first
+COPY ./server/package.json ./server/package-lock.json ./
+RUN npm ci
+COPY ./server ./
+RUN npm run build && \
+  npm ci --production
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:14-alpine3.13
+FROM node:14-alpine3.13 as bridgeProduction
 
 EXPOSE 3000
 
+ENV NODE_ENV "production"
+WORKDIR /usr/src/app
 ARG version=develop
 ENV VERSION="${version}"
 ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local"
 ENV API_TOKEN ""
 
 # copy angular output from angularBuilder
-COPY --from=angularBuilder /usr/src/app/dist /usr/src/app/dist
+COPY --from=bridgeBuilder /usr/src/app/dist /usr/src/app/dist
+COPY --from=bridgeServerBuilder /usr/src/app/server/dist /usr/src/app/server/dist
+COPY --from=bridgeServerBuilder /usr/src/app/server/node_modules /usr/src/app/server/node_modules
 
-# copy source
-COPY . /usr/src/app
-
-# install additional npm dependencies for express server
-WORKDIR /usr/src/app/server
-RUN npm install\
-    && npm run build
-WORKDIR /usr/src/app
+# Copy server static files
+COPY ./server/views /usr/src/app/server/views
 
 RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
-
-ENV NODE_ENV "production"
 
 # Set user
 USER myuser

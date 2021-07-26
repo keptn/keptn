@@ -4,3 +4,4 @@ deploy/
 dist/
 Dockerfile
 **/node_modules
+e2e/
