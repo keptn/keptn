@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc --build",
-    "dev": "nodemon --config nodemon.json --watch ./"
+    "dev": "npm run build && nodemon --config nodemon.json --watch ./"
   },
   "bugs": {
     "url": "https://github.com/keptn/keptn/issues"
