@@ -199,7 +199,7 @@ feat(bridge): New button that breaks other things (#345)
 BREAKING CHANGE: The new button added with #345 introduces new functionality that is not compatible with the previous type of sent events.
 ```
 
-If your breaking change is explained in a single line you can also use this form:
+If your breaking change can be explained in a single line you can also use this form:
 ```
 feat(bridge)!: New button that breaks other things (#345)
 ```
