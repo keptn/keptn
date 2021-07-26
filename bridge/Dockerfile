@@ -43,6 +43,7 @@ ENV API_TOKEN ""
 # copy angular output from angularBuilder
 COPY --from=bridgeBuilder /usr/src/app/dist /usr/src/app/dist
 COPY --from=bridgeServerBuilder /usr/src/app/server/dist /usr/src/app/server/dist
+COPY --from=bridgeServerBuilder /usr/src/app/server/package.json /usr/src/app/server/
 COPY --from=bridgeServerBuilder /usr/src/app/server/node_modules /usr/src/app/server/node_modules
 
 # Copy server static files
@@ -53,4 +54,4 @@ RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && 
 # Set user
 USER myuser
 
-CMD ["/usr/local/bin/npm", "start"]
+CMD ["/usr/local/bin/npm", "start", "--prefix", "./server"]
