@@ -81,9 +81,9 @@ to indicate that this issue is good to get started with contributing to Keptn.
 
 For contributions to Keptn, please fork the Keptn repository and work in a branch. More information about forking is written down in the [docs/fork](docs/fork.md).
 
-We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/), however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
+We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/) loosely however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
 
-* If you work on a new feature, patch, or bugfix, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
+* If you work on a new feature, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
 
   * `feature/###/name` for new features
   * `patch/###/name` for patches
@@ -166,10 +166,60 @@ git rebase master
 git push --set-upstream origin feature/123/foo
 ```
 
-Finally, go to GitHub and make a Pull Request. Please describe what this PR is about and add a link to relevant GitHub issues.
+Finally, go to GitHub and create a Pull Request. There should be a PR template already prepared for you.
+If not, you will find it at `.github/pull_request_template.md`.
+Please describe what this PR is about and add a link to relevant GitHub issues.
 If you changed something that is visible to the user, please add a screenshot.
+Please follow the [conventional commit guidelines](https://www.conventionalcommits.org/en/v1.0.0/) for your PR title.
+If you only have one commit in your PR, please follow the guidelines for the commit message, otherwise the PR title is enough.
+You can find a list of all possible feature types [here](#commit-types-and-scopes).
+
+An example for a pull request title would be:
+```
+feat(api): New endpoint for feature X (#1234)
+```
+This would be a PR that adds a new endpoint to the keptn API and the issue number related to this PR is #1234.
+
+Following those guidelines helps us create automated releases where the commit and PR messages are directly used in the changelog.
+
 In addition, please always ask yourself the following questions:
 
 **Based on the linked issue, what changes within the PR would you expect as a reviewer?**
 
 Your PR will usually be reviewed by the Keptn team within a couple of days, but feel free to let us know about your PR [via Slack](https://slack.keptn.sh).
+
+### Commit Types and Scopes
+Please find and up-to-date list of types and scopes [here](https://github.com/keptn/keptn/blob/master/.github/semantic.yml).
+
+#### Types
+
+- `feat    `: A new feature
+- `fix     `: A bug fix
+- `build   `: Changes that affect the build system or external dependencies
+- `chore   `: Other changes that don't modify source or test files
+- `ci      `: Changes to our CI configuration files and scripts
+- `docs    `: Documentation only changes
+- `perf    `: A code change that improves performance
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `revert  `: Reverts a previous commit
+- `style   `: Changes that do not affect the meaning of the code
+- `test    `: Adding missing tests or correcting existing tests
+
+#### Scopes
+
+- api
+- approval-service
+- bridge
+- cli
+- configuration-service
+- distributor
+- docs
+- helm-service
+- installer
+- jmeter-service
+- lighthouse-service
+- mongodb-datestore
+- remediation-service
+- secret-service
+- shipyard-controller
+- statistics-service
