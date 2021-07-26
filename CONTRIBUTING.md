@@ -179,7 +179,8 @@ If not, you will find it at `.github/pull_request_template.md`.
 Please describe what this PR is about and add a link to relevant GitHub issues.
 If you changed something that is visible to the user, please add a screenshot.
 Please follow the [conventional commit guidelines](https://www.conventionalcommits.org/en/v1.0.0/) for your PR title.
-If you only have one commit in your PR, please follow the guidelines for the commit message, otherwise the PR title is enough.
+
+If you only have one commit in your PR, please follow the guidelines for the message of that single commit, otherwise the PR title is enough.
 You can find a list of all possible feature types [here](#commit-types-and-scopes).
 
 An example for a pull request title would be:
@@ -213,7 +214,7 @@ In addition, please always ask yourself the following questions:
 Your PR will usually be reviewed by the Keptn team within a couple of days, but feel free to let us know about your PR [via Slack](https://slack.keptn.sh).
 
 ### Commit Types and Scopes
-Please find and up-to-date list of types and scopes [here](https://github.com/keptn/keptn/blob/master/.github/semantic.yml).
+**Please find and up-to-date list of types and scopes [here](https://github.com/keptn/keptn/blob/master/.github/semantic.yml).**
 
 #### Types
 
