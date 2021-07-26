@@ -20,7 +20,6 @@ FROM node:14-alpine3.13
 
 EXPOSE 3000
 
-ENV NODE_ENV "production"
 ARG version=develop
 ENV VERSION="${version}"
 ENV API_URL "http://api-gateway-nginx.keptn.svc.cluster.local"
@@ -35,18 +34,14 @@ COPY . /usr/src/app
 # install additional npm dependencies for express server
 WORKDIR /usr/src/app/server
 RUN npm install\
-    && npm install typescript -g\
     && npm run build
 WORKDIR /usr/src/app
 
 RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
 
+ENV NODE_ENV "production"
+
 # Set user
 USER myuser
-
-# KEEP THE FOLLOWING LINES COMMENTED OUT!!! (they will be included within the travis-ci build)
-#travis-uncomment ADD MANIFEST /
-#travis-uncomment COPY entrypoint.sh /
-#travis-uncomment ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["/usr/local/bin/npm", "start"]

@@ -224,6 +224,7 @@ async function init(): Promise<Express> {
   });
 
 // error handler
+  // tslint:disable-next-line:no-any
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

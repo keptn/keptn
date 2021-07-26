@@ -6,8 +6,8 @@ import random from 'crypto-random-string';
 declare module 'express-session' {
   export interface SessionData {
     authenticated: boolean;
-    principal: any;
-    logoutHint: any;
+    principal: string;
+    logoutHint: string;
   }
 }
 const memoryStore = mS(expressSession);
@@ -62,7 +62,7 @@ function isAuthenticated(req: Request) {
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function setAuthenticatedSession(req: Request, principal: string, logoutHint: any) {
+function setAuthenticatedSession(req: Request, principal: string, logoutHint: string) {
 
   if (!principal) {
     throw Error('Invalid session initialisation. Principal is mandatory.');
