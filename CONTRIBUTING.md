@@ -81,16 +81,24 @@ to indicate that this issue is good to get started with contributing to Keptn.
 
 For contributions to Keptn, please fork the Keptn repository and work in a branch. More information about forking is written down in the [docs/fork](docs/fork.md).
 
-We are following the [git branching model described in this blog post](https://nvie.com/posts/a-successful-git-branching-model/) loosely however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
+We are loosely following the [Git Flow branching model](https://nvie.com/posts/a-successful-git-branching-model/) however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
 
 * If you work on a new feature, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
+```
+<ticket-type>/<github-issue-number>/<descriptive-name-with-dashes>
 
-  * `feature/###/name` for new features
-  * `patch/###/name` for patches
-  * `bug/###/name` for bugfixes
+Examples:
+feat/1234/my-new-feature
+fix/2235/important-bugfix
+```
 
-* If you work on a hotfix, branch away from the master branch and create a PR to master and the respective release branches.
-  * `hotfix/###/name` for hotfixes (e.g., for releases)
+All possible ticket/commit/PR types and scopes can be found [here](#commit-types-and-scopes).
+
+* If you work on a hotfix and a maintenance branch for the related release(s) doesn't exist yet, please create a maintenance branch with the following naming scheme:
+If the release was e.g. `v0.8.6`, the maintenance branch should be named `0.8.x` and  it should have the faulty release as its base instead of master.
+Then, you can create a bugfix branch from the **master** branch and work on the hotfix. When you are done, please create a PR against the master branch.
+The merged commit should then cherry-picked to the maintenance branch and then the hotfix release can be created.
+
 
 **Note:** The `###` part of the branch has to reference the GitHub issue number, e.g., if you work on feature described in issue `#1234`, the branch name would be: `feature/1234/my-feature`.
 
@@ -179,6 +187,22 @@ An example for a pull request title would be:
 feat(api): New endpoint for feature X (#1234)
 ```
 This would be a PR that adds a new endpoint to the keptn API and the issue number related to this PR is #1234.
+
+If you have **breaking changes** in your PR, it is important to note them in the PR description but also in the merge commit for that PR.
+When pressing "squash and merge", you have the option to fill out the commit message. Please use that feature to add the breaking changes according to the conventional commit guidelines.
+Also, please remove the PR number at the end and just add the issue number.
+
+An example for a PR with breaking changes and the according merge commit:
+```
+feat(bridge): New button that breaks other things (#345)
+
+BREAKING CHANGE: The new button added with #345 introduces new functionality that is not compatible with the previous type of sent events.
+```
+
+If your breaking change is explained in a single line you can also use this form:
+```
+feat(bridge)!: New button that breaks other things (#345)
+```
 
 Following those guidelines helps us create automated releases where the commit and PR messages are directly used in the changelog.
 
