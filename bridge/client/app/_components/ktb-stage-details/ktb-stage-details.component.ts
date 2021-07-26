@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {DtToggleButtonItem} from '@dynatrace/barista-components/toggle-button-group';
+import { DtToggleButtonChange, DtToggleButtonItem } from '@dynatrace/barista-components/toggle-button-group';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
 
 import {Project} from '../../_models/project';
@@ -17,29 +17,29 @@ import {Subject} from 'rxjs';
   styleUrls: ['./ktb-stage-details.component.scss']
 })
 export class KtbStageDetailsComponent implements OnInit, OnDestroy {
-  public _project: Project;
-  public selectedStage: Stage = null;
-  public filterEventType: string = null;
+  public _project?: Project;
+  public selectedStage?: Stage;
+  public filterEventType?: string;
   public overlayConfig: DtOverlayConfig = {
     pinnable: true
   };
-  public isQualityGatesOnly: boolean;
-  private _filteredServices: string[];
+  public isQualityGatesOnly = false;
+  private _filteredServices: string[] = [];
   private readonly unsubscribe$ = new Subject<void>();
 
-  @ViewChild('problemFilterEventButton') public problemFilterEventButton: DtToggleButtonItem<string>;
-  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton: DtToggleButtonItem<string>;
-  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton: DtToggleButtonItem<string>;
+  @ViewChild('problemFilterEventButton') public problemFilterEventButton?: DtToggleButtonItem<string>;
+  @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton?: DtToggleButtonItem<string>;
+  @ViewChild('approvalFilterEventButton') public approvalFilterEventButton?: DtToggleButtonItem<string>;
 
   @Input()
-  get project() {
+  get project(): Project | undefined {
     return this._project;
   }
 
-  set project(project: Project) {
+  set project(project: Project | undefined) {
     if (this._project !== project) {
       this._project = project;
-      this.selectedStage = null;
+      this.selectedStage = undefined;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -60,24 +60,27 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.dataService.isQualityGatesOnly.pipe(
       takeUntil(this.unsubscribe$)
-    ).subscribe(isQualityGatesOnly => {this.isQualityGatesOnly = isQualityGatesOnly});
+    ).subscribe(isQualityGatesOnly => {
+      this.isQualityGatesOnly = isQualityGatesOnly;
+    });
   }
 
-  selectStage($event) {
+  selectStage($event: {stage: Stage, filterType?: string}) {
     this.selectedStage = $event.stage;
     if (this.filterEventType !== $event.filterType) {
       this.resetFilter($event.filterType);
     }
   }
 
-  private resetFilter(eventType = null): void {
+  private resetFilter(eventType?: string): void {
     this.problemFilterEventButton?.deselect();
     this.evaluationFilterEventButton?.deselect();
     this.approvalFilterEventButton?.deselect();
     this.filterEventType = eventType;
   }
 
-  selectFilterEvent($event) {
+  // tslint:disable-next-line:no-any
+  selectFilterEvent($event: DtToggleButtonChange<any>) {
     if ($event.isUserInput) {
       this.filterEventType = $event.source.selected ? $event.value : null;
     }
@@ -91,11 +94,11 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     return problemEvents.filter(root => root?.data.service === service.serviceName);
   }
 
-  findFailedRootEvent(failedRootEvents: Root[], service: Service): Root {
+  findFailedRootEvent(failedRootEvents: Root[], service: Service): Root | undefined {
     return failedRootEvents.find(root => root.data.service === service.serviceName);
   }
 
-  getServiceLink(service) {
+  getServiceLink(service: Service) {
     return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
   }
 
@@ -104,8 +107,9 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   }
 
   public filterRoots(roots: Root[]): Root[] {
-    return this.filteredServices.length === 0 ? roots : roots?.filter(root => this.filteredServices.includes(root.getService()));
-
+    return this.filteredServices.length === 0
+          ? roots
+          : roots?.filter(root => root.service ? this.filteredServices.includes(root.service) : false);
   }
 
   ngOnDestroy(): void {

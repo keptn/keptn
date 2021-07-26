@@ -9,73 +9,87 @@ import {ApiService} from '../_services/api.service';
 import {EventTypes} from '../_models/event-types';
 import {DataService} from '../_services/data.service';
 import {Deployment} from '../_models/deployment';
-import {environment} from "../../environments/environment";
+import {environment} from '../../environments/environment';
+import { DateUtil } from '../_utils/date.utils';
+import { Project } from '../_models/project';
 
 @Component({
-  selector: 'app-project-board',
+  selector: 'ktb-evaluation-board',
   templateUrl: './evaluation-board.component.html',
   styleUrls: ['./evaluation-board.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EvaluationBoardComponent implements OnInit, OnDestroy {
-
-  private unsubscribe$ = new Subject();
-
-  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
-
-  public error: string = null;
-  public contextId: string;
-  public root: Root;
-  public evaluations: Trace[];
-  public hasHistory: boolean;
+  private unsubscribe$ = new Subject<void>();
   private deployments: Deployment[] = [];
+  public logoInvertedUrl = environment?.config?.logoInvertedUrl;
+  public error?: string;
+  public contextId?: string;
+  public root?: Root;
+  public evaluations?: Trace[];
+  public hasHistory: boolean;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private location: Location, private route: ActivatedRoute, private apiService: ApiService, private dataService: DataService) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private location: Location, private route: ActivatedRoute,
+              private apiService: ApiService, private dataService: DataService) {
     this.hasHistory = window.history.length > 1;
   }
 
   ngOnInit() {
     this.route.params
-      .pipe(takeUntil(this.unsubscribe$))
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        map(params => params.shkeptncontext),
+        filter((params: {shkeptncontext: string | undefined, eventselector: string | undefined}):
+                params is {shkeptncontext: string, eventselector: string | undefined} => !!params.shkeptncontext)
+      )
       .subscribe(params => {
-        if (params.shkeptncontext) {
-          this.contextId = params.shkeptncontext;
-          this.apiService.getTraces(this.contextId)
-            .pipe(
-              map(response => response.body),
-              map(result => result.events || []),
-              map(traces => traces.map(trace => Trace.fromJSON(trace)).sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()))
-            )
-            .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((traces: Trace[]) => {
-              if (traces.length > 0) {
-                this.root = Root.fromJSON(traces[0]);
-                this.root.traces = traces;
-                this.evaluations = traces.filter(t => t.type === EventTypes.EVALUATION_FINISHED && (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector)) ;
-
-                this.dataService.getProject(this.root.getProject())
-                  .pipe(
-                    takeUntil(this.unsubscribe$),
-                    filter(project => !!project)
-                  )
-                  .subscribe(project => {
-                    this.deployments = project.getService(this.root.getService()).deployments;
-                    this._changeDetectorRef.markForCheck();
-                  });
-              } else {
-                this.error = 'contextError';
-                this._changeDetectorRef.markForCheck();
+        this.contextId = params.shkeptncontext;
+        this.apiService.getTraces(this.contextId)
+          .pipe(
+            map(response => response.body?.events || []),
+            map(traces => traces.map(trace => Trace.fromJSON(trace)).sort(DateUtil.compareTraceTimesDesc)),
+            takeUntil(this.unsubscribe$)
+          ).subscribe((traces: Trace[]) => {
+            if (traces.length > 0) {
+              this.root = Root.fromJSON(traces[0]);
+              this.root.traces = traces;
+              this.evaluations = traces.filter(t => t.type === EventTypes.EVALUATION_FINISHED
+                                  && (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector));
+              const serviceName = this.root.service;
+              if (this.root.project && serviceName) {
+                this.setDeployments(this.root.project, serviceName);
               }
-            }, () => {
-              this.error = 'error';
+            } else {
+              this.error = 'contextError';
               this._changeDetectorRef.markForCheck();
-            });
-        }
+            }
+          }, () => {
+            this.error = 'error';
+            this._changeDetectorRef.markForCheck();
+          });
+      });
+  }
+
+  private setDeployments(projectName: string, serviceName: string): void {
+    this.dataService.getProject(projectName)
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        filter((project: Project | undefined): project is Project => !!project)
+      )
+      .subscribe(project => {
+        this.deployments = project.getService(serviceName)?.deployments ?? [];
+        this._changeDetectorRef.markForCheck();
       });
   }
 
   public getDeployment(stage: string) {
     return this.deployments.find(deployment => deployment.stages.find(s => s.stageName === stage));
+  }
+
+  public getServiceDetailsLink(shkeptncontext: string, stage: string | undefined): string[] {
+    return this.root?.project && this.root?.service && stage
+      ? ['/project', this.root.project, 'service', this.root.service, 'context', shkeptncontext, 'stage', stage]
+      : [];
   }
 
   goBack(): void {

@@ -16,6 +16,8 @@ type IEventSender interface {
 	Send(ctx context.Context, event cloudevents.Event) error
 }
 
+const invalidRequestFormatMsg = "Invalid request format"
+
 func SetNotFoundErrorResponse(err error, c *gin.Context, message ...string) {
 	msg := errMsg(err, message)
 	c.JSON(http.StatusNotFound, models.Error{

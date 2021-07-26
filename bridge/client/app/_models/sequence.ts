@@ -7,13 +7,13 @@ import {EVENT_ICONS} from './event-icons';
 const DEFAULT_ICON = 'information';
 
 export class Sequence {
-  name: string;
-  project: string;
-  service: string;
-  shkeptncontext: string;
-  stages: [
+  name!: string;
+  project!: string;
+  service!: string;
+  shkeptncontext!: string;
+  stages!: [
     {
-      image: string,
+      image?: string,
       latestEvaluation?: EvaluationResult,
       latestEvent?: {
         id: string,
@@ -28,12 +28,12 @@ export class Sequence {
       name: string
     }
   ];
-  state: 'triggered' | 'finished' | 'waiting';
-  time: string;
+  state!: 'triggered' | 'finished' | 'waiting';
+  time!: string;
   problemTitle?: string;
   traces: Trace[] = [];
 
-  public static fromJSON(data: any): Sequence {
+  public static fromJSON(data: unknown): Sequence {
     return Object.assign(new this(), data);
   }
 
@@ -64,26 +64,26 @@ export class Sequence {
 
   public isFaulty(stageName?: string): boolean {
     return stageName ?
-      !!this.getStage(stageName).latestFailedEvent
+      !!this.getStage(stageName)?.latestFailedEvent
       : this.stages.some(stage => stage.latestFailedEvent);
   }
 
   public isFinished(stageName?: string): boolean {
-    return stageName ? this.getStage(stageName)?.latestEvent.type.endsWith('finished') : this.state === 'finished';
+    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith('finished') ?? false) : this.state === 'finished';
   }
 
-  public getEvaluation(stage: string): EvaluationResult {
-    return this.getStage(stage).latestEvaluation;
+  public getEvaluation(stage: string): EvaluationResult | undefined {
+    return this.getStage(stage)?.latestEvaluation;
   }
 
   public hasPendingApproval(stageName?: string): boolean {
     return stageName ?
-        this.getStage(stageName)?.latestEvent.type === EventTypes.APPROVAL_TRIGGERED
-      : this.stages.some(stage => stage.latestEvent.type === EventTypes.APPROVAL_TRIGGERED);
+        this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED
+      : this.stages.some(stage => stage.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED);
   }
 
   public getStatus(): string {
-    let status: any = this.state;
+    let status: string = this.state;
     if (this.state === 'finished') {
       if (this.stages.some(stage => stage.latestFailedEvent)) {
         status = 'failed';
@@ -129,25 +129,25 @@ export class Sequence {
     }
     else {
       const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
-      icon = EVENT_ICONS[Sequence.getShortType(stage?.latestEvent.type)] || DEFAULT_ICON;
+      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || DEFAULT_ICON : DEFAULT_ICON;
     }
     return icon;
   }
 
-  public getShortImageName(): string | null {
+  public getShortImageName(): string | undefined {
     return this.stages[0]?.image?.split('/').pop();
   }
 
-  public findTrace(comp: (args: Trace) => any): Trace {
-    return this.traces.reduce((result, trace) => result || trace.findTrace(comp), null);
+  public findTrace(comp: (args: Trace) => boolean): Trace | undefined {
+    return this.traces.reduce((result: Trace | undefined, trace: Trace) => result || trace.findTrace(comp), undefined);
   }
 
-  public findLastTrace(comp: (args: Trace) => any): Trace {
-    return this.traces.reduce((result, trace) => trace.findTrace(comp) || result, null);
+  public findLastTrace(comp: (args: Trace) => boolean): Trace | undefined {
+    return this.traces.reduce((result: Trace | undefined, trace: Trace) => trace.findTrace(comp) || result, undefined);
   }
 
-  public getLabels(): Map<string, string> {
-    return this.getLastTrace()?.getFinishedEvent()?.data.labels || this.getFirstTrace()?.data.labels;
+  public getLabels(): Map<string, string> | undefined {
+    return (this.getLastTrace()?.getFinishedEvent()?.labels || this.getFirstTrace()?.labels);
   }
 
   private getLastTrace(): Trace {

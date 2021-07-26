@@ -102,6 +102,39 @@ a:hover {
   color: $primary-color;
 }
 
+button.dt-button-primary.danger-button:not([disabled]),
+button.dt-button-primary.error-button:not([disabled]) {
+  background-color: $error-color;
+  border-color: $error-color;
+
+  &:hover:not([disabled]) {
+    background-color: $error-color-hover;
+    border-color: $error-color-hover;
+  }
+
+  &:active:not([disabled]) {
+    background-color: $error-color-active;
+    border-color: $error-color-active;
+  }
+}
+
+button.dt-button-secondary.danger-button:not([disabled]),
+button.dt-button-secondary.error-button:not([disabled]) {
+  border-color: $error-color;
+  color: $error-color;
+
+  &:hover:not([disabled]) {
+    border-color: $error-color-hover;
+    color: $error-color-hover;
+  }
+
+  &:active:not([disabled]) {
+    border-color: $error-color-active;
+    color: $error-color-active;
+  }
+}
+
+
 .m-0 {
   margin: 0 !important;
 }
@@ -240,6 +273,10 @@ a:hover {
   font-weight: bold;
 }
 
+.align-left {
+  text-align: left;
+}
+
 pre.code {
   padding: 16px;
   overflow: auto;
@@ -284,6 +321,28 @@ pre.code {
   }
 }
 
+.ktb-drag-and-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  border: 1px solid $link-icon-color;
+  border-radius: 5px;
+  background-color: transparent;
+  text-align: center;
+  position: relative;
+
+  p.drop-error {
+    position: absolute;
+    bottom: -6px;
+    color: $error-color;
+  }
+
+  &.drag-over {
+    background-color: $gray-200;
+  }
+}
+
 [fxFLex] {
   min-height: 0;
 }
@@ -305,4 +364,25 @@ pre.code {
 @keyframes slideDown {
   0%, 10% { transform: translateY(-100%); }
   10%, 100% { transform: translateY(0px); }
+}
+
+.dt-tag {
+  &.justify-content-center {
+    justify-content: center;
+  }
+  &.error {
+    background-color: $error-color;
+    color: $white;
+  }
+  &.warning {
+    background-color: $warning-color;
+    color: $white;
+  }
+  &.success {
+    background-color: $cta-color-active;
+    color: $white;
+  }
+  &.highlight {
+    border-color: $blue-400;
+  }
 }

@@ -1,4 +1,4 @@
-export const EVENT_ICONS = {
+export const EVENT_ICONS: {[key: string]: string} = {
   'artifact-delivery': 'duplicate',
   delivery: 'duplicate',
   deployment: 'deploy',
@@ -8,5 +8,6 @@ export const EVENT_ICONS = {
   remediation: 'criticalevent',
   release: 'hops',
   approval: 'unknown',
-  waiting: 'idle'
+  waiting: 'idle',
+  default: 'information'
 };

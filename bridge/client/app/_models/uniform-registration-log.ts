@@ -1,4 +1,4 @@
-export class UniformRegistrationLog {
+export interface UniformRegistrationLog {
   integrationid: string;
   message: string;
   time: Date;
@@ -7,6 +7,6 @@ export class UniformRegistrationLog {
   triggeredid?: string;
 }
 
-export class UniformRegistrationLogResponse {
+export interface UniformRegistrationLogResponse {
   logs: UniformRegistrationLog[];
 }

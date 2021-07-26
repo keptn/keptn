@@ -4,18 +4,19 @@ import {map, switchMap, takeUntil} from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute} from '@angular/router';
 import {Project} from '../../_models/project';
-import {DtFilterFieldDefaultDataSource} from '@dynatrace/barista-components/filter-field';
+import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import {Subject} from 'rxjs';
 import {ProjectMock} from '../../_models/project.mock';
+import { DtAutoComplete } from '../../_models/dt-filter';
 
 @Component({
-  selector: 'ktb-subscription-item',
+  selector: 'ktb-subscription-item[subscription]',
   templateUrl: './ktb-subscription-item.component.html',
   styleUrls: ['./ktb-subscription-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
-  private _subscription: Subscription;
+  private _subscription!: Subscription;
   public tasks: string[] = [];
   public _dataSource = new DtFilterFieldDefaultDataSource();
   private readonly unsubscribe$ = new Subject<void>();
@@ -47,7 +48,9 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
         switchMap(projectName => this.dataService.getProject(projectName)),
         takeUntil(this.unsubscribe$)
       ).subscribe(project => {
+        if (project) {
           this.updateDataSource(project);
+        }
       });
   }
 
@@ -65,7 +68,7 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
         },
         {
           name: 'Services',
-          autocomplete: project.services.map(service => {
+          autocomplete: project.getServices().map(service => {
             return {
               name: service.serviceName
             };
@@ -75,9 +78,11 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
     };
   }
 
-  filterChanged(subscription: Subscription, event) {
-    const result = event.filters.reduce((filters, filter) => {
-      filters[filter[0].name].push(filter[1].name);
+  // tslint:disable-next-line:no-any
+  filterChanged(subscription: Subscription, event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
+    event = event as DtFilterFieldChangeEvent<DtAutoComplete>;
+    const result = event.filters.reduce((filters: {Stages: string[], Services: string[]}, filter) => {
+      filters[filter[0].name as 'Stages' | 'Services'].push(filter[1].name);
       return filters;
     }, {Stages: [], Services: []});
     subscription.services = result.Services;
@@ -86,6 +91,7 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

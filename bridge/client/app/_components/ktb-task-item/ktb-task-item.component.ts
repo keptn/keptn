@@ -10,14 +10,12 @@ import {
   Output, EventEmitter
 } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import {Observable, Subject} from "rxjs";
-import {map, takeUntil} from "rxjs/operators";
-
+import {Observable, of, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 import {Trace} from '../../_models/trace';
-import {Project} from "../../_models/project";
+import {Project} from '../../_models/project';
 import {ClipboardService} from '../../_services/clipboard.service';
-import {DataService} from "../../_services/data.service";
-
+import {DataService} from '../../_services/data.service';
 import {DateUtil} from '../../_utils/date.utils';
 import {ActivatedRoute} from '@angular/router';
 
@@ -29,28 +27,30 @@ export class KtbTaskItemDetail {
 }
 
 @Component({
-  selector: 'ktb-task-item',
+  selector: 'ktb-task-item[task]',
   templateUrl: './ktb-task-item.component.html',
   styleUrls: ['./ktb-task-item.component.scss'],
 })
 export class KtbTaskItemComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  public project$: Observable<Project>;
-  public _task: Trace;
-  @Input() public isExpanded: boolean;
+  public project$: Observable<Project | undefined> = of(undefined);
+  public _task?: Trace;
+  @Input() public isExpanded = false;
 
   @ViewChild('taskPayloadDialog')
-  public taskPayloadDialog: TemplateRef<any>;
-  public taskPayloadDialogRef: MatDialogRef<any, any>;
+  // tslint:disable-next-line:no-any
+  public taskPayloadDialog?: TemplateRef<any>;
+  // tslint:disable-next-line:no-any
+  public taskPayloadDialogRef?: MatDialogRef<any, any>;
 
   @Output() itemClicked: EventEmitter<Trace> = new EventEmitter();
 
   @Input()
-  get task(): Trace {
+  get task(): Trace | undefined {
     return this._task;
   }
 
-  set task(value: Trace) {
+  set task(value: Trace | undefined) {
     if (this._task !== value) {
       this._task = value;
       this.changeDetectorRef.markForCheck();
@@ -63,16 +63,15 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
               private clipboard: ClipboardService,
               public dateUtil: DateUtil,
               private route: ActivatedRoute) {
-    this.project$ = this.dataService.projects.pipe(
-      map(projects => projects ? projects.find(project => {
-        return project.projectName === this._task.getProject();
-      }) : null)
-    );
   }
 
-  showEventPayloadDialog(event, task) {
+
+
+  showEventPayloadDialog(event: MouseEvent, task: Trace) {
     event.stopPropagation();
-    this.taskPayloadDialogRef = this.dialog.open(this.taskPayloadDialog, { data: task.plainEvent });
+    if (this.taskPayloadDialog) {
+      this.taskPayloadDialogRef = this.dialog.open(this.taskPayloadDialog, {data: task.plainEvent});
+    }
   }
 
   closeEventPayloadDialog() {
@@ -87,6 +86,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
 
   isUrl(value: string): boolean {
     try {
+      // tslint:disable-next-line:no-unused-expression
       new URL(value);
     } catch (_) {
       return false;
@@ -99,10 +99,13 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    if (this.task?.project) {
+      this.project$ = this.dataService.getProject(this.task?.project);
+    }
     this.route.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(params => {
-        if (this.route.snapshot.params['eventId'] === this.task.id) {
+        if (params.eventId === this.task?.id) {
           this.isExpanded = true;
         }
       });
@@ -110,6 +113,7 @@ export class KtbTaskItemComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

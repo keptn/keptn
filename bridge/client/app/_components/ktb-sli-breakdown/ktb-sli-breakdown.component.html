@@ -75,7 +75,7 @@
     <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
     <dt-cell *dtCellDef="let row">
       <ng-container *ngIf="toSliResult(row) as result">
-        <span *ngIf="result.success" [textContent]="evaluationState[result.result]"></span>
+        <span *ngIf="result.success" [textContent]="evaluationState.get(result.result)"></span>
       </ng-container>
     </dt-cell>
   </ng-container>
@@ -84,7 +84,7 @@
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Score</dt-header-cell>
     <dt-cell *dtCellDef="let row" [dtOverlay]="scoreOverlay">
       <ng-container *ngIf="toSliResult(row) as result">
-        <span *ngIf="result.success" [class.error]="result.result === 'fail'" [class.warning]="result.result === 'warning'"
+        <span *ngIf="result.success" [class.error]="result.result === ResultTypes.FAILED" [class.warning]="result.result === ResultTypes.WARNING"
               [textContent]="result.score"></span>
       </ng-container>
     </dt-cell>

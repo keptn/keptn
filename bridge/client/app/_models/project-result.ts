@@ -1,6 +1,6 @@
-import {Project} from "./project";
+import {Project} from './project';
 
-export class ProjectResult {
+export interface ProjectResult {
   projects: Project[];
   totalCount: number;
 }

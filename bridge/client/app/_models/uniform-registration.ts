@@ -1,4 +1,4 @@
-export class UniformRegistration {
+export interface UniformRegistration {
   id: string;
   metadata: {
     deplyomentname: string,
@@ -12,7 +12,7 @@ export class UniformRegistration {
     },
     location: string,
     status: string
-  }
+  };
   name: string;
   subscription: {
     filter: {
@@ -22,6 +22,6 @@ export class UniformRegistration {
     },
     status: string,
     topics: string []
-  }
+  };
 }
 

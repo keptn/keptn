@@ -1,4 +1,4 @@
-<div class="container" *ngIf="error">
+<div class="container" *ngIf="error$ | async as error">
   <dt-empty-state>
     <dt-empty-state-item>
       <dt-empty-state-item-img>
@@ -24,44 +24,54 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<div class="container" *ngIf="!error && (project$ | async) === null">
+<div class="container" *ngIf="!(isCreateMode$ | async) && !(error$ | async) && (project$ | async) === undefined">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
   </div>
 </div>
-<div class="project-board" fxLayout="row" *ngIf="project$ | async as project">
-  <dt-menu aria-label="Keptn Menu" class="dt-default-menu-example" fxFlex="0 0 50px">
-    <dt-menu-group>
-      <ng-template #overlay let-data><span>{{data.text}}</span></ng-template>
-
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" routerLinkActive="active" routerLink="./" [routerLinkActiveOptions]= "{exact: true}">
-        <dt-icon name="environment"></dt-icon>
-      </button>
-
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" routerLinkActive="active" routerLink="service">
-        <dt-icon name="services"></dt-icon>
-      </button>
-
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
-        <dt-icon name="hops"></dt-icon>
-      </button>
-
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
-        <dt-icon name="infrastructure"></dt-icon>
-      </button>
-
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
-        <dt-icon name="plugin-connection"></dt-icon>
-      </button>
-    </dt-menu-group>
-    <dt-menu-group class="bottom-menu">
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open settings view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Settings'}}" routerLinkActive="active" routerLink="settings">
-        <dt-icon name="options-menu"></dt-icon>
-      </button>
-    </dt-menu-group>
-  </dt-menu>
+<div class="project-board" fxLayout="row" *ngIf="(project$ | async) || (isCreateMode$ | async)">
+  <ng-container
+    [ngTemplateOutlet]="keptnMenu"
+    [ngTemplateOutletContext]="{isCreateMode: (isCreateMode$ | async)}"></ng-container>
   <div fxFlex="calc(100%-50px)">
     <router-outlet></router-outlet>
   </div>
 </div>
+
+
+<ng-template #keptnMenu let-isCreateMode="isCreateMode">
+  <dt-menu aria-label="Keptn Menu" class="dt-default-menu-example" fxFlex="0 0 50px">
+    <dt-menu-group>
+      <ng-template #overlay let-data><span>{{data.text}}</span></ng-template>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open environment view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Environment'}}" routerLinkActive="active" routerLink="./" [routerLinkActiveOptions]= "{exact: true}">
+        <dt-icon name="environment"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open services view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Services'}}" routerLinkActive="active" routerLink="service">
+        <dt-icon name="services"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
+        <dt-icon name="hops"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
+        <dt-icon name="infrastructure"></dt-icon>
+      </button>
+
+      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
+        <dt-icon name="plugin-connection"></dt-icon>
+      </button>
+    </dt-menu-group>
+    <dt-menu-group class="bottom-menu">
+      <button *ngIf="!isCreateMode" dt-icon-button dtMenuItem variant="nested" aria-label="Open settings view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Settings'}}" routerLinkActive="active" routerLink="settings">
+        <dt-icon name="options-menu"></dt-icon>
+      </button>
+      <button *ngIf="isCreateMode" dt-icon-button dtMenuItem variant="nested" aria-label="Open create project view" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Create project'}}" routerLinkActive="active" routerLink="/create/project">
+        <dt-icon name="options-menu"></dt-icon>
+      </button>
+    </dt-menu-group>
+  </dt-menu>
+</ng-template>

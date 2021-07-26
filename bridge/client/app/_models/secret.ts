@@ -1,27 +1,35 @@
+class KeyValuePair {
+  key!: string;
+  value!: string;
+}
+
 export class Secret {
-  name: string;
-  scope: string;
-  data: [{
-    key: string;
-    value: string;
-  }];
+  name!: string;
+  scope!: string;
+  data: KeyValuePair[];
 
   constructor() {
-    this.scope = "keptn-default";
+    this.scope = 'keptn-default';
+    this.data = [];
   }
 
-  addData() {
-    if(!this.data)
-      this.data = [{ key: "", value: "" }];
-    else
-      this.data.push({ key: "", value: "" });
+  static fromJSON(data: unknown) {
+    return Object.assign(new this(), data);
   }
 
-  removeData(index) {
-    this.data.splice(index, 1);
+  setName(name: string): void {
+    this.name = name;
   }
 
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
+  addData(key: string, value: string): void {
+    this.data?.push({ key, value });
+  }
+
+  getData(index: number): KeyValuePair {
+    return this.data[index];
+  }
+
+  removeData(index: number): void {
+    this.data?.splice(index, 1);
   }
 }

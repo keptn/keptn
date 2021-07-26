@@ -5,14 +5,18 @@ enum NotificationType {
   Error = 'error'
 }
 
-class Notification {
-  type: NotificationType;
-  message: string;
-
-  static fromJSON(data: any) {
-    return Object.assign(new this, data);
-  }
-
+enum TemplateRenderedNotifications {
+  CREATE_PROJECT = 'message_create_project'
 }
 
-export {Notification, NotificationType}
+class Notification {
+  isTemplateRendered?: boolean;
+  // tslint:disable-next-line:no-any
+  data?: any;
+
+  constructor(public type: NotificationType, public message: string) {
+  }
+}
+
+export {Notification, NotificationType, TemplateRenderedNotifications};
+

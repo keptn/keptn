@@ -1,10 +1,9 @@
-import {Injectable} from "@angular/core";
-import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {finalize} from "rxjs/operators";
-
-import {HttpProgressState} from "../_models/http-progress-state";
-import {HttpStateService} from "../_services/http-state.service";
+import {Injectable} from '@angular/core';
+import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {finalize} from 'rxjs/operators';
+import {HttpProgressState} from '../_models/http-progress-state';
+import {HttpStateService} from '../_services/http-state.service';
 
 @Injectable({
   providedIn: 'root'

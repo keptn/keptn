@@ -8,6 +8,7 @@
       ]
     },
     "array-type": false,
+    "no-any": true,
     "arrow-parens": false,
     "arrow-return-shorthand": true,
     "deprecation": {
@@ -20,13 +21,12 @@
     "directive-selector": [
       true,
       "attribute",
-      "app",
+      "ktb",
       "camelCase"
     ],
     "component-selector": [
       true,
       "element",
-      "app",
       "ktb",
       "kebab-case"
     ],
@@ -45,7 +45,7 @@
     "max-classes-per-file": false,
     "max-line-length": [
       true,
-      140
+      300
     ],
     "member-access": false,
     "member-ordering": [
@@ -89,7 +89,7 @@
     ],
     "trailing-comma": false,
     "no-conflicting-lifecycle": true,
-    "no-host-metadata-property": true,
+    "no-host-metadata-property": false,
     "no-input-rename": true,
     "no-inputs-metadata-property": true,
     "no-output-native": true,
