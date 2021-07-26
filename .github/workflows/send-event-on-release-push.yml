@@ -1,12 +1,12 @@
 name: Update Docs
 on:
   push:
-    branches:
-      - "release-*"
+    tags:
+      - "*"
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch which should be used to generate the new keptn docs (Example: refs/heads/release-0.8.4)'
+      tag:
+        description: 'Tag which should be used to generate the new keptn docs (Example: refs/tags/0.8.6)'
         required: true
         default: ''
 jobs:
@@ -29,4 +29,4 @@ jobs:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           repository: 'keptn/keptn.github.io'
           event-type: release-push
-          client-payload: '{"ref": "${{ github.event.inputs.branch }}"}'
+          client-payload: '{"ref": "${{ github.event.inputs.tag }}"}'
