@@ -42,6 +42,9 @@ export class KtbEventItemComponent {
   set event(value: Trace | undefined) {
     if (this._event !== value) {
       this._event = value;
+      if (this._event?.project) {
+        this.project$ = this.dataService.getProject(this._event.project);
+      }
       this.changeDetectorRef.markForCheck();
     }
   }
@@ -51,9 +54,6 @@ export class KtbEventItemComponent {
               private dialog: MatDialog,
               private clipboard: ClipboardService,
               public dateUtil: DateUtil) {
-    if (this._event?.project) {
-      this.project$ = this.dataService.getProject(this._event?.project);
-    }
   }
 
   showEventPayloadDialog() {
