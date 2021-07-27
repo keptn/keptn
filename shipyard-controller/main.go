@@ -41,6 +41,7 @@ import (
 const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
+const envVarLogTTL = "LOG_TTL"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
@@ -147,7 +148,10 @@ func main() {
 	uniformController.Inject(apiV1)
 
 	logRepo := createLogRepo()
-	logRepo.SetupTTLIndex(getLogTTLDurationInSeconds(os.Getenv("LOG_TTL")))
+	err = logRepo.SetupTTLIndex(getDurationFromEnvVar(envVarLogTTL, envVarLogsTTLDefault))
+	if err != nil {
+		log.WithError(err).Error("could not setup TTL index for log repo entries")
+	}
 	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
 	logController := controller.NewLogController(logHandler)
 	logController.Inject(apiV1)
@@ -241,3 +245,26 @@ func getLogTTLDurationInSeconds(logsTTL string) int32 {
 	}
 	return int32(secondsInt)
 }
+
+func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
+	durationString := os.Getenv(envVar)
+	var duration time.Duration
+	var err error
+	if durationString != "" {
+		duration, err = time.ParseDuration(durationString)
+		if err != nil {
+			log.Errorf("could not parse log %s env var %s: %s. Will use default value %s", envVar, duration, err.Error(), fallbackValue)
+		}
+	}
+
+	if duration.Seconds() == 0 {
+		duration, err = time.ParseDuration(fallbackValue)
+		if err != nil {
+			log.Errorf("could not parse default duration string %s. %s will be set to 0", err.Error(), envVar)
+			return time.Duration(0)
+		}
+	}
+
+	return duration
+}
+
