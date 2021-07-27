@@ -1,0 +1,30 @@
+titleOnly: true
+types:
+  - feat      # A new feature
+  - fix       # A bug fix
+  - build     # Changes that affect the build system or external dependencies
+  - chore     # Other changes that don't modify src or test files
+  - ci        # Changes to our CI configuration files and scripts
+  - docs      # Documentation only changes
+  - perf      # A code change that improves performance
+  - refactor  # A code change that neither fixes a bug nor adds a feature
+  - revert    # Reverts a previous commit
+  - style     # Changes that do not affect the meaning of the code
+  - test      # Adding missing tests or correcting existing tests
+scopes:
+  - api
+  - approval-service
+  - bridge
+  - cli
+  - configuration-service
+  - distributor
+  - docs
+  - helm-service
+  - installer
+  - jmeter-service
+  - lighthouse-service
+  - mongodb-datestore
+  - remediation-service
+  - secret-service
+  - shipyard-controller
+  - statistics-service
