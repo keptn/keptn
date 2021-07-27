@@ -69,6 +69,8 @@ shipyardController:
   image:
     repository: docker.io/keptn/shipyard-controller
     tag: ""
+  config:
+    uniformIntegrationTTL: "2m"
 
 secretService:
   image:

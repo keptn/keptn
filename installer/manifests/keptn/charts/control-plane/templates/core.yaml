@@ -342,6 +342,8 @@ spec:
               value: 'keptn'
             - name: KEPTN_SPEC_VERSION
               value: {{ .Values.keptnSpecVersion }}
+            - name: UNIFORM_INTEGRATION_TTL
+              value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
           ports:
             - containerPort: 8080
           resources:

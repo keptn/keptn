@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
@@ -35,8 +36,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
 
+	err := mdbrepo.SetupTTLIndex(1 * time.Minute)
+	require.Nil(t, err)
+
 	// insert our integration entities
-	err := mdbrepo.CreateOrUpdateUniformIntegration(integration1)
+	err = mdbrepo.CreateOrUpdateUniformIntegration(integration1)
 	require.Nil(t, err)
 
 	err = mdbrepo.CreateOrUpdateUniformIntegration(integration2)

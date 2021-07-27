@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -77,6 +78,16 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 		return err
 	}
 	return nil
+}
+
+func (mdbrepo *MongoDBUniformRepo) SetupTTLIndex(duration time.Duration) error {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	if err != nil {
+		return fmt.Errorf("could not get collection: %s", err.Error())
+	}
+	defer cancel()
+
+	return SetupTTLIndex(ctx, "metadata.lastseen", duration, collection)
 }
 
 func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformIntegrationParams) bson.M {

@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
@@ -13,12 +18,8 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
-	"strconv"
-	"time"
 )
 
 // @title Control Plane API
@@ -39,8 +40,10 @@ import (
 
 const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
+const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarLogsTTLDefault = "120h" // 5 days
+const envVarUniformTTLDefault = "1m"
 
 func main() {
 	log.SetLevel(log.InfoLevel)
@@ -133,6 +136,11 @@ func main() {
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 
 	uniformRepo := createUniformRepo()
+	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
+	if err != nil {
+		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
+	}
+
 	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformManager)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
