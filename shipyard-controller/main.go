@@ -170,7 +170,7 @@ func main() {
 	uniformRepo := createUniformRepo()
 	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
 	if err != nil {
-		log.WithError(err).Error("could not setup TTL index for log repo entries")
+		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
 	}
 
 	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
