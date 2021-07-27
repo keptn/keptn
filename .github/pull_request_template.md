@@ -2,9 +2,9 @@
 <!-- Please use the sections that you need and delete other sections -->
 
 ## This PR
+<!-- add the description of the PR here -->
 
 - adds this new feature
-<!-- add the description of the PR here -->
 
 ### Related Issues
 
