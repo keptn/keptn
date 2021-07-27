@@ -1,60 +1,70 @@
-import {Component, OnInit} from '@angular/core';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {Secret} from "../../_models/secret";
+import { Component } from '@angular/core';
+import { DataService } from '../../_services/data.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AbstractControl, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { Secret } from '../../_models/secret';
 
 @Component({
   selector: 'ktb-secrets-view',
   templateUrl: './ktb-create-secret-form.component.html',
   styleUrls: ['./ktb-create-secret-form.component.scss']
 })
-export class KtbCreateSecretFormComponent implements OnInit {
+export class KtbCreateSecretFormComponent {
 
-  public isLoading: boolean = false;
-  public secret: Secret = null;
+  public isLoading = false;
 
-  public secretNamePattern = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
-  public secretKeyPattern = "[-._a-zA-Z0-9]+";
+  private secretNamePattern = '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*';
+  private secretKeyPattern = '[-._a-zA-Z0-9]+';
 
-  public defaultFormControls: {} = {
-    name: new FormControl('', [Validators.required, Validators.pattern(this.secretNamePattern)])
-  };
-  public createSecretForm = new FormGroup(this.defaultFormControls);
+  public createSecretForm = this.fb.group({
+    name: ['', [Validators.required, Validators.pattern(this.secretNamePattern)]],
+    data: this.fb.array([
+      this.fb.group({
+        key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
+        value: ['', [Validators.required]]
+      })
+    ])
+  });
 
-  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute) { }
-
-  ngOnInit(): void {
-    this.secret = new Secret();
-    this.addPair();
+  constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private fb: FormBuilder) {
   }
 
-  public createSecret() {
-    if(this.createSecretForm.valid) {
+  get data(): FormArray {
+    return this.createSecretForm.get('data') as FormArray;
+  }
+
+  public createSecret(): void {
+    if (this.createSecretForm.valid) {
       this.isLoading = true;
-      this.dataService.addSecret(this.secret)
+
+      const secret: Secret = new Secret();
+      secret.setName(this.createSecretForm.get('name')?.value);
+      for (const dataGroup of this.data?.controls || []) {
+        secret.addData(dataGroup.get('key')?.value, dataGroup.get('value')?.value);
+      }
+
+      this.dataService.addSecret(secret)
         .subscribe((result) => {
           this.isLoading = false;
-          this.router.navigate(['../'], { relativeTo: this.route });
+          this.router.navigate(['../'], {relativeTo: this.route});
         }, (err) => {
           this.isLoading = false;
         });
     }
   }
 
-  public addPair() {
-    this.secret.addData();
-    this.createSecretForm.addControl('key'+this.secret.data.length, new FormControl('', [Validators.required, Validators.pattern(this.secretKeyPattern)]));
-    this.createSecretForm.addControl('value'+this.secret.data.length, new FormControl('', [Validators.required]));
+  public addPair(): void {
+    this.data?.push(this.fb.group({
+      key: ['', [Validators.required, Validators.pattern(this.secretKeyPattern)]],
+      value: ['', [Validators.required]]
+    }));
   }
 
-  public removePair(index) {
-    this.secret.removeData(index);
-    this.createSecretForm.removeControl('key'+(index+1));
-    this.createSecretForm.removeControl('value'+(index+1));
+  public removePair(index: number): void {
+    this.data?.removeAt(index);
   }
 
-  public getFormControl(controlName) {
+  public getFormControl(controlName: string): AbstractControl | null {
     return this.createSecretForm.get(controlName);
   }
 

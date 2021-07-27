@@ -43,10 +43,12 @@ const envVarConfigurationSvcEndpoint = "CONFIGURATION_SERVICE"
 const envVarEventDispatchIntervalSec = "EVENT_DISPATCH_INTERVAL_SEC"
 const envVarSequenceDispatchIntervalSec = "SEQUENCE_DISPATCH_INTERVAL_SEC"
 const envVarTaskStartedWaitDuration = "TASK_STARTED_WAIT_DURATION"
+const envVarUniformIntegrationTTL = "UNIFORM_INTEGRATION_TTL"
 const envVarLogTTL = "LOG_TTL"
 const envVarEventDispatchIntervalSecDefault = "10"
 const envVarSequenceDispatchIntervalSecDefault = "10s"
 const envVarLogsTTLDefault = "120h" // 5 days
+const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
 
 func main() {
@@ -180,6 +182,11 @@ func main() {
 	watcher.Run(context.Background())
 
 	uniformRepo := createUniformRepo()
+	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(envVarUniformIntegrationTTL, envVarUniformTTLDefault))
+	if err != nil {
+		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
+	}
+
 	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformManager)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)

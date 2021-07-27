@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import axios from 'axios';
+import axios, { Method } from 'axios';
 import * as https from 'https';
 import { currentPrincipal } from '../user/session.js';
 
@@ -61,9 +61,8 @@ function apiRouter(params:
 
   router.get('/swagger-ui/swagger.yaml', async (req, res, next) => {
     try {
-      // @ts-ignore
       const result = await axios({
-        method: req.method,
+        method: req.method as Method,
         url: `${apiUrl}${req.url}`,
         headers: {
           'Content-Type': 'application/json'
@@ -78,9 +77,8 @@ function apiRouter(params:
 
   router.get('/version.json', async (req, res, next) => {
     try {
-      // @ts-ignore
       const result = await axios({
-        method: req.method,
+        method: req.method as Method,
         url: `https://get.keptn.sh/version.json`,
         headers: {
           'Content-Type': 'application/json',
@@ -96,9 +94,8 @@ function apiRouter(params:
 
   router.all('*', async (req, res, next) => {
     try {
-      // @ts-ignore
       const result = await axios({
-        method: req.method,
+        method: req.method as Method,
         url: `${apiUrl}${req.url}`,
         ...req.method !== 'GET' && { data: req.body },
         headers: {

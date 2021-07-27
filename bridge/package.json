@@ -5,8 +5,8 @@
     "start": "cd ./server && npm run start",
     "start:dev": "npm-run-all -p start:client:dev start:server:dev",
     "start:prod": "npm run build && npm run start",
-    "start:server:dev": "cd ./server && npm run dev",
     "start:client:dev": "ng build --watch",
+    "start:server:dev": "cd ./server && npm run dev",
     "ng": "ng",
     "build": "ng build --prod --base-href=./",
     "test": "ng test",
@@ -63,7 +63,7 @@
     "moment": "^2.29.1",
     "ngx-moment": "^3.5.0",
     "normalize.css": "^8.0.1",
-    "rxjs": "^6.6.3",
+    "rxjs": "^6.6.7",
     "semver": "^7.3.2",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
@@ -73,9 +73,12 @@
     "@angular/cli": "^11.2.13",
     "@angular/compiler-cli": "^11.2.8",
     "@angular/language-service": "^11.2.13",
+    "@types/dompurify": "^2.2.3",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
+    "@types/marked": "^2.0.4",
     "@types/node": "^15.12.5",
+    "@types/semver": "^7.3.7",
     "codelyzer": "^6.0.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~7.0.0",
@@ -94,7 +97,7 @@
     "typescript": "^4.1.5"
   },
   "resolutions": {
-    "minimist": "~1.2.5",
+    "minimist": "1.2.5",
     "css-what": "~5.0.1",
     "glob-parent": "~5.1.2"
   }

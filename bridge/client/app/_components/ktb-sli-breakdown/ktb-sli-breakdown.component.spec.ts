@@ -4,6 +4,7 @@ import { KtbEvaluationDetailsComponent } from '../ktb-evaluation-details/ktb-eva
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { Evaluations } from '../../_services/_mockData/evaluations.mock';
+import { Trace } from '../../_models/trace';
 
 describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbSliBreakdownComponent;
@@ -26,11 +27,17 @@ describe('KtbEvaluationDetailsComponent', () => {
   }));
 
   it('should have expandable row', () => {
+    // tslint:disable:no-non-null-assertion
     // given
-    const selectedEvaluation = Evaluations.data.evaluationHistory[1];
+    // @ts-ignore
+    const selectedEvaluation: Trace = Evaluations.data.evaluationHistory[1]!;
+    // @ts-ignore
     component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
+    // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
+    // @ts-ignore
     component.comparedIndicatorResults = Evaluations.data.evaluationHistory[0].data.evaluation.indicatorResults;
+    // tslint:enable:no-non-null-assertion
 
     // then
     fixture.detectChanges();
@@ -57,8 +64,11 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   it('should not have expandable row', () => {
     // given
+    // @ts-ignore
     const selectedEvaluation = Evaluations.data.evaluationHistory[1];
+    // @ts-ignore
     component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
+    // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
     component.comparedIndicatorResults = [];
 
@@ -77,9 +87,13 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   it('should have success values', () => {
     // given
+    // @ts-ignore
     const selectedEvaluation = Evaluations.data.evaluationHistory[7];
+    // @ts-ignore
     component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
+    // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
+    // @ts-ignore
     component.comparedIndicatorResults = Evaluations.data.evaluationHistory[5].data.evaluation.indicatorResults;
 
     // then
@@ -105,9 +119,13 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   it('should have error values', () => {
     // given
+    // @ts-ignore
     const selectedEvaluation = Evaluations.data.evaluationHistory[6];
+    // @ts-ignore
     component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
+    // @ts-ignore
     component.score = selectedEvaluation.data.evaluation.score;
+    // @ts-ignore
     component.comparedIndicatorResults = Evaluations.data.evaluationHistory[5].data.evaluation.indicatorResults;
 
     // then

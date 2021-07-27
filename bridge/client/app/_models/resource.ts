@@ -1,4 +1,4 @@
-export class Resource {
+export interface Resource {
   resourceURI: string;
   resourceContent: string;
 }

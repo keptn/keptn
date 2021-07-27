@@ -13,6 +13,8 @@
   ],
   "exclude": [
     "client/test.ts",
-    "client/**/*.spec.ts"
+    "client/**/*.spec.ts",
+    "client/**/*.mock.ts",
+    "client/app/_utils/test.utils.ts"
   ]
 }

@@ -11,16 +11,39 @@
   animation: slideDown 4s ease 0s 1 forwards;
 }
 
-:host ::ng-deep .info-note a,
-:host ::ng-deep .error-note a,
-:host ::ng-deep .success-note a {
-  color: #ffffff;
-}
+:host ::ng-deep {
+  .dt-button.dt-button-nested.dt-icon-button:active:not([disabled]),
+  .dt-button.dt-button-nested.dt-icon-button:hover:not([disabled]) {
+    background: transparent;
+    svg {
+      fill: $gray-300;
+    }
+  }
 
-:host ::ng-deep .info-note .dt-button-nested .dt-button-icon .dt-icon svg,
-:host ::ng-deep .error-note .dt-button-nested .dt-button-icon .dt-icon svg,
-:host ::ng-deep .success-note .dt-button-nested .dt-button-icon .dt-icon svg {
-  fill: #ffffff;
+  .dt-icon-button {
+    margin-top: 7px;
+    margin-right: 7px;
+  }
+
+  .info-note,
+  .error-note,
+  .success-note {
+    a {
+      color: #ffffff;
+    }
+
+    .dt-button-nested .dt-button-icon .dt-icon svg {
+      fill: #ffffff;
+    }
+
+    .long-note {
+      line-height: 1.4;
+    }
+
+    span.small {
+      color: #ffffff;
+    }
+  }
 }
 
 .info-note, .error-note, .success-note {

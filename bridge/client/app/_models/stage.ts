@@ -1,11 +1,12 @@
 import {Service} from './service';
+import { Root } from './root';
 
 export class Stage {
-  stageName: string;
-  parentStages: string[];
-  services: Service[];
+  stageName!: string;
+  parentStages?: string[];
+  services: Service[] = [];
 
-  static fromJSON(data: any) {
+  static fromJSON(data: unknown) {
     return Object.assign(new this(), data);
   }
 
@@ -13,7 +14,7 @@ export class Stage {
     return this.services.filter(s => s.getOpenApprovals().length > 0);
   }
 
-  public getOpenProblems() {
-    return this.services.reduce((openProblems, service) => [...openProblems, ...service.getOpenProblems()], []);
+  public getOpenProblems(): Root[] {
+    return this.services.reduce((openProblems: Root[], service: Service) => [...openProblems, ...service.getOpenProblems()], []);
   }
 }

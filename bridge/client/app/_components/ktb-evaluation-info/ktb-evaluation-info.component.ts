@@ -11,15 +11,15 @@ import {EvaluationResult} from '../../_models/evaluation-result';
   styleUrls: ['./ktb-evaluation-info.component.scss']
 })
 export class KtbEvaluationInfoComponent {
-  private _evaluationResult: EvaluationResult;
-  public isError: boolean;
-  public isWarning: boolean;
-  public isSuccess: boolean;
+  private _evaluationResult?: EvaluationResult;
+  public isError = false;
+  public isWarning = false;
+  public isSuccess = false;
   @Input()
-  get evaluationResult() {
+  get evaluationResult(): EvaluationResult | undefined {
     return this._evaluationResult;
   }
-  set evaluationResult(result: EvaluationResult) {
+  set evaluationResult(result: EvaluationResult | undefined) {
     this._evaluationResult = result;
     if (this.evaluationResult) {
       this.isError = this.evaluationResult.result === ResultTypes.FAILED;
@@ -27,9 +27,9 @@ export class KtbEvaluationInfoComponent {
       this.isSuccess = this.evaluationResult.result === ResultTypes.PASSED;
     }
   }
-  @Input() public evaluation: Trace;
-  @Input() public overlayDisabled: boolean;
-  @Input() public fill: boolean | undefined;
+  @Input() public evaluation?: Trace;
+  @Input() public overlayDisabled?: boolean;
+  @Input() public fill?: boolean;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true

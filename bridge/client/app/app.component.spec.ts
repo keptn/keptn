@@ -70,7 +70,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
 
     // NOTE: function used in index.html, this is a duplicate only for testing
-    function getBridgeBaseHref(origin, path) {
+    function getBridgeBaseHref(origin: string, path: string) {
       if (path.indexOf('/bridge') != -1)
         return [origin, path.substring(0, path.indexOf('/bridge')), '/bridge/'].join('');
       else

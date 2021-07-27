@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Observable, of, throwError} from 'rxjs';
+import {Observable, throwError} from 'rxjs';
 import {catchError, retryWhen} from 'rxjs/operators';
 import {genericRetryStrategy} from './http-generic-retry-strategy';
 import {DtToast} from '@dynatrace/barista-components/toast';
@@ -32,11 +32,8 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                 1000
               );
             }
-
-            return of(undefined);
           }
-
-          if (error.error instanceof ErrorEvent) {
+          else if (error.error instanceof ErrorEvent) {
             // A client-side or network error occurred. Handle it accordingly.
             console.error('An error occurred:', error.error.message);
             this.toast.create(`${error.error.message}`);

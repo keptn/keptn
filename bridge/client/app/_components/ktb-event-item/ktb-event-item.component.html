@@ -4,7 +4,7 @@
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
         <dt-icon class="event-icon" [class.error]="_event.isFaulty()" [class.success]="_event.isSuccessful()" [class.highlight]="_event.isApproval()" [name]="_event.getIcon()"></dt-icon>
         <h4 class="m-0 mt-1 mb-1" [class.error]="_event.isFaulty()" [textContent]="_event.getLabel()"></h4>
-        <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank" [title]="'View ' + _event.getService() + ' in ' + _event.getStage()"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
+        <a *ngIf="_event.data.deploymentURIPublic" [href]="_event.data.deploymentURIPublic" target="_blank" [title]="'View ' + _event.service + ' in ' + _event.stage"><button dt-icon-button variant="nested"><dt-icon name="externallink"></dt-icon></button></a>
       </div>
       <div *ngIf="_event.data.canary">
         <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="_event.data.canary.action"></span> <span [textContent]="_event.data.canary.value"></span></p>
@@ -18,17 +18,17 @@
     </div>
     <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-event-item-contextButtons">
       <div fxLayout="row" fxLayoutAlign="start start">
-        <p *ngIf="showTime" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
-        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" title="Evaluation board" [routerLink]="['/evaluation', _event.shkeptncontext, _event.getStage()]" *ngIf="_event.isEvaluation() && _event.isFinished() || showChartLink"><dt-icon name="chart-bar"></dt-icon></button>
+        <p *ngIf="showTime && _event.time" class="m-0 mt-1 mb-1" [textContent]="_event.time | amDateFormat:dateUtil.getDateTimeFormat()"></p>
+        <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-evaluation" title="Evaluation board" [routerLink]="['/evaluation', _event.shkeptncontext, _event.stage]" *ngIf="_event.isEvaluation() && _event.isFinished() || showChartLink"><dt-icon name="chart-bar"></dt-icon></button>
         <button dt-icon-button variant="nested" uitestid="keptn-event-item-contextButton-payload" title="Event payload" (click)="showEventPayloadDialog()"><dt-icon name="coding"></dt-icon></button>
       </div>
     </div>
   </div>
-  <div *ngIf="_event.data.problem?.ProblemDetails">
-    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="_event.data.problem.ProblemDetails.tagsOfAffectedEntities" uitestid="keptn-event-item-problemTags">
+  <div *ngIf="_event.data.problem?.ProblemDetails as problemDetails">
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="problemDetails.tagsOfAffectedEntities" uitestid="keptn-event-item-problemTags">
       <p class="bold nobreak m-0 mt-1 mb-1">Labels: </p>
       <dt-tag-list aria-label="affected-entities" (click)="$event.stopPropagation();">
-        <dt-tag *ngFor="let tag of _event.data.problem.ProblemDetails.tagsOfAffectedEntities">
+        <dt-tag *ngFor="let tag of problemDetails.tagsOfAffectedEntities">
           <p *ngIf="!isUrl(tag.value)" ><span [textContent]="tag.key"></span>:&nbsp;<span [textContent]="tag.value"></span></p>
           <a *ngIf="isUrl(tag.value)" [href]="tag.value" target="_blank" [textContent]="tag.key"></a>
         </dt-tag>
@@ -39,7 +39,7 @@
     <div fxLayout="row" fxLayoutAlign="start center">
       <p class="bold">Labels: </p>
       <dt-tag-list aria-label="evaluation-labels">
-        <dt-tag *ngFor="let label of _event.getFinishedEvent()?.data.labels | keyvalue">
+        <dt-tag *ngFor="let label of _event.getFinishedEvent()?.labels | keyvalue">
           <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
           <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
         </dt-tag>

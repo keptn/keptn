@@ -4,7 +4,8 @@ import {DataService} from '../../_services/data.service';
 import {Subject, timer} from 'rxjs';
 import moment from 'moment';
 import {ClipboardService} from '../../_services/clipboard.service';
-import {ApiService} from "../../_services/api.service";
+import {ApiService} from '../../_services/api.service';
+import { KeptnInfo } from '../../_models/keptn-info';
 
 @Component({
   selector: 'ktb-integration-view',
@@ -13,12 +14,12 @@ import {ApiService} from "../../_services/api.service";
 })
 export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
-  private _rootEventsTimerInterval = 30;
+  private _rootEventsTimerInterval = 30_000;
 
-  public currentTime: string;
-  public keptnInfo: any;
-  public integrationsExternalDetails = null;
-  public useCaseExamples = {
+  public currentTime: string = this.getCurrentTime();
+  public keptnInfo?: KeptnInfo;
+  public integrationsExternalDetails?: string;
+  public useCaseExamples: {cli: {label: string, code: string}[], api: {label: string, code: string}[]} = {
     cli: [],
     api: []
   };
@@ -27,7 +28,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dataService.keptnInfo
-      .pipe(filter(keptnInfo => !!keptnInfo))
+      .pipe(filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo))
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(keptnInfo => {
         this.keptnInfo = keptnInfo;
@@ -44,7 +45,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
           this.updateIntegrations();
         }
       });
-    timer(this._rootEventsTimerInterval*1000, this._rootEventsTimerInterval*1000)
+    timer(this._rootEventsTimerInterval, this._rootEventsTimerInterval)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.updateIntegrations();
@@ -53,14 +54,24 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
 
   updateIntegrations() {
     if (this.keptnInfo && this.keptnInfo.bridgeInfo.keptnInstallationType && this.keptnInfo.bridgeInfo.keptnInstallationType.includes('QUALITY_GATES')) {
-      this.currentTime = moment.utc().startOf('minute').format('YYYY-MM-DDTHH:mm:ss');
-      this.useCaseExamples.cli.find(e => e.label === 'Trigger a quality gate evaluation').code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
-      this.useCaseExamples.api.find(e => e.label === 'Trigger a quality gate evaluation').code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
+      this.currentTime = this.getCurrentTime();
+      const cliItem = this.useCaseExamples.cli.find(e => e.label === 'Trigger a quality gate evaluation');
+      const apiItem = this.useCaseExamples.api.find(e => e.label === 'Trigger a quality gate evaluation');
+      if (cliItem) {
+        cliItem.code = `keptn trigger evaluation --project=\${PROJECT} --stage=\${STAGE} --service=\${SERVICE} --start=${this.currentTime} --timeframe=5m`;
+      }
+      if (apiItem) {
+        apiItem.code = `curl -X POST "\${KEPTN_API_ENDPOINT}/v1/project/\${PROJECT}/stage/\${STAGE}/service/\${SERVICE}/evaluation" \\
     -H "accept: application/json; charset=utf-8" \\
     -H "x-token: \${KEPTN_API_TOKEN}" \\
     -H "Content-Type: application/json; charset=utf-8" \\
     -d "{"start": "${this.currentTime}", "timeframe": "5m", "labels":{"buildId":"build-17","owner":"JohnDoe","testNo":"47-11"}"`;
+      }
     }
+  }
+
+  private getCurrentTime(): string {
+    return moment.utc().startOf('minute').format('YYYY-MM-DDTHH:mm:ss');
   }
 
   addEvaluationUseCaseToIntegrations() {
@@ -107,13 +118,13 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((result: string) => {
         this.integrationsExternalDetails = result;
-      }, (err: Error) => {
+      }, () => {
         this.integrationsExternalDetails = '<p>Couldn\'t load page. For more details see <a href="https://keptn.sh/docs/integrations/" target="_blank" rel="noopener noreferrer">https://keptn.sh/docs/integrations/</a>';
       });
   }
 
   copyApiToken() {
-    this.clipboard.copy(this.keptnInfo.bridgeInfo.apiToken, 'API token');
+    this.clipboard.copy(this.keptnInfo?.bridgeInfo.apiToken, 'API token');
   }
 
   ngOnDestroy(): void {

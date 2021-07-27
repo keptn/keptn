@@ -48,7 +48,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   it('should disable the "Update shipyard" button when no file is selected', () => {
     // given
     component.isCreateMode = false;
-    component.shipyardFile = null;
+    component.shipyardFile = undefined;
     const button = fixture.nativeElement.querySelector('button.shipyard-upload-button');
 
     // then
@@ -87,7 +87,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     Object.defineProperty(file.constructor.prototype, 'size', {
       value: 4096
     });
-    const fileList = TestUtils.createNewDropEventWithFiles([file]).dataTransfer.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([file]).dataTransfer?.files;
 
     // when
     component.validateAndUpdateFile(fileList);
@@ -100,7 +100,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   it('should show an error when the file selected by the file input has not the right file extension', () => {
     // given
     const errorContainer = fixture.nativeElement.querySelector('p.drop-error');
-    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer?.files;
 
     // when
     component.validateAndUpdateFile(fileList);
@@ -112,14 +112,14 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
   it('should update the files when dropped handler is called', () => {
     // given
-    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer?.files;
 
     // when
     component.updateFile(fileList);
     fixture.detectChanges();
 
     // then
-    expect(component.shipyardFile).toEqual(fileList[0]);
+    expect(component.shipyardFile).toEqual(fileList?.[0]);
   });
 
   it('should call validateAndUpdateFile when file input was changed', () => {
@@ -136,14 +136,14 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
   it('should emit the updated files', () => {
     // given
-    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.yaml')]).dataTransfer.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.yaml')]).dataTransfer?.files;
     const spy = spyOn(component.shipyardFileChanged, 'emit');
 
     // when
     component.updateFile(fileList);
 
     // then
-    expect(spy).toHaveBeenCalledWith(fileList[0]);
+    expect(spy).toHaveBeenCalledWith(fileList?.[0]);
   });
 
   it('should show the file when a shipyard file is set', () => {
@@ -188,7 +188,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     // then
     const div = fixture.nativeElement.querySelector('.shipyard-file-name');
     expect(div).toBeFalsy();
-    expect(component.shipyardFile).toBeNull();
+    expect(component.shipyardFile).toBeUndefined();
   });
 
   it('should have a different file selected after a file was deleted and re-added', () => {
