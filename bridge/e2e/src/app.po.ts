@@ -6,6 +6,6 @@ export class AppPage {
   }
 
   navigateToPath(path: string) {
-    return browser.get(path) as Promise<any>;
+    return browser.get(`${browser.baseUrl}${path}`) as Promise<any>;
   }
 }

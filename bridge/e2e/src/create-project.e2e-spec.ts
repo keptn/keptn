@@ -8,7 +8,7 @@ describe('Create Project', () => {
 
   beforeEach(() => {
     page = new AppPage();
-    page.navigateToPath('/create/project');
+    page.navigateToPath('create/project');
   });
 
   it('should create a new project', async () => {
