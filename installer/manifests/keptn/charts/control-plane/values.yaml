@@ -33,6 +33,9 @@ apiService:
   image:
     repository: docker.io/keptn/api
     tag: ""
+  config:
+    maxAuthRequestsPerSecond: "1.0"
+    maxAuthRequestBurst: "2"
 
 bridge:
   image:
