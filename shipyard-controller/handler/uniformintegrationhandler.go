@@ -5,6 +5,7 @@ import (
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"net/http"
+	"time"
 )
 
 type IUniformIntegrationHandler interface {
@@ -56,6 +57,8 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	}
 
 	integration.ID = hash
+
+	integration.MetaData.LastSeen = time.Now().UTC()
 
 	if err := rh.integrationManager.Register(*integration); err != nil {
 		SetInternalServerErrorResponse(err, c)
