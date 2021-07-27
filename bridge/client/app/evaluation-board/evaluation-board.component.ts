@@ -38,9 +38,9 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
     this.route.params
       .pipe(
         takeUntil(this.unsubscribe$),
-        map(params => params.shkeptncontext),
-        filter((params: {shkeptncontext: string | undefined, eventselector: string | undefined}):
-                params is {shkeptncontext: string, eventselector: string | undefined} => !!params.shkeptncontext)
+        // tslint:disable-next-line:no-any
+        filter((params: any):
+        params is {shkeptncontext: string, eventselector: string | undefined} => !!params.shkeptncontext)
       )
       .subscribe(params => {
         this.contextId = params.shkeptncontext;
