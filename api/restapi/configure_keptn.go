@@ -5,19 +5,21 @@ package restapi
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/benbjohnson/clock"
+	"github.com/kelseyhightower/envconfig"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/go-openapi/errors"
-	openapierrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/api/handlers"
+	custommiddleware "github.com/keptn/keptn/api/middleware"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
@@ -28,11 +30,30 @@ import (
 
 //go:generate swagger generate server --target ../../api --name Keptn --spec ../swagger.yaml --principal models.Principal
 
+type EnvConfig struct {
+	AuthRequestsPerSecond float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
+	AuthRequestMaxBurst   int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
+}
+
 func configureFlags(api *operations.KeptnAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
+func getEnvConfig() (*EnvConfig, error) {
+	env := &EnvConfig{}
+	if err := envconfig.Process("", env); err != nil {
+		return nil, err
+	}
+	return env, nil
+}
+
 func configureAPI(api *operations.KeptnAPI) http.Handler {
+	env, err := getEnvConfig()
+	if err != nil {
+		log.WithError(err).Error("Failed to process env var")
+		os.Exit(1)
+	}
+
 	/// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -47,14 +68,8 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-token" header is set
-	api.KeyAuth = func(token string) (*models.Principal, error) {
-		if token == os.Getenv("SECRET_TOKEN") {
-			prin := models.Principal(token)
-			return &prin, nil
-		}
-		log.Printf("Access attempt with incorrect api key auth: %s", token)
-		return nil, openapierrors.New(401, "incorrect api key auth")
-	}
+	tokenValidator := &custommiddleware.BasicTokenValidator{}
+	api.KeyAuth = tokenValidator.ValidateToken
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
 	// Expected interface runtime.Authorizer
@@ -76,6 +91,8 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 
 	//api.EvaluationTriggerEvaluationHandler = evaluation.TriggerEvaluationHandlerFunc(handlers.TriggerEvaluationHandlerFunc)
 
+	rateLimiter := custommiddleware.NewRateLimiter(env.AuthRequestsPerSecond, env.AuthRequestMaxBurst, tokenValidator, clock.New())
+	api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
