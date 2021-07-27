@@ -83,7 +83,7 @@ For contributions to Keptn, please fork the Keptn repository and work in a branc
 
 We are loosely following the [Git Flow branching model](https://nvie.com/posts/a-successful-git-branching-model/) however, we try to avoid the extra step of the `develop` branch and instead work directly on the `master` branch.
 
-* If you work on a new feature, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
+* If you work on an improvement, [fork the repository](docs/fork.md), branch away from the `master` branch and use the following schema for naming your branches:
 ```
 <ticket-type>/<github-issue-number>/<descriptive-name-with-dashes>
 
@@ -190,7 +190,7 @@ feat(api): New endpoint for feature X (#1234)
 This would be a PR that adds a new endpoint to the keptn API and the issue number related to this PR is #1234.
 
 If you have **breaking changes** in your PR, it is important to note them in the PR description but also in the merge commit for that PR.
-When pressing "squash and merge", you have the option to fill out the commit message. Please use that feature to add the breaking changes according to the conventional commit guidelines.
+When pressing "squash and merge", you have the option to fill out the commit message. Please use that feature to add the breaking changes according to the [conventional commit guidelines](https://www.conventionalcommits.org/en/v1.0.0/).
 Also, please remove the PR number at the end and just add the issue number.
 
 An example for a PR with breaking changes and the according merge commit:
