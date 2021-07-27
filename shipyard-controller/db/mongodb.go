@@ -17,6 +17,7 @@ func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Durat
 		return fmt.Errorf("could not load list of indexes of collection %s: %w", collection.Name(), err)
 	}
 
+	// get all indexes
 	var ixs []bson.M
 	err = cur.All(ctx, &ixs)
 	if err != nil {
@@ -24,10 +25,15 @@ func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Durat
 	}
 
 	for _, index := range ixs {
+		// if we find an index with the right name
 		if index["name"] == indexName {
+			// and the ttl value did not change
 			if index["expireAfterSeconds"] == ttlInSeconds {
+				// do nothing
 				return nil
 			}
+			// if ttl value did change, we need to delete the index
+			// and (re) create it bellow
 			_, err := collection.Indexes().DropOne(ctx, indexName)
 			if err != nil {
 				return fmt.Errorf("unable to delete %s index of collection %s: %w", indexName, collection.Name(), err)
@@ -35,6 +41,7 @@ func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Durat
 		}
 	}
 
+	// create the index
 	newIndex := mongo.IndexModel{
 		Keys: bson.M{
 			propertyName: 1,
