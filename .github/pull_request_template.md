@@ -7,8 +7,8 @@
 - adds this new feature
 
 ### Related Issues
-
 <!-- add here the GitHub issue that this PR resolves if applicable -->
+
 Fixes #1234523
 
 ### Notes
