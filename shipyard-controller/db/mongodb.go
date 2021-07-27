@@ -11,27 +11,28 @@ import (
 
 func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Duration, collection *mongo.Collection) error {
 	ttlInSeconds := int32(duration.Seconds())
-	createIndex := true
-
+	indexName := propertyName + "_1"
 	cur, err := collection.Indexes().List(ctx)
 	if err != nil {
-		return fmt.Errorf("could not load list of indexes of collection %s: %s", collection.Name(), err.Error())
+		return fmt.Errorf("could not load list of indexes of collection %s: %w", collection.Name(), err)
 	}
 
-	for cur.Next(ctx) {
-		index := &mongo.IndexModel{}
-		if err := cur.Decode(index); err != nil {
-			return fmt.Errorf("could not decode index information: %s", err.Error())
-		}
-
-		// if the index ExpireAfterSeconds property already matches our desired value, we do not need to recreate it
-		if index.Options != nil && index.Options.ExpireAfterSeconds != nil && *index.Options.ExpireAfterSeconds == ttlInSeconds {
-			createIndex = false
-		}
+	var ixs []bson.M
+	err = cur.All(ctx, &ixs)
+	if err != nil {
+		return fmt.Errorf("unable to iterate cursor for indexes of collection %s: %w", collection.Name(), err)
 	}
 
-	if !createIndex {
-		return nil
+	for _, index := range ixs {
+		if index["name"] == indexName {
+			if index["expireAfterSeconds"] == ttlInSeconds {
+				return nil
+			}
+			_, err := collection.Indexes().DropOne(ctx, indexName)
+			if err != nil {
+				return fmt.Errorf("unable to delete %s index of collection %s: %w", indexName, collection.Name(), err)
+			}
+		}
 	}
 
 	newIndex := mongo.IndexModel{
