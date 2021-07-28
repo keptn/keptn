@@ -703,11 +703,15 @@ jobs:
         name: "Docker Build ${{ env.ARTIFACT }}"
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (env.SHOULD_BUILD == 'true')
         uses: keptn/gh-action-build-docker-image@master
+        env:
+          ARTIFACT: ${{ matrix.ARTIFACT }}
+          SHOULD_BUILD: ${{ matrix.SHOULD_BUILD }}
+          BUILD_FOLDER: ${{ matrix.BUILD_FOLDER }}
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: ${{ env.ARTIFACT }}
-          DOCKER_FOLDER: ${{ matrix.BUILD_FOLDER }}
+          DOCKER_FOLDER: ${{ env.BUILD_FOLDER }}
 
       - id: create_docker_build_report
         name: Create Docker Build Report
