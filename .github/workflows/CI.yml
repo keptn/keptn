@@ -706,7 +706,6 @@ jobs:
           echo "$ARTIFACT"
           echo "${{ matrix.ARTIFACT }}"
           echo "${{ env.ARTIFACT }}"
-          echo "${{ jobs.docker_build.env.ARTIFACT }}"
 
       - id: docker_build_image
         name: "Docker Build ${{ env.ARTIFACT }}"
