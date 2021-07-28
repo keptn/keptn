@@ -118,7 +118,7 @@ export class Sequence {
     return this.name === 'remediation';
   }
 
-  public getLatestEvent() {
+  public getLatestEvent(): {id: string, time: string, type: string} | undefined {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
 
