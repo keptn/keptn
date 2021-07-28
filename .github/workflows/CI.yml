@@ -669,10 +669,9 @@ jobs:
       STATISTICS_SVC_FOLDER: "statistics-service/"
     strategy:
       matrix:
-        include:
-          - artifact: keptn/${{ jobs.docker_build.env.API_IMAGE }}
-            build-folder: ${{ jobs.docker_build.env.API_FOLDER }}
-            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_API }}
+        artifact: ["keptn/${{ jobs.docker_build.env.API_IMAGE }}"]
+        build-folder: ["${{ jobs.docker_build.env.API_FOLDER }}"]
+        should-build: ["${{ needs.prepare_ci_run.outputs.BUILD_API }}"]
 #          - artifact: keptn/${{ env.BRIDGE_IMAGE }}
 #            build-folder: ${{ env.BRIDGE_FOLDER }}
 #            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}
