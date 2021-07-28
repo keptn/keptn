@@ -14,7 +14,6 @@ import {DataService} from '../../_services/data.service';
 import {Subject} from 'rxjs';
 import {Project} from '../../_models/project';
 import {Sequence} from '../../_models/sequence';
-import { Trace } from '../../_models/trace';
 
 @Component({
   selector: 'ktb-root-events-list',
