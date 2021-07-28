@@ -671,48 +671,48 @@ jobs:
     strategy:
       matrix:
         include:
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}"
-            build-folder: "${{ env.API_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE }}"
-            build-folder: "${{ env.BRIDGE_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE }}"
-            build-folder: "${{ env.DISTRIBUTOR_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE }}"
-            build-folder: "${{ env.JMETER_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
-            build-folder: "${{ env.HELM_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}"
-            build-folder: "${{ env.APPROVAL_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE }}"
-            build-folder: "${{ env.OS_ROUTE_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
-            build-folder: "${{ env.SHIPYARD_CONTROLLER_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SECRET_SVC_IMAGE }}"
-            build-folder: "${{ env.SECRET_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE }}"
-            build-folder: "${{ env.CONFIGURATION_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE }}"
-            build-folder: "${{ env.REMEDIATION_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE }}"
-            build-folder: "${{ env.LIGHTHOUSE_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE }}"
-            build-folder: "${{ env.MONGODB_DS_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
-          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE }}"
-            build-folder: "${{ env.STATISTICS_SVC_FOLDER }}"
-            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}
+            build-folder: ${{ env.API_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_API }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE }}
+            build-folder: ${{ env.BRIDGE_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE }}
+            build-folder: ${{ env.DISTRIBUTOR_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE }}
+            build-folder: ${{ env.JMETER_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}
+            build-folder: ${{ env.HELM_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}
+            build-folder: ${{ env.APPROVAL_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE }}
+            build-folder: ${{ env.OS_ROUTE_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}
+            build-folder: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.SECRET_SVC_IMAGE }}
+            build-folder: ${{ env.SECRET_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE }}
+            build-folder: ${{ env.CONFIGURATION_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE }}
+            build-folder: ${{ env.REMEDIATION_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE }}
+            build-folder: ${{ env.LIGHTHOUSE_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE }}
+            build-folder: ${{ env.MONGODB_DS_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}
+          - artifact: ${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE }}
+            build-folder: ${{ env.STATISTICS_SVC_FOLDER }}
+            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
