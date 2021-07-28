@@ -1,13 +1,14 @@
 import semver from 'semver';
 import {Stage} from './stage';
-import {Service} from './service';
+import { DeploymentInformation, Service } from './service';
 import {Trace} from './trace';
-import {Root} from './root';
 import { Deployment } from './deployment';
 import {EventTypes} from './event-types';
 import moment from 'moment';
 import {DeploymentStage} from './deployment-stage';
 import {Sequence} from './sequence';
+import { ResultTypes } from './result-types';
+import { Approval } from './approval';
 
 export class Project {
   projectName!: string;
@@ -17,24 +18,17 @@ export class Project {
   allSequencesLoaded = false;
   stages: Stage[] = [];
   services?: Service[];
-  roots: Root[] = [];
   sequences: Sequence[] = [];
 
-  static fromJSON(data: unknown) {
+  static fromJSON(data: unknown): Project {
     const project: Project = Object.assign(new this(), data);
-    project.stages = project.stages.map(stage => {
-      stage.services = stage.services.map(service => {
-        service.stage = stage.stageName;
-        return Service.fromJSON(service);
-      });
-      return Stage.fromJSON(stage);
-    });
+    project.stages = project.stages.map(stage => Stage.fromJSON(stage));
     project.setDeployments();
     return project;
   }
 
-  getServices(byStage?: Stage): Service[] {
-    if (!byStage) {
+  getServices(stageName?: string): Service[] {
+    if (!stageName) {
       if (!this.services) {
         let services: Service[] = [];
         for (const currentStage of this.stages){
@@ -47,7 +41,7 @@ export class Project {
       return this.services;
     }
     else {
-      return this.stages.find(s => s.stageName === byStage.stageName)?.services ?? [];
+      return this.stages.find(s => s.stageName === stageName)?.services ?? [];
     }
   }
 
@@ -68,12 +62,9 @@ export class Project {
     return this.stages.find(s => s.stageName === stageName);
   }
 
-  getLatestDeploymentTrace(service: Service, stage?: Stage): Trace | undefined {
-    const currentService = this.getService(service.serviceName);
-
-    return currentService?.roots
-      ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
-      ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
+  getLatestDeployment(service: Service, stage?: Stage): DeploymentInformation | undefined {
+    const currentService = stage ? this.getServices(stage.stageName)?.find(s => s.serviceName === service.serviceName) : this.getService(service.serviceName);
+    return currentService?.deploymentInformation;
   }
 
   getLatestDeploymentTraceOfSequence(service: Service, stage?: Stage): Trace | undefined{
@@ -84,11 +75,11 @@ export class Project {
       ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
   }
 
-  getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getServices(stage).map(service => service.getRecentRoot()).filter(seq => seq?.hasFailedEvaluation() === stage.stageName);
+  getLatestFailedRootEvents(stage: Stage): Sequence[] {
+    return this.getServices(stage.stageName).map(service => service.latestSequence).filter((seq: Sequence | undefined): seq is Sequence => seq?.getEvaluation(stage.stageName)?.result === ResultTypes.FAILED);
   }
 
-  getLatestProblemEvents(stage: Stage): Root[] {
+  getLatestProblemEvents(stage: Stage): Sequence[] {
     return stage.getOpenProblems();
   }
 
@@ -96,17 +87,15 @@ export class Project {
     return service.sequences.find(sequence => sequence.shkeptncontext === event.shkeptncontext);
   }
 
-  getRootEvent(service: Service, event: Trace): Root | undefined {
-    return service.roots.find(root => root.shkeptncontext === event.shkeptncontext);
-  }
-
-  getDeploymentEvaluation(trace: Trace, isSequence: boolean): Trace | undefined {
-    const service = this.getServices().find(s => s.serviceName === trace.data.service);
-    let root: Sequence | Root | undefined;
-    if (service) {
-      root = (isSequence ? this.getSequence : this.getRootEvent)(service, trace);
+  getApprovalEvaluation(trace: Trace): Trace | undefined {
+    let evaluation: Approval | undefined;
+    if (trace.stage) {
+      const stage = this.getStage(trace.stage);
+      if (stage) {
+        evaluation = stage.services.reduce((foundApproval: Approval | undefined, service: Service) => foundApproval || service.openApprovals.find(a => a.trace.shkeptncontext === trace.shkeptncontext), undefined);
+      }
     }
-    return root?.findLastTrace(t => !!(t.isEvaluation() && t.isFinished()))?.getFinishedEvent();
+    return evaluation?.evaluationTrace;
   }
 
   private setDeployments() {
@@ -136,7 +125,7 @@ export class Project {
       semver.valid(b.version) != null && semver.gt(a.version, b.version, true) ? -1 : 1);
   }
 
-  public getLatestDeployment(serviceName: string): Service | undefined {
+  public getServiceWithLatestDeployment(serviceName: string): Service | undefined {
     let lastService: Service | undefined;
     this.stages.forEach((stage: Stage) => {
       const service = stage.services.find(s => s.serviceName === serviceName);

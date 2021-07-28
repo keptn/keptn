@@ -92,9 +92,9 @@ export class ApiService {
 
   public deleteProject(projectName: string): Observable<object> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
-    return this.http.delete<any>(url);
+    return this.http.delete<object>(url);
   }
-  
+
   /**
    * Creates a new project
    *
@@ -117,9 +117,10 @@ export class ApiService {
   }
 
   public getProject(projectName: string): Observable<Project> {
-    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
+    const url = `${this._baseUrl}/project/${projectName}`;
     const params = {
-      disableUpstreamSync: 'true'
+      approval: 'true',
+      remediation: 'true'
     };
     return this.http
       .get<Project>(url, {params});
@@ -257,7 +258,7 @@ export class ApiService {
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, fromTime?: string): Observable<EventResult> {
     const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
     const params = {
-      filter: `data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}`,
+      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}`,
       excludeInvalidated: 'true',
       limit: '50',
       ...fromTime && {fromTime}

@@ -110,7 +110,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           this.currentSequence = undefined;
           this.selectedStage = undefined;
           this.updateFilterDataSource(project);
-          this.dataService.loadRoots(project);
         }
         this.project = project;
         this._changeDetectorRef.markForCheck();

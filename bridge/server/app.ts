@@ -99,6 +99,9 @@ if (lookAndFeelUrl) {
 const oneWeek = 7 * 24 * 3_600_000;    // 3600000msec == 1hour
 
 async function init(): Promise<Express> {
+  if (!apiUrl) {
+    throw Error('API_URL is not provided');
+  }
   if (!apiToken) {
     console.log('API_TOKEN was not provided. Fetching from kubectl.');
     apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}')
@@ -224,6 +227,7 @@ async function init(): Promise<Express> {
   });
 
 // error handler
+  // tslint:disable-next-line:no-any
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

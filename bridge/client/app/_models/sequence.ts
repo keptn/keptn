@@ -1,10 +1,16 @@
-import {ResultTypes} from './result-types';
-import {Trace} from './trace';
-import {EventTypes} from './event-types';
-import {EvaluationResult} from './evaluation-result';
-import {EVENT_ICONS} from './event-icons';
+import { ResultTypes } from './result-types';
+import { Trace } from './trace';
+import { EventTypes } from './event-types';
+import { EvaluationResult } from './evaluation-result';
+import { EVENT_ICONS } from './event-icons';
+import { RemediationAction } from './remediation-action';
 
 const DEFAULT_ICON = 'information';
+export type SequenceEvent = {
+  id: string,
+  time: string,
+  type: string
+};
 
 export class Sequence {
   name!: string;
@@ -15,26 +21,27 @@ export class Sequence {
     {
       image?: string,
       latestEvaluation?: EvaluationResult,
-      latestEvent?: {
-        id: string,
-        time: string,
-        type: string
-      },
-      latestFailedEvent?: {
-        id: string,
-        time: string,
-        type: string
-      },
-      name: string
+      latestEvent?: SequenceEvent,
+      latestFailedEvent?: SequenceEvent,
+      name: string,
+      latestEvaluationTrace?: Trace,
+      actions?: RemediationAction[]
     }
   ];
   state!: 'triggered' | 'finished' | 'waiting';
-  time!: string;
+  time!: number;
   problemTitle?: string;
   traces: Trace[] = [];
 
   public static fromJSON(data: unknown): Sequence {
-    return Object.assign(new this(), data);
+    const sequence = Object.assign(new this(), data);
+    for (const stage of sequence.stages) {
+      stage.actions = stage.actions?.map(s => RemediationAction.fromJSON(s)) ?? [];
+      if (stage.latestEvaluationTrace) {
+        stage.latestEvaluationTrace = Trace.fromJSON(stage.latestEvaluationTrace);
+      }
+    }
+    return sequence;
   }
 
   public static getShortType(type: string): string {
@@ -74,6 +81,10 @@ export class Sequence {
 
   public getEvaluation(stage: string): EvaluationResult | undefined {
     return this.getStage(stage)?.latestEvaluation;
+  }
+
+  public getEvaluationTrace(stage: string): Trace | undefined {
+    return this.getStage(stage)?.latestEvaluationTrace;
   }
 
   public hasPendingApproval(stageName?: string): boolean {
@@ -154,7 +165,11 @@ export class Sequence {
     return this.traces[this.traces.length - 1];
   }
 
-  private getFirstTrace(): Trace | null {
+  private getFirstTrace(): Trace | undefined {
     return this.traces[0];
+  }
+
+  public getRemediationActions(): RemediationAction[] {
+    return this.stages[0]?.actions ?? [];
   }
 }
