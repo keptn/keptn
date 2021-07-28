@@ -19,7 +19,7 @@ on:
         required: true
         default: 'master'
 env:
-  META_KEPTN_VERSION: 0.8.4
+  META_KEPTN_VERSION: 0.8.6
   META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
