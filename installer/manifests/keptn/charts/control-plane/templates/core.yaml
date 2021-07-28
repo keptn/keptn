@@ -117,6 +117,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: MAX_AUTH_REQUESTS_PER_SECOND
+              value: '{{ .Values.apiService.config.maxAuthRequestsPerSecond | default "1.0"}}'
+            - name: MAX_AUTH_REQUESTS_BURST
+              value: '{{ .Values.apiService.config.maxAuthRequestBurst | default "2"}}'
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -357,6 +361,8 @@ spec:
               value: {{ .Values.keptnSpecVersion }}
             - name: TASK_STARTED_WAIT_DURATION
               value: {{ .Values.shipyardController.config.taskStartedWaitDuration | default "10m"}}
+            - name: UNIFORM_INTEGRATION_TTL
+              value: {{ .Values.shipyardController.config.uniformIntegrationTTL | default "2m" }}
           ports:
             - containerPort: 8080
           resources:

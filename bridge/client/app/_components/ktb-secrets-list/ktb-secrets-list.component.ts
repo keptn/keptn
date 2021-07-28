@@ -1,9 +1,9 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {DataService} from '../../_services/data.service';
-import {ActivatedRoute} from '@angular/router';
-import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Subject} from 'rxjs';
-import {Secret} from '../../_models/secret';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { DataService } from '../../_services/data.service';
+import { ActivatedRoute } from '@angular/router';
+import { DtTableDataSource } from '@dynatrace/barista-components/table';
+import { Subject } from 'rxjs';
+import { Secret } from '../../_models/secret';
 
 @Component({
   selector: 'ktb-secrets-view',
@@ -15,10 +15,10 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   private closeConfirmationDialogTimeout?: ReturnType<typeof setTimeout>;
 
-  public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
+  public tableEntries: DtTableDataSource<Secret> = new DtTableDataSource();
   public currentSecret?: Secret;
 
-  public deleteSecretDialogState: string | null = null;
+  public deleteSecretDialogState?: string;
 
   constructor(private dataService: DataService, private route: ActivatedRoute, private _changeDetectorRef: ChangeDetectorRef) {
   }
@@ -46,12 +46,15 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
         this.closeConfirmationDialogTimeout = setTimeout(() => {
           this.closeConfirmationDialog();
         }, 2000);
-        this.tableEntries.data = this.tableEntries.data.slice(this.tableEntries.data.indexOf(secret), 1);
+
+        const data: Secret[] = this.tableEntries.data;
+        data.splice(data.findIndex((s: Secret) => s.name === secret.name), 1);
+        this.tableEntries = new DtTableDataSource(data);
       });
   }
 
   closeConfirmationDialog() {
-    this.deleteSecretDialogState = null;
+    this.deleteSecretDialogState = undefined;
   }
 
   public toSecret(row: Secret): Secret {

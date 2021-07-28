@@ -29,7 +29,7 @@ try {
   console.log('Installing default Look-and-Feel');
 
   const destDir = join(__dirname, '../../dist/assets/branding');
-  const srcDir = join(__dirname, '../../client/assets/default-branding');
+  const srcDir = join(__dirname, `../../${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`);
   const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
 
   if (!existsSync(destDir)) {

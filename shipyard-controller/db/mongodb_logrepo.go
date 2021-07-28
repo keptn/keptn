@@ -14,7 +14,6 @@ import (
 )
 
 const logCollectionName = "keptnErrorLogs"
-const ttlIndexName = "logTTLIndex"
 
 type MongoDBLogRepo struct {
 	DbConnection *MongoDBConnection
@@ -27,58 +26,20 @@ func NewMongoDBLogRepo(dbConnection *MongoDBConnection) *MongoDBLogRepo {
 
 func (mdbrepo *MongoDBLogRepo) SetupTTLIndex(duration time.Duration) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
-	defer cancel()
-
 	if err != nil {
 		return fmt.Errorf("could not get collection: %s", err.Error())
 	}
+	defer cancel()
 
-	ttlInSeconds := int32(duration.Seconds())
-	createIndex := true
-
-	cur, err := collection.Indexes().List(ctx)
-	if err != nil {
-		return fmt.Errorf("could not load list of indexes of collection %s: %s", logCollectionName, err.Error())
-	}
-
-	for cur.Next(ctx) {
-		index := &mongo.IndexModel{}
-		if err := cur.Decode(index); err != nil {
-			return fmt.Errorf("could not decode index information: %s", err.Error())
-		}
-
-		// if the index ExpireAfterSeconds property already matches our desired value, we do not need to recreate it
-		if index.Options != nil && index.Options.ExpireAfterSeconds != nil && *index.Options.ExpireAfterSeconds == ttlInSeconds {
-			createIndex = false
-		}
-	}
-
-	if !createIndex {
-		return nil
-	}
-
-	newIndex := mongo.IndexModel{
-		Keys: bson.M{
-			"time": 1,
-		},
-		Options: &options.IndexOptions{
-			ExpireAfterSeconds: &ttlInSeconds,
-		},
-	}
-	_, err = collection.Indexes().CreateOne(ctx, newIndex)
-	if err != nil {
-		return fmt.Errorf("could not create index: %s", err.Error())
-	}
-	return nil
+	return SetupTTLIndex(ctx, "time", duration, collection)
 }
 
 func (mdbrepo *MongoDBLogRepo) CreateLogEntries(entries []models.LogEntry) error {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
-	defer cancel()
-
 	if err != nil {
 		return fmt.Errorf("could not get collection: %s", err.Error())
 	}
+	defer cancel()
 
 	var inserts = []interface{}{}
 	for index := range entries {

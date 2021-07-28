@@ -40,7 +40,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
         takeUntil(this.unsubscribe$),
         // tslint:disable-next-line:no-any
         filter((params: any):
-                params is {shkeptncontext: string, eventselector: string | undefined} => !!params.shkeptncontext)
+        params is {shkeptncontext: string, eventselector: string | undefined} => !!params.shkeptncontext)
       )
       .subscribe(params => {
         this.contextId = params.shkeptncontext;

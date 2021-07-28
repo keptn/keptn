@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, NgZone, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
 import { DataService } from '../../_services/data.service';
@@ -37,10 +37,12 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     if (this._project !== value) {
       this._project = value;
       this._timer.unsubscribe();
-      this._timer = timer(0, this._timerInterval * 1000)
-        .subscribe(() => {
-          this.loadLatestSequences();
-        });
+      this.ngZone.runOutsideAngular(() => {
+        this._timer = timer(0, this._timerInterval * 1000)
+          .subscribe(() => {
+            this.loadLatestSequences();
+          });
+      });
     }
   }
 
@@ -56,7 +58,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone) {
   }
 
   loadLatestSequences() {

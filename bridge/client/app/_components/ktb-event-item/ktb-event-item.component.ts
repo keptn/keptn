@@ -43,7 +43,7 @@ export class KtbEventItemComponent {
     if (this._event !== value) {
       this._event = value;
       if (this._event?.project) {
-        this.project$ = this.dataService.getProject(this._event?.project);
+        this.project$ = this.dataService.getProject(this._event.project);
       }
       this.changeDetectorRef.markForCheck();
     }
