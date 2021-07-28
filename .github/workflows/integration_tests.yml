@@ -283,7 +283,6 @@ jobs:
         id: authenticate_keptn_cli
         run: |
           keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
-
       - name: Trigger Service Delivery
         id: trigger-service-delivery
         uses: keptn/gh-action-send-event@main
@@ -301,7 +300,7 @@ jobs:
                 "status": "",
                 "labels": {
                   "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                  "artifact-version": "some version"
+                  "artifact-version": "${{ env.VERSION }}"
                 }
               },
               "source": "gh",
