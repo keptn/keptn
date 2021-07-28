@@ -637,7 +637,7 @@ jobs:
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-      API_IMAGE: "api"
+      API_IMAGE:
       API_FOLDER: "api/"
       OS_ROUTE_SVC_IMAGE: "openshift-route-service"
       OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
@@ -669,8 +669,8 @@ jobs:
       STATISTICS_SVC_FOLDER: "statistics-service/"
     strategy:
       matrix:
-        artifact: ["keptn/${{ jobs.docker_build.env.API_IMAGE }}"]
-        build-folder: ["${{ jobs.docker_build.env.API_FOLDER }}"]
+        artifact: ["keptn/api"]
+        build-folder: ["api/"]
         should-build: ["${{ needs.prepare_ci_run.outputs.BUILD_API }}"]
 #          - artifact: keptn/${{ env.BRIDGE_IMAGE }}
 #            build-folder: ${{ env.BRIDGE_FOLDER }}
