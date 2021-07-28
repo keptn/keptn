@@ -631,7 +631,7 @@ jobs:
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
       ARTIFACT: ${{ matrix.artifact }}
-      BUILD_FOLDER: ${{ matrx.build-folder }}
+      BUILD_FOLDER: ${{ matrix.build-folder }}
       SHOULD_BUILD: ${{ matrix.should-build }}
     strategy:
       matrix:
