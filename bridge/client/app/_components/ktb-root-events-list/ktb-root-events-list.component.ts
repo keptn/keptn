@@ -84,7 +84,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     this.selectedEventChange.emit({ sequence, stage });
   }
 
-  identifyEvent(index: number, item: Trace) {
+  identifyEvent(index: number, item: Sequence) {
     return item?.time;
   }
 
@@ -100,8 +100,8 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
   }
 
-  public getShortType(type: string): string {
-    return Sequence.getShortType(type);
+  public getShortType(type: string | undefined): string | undefined{
+    return type ? Sequence.getShortType(type) : undefined;
   }
 
   public toDate(time: string): Date {

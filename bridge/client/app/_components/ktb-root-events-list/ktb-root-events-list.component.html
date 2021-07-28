@@ -50,14 +50,14 @@
           <span [textContent]="toDate(sequence.time) | amCalendar:dateUtil.getCalendarFormats()"></span>
           and
           <span *ngIf="sequence.isFinished()">took <span
-            [textContent]="dateUtil.getDurationFormatted(sequence.time, sequence.getLatestEvent().time)"></span></span>
+            [textContent]="dateUtil.getDurationFormatted(sequence.time, sequence.getLatestEvent()?.time)"></span></span>
           <span *ngIf="!sequence.isFinished()">running for <span
             [textContent]="dateUtil.getDurationFormatted(sequence.time)"></span></span>
         </p>
         <p class="m-0 small">
           <span *ngIf="!sequence.isFinished()">Recent task: </span>
           <span *ngIf="sequence.isFinished()">Last task: </span>
-          <span [textContent]="getShortType(sequence.getLatestEvent().type)"></span>
+          <span [textContent]="getShortType(sequence.getLatestEvent()?.type)"></span>
         </p>
         <p class="m-0 small" *ngIf="sequence.isRemediation()" [textContent]="sequence.problemTitle"></p>
       </ng-template>
