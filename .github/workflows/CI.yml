@@ -37,7 +37,6 @@ jobs:
       BUILD_HELM_SVC: ${{ steps.check_modified_files.outputs.BUILD_HELM_SVC }}
       BUILD_APPROVAL_SVC: ${{ steps.check_modified_files.outputs.BUILD_APPROVAL_SVC }}
       BUILD_DISTRIBUTOR: ${{ steps.check_modified_files.outputs.BUILD_DISTRIBUTOR }}
-      BUILD_EVENTBROKER: ${{ steps.check_modified_files.outputs.BUILD_EVENTBROKER }}
       BUILD_SHIPYARD_CONTROLLER: ${{ steps.check_modified_files.outputs.BUILD_SHIPYARD_CONTROLLER }}
       BUILD_SECRET_SVC: ${{ steps.check_modified_files.outputs.BUILD_SECRET_SVC }}
       BUILD_CONFIGURATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_CONFIGURATION_SVC }}
@@ -110,7 +109,6 @@ jobs:
           BUILD_HELM_SVC=false
           BUILD_APPROVAL_SVC=false
           BUILD_DISTRIBUTOR=false
-          BUILD_EVENTBROKER=false
           BUILD_SHIPYARD_CONTROLLER=false
           BUILD_SECRET_SVC=false
           BUILD_CONFIGURATION_SVC=false
@@ -163,10 +161,6 @@ jobs:
               BUILD_DISTRIBUTOR=true
             fi
 
-            if [[ $changed_file == "${EVENTBROKER_FOLDER}"* ]]; then
-              BUILD_EVENTBROKER=true
-            fi
-
             if [[ $changed_file == "${SHIPYARD_CONTROLLER_FOLDER}"* ]]; then
               BUILD_SHIPYARD_CONTROLLER=true
             fi
@@ -206,7 +200,6 @@ jobs:
           echo "##[set-output name=BUILD_HELM_SVC;]$(echo ${BUILD_HELM_SVC})"
           echo "##[set-output name=BUILD_APPROVAL_SVC;]$(echo ${BUILD_APPROVAL_SVC})"
           echo "##[set-output name=BUILD_DISTRIBUTOR;]$(echo ${BUILD_DISTRIBUTOR})"
-          echo "##[set-output name=BUILD_EVENTBROKER;]$(echo ${BUILD_EVENTBROKER})"
           echo "##[set-output name=BUILD_SHIPYARD_CONTROLLER;]$(echo ${BUILD_SHIPYARD_CONTROLLER})"
           echo "##[set-output name=BUILD_SECRET_SVC;]$(echo ${BUILD_SECRET_SVC})"
           echo "##[set-output name=BUILD_CONFIGURATION_SVC;]$(echo ${BUILD_CONFIGURATION_SVC})"
@@ -637,80 +630,51 @@ jobs:
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-      API_IMAGE:
-      API_FOLDER: "api/"
-      OS_ROUTE_SVC_IMAGE: "openshift-route-service"
-      OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
-      BRIDGE_IMAGE: "bridge2"
-      BRIDGE_FOLDER: "bridge/"
-      JMETER_SVC_IMAGE: "jmeter-service"
-      JMETER_SVC_FOLDER: "jmeter-service/"
-      HELM_SVC_IMAGE: "helm-service"
-      HELM_SVC_FOLDER: "helm-service/"
-      APPROVAL_SVC_IMAGE: "approval-service"
-      APPROVAL_SVC_FOLDER: "approval-service/"
-      DISTRIBUTOR_IMAGE: "distributor"
-      DISTRIBUTOR_FOLDER: "distributor/"
-      EVENTBROKER_IMAGE: "eventbroker-go"
-      EVENTBROKER_FOLDER: "eventbroker/"
-      SHIPYARD_CONTROLLER_IMAGE: "shipyard-controller"
-      SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
-      SECRET_SVC_IMAGE: "secret-service"
-      SECRET_SVC_FOLDER: "secret-service/"
-      CONFIGURATION_SVC_IMAGE: "configuration-service"
-      CONFIGURATION_SVC_FOLDER: "configuration-service/"
-      REMEDIATION_SVC_IMAGE: "remediation-service"
-      REMEDIATION_SVC_FOLDER: "remediation-service/"
-      LIGHTHOUSE_SVC_IMAGE: "lighthouse-service"
-      LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
-      MONGODB_DS_IMAGE: "mongodb-datastore"
-      MONGODB_DS_FOLDER: "mongodb-datastore/"
-      STATISTICS_SVC_IMAGE: "statistics-service"
-      STATISTICS_SVC_FOLDER: "statistics-service/"
     strategy:
       matrix:
-        artifact: ["keptn/api"]
-        build-folder: ["api/"]
-        should-build: ["${{ needs.prepare_ci_run.outputs.BUILD_API }}"]
-#          - artifact: keptn/${{ env.BRIDGE_IMAGE }}
-#            build-folder: ${{ env.BRIDGE_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}
-#          - artifact: keptn/${{ env.DISTRIBUTOR_IMAGE }}
-#            build-folder: ${{ env.DISTRIBUTOR_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}
-#          - artifact: keptn/${{ env.JMETER_SVC_IMAGE }}
-#            build-folder: ${{ env.JMETER_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}
-#          - artifact: keptn/${{ env.HELM_SVC_IMAGE }}
-#            build-folder: ${{ env.HELM_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}
-#          - artifact: keptn/${{ env.APPROVAL_SVC_IMAGE }}
-#            build-folder: ${{ env.APPROVAL_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}
-#          - artifact: keptn/${{ env.OS_ROUTE_SVC_IMAGE }}
-#            build-folder: ${{ env.OS_ROUTE_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}
-#          - artifact: keptn/${{ env.SHIPYARD_CONTROLLER_IMAGE }}
-#            build-folder: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}
-#          - artifact: keptn/${{ env.SECRET_SVC_IMAGE }}
-#            build-folder: ${{ env.SECRET_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}
-#          - artifact: keptn/${{ env.CONFIGURATION_SVC_IMAGE }}
-#            build-folder: ${{ env.CONFIGURATION_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}
-#          - artifact: keptn/${{ env.REMEDIATION_SVC_IMAGE }}
-#            build-folder: ${{ env.REMEDIATION_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}
-#          - artifact: keptn/${{ env.LIGHTHOUSE_SVC_IMAGE }}
-#            build-folder: ${{ env.LIGHTHOUSE_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}
-#          - artifact: keptn/${{ env.MONGODB_DS_IMAGE }}
-#            build-folder: ${{ env.MONGODB_DS_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}
-#          - artifact: keptn/${{ env.STATISTICS_SVC_IMAGE }}
-#            build-folder: ${{ env.STATISTICS_SVC_FOLDER }}
-#            should-build: ${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}
+        includes:
+          - artifact: "keptn/api"
+            build-folder: "api/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
+          - artifact: "keptn/bridge2"
+            build-folder: "bridge/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
+          - artifact: "keptn/distributor"
+            build-folder: "distributor/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
+          - artifact: "keptn/jmeter-service"
+            build-folder: "jmeter-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
+          - artifact: "keptn/helm-service"
+            build-folder: "helm-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
+          - artifact: "keptn/approval-service"
+            build-folder: "approval-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
+          - artifact: "keptn/openshift-route-service"
+            build-folder: "platform-support/openshift-route-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
+          - artifact: "keptn/shipyard-controller"
+            build-folder: "shipyard-controller/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
+          - artifact: "keptn/secret-service"
+            build-folder: "secret-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
+          - artifact: "keptn/configuration-service"
+            build-folder: "configuration-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
+          - artifact: "keptn/remediation-service"
+            build-folder: "remediation-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
+          - artifact: "keptn/lighthouse-service"
+            build-folder: "lighthouse-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
+          - artifact: "keptn/mongodb-datastore"
+            build-folder: "mongodb-datastore/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
+          - artifact: "keptn/statistics-service"
+            build-folder: "statistics-service/"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
