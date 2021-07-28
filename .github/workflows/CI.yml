@@ -13,6 +13,10 @@ on:
   workflow_dispatch: # run CI when triggered manually
 env:
   GO_VERSION: ^1.16
+  DOCKER_ORGANIZATION: "keptn"
+  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
+  CLI_FOLDER: "cli/"
+  INSTALLER_FOLDER: "installer/"
 defaults:
   run:
     shell: bash
@@ -634,21 +638,81 @@ jobs:
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-#    strategy:
-#      matrix:
-#        include:
-#          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}"
-#            build-folder: "${{ env.API_FOLDER }}"
-#            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
-#          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE }}"
-#            build-folder: "${{ env.BRIDGE_FOLDER }}"
-#            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
-#          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE }}"
-#            build-folder: "${{ env.DISTRIBUTOR_FOLDER }}"
-#            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
-#          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE }}"
-#            build-folder: "${{ env.JMETER_SVC_FOLDER }}"
-#            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
+      API_IMAGE: "api"
+      API_FOLDER: "api/"
+      OS_ROUTE_SVC_IMAGE: "openshift-route-service"
+      OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
+      BRIDGE_IMAGE: "bridge2"
+      BRIDGE_FOLDER: "bridge/"
+      JMETER_SVC_IMAGE: "jmeter-service"
+      JMETER_SVC_FOLDER: "jmeter-service/"
+      HELM_SVC_IMAGE: "helm-service"
+      HELM_SVC_FOLDER: "helm-service/"
+      APPROVAL_SVC_IMAGE: "approval-service"
+      APPROVAL_SVC_FOLDER: "approval-service/"
+      DISTRIBUTOR_IMAGE: "distributor"
+      DISTRIBUTOR_FOLDER: "distributor/"
+      EVENTBROKER_IMAGE: "eventbroker-go"
+      EVENTBROKER_FOLDER: "eventbroker/"
+      SHIPYARD_CONTROLLER_IMAGE: "shipyard-controller"
+      SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
+      SECRET_SVC_IMAGE: "secret-service"
+      SECRET_SVC_FOLDER: "secret-service/"
+      CONFIGURATION_SVC_IMAGE: "configuration-service"
+      CONFIGURATION_SVC_FOLDER: "configuration-service/"
+      REMEDIATION_SVC_IMAGE: "remediation-service"
+      REMEDIATION_SVC_FOLDER: "remediation-service/"
+      LIGHTHOUSE_SVC_IMAGE: "lighthouse-service"
+      LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
+      MONGODB_DS_IMAGE: "mongodb-datastore"
+      MONGODB_DS_FOLDER: "mongodb-datastore/"
+      STATISTICS_SVC_IMAGE: "statistics-service"
+      STATISTICS_SVC_FOLDER: "statistics-service/"
+    strategy:
+      matrix:
+        include:
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.API_IMAGE }}"
+            build-folder: "${{ env.API_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.BRIDGE_IMAGE }}"
+            build-folder: "${{ env.BRIDGE_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.DISTRIBUTOR_IMAGE }}"
+            build-folder: "${{ env.DISTRIBUTOR_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.JMETER_SVC_IMAGE }}"
+            build-folder: "${{ env.JMETER_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
+            build-folder: "${{ env.HELM_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}"
+            build-folder: "${{ env.APPROVAL_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE }}"
+            build-folder: "${{ env.OS_ROUTE_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
+            build-folder: "${{ env.SHIPYARD_CONTROLLER_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SECRET_SVC_IMAGE }}"
+            build-folder: "${{ env.SECRET_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE }}"
+            build-folder: "${{ env.CONFIGURATION_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE }}"
+            build-folder: "${{ env.REMEDIATION_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE }}"
+            build-folder: "${{ env.LIGHTHOUSE_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE }}"
+            build-folder: "${{ env.MONGODB_DS_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
+          - artifact: "${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE }}"
+            build-folder: "${{ env.STATISTICS_SVC_FOLDER }}"
+            should-build: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
@@ -679,106 +743,6 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE_NAME: ${{ matrix.artifact }}
           DOCKER_FOLDER: ${{ matrix.build-folder }}
-
-      - id: docker_build_helm_service
-        name: Docker Build helm-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.HELM_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.HELM_SVC_FOLDER }}
-
-      - id: docker_build_approval_service
-        name: Docker Build approval-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.APPROVAL_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.APPROVAL_SVC_FOLDER }}
-
-      - id: docker_build_os_route_service
-        name: Docker Build openshift-route-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.OS_ROUTE_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.OS_ROUTE_SVC_FOLDER }}
-
-      - id: docker_build_shipyard_controller
-        name: Docker Build shipyard-controller
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SHIPYARD_CONTROLLER_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.SHIPYARD_CONTROLLER_FOLDER }}
-
-      - id: docker_build_secret_service
-        name: Docker Build secret-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.SECRET_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.SECRET_SVC_FOLDER }}
-
-      - id: docker_build_configuration_service
-        name: Docker Build configuration-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.CONFIGURATION_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.CONFIGURATION_SVC_FOLDER }}
-
-      - id: docker_build_remediation_service
-        name: Docker Build remediation-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.REMEDIATION_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.REMEDIATION_SVC_FOLDER }}
-
-      - id: docker_build_lighthouse_service
-        name: Docker Build lighthouse-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.LIGHTHOUSE_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.LIGHTHOUSE_SVC_FOLDER }}
-
-      - id: docker_build_mongodb_ds
-        name: Docker Build mongodb-datastore
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.MONGODB_DS_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.MONGODB_DS_FOLDER }}
-
-      - id: docker_build_statistics_service
-        name: Docker Build statistics-service
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: "${{ env.DOCKER_ORGANIZATION }}/${{ env.STATISTICS_SVC_IMAGE }}"
-          DOCKER_FOLDER: ${{ env.STATISTICS_SVC_FOLDER }}
 
       - id: create_docker_build_report
         name: Create Docker Build Report
