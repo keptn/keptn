@@ -699,14 +699,14 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
 
-      - env:
+      - name: Debug env variables
+        env:
           ARTIFACT: ${{ matrix.ARTIFACT }}
-          SHOULD_BUILD: ${{ matrix.SHOULD_BUILD }}
-          BUILD_FOLDER: ${{ matrix.BUILD_FOLDER }}
         run: |
-          echo "$BUILD_FOLDER"
           echo "$ARTIFACT"
-          echo "$SHOULD_BUILD"
+          echo "${{ matrix.ARTIFACT }}"
+          echo "${{ env.ARTIFACT }}"
+          echo "${{ jobs.docker_build.env.ARTIFACT }}"
 
       - id: docker_build_image
         name: "Docker Build ${{ env.ARTIFACT }}"
