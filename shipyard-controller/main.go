@@ -148,7 +148,7 @@ func main() {
 	evaluationController := controller.NewEvaluationController(evaluationHandler)
 	evaluationController.Inject(apiV1)
 
-	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()), sequenceControlChannel)
+	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()), shipyardController)
 	stateController := controller.NewStateController(stateHandler)
 	stateController.Inject(apiV1)
 

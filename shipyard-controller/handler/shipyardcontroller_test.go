@@ -779,7 +779,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
 
-	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 	// make sure that the UpdateEventOfServiceCalls has been called
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
@@ -1325,7 +1325,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
@@ -1358,7 +1358,7 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 
 	eventsOperations.UpdateEventOfServiceFunc = func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 		return errors.New("updating event of service failed")
@@ -1411,7 +1411,7 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 
 	assert.NotNil(t, err)
 
-	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 
 	assert.Equal(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
@@ -2312,7 +2312,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 				return nil
 			},
 		},
-		eventsDbOperations: &db_mock.EventsDbOperationsMock{
+		eventsDBOperations: &db_mock.EventsDbOperationsMock{
 			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 				return nil
 			},

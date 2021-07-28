@@ -11,18 +11,18 @@ import (
 
 type IStateHandler interface {
 	GetSequenceState(context *gin.Context)
+	ControlSequenceState(context *gin.Context)
 }
 
 type StateHandler struct {
-	StateRepo           db.SequenceStateRepo
-	shipyardController  IShipyardController
-	sequenceControlChan chan common.SequenceControl
+	StateRepo          db.SequenceStateRepo
+	shipyardController IShipyardController
 }
 
-func NewStateHandler(stateRepo db.SequenceStateRepo, sequenceControlChan chan common.SequenceControl) *StateHandler {
+func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyardController) *StateHandler {
 	return &StateHandler{
-		StateRepo:           stateRepo,
-		sequenceControlChan: sequenceControlChan,
+		StateRepo:          stateRepo,
+		shipyardController: shipyardController,
 	}
 }
 
@@ -72,8 +72,8 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept  json
 // @Produce  json
-// @Param   project     		path    string  false   "The project name"
-// @Param   keptnContext		path	string	false	"The keptnContext ID of the sequence"
+// @Param   project     		path    string  true   "The project name"
+// @Param   keptnContext		path	string	true	"The keptnContext ID of the sequence"
 // @Param   sequenceControl     body    operations.SequenceControlCommand true "Sequence Control Command"
 // @Success 200 {object} operations.SequenceControlResponse	"ok"
 // @Failure 400 {object} models.Error "Invalid payload"
@@ -86,17 +86,18 @@ func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
 	params := &operations.SequenceControlCommand{}
 	if err := c.ShouldBindJSON(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
 	}
 
-	// TODO: inform shipyard controller about the sequence control
-	// TODO: we decided to communicate these kind of things via channels, which is fine for the SequenceDispatcher and SequenceWatcher for starting and timing out sequences
-	// TODO: in this case, I'm not sure I like it - should we add a ControlSequence() method to the ShipyardController interface?
-	// (either via channel or by adding an appropriate method to the IShipyardController interface)
-	sh.sequenceControlChan <- common.SequenceControl{
+	err := sh.shipyardController.ControlSequence(common.SequenceControl{
 		State:        params.State,
 		KeptnContext: keptnContext,
 		Stage:        params.Stage,
 		Project:      project,
+	})
+	if err != nil {
+		SetInternalServerErrorResponse(err, c, "Unable to control sequence")
+		return
 	}
 
 	c.JSON(http.StatusOK, operations.SequenceControlResponse{})
