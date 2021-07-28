@@ -622,7 +622,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   docker_build:
-    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
+    needs: [prepare_ci_run]
     name: Docker Build
     runs-on: ubuntu-20.04
     env:
