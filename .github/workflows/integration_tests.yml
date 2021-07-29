@@ -949,9 +949,6 @@ jobs:
           echo "* **GIT_SHA**: $GIT_SHA" >> release-notes.txt
           echo "* **ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
           echo "" >> release-notes.txt
-          echo "**Docker Images**" >> release-notes.txt
-          cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
-          echo "" >> release-notes.txt
           echo "**Integration Tests**" >> release-notes.txt
           cat final-test-report.txt >> release-notes.txt
           echo "" >> release-notes.txt
