@@ -291,6 +291,29 @@ jobs:
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
+  debug-job:
+    name: Debugging
+    runs-on: ubuntu-20.04
+    needs: prepare_ci_run
+    steps:
+      - run: |
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_INSTALLER }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_CLI }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
+          echo "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
+
   unit-tests-go-microservices:
     name: Unit Tests Go Microservices
     needs: prepare_ci_run
