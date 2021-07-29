@@ -30,8 +30,7 @@ spec:
             - name: "task2"
             - name: "task3"`
 
-func TestAbortSequence(t *testing.T) {
-
+func Test_SequenceControl_Abort(t *testing.T) {
 	projectName := "sequence-abort"
 	serviceName := "myservice"
 	stageName := "dev"
@@ -90,7 +89,7 @@ func TestAbortSequence(t *testing.T) {
 
 }
 
-func TestPauseAndResumeSequence(t *testing.T) {
+func Test_SequenceControl_PauseAndResume(t *testing.T) {
 	projectName := "sequence-pause-and-resume"
 	serviceName := "myservice"
 	stageName := "dev"
