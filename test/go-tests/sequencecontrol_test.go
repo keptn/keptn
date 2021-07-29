@@ -90,7 +90,7 @@ func TestAbortSequence(t *testing.T) {
 }
 
 func TestPauseAndResumeSequence(t *testing.T) {
-	projectName := "sequence-abort"
+	projectName := "sequence-pause-and-resume"
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
@@ -110,6 +110,7 @@ func TestPauseAndResumeSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
 	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
 
 	// verify state
@@ -125,10 +126,10 @@ func TestPauseAndResumeSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, keptn)
 
-	// send .started event
+	t.Log("sending task started event")
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 
-	// pause sequence
+	t.Log("pausing sequence")
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
 		State: common.PauseSequence,
 		Stage: "",
@@ -136,10 +137,31 @@ func TestPauseAndResumeSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	// send .finished event
+	t.Log("sending task finished event")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultPass,
 	}, source)
 
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
+
+	t.Log("verifying that the next task has not being triggered")
+	time.Sleep(10 * time.Second) //sorry, but I don't know how to verify it without a waiting
+	nextTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "dev", keptnv2.GetTriggeredEventType("mynextTask"))
+	require.Nil(t, err)
+	require.Nil(t, nextTriggeredEvent)
+
+	t.Log("resuming sequence")
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
+		State: common.ResumeSequence,
+		Stage: "",
+	})
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	t.Log("verifying that the next task has being triggered")
+	require.Eventually(t, func() bool {
+		nextTaskTriggered, _ := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mynexttask"))
+		return nextTaskTriggered != nil
+	}, 20*time.Second, 2*time.Second)
+
 }
