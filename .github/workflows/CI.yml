@@ -675,9 +675,6 @@ jobs:
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-      ARTIFACT: ${{ matrix.ARTIFACT }}
-      BUILD_FOLDER: ${{ matrix.BUILD_FOLDER }}
-      SHOULD_BUILD: ${{ matrix.SHOULD_BUILD }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
@@ -699,27 +696,15 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
 
-      - name: Debug env variables
-        env:
-          ARTIFACT: ${{ matrix.ARTIFACT }}
-        run: |
-          echo "$ARTIFACT"
-          echo "${{ matrix.ARTIFACT }}"
-          echo "${{ env.ARTIFACT }}"
-
       - id: docker_build_image
-        name: "Docker Build ${{ env.ARTIFACT }}"
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (env.SHOULD_BUILD == 'true')
+        name: "Docker Build ${{ matrix.config.ARTIFACT }}"
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
         uses: keptn/gh-action-build-docker-image@master
-        env:
-          ARTIFACT: ${{ matrix.config.ARTIFACT }}
-          SHOULD_BUILD: ${{ matrix.config.SHOULD_BUILD }}
-          BUILD_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: ${{ env.ARTIFACT }}
-          DOCKER_FOLDER: ${{ env.BUILD_FOLDER }}
+          IMAGE_NAME: ${{ matrix.config.ARTIFACT }}
+          DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
 
       - id: create_docker_build_report
         name: Create Docker Build Report
