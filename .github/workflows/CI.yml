@@ -639,7 +639,7 @@ jobs:
           recreate: true
 
   docker_build:
-    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
+    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node, prepare_github_pr_comment]
     name: Docker Build
     runs-on: ubuntu-20.04
     strategy:
