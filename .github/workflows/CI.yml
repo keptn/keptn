@@ -627,10 +627,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        ARTIFACT:
-        BUILD_FOLDER:
-        SHOULD_BUILD:
-        includes:
+        config:
           - ARTIFACT: "keptn/api"
             BUILD_FOLDER: "api/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
@@ -715,9 +712,9 @@ jobs:
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (env.SHOULD_BUILD == 'true')
         uses: keptn/gh-action-build-docker-image@master
         env:
-          ARTIFACT: ${{ matrix.ARTIFACT }}
-          SHOULD_BUILD: ${{ matrix.SHOULD_BUILD }}
-          BUILD_FOLDER: ${{ matrix.BUILD_FOLDER }}
+          ARTIFACT: ${{ matrix.config.ARTIFACT }}
+          SHOULD_BUILD: ${{ matrix.config.SHOULD_BUILD }}
+          BUILD_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
