@@ -621,22 +621,36 @@ jobs:
   ############################################################################
   # Build Docker Images                                                      #
   ############################################################################
+  prepare_github_pr_comment:
+    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
+    name: Prepare GitHub Report Comment
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Create PR comment
+        if: (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't comment on the PR in this case
+        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        continue-on-error: true
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: "Docker Build Report"
+          recreate: true
+
   docker_build:
     needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
     name: Docker Build
     runs-on: ubuntu-20.04
-    outputs:
-      build-report-api: ${{ steps.docker_build_image_new.outputs.build-report-api }}
-      matrix-config: ${{ matrix.config }}
     strategy:
       matrix:
         config:
           - ARTIFACT: "api"
             BUILD_FOLDER: "api/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
-#          - ARTIFACT: "bridge2"
-#            BUILD_FOLDER: "bridge/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
+          - ARTIFACT: "bridge2"
+            BUILD_FOLDER: "bridge/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
 #          - ARTIFACT: "distributor"
 #            BUILD_FOLDER: "distributor/"
 #            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
@@ -738,34 +752,9 @@ jobs:
             report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           fi
 
-          echo "::set-output name=build-report-${{ matrix.config.ARTIFACT }}::$report"
+          echo "::set-output name=build-report::$report"
 
-      - id: docker_logout
-        name: Docker logout
-        run: |
-          docker logout
-
-  docker_build_report:
-    name: "Report docker builds to PR"
-    needs: docker_build
-    runs-on: ubuntu-20.04
-    steps:
-      - name: "Gather Report Data"
-        run: |
-          echo "Report from one step: ${{ needs.docker_build.outputs.build-report-api }}"
-          echo "another test"
-          echo "${{ needs.docker_build.matrix.config }}"
-
-      - id: create_docker_build_report
-        name: Create Docker Build Report
-        run: |
-          echo "The following Docker Images have been built: " > docker_build_report_final.txt
-          cat docker_build_report.txt >> docker_build_report_final.txt || echo "* No images have been built or uploaded" >> docker_build_report_final.txt
-          echo "---"
-          cat docker_build_report_final.txt
-
-      - id: report_docker_build_to_pr
-        name: Report Docker Build to PR
+      - name: Report Docker Build to PR
         if: (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
@@ -774,12 +763,10 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          path: docker_build_report_final.txt
-          recreate: true
+          message: ${{ steps.docker_build.outputs.build-report }}
+          append: true
 
-      - name: Upload Docker Build Report as an artifact
-        id: upload_docker_build_report
-        uses: actions/upload-artifact@v2
-        with:
-          name: docker-build-report
-          path: docker_build_report.txt
+      - id: docker_logout
+        name: Docker logout
+        run: |
+          docker logout
