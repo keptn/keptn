@@ -753,6 +753,8 @@ jobs:
       - name: "Gather Report Data"
         run: |
           echo "Report from one step: ${{ needs.docker_build.outputs.build-report-api }}"
+          echo "another test"
+          echo "${{ needs.docker_build.matrix.config }}"
 
       - id: create_docker_build_report
         name: Create Docker Build Report
