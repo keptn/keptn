@@ -295,6 +295,79 @@ jobs:
     name: Unit Tests Go Microservices
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        config:
+          - artifact: "api"
+            working-dir: "./api"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
+            test-folders: "./handlers/... ./utils/..."
+            go-flags: ""
+          - artifact:
+            working-dir:
+            should-run:
+            test-folders:
+            go-flags:
+          - artifact: "openshift-route-service"
+            working-dir: "./platform-support/openshift-route-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
+            test-folders: "./..."
+            go-flags: "-race"
+          - artifact: "jmeter-service"
+            working-dir: "./jmeter-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
+            test-folders: "./..."
+            go-flags: "-race"
+          - artifact: "helm-service"
+            working-dir: "./helm-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
+            test-folders: "./..."
+            go-flags: "-race"
+          - artifact: "approval-service"
+            working-dir: "./approval-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
+            test-folders: "./..."
+            go-flags: "-race"
+          - artifact: "distributor"
+            working-dir: "./distributor"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
+            test-folders: "./..."
+            go-flags: ""
+          - artifact: "shipyard-controller"
+            working-dir: "./shipyard-controller"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
+            test-folders: "./..."
+            go-flags: ""
+          - artifact: "secret-service"
+            working-dir: "./secret-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
+            test-folders: "./..."
+            go-flags: ""
+          - artifact: "configuration-service"
+            working-dir: "./configuration-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
+            test-folders: "./..."
+            go-flags: ""
+          - artifact: "remediation-service"
+            working-dir: "./remediation-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
+            test-folders: "./..."
+            go-flags: "-race"
+          - artifact: "lighthouse-service"
+            working-dir: "./lighthouse-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
+            test-folders: "./..."
+            go-flags:
+          - artifact: "mongodb-datastore"
+            working-dir: "./mongodb-datastore"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
+            test-folders: "./..."
+            go-flags: "-race"
+          - artifact: "statistics-service"
+            working-dir: "./statistics-service"
+            should-run: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
+            test-folders: "./..."
+            go-flags: "-race"
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -317,97 +390,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Test api
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
+      - name: Test ${{ matrix.config.artifact }}
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
         run: |
-          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
-          bash <(curl -s https://codecov.io/bash) -c -F api
-        working-directory: ./api
-
-      - name: Test os route svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
-        working-directory: ./platform-support/openshift-route-service
-
-      - name: Test jmeter svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
-        working-directory: ./jmeter-service
-
-      - name: Test helm svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F helm-service
-        working-directory: ./helm-service
-
-      - name: Test approval svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F approval-service
-        working-directory: ./approval-service
-
-      - name: Test distributor
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F distributor
-        working-directory: ./distributor
-
-      - name: Test shipyard controller svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
-        working-directory: ./shipyard-controller
-
-      - name: Test secret svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F secret-service
-        working-directory: ./secret-service
-
-      - name: Test configuration svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
-        working-directory: ./configuration-service
-
-      - name: Test remediation svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
-        working-directory: ./remediation-service
-
-      - name: Test lighthouse svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
-        working-directory: ./lighthouse-service
-
-      - name: Test mongodb datastore svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
-        working-directory: ./mongodb-datastore
-
-      - name: Test statistics svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
-        working-directory: ./statistics-service
-
+          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
+          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
+        working-directory: ${{ matrix.config.working-dir }}
 
   unit-tests-node:
     needs: prepare_ci_run
