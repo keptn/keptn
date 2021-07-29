@@ -630,46 +630,46 @@ jobs:
     strategy:
       matrix:
         config:
-          - ARTIFACT: "keptn/api"
+          - ARTIFACT: "api"
             BUILD_FOLDER: "api/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
-          - ARTIFACT: "keptn/bridge2"
+          - ARTIFACT: "bridge2"
             BUILD_FOLDER: "bridge/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
-          - ARTIFACT: "keptn/distributor"
+          - ARTIFACT: "distributor"
             BUILD_FOLDER: "distributor/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
-          - ARTIFACT: "keptn/jmeter-service"
+          - ARTIFACT: "jmeter-service"
             BUILD_FOLDER: "jmeter-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
-          - ARTIFACT: "keptn/helm-service"
+          - ARTIFACT: "helm-service"
             BUILD_FOLDER: "helm-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
-          - ARTIFACT: "keptn/approval-service"
+          - ARTIFACT: "approval-service"
             BUILD_FOLDER: "approval-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
-          - ARTIFACT: "keptn/openshift-route-service"
+          - ARTIFACT: "openshift-route-service"
             BUILD_FOLDER: "platform-support/openshift-route-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
-          - ARTIFACT: "keptn/shipyard-controller"
+          - ARTIFACT: "shipyard-controller"
             BUILD_FOLDER: "shipyard-controller/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
-          - ARTIFACT: "keptn/secret-service"
+          - ARTIFACT: "secret-service"
             BUILD_FOLDER: "secret-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
-          - ARTIFACT: "keptn/configuration-service"
+          - ARTIFACT: "configuration-service"
             BUILD_FOLDER: "configuration-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
-          - ARTIFACT: "keptn/remediation-service"
+          - ARTIFACT: "remediation-service"
             BUILD_FOLDER: "remediation-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
-          - ARTIFACT: "keptn/lighthouse-service"
+          - ARTIFACT: "lighthouse-service"
             BUILD_FOLDER: "lighthouse-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
-          - ARTIFACT: "keptn/mongodb-datastore"
+          - ARTIFACT: "mongodb-datastore"
             BUILD_FOLDER: "mongodb-datastore/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
-          - ARTIFACT: "keptn/statistics-service"
+          - ARTIFACT: "statistics-service"
             BUILD_FOLDER: "statistics-service/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
     env:
@@ -708,22 +708,22 @@ jobs:
             docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}
 
       - id: docker_build_image
-        name: "Docker Build ${{ matrix.config.ARTIFACT }}"
+        name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
         uses: keptn/gh-action-build-docker-image@master
         with:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: ${{ matrix.config.ARTIFACT }}
+          IMAGE_NAME: keptn/${{ matrix.config.ARTIFACT }}
           DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
 
       - id: docker_build_image_new
-        name: "Docker Build ${{ matrix.config.ARTIFACT }}"
+        name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE: ${{ matrix.config.ARTIFACT }}
+          IMAGE: keptn/${{ matrix.config.ARTIFACT }}
           DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
         run: |
           DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
