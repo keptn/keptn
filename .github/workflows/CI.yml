@@ -700,6 +700,10 @@ jobs:
         name: Docker Cache
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
+        with:
+          key: docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}-{hash}
+          restore-keys: |
+            docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}
 
       - id: docker_build_image
         name: "Docker Build ${{ matrix.config.ARTIFACT }}"
