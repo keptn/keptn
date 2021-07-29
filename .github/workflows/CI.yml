@@ -13,9 +13,6 @@ on:
   workflow_dispatch: # run CI when triggered manually
 env:
   GO_VERSION: ^1.16
-  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
-  CLI_FOLDER: "cli/"
-  INSTALLER_FOLDER: "installer/"
 defaults:
   run:
     shell: bash
@@ -651,42 +648,42 @@ jobs:
           - ARTIFACT: "bridge2"
             BUILD_FOLDER: "bridge/"
             SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
-#          - ARTIFACT: "distributor"
-#            BUILD_FOLDER: "distributor/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
-#          - ARTIFACT: "jmeter-service"
-#            BUILD_FOLDER: "jmeter-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
-#          - ARTIFACT: "helm-service"
-#            BUILD_FOLDER: "helm-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
-#          - ARTIFACT: "approval-service"
-#            BUILD_FOLDER: "approval-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
-#          - ARTIFACT: "openshift-route-service"
-#            BUILD_FOLDER: "platform-support/openshift-route-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
-#          - ARTIFACT: "shipyard-controller"
-#            BUILD_FOLDER: "shipyard-controller/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
-#          - ARTIFACT: "secret-service"
-#            BUILD_FOLDER: "secret-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
-#          - ARTIFACT: "configuration-service"
-#            BUILD_FOLDER: "configuration-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
-#          - ARTIFACT: "remediation-service"
-#            BUILD_FOLDER: "remediation-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
-#          - ARTIFACT: "lighthouse-service"
-#            BUILD_FOLDER: "lighthouse-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
-#          - ARTIFACT: "mongodb-datastore"
-#            BUILD_FOLDER: "mongodb-datastore/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
-#          - ARTIFACT: "statistics-service"
-#            BUILD_FOLDER: "statistics-service/"
-#            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
+          - ARTIFACT: "distributor"
+            BUILD_FOLDER: "distributor/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
+          - ARTIFACT: "jmeter-service"
+            BUILD_FOLDER: "jmeter-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
+          - ARTIFACT: "helm-service"
+            BUILD_FOLDER: "helm-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
+          - ARTIFACT: "approval-service"
+            BUILD_FOLDER: "approval-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
+          - ARTIFACT: "openshift-route-service"
+            BUILD_FOLDER: "platform-support/openshift-route-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
+          - ARTIFACT: "shipyard-controller"
+            BUILD_FOLDER: "shipyard-controller/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
+          - ARTIFACT: "secret-service"
+            BUILD_FOLDER: "secret-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
+          - ARTIFACT: "configuration-service"
+            BUILD_FOLDER: "configuration-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
+          - ARTIFACT: "remediation-service"
+            BUILD_FOLDER: "remediation-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
+          - ARTIFACT: "lighthouse-service"
+            BUILD_FOLDER: "lighthouse-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
+          - ARTIFACT: "mongodb-datastore"
+            BUILD_FOLDER: "mongodb-datastore/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
+          - ARTIFACT: "statistics-service"
+            BUILD_FOLDER: "statistics-service/"
+            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -757,6 +754,7 @@ jobs:
           append: true
 
       - id: docker_logout
+        if: always()
         name: Docker logout
         run: |
           docker logout
