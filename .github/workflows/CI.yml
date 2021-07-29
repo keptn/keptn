@@ -627,6 +627,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       build-report-api: ${{ steps.docker_build_image_new.outputs.build-report-api }}
+      matrix-config: ${{ matrix.config }}
     strategy:
       matrix:
         config:
@@ -746,7 +747,7 @@ jobs:
 
   docker_build_report:
     name: "Report docker builds to PR"
-    needs: [docker_build]
+    needs: docker_build
     runs-on: ubuntu-20.04
     steps:
       - name: "Gather Report Data"
