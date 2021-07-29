@@ -707,15 +707,15 @@ jobs:
           restore-keys: |
             docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}
 
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
-        uses: keptn/gh-action-build-docker-image@master
-        with:
-          VERSION: ${{ env.VERSION }}
-          DATETIME: ${{ env.DATETIME }}
-          IMAGE_NAME: keptn/${{ matrix.config.ARTIFACT }}
-          DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
+#      - id: docker_build_image
+#        name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
+#        uses: keptn/gh-action-build-docker-image@master
+#        with:
+#          VERSION: ${{ env.VERSION }}
+#          DATETIME: ${{ env.DATETIME }}
+#          IMAGE_NAME: keptn/${{ matrix.config.ARTIFACT }}
+#          DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
 
       - id: docker_build_image_new
         name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
@@ -727,14 +727,14 @@ jobs:
           DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
         run: |
           DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
-          docker build . -f "${DOCKER_FOLDER}"/Dockerfile -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
+          docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
 
           if [[ $? -ne 0 ]]; then
-            echo "::warning file=${FOLDER}/${FILE}::Failed to push ${IMAGE}:${VERSION}.${DATETIME} to DockerHub, continuing anyway"
-            report="* Failed to push ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${FOLDER})"
+            echo "::warning file=${DOCKER_FOLDER}/Dockerfile::Failed to push ${IMAGE}:${VERSION}.${DATETIME} to DockerHub, continuing anyway"
+            report="* Failed to push ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           else
-            report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${FOLDER})"
+            report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           fi
 
           echo "::set-output name=build-report-${{ matrix.config.ARTIFACT }}::$report"
