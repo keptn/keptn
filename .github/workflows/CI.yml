@@ -303,113 +303,113 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
-      # cache go modules
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Test api
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
-        run: |
-          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
-          bash <(curl -s https://codecov.io/bash) -c -F api
-        working-directory: ./api
-
-      - name: Test os route svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
-        working-directory: ./platform-support/openshift-route-service
-
-      - name: Test jmeter svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
-        working-directory: ./jmeter-service
-
-      - name: Test helm svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F helm-service
-        working-directory: ./helm-service
-
-      - name: Test approval svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F approval-service
-        working-directory: ./approval-service
-
-      - name: Test distributor
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F distributor
-        working-directory: ./distributor
-
-      - name: Test shipyard controller svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
-        working-directory: ./shipyard-controller
-
-      - name: Test secret svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F secret-service
-        working-directory: ./secret-service
-
-      - name: Test configuration svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
-        working-directory: ./configuration-service
-
-      - name: Test remediation svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
-        working-directory: ./remediation-service
-
-      - name: Test lighthouse svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
-        working-directory: ./lighthouse-service
-
-      - name: Test mongodb datastore svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
-        working-directory: ./mongodb-datastore
-
-      - name: Test statistics svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
-        working-directory: ./statistics-service
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.3.4
+#
+#      - name: Load CI Environment from .ci_env
+#        id: load_ci_env
+#        uses: c-py/action-dotenv-to-setenv@v3
+#        with:
+#          env-file: .ci_env
+#
+#      # cache go modules
+#      - uses: actions/cache@v2.1.6
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-
+#
+#      - name: Test api
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
+#        run: |
+#          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
+#          bash <(curl -s https://codecov.io/bash) -c -F api
+#        working-directory: ./api
+#
+#      - name: Test os route svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
+#        working-directory: ./platform-support/openshift-route-service
+#
+#      - name: Test jmeter svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
+#        working-directory: ./jmeter-service
+#
+#      - name: Test helm svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F helm-service
+#        working-directory: ./helm-service
+#
+#      - name: Test approval svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F approval-service
+#        working-directory: ./approval-service
+#
+#      - name: Test distributor
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
+#        run: |
+#          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F distributor
+#        working-directory: ./distributor
+#
+#      - name: Test shipyard controller svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
+#        run: |
+#          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
+#        working-directory: ./shipyard-controller
+#
+#      - name: Test secret svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
+#        run: |
+#          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F secret-service
+#        working-directory: ./secret-service
+#
+#      - name: Test configuration svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
+#        run: |
+#          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
+#        working-directory: ./configuration-service
+#
+#      - name: Test remediation svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
+#        working-directory: ./remediation-service
+#
+#      - name: Test lighthouse svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
+#        run: |
+#          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
+#        working-directory: ./lighthouse-service
+#
+#      - name: Test mongodb datastore svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
+#        working-directory: ./mongodb-datastore
+#
+#      - name: Test statistics svc
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
+#        run: |
+#          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+#          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
+#        working-directory: ./statistics-service
 
 
   unit-tests-node:
@@ -421,32 +421,32 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: 12.x
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install npm libs
-        run: |
-          npm install -g codecov
-          npm install -g libnpx@10.2.0
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-      - name: Test
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: |
-          npm install
-          npm run test:ci
-        working-directory: ./bridge
-      - name: Coverage report
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
-        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.3.4
+#      - uses: actions/cache@v2.1.6
+#        with:
+#          path: ~/.npm
+#          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#          restore-keys: |
+#            ${{ runner.os }}-node-
+#      - name: Install npm libs
+#        run: |
+#          npm install -g codecov
+#          npm install -g libnpx@10.2.0
+#      - name: Load CI Environment from .ci_env
+#        id: load_ci_env
+#        uses: c-py/action-dotenv-to-setenv@v3
+#        with:
+#          env-file: .ci_env
+#      - name: Test
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
+#        run: |
+#          npm install
+#          npm run test:ci
+#        working-directory: ./bridge
+#      - name: Coverage report
+#        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
+#        run: bash <(curl -s https://codecov.io/bash) -c -F bridge
 
 
   unit-tests-cli:
@@ -464,159 +464,159 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-
-      # cache go modules
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-cli
-
-      - name: Test cli
-        run: make test-unit-cli # go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
-
-      - name: Coverage report
-        run: bash <(curl -s https://codecov.io/bash) -c -F cli
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.3.4
+#
+#      # cache go modules
+#      - uses: actions/cache@v2.1.6
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-cli
+#
+#      - name: Test cli
+#        run: make test-unit-cli # go test -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
+#
+#      - name: Coverage report
+#        run: bash <(curl -s https://codecov.io/bash) -c -F cli
 
   ############################################################################
   # Build CLI                                                                #
   ############################################################################
-  build-cli:
-    name: Build Keptn CLI
-    needs: [prepare_ci_run, unit-tests-cli]
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    strategy:
-      matrix:
-        include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
-          - platform: "ubuntu-20.04"
-            GOOS: "linux"
-            GOARCH: "amd64"
-          - platform: "ubuntu-20.04"
-            GOOS: "linux"
-            GOARCH: "arm"
-          - platform: "ubuntu-20.04"
-            GOOS: "linux"
-            GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
-            GOOS: "darwin"
-            GOARCH: "amd64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
-            GOOS: "darwin"
-            GOARCH: "arm64"
-          - platform: "ubuntu-20.04"
-            GOOS: "windows"
-            GOARCH: "amd64"
-    env:
-      KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
-
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-      # cache go modules
-      - uses: actions/cache@v2.1.6
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-cli
-      - name: Build cli
-        env:
-          PLATFORM: "${{ matrix.platform }}"
-          GOARCH: "${{ matrix.GOARCH }}"
-          GOOS: "${{ matrix.GOOS }}"
-          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-        run: |
-          FILE_ENDING=""
-          # overwrite file ending for windows binaries
-          if [[ "$GOOS" == "windows" ]]; then
-            FILE_ENDING=".exe"
-          fi
-
-          # determine output file name based on version, go os, architecture
-          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
-          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
-
-          if [[ "$BRANCH" == "master" ]]; then
-            # use VERSION.DATETIME for the cli version (e.g., nightly build)
-            VERSION=${VERSION}.${DATETIME}
-          fi
-
-          if [[ "$GOOS" == "linux" ]]; then
-            # enable static build for linux
-            export CGO_ENABLED=0
-          fi
-
-          if [[ "$GOOS" == "darwin" ]]; then
-            # enable CGO for compiling docker credential helper natively
-            export CGO_ENABLED=1
-          fi
-
-          # build the binary using makefile
-          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
-          # verify output file exists
-          ls bin/${OUTPUT_EXECUTABLE_NAME}
-
-          # create a .tar.gz archive of the binary
-          mkdir dist
-          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
-      - name: Upload Keptn CLI as an artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: keptn-cli
-          path: dist/
+#  build-cli:
+#    name: Build Keptn CLI
+#    needs: [prepare_ci_run, unit-tests-cli]
+#    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
+#    strategy:
+#      matrix:
+#        include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
+#          - platform: "ubuntu-20.04"
+#            GOOS: "linux"
+#            GOARCH: "amd64"
+#          - platform: "ubuntu-20.04"
+#            GOOS: "linux"
+#            GOARCH: "arm"
+#          - platform: "ubuntu-20.04"
+#            GOOS: "linux"
+#            GOARCH: "arm64"
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+#            GOOS: "darwin"
+#            GOARCH: "amd64"
+#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+#            GOOS: "darwin"
+#            GOARCH: "arm64"
+#          - platform: "ubuntu-20.04"
+#            GOOS: "windows"
+#            GOARCH: "amd64"
+#    env:
+#      KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
+#
+#    runs-on: ${{ matrix.platform }}
+#    steps:
+#      - name: Set up Go 1.x
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: ${{ env.GO_VERSION }}
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.3.4
+#      # cache go modules
+#      - uses: actions/cache@v2.1.6
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-cli
+#      - name: Build cli
+#        env:
+#          PLATFORM: "${{ matrix.platform }}"
+#          GOARCH: "${{ matrix.GOARCH }}"
+#          GOOS: "${{ matrix.GOOS }}"
+#          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+#          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+#          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+#          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+#        run: |
+#          FILE_ENDING=""
+#          # overwrite file ending for windows binaries
+#          if [[ "$GOOS" == "windows" ]]; then
+#            FILE_ENDING=".exe"
+#          fi
+#
+#          # determine output file name based on version, go os, architecture
+#          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+#          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
+#
+#          if [[ "$BRANCH" == "master" ]]; then
+#            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+#            VERSION=${VERSION}.${DATETIME}
+#          fi
+#
+#          if [[ "$GOOS" == "linux" ]]; then
+#            # enable static build for linux
+#            export CGO_ENABLED=0
+#          fi
+#
+#          if [[ "$GOOS" == "darwin" ]]; then
+#            # enable CGO for compiling docker credential helper natively
+#            export CGO_ENABLED=1
+#          fi
+#
+#          # build the binary using makefile
+#          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
+#          # verify output file exists
+#          ls bin/${OUTPUT_EXECUTABLE_NAME}
+#
+#          # create a .tar.gz archive of the binary
+#          mkdir dist
+#          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
+#      - name: Upload Keptn CLI as an artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: keptn-cli
+#          path: dist/
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)                   #
   ############################################################################
-  helm_charts_build:
-    needs: prepare_ci_run
-    name: Build Helm Charts
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-    runs-on: ubuntu-20.04
-    env:
-      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-      KEPTN_SPEC_VERSION: ${{ needs.prepare_ci_run.outputs.KEPTN_SPEC_VERSION }}
-      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2.3.4
-
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
-      - name: Build Helm Charts
-        id: build_helm_charts
-        run: |
-          if [[ "$BRANCH" == "master" ]] || [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
-          else
-            # just use VERSION for the image tag
-            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
-          fi
-
-      - name: Upload Helm Chart as an artifact
-        id: upload_helm_chart
-        uses: actions/upload-artifact@v2
-        with:
-          name: keptn-installer
-          path: keptn-charts/*.tgz
+#  helm_charts_build:
+#    needs: prepare_ci_run
+#    name: Build Helm Charts
+#    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+#    runs-on: ubuntu-20.04
+#    env:
+#      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+#      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+#      KEPTN_SPEC_VERSION: ${{ needs.prepare_ci_run.outputs.KEPTN_SPEC_VERSION }}
+#      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+#      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+#    steps:
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.3.4
+#
+#      - name: Load CI Environment from .ci_env
+#        id: load_ci_env
+#        uses: c-py/action-dotenv-to-setenv@v3
+#        with:
+#          env-file: .ci_env
+#
+#      - name: Build Helm Charts
+#        id: build_helm_charts
+#        run: |
+#          if [[ "$BRANCH" == "master" ]] || [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+#            # use VERSION.DATETIME for the image tag (e.g., nightly build)
+#            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}"
+#          else
+#            # just use VERSION for the image tag
+#            ./gh-actions-scripts/build_helm_charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}"
+#          fi
+#
+#      - name: Upload Helm Chart as an artifact
+#        id: upload_helm_chart
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: keptn-installer
+#          path: keptn-charts/*.tgz
 
   ############################################################################
   # Build Docker Images                                                      #
