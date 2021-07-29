@@ -719,7 +719,7 @@ jobs:
           restore-keys: |
             docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}
 
-      - id: docker_build_image_new
+      - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
         env:
@@ -750,7 +750,7 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: ${{ steps.docker_build_image_new.outputs.build-report }}
+          message: ${{ steps.docker_build_image.outputs.build-report }}
           append: true
 
       - id: docker_logout
