@@ -384,6 +384,8 @@ jobs:
 
       - name: Test ${{ matrix.config.artifact }}
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
+        env:
+          SHOULD_RUN: ${{ matrix.config.should-run }}
         run: |
           go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
           bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
