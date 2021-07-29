@@ -622,7 +622,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   prepare_github_pr_comment:
-    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
+    needs: [prepare_ci_run]
     name: Prepare GitHub Report Comment
     runs-on: ubuntu-20.04
     steps:
