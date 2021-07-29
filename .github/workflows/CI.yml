@@ -115,6 +115,9 @@ jobs:
           BUILD_MONGODB_DS=false
           BUILD_STATISTICS_SVC=false
 
+          echo "changed files:"
+          echo "${{ steps.changed_files.outputs.all }}"
+
           for changed_file in ${{ steps.changed_files.outputs.all }}; do
             echo "Checking if $changed_file leads to a build..."
 
