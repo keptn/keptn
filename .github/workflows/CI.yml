@@ -763,7 +763,7 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: ${{ steps.docker_build.outputs.build-report }}
+          message: ${{ steps.docker_build_image_new.outputs.build-report }}
           append: true
 
       - id: docker_logout
