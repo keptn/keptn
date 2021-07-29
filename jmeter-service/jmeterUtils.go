@@ -133,14 +133,20 @@ func parseJMeterResult(jmeterCommandResult string, testInfo *TestInfo, workload 
  * Status: true or false
  * Error: error details if status was false
  */
-func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptncommon.Logger) (bool, error) {
+func executeJMeter(testInfo *TestInfo, workload *Workload, resultsDir string, url *url.URL, LTN string, funcValidation bool, logger *keptncommon.Logger, job bool) (bool, error) {
 	os.RemoveAll(resultsDir)
 	os.MkdirAll(resultsDir, 0644)
 
 	// Step 1: Lets download all files that match /jmeter/ into a local temp directory
 	// Due to current limitations of the REST API we also fall-back and always load a specific file referenced in workload on service, stage or project level
 	// Implementing https://github.com/keptn/keptn/issues/2756
-	localTempDir := testInfo.Context
+	var localTempDir string = ""
+	if job {
+		localTempDir = "/keptn"
+	} else {
+		localTempDir = testInfo.Context
+	}
+
 	os.RemoveAll(localTempDir)
 	os.MkdirAll(localTempDir, 0644)
 	fileMatchPattern := JMeterConfigDirectory

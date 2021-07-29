@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -28,16 +29,65 @@ type envConfig struct {
 	// Port on which to listen for cloudevents
 	Port int    `envconfig:"RCV_PORT" default:"8080"`
 	Path string `envconfig:"RCV_PATH" default:"/"`
+	Job bool `envconfig:"JOB" default:"false"`
+	Event string `envconfig:"EVENT" default:""`
 }
 
+var testevent string = `
+{
+  "specversion": "1.0",
+  "id": "c4d3a334-6cb9-4e8c-a372-7e0b45942f53",
+  "source": "source-service",
+  "type": "sh.keptn.event.test.triggered",
+  "datacontenttype": "application/json",
+  "data": {
+    "project": "sockshop",
+    "stage": "dev",
+    "service": "carts",
+    "labels": {
+      "label-key": "label-value"
+    },
+    "status": "succeeded",
+    "result": "pass",
+    "message": "a message",
+    "test": {
+      "teststrategy": "functional"
+    },
+    "deployment": {
+      "deploymentURIsLocal": [
+        "http://carts.sockshop-staging.svc.cluster.local"
+      ],
+      "deploymentURIsPublic": [
+        "http://carts.sockshot.local:80"
+      ]
+    }
+  },
+  "shkeptncontext": "a3e5f16d-8888-4720-82c7-6995062905c1"
+}`
+
+var env envConfig
+
 func main() {
-	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
 
-	go keptnapi.RunHealthEndpoint("10998")
-	os.Exit(_main(os.Args[1:], env))
+	if !env.Job {
+		go keptnapi.RunHealthEndpoint("10998")
+		os.Exit(_main(os.Args[1:], env))
+	} else {
+		log.Println("Running JMeter-Service as Job")
+		defer os.Exit(0)
+
+		ctx := context.Background()
+		ctx = cloudevents.WithEncodingStructured(ctx)
+
+		var event cloudevents.Event
+		json.Unmarshal([]byte(testevent), &event)
+
+		gotEvent(ctx, event)
+	}
+
 }
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
@@ -63,7 +113,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return nil
 	}
 
-	go runTests(event, shkeptncontext, *data, logger)
+	if env.Job {
+		runTests(event, shkeptncontext, *data, logger)
+	} else {
+		go runTests(event, shkeptncontext, *data, logger)
+	}
 
 	return nil
 }
@@ -73,7 +127,11 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // The method will always try to execute a health check workload first, then execute the workload based on the passed testStrategy
 //
 func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestTriggeredEventData, logger *keptncommon.Logger) {
-	sendTestsStartedEvent(shkeptncontext, event, logger)
+	if !env.Job {
+		sendTestsStartedEvent(shkeptncontext, event, logger)
+	} else {
+		log.Println("Running test from Job")
+	}
 
 	testInfo := getTestInfo(data, shkeptncontext)
 	startedAt := time.Now()
@@ -89,7 +147,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	if err != nil {
 		msg := fmt.Sprintf("Error getting service url to run test against: %s", err.Error())
 		logger.Error(msg)
-		if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
+		if !env.Job {
+			log.Fatalf(msg)
+		} else if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		return
@@ -105,7 +165,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		if err != nil {
 			msg := fmt.Sprintf("Jmeter-service cannot reach URL %s: %s", serviceUrl, err.Error())
 			logger.Error(msg)
-			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
+			if env.Job {
+				log.Fatal(msg)
+			} else if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
@@ -115,7 +177,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 		if err != nil {
 			msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 			logger.Error(msg)
-			if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
+			if env.Job {
+				log.Fatalf(msg)
+			} else if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
@@ -123,7 +187,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 
 		if !res {
 			msg := fmt.Sprintf("Tests for %s with status = %s.%s", TestStrategy_HealthCheck, strconv.FormatBool(res), testInfo.ToString())
-			if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
+			if env.Job {
+				logger.Info(msg)
+			} else if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 				logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 			}
 			return
@@ -150,7 +216,9 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 			if err != nil {
 				msg := fmt.Sprintf("could not run test workload: %s", err.Error())
 				logger.Error(msg)
-				if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
+				if env.Job {
+					log.Fatalf(msg)
+				} else if err := sendErroredTestsFinishedEvent(shkeptncontext, event, startedAt, msg, logger); err != nil {
 					logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 				}
 				return
@@ -167,13 +235,17 @@ func runTests(event cloudevents.Event, shkeptncontext string, data keptnv2.TestT
 	// now lets send the test finished event
 	msg := fmt.Sprintf("Tests for %s with status = %s.%s", testStrategy, strconv.FormatBool(res), testInfo.ToString())
 	if !res {
-		if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
+		if env.Job {
+			logger.Info(msg)
+		} else if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultFailed, logger); err != nil {
 			logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 		}
 		return
 	}
 
-	if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultPass, logger); err != nil {
+	if env.Job {
+		logger.Info(msg)
+	} else if err := sendTestsFinishedEvent(shkeptncontext, event, startedAt, msg, keptnv2.ResultPass, logger); err != nil {
 		logger.Error(fmt.Sprintf("Error sending test finished event: %s", err.Error()) + ". " + testInfo.ToString())
 	}
 }
@@ -225,11 +297,14 @@ func runWorkload(serviceURL *url.URL, testInfo *TestInfo, workload *Workload, lo
 	resultDirectory := fmt.Sprintf("%s_%s_%s_%s_%s", testInfo.Project, testInfo.Service, testInfo.Stage, workload.TestStrategy, testInfo.Context)
 
 	// lets first remove all potentially left over result files from previous runs -> we keep them between runs for troubleshooting though
-	os.RemoveAll(resultDirectory)
-	os.RemoveAll(resultDirectory + "_result.tlf")
-	os.RemoveAll("output.txt")
+	if !env.Job {
+		os.RemoveAll(resultDirectory)
+		os.RemoveAll(resultDirectory + "_result.tlf")
+		os.RemoveAll("output.txt")
+	}
 
-	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger)
+
+	return executeJMeter(testInfo, workload, resultDirectory, serviceURL, resultDirectory, breakOnFunctionalIssues, logger, env.Job)
 }
 
 func checkEndpointAvailable(timeout time.Duration, serviceURL *url.URL) error {
