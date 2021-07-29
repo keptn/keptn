@@ -302,12 +302,6 @@ jobs:
             working-dir: "./api"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
             test-folders: "./handlers/... ./utils/..."
-            go-flags: ""
-          - artifact:
-            working-dir:
-            should-run:
-            test-folders:
-            go-flags:
           - artifact: "openshift-route-service"
             working-dir: "./platform-support/openshift-route-service"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
@@ -332,22 +326,18 @@ jobs:
             working-dir: "./distributor"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
             test-folders: "./..."
-            go-flags: ""
           - artifact: "shipyard-controller"
             working-dir: "./shipyard-controller"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
             test-folders: "./..."
-            go-flags: ""
           - artifact: "secret-service"
             working-dir: "./secret-service"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
             test-folders: "./..."
-            go-flags: ""
           - artifact: "configuration-service"
             working-dir: "./configuration-service"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
             test-folders: "./..."
-            go-flags: ""
           - artifact: "remediation-service"
             working-dir: "./remediation-service"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
@@ -357,7 +347,6 @@ jobs:
             working-dir: "./lighthouse-service"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
             test-folders: "./..."
-            go-flags:
           - artifact: "mongodb-datastore"
             working-dir: "./mongodb-datastore"
             should-run: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
