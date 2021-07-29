@@ -626,7 +626,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-20.04
     outputs:
-      build-report-${{ matrix.config.ARTIFACT }}: ${{ steps.docker_build.outputs.build-report-${{ matrix.config.ARTIFACT }} }}
+      build-report-api: ${{ steps.docker_build.outputs.build-report-api }}
     strategy:
       matrix:
         config:
