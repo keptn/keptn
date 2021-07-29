@@ -486,7 +486,7 @@ jobs:
   ############################################################################
   build-cli:
     name: Build Keptn CLI
-    needs: [prepare_ci_run, unit-tests-cli]
+    needs: [prepare_ci_run]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
     strategy:
       matrix:
