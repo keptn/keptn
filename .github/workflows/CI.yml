@@ -778,5 +778,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: "Gather Report Data"
+        env:
+          build-report-api: ${{ jobs.docker_build.outputs.build-report-keptn/api }}
         run: |
-          echo "Report from one step: ${{ jobs.docker_build.outputs.build-report-keptn/api }}"
+          echo "Report from one step: $build-report-api"
