@@ -627,6 +627,9 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
+        ARTIFACT:
+          - "keptn/api"
+          - "keptn/bridge2"
         includes:
           - ARTIFACT: "keptn/api"
             BUILD_FOLDER: "api/"
