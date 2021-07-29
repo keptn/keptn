@@ -625,6 +625,8 @@ jobs:
     needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
     name: Docker Build
     runs-on: ubuntu-20.04
+    outputs:
+      build-report-${{ matrix.config.ARTIFACT }}: ${{ steps.docker_build.outputs.build-report-${{ matrix.config.ARTIFACT }} }}
     strategy:
       matrix:
         config:
@@ -715,6 +717,28 @@ jobs:
           IMAGE_NAME: ${{ matrix.config.ARTIFACT }}
           DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
 
+      - id: docker_build_image_new
+        name: "Docker Build ${{ matrix.config.ARTIFACT }}"
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
+        env:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE: ${{ matrix.config.ARTIFACT }}
+          DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
+        run: |
+          DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
+          docker build . -f "${DOCKER_FOLDER}"/Dockerfile -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
+          docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
+
+          if [[ $? -ne 0 ]]; then
+            echo "::warning file=${FOLDER}/${FILE}::Failed to push ${IMAGE}:${VERSION}.${DATETIME} to DockerHub, continuing anyway"
+            report="* Failed to push ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${FOLDER})"
+          else
+            report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${FOLDER})"
+          fi
+
+          echo "::set-output name=build-report-${{ matrix.config.ARTIFACT }}::$report"
+
       - id: docker_logout
         name: Docker logout
         run: |
@@ -735,6 +759,7 @@ jobs:
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
         uses: marocchino/sticky-pull-request-comment@v2.1.0
+        continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           path: docker_build_report_final.txt
@@ -746,3 +771,12 @@ jobs:
         with:
           name: docker-build-report
           path: docker_build_report.txt
+
+  docker_build_report:
+    name: "Report docker builds to PR"
+    needs: [docker_build]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Gather Report Data"
+        run: |
+          echo "Report from one step: ${{ jobs.docker_build.outputs.build-report-keptn/api }}"
