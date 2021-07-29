@@ -840,13 +840,12 @@ jobs:
           env-file: ./dist/build-config/build-config.env
 
       - name: Overwrite VERSION String for nightly builds
+        if: env.BRANCH == 'master'
         run: |
-          if [[ "$BRANCH" == "master" ]]; then
-            # use VERSION.DATETIME for the cli version (e.g., nightly build)
-            VERSION=${VERSION}.${DATETIME}
-            # overwrite VERSION
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          fi
+          # use VERSION.DATETIME for the cli version (e.g., nightly build)
+          VERSION=${VERSION}.${DATETIME}
+          # overwrite VERSION
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: DEBUG Build-Config
         run: |
@@ -1230,7 +1229,8 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                  "artifact-version": "${{ env.VERSION }}"
                 }
               },
               "source": "gh",
