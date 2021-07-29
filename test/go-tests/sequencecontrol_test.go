@@ -26,8 +26,9 @@ spec:
       sequences:
         - name: "mysequence"
           tasks:
-            - name: "mytask"
-            - name: "mynexttask"`
+            - name: "task1"
+            - name: "task2"
+            - name: "task3"`
 
 func TestAbortSequence(t *testing.T) {
 
@@ -57,11 +58,11 @@ func TestAbortSequence(t *testing.T) {
 	// verify state
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
-	myTaskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
 	require.Nil(t, err)
-	require.NotNil(t, myTaskTriggeredEvent)
+	require.NotNil(t, taskTriggeredEvent)
 
-	cloudEvent := keptnv2.ToCloudEvent(*myTaskTriggeredEvent)
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
 
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
@@ -116,18 +117,17 @@ func TestPauseAndResumeSequence(t *testing.T) {
 	// verify state
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
 
-	myTaskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mytask"))
+	task1TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
 	require.Nil(t, err)
-	require.NotNil(t, myTaskTriggeredEvent)
+	require.NotNil(t, task1TriggeredEvent)
 
-	cloudEvent := keptnv2.ToCloudEvent(*myTaskTriggeredEvent)
-
+	cloudEvent := keptnv2.ToCloudEvent(*task1TriggeredEvent)
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
 	require.NotNil(t, keptn)
 
-	t.Log("sending task started event")
-	_, err = keptn.SendTaskStartedEvent(nil, source)
+	t.Log("sending task1 started event")
+	keptn.SendTaskStartedEvent(nil, source)
 
 	t.Log("pausing sequence")
 	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
@@ -137,7 +137,7 @@ func TestPauseAndResumeSequence(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
 
-	t.Log("sending task finished event")
+	t.Log("sending task1 finished event")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultPass,
 	}, source)
@@ -145,10 +145,10 @@ func TestPauseAndResumeSequence(t *testing.T) {
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
 
 	t.Log("verifying that the next task has not being triggered")
-	time.Sleep(10 * time.Second) //sorry, but I don't know how to verify it without a waiting
-	nextTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "dev", keptnv2.GetTriggeredEventType("mynextTask"))
+	time.Sleep(5 * time.Second) //sorry, but I don't know how to verify it without a waiting
+	task2TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "dev", keptnv2.GetTriggeredEventType("task2"))
 	require.Nil(t, err)
-	require.Nil(t, nextTriggeredEvent)
+	require.Nil(t, task2TriggeredEvent)
 
 	t.Log("resuming sequence")
 	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
@@ -160,8 +160,51 @@ func TestPauseAndResumeSequence(t *testing.T) {
 
 	t.Log("verifying that the next task has being triggered")
 	require.Eventually(t, func() bool {
-		nextTaskTriggered, _ := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("mynexttask"))
-		return nextTaskTriggered != nil
+		task2TriggeredEvent, _ = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task2"))
+		return task2TriggeredEvent != nil
+	}, 20*time.Second, 2*time.Second)
+
+	cloudEvent = keptnv2.ToCloudEvent(*task2TriggeredEvent)
+	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	t.Log("sending task2 started event")
+	keptn.SendTaskStartedEvent(nil, source)
+
+	t.Logf("pausing sequence in stage %s", stageName)
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
+		State: common.PauseSequence,
+		Stage: stageName,
+	})
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	t.Log("sending task2 finished event")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Result: keptnv2.ResultPass,
+	}, source)
+
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	t.Log("verifying that the next task has not being triggered")
+	time.Sleep(5 * time.Second) //sorry, but I don't know how to verify it without a waiting
+	task3TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "dev", keptnv2.GetTriggeredEventType("task3"))
+	require.Nil(t, err)
+	require.Nil(t, task3TriggeredEvent)
+
+	t.Logf("resuming sequence in stage %s", stageName)
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
+		State: common.ResumeSequence,
+		Stage: stageName,
+	})
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	t.Log("verifying that the next task has being triggered")
+	require.Eventually(t, func() bool {
+		task3TriggeredEvent, _ = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task3"))
+		return task3TriggeredEvent != nil
 	}, 20*time.Second, 2*time.Second)
 
 }
