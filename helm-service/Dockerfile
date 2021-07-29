@@ -20,7 +20,7 @@ COPY go.mod go.sum ./
 # Download dependencies
 RUN go mod download
 
-# Copy local code to the container image. 
+# Copy local code to the container image.
 COPY . .
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
