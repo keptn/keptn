@@ -1,8 +1,6 @@
-import { Sequence } from '../models/sequence.js';
+import { SequenceResult as sr } from '../../shared/interfaces/sequence-result';
+import { Sequence } from '../models/sequence';
 
-export interface SequenceResult {
-  nextPageKey?: number;
-  pageSize?: number;
-  totalCount?: number;
+export interface SequenceResult extends sr {
   states: Sequence[];
 }

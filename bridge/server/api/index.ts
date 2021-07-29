@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { Method } from 'axios';
-import { currentPrincipal } from '../user/session.js';
-import { axios } from '../services/axios-instance.js';
-import { DataService } from '../services/data-service.js';
+import { currentPrincipal } from '../user/session';
+import { axios } from '../services/axios-instance';
+import { DataService } from '../services/data-service';
 
 const router = Router();
 
@@ -90,7 +90,7 @@ function apiRouter(params:
     try {
       const projectName = req.params.projectName;
       const project = await dataService.getProject(projectName, req.query.remediation === 'true', req.query.approval === 'true');
-      res.json(project);
+      return res.json(project);
     }
     catch (error) {
       return next(error);

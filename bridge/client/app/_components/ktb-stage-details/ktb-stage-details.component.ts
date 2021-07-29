@@ -7,7 +7,6 @@ import {Service} from '../../_models/service';
 import {DataService} from '../../_services/data.service';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
-import { Sequence } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-stage-details',
@@ -84,18 +83,6 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasProblemEvent(problemEvents: Sequence[], service: Service): boolean {
-    return problemEvents.some(p => service.openRemediations.some(r => r.service === p.service));
-  }
-
-  findProblemEvent(problemEvents: Sequence[], service: Service): Sequence[] {
-    return service.openRemediations;
-  }
-
-  findFailedRootEvent(failedRootEvents: Sequence[], service: Service): Sequence | undefined {
-    return failedRootEvents.find(sequence => sequence.service === service.serviceName);
-  }
-
   getServiceLink(service: Service) {
     return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
   }
@@ -104,14 +91,9 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
   }
 
-  public filterSequences(sequences: Sequence[]): Sequence[] {
-    return this.filteredServices.length === 0
-          ? sequences
-          : sequences?.filter(sequence => sequence.service ? this.filteredServices.includes(sequence.service) : false);
-  }
-
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

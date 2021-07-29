@@ -1,6 +1,7 @@
-import { Sequence, SequenceStage } from './sequence.js';
-import { ResultTypes } from './result-types.js';
-import { EventState } from './event-state';
+import { Sequence } from './sequence';
+import { SequenceStage } from '../../shared/models/sequence';
+import { EventState } from '../../shared/models/event-state';
+import { ResultTypes } from '../../shared/models/result-types';
 
 export class Remediation extends Sequence {
   stages: (SequenceStage & {
@@ -12,7 +13,6 @@ export class Remediation extends Sequence {
       result?: ResultTypes
     }[]
   })[] = [];
-
   public static fromJSON(data: unknown): Remediation {
     return Object.assign(new this(), data);
   }

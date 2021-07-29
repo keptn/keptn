@@ -11,8 +11,8 @@ import { Trace } from '../../_models/trace';
 import { EvaluationChartDataItem, EvaluationChartItem } from '../../_models/evaluation-chart-item';
 import { HeatmapOptions } from '../../_models/heatmap-options';
 import { HeatmapData, HeatmapSeriesOptions } from '../../_models/heatmap-series-options';
-import { IndicatorResult } from '../../_models/indicator-result';
-import { ResultTypes } from '../../_models/result-types';
+import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
+import { ResultTypes } from '../../../../shared/models/result-types';
 
 // tslint:disable-next-line:no-any
 declare var require: any;

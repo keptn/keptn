@@ -1,33 +1,27 @@
 import { Deployment } from './deployment';
-import { EventTypes } from './event-types';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Sequence } from './sequence';
 import { Trace } from './trace';
-import { Approval } from './approval';
+import { Service as sv } from '../../../shared/models/service';
+import { Approval } from '../_interfaces/approval';
+import { ResultTypes } from '../../../shared/models/result-types';
 
 export type DeploymentInformation = { deploymentUrl?: string, image?: string };
 
-export class Service {
-  serviceName!: string;
-  deployedImage?: string;
-  stage!: string;
+export class Service extends sv {
   allDeploymentsLoaded = false;
   deployments: Deployment[] = [];
-  lastEventTypes?: {[key: string]: {eventId: string, keptnContext: string, time: number}};
   sequences: Sequence[] = [];
   openApprovals: Approval[] = [];
   openRemediations: Sequence[] = [];
   latestSequence?: Sequence;
-  deploymentTrace?: Trace;
-  deploymentInformation?: DeploymentInformation;
 
   static fromJSON(data: unknown): Service {
     const service = Object.assign(new this(), data);
     if (service.latestSequence) {
       service.latestSequence = Sequence.fromJSON(service.latestSequence);
     }
-    if (service.deploymentTrace) {
-      service.deploymentTrace = Trace.fromJSON(service.deploymentTrace);
-    }
+
     service.openRemediations = service.openRemediations?.map(remediation => Sequence.fromJSON(remediation)) ?? [];
     service.openApprovals = service.openApprovals.map(approval => {
       approval.trace = Trace.fromJSON(approval.trace);
@@ -67,6 +61,14 @@ export class Service {
   }
 
   public hasRemediations(): boolean {
-    return this.deployments.some(d => d.stages.some(s => s.remediations.length !== 0));
+    return this.openRemediations.length > 0;
+  }
+
+  public hasFailedEvaluation(): boolean {
+    return this.latestSequence?.getEvaluation(this.stage)?.result === ResultTypes.FAILED;
+  }
+
+  public getFailedEvaluationSequence(): Sequence | undefined {
+    return this.latestSequence?.getEvaluation(this.stage)?.result === ResultTypes.FAILED ? this.latestSequence : undefined;
   }
 }

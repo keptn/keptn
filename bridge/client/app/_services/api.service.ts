@@ -3,12 +3,10 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Resource } from '../_models/resource';
 import { Stage } from '../_models/stage';
-import { ProjectResult } from '../_models/project-result';
 import { ServiceResult } from '../_models/service-result';
-import { EventResult } from '../_models/event-result';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../_models/approval-states';
-import { EventTypes } from '../_models/event-types';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Metadata } from '../_models/metadata';
 import { TaskNames } from '../_models/task-names.mock';
 import { Deployment } from '../_models/deployment';
@@ -20,6 +18,8 @@ import { UniformRegistrationLogResponse } from '../_models/uniform-registration-
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
+import { EventResult } from '../_interfaces/event-result';
+import { ProjectResult } from '../_interfaces/project-result';
 
 @Injectable({
   providedIn: 'root'

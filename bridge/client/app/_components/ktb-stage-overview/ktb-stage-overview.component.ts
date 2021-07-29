@@ -6,7 +6,6 @@ import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynat
 import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
-import { Sequence } from '../../_models/sequence';
 import { map, switchMap, filter } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 
@@ -90,12 +89,6 @@ export class KtbStageOverviewComponent {
 
   public filterServices(services: Service[]): Service[] {
     return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
-  }
-
-  public filterSequences(sequences: Sequence[]): Sequence[] {
-    return this.filteredServices.length === 0
-      ? sequences
-      : sequences?.filter(sequence => sequence.service ? this.filteredServices.includes(sequence.service) : false);
   }
 
   private getServicesOfFilter(event: DtFilterFieldChangeEvent<DtFilter>): string[] {

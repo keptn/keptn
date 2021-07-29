@@ -2,7 +2,7 @@ import {Component, Input} from '@angular/core';
 
 import {Trace} from '../../_models/trace';
 import {Stage} from '../../_models/stage';
-import {EvaluationResult} from '../../_models/evaluation-result';
+import {EvaluationResult} from '../../../../shared/interfaces/evaluation-result';
 
 @Component({
   selector: 'ktb-stage-badge',

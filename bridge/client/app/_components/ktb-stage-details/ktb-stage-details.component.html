@@ -1,7 +1,7 @@
 <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
   <ng-container *ngIf="selectedStage && project as project">
-    <ng-container *ngIf="filterSequences(project.getLatestFailedRootEvents(selectedStage)) as failedRootEvents">
-      <ng-container *ngIf="filterSequences(project.getLatestProblemEvents(selectedStage)) as problemEvents">
+    <ng-container *ngIf="filterServices(selectedStage.getServicesWithFailedEvaluation()) as failedRootEvents">
+      <ng-container *ngIf="filterServices(selectedStage.getServicesWithRemediations()) as problemEvents">
         <h2 [textContent]="selectedStage.stageName"></h2>
         <dt-toggle-button-group (change)="selectFilterEvent($event)">
           <button #problemFilterEventButton dt-toggle-button-item class="default" [value]="'problem'" [class.error]="problemEvents.length > 0" [disabled]="problemEvents.length == 0" [selected]="filterEventType == 'problem'">
@@ -16,11 +16,11 @@
             </dt-toggle-button-item-icon>
             <span [textContent]="failedRootEvents.length"></span> Quality gate<span *ngIf="failedRootEvents.length != 1">s</span> failed
           </button>
-          <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="selectedStage.servicesWithOpenApprovals().length > 0" [disabled]="selectedStage.servicesWithOpenApprovals().length == 0" [selected]="filterEventType == 'approval'">
+          <button #approvalFilterEventButton dt-toggle-button-item class="default" [value]="'approval'" [class.highlight]="selectedStage.getServicesWithOpenApprovals().length > 0" [disabled]="selectedStage.getServicesWithOpenApprovals().length == 0" [selected]="filterEventType == 'approval'">
             <dt-toggle-button-item-icon>
               <dt-icon class="stage-state-icon" name="deploy"></dt-icon>
             </dt-toggle-button-item-icon>
-            <span [textContent]="selectedStage.servicesWithOpenApprovals().length"></span> Service<span *ngIf="selectedStage.servicesWithOpenApprovals().length != 1">s</span> out-of-sync
+            <span [textContent]="selectedStage.getServicesWithOpenApprovals().length"></span> Service<span *ngIf="selectedStage.getServicesWithOpenApprovals().length != 1">s</span> out-of-sync
           </button>
         </dt-toggle-button-group>
 
@@ -30,16 +30,16 @@
 
         <ng-container *ngFor="let service of filterServices(selectedStage.services)">
           <ktb-expandable-tile class="mt-1" [expanded]="service.getOpenApprovals().length > 0"
-                               *ngIf="!filterEventType || filterEventType == 'problem' && hasProblemEvent(problemEvents, service) || filterEventType == 'evaluation' && findFailedRootEvent(failedRootEvents, service) || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
+                               *ngIf="!filterEventType || filterEventType == 'problem' && service.hasRemediations() || filterEventType == 'evaluation' && service.hasFailedEvaluation() || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
             <ktb-expandable-tile-header>
               <dt-info-group>
                 <dt-info-group-title>
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <h2 class="m-0" [textContent]="service.serviceName"></h2>
-                    <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
+                    <ng-container *ngIf="service.hasFailedEvaluation()">
                       <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
                     </ng-container>
-                    <ng-container *ngIf="hasProblemEvent(problemEvents, service)">
+                    <ng-container *ngIf="service.hasRemediations()">
                       <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
                     </ng-container>
                     <dt-icon class="stage-state-icon highlight" *ngIf="service.getOpenApprovals().length > 0" name="deploy"></dt-icon>
@@ -55,7 +55,7 @@
                 </ng-template>
               </dt-info-group>
             </ktb-expandable-tile-header>
-            <ng-container *ngFor="let remediationSequence of findProblemEvent(problemEvents, service)">
+            <ng-container *ngFor="let remediationSequence of service.openRemediations">
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                 <dt-icon class="stage-state-icon event-icon error" name="criticalevent"></dt-icon>
                 <p class="m-0" [textContent]="remediationSequence.problemTitle"></p>
@@ -74,7 +74,7 @@
                 </dt-tag-list>
               </div>
             </ng-container>
-            <ng-container *ngIf="findFailedRootEvent(failedRootEvents, service) as failedRootEvent">
+            <ng-container *ngIf="service.getFailedEvaluationSequence() as failedRootEvent">
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                 <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
                 <p class="m-0">Quality gate <span *ngIf="failedRootEvent.getShortImageName()">of <span [textContent]="failedRootEvent.getShortImageName()"></span></span> failed with a score of</p>

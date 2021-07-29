@@ -1,5 +1,5 @@
 import { Trace } from './trace';
-import { IndicatorResult } from './indicator-result';
+import { IndicatorResult } from '../../../shared/interfaces/indicator-result';
 
 export interface EvaluationChartDataItem {
   y: number;

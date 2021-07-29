@@ -1,14 +1,14 @@
-import { ApiService } from './api-service.js';
-import { Sequence } from '../models/sequence.js';
-import { Remediation } from '../models/remediation.js';
-import { SequenceTypes } from '../models/sequence-types.js';
-import { Trace } from '../models/trace.js';
-import { EventTypes } from '../models/event-types.js';
-import { DeploymentInformation, Service } from '../models/service.js';
-import { Approval } from '../models/approval.js';
-import { Project } from '../models/project.js';
-import { ResultTypes } from '../models/result-types.js';
-import { EventState } from '../models/event-state.js';
+import { ApiService } from './api-service';
+import { Sequence } from '../models/sequence';
+import { SequenceTypes } from '../../shared/models/sequence-types';
+import { Trace } from '../models/trace';
+import { DeploymentInformation, Service } from '../models/service';
+import { Project } from '../models/project';
+import { EventState } from '../../shared/models/event-state';
+import { Remediation } from '../models/remediation';
+import { EventTypes } from '../../shared/interfaces/event-types';
+import { Approval } from '../interfaces/approval';
+import { ResultTypes } from '../../shared/models/result-types';
 
 export class DataService {
   private apiService;

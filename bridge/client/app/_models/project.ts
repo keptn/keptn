@@ -1,20 +1,16 @@
 import semver from 'semver';
-import {Stage} from './stage';
+import { Stage } from './stage';
 import { DeploymentInformation, Service } from './service';
-import {Trace} from './trace';
+import { Trace } from './trace';
 import { Deployment } from './deployment';
-import {EventTypes} from './event-types';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 import moment from 'moment';
-import {DeploymentStage} from './deployment-stage';
-import {Sequence} from './sequence';
-import { ResultTypes } from './result-types';
-import { Approval } from './approval';
+import { DeploymentStage } from './deployment-stage';
+import { Sequence } from './sequence';
+import { Project as pj } from '../../../shared/models/project';
+import { Approval } from '../_interfaces/approval';
 
-export class Project {
-  projectName!: string;
-  gitUser?: string;
-  gitRemoteURI?: string;
-  shipyardVersion?: string;
+export class Project extends pj {
   allSequencesLoaded = false;
   stages: Stage[] = [];
   services?: Service[];
@@ -73,14 +69,6 @@ export class Project {
     return currentService?.sequences
       ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
       ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
-  }
-
-  getLatestFailedRootEvents(stage: Stage): Sequence[] {
-    return this.getServices(stage.stageName).map(service => service.latestSequence).filter((seq: Sequence | undefined): seq is Sequence => seq?.getEvaluation(stage.stageName)?.result === ResultTypes.FAILED);
-  }
-
-  getLatestProblemEvents(stage: Stage): Sequence[] {
-    return stage.getOpenProblems();
   }
 
   getSequence(service: Service, event: Trace): Sequence | undefined {

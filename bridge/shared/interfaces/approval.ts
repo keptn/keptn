@@ -1,4 +1,4 @@
-import { Trace } from './trace';
+import { Trace } from '../models/trace';
 
 export interface Approval {
   trace: Trace;

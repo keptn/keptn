@@ -1,10 +1,8 @@
 import { Service } from './service';
-import { Sequence } from './sequence';
-import { Approval } from './approval';
+import { Stage as st} from '../../../shared/models/stage';
+import { ResultTypes } from '../../../shared/models/result-types';
 
-export class Stage {
-  stageName!: string;
-  parentStages?: string[];
+export class Stage extends st {
   services: Service[] = [];
 
   static fromJSON(data: unknown): Stage {
@@ -16,15 +14,15 @@ export class Stage {
     return stage;
   }
 
-  public servicesWithOpenApprovals(): Service[] {
+  public getServicesWithOpenApprovals(): Service[] {
     return this.services.filter(s => s.getOpenApprovals().length > 0);
   }
 
-  public getOpenProblems(): Sequence[] {
-    return this.services.reduce((remediations: Sequence[], service: Service) => [...remediations, ...service.openRemediations], []);
+  public getServicesWithFailedEvaluation(): Service[] {
+    return this.services.filter(service => service.latestSequence?.getEvaluation(this.stageName)?.result === ResultTypes.FAILED);
   }
 
-  public getOpenApprovals(): Approval[] {
-    return this.services.reduce((openApprovals: Approval[], service: Service) => [...openApprovals, ...service.openApprovals], []);
+  public getServicesWithRemediations(): Service[] {
+    return this.services.filter(service => service.openRemediations.length > 0);
   }
 }

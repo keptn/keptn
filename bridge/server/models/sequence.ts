@@ -1,29 +1,12 @@
-import { Trace } from './trace.js';
-import { EvaluationResult } from '../interfaces/evaluation-result.js';
+import { Sequence as sq, SequenceStage } from '../../shared/models/sequence';
+import { Trace } from '../../shared/models/trace';
 
-export type SequenceEvent = {
-  id: string,
-  time: string,
-  type: string
-};
-
-export type SequenceStage = {
-  image?: string,
-  latestEvaluation?: EvaluationResult,
-  latestEvent?: SequenceEvent,
-  latestFailedEvent?: SequenceEvent,
-  name: string,
-  latestEvaluationTrace?: Trace;
-};
-
-export class Sequence {
-  name!: string;
-  project!: string;
-  service!: string;
-  shkeptncontext!: string;
-  stages!: SequenceStage[];
-  state!: 'triggered' | 'finished' | 'waiting';
-  time!: Date;
+export class Sequence extends sq {
+  stages!: (SequenceStage &
+    {
+      latestEvaluationTrace?: Trace
+    })[]
+  ;
   problemTitle?: string;
 
   public static fromJSON(data: unknown): Sequence {

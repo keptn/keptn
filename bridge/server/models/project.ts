@@ -1,11 +1,7 @@
-import { ProjectResult } from '../interfaces/project-result.js';
-import { Stage } from './stage.js';
+import { Stage } from './stage';
+import { Project as pj } from '../../shared/models/project';
 
-export class Project implements ProjectResult {
-  creationDate!: number;
-  projectName!: string;
-  shipyard?: string;
-  shipyardVersion?: string;
+export class Project extends pj {
   stages: Stage[] = [];
 
   public static fromJSON(data: unknown): Project {

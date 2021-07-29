@@ -1,5 +1,5 @@
-import {ResultTypes} from './result-types';
-import { Target } from './indicator-result';
+import {ResultTypes} from '../../../shared/models/result-types';
+import { Target } from '../../../shared/interfaces/indicator-result';
 
 export interface SliResult {
   comparedValue?: number;

@@ -1,10 +1,8 @@
-import { StageResult } from '../interfaces/stage-result.js';
-import { Service } from './service.js';
+import { Service } from './service';
+import { Stage as sg } from '../../shared/models/stage';
 
-export class Stage implements StageResult {
+export class Stage extends sg {
   services: Service[] = [];
-  stageName!: string;
-  parentStages?: string[];
 
   public static fromJSON(data: unknown) {
     const stage = Object.assign(new this(), data);

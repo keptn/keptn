@@ -1,5 +1,5 @@
 import {Trace} from './trace';
-import {EventTypes} from './event-types';
+import {EventTypes} from '../../../shared/interfaces/event-types';
 
 export class Root extends Trace {
   traces: Trace[] = [];

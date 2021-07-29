@@ -1,10 +1,10 @@
-import { axios } from './axios-instance.js';
-import { SequenceResult } from '../interfaces/sequence-result.js';
+import { axios } from './axios-instance';
 import { AxiosResponse } from 'axios';
-import { ProjectResult } from '../interfaces/project-result.js';
-import { EventResult } from '../interfaces/event-result.js';
-import { EventTypes } from '../models/event-types.js';
-import { ResultTypes } from '../models/result-types.js';
+import { EventTypes } from '../../shared/interfaces/event-types';
+import { Project } from '../models/project';
+import { ResultTypes } from '../../shared/models/result-types';
+import { SequenceResult } from '../interfaces/sequence-result';
+import { EventResult } from '../interfaces/event-result';
 
 export class ApiService {
   private readonly defaultHeaders: object;
@@ -16,8 +16,8 @@ export class ApiService {
   }
 
 
-  public getProject(projectName: string): Promise<AxiosResponse<ProjectResult>> {
-    return axios.get<ProjectResult>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`, {
+  public getProject(projectName: string): Promise<AxiosResponse<Project>> {
+    return axios.get<Project>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`, {
       headers: this.defaultHeaders
     });
   }
