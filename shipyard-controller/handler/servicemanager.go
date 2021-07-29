@@ -100,16 +100,12 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 		return sm.logAndReturnError(fmt.Sprintf("could not get stages of project %s: %s", projectName, err.Error()))
 	}
 
-
-
-
 	for _, stage := range stages {
 		log.Infof("Checking if service %s already exists in project %s", *params.ServiceName, projectName)
 		// check if the service exists, do not continue if yes
 		service, _ := sm.GetService(projectName, stage.StageName, *params.ServiceName)
 		if service != nil {
 			log.Infof("Service %s already exists in project %s", *params.ServiceName, projectName)
-			//_ = sendServiceCreateFailedFinishedEvent(KeptnContext, projectName, params)
 			return errServiceAlreadyExists
 		}
 
@@ -128,7 +124,6 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 }
 
 func (sm *serviceManager) DeleteService(projectName, serviceName string) error {
-
 	log.Infof("Deleting service %s from project %s", serviceName, projectName)
 
 	stages, err := sm.GetAllStages(projectName)

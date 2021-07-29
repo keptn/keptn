@@ -264,7 +264,7 @@ func (sc *shipyardController) timeoutSequence(timeout common.SequenceTimeout) er
 		return fmt.Errorf("Could not retrieve task sequence associated to eventID %s: %s", timeout.LastEvent.ID, err.Error())
 	}
 
-	if taskContexts == nil || len(taskContexts) == 0 {
+	if len(taskContexts) == 0 {
 		log.Infof("No task event associated with eventID %s found", timeout.LastEvent.ID)
 		return nil
 	}
@@ -502,14 +502,11 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	// dispatch the task sequence
 	sc.onSequenceTriggered(event)
 	if sc.sequenceDispatcher != nil {
-		if err := sc.sequenceDispatcher.Add(models.QueueItem{
+		return sc.sequenceDispatcher.Add(models.QueueItem{
 			Scope:     *eventScope,
 			EventID:   event.ID,
 			Timestamp: time.Now().UTC(),
-		}); err != nil {
-			return err
-		}
-		return nil
+		})
 	}
 	return sc.startTaskSequence(event)
 }
@@ -658,7 +655,7 @@ func (sc *shipyardController) getTaskSequenceContext(eventScope *models.EventSco
 			return nil, errors.New(msg)
 		}
 
-		if taskContexts == nil || len(taskContexts) == 0 {
+		if len(taskContexts) == 0 {
 			log.Infof("No task event associated with eventID %s found", eventScope.TriggeredID)
 			<-time.After(2 * time.Second)
 		} else {
@@ -716,7 +713,6 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 
 	allEvents := []models.Event{}
 	for _, project := range projects {
-		//log.Infof("Retrieving all .triggered events of project %s with filter: %s", project.ProjectName, printObject(filter))
 		events, err := sc.eventRepo.GetEvents(project.ProjectName, filter, common.TriggeredEvent)
 		if err == nil {
 			allEvents = append(allEvents, events...)
@@ -726,7 +722,6 @@ func (sc *shipyardController) GetAllTriggeredEvents(filter common.EventFilter) (
 }
 
 func (sc *shipyardController) GetTriggeredEventsOfProject(project string, filter common.EventFilter) ([]models.Event, error) {
-	//log.Infof("Retrieving all .triggered events with filter: %s", printObject(filter))
 	return sc.eventRepo.GetEvents(project, filter, common.TriggeredEvent)
 }
 

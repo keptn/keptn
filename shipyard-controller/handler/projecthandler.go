@@ -155,10 +155,9 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		if err == ErrProjectAlreadyExists {
 			SetConflictErrorResponse(err, c)
 			return
-		} else {
-			SetInternalServerErrorResponse(err, c)
-			return
 		}
+		SetInternalServerErrorResponse(err, c)
+		return
 	}
 	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, createProjectParams); err != nil {
 		log.Errorf("could not send project.create.finished event: %s", err.Error())
@@ -223,17 +222,18 @@ func (ph *ProjectHandler) DeleteProject(c *gin.Context) {
 
 	common.LockProject(projectName)
 	defer common.UnlockProject(projectName)
-	err, responseMessage := ph.ProjectManager.Delete(projectName)
+	responseMessage, err := ph.ProjectManager.Delete(projectName)
 	if err != nil {
+		log.Errorf("failed to delete project %s: %s", projectName, err.Error())
 		if err := ph.sendProjectDeleteFailFinishedEvent(keptnContext, projectName); err != nil {
-			//LOG MESSAGE ONLY
+			log.Errorf("failed to send finished event: %s", err.Error())
 		}
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
 	if err := ph.sendProjectDeleteSuccessFinishedEvent(keptnContext, projectName); err != nil {
-		//LOG MESSAGE ONLY
+		log.Errorf("failed to send finished event: %s", err.Error())
 	}
 
 	c.JSON(http.StatusOK, operations.DeleteProjectResponse{

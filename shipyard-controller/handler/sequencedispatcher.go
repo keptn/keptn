@@ -98,7 +98,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 		return err
 	}
 
-	/// if there is a sequence running in the stage, we cannot trigger this sequence yet
+	// if there is a sequence running in the stage, we cannot trigger this sequence yet
 	if sd.areActiveSequencesBlockingQueuedSequences(runningSequencesInStage) {
 		log.Infof("sequence %s cannot be started yet because sequences are still running in stage %s", queuedSequence.Scope.KeptnContext, queuedSequence.Scope.Stage)
 		return nil
@@ -112,7 +112,7 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 		return err
 	}
 
-	if events == nil || len(events) == 0 {
+	if len(events) == 0 {
 		return fmt.Errorf("sequence.triggered event with ID %s cannot be found anymore", queuedSequence.EventID)
 	}
 
@@ -120,15 +120,11 @@ func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) 
 
 	sd.eventChannel <- sequenceTriggeredEvent
 
-	if err := sd.sequenceQueue.DeleteQueuedSequences(queuedSequence); err != nil {
-		return err
-	}
-
-	return nil
+	return sd.sequenceQueue.DeleteQueuedSequences(queuedSequence)
 }
 
 func (sd *SequenceDispatcher) areActiveSequencesBlockingQueuedSequences(sequenceTasks []models.TaskSequenceEvent) bool {
-	if sequenceTasks == nil || len(sequenceTasks) == 0 {
+	if len(sequenceTasks) == 0 {
 		// if there is no sequence currently running, we do not need to block
 		return false
 	}

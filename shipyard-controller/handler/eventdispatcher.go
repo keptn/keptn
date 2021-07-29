@@ -205,7 +205,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 
 func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {
 	runningSequencesInStage = removeSequencesOfSameContext(eventScope.KeptnContext, runningSequencesInStage)
-	/// if there is another sequence running in the stage, we cannot send the event
+	// if there is another sequence running in the stage, we cannot send the event
 	tasksGroupedByContext := groupSequenceMappingsByContext(runningSequencesInStage)
 
 	for otherKeptnContext, tasksOfContext := range tasksGroupedByContext {
