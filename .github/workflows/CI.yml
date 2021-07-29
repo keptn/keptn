@@ -619,7 +619,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   prepare_github_pr_comment:
-    needs: [prepare_ci_run]
+    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
     name: Prepare GitHub Report Comment
     runs-on: ubuntu-20.04
     steps:
@@ -742,7 +742,7 @@ jobs:
           echo "::set-output name=build-report::$report"
 
       - name: Report Docker Build to PR
-        if: (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
@@ -752,6 +752,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           message: ${{ steps.docker_build_image.outputs.build-report }}
           append: true
+
+      - name: Delete PR comment on failure
+        if: failure() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't comment on the PR in this case
+        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        continue-on-error: true
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          delete: true
 
       - id: docker_logout
         if: always()
