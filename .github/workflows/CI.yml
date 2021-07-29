@@ -706,6 +706,11 @@ jobs:
           IMAGE_NAME: ${{ matrix.config.ARTIFACT }}
           DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
 
+      - id: docker_logout
+        name: Docker logout
+        run: |
+          docker logout
+
       - id: create_docker_build_report
         name: Create Docker Build Report
         run: |
