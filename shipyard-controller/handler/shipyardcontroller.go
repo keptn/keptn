@@ -225,7 +225,7 @@ func (sc *shipyardController) cancelSequence(cancel common.SequenceControl) erro
 	sequenceTriggeredEvent, err := sc.getTaskSequenceTriggeredEvent(models.EventScope{
 		EventData: keptnv2.EventData{
 			Project: cancel.Project,
-			Stage:   cancel.Stage,
+			Stage:   lastTaskOfSequence.Stage,
 		},
 		KeptnContext: cancel.KeptnContext,
 	}, lastTaskOfSequence.TaskSequenceName)
