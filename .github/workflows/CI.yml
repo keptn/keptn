@@ -359,6 +359,7 @@ jobs:
             go-flags: "-race"
     steps:
       - name: Set up Go 1.x
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -367,12 +368,14 @@ jobs:
 
       - name: Load CI Environment from .ci_env
         id: load_ci_env
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
         uses: c-py/action-dotenv-to-setenv@v3
         with:
           env-file: .ci_env
 
       # cache go modules
-      - uses: actions/cache@v2.1.6
+      - if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
+        uses: actions/cache@v2.1.6
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
