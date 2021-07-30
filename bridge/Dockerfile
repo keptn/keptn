@@ -20,10 +20,11 @@ ENV VERSION="${version}"
 # Prepare app directory
 WORKDIR /usr/src/app/server
 
-# copy package.json only to install angular dependencies first
+# copy package.json only to install dependencies first
 COPY ./server/package.json ./server/package-lock.json ./
-RUN npm ci
+RUN npm i
 COPY ./server ./
+COPY ./shared /usr/src/app/shared
 RUN npm run build && \
   npm ci --production
 
