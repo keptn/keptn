@@ -223,24 +223,6 @@ jobs:
           echo "::set-output name=BUILD_MONGODB_DS::$BUILD_MONGODB_DS"
           echo "::set-output name=BUILD_STATISTICS_SVC::$BUILD_STATISTICS_SVC"
 
-          echo "BUILD_INSTALLER: $BUILD_INSTALLER"
-          echo "BUILD_API: $BUILD_API"
-          echo "BUILD_CLI: $BUILD_CLI"
-          echo "BUILD_OS_ROUTE_SVC: $BUILD_OS_ROUTE_SVC"
-          echo "BUILD_BRIDGE: $BUILD_BRIDGE"
-          echo "BUILD_JMETER: $BUILD_JMETER"
-          echo "BUILD_HELM_SVC: $BUILD_HELM_SVC"
-          echo "BUILD_APPROVAL_SVC: $BUILD_APPROVAL_SVC"
-          echo "BUILD_DISTRIBUTOR: $BUILD_DISTRIBUTOR"
-          echo "BUILD_SHIPYARD_CONTROLLER: $BUILD_SHIPYARD_CONTROLLER"
-          echo "BUILD_SECRET_SVC: $BUILD_SECRET_SVC"
-          echo "BUILD_CONFIGURATION_SVC: $BUILD_CONFIGURATION_SVC"
-          echo "BUILD_REMEDIATION_SVC: $BUILD_REMEDIATION_SVC"
-          echo "BUILD_LIGHTHOUSE_SVC: $BUILD_LIGHTHOUSE_SVC"
-          echo "BUILD_MONGODB_DS: $BUILD_MONGODB_DS"
-          echo "BUILD_STATISTICS_SVC: $BUILD_STATISTICS_SVC"
-
-
       - name: Extract branch name
         id: extract_branch
         # see https://github.com/keptn/gh-action-extract-branch-name for details
@@ -327,32 +309,6 @@ jobs:
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
-  debug-job:
-    name: Debugging
-    runs-on: ubuntu-20.04
-    needs: prepare_ci_run
-    steps:
-      - run: |
-          echo "changed files:"
-          echo "${{ needs.prepare_ci_run.outputs.changed_files.outputs.all }}"
-
-          echo "BUILD_INSTALLER: ${{ needs.prepare_ci_run.outputs.BUILD_INSTALLER }}"
-          echo "BUILD_API: ${{ needs.prepare_ci_run.outputs.BUILD_API }}"
-          echo "BUILD_CLI: ${{ needs.prepare_ci_run.outputs.BUILD_CLI }}"
-          echo "BUILD_OS_ROUTE_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
-          echo "BUILD_BRIDGE: ${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
-          echo "BUILD_JMETER: ${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
-          echo "BUILD_HELM_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
-          echo "BUILD_APPROVAL_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
-          echo "BUILD_DISTRIBUTOR: ${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
-          echo "BUILD_SHIPYARD_CONTROLLER: ${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
-          echo "BUILD_SECRET_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
-          echo "BUILD_CONFIGURATION_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
-          echo "BUILD_REMEDIATION_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
-          echo "BUILD_LIGHTHOUSE_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
-          echo "BUILD_MONGODB_DS: ${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
-          echo "BUILD_STATISTICS_SVC: ${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
-
   unit-tests-go-microservices:
     name: Unit Tests Go Microservices
     needs: prepare_ci_run
