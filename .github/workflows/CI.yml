@@ -13,6 +13,20 @@ on:
   workflow_dispatch: # run CI when triggered manually
 env:
   GO_VERSION: ^1.16
+  API_FOLDER: "api/"
+  OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
+  BRIDGE_FOLDER: "bridge/"
+  JMETER_SVC_FOLDER: "jmeter-service/"
+  HELM_SVC_FOLDER: "helm-service/"
+  APPROVAL_SVC_FOLDER: "approval-service/"
+  DISTRIBUTOR_FOLDER: "distributor/"
+  SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
+  SECRET_SVC_FOLDER: "secret-service/"
+  CONFIGURATION_SVC_FOLDER: "configuration-service/"
+  REMEDIATION_SVC_FOLDER: "remediation-service/"
+  LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
+  MONGODB_DS_FOLDER: "mongodb-datastore/"
+  STATISTICS_SVC_FOLDER: "statistics-service/"
 defaults:
   run:
     shell: bash
