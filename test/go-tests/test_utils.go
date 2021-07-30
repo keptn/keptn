@@ -237,3 +237,11 @@ func IsEqual(t *testing.T, expected, actual interface{}, property string) bool {
 func StringArr(el ...string) []string {
 	return el
 }
+
+func RestartPod(deploymentName string) error {
+	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+}
+
+func WaitForPodOfDeployment(deploymentName string) error {
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+}

@@ -159,3 +159,21 @@ func getIntegrationWithName(name string) (models.Integration, error) {
 	}
 	return models.Integration{}, fmt.Errorf("No Keptn Inegration with name %s found", name)
 }
+
+func setShipyardControllerEnvVar(t *testing.T, envVar, timeoutValue string) error {
+	_, err := ExecuteCommand(fmt.Sprintf("kubectl -n %s set env deployment shipyard-controller %s=%s", GetKeptnNameSpaceFromEnv(), envVar, timeoutValue))
+	if err != nil {
+		return err
+	}
+
+	t.Log("restarting shipyard controller pod")
+	err = RestartPod("shipyard-controller")
+	if err != nil {
+		return err
+	}
+
+	// wait 10s to make sure we wait for the updated pod to be ready
+	<-time.After(10 * time.Second)
+	t.Log("waiting for shipyard controller pod to be ready again")
+	return WaitForPodOfDeployment("shipyard-controller")
+}
