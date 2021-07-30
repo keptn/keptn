@@ -27,12 +27,16 @@ export class DataService {
     if (includeRemediation) {
       remediations = await this.getRemediations(projectName);
     }
+    const lastSequences: {[key: string]: Sequence} = {};
     for (const stage of project.stages) {
       for (const service of stage.services) {
         const keptnContext = service.getLatestSequence(stage.stageName);
         if (keptnContext) {
           try {
-            await this.fetchServiceDetails(service, stage.stageName, keptnContext, projectName, includeRemediation, includeApproval, remediations);
+            const latestSequence = await this.fetchServiceDetails(service, stage.stageName, keptnContext, projectName, includeApproval, remediations, lastSequences[service.serviceName]);
+            if (latestSequence) {
+              lastSequences[service.serviceName] = latestSequence;
+            }
           }
           catch (error) {
             console.error(error);
@@ -43,19 +47,22 @@ export class DataService {
     return project;
   }
 
-  private async fetchServiceDetails(service: Service, stageName: string, keptnContext: string, projectName: string, includeRemediation: boolean, includeApproval: boolean, remediations: Remediation[]): Promise<void> {
-    service.latestSequence = await this.getSequence(projectName, stageName, keptnContext, true);
+  private async fetchServiceDetails(service: Service, stageName: string, keptnContext: string, projectName: string, includeApproval: boolean, remediations: Remediation[], sequenceBefore: Sequence | undefined): Promise<Sequence | undefined> {
+    const latestSequence = sequenceBefore?.shkeptncontext === keptnContext ? sequenceBefore : await this.getSequence(projectName, stageName, keptnContext, true);
+    service.latestSequence = latestSequence ? Sequence.fromJSON(latestSequence) : undefined;
+    service.latestSequence?.reduceToStage(stageName);
     service.deploymentInformation = await this.getDeploymentInformation(service, projectName, stageName);
-    if (includeRemediation) {
-      const serviceRemediations = remediations.filter(remediation => remediation.service === service.serviceName && remediation.stages.some(s => s.name === stageName));
-      for (const remediation of serviceRemediations) {
-        remediation.reduceToStage(stageName);
-      }
-      service.openRemediations = serviceRemediations;
+
+    const serviceRemediations = remediations.filter(remediation => remediation.service === service.serviceName && remediation.stages.some(s => s.name === stageName));
+    for (const remediation of serviceRemediations) {
+      remediation.reduceToStage(stageName);
     }
+    service.openRemediations = serviceRemediations;
+
     if (includeApproval) {
       service.openApprovals = await this.getApprovals(projectName, stageName, service.serviceName);
     }
+    return latestSequence;
   }
 
   public async getSequence(projectName: string, stageName?: string, keptnContext?: string, includeEvaluationTrace = false): Promise<Sequence | undefined> {
@@ -63,7 +70,6 @@ export class DataService {
     let sequence = response.data.states[0];
     if (sequence && stageName) { // we just need the result of a stage
       sequence = Sequence.fromJSON(sequence);
-      sequence.reduceToStage(stageName);
       if (includeEvaluationTrace) {
         const stage = sequence.stages.find(s => s.name === stageName);
         if (stage) { // get latest evaluation
@@ -74,7 +80,7 @@ export class DataService {
         }
       }
     }
-    return Sequence.fromJSON(sequence);
+    return sequence ?? Sequence.fromJSON(sequence);
   }
 
   public async getDeploymentInformation(service: Service, projectName: string, stageName: string): Promise<DeploymentInformation | undefined> {
