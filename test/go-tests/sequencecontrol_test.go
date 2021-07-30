@@ -28,7 +28,35 @@ spec:
           tasks:
             - name: "task1"
             - name: "task2"
-            - name: "task3"`
+            - name: "task3"
+    - name: "prod"
+      sequences:
+        - name: "mysequence"
+          triggeredOn:
+            - event: "dev.mysequence.finished"
+          tasks:
+            - name: "task4"
+            - name: "task5"`
+
+const shipyardWithMultipleStages = `--- 
+apiVersion: "spec.keptn.sh/0.2.3"
+kind: Shipyard
+metadata:
+  name: "shipyard-echo-service"
+spec:
+  stages:
+    - name: "dev"
+      sequences:
+        - name: "mysequence"
+          tasks:
+            - name: "task1"
+    - name: "prod"
+      sequences:
+        - name: "mysequence"
+          triggeredOn:
+            - event: "dev.mysequence.finished"
+          tasks:
+            - name: "task2"`
 
 func Test_SequenceControl_Abort(t *testing.T) {
 	projectName := "sequence-abort"
@@ -205,5 +233,62 @@ func Test_SequenceControl_PauseAndResume(t *testing.T) {
 		task3TriggeredEvent, _ = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task3"))
 		return task3TriggeredEvent != nil
 	}, 20*time.Second, 2*time.Second)
+}
+
+func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
+	projectName := "sequence-pause-and-resume"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+	source := "golang-test"
+
+	shipyardFilePath, err := CreateTmpShipyardFile(shipyardWithMultipleStages)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	// verify state
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	//TASK 1
+	task1TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+	require.Nil(t, err)
+	require.NotNil(t, task1TriggeredEvent)
+
+	cloudEvent := keptnv2.ToCloudEvent(*task1TriggeredEvent)
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	t.Log("sending task1 started event")
+	keptn.SendTaskStartedEvent(nil, source)
+
+	t.Log("pause sequence")
+	resp, err := ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
+		State: common.PauseSequence,
+		Stage: "",
+	})
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	t.Log("sending task1 finished event")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Result: keptnv2.ResultPass,
+	}, source)
+
+	// TODO: the check bellow fails
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
 
 }
