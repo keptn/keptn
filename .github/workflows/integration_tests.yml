@@ -985,18 +985,14 @@ jobs:
 
       - name: Draft Release with Releasenotes
         id: create_draft_release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
-          draft: true       # we only want to publish draft releases here - a human should review it and push the button eventually
-          prerelease: true  # mark as pre-release for now, a human can always change it to a non-prerelease afterwards
-          body_path: release-notes.txt
-          files: |
-            dist/keptn-cli/keptn-*.tar.gz
-            dist/keptn-installer/*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES_FILE: release-notes.txt
+        run: |
+          mkdir -p dist/release
+          cp -r dist/keptn-cli/keptn-*.tar.gz dist/release/
+          cp -r dist/keptn-installer/*.tgz dist/release/
+          gh release create "${{ env.VERSION }}" --target "${{ env.VERSION }}" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" dist/release/*
 
       - name: Upload Helm Charts to Google Cloud
         id: upload_helm_charts
