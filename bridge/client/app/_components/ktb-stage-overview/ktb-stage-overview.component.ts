@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { Project } from '../../_models/project';
 import { Stage } from '../../_models/stage';
 import { DataService } from '../../_services/data.service';
@@ -6,8 +6,9 @@ import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynat
 import { ApiService } from '../../_services/api.service';
 import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
-import { map, switchMap, filter } from 'rxjs/operators';
+import { map, switchMap, filter, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'ktb-stage-overview',
@@ -16,13 +17,14 @@ import { ActivatedRoute } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class KtbStageOverviewComponent {
+export class KtbStageOverviewComponent implements OnDestroy {
   public project?: Project;
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
+  private unsubscribe$: Subject<void> = new Subject<void>();
 
   @Output() selectedStageChange: EventEmitter<{ stage: Stage, filterType?: string }> = new EventEmitter();
   @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
@@ -32,7 +34,8 @@ export class KtbStageOverviewComponent {
       .pipe(
         map(params => params.projectName),
         filter(projectName => !!projectName),
-        switchMap(projectName => this.dataService.getProject(projectName))
+        switchMap(projectName => this.dataService.getProject(projectName)),
+        takeUntil(this.unsubscribe$)
       );
     project$.subscribe(project => {
       this.project = project;
@@ -109,4 +112,8 @@ export class KtbStageOverviewComponent {
     this.selectedStageChange.emit({stage, filterType});
   }
 
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
 }
