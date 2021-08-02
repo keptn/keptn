@@ -61,18 +61,7 @@
       </div>
     </div>
   </ktb-expandable-tile-header>
-  <div *ngIf="task.isApproval() && task.isApprovalPending()">
-    <table>
-      <tr>
-        <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeploymentTraceOfSequence(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
-      </tr>
-      <tr>
-        <td><p class="m-0">Deployable artifact: </p></td>
-        <td><ktb-approval-item [event]="task" [isSequence]="true"></ktb-approval-item></td>
-      </tr>
-    </table>
-  </div>
+
   <div class="sub-task-item pt-2 pb-2" #subTaskRef *ngFor="let subTask of task.traces">
     <ktb-task-item *ngIf="subTask.isTriggered(); else taskLine" [task]="subTask" (itemClicked)="onClick($event)" (click)="$event.stopPropagation();onClick(subTask)"></ktb-task-item>
     <ng-template #taskLine>
@@ -96,6 +85,18 @@
     select="ktb-task-item-detail,
         [ktb-task-item-detail],
         [ktbEventItemDetail]"></ng-content>
+  <div *ngIf="task.isApproval() && task.isApprovalPending()">
+    <table>
+      <tr>
+        <td><p class="m-0">Currently deployed artifact: </p></td>
+        <td><p class="m-0" [textContent]="project.getLatestDeploymentTraceOfSequence(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+      </tr>
+      <tr>
+        <td><p class="m-0">Deployable artifact: </p></td>
+        <td><ktb-approval-item [event]="task" [isSequence]="true"></ktb-approval-item></td>
+      </tr>
+    </table>
+  </div>
 </ktb-expandable-tile>
 <ng-template #taskPayloadDialog let-data>
   <h1 mat-dialog-title>Event payload</h1>
