@@ -65,4 +65,13 @@ export class ApiService {
     };
     return axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {params, headers: this.defaultHeaders});
   }
+
+  public getOpenTriggeredEvents(projectName: string, stageName: string, serviceName: string, eventType: EventTypes): Promise<AxiosResponse<EventResult>> {
+    const params = {
+      project: projectName,
+      stage: stageName,
+      service: serviceName,
+    };
+    return axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, {params, headers: this.defaultHeaders});
+  }
 }

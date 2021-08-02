@@ -11,7 +11,7 @@ import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
 
 export class DataService {
-  private apiService;
+  private apiService: ApiService;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
   private readonly MAX_TRACE_PAGE_SIZE = 50;
 
@@ -158,10 +158,14 @@ export class DataService {
   }
 
   public async getApprovals(projectName: string, stageName: string, serviceName: string): Promise<Approval[]> {
-    // currently a workaround to fetch open approvals
-    const responseTriggered = await this.apiService.getTraces(EventTypes.APPROVAL_TRIGGERED, this.MAX_TRACE_PAGE_SIZE, projectName, stageName, serviceName);
-    const responseStarted = await this.apiService.getTraces(EventTypes.APPROVAL_STARTED, this.MAX_TRACE_PAGE_SIZE, projectName, stageName, serviceName);
-    const tracesTriggered = responseTriggered.data.events.filter(triggeredTrace => !responseStarted.data.events.some(startedTrace => startedTrace.triggeredid === triggeredTrace.id));
+    let tracesTriggered: Trace[];
+    try {
+      const response = await this.apiService.getOpenTriggeredEvents(projectName, stageName, serviceName, EventTypes.APPROVAL_TRIGGERED);
+      tracesTriggered = response.data.events ?? [];
+    }
+    catch { // status 500 if no events are found
+      tracesTriggered = [];
+    }
     const approvals: Approval[] = [];
     // for each approval the latest evaluation trace (before this event) is needed
     for (const trace of tracesTriggered) {
