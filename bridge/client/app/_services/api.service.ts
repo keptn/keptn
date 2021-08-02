@@ -92,7 +92,7 @@ export class ApiService {
 
   public deleteProject(projectName: string): Observable<object> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
-    return this.http.delete<any>(url);
+    return this.http.delete<object>(url);
   }
 
   /**

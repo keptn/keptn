@@ -1,0 +1,5 @@
+<ng-container *ngIf="uniformRegistration as uniformRegistration">
+  <div *ngIf="projectName$ | async as projectName" class="subscription-list">
+    <ktb-subscription-item *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName), let index = index" [subscription]="subscription" name="Subscription {{index + 1}}"></ktb-subscription-item>
+  </div>
+</ng-container>

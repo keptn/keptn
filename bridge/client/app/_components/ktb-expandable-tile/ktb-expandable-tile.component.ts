@@ -6,7 +6,7 @@ import {
   Input,
   ViewEncapsulation
 } from '@angular/core';
-
+type alignmentType = 'right' | 'left';
 @Directive({
   selector: `ktb-expandable-tile-header, [ktb-expandable-tile-header], [ktbExpandableTileHeader]`,
   exportAs: 'ktbExpandableTileHeader',
@@ -45,6 +45,15 @@ export class KtbExpandableTileComponent {
   private _disabled = false;
   private _warning = false;
   private _highlight = false;
+  private _alignment: alignmentType = 'right';
+
+  @Input()
+  get alignment(): alignmentType {
+    return this._alignment;
+  }
+  set alignment(alignment: alignmentType) {
+    this._alignment = alignment;
+  }
 
   @Input()
   get error(): boolean {

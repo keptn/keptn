@@ -33,8 +33,8 @@ export class Project {
     return project;
   }
 
-  getServices(byStage?: Stage): Service[] {
-    if (!byStage) {
+  getServices(stageName?: string): Service[] {
+    if (!stageName) {
       if (!this.services) {
         let services: Service[] = [];
         for (const currentStage of this.stages){
@@ -47,7 +47,7 @@ export class Project {
       return this.services;
     }
     else {
-      return this.stages.find(s => s.stageName === byStage.stageName)?.services ?? [];
+      return this.stages.find(s => s.stageName === stageName)?.services ?? [];
     }
   }
 
@@ -85,7 +85,7 @@ export class Project {
   }
 
   getLatestFailedRootEvents(stage: Stage): Root[] {
-    return this.getServices(stage).map(service => service.getRecentRoot()).filter(seq => seq?.hasFailedEvaluation() === stage.stageName);
+    return this.getServices(stage.stageName).map(service => service.getRecentRoot()).filter(seq => seq?.hasFailedEvaluation() === stage.stageName);
   }
 
   getLatestProblemEvents(stage: Stage): Root[] {

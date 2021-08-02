@@ -105,7 +105,9 @@ export class DataService {
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    return this.apiService.getUniformRegistrations();
+    return this.apiService.getUniformRegistrations().pipe(
+      map(uniformRegistrations => uniformRegistrations.map(registration => UniformRegistration.fromJSON(registration)))
+    );
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {

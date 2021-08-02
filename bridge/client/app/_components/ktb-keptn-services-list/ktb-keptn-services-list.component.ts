@@ -4,7 +4,7 @@ import { UniformRegistration } from '../../_models/uniform-registration';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute } from '@angular/router';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../_models/uniform-registration-log';
 
 @Component({
@@ -16,26 +16,24 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   private selectedUniformRegistrationId$ = new Subject<string>();
   private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
+  public UniformRegistrationClass = UniformRegistration;
 
   public uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
   public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
   public isLoadingLogs = false;
 
-  public projectName: string | null = null;
+  public projectName$: Observable<string | null>;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
   constructor(private dataService: DataService, private route: ActivatedRoute) {
+    this.projectName$ = this.route.paramMap.pipe(
+      map(paramMap => paramMap.get('projectName'))
+    );
   }
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(
-      takeUntil(this.unsubscribe$)
-    ).subscribe(map => {
-      this.projectName = map.get('projectName');
-    });
-
     this.selectedUniformRegistrationId$.pipe(
       takeUntil(this.unsubscribe$),
       switchMap(uniformRegistrationId => {
@@ -77,10 +75,6 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     }
   }
 
-  public formatSubscriptions(subscriptions: string[]): string {
-    return subscriptions.join('<br/>');
-  }
-
   public sortData(sortEvent: DtSortEvent) {
     if (this.uniformRegistrations.data) {
       const isAscending = sortEvent.direction === 'asc';
@@ -104,10 +98,6 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     } else {
       this.uniformRegistrations.data = [];
     }
-  }
-
-  public toRegistration(row: UniformRegistration): UniformRegistration {
-    return row;
   }
 
   private compare(a: string, b: string, isAsc: boolean): number {
