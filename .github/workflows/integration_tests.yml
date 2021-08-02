@@ -22,9 +22,45 @@ defaults:
   run:
     shell: bash
 jobs:
+  determine-target-branch:
+    name: "Determine Target Branch"
+    runs-on: ubuntu-20.04
+    outputs:
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+    steps:
+      # This step is supposed to determine the target branch where to download the build-artifacts from
+      - name: Determine Target Branch for Integration Tests
+        id: determine_branch
+        run: |
+          if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
+            # branch was manually set by user -> probably a workflow_dispatch action
+            BRANCH=${{ github.event.inputs.branch }}
+            echo "Using $BRANCH as target branch for integration tests"
+          else
+            echo "Determining branch based on what triggered this workflow"
+
+            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
+              echo "This is a push to a local branch -> using branch name"
+              BRANCH=${GITHUB_REF#refs/heads/}
+              echo "Branch Name: $BRANCH"
+            else
+              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
+                # usually the format for PRs is: refs/pull/1234/merge
+                echo "::error::This is a Pull Request, and PRs are not supported yet"
+                exit 1
+              else
+                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
+                exit 1
+              fi
+            fi
+          fi
+
+          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
+
   integration-test:
     name: "Tests"
     runs-on: ubuntu-20.04
+    needs: determine-target-branch
     strategy:
       fail-fast: false
       matrix:
@@ -83,11 +119,7 @@ jobs:
       KEPTN_EXAMPLES_BRANCH: ${{ github.event.inputs.examples_branch }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
       GO_VERSION: ^1.16
-    outputs:
-      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
-      ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
     steps:
-
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
@@ -105,35 +137,6 @@ jobs:
           path: |
             ~/downloads
           key: ${{ runner.os }}-${{ matrix.CLOUD_PROVIDER }}-downloads
-
-      # This step is supposed to determine the target branch where to download the build-artifacts from
-      - name: Determine Target Branch for Integration Tests
-        id: determine_branch
-        run: |
-          if [[ "${{ github.event.inputs.branch }}" != "" ]]; then
-            # branch was manually set by user -> probably a workflow_dispatch action
-            BRANCH=${{ github.event.inputs.branch }}
-            echo "Using $BRANCH as target branch for integration tests"
-          else
-            echo "Determining branch based on what triggered this workflow"
-
-            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
-              echo "This is a push to a local branch -> using branch name"
-              BRANCH=${GITHUB_REF#refs/heads/}
-              echo "Branch Name: $BRANCH"
-            else
-              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-                # usually the format for PRs is: refs/pull/1234/merge
-                echo "::error::This is a Pull Request, and PRs are not supported yet"
-                exit 1
-              else
-                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
-                exit 1
-              fi
-            fi
-          fi
-
-          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
 
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
@@ -715,12 +718,11 @@ jobs:
   #######################################################################
   publish-draft-release:
     name: Publish Draft release
-    needs: integration-test
+    needs: determine-target-branch
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
-      ARTIFACTS_CI_EVENT_TYPE: ${{ needs.integration-test.outputs.ARTIFACTS_CI_EVENT_TYPE }}
-      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
+      BRANCH: ${{ needs.determine-target-branch.outputs.BRANCH }}
     steps:
       - name: Check out code
         uses: actions/checkout@v2.3.4
@@ -774,7 +776,7 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ env.ARTIFACTS_CI_EVENT_TYPE }} # e.g., push, pull_request
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           workflow_conclusion: success
           # use the following branch
           branch: ${{ env.BRANCH}}
@@ -1019,11 +1021,11 @@ jobs:
   #######################################################################
   deploy_keptn_with_keptn:
     name: Deploy Keptn with Keptn
-    needs: integration-test
+    needs: [integration-test, determine-target-branch]
     if: github.event_name == 'schedule'
     runs-on: ubuntu-20.04
     env:
-      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
+      BRANCH: ${{ needs.determine-target-branch.outputs.BRANCH }}
     steps:
       - name: Check out code
         uses: actions/checkout@v2.3.4
