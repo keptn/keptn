@@ -1,6 +1,6 @@
 import {Pipe, PipeTransform} from '@angular/core';
 import {DataService} from '../_services/data.service';
-import semver from 'semver';
+import * as semver from 'semver';
 import {Observable} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
 

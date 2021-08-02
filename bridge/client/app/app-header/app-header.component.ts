@@ -1,4 +1,4 @@
-import semver from 'semver';
+import * as semver from 'semver';
 
 import {DOCUMENT} from "@angular/common";
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';

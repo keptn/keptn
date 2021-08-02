@@ -147,22 +147,23 @@ func handleCustomCreds(configLocation string, namespace string) (url.URL, string
 
 // initChecks needs to be run when credentialManager is called or initialized
 func initChecks(autoApplyNewContext bool) {
-	if !GlobalCheckForContextChange {
-		cliConfigManager := config.NewCLIConfigManager()
-		err := getCurrentContextFromKubeConfig()
-		if err != nil {
-			log.Fatal(err)
-		}
+	cliConfigManager := config.NewCLIConfigManager()
+	cliConfig, err := cliConfigManager.LoadCLIConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if cliConfig.KubeContextCheck && !GlobalCheckForContextChange {
+		getCurrentContextFromKubeConfig()
 		checkForContextChange(cliConfigManager, autoApplyNewContext)
 		GlobalCheckForContextChange = true
 	}
 }
 
-func getCurrentContextFromKubeConfig() error {
+func getCurrentContextFromKubeConfig() {
 	kubeConfigFile.CurrentContext = ""
 	keptnContext = ""
 	if MockAuthCreds || MockKubeConfigCheck {
-		return nil
+		return
 	}
 
 	var kubeconfig string
@@ -176,16 +177,11 @@ func getCurrentContextFromKubeConfig() error {
 
 	fileContent, err := fileutils.ReadFile(kubeconfig)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: could not open KUBECONFIG file: "+err.Error()+"\n")
-		return nil
-	}
-
-	err = yaml.Unmarshal(fileContent, &kubeConfigFile)
-	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error()+"\n")
-		return nil
+		fmt.Println("Hint: If you don't have a 'kubeconfig' file, you can disable this check via 'keptn set config KubeContextCheck false'")
+	} else if err = yaml.Unmarshal(fileContent, &kubeConfigFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not parse KUBECONFIG file: "+err.Error()+"\n")
 	}
-	return nil
 }
 
 func checkForContextChange(cliConfigManager *config.CLIConfigManager, autoApplyNewContext bool) error {

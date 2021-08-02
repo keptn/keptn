@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2"
@@ -25,6 +26,10 @@ const (
 )
 
 type APIEventSender struct {
+}
+
+func (sender *APIEventSender) Send(ctx context.Context, event v2.Event) error {
+	return sender.SendEvent(event)
 }
 
 func (sender *APIEventSender) SendEvent(event v2.Event) error {
@@ -231,4 +236,12 @@ func IsEqual(t *testing.T, expected, actual interface{}, property string) bool {
 
 func StringArr(el ...string) []string {
 	return el
+}
+
+func RestartPod(deploymentName string) error {
+	return keptnkubeutils.RestartPodsWithSelector(false, GetKeptnNameSpaceFromEnv(), "app.kubernetes.io/name="+deploymentName)
+}
+
+func WaitForPodOfDeployment(deploymentName string) error {
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
