@@ -991,7 +991,7 @@ jobs:
           if [[ "$BRANCH" == "release-"* ]]; then
             gh release create "${{ env.VERSION }}" --target "${{ env.VERSION }}" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" dist/release/*
           else
-            gh release create "${{ env.VERSION }}" --target "${{ env.BRANCH }}" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" dist/release/*
+            gh release create "${{ env.VERSION }}" --target "${{ env.github_ref }}" --draft --prerelease --notes-file "${{ env.RELEASE_NOTES_FILE }}" dist/release/*
           fi
 
       - name: Upload Helm Charts to Google Cloud
