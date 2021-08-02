@@ -713,29 +713,11 @@ jobs:
           name: support-archive
           path: support-archive/*.zip
 
-  #######################################################################
-  # This job publishes a draft release based on the previous steps      #
-  #######################################################################
-  publish-draft-release:
-    name: Publish Draft release
-    needs: determine-target-branch
-    if: always() # always run, regardless of the outcome of the last job
+  test-report:
+    name: "Generate test report"
+    needs: integration-test
     runs-on: ubuntu-20.04
-    env:
-      BRANCH: ${{ needs.determine-target-branch.outputs.BRANCH }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2.3.4
-
-      - name: Debug - Output Branch
-        run: echo $BRANCH
-
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
       - name: Download test reports
         uses: actions/download-artifact@v2
         with:
@@ -761,47 +743,6 @@ jobs:
         with:
           name: test-report
           path: final-test-report.txt
-
-      - name: Summarize Resource Usage
-        id: print_resource_usage
-        run: |
-          echo "**Resource Limits**" > final-resource-limits.txt
-          ls -la test-resource-limits*.txt
-          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
-          # Todo: some calculations should be done...
-
-      - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.14.0
-        with:
-          # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
-          workflow_conclusion: success
-          # use the following branch
-          branch: ${{ env.BRANCH}}
-          # directory where to extract artifacts to
-          path: ./dist
-
-      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
-        id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: ./dist/build-config/build-config.env
-
-      - name: Overwrite VERSION String for nightly builds
-        run: |
-          if [[ "$BRANCH" == "master" ]]; then
-            # use VERSION.DATETIME for the cli version (e.g., nightly build)
-            VERSION=${VERSION}.${DATETIME}
-            # overwrite VERSION
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          fi
-
-      - name: DEBUG Build-Config
-        run: |
-          echo VERSION=${VERSION}
-          echo BRANCH=${BRANCH}
 
       - name: Formulate bug issue on errors
         id: formulate_bug_issue
@@ -856,6 +797,61 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  #######################################################################
+  # This job publishes a draft release based on the previous steps      #
+  #######################################################################
+  publish-draft-release:
+    name: Publish Draft release
+    needs: determine-target-branch
+    if: always() # always run, regardless of the outcome of the last job
+    runs-on: ubuntu-20.04
+    env:
+      BRANCH: ${{ needs.determine-target-branch.outputs.BRANCH }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+
+      - name: Load CI Environment from .ci_env
+        id: load_ci_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: .ci_env
+
+      - name: Summarize Resource Usage
+        id: print_resource_usage
+        run: |
+          echo "**Resource Limits**" > final-resource-limits.txt
+          ls -la test-resource-limits*.txt
+          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
+          # Todo: some calculations should be done...
+
+      - name: Download all artifacts from last successful build of specified branch
+        uses: dawidd6/action-download-artifact@v2.14.0
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
+          workflow_conclusion: success
+          # use the following branch
+          branch: ${{ env.BRANCH}}
+          # directory where to extract artifacts to
+          path: ./dist
+
+      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
+        id: load_build_env
+        uses: c-py/action-dotenv-to-setenv@v3
+        with:
+          env-file: ./dist/build-config/build-config.env
+
+      - name: Overwrite VERSION String for nightly builds
+        run: |
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+            # overwrite VERSION
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
 
       # Part of this job is to check if a releasenotes file exists and to use it as the release message
       - name: Try getting release notes
@@ -893,7 +889,7 @@ jobs:
           cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
           echo "" >> release-notes.txt
           echo "**Integration Tests**" >> release-notes.txt
-          cat final-test-report.txt >> release-notes.txt
+          cat final-test-report.txt >> release-notes.txt || echo "Failed to open integration test report" >> release-notes.txt
           echo "" >> release-notes.txt
           echo "</p>" >> release-notes.txt
           echo "</details>" >> release-notes.txt
