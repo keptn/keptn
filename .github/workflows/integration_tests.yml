@@ -723,6 +723,14 @@ jobs:
         with:
           name: test-report
 
+      - name: Summarize Resource Usage
+        id: print_resource_usage
+        run: |
+          echo "**Resource Limits**" > final-resource-limits.txt
+          ls -la test-resource-limits*.txt
+          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
+          # Todo: some calculations should be done...
+
       - name: Print Test Report
         id: print_test_report
         run: |
@@ -817,14 +825,6 @@ jobs:
         with:
           env-file: .ci_env
 
-      - name: Summarize Resource Usage
-        id: print_resource_usage
-        run: |
-          echo "**Resource Limits**" > final-resource-limits.txt
-          ls -la test-resource-limits*.txt
-          cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
-          # Todo: some calculations should be done...
-
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         with:
@@ -898,7 +898,7 @@ jobs:
           echo "<details><summary>Kubernetes Resource Data</summary>" >> release-notes.txt
           echo "<p>" >> release-notes.txt
           echo ""  >> release-notes.txt
-          cat $RESOURCE_LIMITS_FILENAME >> release-notes.txt
+          cat $RESOURCE_LIMITS_FILENAME >> release-notes.txt || echo "Failed to open resource usage report" >> release-notes.txt
           echo "</p>" >> release-notes.txt
           echo "</details>" >> release-notes.txt
 
