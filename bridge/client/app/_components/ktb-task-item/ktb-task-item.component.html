@@ -23,7 +23,8 @@
           <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="task.getProblemDetails()"></span></p>
         </div>
         <div *ngIf="task.isRemediationAction()">
-          <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="task.getRemediationActionDetails()"></span></p>
+          <p class="m-0 nobreak" *ngIf="task.getRemediationActionName() as actionName"><span class="bold">Action: </span><span [textContent]="actionName"></span></p>
+          <p class="m-0 nobreak" *ngIf="task.getRemediationActionDescription() as actionDetails"><span class="bold">Description: </span><span [textContent]="actionDetails"></span></p>
         </div>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
