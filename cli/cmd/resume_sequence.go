@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,11 @@ var resumeSequenceCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return ResumeSequence(resumeSequenceParams)
+		if err := ResumeSequence(resumeSequenceParams); err != nil {
+			return err
+		}
+		fmt.Println("Successfully resumed sequence")
+		return nil
 	},
 }
 
