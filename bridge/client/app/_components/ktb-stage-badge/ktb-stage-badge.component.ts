@@ -1,7 +1,5 @@
 import {Component, Input} from '@angular/core';
-
 import {Trace} from '../../_models/trace';
-import {Stage} from '../../_models/stage';
 import {EvaluationResult} from '../../_models/evaluation-result';
 
 @Component({

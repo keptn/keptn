@@ -87,7 +87,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     Object.defineProperty(file.constructor.prototype, 'size', {
       value: 4096
     });
-    const fileList = TestUtils.createNewDropEventWithFiles([file]).dataTransfer?.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([file]).dataTransfer?.files ?? null;
 
     // when
     component.validateAndUpdateFile(fileList);
@@ -100,7 +100,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   it('should show an error when the file selected by the file input has not the right file extension', () => {
     // given
     const errorContainer = fixture.nativeElement.querySelector('p.drop-error');
-    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer?.files;
+    const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.png', {type: 'image/png'})]).dataTransfer?.files ?? null;
 
     // when
     component.validateAndUpdateFile(fileList);
