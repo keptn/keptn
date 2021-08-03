@@ -55,11 +55,9 @@ func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event, keptnHan
 
 func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent keptnv2.ApprovalTriggeredEventData,
 	triggeredID, shkeptncontext string) []cloudevents.Event {
-
 	outgoingEvents := make([]cloudevents.Event, 0)
 	if inputEvent.Result == keptnv2.ResultPass && inputEvent.Approval.Pass == keptnv2.ApprovalAutomatic ||
 		inputEvent.Result == keptnv2.ResultWarning && inputEvent.Approval.Warning == keptnv2.ApprovalAutomatic {
-
 		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *startedEvent)
 		a.keptn.Logger.Info(fmt.Sprintf("Automatically approve release of service %s of project %s and current stage %s",
@@ -69,7 +67,6 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 		outgoingEvents = append(outgoingEvents, *finishedEvent)
 	} else if inputEvent.Result == keptnv2.ResultFailed {
 		// Handle case if an ApprovalTriggered event was sent even the evaluation result is failed
-
 		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *startedEvent)
 
@@ -77,6 +74,9 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 			"the previous step failed", inputEvent.Service, inputEvent.Project, inputEvent.Stage))
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultFailed, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *finishedEvent)
+	} else if inputEvent.Approval.Pass == keptnv2.ApprovalManual || inputEvent.Approval.Warning == keptnv2.ApprovalManual {
+		startedEvent := a.getApprovalStartedEvent(inputEvent, triggeredID, shkeptncontext)
+		outgoingEvents = append(outgoingEvents, *startedEvent)
 	}
 
 	return outgoingEvents

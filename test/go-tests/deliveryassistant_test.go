@@ -111,14 +111,18 @@ func Test_DeliveryAssistant(t *testing.T) {
 
 	// combi4
 	combi4PassContext := triggerApproval(t, projectName, serviceName, "combi4", keptnv2.ResultPass)
+
+	verifyApprovalStartedEventExists(t, combi4PassContext, projectName, "combi4", keptnv2.StatusSucceeded)
 	triggeredEvent = retrieveApprovalTriggeredEvent(t, combi4PassContext, projectName, "combi4")
 	verifyApprovalUsingCLI(t, combi4PassContext, projectName, "combi4", triggeredEvent.ID)
 
 	combi4WarningContext := triggerApproval(t, projectName, serviceName, "combi4", keptnv2.ResultWarning)
+	verifyApprovalStartedEventExists(t, combi4PassContext, projectName, "combi4", keptnv2.StatusSucceeded)
 	triggeredEvent = retrieveApprovalTriggeredEvent(t, combi4WarningContext, projectName, "combi4")
 	verifyApprovalUsingCLI(t, combi4WarningContext, projectName, "combi4", triggeredEvent.ID)
 
 	combi4FailContext := triggerApproval(t, projectName, serviceName, "combi4", keptnv2.ResultFailed)
+	verifyApprovalStartedEventExists(t, combi4PassContext, projectName, "combi4", keptnv2.StatusSucceeded)
 	verifyApprovalFinishedEventExistsWithResult(t, combi4FailContext, projectName, "combi4", keptnv2.ResultFailed, keptnv2.StatusSucceeded)
 
 	verifyNoOpenApprovalsLeft(t, projectName, "combi4")
@@ -172,6 +176,23 @@ func verifyApprovalFinishedEventExistsWithResult(t *testing.T, keptnContext, pro
 	err := keptnv2.Decode(finishedEvent.Data, eventData)
 	require.Nil(t, err)
 	require.Equal(t, result, eventData.Result)
+	require.Equal(t, status, eventData.Status)
+}
+
+func verifyApprovalStartedEventExists(t *testing.T, keptnContext, projectName, stage string, status keptnv2.StatusType) {
+	var startedEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		t.Logf("verifying that approval.finished event for context %s does exist", keptnContext)
+		approvalStarted, err := GetLatestEventOfType(keptnContext, projectName, stage, keptnv2.GetStartedEventType("approval"))
+		if err != nil || approvalStarted == nil {
+			return false
+		}
+		startedEvent = approvalStarted
+		return true
+	}, 1*time.Minute, 10*time.Second)
+	eventData := &keptnv2.EventData{}
+	err := keptnv2.Decode(startedEvent.Data, eventData)
+	require.Nil(t, err)
 	require.Equal(t, status, eventData.Status)
 }
 

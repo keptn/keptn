@@ -78,8 +78,8 @@ export class Sequence {
 
   public hasPendingApproval(stageName?: string): boolean {
     return stageName ?
-        this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED
-      : this.stages.some(stage => stage.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED);
+        this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_STARTED
+      : this.stages.some(stage => stage.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || stage.latestEvent?.type === EventTypes.APPROVAL_STARTED);
   }
 
   public getStatus(): string {

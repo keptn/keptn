@@ -539,10 +539,7 @@ export class DataService {
   }
 
   public sendApprovalEvent(approval: Trace, approve: boolean): void {
-    this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_STARTED, 'approval.started')
-      .pipe(
-        mergeMap(() => this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished'))
-      )
+    this.apiService.sendApprovalEvent(approval, approve, EventTypes.APPROVAL_FINISHED, 'approval.finished')
       .subscribe(() => {
         const sequence = this._projects.getValue()?.find(p => p.projectName === approval.data.project)
                         ?.getServices().find(s => s.serviceName === approval.data.service)
