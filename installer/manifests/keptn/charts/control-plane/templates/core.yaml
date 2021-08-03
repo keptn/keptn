@@ -94,11 +94,11 @@ spec:
             - containerPort: 8080
           resources:
             requests:
-              memory: "64Mi"
+              memory: "32Mi"
               cpu: "50m"
             limits:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "64Mi"
+              cpu: "100m"
           env:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
@@ -246,10 +246,10 @@ spec:
           resources:
             requests:
               memory: "64Mi"
-              cpu: "50m"
+              cpu: "25m"
             limits:
               memory: "128Mi"
-              cpu: "500m"
+              cpu: "200m"
           volumeMounts:
             - mountPath: /usr/src/app/dist/assets/branding
               name: assets
@@ -371,7 +371,7 @@ spec:
               cpu: "50m"
             limits:
               memory: "128Mi"
-              cpu: "500m"
+              cpu: "100m"
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -504,10 +504,10 @@ spec:
           resources:
             requests:
               memory: "32Mi"
-              cpu: "50m"
+              cpu: "25m"
             limits:
-              memory: "128Mi"
-              cpu: "500m"
+              memory: "64Mi"
+              cpu: "200m"
           volumeMounts:
             - mountPath: /data
               name: secret-service-configmap-volume
@@ -641,11 +641,11 @@ spec:
             - containerPort: 8080
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: "32Mi"
+              cpu: "25m"
             limits:
-              memory: "128Mi"
-              cpu: "500m"
+              memory: "64Mi"
+              cpu: "100m"
           volumeMounts:
             - mountPath: /data/config
               name: configuration-volume
@@ -860,10 +860,10 @@ spec:
           resources:
             requests:
               memory: "32Mi"
-              cpu: "50m"
+              cpu: "25m"
             limits:
               memory: "128Mi"
-              cpu: "500m"
+              cpu: "100m"
           env:
             - name: CONFIGURATION_SERVICE
               value: 'http://configuration-service:8080'
