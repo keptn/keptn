@@ -42,11 +42,11 @@ securityContext: {}                          # Set the security context (e.g. ru
 
 resources:                                  # Resource limits and requests
   limits:
-    cpu: 1000m
-    memory: 512Mi
-  requests:
-    cpu: 50m
+    cpu: 100m
     memory: 128Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
 
 nodeSelector: {}                                # Node selector configuration
 
