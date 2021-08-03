@@ -12,7 +12,78 @@ on:
       - 'release-*'
   workflow_dispatch: # run CI when triggered manually
 env:
-  GO_VERSION: ^1.16
+  GO_VERSION: "^1.16"
+  KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
+  CLI_FOLDER: "cli/"
+  INSTALLER_FOLDER: "installer/"
+
+  BRIDGE_ARTIFACT: "bridge2"
+  BRIDGE_FOLDER: "bridge/"
+
+  API_ARTIFACT: "api"
+  API_FOLDER: "api/"
+  API_TEST_FOLDERS: "./handlers/... ./utils/..."
+  API_GO_FLAGS: ""
+
+  OS_ROUTE_SVC_ARTIFACT: "openshift-route-service"
+  OS_ROUTE_SVC_FOLDER: "platform-support/openshift-route-service/"
+  OS_ROUTE_SVC_TEST_FOLDERS: "./..."
+  OS_ROUTE_SVC_GO_FLAGS: "-race"
+
+  JMETER_SVC_ARTIFACT: "jmeter-service"
+  JMETER_SVC_FOLDER: "jmeter-service/"
+  JMETER_SVC_TEST_FOLDERS: "./..."
+  JMETER_SVC_GO_FLAGS: "-race"
+
+  HELM_SVC_ARTIFACT: "helm-service"
+  HELM_SVC_FOLDER: "helm-service/"
+  HELM_SVC_TEST_FOLDERS: "./..."
+  HELM_SVC_GO_FLAGS: "-race"
+
+  APPROVAL_SVC_ARTIFACT: "approval-service"
+  APPROVAL_SVC_FOLDER: "approval-service/"
+  APPROVAL_SVC_TEST_FOLDERS: "./..."
+  APPROVAL_SVC_GO_FLAGS: "-race"
+
+  DISTRIBUTOR_ARTIFACT: "distributor"
+  DISTRIBUTOR_FOLDER: "distributor/"
+  DISTRIBUTOR_TEST_FOLDERS: "./..."
+  DISTRIBUTOR_GO_FLAGS: ""
+
+  SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
+  SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
+  SHIPYARD_CONTROLLER_TEST_FOLDERS: "./..."
+  SHIPYARD_CONTROLLER_GO_FLAGS: ""
+
+  SECRET_SVC_ARTIFACT: "secret-service"
+  SECRET_SVC_FOLDER: "secret-service/"
+  SECRET_SVC_TEST_FOLDERS: "./..."
+  SECRET_SVC_GO_FLAGS: ""
+
+  CONFIGURATION_SVC_ARTIFACT: "configuration-service"
+  CONFIGURATION_SVC_FOLDER: "configuration-service/"
+  CONFIGURATION_SVC_TEST_FOLDERS: "./..."
+  CONFIGURATION_SVC_GO_FLAGS: ""
+
+  REMEDIATION_SVC_ARTIFACT: "remediation-service"
+  REMEDIATION_SVC_FOLDER: "remediation-service/"
+  REMEDIATION_SVC_TEST_FOLDERS: "./..."
+  REMEDIATION_SVC_GO_FLAGS: "-race"
+
+  LIGHTHOUSE_SVC_ARTIFACT: "lighthouse-service"
+  LIGHTHOUSE_SVC_FOLDER: "lighthouse-service/"
+  LIGHTHOUSE_SVC_TEST_FOLDERS: "./..."
+  LIGHTHOUSE_SVC_GO_FLAGS: ""
+
+  MONGODB_DS_ARTIFACT: "mongodb-datastore"
+  MONGODB_DS_FOLDER: "mongodb-datastore/"
+  MONGODB_DS_TEST_FOLDERS: "./..."
+  MONGODB_DS_GO_FLAGS: "-race"
+
+  STATISTICS_SVC_ARTIFACT: "statistics-service"
+  STATISTICS_SVC_FOLDER: "statistics-service/"
+  STATISTICS_SVC_TEST_FOLDERS: "./..."
+  STATISTICS_SVC_GO_FLAGS: "-race"
 defaults:
   run:
     shell: bash
@@ -41,8 +112,8 @@ jobs:
       BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
       BUILD_MONGODB_DS: ${{ steps.check_modified_files.outputs.BUILD_MONGODB_DS }}
       BUILD_STATISTICS_SVC: ${{ steps.check_modified_files.outputs.BUILD_STATISTICS_SVC }}
-      # some env variables
-      KUBE_CONSTRAINTS: ${{ steps.output_kube_constraints.outputs.KUBE_CONSTRAINTS }}
+      BUILD_MATRIX: ${{ steps.check_modified_files.outputs.BUILD_MATRIX }}
+      BUILD_MATRIX_EMPTY: ${{ steps.check_modified_files.outputs.BUILD_MATRIX_EMPTY }}
       # metadata
       GIT_SHA: ${{ steps.extract_branch.outputs.GIT_SHA }}
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
@@ -70,16 +141,6 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
-      - name: Output KUBE_CONSTRAINTS
-        id: output_kube_constraints
-        run: echo "##[set-output name=KUBE_CONSTRAINTS;]$(echo ${KUBE_CONSTRAINTS})"
-
       - name: Get changed files
         id: changed_files
         uses: jitterbit/get-changed-files@v1
@@ -95,6 +156,8 @@ jobs:
       - name: Process only certain artifacts based on changed files (for PRs only)
         if: github.event_name == 'pull_request'
         id: check_modified_files
+        env:
+          BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
         run: |
           # initialize variables with false (make sure they are also set in needs.prepare_ci_run.outputs !!!)
           BUILD_INSTALLER=false
@@ -114,6 +177,28 @@ jobs:
           BUILD_MONGODB_DS=false
           BUILD_STATISTICS_SVC=false
 
+          artifacts=(
+            "BRIDGE"
+            "API"
+            "OS_ROUTE_SVC"
+            "JMETER_SVC"
+            "HELM_SVC"
+            "APPROVAL_SVC"
+            "DISTRIBUTOR"
+            "SHIPYARD_CONTROLLER"
+            "SECRET_SVC"
+            "CONFIGURATION_SVC"
+            "REMEDIATION_SVC"
+            "LIGHTHOUSE_SVC"
+            "MONGODB_DS"
+            "STATISTICS_SVC"
+          )
+
+          echo "changed files:"
+          echo "${{ steps.changed_files.outputs.all }}"
+          matrix_config='{"config":['
+          build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "test-folders": $test_folders, "go-flags": $go_flags }'
+
           for changed_file in ${{ steps.changed_files.outputs.all }}; do
             echo "Checking if $changed_file leads to a build..."
 
@@ -127,83 +212,83 @@ jobs:
               BUILD_CLI=true
             fi
 
-            if [[ $changed_file == "${API_FOLDER}"* ]]; then
-              echo "Found changes in API"
-              BUILD_API=true
-            fi
+            for artifact in "${artifacts[@]}"; do
+              # Prepare variables
+              artifact_fullname="${artifact}_ARTIFACT"
+              artifact_folder="${artifact}_FOLDER"
+              should_build_artifact="BUILD_${artifact}"
+              artifact_go_flags="${artifact}_GO_FLAGS"
+              artifact_test_folders="${artifact}_TEST_FOLDERS"
 
-            if [[ $changed_file == "${OS_ROUTE_SVC_FOLDER}"* ]]; then
-              echo "Found changes in OS Route Service"
-              BUILD_OS_ROUTE_SVC=true
-            fi
-
-            if [[ $changed_file == "${BRIDGE_FOLDER}"* ]]; then
-              echo "Found changes in Bridge"
-              BUILD_BRIDGE=true
-            fi
-
-            if [[ $changed_file == "${JMETER_SVC_FOLDER}"* ]]; then
-              BUILD_JMETER=true
-            fi
-
-            if [[ $changed_file == "${HELM_SVC_FOLDER}"* ]]; then
-              BUILD_HELM_SVC=true
-            fi
-
-            if [[ $changed_file == "${APPROVAL_SVC_FOLDER}"* ]]; then
-              BUILD_APPROVAL_SVC=true
-            fi
-
-            if [[ $changed_file == "${DISTRIBUTOR_FOLDER}"* ]]; then
-              BUILD_DISTRIBUTOR=true
-            fi
-
-            if [[ $changed_file == "${SHIPYARD_CONTROLLER_FOLDER}"* ]]; then
-              BUILD_SHIPYARD_CONTROLLER=true
-            fi
-
-            if [[ $changed_file == "${SECRET_SVC_FOLDER}"* ]]; then
-              BUILD_SECRET_SVC=true
-            fi
-
-            if [[ $changed_file == "${CONFIGURATION_SVC_FOLDER}"* ]]; then
-              BUILD_CONFIGURATION_SVC=true
-            fi
-
-            if [[ $changed_file == "${REMEDIATION_SVC_FOLDER}"* ]]; then
-              BUILD_REMEDIATION_SVC=true
-            fi
-
-            if [[ $changed_file == "${LIGHTHOUSE_SVC_FOLDER}"* ]]; then
-              BUILD_LIGHTHOUSE_SVC=true
-            fi
-
-            if [[ $changed_file == "${MONGODB_DS_FOLDER}"* ]]; then
-              BUILD_MONGODB_DS=true
-            fi
-
-            if [[ $changed_file == "${STATISTICS_SVC_FOLDER}"* ]]; then
-              BUILD_STATISTICS_SVC=true
-            fi
+              if [[ ( $changed_file == ${!artifact_folder}* || $BUILD_EVERYTHING == 'true') && ("${!should_build_artifact}" != 'true')]]; then
+                echo "Found changes in $artifact"
+                IFS= read -r "${should_build_artifact}" <<< "true"
+                artifact_config=$(jq -n \
+                --arg artifact "${!artifact_fullname}" \
+                --arg working_dir "${!artifact_folder}" \
+                --arg should_run "${!should_build_artifact}" \
+                --arg test_folders "${!artifact_test_folders}" \
+                --arg go_flags "${!artifact_go_flags}" \
+                "$build_artifact_template"
+                )
+                matrix_config="$matrix_config $artifact_config,"
+              fi
+            done
           done
 
+          # Terminate matrix JSON config and remove trailing comma
+          matrix_config="${matrix_config%,}]}"
+
+          # Escape newlines for multiline string support in GH actions
+          # Reference: https://github.community/t/set-output-truncates-multiline-strings/16852
+          matrix_config="${matrix_config//'%'/'%25'}"
+          matrix_config="${matrix_config//$'\n'/'%0A'}"
+          matrix_config="${matrix_config//$'\r'/'%0D'}"
+
           # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
-          echo "##[set-output name=BUILD_INSTALLER;]$(echo ${BUILD_INSTALLER})"
-          echo "##[set-output name=BUILD_API;]$(echo ${BUILD_API})"
-          echo "##[set-output name=BUILD_CLI;]$(echo ${BUILD_CLI})"
-          echo "##[set-output name=BUILD_OS_ROUTE_SVC;]$(echo ${BUILD_OS_ROUTE_SVC})"
-          echo "##[set-output name=BUILD_BRIDGE;]$(echo ${BUILD_BRIDGE})"
-          echo "##[set-output name=BUILD_JMETER;]$(echo ${BUILD_JMETER})"
-          echo "##[set-output name=BUILD_HELM_SVC;]$(echo ${BUILD_HELM_SVC})"
-          echo "##[set-output name=BUILD_APPROVAL_SVC;]$(echo ${BUILD_APPROVAL_SVC})"
-          echo "##[set-output name=BUILD_DISTRIBUTOR;]$(echo ${BUILD_DISTRIBUTOR})"
-          echo "##[set-output name=BUILD_SHIPYARD_CONTROLLER;]$(echo ${BUILD_SHIPYARD_CONTROLLER})"
-          echo "##[set-output name=BUILD_SECRET_SVC;]$(echo ${BUILD_SECRET_SVC})"
-          echo "##[set-output name=BUILD_CONFIGURATION_SVC;]$(echo ${BUILD_CONFIGURATION_SVC})"
-          echo "##[set-output name=BUILD_REMEDIATION_SVC;]$(echo ${BUILD_REMEDIATION_SVC})"
-          echo "##[set-output name=BUILD_LIGHTHOUSE_SVC;]$(echo ${BUILD_LIGHTHOUSE_SVC})"
-          echo "##[set-output name=BUILD_MONGODB_DS;]$(echo ${BUILD_MONGODB_DS})"
-          echo "##[set-output name=BUILD_STATISTICS_SVC;]$(echo ${BUILD_STATISTICS_SVC})"
+          echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"
+          echo "::set-output name=BUILD_API::$BUILD_API"
+          echo "::set-output name=BUILD_CLI::$BUILD_CLI"
+          echo "::set-output name=BUILD_OS_ROUTE_SVC::$BUILD_OS_ROUTE_SVC"
+          echo "::set-output name=BUILD_BRIDGE::$BUILD_BRIDGE"
+          echo "::set-output name=BUILD_JMETER::$BUILD_JMETER"
+          echo "::set-output name=BUILD_HELM_SVC::$BUILD_HELM_SVC"
+          echo "::set-output name=BUILD_APPROVAL_SVC::$BUILD_APPROVAL_SVC"
+          echo "::set-output name=BUILD_DISTRIBUTOR::$BUILD_DISTRIBUTOR"
+          echo "::set-output name=BUILD_SHIPYARD_CONTROLLER::$BUILD_SHIPYARD_CONTROLLER"
+          echo "::set-output name=BUILD_SECRET_SVC::$BUILD_SECRET_SVC"
+          echo "::set-output name=BUILD_CONFIGURATION_SVC::$BUILD_CONFIGURATION_SVC"
+          echo "::set-output name=BUILD_REMEDIATION_SVC::$BUILD_REMEDIATION_SVC"
+          echo "::set-output name=BUILD_LIGHTHOUSE_SVC::$BUILD_LIGHTHOUSE_SVC"
+          echo "::set-output name=BUILD_MONGODB_DS::$BUILD_MONGODB_DS"
+          echo "::set-output name=BUILD_STATISTICS_SVC::$BUILD_STATISTICS_SVC"
+          echo "::set-output name=BUILD_MATRIX::$matrix_config"
+
+          echo "The following artifacts will be tested and built:"
+          echo "BUILD_INSTALLER: $BUILD_INSTALLER"
+          echo "BUILD_API: $BUILD_API"
+          echo "BUILD_CLI: $BUILD_CLI"
+          echo "BUILD_OS_ROUTE_SVC: $BUILD_OS_ROUTE_SVC"
+          echo "BUILD_BRIDGE: $BUILD_BRIDGE"
+          echo "BUILD_JMETER: $BUILD_JMETER"
+          echo "BUILD_HELM_SVC: $BUILD_HELM_SVC"
+          echo "BUILD_APPROVAL_SVC: $BUILD_APPROVAL_SVC"
+          echo "BUILD_DISTRIBUTOR: $BUILD_DISTRIBUTOR"
+          echo "BUILD_SHIPYARD_CONTROLLER: $BUILD_SHIPYARD_CONTROLLER"
+          echo "BUILD_SECRET_SVC: $BUILD_SECRET_SVC"
+          echo "BUILD_CONFIGURATION_SVC: $BUILD_CONFIGURATION_SVC"
+          echo "BUILD_REMEDIATION_SVC: $BUILD_REMEDIATION_SVC"
+          echo "BUILD_LIGHTHOUSE_SVC: $BUILD_LIGHTHOUSE_SVC"
+          echo "BUILD_MONGODB_DS: $BUILD_MONGODB_DS"
+          echo "BUILD_STATISTICS_SVC: $BUILD_STATISTICS_SVC"
+
+          if [[ "$matrix_config" == '{"config":[]}' ]]; then
+            echo "Build matrix is emtpy, setting output..."
+            echo "::set-output name=BUILD_MATRIX_EMPTY::true"
+          else
+            echo "Build matrix is NOT emtpy, setting output..."
+            echo "::set-output name=BUILD_MATRIX_EMPTY::false"
+          fi
 
       - name: Extract branch name
         id: extract_branch
@@ -295,123 +380,41 @@ jobs:
     name: Unit Tests Go Microservices
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
+    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
+    strategy:
+      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     steps:
+      # Always skip this job for the bridge
       - name: Set up Go 1.x
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
+
       - name: Checkout Code
+        if: matrix.config.artifact != 'bridge2'
         uses: actions/checkout@v2.3.4
 
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
       # cache go modules
-      - uses: actions/cache@v2.1.6
+      - if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        uses: actions/cache@v2.1.6
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Test api
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_API == 'true')
+      - name: Test ${{ matrix.config.artifact }}
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
         run: |
-          go test -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./utils/...
-          bash <(curl -s https://codecov.io/bash) -c -F api
-        working-directory: ./api
-
-      - name: Test os route svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F openshift-route-service
-        working-directory: ./platform-support/openshift-route-service
-
-      - name: Test jmeter svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_JMETER == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F jmeter-service
-        working-directory: ./jmeter-service
-
-      - name: Test helm svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_HELM_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F helm-service
-        working-directory: ./helm-service
-
-      - name: Test approval svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F approval-service
-        working-directory: ./approval-service
-
-      - name: Test distributor
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F distributor
-        working-directory: ./distributor
-
-      - name: Test shipyard controller svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F shipyard-controller
-        working-directory: ./shipyard-controller
-
-      - name: Test secret svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_SECRET_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F secret-service
-        working-directory: ./secret-service
-
-      - name: Test configuration svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F configuration-service
-        working-directory: ./configuration-service
-
-      - name: Test remediation svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F remediation-service
-        working-directory: ./remediation-service
-
-      - name: Test lighthouse svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC == 'true')
-        run: |
-          go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F lighthouse-service
-        working-directory: ./lighthouse-service
-
-      - name: Test mongodb datastore svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_MONGODB_DS == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F mongodb-datastore
-        working-directory: ./mongodb-datastore
-
-      - name: Test statistics svc
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC == 'true')
-        run: |
-          go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
-          bash <(curl -s https://codecov.io/bash) -c -F statistics-service
-        working-directory: ./statistics-service
-
+          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
+          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
+        working-directory: ${{ matrix.config.working-dir }}
 
   unit-tests-node:
-    needs: prepare_ci_run
     name: Unit Tests Bridge/NodeJS
+    needs: prepare_ci_run
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
@@ -430,11 +433,6 @@ jobs:
         run: |
           npm install -g codecov
           npm install -g libnpx@10.2.0
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
       - name: Test
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
         run: |
@@ -448,14 +446,12 @@ jobs:
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
     needs: prepare_ci_run
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
     strategy:
       matrix:
         platform: [ ubuntu-20.04 ] #, macOS-11.0, windows-2019 ]
     runs-on: ${{ matrix.platform }}
-    env:
-      KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -506,8 +502,6 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "windows"
             GOARCH: "amd64"
-    env:
-      KUBE_CONSTRAINTS: ${{ needs.prepare_ci_run.outputs.KUBE_CONSTRAINTS }}
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -591,12 +585,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
 
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
       - name: Build Helm Charts
         id: build_helm_charts
         run: |
@@ -639,51 +627,9 @@ jobs:
     needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node, prepare_github_pr_comment]
     name: Docker Build
     runs-on: ubuntu-20.04
+    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
-      matrix:
-        config:
-          - ARTIFACT: "api"
-            BUILD_FOLDER: "api/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_API }}"
-          - ARTIFACT: "bridge2"
-            BUILD_FOLDER: "bridge/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_BRIDGE }}"
-          - ARTIFACT: "distributor"
-            BUILD_FOLDER: "distributor/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_DISTRIBUTOR }}"
-          - ARTIFACT: "jmeter-service"
-            BUILD_FOLDER: "jmeter-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_JMETER }}"
-          - ARTIFACT: "helm-service"
-            BUILD_FOLDER: "helm-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_HELM_SVC }}"
-          - ARTIFACT: "approval-service"
-            BUILD_FOLDER: "approval-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_APPROVAL_SVC }}"
-          - ARTIFACT: "openshift-route-service"
-            BUILD_FOLDER: "platform-support/openshift-route-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_OS_ROUTE_SVC }}"
-          - ARTIFACT: "shipyard-controller"
-            BUILD_FOLDER: "shipyard-controller/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SHIPYARD_CONTROLLER }}"
-          - ARTIFACT: "secret-service"
-            BUILD_FOLDER: "secret-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_SECRET_SVC }}"
-          - ARTIFACT: "configuration-service"
-            BUILD_FOLDER: "configuration-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_CONFIGURATION_SVC }}"
-          - ARTIFACT: "remediation-service"
-            BUILD_FOLDER: "remediation-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_REMEDIATION_SVC }}"
-          - ARTIFACT: "lighthouse-service"
-            BUILD_FOLDER: "lighthouse-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_LIGHTHOUSE_SVC }}"
-          - ARTIFACT: "mongodb-datastore"
-            BUILD_FOLDER: "mongodb-datastore/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_MONGODB_DS }}"
-          - ARTIFACT: "statistics-service"
-            BUILD_FOLDER: "statistics-service/"
-            SHOULD_BUILD: "${{ needs.prepare_ci_run.outputs.BUILD_STATISTICS_SVC }}"
+      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -692,12 +638,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
-
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
 
       - id: docker_login
         name: Docker Login
@@ -715,18 +655,18 @@ jobs:
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
         with:
-          key: docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}-{hash}
+          key: docker-build-cache-${{ github.workflow }}-{hash}
           restore-keys: |
-            docker-build-cache-${{ github.workflow }}-${{ matrix.config.ARTIFACT }}
+            docker-build-cache-${{ github.workflow }}
 
       - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.ARTIFACT }}"
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.SHOULD_BUILD == 'true')
+        name: "Docker Build keptn/${{ matrix.config.artifact }}"
+        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
-          IMAGE: keptn/${{ matrix.config.ARTIFACT }}
-          DOCKER_FOLDER: ${{ matrix.config.BUILD_FOLDER }}
+          IMAGE: keptn/${{ matrix.config.artifact }}
+          DOCKER_FOLDER: ${{ matrix.config.working-dir }}
         run: |
           DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
