@@ -13,7 +13,7 @@ export class KtbStageBadgeComponent {
 
   @Input() public evaluation?: Trace;
   @Input() public evaluationResult?: EvaluationResult;
-  @Input() public stage?: Stage;
+  @Input() public stage?: string;
   @Input() public isSelected?: boolean = undefined;
   @Input() public fill?: boolean = undefined;
   @Input() public error = false;

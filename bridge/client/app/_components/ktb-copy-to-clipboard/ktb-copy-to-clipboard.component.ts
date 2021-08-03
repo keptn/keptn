@@ -21,8 +21,8 @@ import {Platform} from '@angular/cdk/platform';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbCopyToClipboardComponent {
-  @Input() public value?: string;
-  @Input() public label?: string;
+  @Input() public value = '';
+  @Input() public label = '';
 
   public visible = false;
 

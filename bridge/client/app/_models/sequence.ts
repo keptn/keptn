@@ -3,8 +3,7 @@ import {Trace} from './trace';
 import {EventTypes} from './event-types';
 import {EvaluationResult} from './evaluation-result';
 import {EVENT_ICONS} from './event-icons';
-
-const DEFAULT_ICON = 'information';
+import { DtIconType } from '@dynatrace/barista-icons';
 
 export class Sequence {
   name!: string;
@@ -122,14 +121,14 @@ export class Sequence {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
 
-  public getIcon(stageName?: string): string {
+  public getIcon(stageName?: string): DtIconType {
     let icon;
     if (this.state === 'waiting') {
       icon = EVENT_ICONS.waiting;
     }
     else {
       const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
-      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || DEFAULT_ICON : DEFAULT_ICON;
+      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
     }
     return icon;
   }

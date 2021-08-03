@@ -1,7 +1,12 @@
-import Highcharts, { NavigatorXAxisPlotBandsOptions, PointClickEventObject, SeriesHeatmapDataOptions } from 'highcharts';
+import Highcharts, {
+  NavigatorXAxisPlotBandsOptions,
+  PointClickEventObject,
+  SeriesColumnOptions,
+  SeriesHeatmapDataOptions, SeriesLineOptions
+} from 'highcharts';
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { DtChart, DtChartSeriesVisibilityChangeEvent } from '@dynatrace/barista-components/chart';
+import { DtChart, DtChartOptions, DtChartSeries, DtChartSeriesVisibilityChangeEvent } from '@dynatrace/barista-components/chart';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ClipboardService } from '../../_services/clipboard.service';
@@ -80,9 +85,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
 
   public _evaluationData?: Trace;
   public _selectedEvaluationData?: Trace;
-  public _comparisonView = 'heatmap';
+  public _comparisonView: string | null = 'heatmap';
   private _metrics: string[] = [];
-  public _chartOptions: Highcharts.Options = {
+  public _chartOptions: DtChartOptions = {
     chart: {
       height: 400
     },
@@ -130,7 +135,7 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       },
     },
   };
-  public _chartSeries: Highcharts.SeriesOptions[] = [];
+  public _chartSeries: (SeriesColumnOptions | SeriesLineOptions)[] = [];
   public _heatmapOptions: HeatmapOptions = {
     chart: {
       type: 'heatmap',
@@ -210,6 +215,12 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
       this.evaluationDataChanged();
       this._changeDetectorRef.markForCheck();
     }
+  }
+
+  get heatmapSeries(): DtChartSeries[] {
+    // type 'heatmap' does not exist in barista components but in highcharts
+    // @ts-ignore
+    return this._heatmapSeries as DtChartSeries[];
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService,

@@ -20,7 +20,7 @@ export class KtbHttpLoadingBarComponent implements OnInit, OnDestroy {
   @Input() public filterBy: string | null = null;
 
   public value = 0;
-  public align = 'start';
+  public align: 'start' | 'end' = 'start';
   public state = 'recovered';
 
   constructor(private httpStateService: HttpStateService) { }
