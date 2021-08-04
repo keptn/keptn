@@ -1,15 +1,15 @@
 import semver from 'semver';
-import {DOCUMENT} from '@angular/common';
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {NavigationEnd, Router, RoutesRecognized} from '@angular/router';
-import {Title} from '@angular/platform-browser';
-import {Observable, Subject, of} from 'rxjs';
-import {filter, takeUntil} from 'rxjs/operators';
-import {Project} from '../_models/project';
-import {DataService} from '../_services/data.service';
-import {NotificationsService} from '../_services/notifications.service';
-import {NotificationType} from '../_models/notification';
-import {environment} from '../../environments/environment';
+import { DOCUMENT } from '@angular/common';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RoutesRecognized } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { Observable, Subject, of } from 'rxjs';
+import { filter, switchMap, takeUntil } from 'rxjs/operators';
+import { Project } from '../_models/project';
+import { DataService } from '../_services/data.service';
+import { NotificationsService } from '../_services/notifications.service';
+import { NotificationType } from '../_models/notification';
+import { environment } from '../../environments/environment';
 import { KeptnInfo } from '../_models/keptn-info';
 import { DtSwitchChange } from '@dynatrace/barista-components/switch';
 import { VersionInfo } from '../_models/keptn-versions';
@@ -45,8 +45,16 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(event => {
         if (event instanceof RoutesRecognized) {
-          const projectName = event.state.root.children[0].params.projectName;
-          this.project$ = this.dataService.getProject(projectName);
+          const pieces = event.url.split('/');
+          if (pieces[1] === 'evaluation') {
+            this.project$ = this.dataService.projectName.pipe(
+              switchMap(projectName => this.dataService.getProject(projectName))
+            );
+          }
+          else {
+            const projectName = event.state.root.children[0].params.projectName;
+            this.project$ = this.dataService.getProject(projectName);
+          }
         } else if (event instanceof NavigationEnd) {
           // catch url change and update projectBoardView for the project picker
           const pieces = event.url.split('/');

@@ -35,7 +35,7 @@ export class KtbProjectSettingsShipyardComponent {
     this.shipyardFileChanged.emit(this.shipyardFile);
   }
 
-  public validateAndUpdateFile(files?: FileList) {
+  public validateAndUpdateFile(files: FileList | null) {
     if (files?.length && this.dropError) {
       if (!FormUtils.isFile(files[0])) {
         this.dropError.nativeElement.innerText = 'Please select only files';

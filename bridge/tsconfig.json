@@ -28,6 +28,8 @@
     "node_modules"
   ],
   "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictNullChecks": true,
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true
   }

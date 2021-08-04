@@ -6,6 +6,7 @@ import {EVENT_ICONS} from './event-icons';
 import {ProblemStates} from './problem-states';
 import {DateUtil} from '../_utils/date.utils';
 import { IndicatorResult } from './indicator-result';
+import { DtIconType } from '@dynatrace/barista-icons';
 
 class Trace {
   traces: Trace[] = [];
@@ -104,7 +105,7 @@ class Trace {
   source?: string;
   label?: string;
   heatmapLabel?: string;
-  icon?: string;
+  icon?: DtIconType;
   image?: string;
   plainEvent?: string;
   time?: Date;
@@ -249,8 +250,12 @@ class Trace {
     return this.type === EventTypes.ACTION_TRIGGERED;
   }
 
-  public getRemediationActionDetails(): string | undefined {
-    return this.data.action?.description || this.data.action?.name;
+  public getRemediationActionDescription(): string | undefined {
+    return this.data.action?.description;
+  }
+
+  public getRemediationActionName(): string | undefined {
+    return this.data.action?.name;
   }
 
   public isProblemResolvedOrClosed(): boolean {
@@ -272,7 +277,7 @@ class Trace {
   }
 
   public isApproval(): string | undefined {
-    return this.type === EventTypes.APPROVAL_TRIGGERED ? this.data.stage : undefined;
+    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED ? this.data.stage : undefined;
   }
 
   public isApprovalPending(): boolean {
@@ -342,8 +347,8 @@ class Trace {
     }
   }
 
-  getIcon(): string {
-    if(!this.icon) {
+  getIcon(): DtIconType {
+    if (!this.icon) {
       this.icon = EVENT_ICONS[this.getShortType()] || EVENT_ICONS.default;
     }
     return this.icon;

@@ -1,5 +1,0 @@
-DOCKER_ORGANIZATION="keptn"
-KUBE_CONSTRAINTS=">= 1.14, <= 1.21"
-
-CLI_FOLDER="cli/"
-INSTALLER_FOLDER="installer/"

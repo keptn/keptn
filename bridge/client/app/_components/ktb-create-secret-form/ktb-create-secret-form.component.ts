@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Secret } from '../../_models/secret';
 
 @Component({
@@ -29,8 +29,12 @@ export class KtbCreateSecretFormComponent {
   constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, private fb: FormBuilder) {
   }
 
-  get data(): FormArray {
+  get data(): FormArray | null {
     return this.createSecretForm.get('data') as FormArray;
+  }
+
+  get dataControls(): FormGroup[] {
+    return this.data?.controls as FormGroup[] || [];
   }
 
   public createSecret(): void {

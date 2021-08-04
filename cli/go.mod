@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/keptn/go-utils v0.8.5
-	github.com/keptn/kubernetes-utils v0.8.4-0.20210630130009-8242bbef5723
+	github.com/keptn/kubernetes-utils v0.8.4-0.20210804071507-1c37565807d5
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.1

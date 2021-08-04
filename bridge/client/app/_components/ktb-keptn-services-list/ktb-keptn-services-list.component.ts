@@ -22,7 +22,6 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
   public isLoadingLogs = false;
-
   public projectName$: Observable<string | null>;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();

@@ -68,16 +68,16 @@ export class Project {
     return this.stages.find(s => s.stageName === stageName);
   }
 
-  getLatestDeploymentTrace(service: Service, stage?: Stage): Trace | undefined {
-    const currentService = this.getService(service.serviceName);
+  getLatestDeploymentTrace(service: Service | undefined, stage?: Stage): Trace | undefined {
+    const currentService = service ? this.getService(service.serviceName) : undefined;
 
     return currentService?.roots
       ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
       ?.findTrace(trace => stage ? trace.isDeployment() === stage.stageName : !!trace.isDeployment());
   }
 
-  getLatestDeploymentTraceOfSequence(service: Service, stage?: Stage): Trace | undefined{
-    const currentService = this.getService(service.serviceName);
+  getLatestDeploymentTraceOfSequence(service: Service | undefined, stage?: Stage): Trace | undefined{
+    const currentService = service ? this.getService(service.serviceName) : undefined;
 
     return currentService?.sequences
       ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
@@ -150,7 +150,7 @@ export class Project {
     return lastService;
   }
 
-  public getStages(parent: (string | null)[]): Stage[] {
+  public getStages(parent: string[] | null): Stage[] {
     return this.stages.filter(s => (
       parent && s.parentStages?.every((element, i) => element === parent[i]))
       || (!parent && !s.parentStages));
