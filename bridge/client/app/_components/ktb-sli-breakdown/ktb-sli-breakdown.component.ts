@@ -26,6 +26,7 @@ export class KtbSliBreakdownComponent implements OnInit {
   private _score = 0;
   public columnNames: string[] = [];
   public tableEntries: DtTableDataSource<object> = new DtTableDataSource();
+  public readonly SliResultClass = SliResult;
   private _comparedIndicatorResults: IndicatorResult[] = [];
 
   @Input()
@@ -93,10 +94,6 @@ export class KtbSliBreakdownComponent implements OnInit {
     return n;
   }
 
-  public toSliResult(row: SliResult): SliResult {
-    return row;
-  }
-
   private assembleTablesEntries(indicatorResults: IndicatorResult[]): SliResult[] {
     const totalscore  = indicatorResults.reduce((acc, result) => acc + result.score, 0);
     const isOld = indicatorResults.some(result => !!result.targets);
@@ -127,8 +124,10 @@ export class KtbSliBreakdownComponent implements OnInit {
       const compared: Partial<SliResult> = {};
       if (comparedValue) {
         compared.comparedValue = this.formatNumber(comparedValue);
-        compared.absoluteChange = this.formatNumber(comparedValue - indicatorResult.value.value);
-        compared.relativeChange = this.formatNumber(comparedValue / (indicatorResult.value.value || 1) * 100 - 100);
+        compared.calculatedChanges = {
+          absolute: this.formatNumber(comparedValue - indicatorResult.value.value),
+          relative: this.formatNumber(comparedValue / (indicatorResult.value.value || 1) * 100 - 100)
+        };
       }
 
       return {
@@ -153,6 +152,12 @@ export class KtbSliBreakdownComponent implements OnInit {
 
   private round(value: number, places: number): number {
     return +(Math.round(Number(`${value}e+${places}`))  + `e-${places}`);
+  }
+
+  public setExpanded(result: SliResult): void {
+    if (result.comparedValue !== undefined) {
+      result.expanded = !result.expanded;
+    }
   }
 
 }

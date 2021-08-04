@@ -26,7 +26,7 @@
               <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
             </button>
           </ng-container>
-          <span [textContent]="trace.time | amCalendar:dateUtil.getCalendarFormats()"></span>
+          <span *ngIf="trace.time" [textContent]="trace.time | amCalendar:dateUtil.getCalendarFormats()"></span>
         </ng-container>
       </ng-template>
     </dt-cell>

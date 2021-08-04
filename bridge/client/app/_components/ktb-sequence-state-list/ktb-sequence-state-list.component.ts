@@ -54,7 +54,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     if (this._sequenceStates !== value) {
       this._sequenceStates = value;
       this.updateDataSource();
-      this._changeDetectorRef.markForCheck();
+      this._changeDetectorRef.detectChanges();
     }
   }
 

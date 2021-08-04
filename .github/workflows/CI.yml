@@ -154,7 +154,7 @@ jobs:
           echo "##[set-output name=BUILD_EVERYTHING;]$(echo ${BUILD_EVERYTHING})"
 
       - name: Process only certain artifacts based on changed files (for PRs only)
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') || (github.event_name == 'push')
         id: check_modified_files
         env:
           BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
@@ -668,7 +668,6 @@ jobs:
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
         run: |
-          DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
 

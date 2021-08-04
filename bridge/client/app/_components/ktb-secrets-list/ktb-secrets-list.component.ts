@@ -18,7 +18,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   public tableEntries: DtTableDataSource<Secret> = new DtTableDataSource();
   public currentSecret?: Secret;
 
-  public deleteSecretDialogState?: string;
+  public deleteSecretDialogState: string | null = null;
 
   constructor(private dataService: DataService, private route: ActivatedRoute, private _changeDetectorRef: ChangeDetectorRef) {
   }
@@ -54,7 +54,7 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
   }
 
   closeConfirmationDialog() {
-    this.deleteSecretDialogState = undefined;
+    this.deleteSecretDialogState = null;
   }
 
   public toSecret(row: Secret): Secret {

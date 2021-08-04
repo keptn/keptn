@@ -3,7 +3,7 @@
   <ng-container dtColumnDef="details" dtColumnProportion="0.1" dtColumnMinWidth="50">
     <dt-header-cell *dtHeaderCellDef></dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ng-container *ngIf="toSliResult(row) as result">
+      <ng-container *ngIf="(row | toType : SliResultClass) as result">
         <button dt-icon-button variant="nested" *ngIf="result.comparedValue !== undefined">
           <dt-icon name="dropdownclosed" [class.open]="result.expanded" class="transform-icon"></dt-icon>
         </button>
@@ -14,7 +14,7 @@
   <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="5">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <div fxLayout="column" *ngIf="toSliResult(row) as result" [class.bold]="result.keySli">
+      <div fxLayout="column" *ngIf="(row | toType : SliResultClass) as result" [class.bold]="result.keySli">
         <span class="truncate" [title]="result.name" [textContent]="result.name"></span>
         <ng-container *ngIf="result.expanded">
           <span class="small">compared with</span>
@@ -26,7 +26,7 @@
   <ng-container dtColumnDef="value" dtColumnAlign="text" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>Value</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <div fxLayout="column" *ngIf="toSliResult(row) as result">
+      <div fxLayout="column" *ngIf="(row | toType : SliResultClass) as result">
         <span *ngIf="result.success" [textContent]="result.value"></span>
         <ng-container *ngIf="!result.success">
           <dt-icon class="event-icon error" [dtOverlay]="errorOverlay" [name]="'criticalevent'"></dt-icon>
@@ -35,12 +35,12 @@
           </ng-template>
         </ng-container>
 
-        <ng-container *ngIf="result.expanded">
+        <ng-container *ngIf="result.expanded && result.calculatedChanges as changes">
           <span>{{result.comparedValue}}
-            (<span *ngIf="result.absoluteChange < 0" class="error" [textContent]="result.absoluteChange"></span>
-            <span *ngIf="result.absoluteChange >= 0" [class.success]="result.absoluteChange !== 0">+{{result.absoluteChange}}</span>,
-            <span *ngIf="result.relativeChange < 0" class="error">{{result.relativeChange}}%</span>
-            <span *ngIf="result.relativeChange >= 0" [class.success]="result.relativeChange !== 0">+{{result.relativeChange}}%</span> )
+            (<span *ngIf="changes.absolute < 0" class="error" [textContent]="changes.absolute"></span>
+            <span *ngIf="changes.absolute >= 0" [class.success]="changes.absolute !== 0">+{{changes.absolute}}</span>,
+            <span *ngIf="changes.relative < 0" class="error">{{changes.relative}}%</span>
+            <span *ngIf="changes.relative >= 0" [class.success]="changes.relative !== 0">+{{changes.relative}}%</span> )
           </span>
         </ng-container>
       </div>
@@ -50,22 +50,22 @@
   <ng-container dtColumnDef="passTargets" dtColumnAlign="number" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>pass Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ktb-sli-breakdown-criteria-item *ngIf="toSliResult(row) as result" [isInformative]="!result.success" [targets]="result.passTargets"></ktb-sli-breakdown-criteria-item>
+      <ktb-sli-breakdown-criteria-item *ngIf="(row | toType : SliResultClass) as result" [isInformative]="!result.success" [targets]="result.passTargets || []"></ktb-sli-breakdown-criteria-item>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="warningTargets" dtColumnAlign="number" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>warning Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ktb-sli-breakdown-criteria-item *ngIf="toSliResult(row) as result" [isInformative]="!result.success" [targets]="result.warningTargets"></ktb-sli-breakdown-criteria-item>
+      <ktb-sli-breakdown-criteria-item *ngIf="(row | toType : SliResultClass) as result" [isInformative]="!result.success" [targets]="result.warningTargets || []"></ktb-sli-breakdown-criteria-item>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="targets" dtColumnAlign="number" dtColumnProportion="2">
     <dt-header-cell *dtHeaderCellDef>Criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ng-container *ngIf="toSliResult(row) as result">
-        <ktb-sli-breakdown-criteria-item *ngIf="result.success" [targets]="result.targets"></ktb-sli-breakdown-criteria-item>
+      <ng-container *ngIf="(row | toType : SliResultClass) as result">
+        <ktb-sli-breakdown-criteria-item *ngIf="result.success" [targets]="result.targets || []"></ktb-sli-breakdown-criteria-item>
         <span *ngIf="!result.success">-</span>
       </ng-container>
     </dt-cell>
@@ -74,7 +74,7 @@
   <ng-container dtColumnDef="result" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell *dtHeaderCellDef>Result</dt-header-cell>
     <dt-cell *dtCellDef="let row">
-      <ng-container *ngIf="toSliResult(row) as result">
+      <ng-container *ngIf="(row | toType : SliResultClass) as result">
         <span *ngIf="result.success" [textContent]="evaluationState.get(result.result)"></span>
       </ng-container>
     </dt-cell>
@@ -83,7 +83,7 @@
   <ng-container dtColumnDef="score" dtColumnAlign="number" dtColumnProportion="1">
     <dt-header-cell dt-sort-header *dtHeaderCellDef>Score</dt-header-cell>
     <dt-cell *dtCellDef="let row" [dtOverlay]="scoreOverlay">
-      <ng-container *ngIf="toSliResult(row) as result">
+      <ng-container *ngIf="(row | toType : SliResultClass) as result">
         <span *ngIf="result.success" [class.error]="result.result === ResultTypes.FAILED" [class.warning]="result.result === ResultTypes.WARNING"
               [textContent]="result.score"></span>
       </ng-container>
@@ -103,7 +103,7 @@
         let row;
         columns: columnNames
       "
-    (click)="toSliResult(row).comparedValue !== undefined && (toSliResult(row).expanded = !toSliResult(row).expanded)"
+    (click)="setExpanded(row)"
   >
   </dt-row>
 </dt-table>

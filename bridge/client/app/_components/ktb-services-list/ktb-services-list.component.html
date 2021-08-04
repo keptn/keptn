@@ -26,7 +26,7 @@
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : ServiceClass as service">
             <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="service.getRecentRoot() as currentSequence">
-              <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(service.stage).isLoading() || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
+              <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(service.stage)?.isLoading() || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
                        [name]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
                        [class.error]="currentSequence.isFaulty(service.stage)"
                        [class.success]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() && !currentSequence.isFaulty(service.stage)"
