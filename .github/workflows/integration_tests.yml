@@ -39,49 +39,49 @@ jobs:
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
-          - CLOUD_PROVIDER: "k3s-on-GHA"
-            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
-            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "k3s-on-GHA"
-            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
-            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "k3d-on-GHA"
-            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_AIRGAPPED_TEST: "true"
-            RUN_QUALITY_GATES_TEST: "false"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-            COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.18"
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
-            REMOTE_EXECUTION_PLANE: "true"
-            COLLECT_RESOURCE_LIMITS: "false"
-          - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.19"
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_QUALITY_GATES_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
-            REMOTE_EXECUTION_PLANE: "false"
-            COLLECT_RESOURCE_LIMITS: "true"
+#          - CLOUD_PROVIDER: "k3s-on-GHA"
+#            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
+#            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+#            PLATFORM: "kubernetes"
+#            KEPTN_SERVICE_TYPE: "NodePort"
+#            RUN_QUALITY_GATES_TEST: "true"
+#            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+#            COLLECT_RESOURCE_LIMITS: "false"
+#          - CLOUD_PROVIDER: "k3s-on-GHA"
+#            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
+#            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+#            PLATFORM: "kubernetes"
+#            KEPTN_SERVICE_TYPE: "NodePort"
+#            RUN_QUALITY_GATES_TEST: "true"
+#            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+#            COLLECT_RESOURCE_LIMITS: "false"
+#          - CLOUD_PROVIDER: "k3d-on-GHA"
+#            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
+#            KUBECONFIG: ""
+#            PLATFORM: "kubernetes"
+#            KEPTN_SERVICE_TYPE: "NodePort"
+#            RUN_AIRGAPPED_TEST: "true"
+#            RUN_QUALITY_GATES_TEST: "false"
+#            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+#            COLLECT_RESOURCE_LIMITS: "false"
+#          - CLOUD_PROVIDER: "GKE"
+#            PLATFORM_VERSION: "1.18"
+#            KUBECONFIG: ""
+#            PLATFORM: "kubernetes"
+#            KEPTN_SERVICE_TYPE: "LoadBalancer"
+#            RUN_QUALITY_GATES_TEST: "true"
+#            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+#            REMOTE_EXECUTION_PLANE: "true"
+#            COLLECT_RESOURCE_LIMITS: "false"
+#          - CLOUD_PROVIDER: "GKE"
+#            PLATFORM_VERSION: "1.19"
+#            KUBECONFIG: ""
+#            PLATFORM: "kubernetes"
+#            KEPTN_SERVICE_TYPE: "LoadBalancer"
+#            RUN_QUALITY_GATES_TEST: "true"
+#            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+#            REMOTE_EXECUTION_PLANE: "false"
+#            COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -505,9 +505,6 @@ jobs:
         uses: actions/github-script@v4
         id: last_successful_commit_next
         with:
-          workflow_id: 'CI.yml'
-          branch: ${{ env.BRANCH}}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             try {
               const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
@@ -515,9 +512,9 @@ jobs:
                 .listWorkflowRuns({
                   owner,
                   repo,
-                  workflow_id: core.getInput("workflow_id"),
+                  workflow_id: 'CI.yml',
                   status: "success",
-                  branch: core.getInput("branch"),
+                  branch: process.env.BRANCH,
                 })
                 .then((res) => {
                   if(res.data.workflow_runs.length > 0) {
