@@ -222,14 +222,25 @@ jobs:
           cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
           # Todo: some calculations should be done...
 
-      - name: Download all artifacts from last successful build of specified branch
+      - name: Find last successful run
+        uses: nrwl/last-successful-commit-action@v1
+        id: last_successful_commit
+        with:
+          branch: ${{ env.BRANCH}}
+          workflow_id: 'CI.yml'
+          github_token: ${{secrets.GITHUB_TOKEN}}
+
+      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
+      - name: Download build artifacts from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
+        id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: CI.yml
-          # use the following branch
-          branch: ${{ env.BRANCH}}
+          workflow_conclusion: success
+          # use the following commit
+          commit: ${{ steps.last_successful_commit.outputs.commit_hash }}
           # directory where to extract artifacts to
           path: ./dist
 
@@ -490,16 +501,25 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Download all artifacts from last successful build of specified branch
+      - name: Find last successful run
+        uses: nrwl/last-successful-commit-action@v1
+        id: last_successful_commit
+        with:
+          branch: ${{ env.BRANCH}}
+          workflow_id: 'CI.yml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
+      - name: Download build artifacts from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
+        id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           workflow_conclusion: success
-          # use the following branch
-          branch: ${{ env.BRANCH}}
+          # use the following commit
+          commit: ${{ steps.last_successful_commit.outputs.commit_hash }}
           # directory where to extract artifacts to
           path: ./dist
 
