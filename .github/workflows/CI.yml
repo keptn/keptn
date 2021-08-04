@@ -668,7 +668,6 @@ jobs:
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
         run: |
-          DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
 
