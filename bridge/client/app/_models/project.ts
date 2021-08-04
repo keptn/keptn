@@ -59,7 +59,15 @@ export class Project extends pj {
   }
 
   getLatestDeployment(service?: Service, stage?: Stage): DeploymentInformation | undefined {
-    const currentService = stage ? this.getServices(stage.stageName)?.find(s => s.serviceName === service.serviceName) : service ? this.getService(service.serviceName) : undefined;
+    let currentService: Service | undefined;
+    if (service) {
+      if (stage) {
+        currentService = this.getServices(stage.stageName)?.find(s => s.serviceName === service.serviceName);
+      }
+      else {
+        currentService = this.getService(service.serviceName);
+      }
+    }
     return currentService?.deploymentInformation;
   }
 

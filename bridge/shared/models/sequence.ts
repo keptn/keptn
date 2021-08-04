@@ -28,6 +28,6 @@ export class Sequence {
   shkeptncontext!: string;
   stages!: SequenceStage[];
   state!: SequenceStateType;
-  time!: number;
+  time!: string;
   problemTitle?: string;
 }

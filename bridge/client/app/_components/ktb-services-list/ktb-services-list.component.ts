@@ -71,7 +71,7 @@ export class KtbServicesListComponent {
         return -1;
       }
       else {
-        return b.latestSequence.time - a.latestSequence.time;
+        return new Date(b.latestSequence.time).getTime() - new Date(a.latestSequence.time).getTime();
       }
     };
   }
