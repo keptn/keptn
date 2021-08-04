@@ -1,0 +1,14 @@
+<div class="mb-3" fxLayout="row" fxLayoutAlign="space-between center">
+  <div class="bold">Are you absolutely sure?</div>
+  <button dt-icon-button variant="nested" (click)="dialogRef.close()">
+    <dt-icon name="abort"></dt-icon>
+  </button>
+</div>
+<div class="mt-3" fxLayout="column" fxLayoutAlign="stretch">
+  <div class="mb-1">
+    <p>This action cannot be undone. This will abort the <span class="bold">{{data.name}}</span> sequence.</p>
+  </div>
+  <button dt-button class="danger-button" (click)="confirm()">
+    I understand the consequences, abort this sequence
+  </button>
+</div>

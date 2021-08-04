@@ -113,6 +113,7 @@ import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subs
 import { ToDatePipe } from './_pipes/to-date.pipe';
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
+import { KtbConfirmationDialogComponent } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
 import { environment } from '../environments/environment';
 
@@ -184,6 +185,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
     KtbDeletionDialogComponent,
+    KtbConfirmationDialogComponent,
     ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
