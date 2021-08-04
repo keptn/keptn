@@ -509,6 +509,10 @@ jobs:
           workflow_id: 'CI.yml'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Print last successful commit hash
+        run: |
+          echo "${{ steps.last_successful_commit.outputs.commit_hash }}"
+
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download build artifacts from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
