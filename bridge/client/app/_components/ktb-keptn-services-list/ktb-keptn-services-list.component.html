@@ -64,8 +64,8 @@
       <dt-loading-spinner *ngIf="isLoadingLogs"></dt-loading-spinner>
 
       <div fxLayout="column" class="overflow-y-scroll" *ngIf="!isLoadingLogs">
-        <ktb-uniform-registration-logs [projectName]="projectName"
-                                       [logs]="uniformRegistrationLogs$ | async"></ktb-uniform-registration-logs>
+        <ktb-uniform-registration-logs *ngIf="uniformRegistrationLogs$ | async as logs" [projectName]="projectName"
+                                       [logs]="logs"></ktb-uniform-registration-logs>
       </div>
     </ng-container>
   </div>

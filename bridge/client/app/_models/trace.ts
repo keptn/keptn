@@ -6,6 +6,7 @@ import {EVENT_ICONS} from './event-icons';
 import {ProblemStates} from './problem-states';
 import {DateUtil} from '../_utils/date.utils';
 import { IndicatorResult } from './indicator-result';
+import { DtIconType } from '@dynatrace/barista-icons';
 
 class Trace {
   traces: Trace[] = [];
@@ -104,7 +105,7 @@ class Trace {
   source?: string;
   label?: string;
   heatmapLabel?: string;
-  icon?: string;
+  icon?: DtIconType;
   image?: string;
   plainEvent?: string;
   time?: Date;
@@ -346,8 +347,8 @@ class Trace {
     }
   }
 
-  getIcon(): string {
-    if(!this.icon) {
+  getIcon(): DtIconType {
+    if (!this.icon) {
       this.icon = EVENT_ICONS[this.getShortType()] || EVENT_ICONS.default;
     }
     return this.icon;

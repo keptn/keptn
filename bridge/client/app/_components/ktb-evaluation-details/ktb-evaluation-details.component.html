@@ -13,7 +13,7 @@
   <div class="chart-container m-0" *ngIf="showChart && !isInvalidated" (click)="$event.stopPropagation();">
     <dt-chart class="mr-2" #heatmapChart *ngIf="showChart && _comparisonView == 'heatmap'" uitestid="keptn-evaluation-details-chartHeatmap"
               [options]="_heatmapOptions"
-              [series]="_heatmapSeries"
+              [series]="heatmapSeries"
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
     </dt-chart>
 
@@ -30,7 +30,7 @@
               (seriesVisibilityChange)="seriesVisibilityChanged($event)">
       <dt-chart-tooltip>
         <ng-template let-tooltip>
-          <p *ngIf="getEvaluationFromPoint(tooltip.points) as tooltipEvaluation">SLO evaluation of <span [textContent]="tooltipEvaluation.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" [textContent]="tooltipEvaluation.time | amDateFormat:dateUtil.getDateTimeFormat()"></span></p>
+          <p *ngIf="getEvaluationFromPoint(tooltip.points) as tooltipEvaluation">SLO evaluation of <span [textContent]="tooltipEvaluation.data.teststrategy"></span> test from <span class="m-0 mt-1 mb-1" *ngIf="tooltipEvaluation.time" [textContent]="tooltipEvaluation.time | amDateFormat:dateUtil.getDateTimeFormat()"></span></p>
           <dt-key-value-list style="min-width: 100px;">
             <dt-key-value-list-item *ngFor="let data of filterPoints(tooltip.points)">
               <dt-key-value-list-key>
@@ -57,7 +57,7 @@
         <button dt-button variant="secondary" (click)="invalidateEvaluationTrigger()" *ngIf="!isInvalidated">Ignore for comparison</button>
       </div>
     </div>
-    <dt-consumption [max]="evaluation.indicatorResults ? 100 : 0" [value]="evaluation.score" [color]="_evaluationState.get(_selectedEvaluationData.data.result)">
+    <dt-consumption [max]="evaluation.indicatorResults ? 100 : 0" [value]="evaluation.score" [color]="_selectedEvaluationData.data.result ? _evaluationState.get(_selectedEvaluationData.data.result) : undefined">
       <dt-consumption-icon aria-label="Test">
         <dt-icon name="summary"></dt-icon>
       </dt-consumption-icon>
@@ -82,7 +82,7 @@
       </dt-consumption-count>
       <dt-consumption-label>
         <p class="m-0 small"><span class="bold">Evaluation timeframe: </span><span [textContent]="evaluation.timeStart | amDateFormat:'YYYY-MM-DD HH:mm'"></span> - <span [textContent]="evaluation.timeEnd | amDateFormat:'YYYY-MM-DD HH:mm'"></span> (<span [textContent]="dateUtil.getDurationFormatted(evaluation.timeStart, evaluation.timeEnd)"></span>)</p>
-        <p class="m-0" *ngIf="_selectedEvaluationData.data.result === evaluation.result && evaluation.comparedEvents?.length > 0">
+        <p class="m-0" *ngIf="_selectedEvaluationData.data.result === evaluation.result && evaluation.comparedEvents?.length">
           Compared with last
           <span *ngIf="evaluation.compare_with == 'several_results'" [textContent]="evaluation.comparedEvents?.length + ' '"></span>
           <span *ngIf="evaluation.include_result_with_score == 'pass'">passed</span>

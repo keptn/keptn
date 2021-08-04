@@ -121,8 +121,8 @@ export class KtbSequenceTasksListComponent implements OnInit, OnDestroy {
     return !!this.tasks.find(e => e.isEvaluationInvalidation() && e.triggeredid === event.id);
   }
 
-  isFocusedTask(task: Trace) {
-    return task.id === this.focusedEventId || task.findTrace(t => t.id === this.focusedEventId);
+  isFocusedTask(task: Trace): boolean {
+    return task.id === this.focusedEventId || !!task.findTrace(t => t.id === this.focusedEventId);
   }
 
   ngOnDestroy(): void {

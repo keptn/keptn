@@ -4,7 +4,7 @@
     <dt-info-group class="mb-2">
       <dt-info-group-title>
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-          <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center" class="service-title">
+          <div fxLayout="row" fxLayoutAlign="start center" class="service-title mt-1 mb-1">
             <span class="bold" [textContent]="deployment.sequence?.getShortImageName() || deployment.service"></span>&nbsp;
             <dt-tag-list aria-label="deployment-labels" uitestid="keptn-service-details-deploymentTags">
               <dt-tag *ngFor="let label of (deployment.sequence?.getLastTrace()?.getFinishedEvent()?.labels || deployment.sequence?.labels) | keyvalue">
@@ -18,8 +18,8 @@
     </dt-info-group>
     <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
     <ng-container *ngIf="selectedStage">
-      <ktb-sequence-list [shkeptncontext]="deployment.shkeptncontext" [sequences]="deployment.sequence?.getTracesOfStage(selectedStage)" [stage]="selectedStage" [remediations]="deployment?.getStage(selectedStage)?.remediations || []"></ktb-sequence-list>
-      <button *ngIf="deployment.getStage(selectedStage)?.remediations.length > 0" class="mt-1" dt-button variant="secondary" (click)="showRemediationConfigDialog()">
+      <ktb-sequence-list [shkeptncontext]="deployment.shkeptncontext" [sequences]="deployment.sequence?.getTracesOfStage(selectedStage) || []" [stage]="selectedStage" [remediations]="deployment?.getStage(selectedStage)?.remediations || []"></ktb-sequence-list>
+      <button *ngIf="deployment.getStage(selectedStage)?.remediations?.length" class="mt-1" dt-button variant="secondary" (click)="showRemediationConfigDialog()">
         <dt-icon name="services"></dt-icon>
         Show remediation config
       </button>
