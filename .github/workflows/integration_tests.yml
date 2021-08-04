@@ -542,10 +542,13 @@ jobs:
         uses: dawidd6/action-download-artifact@v2.14.0
         id: download_artifacts_push
         with:
-          workflow: "CI.yml"
-          workflow_conclusion: "completed,success"
-          # use the following commit
-          run_id: 1097499524
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
+          workflow_conclusion: success
+          # use the following branch
+          branch: ${{ env.BRANCH}}
           # directory where to extract artifacts to
           path: ./dist
 
