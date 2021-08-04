@@ -501,53 +501,51 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Find last successful run
-        uses: actions/github-script@v4
-        id: last_successful_commit_next
-        with:
-          script: |
-            try {
-              const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-              github.actions
-                .listWorkflowRuns({
-                  owner,
-                  repo,
-                  workflow_id: 'CI.yml',
-                  status: "success",
-                  branch: process.env.BRANCH,
-                })
-                .then((res) => {
-                  if(res.data.workflow_runs.length > 0) {
-                    const lastSuccessCommitHash = res.data.workflow_runs[0].head_commit.id;
-                    core.setOutput("commit_hash", lastSuccessCommitHash);
-                  } else {
-                    core.setFailed("Could not find successful workflow run for the given inputs");
-                  }
-                })
-                .catch((e) => {
-                  core.setFailed(e.message);
-                });
-            } catch (e) {
-              core.setFailed(e.message);
-            }
-
-      - name: Print last successful commit hash
-        env:
-          HASH: ${{ steps.last_successful_commit_next.outputs.commit_hash }}
-        run: |
-          echo "$HASH"
+#      - name: Find last successful run
+#        uses: actions/github-script@v4
+#        id: last_successful_commit_next
+#        with:
+#          script: |
+#            try {
+#              const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+#              github.actions
+#                .listWorkflowRuns({
+#                  owner,
+#                  repo,
+#                  workflow_id: 'CI.yml',
+#                  status: "success",
+#                  branch: process.env.BRANCH,
+#                })
+#                .then((res) => {
+#                  if(res.data.workflow_runs.length > 0) {
+#                    const lastSuccessCommitHash = res.data.workflow_runs[0].head_commit.id;
+#                    core.setOutput("commit_hash", lastSuccessCommitHash);
+#                  } else {
+#                    core.setFailed("Could not find successful workflow run for the given inputs");
+#                  }
+#                })
+#                .catch((e) => {
+#                  core.setFailed(e.message);
+#                });
+#            } catch (e) {
+#              core.setFailed(e.message);
+#            }
+#
+#      - name: Print last successful commit hash
+#        env:
+#          HASH: ${{ steps.last_successful_commit_next.outputs.commit_hash }}
+#        run: |
+#          echo "$HASH"
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download build artifacts from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         id: download_artifacts_push
         with:
-          # Download last successful artifact from a CI build
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: CI.yml
-          workflow_conclusion: success
+          workflow: "CI.yml"
+          workflow_conclusion: "completed,success"
           # use the following commit
-          commit: ${{ steps.last_successful_commit_next.outputs.commit_hash }}
+          run_id: 1097368777
           # directory where to extract artifacts to
           path: ./dist
 
