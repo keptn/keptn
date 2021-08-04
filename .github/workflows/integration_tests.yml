@@ -213,10 +213,8 @@ jobs:
           cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
           # Todo: some calculations should be done...
 
-      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
-      - name: Download build artifacts from specified branch
+      - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
-        id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
           github_token: ${{ secrets.GITHUB_TOKEN }}
