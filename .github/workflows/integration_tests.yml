@@ -503,7 +503,7 @@ jobs:
 
       - name: Find last successful run
         uses: nrwl/last-successful-commit-action@v1
-        id: last_successful_commit
+        id: last_successful_commit_next
         with:
           branch: ${{ env.BRANCH}}
           workflow_id: 'CI.yml'
@@ -511,7 +511,7 @@ jobs:
 
       - name: Print last successful commit hash
         env:
-          HASH: ${{ steps.last_successful_commit.outputs.commit_hash }}
+          HASH: ${{ steps.last_successful_commit_next.outputs.commit_hash }}
         run: |
           echo "$HASH"
 
@@ -525,7 +525,7 @@ jobs:
           workflow: CI.yml
           workflow_conclusion: success
           # use the following commit
-          commit: ${{ steps.last_successful_commit.outputs.commit_hash }}
+          commit: ${{ steps.last_successful_commit_next.outputs.commit_hash }}
           # directory where to extract artifacts to
           path: ./dist
 
