@@ -250,8 +250,12 @@ class Trace {
     return this.type === EventTypes.ACTION_TRIGGERED;
   }
 
-  public getRemediationActionDetails(): string | undefined {
-    return this.data.action?.description || this.data.action?.name;
+  public getRemediationActionDescription(): string | undefined {
+    return this.data.action?.description;
+  }
+
+  public getRemediationActionName(): string | undefined {
+    return this.data.action?.name;
   }
 
   public isProblemResolvedOrClosed(): boolean {

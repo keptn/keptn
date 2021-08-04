@@ -154,7 +154,7 @@ jobs:
           echo "##[set-output name=BUILD_EVERYTHING;]$(echo ${BUILD_EVERYTHING})"
 
       - name: Process only certain artifacts based on changed files (for PRs only)
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') || (github.event_name == 'push')
         id: check_modified_files
         env:
           BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
@@ -418,7 +418,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v2.1.5
+        uses: actions/setup-node@v2.3.1
         with:
           node-version: 12.x
       - name: Checkout Code

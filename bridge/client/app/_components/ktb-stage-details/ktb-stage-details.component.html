@@ -62,7 +62,7 @@
               </div>
               <div class="small" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngFor="let remediationSequence of problemEvent.getRemediationActions()">
                 <dt-icon class="stage-state-icon event-icon" name="process"></dt-icon>
-                <p class="m-0" [textContent]="remediationSequence.getRemediationAction()?.getRemediationActionDetails()"></p>
+                <p class="m-0" *ngIf="remediationSequence.getRemediationAction() as remediationAction" [textContent]="remediationAction.getRemediationActionDescription() || remediationAction.getRemediationActionName()"></p>
                 <button class="m-0 p-0 ml-1" dt-button disabled variant="nested" *ngIf="!remediationSequence.isFinished()">
                   <dt-loading-spinner aria-label="Action is running..."></dt-loading-spinner>
                 </button>
