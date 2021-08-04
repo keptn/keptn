@@ -527,10 +527,8 @@ jobs:
 
           stages=('dev' 'hardening' 'production')
           services=('keptn' 'helm-service' 'jmeter-service')
-          for SERVICE in "${services[@]}"
-          do
-            for STAGE in "${stages[@]}"
-            do
+          for SERVICE in "${services[@]}"; do
+            for STAGE in "${stages[@]}"; do
               export SERVICE
               export STAGE
               envsubst < ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}.yaml > ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}-${STAGE}.yaml
@@ -543,8 +541,7 @@ jobs:
             done
           done
 
-          for STAGE in "${stages[@]}"
-          do
+          for STAGE in "${stages[@]}"; do
             export STAGE
             envsubst < ${KEPTN_INGRESS_TEMPLATE_FILENAME} > ${ENDPOINTS_TEMPLATE_BASE_PATH}/ingress-${STAGE}.yaml
             keptn add-resource \
