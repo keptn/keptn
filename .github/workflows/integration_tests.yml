@@ -509,6 +509,7 @@ jobs:
       - name: Authenticate Keptn CLI
         id: authenticate_keptn_cli
         run: |
+          keptn set config KubeContextCheck false
           keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
 
       - name: Deploy Keptn with Keptn
@@ -632,9 +633,9 @@ jobs:
         env:
           KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
         run: |
-          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
+          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
           do
-            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn
-            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result'
+            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn
+            bash keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result'
             sleep 10;
           done
