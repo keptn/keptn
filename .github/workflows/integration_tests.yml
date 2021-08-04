@@ -150,7 +150,7 @@ jobs:
       - name: Find latest successful run ID
         id: last_run_id
         env:
-          GITHUB_TOKEN: ${{ secrest.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ env.BRANCH }}
         run: |
@@ -225,7 +225,7 @@ jobs:
       - name: Find latest successful run ID
         id: last_run_id
         env:
-          GITHUB_TOKEN: ${{ secrest.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ env.BRANCH }}
         run: |
@@ -504,7 +504,7 @@ jobs:
       - name: Find latest successful run ID
         id: last_run_id
         env:
-          GITHUB_TOKEN: ${{ secrest.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ env.BRANCH }}
         run: |
