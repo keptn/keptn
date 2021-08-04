@@ -109,10 +109,6 @@ func sendApprovalFinishedEvent(sendApprovalFinishedOptions sendApprovalFinishedS
 		return nil
 	}
 
-	startedEvent := getApprovalStartedEvent(approvalFinishedEvent.EventData)
-	if _, err := sendEvent(keptnContext, triggeredID, keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), startedEvent, apiHandler); err != nil {
-		return err
-	}
 	responseEvent, err := sendEvent(keptnContext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.ApprovalTaskName), approvalFinishedEvent, apiHandler)
 	if err != nil {
 		return err
@@ -156,19 +152,6 @@ func sendEvent(keptnContext, triggeredID, eventType string, approvalFinishedEven
 		return nil, fmt.Errorf("Send %s was unsuccessful. %s", eventType, *errorObj.Message)
 	}
 	return responseEvent, nil
-}
-
-func getApprovalStartedEvent(inputEvent keptnv2.EventData) *keptnv2.ApprovalStartedEventData {
-	startedEvent := &keptnv2.ApprovalStartedEventData{
-		EventData: keptnv2.EventData{
-			Project: inputEvent.Project,
-			Stage:   inputEvent.Stage,
-			Service: inputEvent.Service,
-			Labels:  inputEvent.Labels,
-			Status:  inputEvent.Status,
-		},
-	}
-	return startedEvent
 }
 
 func getApprovalFinishedForService(eventHandler *apiutils.EventHandler, scHandler *apiutils.ShipyardControllerHandler,

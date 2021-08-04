@@ -326,6 +326,7 @@ jobs:
             USE_CASE="--use-case=continuous-delivery"
           fi
 
+          echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
             installer/airgapped/install_keptn.sh "k3d-container-registry.localhost:12345/" "http://0.0.0.0:8000/$HELM_CHART_NAME" "http://0.0.0.0:8000/$HELM_SERVICE_HELM_CHART_NAME" "http://0.0.0.0:8000/$JMETER_SERVICE_HELM_CHART_NAME"
@@ -334,6 +335,7 @@ jobs:
             keptn install --platform=${PLATFORM} --namespace=${KEPTN_NAMESPACE} --endpoint-service-type=${KEPTN_SERVICE_TYPE} \
                --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
           fi
+          echo "::endgroup::"
 
 
       # Gather resource limits directly after installation of Keptn
@@ -780,12 +782,6 @@ jobs:
       - name: Debug - Output Branch
         run: echo $BRANCH
 
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
-
       - name: Download test reports
         uses: actions/download-artifact@v2
         with:
@@ -840,13 +836,12 @@ jobs:
           env-file: ./dist/build-config/build-config.env
 
       - name: Overwrite VERSION String for nightly builds
+        if: env.BRANCH == 'master'
         run: |
-          if [[ "$BRANCH" == "master" ]]; then
-            # use VERSION.DATETIME for the cli version (e.g., nightly build)
-            VERSION=${VERSION}.${DATETIME}
-            # overwrite VERSION
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          fi
+          # use VERSION.DATETIME for the cli version (e.g., nightly build)
+          VERSION=${VERSION}.${DATETIME}
+          # overwrite VERSION
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: DEBUG Build-Config
         run: |
@@ -949,9 +944,6 @@ jobs:
           echo "* **DATETIME**: $DATETIME" >> release-notes.txt
           echo "* **GIT_SHA**: $GIT_SHA" >> release-notes.txt
           echo "* **ACTION RUN**: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> release-notes.txt
-          echo "" >> release-notes.txt
-          echo "**Docker Images**" >> release-notes.txt
-          cat dist/docker-build-report/docker_build_report.txt  >> release-notes.txt || echo "Failed to open dist/docker-build-report/docker_build_report.txt" >> release-notes.txt
           echo "" >> release-notes.txt
           echo "**Integration Tests**" >> release-notes.txt
           cat final-test-report.txt >> release-notes.txt
@@ -1094,11 +1086,6 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Load CI Environment from .ci_env
-        id: load_ci_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: .ci_env
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         with:
@@ -1230,7 +1217,8 @@ jobs:
                 "stage": "dev",
                 "status": "",
                 "labels": {
-                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                  "artifact-version": "${{ env.VERSION }}"
                 }
               },
               "source": "gh",

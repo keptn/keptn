@@ -11,15 +11,6 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
-const (
-	PassResult                  = "pass"
-	WarningResult               = "warning"
-	FailResult                  = "fail"
-	TestStrategyRealUser        = "real-user"
-	DeploymentStrategyBlueGreen = "blue_green_service"
-	SucceededResult             = "succeeded"
-)
-
 type Handler interface {
 	IsTypeHandled(event cloudevents.Event) bool
 	Handle(event cloudevents.Event, keptnHandler *keptnv2.Keptn)
