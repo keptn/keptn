@@ -502,12 +502,37 @@ jobs:
           submodules: 'true'
 
       - name: Find last successful run
-        uses: nrwl/last-successful-commit-action@v1
+        uses: actions/github-script@v4
         id: last_successful_commit_next
         with:
-          branch: ${{ env.BRANCH}}
           workflow_id: 'CI.yml'
+          branch: ${{ env.BRANCH}}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+              github.actions
+                .listWorkflowRuns({
+                  owner,
+                  repo,
+                  workflow_id: core.getInput("workflow_id"),
+                  status: "success",
+                  branch: core.getInput("branch"),
+                })
+                .then((res) => {
+                  if(res.data.workflow_runs.length > 0) {
+                    const lastSuccessCommitHash = res.data.workflow_runs[0].head_commit.id;
+                    core.setOutput("commit_hash", lastSuccessCommitHash);
+                  } else {
+                    core.setFailed("Could not find successful workflow run for the given inputs");
+                  }
+                })
+                .catch((e) => {
+                  core.setFailed(e.message);
+                });
+            } catch (e) {
+              core.setFailed(e.message);
+            }
 
       - name: Print last successful commit hash
         env:
