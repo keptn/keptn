@@ -21,7 +21,6 @@ import (
 
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/auth"
-	"github.com/keptn/keptn/api/restapi/operations/configuration"
 	"github.com/keptn/keptn/api/restapi/operations/event"
 	"github.com/keptn/keptn/api/restapi/operations/metadata"
 )
@@ -48,12 +47,6 @@ func NewKeptnAPI(spec *loads.Document) *KeptnAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		ConfigurationGetConfigBridgeHandler: configuration.GetConfigBridgeHandlerFunc(func(params configuration.GetConfigBridgeParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation configuration.GetConfigBridge has not yet been implemented")
-		}),
-		ConfigurationPostConfigBridgeHandler: configuration.PostConfigBridgeHandlerFunc(func(params configuration.PostConfigBridgeParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation configuration.PostConfigBridge has not yet been implemented")
-		}),
 		EventPostEventHandler: event.PostEventHandlerFunc(func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation event.PostEvent has not yet been implemented")
 		}),
@@ -89,9 +82,11 @@ type KeptnAPI struct {
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+
 	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
@@ -112,16 +107,13 @@ type KeptnAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
-	// ConfigurationGetConfigBridgeHandler sets the operation handler for the get config bridge operation
-	ConfigurationGetConfigBridgeHandler configuration.GetConfigBridgeHandler
-	// ConfigurationPostConfigBridgeHandler sets the operation handler for the post config bridge operation
-	ConfigurationPostConfigBridgeHandler configuration.PostConfigBridgeHandler
 	// EventPostEventHandler sets the operation handler for the post event operation
 	EventPostEventHandler event.PostEventHandler
 	// AuthAuthHandler sets the operation handler for the auth operation
 	AuthAuthHandler auth.AuthHandler
 	// MetadataMetadataHandler sets the operation handler for the metadata operation
 	MetadataMetadataHandler metadata.MetadataHandler
+
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -202,12 +194,6 @@ func (o *KeptnAPI) Validate() error {
 		unregistered = append(unregistered, "XTokenAuth")
 	}
 
-	if o.ConfigurationGetConfigBridgeHandler == nil {
-		unregistered = append(unregistered, "configuration.GetConfigBridgeHandler")
-	}
-	if o.ConfigurationPostConfigBridgeHandler == nil {
-		unregistered = append(unregistered, "configuration.PostConfigBridgeHandler")
-	}
 	if o.EventPostEventHandler == nil {
 		unregistered = append(unregistered, "event.PostEventHandler")
 	}
@@ -318,14 +304,6 @@ func (o *KeptnAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/config/bridge"] = configuration.NewGetConfigBridge(o.context, o.ConfigurationGetConfigBridgeHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/config/bridge"] = configuration.NewPostConfigBridge(o.context, o.ConfigurationPostConfigBridgeHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
