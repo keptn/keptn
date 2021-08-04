@@ -510,8 +510,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print last successful commit hash
+        env:
+          HASH: ${{ steps.last_successful_commit.outputs.commit_hash }}
         run: |
-          echo "${{ steps.last_successful_commit.outputs.commit_hash }}"
+          echo "$HASH"
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download build artifacts from specified branch
