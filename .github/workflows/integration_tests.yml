@@ -98,6 +98,7 @@ jobs:
       GO_VERSION: ^1.16
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+      ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
     steps:
 
       - name: Set up Go 1.x
@@ -221,16 +222,6 @@ jobs:
           cat test-resource-limits*.txt >> final-resource-limits.txt || echo "No resource reports found" >> final-resource-limits.txt
           # Todo: some calculations should be done...
 
-      - name: Find latest successful run ID
-        id: last_run_id
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: "keptn/keptn"
-          BRANCH: ${{ env.BRANCH }}
-        run: |
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
-          echo "::set-output name=RUN_ID::$RUN_ID"
-
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         with:
@@ -238,7 +229,7 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
           event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
-          run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
+          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
 
@@ -499,16 +490,6 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      - name: Find latest successful run ID
-        id: last_run_id
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_SLUG: "keptn/keptn"
-          BRANCH: ${{ env.BRANCH }}
-        run: |
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
-          echo "::set-output name=RUN_ID::$RUN_ID"
-
       - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         with:
@@ -516,7 +497,7 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
           event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
-          run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
+          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
 
