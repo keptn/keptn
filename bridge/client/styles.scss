@@ -410,6 +410,23 @@ pre.code {
   }
 }
 
+button.action-btn {
+  .dt-button-icon .dt-icon svg {
+    fill: var(--dt-neutral-active-color);
+  }
+}
+
+button.small-btn {
+  &.dt-button.dt-icon-button {
+    width: 28px;
+
+    .dt-button-icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
 .dt-tag {
   &.justify-content-center {
     justify-content: center;

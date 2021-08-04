@@ -16,8 +16,17 @@ export type SequenceStage = {
 };
 
 enum sequenceState {
-  WAITING = 'waiting'
+  WAITING = 'waiting',
+  PAUSED = 'paused',
+  UNKNOWN = ''
 }
+
+export enum SequenceStateControl {
+  PAUSE = 'pause',
+  ABORT = 'abort',
+  RESUME = 'resume'
+}
+
 export const SequenceState = {...sequenceState, ...EventState};
 export type SequenceStateType = sequenceState & EventState;
 

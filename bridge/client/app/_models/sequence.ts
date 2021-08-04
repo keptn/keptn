@@ -29,14 +29,12 @@ export class Sequence extends sq {
   }
 
   public static getShortType(type: string): string {
-    const parts = type.split('.');
+    const parts = type?.split('.');
     if (parts.length === 6) {
       return parts[4];
-    }
-    else if (parts.length === 5) {
+    } else if (parts.length === 5) {
       return parts[3];
-    }
-    else {
+    } else {
       return type;
     }
   }
@@ -46,7 +44,7 @@ export class Sequence extends sq {
   }
 
   public getStages(): string[] {
-    return  this.stages.map(stage => stage.name);
+    return this.stages.map(stage => stage.name);
   }
 
   public getLastStage(): string | undefined {
@@ -82,8 +80,7 @@ export class Sequence extends sq {
     if (this.state === SequenceState.FINISHED) {
       if (this.stages.some(stage => stage.latestFailedEvent)) {
         status = 'failed';
-      }
-      else {
+      } else {
         status = 'succeeded';
       }
     }
@@ -113,6 +110,14 @@ export class Sequence extends sq {
     return this.name === 'remediation';
   }
 
+  public isPaused(): boolean {
+    return this.state === SequenceState.PAUSED;
+  }
+
+  public isUnkownState(): boolean {
+    return this.state === SequenceState.UNKNOWN;
+  }
+
   public getLatestEvent(): {id: string, time: string, type: string} | undefined {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
@@ -121,8 +126,7 @@ export class Sequence extends sq {
     let icon;
     if (this.state === SequenceState.WAITING) {
       icon = EVENT_ICONS.waiting;
-    }
-    else {
+    } else {
       const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
       icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
     }

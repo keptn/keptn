@@ -20,6 +20,7 @@ import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
+import { Sequence } from '../_models/sequence';
 
 @Injectable({
   providedIn: 'root'
@@ -339,6 +340,15 @@ export class ApiService {
             reason
           }
         }
+      });
+  }
+
+  public sendSequenceControl(project: string, keptnContext: string, state: string): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/sequence/${project}/${keptnContext}/control`;
+
+    return this.http
+      .post<unknown>(url, {
+        state
       });
   }
 

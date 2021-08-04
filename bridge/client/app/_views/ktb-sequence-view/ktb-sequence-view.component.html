@@ -14,13 +14,20 @@
       <div class="mt-2 mb-3">
         <dt-info-group>
           <dt-info-group-title>
-            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-              <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
-                <p class="m-0">
-                  <span class="bold" [textContent]="currentSequence.name"></span>&nbsp;
-                  <span [textContent]="currentSequence.getStatus()"></span>
-                </p>
-                <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center">
+              <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+                <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
+                  <p class="m-0">
+                    <span class="bold" [textContent]="currentSequence.name"></span>&nbsp;
+                    <span [textContent]="currentSequence.getStatus()"></span>
+                  </p>
+                  <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+                </div>
+              </div>
+              <div fxLayout="row" fxLayoutAlign="start center">
+                <button *ngIf="!currentSequence.isPaused()" class="action-btn" dt-button variant="nested" title="Pause sequence" (click)="$event.stopPropagation(); triggerPauseSequence(currentSequence)" [disabled]="currentSequence.isFinished() || currentSequence.isUnkownState()"><dt-icon name="pause"></dt-icon> Pause</button>
+                <button *ngIf="currentSequence.isPaused()" class="action-btn" dt-button variant="nested" title="Resume sequence" (click)="$event.stopPropagation(); triggerResumeSequence(currentSequence)" [disabled]="currentSequence.isFinished() || currentSequence.isUnkownState()"><dt-icon name="resume"></dt-icon> Resume</button>
+                <button class="action-btn" dt-button variant="nested" title="Abort sequence" (click)="$event.stopPropagation(); triggerAbortSequence(currentSequence)" [disabled]="currentSequence.isFinished() || currentSequence.isUnkownState()"><dt-icon name="abort"></dt-icon> Abort</button>
               </div>
             </div>
           </dt-info-group-title>

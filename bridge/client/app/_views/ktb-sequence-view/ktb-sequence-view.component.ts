@@ -11,6 +11,9 @@ import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
+import { SequenceStateControl } from '../../../../shared/models/sequence';
+import { KtbConfirmationDialogComponent } from '../../_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -48,7 +51,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           {name: 'Active', value: 'started'},
           {name: 'Failed', value: 'failed'},
           {name: 'Succeeded', value: 'succeeded'},
-          {name: 'Waiting', value: 'waiting'},
+          {name: 'Waiting', value: 'waiting'}
         ],
       },
     ],
@@ -75,8 +78,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   // tslint:disable-next-line:no-any
   public _seqFilters: any[] = [];
 
+  public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
+
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute,
-              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
+              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number, public dialog: MatDialog) {
 
     if (this.initialDelayMillis === 0) {
       this._sequenceTimerInterval = 0;
@@ -140,7 +145,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     combineLatest([this.route.params, this.sequences$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext),
+        takeWhile( ([params]) => !this.currentSequence && params.shkeptncontext)
       )
       .subscribe(([params, sequences]: [Params, Sequence[]]) => {
         if (params.shkeptncontext) {
@@ -221,7 +226,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   updateFilterDataSource(project: Project) {
     let filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Service');
     if (filterItem) {
-      filterItem.autocomplete = project.getServices().map(s => Object.assign({}, {name: s.serviceName, value: s.serviceName}));
+      filterItem.autocomplete = project.getServices().map(s => Object.assign({}, {
+        name: s.serviceName,
+        value: s.serviceName
+      }));
     }
     filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Stage');
     if (filterItem) {
@@ -282,6 +290,30 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       this.selectedStage = stageName;
       this._changeDetectorRef.markForCheck();
     }
+  }
+
+  triggerResumeSequence(sequence: Sequence): void {
+    this.dataService.sendSequenceControl(sequence, SequenceStateControl.RESUME);
+  }
+
+  triggerPauseSequence(sequence: Sequence): void {
+    this.dataService.sendSequenceControl(sequence, SequenceStateControl.PAUSE);
+  }
+
+  triggerAbortSequence(sequence: Sequence): void {
+    const data = {
+      sequence,
+      confirmCallback: (data: any) => {
+        this.abortSequence(data.sequence);
+      }
+    };
+    this.confirmationDialogRef = this.dialog.open(KtbConfirmationDialogComponent, {
+      data,
+    });
+  }
+
+  abortSequence(sequence: Sequence): void {
+    this.dataService.sendSequenceControl(sequence, SequenceStateControl.ABORT);
   }
 
   ngOnDestroy(): void {
