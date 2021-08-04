@@ -39,8 +39,8 @@ export class DataService {
   protected _tracesLastUpdated: { [key: string]: Date } = {};
   protected _rootTracesLastUpdated: { [key: string]: Date } = {};
   protected _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
-  private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
+  protected readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
+  protected readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
 
   protected _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
@@ -373,7 +373,7 @@ export class DataService {
       );
   }
 
-  private addNewSequences(project: Project, newSequences: Sequence[], areOldSequences: boolean, oldSequence?: Sequence): void {
+  protected addNewSequences(project: Project, newSequences: Sequence[], areOldSequences: boolean, oldSequence?: Sequence): void {
     if (areOldSequences) {
       project.sequences = [...project.sequences || [], ...newSequences || [], ...(oldSequence ? [oldSequence] : [])];
     }
@@ -400,7 +400,7 @@ export class DataService {
     this._tracesLastUpdated[keptnContext] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
   }
 
-  private allSequencesLoaded(sequences: number, totalCount: number, fromTime?: Date, beforeTime?: Date): boolean {
+  protected allSequencesLoaded(sequences: number, totalCount: number, fromTime?: Date, beforeTime?: Date): boolean {
     return !!fromTime && !beforeTime && sequences >= totalCount
         || !!beforeTime && !fromTime && totalCount < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE;
   }
@@ -602,7 +602,7 @@ export class DataService {
     );
   }
 
-  private stageSequenceMapper(stage: Stage, project: Project): void {
+  protected stageSequenceMapper(stage: Stage, project: Project): void {
     stage.services.forEach(service => {
       service.sequences = project.sequences.filter(s => s.service === service.serviceName && s.getStages().includes(stage.stageName));
     });
