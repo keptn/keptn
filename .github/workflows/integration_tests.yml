@@ -148,6 +148,14 @@ jobs:
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
 
+      - name: Find last successful run
+        uses: nrwl/last-successful-commit-action@v1
+        id: last_successful_commit
+        with:
+          branch: ${{ steps.determine_branch.outputs.BRANCH}}
+          workflow_id: 'CI.yml'
+          github_token: ${{secrets.GITHUB_TOKEN}}
+
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download build artifacts from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
@@ -157,7 +165,7 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
           # use the following branch
-          branch: ${{ steps.determine_branch.outputs.BRANCH}}
+          commit: ${{ steps.last_successful_commit.outputs.commit_hash }}
           # directory where to extract artifacts to
           path: ./dist
 
