@@ -629,10 +629,11 @@ jobs:
       - name: Check if keptn on keptn delivery passed
         id: check-service-delivery
         timeout-minutes: 5
+        env:
+          KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
         run: |
           while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
           do
+            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn
             sleep 10;
           done
-        env:
-          KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
