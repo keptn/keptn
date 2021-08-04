@@ -635,5 +635,6 @@ jobs:
           while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
           do
             keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn
+            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result'
             sleep 10;
           done
