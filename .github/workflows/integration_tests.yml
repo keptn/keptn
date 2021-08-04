@@ -98,7 +98,6 @@ jobs:
       GO_VERSION: ^1.16
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
-      ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
     steps:
 
       - name: Set up Go 1.x
@@ -148,14 +147,6 @@ jobs:
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
 
-      - name: Find last successful run
-        uses: nrwl/last-successful-commit-action@v1
-        id: last_successful_commit
-        with:
-          branch: ${{ steps.determine_branch.outputs.BRANCH}}
-          workflow_id: 'CI.yml'
-          github_token: ${{secrets.GITHUB_TOKEN}}
-
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download build artifacts from specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
@@ -180,7 +171,6 @@ jobs:
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
-      ARTIFACTS_CI_EVENT_TYPE: ${{ needs.integration-test.outputs.ARTIFACTS_CI_EVENT_TYPE }}
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
@@ -495,8 +485,7 @@ jobs:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
 
-      # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
-      - name: Download build artifacts from specified branch
+      - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         with:
           # Download last successful artifact from a CI build
