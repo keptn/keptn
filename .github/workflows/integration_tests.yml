@@ -154,8 +154,7 @@ jobs:
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ env.BRANCH }}
         run: |
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" \
-          | jq --arg branch "$BRANCH" -c "[.workflow_runs[] | select( .conclusion == 'success' and .head_branch == $branch)][0] | .id")
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
@@ -229,8 +228,7 @@ jobs:
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ env.BRANCH }}
         run: |
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" \
-          | jq --arg branch "$BRANCH" -c "[.workflow_runs[] | select( .conclusion == 'success' and .head_branch == $branch)][0] | .id")
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
 
       - name: Download all artifacts from last successful build of specified branch
@@ -508,8 +506,7 @@ jobs:
           REPO_SLUG: "keptn/keptn"
           BRANCH: ${{ env.BRANCH }}
         run: |
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" \
-          | jq --arg branch "$BRANCH" -c "[.workflow_runs[] | select( .conclusion == 'success' and .head_branch == $branch)][0] | .id")
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
 
       - name: Download all artifacts from last successful build of specified branch
