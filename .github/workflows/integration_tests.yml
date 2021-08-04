@@ -152,7 +152,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_SLUG: "keptn/keptn"
-          BRANCH: ${{ env.BRANCH }}
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
         run: |
           RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
