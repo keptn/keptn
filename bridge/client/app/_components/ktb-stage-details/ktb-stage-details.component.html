@@ -78,7 +78,7 @@
               <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                 <dt-icon class="stage-state-icon event-icon error" name="traffic-light"></dt-icon>
                 <p class="m-0">Quality gate <span *ngIf="failedRootEvent.getShortImageName()">of <span [textContent]="failedRootEvent.getShortImageName()"></span></span> failed with a score of</p>
-                <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluationTrace(selectedStage.stageName).getFinishedEvent() as evaluation">
+                <dt-tag-list aria-label="evaluation-info" *ngIf="failedRootEvent.getEvaluationTrace(selectedStage.stageName)?.getFinishedEvent() as evaluation">
                   <dt-tag class="justify-content-center" [dtOverlay]="overlay" [dtOverlayConfig]="overlayConfig" [class.error]="evaluation.isFaulty()" [class.warning]="evaluation.isWarning()" [class.success]="evaluation.isSuccessful()" [textContent]="evaluation.data.evaluation.score | number:'1.0-0'"></dt-tag>
                   <ng-template #overlay>
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>

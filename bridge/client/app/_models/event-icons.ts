@@ -1,4 +1,6 @@
-export const EVENT_ICONS: {[key: string]: string} = {
+import { DtIconType } from '@dynatrace/barista-icons';
+
+export const EVENT_ICONS: {[key: string]: DtIconType} = {
   'artifact-delivery': 'duplicate',
   delivery: 'duplicate',
   deployment: 'deploy',

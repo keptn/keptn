@@ -22,7 +22,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
   public isLoadingLogs = false;
 
-  public projectName: string | null = null;
+  public projectName?: string;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
@@ -33,7 +33,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     this.route.paramMap.pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe(map => {
-      this.projectName = map.get('projectName');
+      this.projectName = map.get('projectName') ?? undefined;
     });
 
     this.selectedUniformRegistrationId$.pipe(

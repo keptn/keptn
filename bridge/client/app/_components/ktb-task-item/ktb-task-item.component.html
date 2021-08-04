@@ -1,4 +1,4 @@
-<ktb-expandable-tile [expanded]="isExpanded" [error]="task.isFaulty()" [warning]="task.isWarning()" [success]="task.isSuccessful()" [highlight]="task.isApproval()" *ngIf="task && (project$ | async) as project">
+<ktb-expandable-tile [expanded]="isExpanded" [error]="task.isFaulty()" [warning]="task.isWarning()" [success]="task.isSuccessful()" [highlight]="!!task.isApproval()" *ngIf="task && (project$ | async) as project">
   <ktb-expandable-tile-header>
     <div fxLayout="row">
       <div fxFlex>
@@ -23,7 +23,8 @@
           <p class="m-0 nobreak"><span class="bold">Problem: </span><span [textContent]="task.getProblemDetails()"></span></p>
         </div>
         <div *ngIf="task.isRemediationAction()">
-          <p class="m-0 nobreak"><span class="bold">Action: </span><span [textContent]="task.getRemediationActionDetails()"></span></p>
+          <p class="m-0 nobreak" *ngIf="task.getRemediationActionName() as actionName"><span class="bold">Action: </span><span [textContent]="actionName"></span></p>
+          <p class="m-0 nobreak" *ngIf="task.getRemediationActionDescription() as actionDetails"><span class="bold">Description: </span><span [textContent]="actionDetails"></span></p>
         </div>
       </div>
       <div fxLayout="column" fxLayoutAlign="start end">
@@ -67,7 +68,7 @@
       <div fxLayout="row">
         <div class="overflow-auto" fxFlex>
           <p class="m-0">
-            <span class="mr-2" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span>
+            <span class="mr-2" *ngIf="subTask.time" [textContent]="subTask.time | amDateFormat:dateUtil.getTimeFormat()"></span> <span class="italic" [textContent]="subTask.source"></span>
             <ng-container *ngIf="!subTask.isFinished() && !subTask.isChanged()"> started</ng-container>
             <ng-container *ngIf="subTask.isChanged()"> changed</ng-container>
             <ng-container *ngIf="subTask.isFinished()"> finished with result <span class="italic" [textContent]="subTask.data.result"></span></ng-container>
@@ -88,7 +89,7 @@
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeploymentTraceOfSequence(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        <td><p class="m-0"  *ngIf="task.data.stage && task.data.service" [textContent]="project.getLatestDeploymentTraceOfSequence(project.getService(task.data.service), project.getStage(task.data.stage))?.getShortImageName() || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>

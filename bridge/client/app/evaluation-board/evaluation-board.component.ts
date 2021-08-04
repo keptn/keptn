@@ -32,6 +32,7 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
   constructor(private _changeDetectorRef: ChangeDetectorRef, private location: Location, private route: ActivatedRoute,
               private apiService: ApiService, private dataService: DataService) {
     this.hasHistory = window.history.length > 1;
+    this.dataService.setProjectName(''); // else in the app-header the latest projectName will be shown until the traces are loaded
   }
 
   ngOnInit() {
@@ -55,9 +56,11 @@ export class EvaluationBoardComponent implements OnInit, OnDestroy {
               this.root.traces = traces;
               this.evaluations = traces.filter(t => t.type === EventTypes.EVALUATION_FINISHED
                                   && (!params.eventselector || t.id === params.eventselector || t.data.stage === params.eventselector));
-              const serviceName = this.root.service;
-              if (this.root.project && serviceName) {
-                this.setDeployments(this.root.project, serviceName);
+              if (this.root.project) {
+                this.dataService.setProjectName(this.root.project);
+                if (this.root.service) {
+                  this.setDeployments(this.root.project, this.root.service);
+                }
               }
             } else {
               this.error = 'contextError';

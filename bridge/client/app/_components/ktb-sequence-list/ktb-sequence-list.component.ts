@@ -24,7 +24,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   @Input() stage?: string;
   @Input() shkeptncontext?: string;
   @Input()
-  get sequences() {
+  get sequences(): Trace[] {
     return this._sequences;
   }
   set sequences(sequences: Trace[]) {

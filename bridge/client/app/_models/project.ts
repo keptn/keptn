@@ -58,13 +58,13 @@ export class Project extends pj {
     return this.stages.find(s => s.stageName === stageName);
   }
 
-  getLatestDeployment(service: Service, stage?: Stage): DeploymentInformation | undefined {
-    const currentService = stage ? this.getServices(stage.stageName)?.find(s => s.serviceName === service.serviceName) : this.getService(service.serviceName);
+  getLatestDeployment(service?: Service, stage?: Stage): DeploymentInformation | undefined {
+    const currentService = stage ? this.getServices(stage.stageName)?.find(s => s.serviceName === service.serviceName) : service ? this.getService(service.serviceName) : undefined;
     return currentService?.deploymentInformation;
   }
 
-  getLatestDeploymentTraceOfSequence(service: Service, stage?: Stage): Trace | undefined{
-    const currentService = this.getService(service.serviceName);
+  getLatestDeploymentTraceOfSequence(service: Service | undefined, stage?: Stage): Trace | undefined{
+    const currentService = service ? this.getService(service.serviceName) : undefined;
 
     return currentService?.sequences
       ?.find(r => r.shkeptncontext === currentService.lastEventTypes?.[EventTypes.DEPLOYMENT_FINISHED]?.keptnContext)
@@ -127,7 +127,7 @@ export class Project extends pj {
     return lastService;
   }
 
-  public getStages(parent: (string | null)[]): Stage[] {
+  public getStages(parent: string[] | null): Stage[] {
     return this.stages.filter(s => (
       parent && s.parentStages?.every((element, i) => element === parent[i]))
       || (!parent && !s.parentStages));

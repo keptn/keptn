@@ -5,8 +5,7 @@ import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { EVENT_ICONS } from './event-icons';
 import { RemediationAction } from '../../../shared/models/remediation-action';
 import { Sequence as sq, SequenceStage, SequenceState } from '../../../shared/models/sequence';
-
-const DEFAULT_ICON = 'information';
+import { DtIconType } from '@dynatrace/barista-icons';
 
 export class Sequence extends sq {
   stages!: (SequenceStage &
@@ -118,14 +117,14 @@ export class Sequence extends sq {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
 
-  public getIcon(stageName?: string): string {
+  public getIcon(stageName?: string): DtIconType {
     let icon;
     if (this.state === SequenceState.WAITING) {
       icon = EVENT_ICONS.waiting;
     }
     else {
       const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
-      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || DEFAULT_ICON : DEFAULT_ICON;
+      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
     }
     return icon;
   }

@@ -36,6 +36,7 @@ export class DataService {
   protected _sequencesLastUpdated: { [key: string]: Date } = {};
   protected _tracesLastUpdated: { [key: string]: Date } = {};
   protected _rootTracesLastUpdated: { [key: string]: Date } = {};
+  protected _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
@@ -86,6 +87,13 @@ export class DataService {
 
   get isQualityGatesOnly(): Observable<boolean> {
     return this._isQualityGatesOnly.asObservable();
+  }
+
+  get projectName(): Observable<string> {
+    return this._projectName.asObservable();
+  }
+  public setProjectName(projectName: string): void {
+    this._projectName.next(projectName);
   }
 
   public getProject(projectName: string): Observable<Project | undefined> {

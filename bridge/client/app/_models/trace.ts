@@ -6,6 +6,7 @@ import { EVENT_ICONS } from './event-icons';
 import { ProblemStates } from './problem-states';
 import { DateUtil } from '../_utils/date.utils';
 import { Trace as tc, TraceData } from '../../../shared/models/trace';
+import { DtIconType } from '@dynatrace/barista-icons';
 
 class Trace extends tc {
   traces: Trace[] = [];
@@ -19,7 +20,7 @@ class Trace extends tc {
   source?: string;
   label?: string;
   heatmapLabel?: string;
-  icon?: string;
+  icon?: DtIconType;
   image?: string;
   plainEvent?: string;
   time?: Date;
@@ -164,8 +165,12 @@ class Trace extends tc {
     return this.type === EventTypes.ACTION_TRIGGERED;
   }
 
-  public getRemediationActionDetails(): string | undefined {
-    return this.data.action?.description || this.data.action?.name;
+  public getRemediationActionDescription(): string | undefined {
+    return this.data.action?.description;
+  }
+
+  public getRemediationActionName(): string | undefined {
+    return this.data.action?.name;
   }
 
   public isProblemResolvedOrClosed(): boolean {
@@ -257,7 +262,7 @@ class Trace extends tc {
     }
   }
 
-  getIcon(): string {
+  getIcon(): DtIconType {
     if (!this.icon) {
       this.icon = EVENT_ICONS[this.getShortType()] || EVENT_ICONS.default;
     }
