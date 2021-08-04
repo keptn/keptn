@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, TemplateRef } from '@angular/core';
 import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
 import { UniformRegistration } from '../../_models/uniform-registration';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
@@ -97,6 +97,12 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     } else {
       this.uniformRegistrations.data = [];
     }
+  }
+
+  public getOverlay(registration: UniformRegistration, projectName: string, template: TemplateRef<unknown>): TemplateRef<unknown> {
+    // The overlay must be conditional but in general directives are not meant to be dynamic.
+    // That's why we ignore the fact that undefined is not assignable to TemplateRef
+    return (registration.hasSubscriptions(projectName) ? undefined : template) as TemplateRef<unknown>;
   }
 
   private compare(a: string, b: string, isAsc: boolean): number {

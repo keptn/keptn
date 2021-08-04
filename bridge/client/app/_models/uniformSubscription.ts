@@ -4,8 +4,8 @@ import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-f
 export class UniformSubscription {
   public topics: string[] = [];
   public filter!: {
-    project: string[1],
-    stage: string[1],
+    project: [string],
+    stage: [string],
     service: string[]
   };
   public parameters: {key: string, value: string, visible: boolean}[] = [];

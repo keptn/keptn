@@ -48,7 +48,7 @@
         class="pointer"
         [class.active]="selectedUniformRegistration === row"
         [attr.disabled]="!(row | toType : UniformRegistrationClass).hasSubscriptions(projectName)"
-        [dtOverlay]="(row | toType : UniformRegistrationClass).hasSubscriptions(projectName) ? null : noRegistration"
+        [dtOverlay]="getOverlay(row, projectName, noRegistration)"
         (click)="setSelectedUniformRegistration(row)"
       >
         <ng-template #noRegistration>
