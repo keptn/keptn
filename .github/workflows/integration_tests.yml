@@ -164,7 +164,8 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          # use the following branch
+          workflow_conclusion: success
+          # use the following commit
           commit: ${{ steps.last_successful_commit.outputs.commit_hash }}
           # directory where to extract artifacts to
           path: ./dist
@@ -227,8 +228,6 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ env.ARTIFACTS_CI_EVENT_TYPE }} # e.g., push, pull_request
-          workflow_conclusion: success
           # use the following branch
           branch: ${{ env.BRANCH}}
           # directory where to extract artifacts to
