@@ -17,6 +17,7 @@ scopes:
   - bridge
   - cli
   - configuration-service
+  - deps
   - distributor
   - docs
   - helm-service

@@ -273,7 +273,7 @@ class Trace {
   }
 
   public isApproval(): string | undefined {
-    return this.type === EventTypes.APPROVAL_TRIGGERED ? this.data.stage : undefined;
+    return this.type === EventTypes.APPROVAL_TRIGGERED || this.type === EventTypes.APPROVAL_STARTED ? this.data.stage : undefined;
   }
 
   public isApprovalPending(): boolean {

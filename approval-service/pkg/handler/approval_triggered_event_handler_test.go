@@ -41,16 +41,22 @@ var approvalTriggeredTests = []struct {
 		},
 	},
 	{
-		name:        "pass-with-approval-strategy-manual-auto",
-		image:       "docker.io/keptnexamples/carts:0.11.1",
-		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
-		outputEvent: []cloudevents.Event{},
+		name:       "pass-with-approval-strategy-manual-auto",
+		image:      "docker.io/keptnexamples/carts:0.11.1",
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
+		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
+		},
 	},
 	{
-		name:        "pass-with-approval-strategy-manual-manual",
-		image:       "docker.io/keptnexamples/carts:0.11.1",
-		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
-		outputEvent: []cloudevents.Event{},
+		name:       "pass-with-approval-strategy-manual-manual",
+		image:      "docker.io/keptnexamples/carts:0.11.1",
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
+		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
+		},
 	},
 
 	{
@@ -65,10 +71,13 @@ var approvalTriggeredTests = []struct {
 		},
 	},
 	{
-		name:        "warning-with-approval-strategy-auto-manual",
-		image:       "docker.io/keptnexamples/carts:0.11.1",
-		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
-		outputEvent: []cloudevents.Event{},
+		name:       "warning-with-approval-strategy-auto-manual",
+		image:      "docker.io/keptnexamples/carts:0.11.1",
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
+		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
+		},
 	},
 	{
 		name:       "warning-with-approval-strategy-manual-auto",
@@ -82,10 +91,13 @@ var approvalTriggeredTests = []struct {
 		},
 	},
 	{
-		name:        "warning-with-approval-strategy-manual-manual",
-		image:       "docker.io/keptnexamples/carts:0.11.1",
-		inputEvent:  getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
-		outputEvent: []cloudevents.Event{},
+		name:       "warning-with-approval-strategy-manual-manual",
+		image:      "docker.io/keptnexamples/carts:0.11.1",
+		inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
+		outputEvent: []cloudevents.Event{
+			*getCloudEvent(getApprovalStartedTestData("succeeded"),
+				keptnv2.GetStartedEventType(keptnv2.ApprovalTaskName), shkeptncontext, eventID),
+		},
 	},
 
 	{
@@ -150,7 +162,6 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 			if len(tt.outputEvent) > 0 {
 				for i, r := range res {
 					if !compareEventContext(r, tt.outputEvent[i]) {
-
 						fmt.Println(string(r.Data()))
 						fmt.Println(string(tt.outputEvent[i].Data()))
 						t.Errorf("output events do not match for %s", tt.name)
