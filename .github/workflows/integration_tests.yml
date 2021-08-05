@@ -208,6 +208,7 @@ jobs:
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz | grep -o keptn-[A-Za-z0-9.-]*.tgz)
           HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz | grep -o helm-[A-Za-z0-9.-]*.tgz)
           JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz | grep -o jmeter-[A-Za-z0-9.-]*.tgz)
+
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
           echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
           echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
@@ -240,10 +241,12 @@ jobs:
           K3D_VERSION: ${{ matrix.PLATFORM_VERSION }}
         run: |
           test/utils/download_and_install_k3d.sh
+
           # create registry and cluster
           k3d registry create container-registry.localhost --port 12345
           k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use k3d-container-registry.localhost:12345
           kubectl config use-context k3d-mykeptn
+
       - name: Install and start GKE cluster
 
         if: env.CLOUD_PROVIDER == 'GKE'
@@ -267,6 +270,7 @@ jobs:
           gcloud auth activate-service-account --key-file ~/gcloud-service-key.json
           test/utils/gke_create_cluster.sh
           test/utils/gke_authenticate_at_cluster.sh
+
           echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
 
       - name: Install Istio
@@ -302,6 +306,7 @@ jobs:
             policyTypes:
               - Egress
           EOF
+
           # wait a bit
           sleep 30
 
@@ -375,6 +380,7 @@ jobs:
               hosts:
               - "*"
           EOF
+
           # set ingress-hostname params
           INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           echo "INGRESS_IP=$INGRESS_IP"
@@ -387,6 +393,7 @@ jobs:
         run: |
           source test/utils.sh
           echo "Verifying that services and namespaces have been created"
+
           # verify the deployments within the keptn namespace (for keptn control plane)
           verify_deployment_in_namespace "api-gateway-nginx" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "api-service" ${KEPTN_NAMESPACE}
@@ -395,6 +402,7 @@ jobs:
           verify_deployment_in_namespace "lighthouse-service" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "shipyard-controller" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "statistics-service" ${KEPTN_NAMESPACE}
+
           # verify deployments for continuous delivery
           if [[ "$RUN_CONTINUOUS_DELIVERY_TEST" == "true" ]]; then
             verify_deployment_in_namespace "remediation-service" ${KEPTN_NAMESPACE}
