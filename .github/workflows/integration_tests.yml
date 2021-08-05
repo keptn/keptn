@@ -248,7 +248,6 @@ jobs:
           kubectl config use-context k3d-mykeptn
 
       - name: Install and start GKE cluster
-
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
           GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
@@ -410,6 +409,7 @@ jobs:
             verify_deployment_in_namespace "helm-service" ${KEPTN_NAMESPACE}
             verify_deployment_in_namespace "jmeter-service" ${KEPTN_NAMESPACE}
           fi
+
           # verify the datastore deployments
           verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
@@ -431,9 +431,12 @@ jobs:
               KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
             fi
           fi
+
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
+
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
+
           auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
           verify_test_step $? "Could not authenticate at Keptn API"
 
@@ -562,19 +565,23 @@ jobs:
         run: |
           # extract Keptn API Token
           export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
+
           # extract Keptn Bridge Info
           response=$(keptn configure bridge --output)
           export KEPTN_BRIDGE_URL=$(echo "$response" | awk -F'available under: ' '{ print $2 }' | xargs)
           export KEPTN_BRIDGE_USER=$(echo "$response" | awk -F'user: ' '{ print $2 }' | xargs)
           export KEPTN_BRIDGE_PASSWORD=$(echo "$response" | awk -F'password: ' '{ print $2 }' | xargs)
+
           # disable basic auth
           kubectl -n ${KEPTN_NAMESPACE} delete secret bridge-credentials
           kubectl -n ${KEPTN_NAMESPACE} delete pods --selector=app.kubernetes.io/name=bridge
+
           # start e2e tests in bridge folder
           cd bridge
           npm cache clean --force
           npm ci
           ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL --protractor-config=./e2e/protractor-ci.conf.js
+
           # re-enable basic auth of bridge
           keptn configure bridge --user=$KEPTN_BRIDGE_USER --password=$KEPTN_BRIDGE_PASSWORD
 
@@ -609,9 +616,12 @@ jobs:
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
           kubectl scale deployment/helm-service -n "${KEPTN_NAMESPACE}" --replicas=0
           kubectl scale deployment/jmeter-service -n "${KEPTN_NAMESPACE}" --replicas=0
+
           KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
+
           helm install helm-service http://0.0.0.0:8000/"${HELM_SERVICE_HELM_CHART_NAME}" -n keptn-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
           helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
+
           helm test jmeter-service -n keptn-jmeter-service
           helm test helm-service -n keptn-helm-service
 
@@ -653,14 +663,14 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: test/test_manage_secrets.sh
 
-      #      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
-      #        id: test_continuous_delivery
-      #        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
-      #        continue-on-error: true
-      #        env:
-      #          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #        run: |
-      #          test/test_self_healing_scaling.sh
+#      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
+#        id: test_continuous_delivery
+#        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+#        continue-on-error: true
+#        env:
+#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+#        run: |
+#          test/test_self_healing_scaling.sh
 
       # for debugging etc... it makes sense to have the support archive attached as an artifact
 
@@ -704,6 +714,7 @@ jobs:
         run: |
           kubectl delete namespace keptn-helm-service
           kubectl delete namespace keptn-jmeter-service
+
       - name: Uninstall Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # istio was not installed on minishfit, so no need to uninstall
         timeout-minutes: 5
