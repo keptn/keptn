@@ -627,7 +627,6 @@ jobs:
         env:
           KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
         run: |
-          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result') != pass ]];
-          do
+          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]]; do
             sleep 10;
           done
