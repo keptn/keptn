@@ -79,6 +79,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		ID:   "my-id",
 		Name: "my-name",
 		MetaData: keptnmodels.MetaData{
+			Hostname: "my-host",
 			DistributorVersion: "0.8.3",
 			KubernetesMetaData: keptnmodels.KubernetesMetaData{
 				Namespace: "my-namespace",
@@ -184,7 +185,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			if tt.wantIntegration != nil {
 				require.NotEmpty(t, tt.fields.integrationManager.RegisterCalls())
 				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.RegisterCalls()[0].Integration.Name)
-				require.Equal(t, tt.wantIntegration.MetaData, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData)
+				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Hostname)
+				require.Equal(t, tt.wantIntegration.MetaData.DistributorVersion, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.DistributorVersion)
+				require.Equal(t, tt.wantIntegration.MetaData.Location, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Location)
 				require.Equal(t, tt.wantIntegration.Subscriptions, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions)
 			}
 		})
