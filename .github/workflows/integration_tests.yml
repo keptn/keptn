@@ -10,10 +10,6 @@ on:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
-      artifacts_ci_event_type:
-        description: 'Event Type for CI artifacts (e.g., push, pull_request, workflow_dispatch)'
-        required: true
-        default: 'push'
       examples_branch:
         description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
         required: true
@@ -166,7 +162,6 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
@@ -228,7 +223,6 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
@@ -496,7 +490,6 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
           run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
@@ -633,9 +626,9 @@ jobs:
         env:
           KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
         run: |
-          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
+          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq '.data.result') != "pass" ]];
           do
             keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn || true
-            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' || true
+            keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq '.data.result' || true
             sleep 10;
           done
