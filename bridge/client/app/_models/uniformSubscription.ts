@@ -4,8 +4,8 @@ import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-f
 export class UniformSubscription {
   public topics: string[] = [];
   public filter!: {
-    project: [string],
-    stage: [string],
+    project: [string] | [],
+    stage: [string] | [],
     service: string[]
   };
   public parameters: {key: string, value: string, visible: boolean}[] = [];
@@ -17,7 +17,7 @@ export class UniformSubscription {
     return Object.assign(new this(), data);
   }
 
-  public get project(): string {
+  public get project(): string | undefined {
     return this.filter.project[0];
   }
 

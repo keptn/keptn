@@ -25,11 +25,11 @@ export class UniformRegistration {
   }
 
   public getSubscriptions(projectName: string): UniformSubscription[] {
-    return this.subscriptions.filter(subscription => subscription.project === projectName);
+    return this.subscriptions.filter(subscription => subscription.project === projectName || subscription.project === undefined);
   }
 
   public hasSubscriptions(projectName: string): boolean {
-    return this.subscriptions.some(subscription => subscription.project === projectName);
+    return this.subscriptions.some(subscription => subscription.project === projectName || subscription.project === undefined);
   }
 
   public formatSubscriptions(projectName: string): string | undefined {
