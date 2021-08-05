@@ -592,6 +592,7 @@ jobs:
       - name: Authenticate Keptn CLI
         id: authenticate_keptn_cli
         run: |
+          keptn set config KubeContextCheck false
           keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
 
       - name: Trigger Service Delivery
