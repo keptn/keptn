@@ -39,49 +39,49 @@ jobs:
             RUN_QUALITY_GATES_TEST: "false"
             RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
-#          - CLOUD_PROVIDER: "k3s-on-GHA"
-#            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
-#            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "NodePort"
-#            RUN_QUALITY_GATES_TEST: "true"
-#            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-#            COLLECT_RESOURCE_LIMITS: "false"
-#          - CLOUD_PROVIDER: "k3s-on-GHA"
-#            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
-#            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "NodePort"
-#            RUN_QUALITY_GATES_TEST: "true"
-#            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-#            COLLECT_RESOURCE_LIMITS: "false"
-#          - CLOUD_PROVIDER: "k3d-on-GHA"
-#            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
-#            KUBECONFIG: ""
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "NodePort"
-#            RUN_AIRGAPPED_TEST: "true"
-#            RUN_QUALITY_GATES_TEST: "false"
-#            RUN_CONTINUOUS_DELIVERY_TEST: "false"
-#            COLLECT_RESOURCE_LIMITS: "false"
-#          - CLOUD_PROVIDER: "GKE"
-#            PLATFORM_VERSION: "1.18"
-#            KUBECONFIG: ""
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "LoadBalancer"
-#            RUN_QUALITY_GATES_TEST: "true"
-#            RUN_CONTINUOUS_DELIVERY_TEST: "true"
-#            REMOTE_EXECUTION_PLANE: "true"
-#            COLLECT_RESOURCE_LIMITS: "false"
-#          - CLOUD_PROVIDER: "GKE"
-#            PLATFORM_VERSION: "1.19"
-#            KUBECONFIG: ""
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "LoadBalancer"
-#            RUN_QUALITY_GATES_TEST: "true"
-#            RUN_CONTINUOUS_DELIVERY_TEST: "true"
-#            REMOTE_EXECUTION_PLANE: "false"
-#            COLLECT_RESOURCE_LIMITS: "true"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "k3d-on-GHA"
+            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            RUN_AIRGAPPED_TEST: "true"
+            RUN_QUALITY_GATES_TEST: "false"
+            RUN_CONTINUOUS_DELIVERY_TEST: "false"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.18"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "true"
+            COLLECT_RESOURCE_LIMITS: "false"
+          - CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.19"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            RUN_QUALITY_GATES_TEST: "true"
+            RUN_CONTINUOUS_DELIVERY_TEST: "true"
+            REMOTE_EXECUTION_PLANE: "false"
+            COLLECT_RESOURCE_LIMITS: "true"
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -170,6 +170,7 @@ jobs:
           run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
+
       # load build-config
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
@@ -185,14 +186,17 @@ jobs:
             # overwrite VERSION
             echo "VERSION=${VERSION}" >> $GITHUB_ENV
           fi
+
       - name: DEBUG Build-Config
         run: |
           echo VERSION=${VERSION}
           echo BRANCH=${BRANCH}
+
       - name: Extract Keptn CLI artifact
         run: |
           tar -zxvf dist/keptn-cli/keptn-*-linux-amd64.tar.gz
           sudo mv keptn-*-linux-amd64 /usr/local/bin/keptn
+
       - name: Verify Keptn CLI works
         timeout-minutes: 1
         run: keptn version
@@ -207,6 +211,7 @@ jobs:
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
           echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
           echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
+
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
         timeout-minutes: 15
@@ -215,6 +220,7 @@ jobs:
           test/utils/download_and_install_oc_cli.sh
           test/utils/download_and_install_minishift.sh
           test/utils/minishift_create_cluster.sh
+
       - name: Interact with the cluster
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: oc cluster status
@@ -226,6 +232,7 @@ jobs:
         run: |
           test/utils/download_and_install_k3s.sh
           test/utils/k3s_create_cluster.sh
+
       - name: Install and start K3d
         if: env.CLOUD_PROVIDER == 'k3d-on-GHA'
         timeout-minutes: 10
@@ -238,6 +245,7 @@ jobs:
           k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use k3d-container-registry.localhost:12345
           kubectl config use-context k3d-mykeptn
       - name: Install and start GKE cluster
+
         if: env.CLOUD_PROVIDER == 'GKE'
         env:
           GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
@@ -260,6 +268,7 @@ jobs:
           test/utils/gke_create_cluster.sh
           test/utils/gke_authenticate_at_cluster.sh
           echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
+
       - name: Install Istio
         if: env.CLOUD_PROVIDER != 'minishift-on-GHA' # no need to install istio on minishift
         run: test/utils/install_istio.sh
@@ -275,6 +284,7 @@ jobs:
         run: |
           # pull images and push it to the local k3d registry
           installer/airgapped/pull_and_retag_images.sh "k3d-container-registry.localhost:12345/"
+
       - name: Prevent egress traffic for airgapped system
         # this only prevents pods / containers from accessing services outside of the Kubernetes cluster, it does not
         # prevent containers/images to be pulled from DockerHub
@@ -294,6 +304,7 @@ jobs:
           EOF
           # wait a bit
           sleep 30
+
       - name: Install Keptn
         id: keptn_install
         timeout-minutes: 10
@@ -318,6 +329,7 @@ jobs:
           if [[ $RUN_CONTINUOUS_DELIVERY_TEST == "true" ]]; then
             USE_CASE="--use-case=continuous-delivery"
           fi
+
           echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
@@ -328,6 +340,7 @@ jobs:
                --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
           fi
           echo "::endgroup::"
+
       # Gather resource limits directly after installation of Keptn
       - name: Gather resource limits
         if: env.COLLECT_RESOURCE_LIMITS == 'true'
@@ -336,6 +349,7 @@ jobs:
         run: |
           echo "**Resource Limits for ${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}**" > $TEST_REPORT_FILENAME
           test/utils/k8s_collect_resources.sh ${KEPTN_NAMESPACE} >> $TEST_REPORT_FILENAME
+
       - name: Expose Keptn API (Minishift)
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: oc expose svc/api-gateway-nginx -n ${KEPTN_NAMESPACE} --hostname=api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io
@@ -368,6 +382,7 @@ jobs:
           # restart helm-service
           kubectl delete pod -n ${KEPTN_NAMESPACE} -lapp.kubernetes.io/name=helm-service
           sleep 15
+
       - name: Verify Deployments of Keptn
         run: |
           source test/utils.sh
@@ -390,6 +405,7 @@ jobs:
           # verify the datastore deployments
           verify_deployment_in_namespace "mongodb" ${KEPTN_NAMESPACE}
           verify_deployment_in_namespace "mongodb-datastore" ${KEPTN_NAMESPACE}
+
       - name: Authenticate Keptn CLI with API
         id: authenticate_keptn_cli
         timeout-minutes: 5
@@ -412,6 +428,7 @@ jobs:
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
           auth_at_keptn $KEPTN_ENDPOINT $KEPTN_API_TOKEN
           verify_test_step $? "Could not authenticate at Keptn API"
+
       - name: Verify that Keptn CLI is authenticated using keptn status
         timeout-minutes: 1
         run: keptn status
@@ -552,6 +569,7 @@ jobs:
           ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL --protractor-config=./e2e/protractor-ci.conf.js
           # re-enable basic auth of bridge
           keptn configure bridge --user=$KEPTN_BRIDGE_USER --password=$KEPTN_BRIDGE_PASSWORD
+
       - name: Test Delivery Assistant
         id: test_delivery_assistant
         # Delivery Assistant only works when we install keptn with continuous delivery use-case
@@ -588,6 +606,7 @@ jobs:
           helm install jmeter-service http://0.0.0.0:8000/"${JMETER_SERVICE_HELM_CHART_NAME}" -n keptn-jmeter-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace
           helm test jmeter-service -n keptn-jmeter-service
           helm test helm-service -n keptn-helm-service
+
       - name: Test Continuous Delivery with parallel stages (with sockshop)
         id: test_continuous_delivery
         if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE != 'true')
@@ -601,6 +620,7 @@ jobs:
           test/test_onboard_service.sh
           test/test_new_artifact.sh
           test/test_delete_project.sh
+
       - name: Test Continuous Delivery with parallel stages on Remote Exec Plane (with sockshop)
         id: test_continuous_delivery_remote_exec
         if: env.RUN_AIRGAPPED_TEST != 'true' && (env.RUN_CONTINUOUS_DELIVERY_TEST == 'true') && (env.REMOTE_EXECUTION_PLANE == 'true')
@@ -614,6 +634,7 @@ jobs:
           test/test_onboard_service.sh
           test/test_new_artifact.sh
           test/test_delete_project.sh
+
       - name: Test Manage Secrets
         id: test_manage_secrets
         # do not run this test for the airgapped scenario
@@ -664,6 +685,7 @@ jobs:
           mkdir support-archive/
           echo "y" | keptn generate support-archive -n ${KEPTN_NAMESPACE}
           mv support-archive/keptn*.zip support-archive/${SUPPORT_ARCHIVE_FILENAME}.zip
+
       - name: Uninstall Keptn
         timeout-minutes: 5
         run: echo "y" | keptn uninstall -n ${KEPTN_NAMESPACE}
@@ -697,6 +719,7 @@ jobs:
         run: |
           minishift stop
           minishift delete profile keptn-dev
+
       - name: Write test report
         id: write_test_report
         if: always()
@@ -707,6 +730,7 @@ jobs:
           # please check with headings in print_test_report task roughly 50 lines below
           echo "| ${{ matrix.PLATFORM }}/${{ matrix.CLOUD_PROVIDER}} ${{ matrix.PLATFORM_VERSION }} | ${{ steps.keptn_install.outcome }} | ${{ steps.authenticate_keptn_cli.outcome }} | ${{ steps.test_airgapped_images.outcome }} | ${{ steps.test_linking_stages.outcome }} | ${{ steps.test_uniform_registration.outcome }} | ${{ steps.test_log_ingestion.outcome }} | ${{ steps.test_log_forwarding.outcome }} | ${{ steps.test_sequence_states.outcome }} | ${{ steps.test_sequence_timeout.outcome }} | ${{ steps.test_sequence_queue.outcome }} | ${{ steps.test_sequence_loop.outcome }} | ${{ steps.test_quality_gates.outcome }} | ${{ steps.test_quality_gates_backwards_compatibility.outcome }} | ${{ steps.test_self_healing.outcome }} | ${{ steps.test_delivery_assistant.outcome }} | ${{ steps.test_user_managed_delivery.outcome }} | ${{ steps.test_continuous_delivery.outcome }} | ${{ steps.test_continuous_delivery_remote_exec.outcome }} | ${{ steps.test_manage_secrets.outcome }} | ${{ steps.test_bridge_e2e.outcome }} |" > $TEST_REPORT_FILENAME
           cat $TEST_REPORT_FILENAME
+
       - name: Upload Bridge E2E Screenshots
         if: always()
         uses: actions/upload-artifact@v2
