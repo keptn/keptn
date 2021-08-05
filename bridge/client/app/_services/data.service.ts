@@ -9,8 +9,8 @@ import {ApiService} from './api.service';
 import moment from 'moment';
 import {Deployment} from '../_models/deployment';
 import {Sequence} from '../_models/sequence';
-import {UniformRegistration} from '../_models/uniform-registration';
-import {UniformRegistrationLog} from '../_models/uniform-registration-log';
+import {UniformRegistration} from '../../../server/interfaces/uniform-registration';
+import {UniformRegistrationLog} from '../../../server/interfaces/uniform-registration-log';
 import {Secret} from '../_models/secret';
 import { Root } from '../_models/root';
 import { HttpResponse } from '@angular/common/http';
@@ -37,6 +37,7 @@ export class DataService {
   protected _tracesLastUpdated: { [key: string]: Date } = {};
   protected _rootTracesLastUpdated: { [key: string]: Date } = {};
   protected _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  protected _uniformDates: {[key: string]: string} = this.apiService.uniformLogDates;
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
@@ -96,6 +97,15 @@ export class DataService {
     this._projectName.next(projectName);
   }
 
+  public setUniformDate(integrationId: string, lastSeen?: string) {
+    this._uniformDates[integrationId] = lastSeen || new Date().toISOString();
+    this.apiService.uniformLogDates = this._uniformDates;
+  }
+
+  public getUniformDate(id: string): string | undefined {
+    return this._uniformDates[id];
+  }
+
   public getProject(projectName: string): Observable<Project | undefined> {
     return this.projects.pipe(
       map(projects => projects?.find(project => project.projectName === projectName))
@@ -107,13 +117,17 @@ export class DataService {
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    return this.apiService.getUniformRegistrations();
+    return this.apiService.getUniformRegistrations(this._uniformDates);
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {
     return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize).pipe(
       map((response) => response.logs)
     );
+  }
+
+  public hasUnreadUniformRegistrationLogs(): Observable<boolean> {
+    return this.apiService.hasUnreadUniformRegistrationLogs(this._uniformDates);
   }
 
   public getSecrets(): Observable<Secret[]> {

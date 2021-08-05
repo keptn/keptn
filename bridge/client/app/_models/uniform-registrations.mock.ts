@@ -1,4 +1,4 @@
-import {UniformRegistration} from "./uniform-registration";
+import {UniformRegistration} from "../../../server/interfaces/uniform-registration";
 
 const services: UniformRegistration[] = [
   {

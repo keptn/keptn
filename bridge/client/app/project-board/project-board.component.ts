@@ -22,6 +22,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
   public error$: Observable<string | undefined> = this._errorSubject.asObservable();
   public isCreateMode$: Observable<boolean>;
+  public hasUnreadLogs = false;
 
   constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService) {
     const projectName$ = this.route.paramMap.pipe(
@@ -34,9 +35,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     );
     timer$.subscribe(projectName => {
-      this.dataService.loadProject(projectName);
       // this is on project-board level because we need the project in environment, service, sequence and settings screen
       // sequence screen because there is a check for the latest deployment context (lastEventTypes)
+      this.dataService.loadProject(projectName);
+
+      this.dataService.hasUnreadUniformRegistrationLogs().subscribe(status => {
+        this.hasUnreadLogs = status;
+      });
     });
 
     this.project$ = projectName$.pipe(
@@ -80,28 +85,32 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
           takeUntil(this.unsubscribe$)
         ).subscribe(([traces, eventselector]: [Trace[] | undefined, string | null]) => {
           if (traces?.length) {
-            if (eventselector) {
-              let trace = traces.find((t: Trace) => t.data.stage === eventselector && !!t.project && !!t.service);
-              if (trace) {
-                this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'stage', trace.stage]);
-              } else {
-                trace = [...traces].reverse().find((t: Trace) => t.type === eventselector && !!t.project && !!t.service);
-                if (trace) {
-                  this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'event', trace.id]);
-                } else {
-                  this._errorSubject.next('trace');
-                }
-              }
-            } else {
-              const trace = traces.find((t: Trace) => !!t.project && !!t.service);
-              if (trace) {
-                this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext]);
-              }
-            }
+            this.navigateToTrace(traces, eventselector);
           } else {
             this._errorSubject.next('trace');
           }
         });
+    }
+  }
+
+  private navigateToTrace(traces: Trace[], eventselector: string | null): void {
+    if (eventselector) {
+      let trace = traces.find((t: Trace) => t.data.stage === eventselector && !!t.project && !!t.service);
+      if (trace) {
+        this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'stage', trace.stage]);
+      } else {
+        trace = [...traces].reverse().find((t: Trace) => t.type === eventselector && !!t.project && !!t.service);
+        if (trace) {
+          this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'event', trace.id]);
+        } else {
+          this._errorSubject.next('trace');
+        }
+      }
+    } else {
+      const trace = traces.find((t: Trace) => !!t.project && !!t.service);
+      if (trace) {
+        this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext]);
+      }
     }
   }
 

@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
-import { UniformRegistration } from '../../_models/uniform-registration';
+import { UniformRegistration } from '../../../../server/interfaces/uniform-registration';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute } from '@angular/router';
 import { switchMap, takeUntil } from 'rxjs/operators';
-import { UniformRegistrationLog } from '../../_models/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -23,6 +23,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   public isLoadingLogs = false;
 
   public projectName?: string;
+  public lastSeen?: string;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
@@ -45,6 +46,9 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     ).subscribe((uniformRegLogs) => {
       uniformRegLogs.sort(this.sortLogs);
       this.isLoadingLogs = false;
+      if (this.selectedUniformRegistration) {
+        this.dataService.setUniformDate(this.selectedUniformRegistration.id, uniformRegLogs[0]?.time);
+      }
       this.uniformRegistrationLogsSubject.next(uniformRegLogs);
     });
 
@@ -67,10 +71,15 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   public setSelectedUniformRegistration(uniformRegistration: UniformRegistration) {
     if (this.selectedUniformRegistration !== uniformRegistration) {
+      this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
+      if (this.selectedUniformRegistration) {
+        this.selectedUniformRegistration.unreadEvents = 0;
+      }
       this.selectedUniformRegistration = uniformRegistration;
       this.selectedUniformRegistrationId$.next(this.selectedUniformRegistration.id);
       this.selectedUniformRegistrationChanged.emit(uniformRegistration);

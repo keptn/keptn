@@ -1,6 +1,9 @@
 <div class="uniform-registration-error-log" *ngIf="logs && logs.length > 0">
   <ng-container *ngFor="let log of logs">
     <div>
+      <div>
+        <div *ngIf="isUnread(log.time)" class="notification-indicator mr-2"></div>
+      </div>
       <div class="p-2 pr-3">{{ log.time }}</div>
       <div class="p-2 pr-3 pl-3">
         <ng-container *ngIf="log.shkeptncontext && log.triggeredid && log.task else notask">

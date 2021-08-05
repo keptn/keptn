@@ -97,6 +97,28 @@ function apiRouter(params:
     }
   });
 
+  router.post('/uniform/registration', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const uniformDates: {[key: string]: string} = req.body;
+      const uniformRegistrations = await dataService.getUniformRegistrations(uniformDates);
+      return res.json(uniformRegistrations);
+    }
+    catch (error) {
+      return next(error);
+    }
+  });
+
+  router.post('/hasUnreadUniformRegistrationLogs', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const uniformDates: {[key: string]: string} = req.body;
+      const status = await dataService.hasUnreadUniformRegistrationLogs(uniformDates);
+      res.json(status);
+    }
+    catch (error) {
+      return next(error);
+    }
+  });
+
   router.all('*', async (req, res, next) => {
     try {
       const result = await axios({

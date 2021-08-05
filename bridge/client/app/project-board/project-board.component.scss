@@ -6,7 +6,29 @@
   height: 100%;
 }
 
+.relative {
+  position: relative;
+}
+
 ::ng-deep {
+  .notification-indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    background-color: $red-500;
+    color: $white;
+    font-size: 11px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .notification-indicator-absolute {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+  }
+
   .icon {
     width: 20px;
     height: 20px;
