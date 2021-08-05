@@ -754,10 +754,10 @@ spec:
           resources:
             requests:
               memory: "32Mi"
-              cpu: "50m"
+              cpu: "25m"
             limits:
-              memory: "128Mi"
-              cpu: "500m"
+              memory: "64Mi"
+              cpu: "100m"
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

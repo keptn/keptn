@@ -38,7 +38,7 @@ spec:
             cpu: "50m"
           limits:
             memory: "1024Mi"
-            cpu: "500m"
+            cpu: "200m"
         env:
           - name: EVENTBROKER
             value: 'http://event-broker/keptn'
@@ -57,7 +57,7 @@ spec:
             cpu: "50m"
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "200m"
         env:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'

@@ -69,7 +69,7 @@ spec:
             # limits is high on purpose to enable Debugging using skaffold
             # you can monitor memory usage using "kubectl -n keptn top pods"
             memory: "256Mi"
-            cpu: "500m"
+            cpu: "100m"
       - name: distributor
         image: keptn/distributor:0.8.4
         ports:

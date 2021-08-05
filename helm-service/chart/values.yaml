@@ -16,7 +16,7 @@ distributor:
     tag: ""                                  # Container Tag
 
 remoteControlPlane:
-  enabled: false                              # Enables remote execution plane mode
+  enabled: false                             # Enables remote execution plane mode
   api:
     protocol: "https"                        # Used Protocol (http, https)
     hostname: ""                             # Hostname of the control plane cluster (and Port)
@@ -40,16 +40,16 @@ securityContext: {}                          # Set the security context (e.g. ru
 #  runAsNonRoot: true
 #  runAsUser: 1000
 
-resources:                                  # Resource limits and requests
-  limits:
-    cpu: 100m
-    memory: 128Mi
+resources:                                   # Resource limits and requests
   requests:
     cpu: 25m
     memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
 
-nodeSelector: {}                                # Node selector configuration
+nodeSelector: {}                             # Node selector configuration
 
-tolerations: []                                 # Tolerations for the pods
+tolerations: []                              # Tolerations for the pods
 
-affinity: {}                                    # Affinity rules
+affinity: {}                                 # Affinity rules
