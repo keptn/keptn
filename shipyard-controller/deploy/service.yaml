@@ -86,7 +86,7 @@ spec:
             cpu: "25m"
           limits:
             memory: "32Mi"
-            cpu: "50m"
+            cpu: "100m"
         env:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'

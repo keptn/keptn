@@ -32,13 +32,13 @@ spec:
             - containerPort: 8080
           resources:
             requests:
-              memory: "32Mi"
+              memory: "128Mi"
               cpu: "50m"
             limits:
               # limits is high on purpose to enable Debugging using skaffold
               # you can monitor memory usage using "kubectl -n keptn top pods"
               memory: "512Mi"
-              cpu: "500m"
+              cpu: "200m"
           env:
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
@@ -62,7 +62,7 @@ spec:
               cpu: "25m"
             limits:
               memory: "32Mi"
-              cpu: "50m"
+              cpu: "100m"
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats-cluster'

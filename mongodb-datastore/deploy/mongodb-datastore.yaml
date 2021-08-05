@@ -35,11 +35,11 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "32Mi"
+            cpu: "500m"
           limits:
-            memory: "512Mi"
-            cpu: "5000m"
+            memory: "256Mi"
+            cpu: "200m"
         env:
         - name: DT_CUSTOM_PROP
           value: 'keptn_service=mongodb-datastore'
@@ -66,11 +66,11 @@ spec:
           - containerPort: 8080
         resources:
           requests:
-            memory: "32Mi"
-            cpu: "50m"
+            memory: "16Mi"
+            cpu: "25m"
           limits:
-            memory: "128Mi"
-            cpu: "500m"
+            memory: "32Mi"
+            cpu: "100m"
         env:
           - name: PUBSUB_IMPL
             value: nats
