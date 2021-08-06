@@ -23,20 +23,20 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 		name       string
 		fields     fields
 		request    *http.Request
-		wantParams *models.GetUniformIntegrationParams
+		wantParams *models.GetUniformIntegrationsParams
 		wantStatus int
 	}{
 		{
 			name: "registrations can be retrieved",
 			fields: fields{
 				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
+					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 						return []models.Integration{}, nil
 					},
 				},
 			},
 			request: httptest.NewRequest("GET", "/uniform/registration?project=my-project", nil),
-			wantParams: &models.GetUniformIntegrationParams{
+			wantParams: &models.GetUniformIntegrationsParams{
 				Project: "my-project",
 			},
 			wantStatus: http.StatusOK,
@@ -45,7 +45,7 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 			name: "registrations can not be retrieved",
 			fields: fields{
 				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
+					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -79,7 +79,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		ID:   "my-id",
 		Name: "my-name",
 		MetaData: keptnmodels.MetaData{
-			Hostname: "my-host",
+			Hostname:           "my-host",
 			DistributorVersion: "0.8.3",
 			KubernetesMetaData: keptnmodels.KubernetesMetaData{
 				Namespace: "my-namespace",

@@ -31,7 +31,7 @@ import (
 // 	}
 type IUniformIntegrationManagerMock struct {
 	// GetRegistrationsFunc mocks the GetRegistrations method.
-	GetRegistrationsFunc func(params models.GetUniformIntegrationParams) ([]models.Integration, error)
+	GetRegistrationsFunc func(params models.GetUniformIntegrationsParams) ([]models.Integration, error)
 
 	// RegisterFunc mocks the Register method.
 	RegisterFunc func(integration models.Integration) error
@@ -44,7 +44,7 @@ type IUniformIntegrationManagerMock struct {
 		// GetRegistrations holds details about calls to the GetRegistrations method.
 		GetRegistrations []struct {
 			// Params is the params argument value.
-			Params models.GetUniformIntegrationParams
+			Params models.GetUniformIntegrationsParams
 		}
 		// Register holds details about calls to the Register method.
 		Register []struct {
@@ -63,12 +63,12 @@ type IUniformIntegrationManagerMock struct {
 }
 
 // GetRegistrations calls GetRegistrationsFunc.
-func (mock *IUniformIntegrationManagerMock) GetRegistrations(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
+func (mock *IUniformIntegrationManagerMock) GetRegistrations(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 	if mock.GetRegistrationsFunc == nil {
 		panic("IUniformIntegrationManagerMock.GetRegistrationsFunc: method is nil but IUniformIntegrationManager.GetRegistrations was just called")
 	}
 	callInfo := struct {
-		Params models.GetUniformIntegrationParams
+		Params models.GetUniformIntegrationsParams
 	}{
 		Params: params,
 	}
@@ -82,10 +82,10 @@ func (mock *IUniformIntegrationManagerMock) GetRegistrations(params models.GetUn
 // Check the length with:
 //     len(mockedIUniformIntegrationManager.GetRegistrationsCalls())
 func (mock *IUniformIntegrationManagerMock) GetRegistrationsCalls() []struct {
-	Params models.GetUniformIntegrationParams
+	Params models.GetUniformIntegrationsParams
 } {
 	var calls []struct {
-		Params models.GetUniformIntegrationParams
+		Params models.GetUniformIntegrationsParams
 	}
 	mock.lockGetRegistrations.RLock()
 	calls = mock.calls.GetRegistrations

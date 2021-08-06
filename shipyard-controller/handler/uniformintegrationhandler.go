@@ -22,7 +22,7 @@ func NewUniformIntegrationHandler(im IUniformIntegrationManager) *UniformIntegra
 	return &UniformIntegrationHandler{integrationManager: im}
 }
 
-// CreateRegistration registers a uniform integration
+// Register creates or updates a uniform integration
 // @Summary Register a uniform integration
 // @Description Register a uniform integration
 // @Tags Uniform
@@ -40,6 +40,12 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	if err := c.ShouldBindJSON(integration); err != nil {
 		SetBadRequestErrorResponse(err, c)
 		return
+	}
+
+	// for backwards compatibility, we check if there is a Subscriptions field set
+	// if it not the case we are taking the old Subscription field and map it to the new Subscriptions field
+	if integration.Subscriptions == nil {
+		integration.Subscriptions = append(integration.Subscriptions, integration.Subscription)
 	}
 
 	integrationID := keptnmodels.IntegrationID{
@@ -106,7 +112,7 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 // @Failure 500 {object} models.Error "Internal error"
 // @Router /uniform/registration [get]
 func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
-	params := &models.GetUniformIntegrationParams{}
+	params := &models.GetUniformIntegrationsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(err, c, "Invalid request format")
 		return

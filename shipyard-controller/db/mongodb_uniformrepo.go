@@ -21,7 +21,7 @@ func NewMongoDBUniformRepo(dbConnection *MongoDBConnection) *MongoDBUniformRepo 
 	return &MongoDBUniformRepo{DbConnection: dbConnection}
 }
 
-func (mdbrepo *MongoDBUniformRepo) GetUniformIntegrations(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
+func (mdbrepo *MongoDBUniformRepo) GetUniformIntegrations(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (mdbrepo *MongoDBUniformRepo) SetupTTLIndex(duration time.Duration) error {
 	return SetupTTLIndex(ctx, "metadata.lastseen", duration, collection)
 }
 
-func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformIntegrationParams) bson.M {
+func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformIntegrationsParams) bson.M {
 	searchOptions := bson.M{}
 
 	if params.ID != "" {
@@ -101,13 +101,13 @@ func (mdbrepo *MongoDBUniformRepo) getSearchOptions(params models.GetUniformInte
 	}
 
 	if params.Project != "" {
-		searchOptions["subscriptions.filter.project"] = params.Project
+		searchOptions["subscriptions.filter.projects"] = params.Project
 	}
 	if params.Stage != "" {
-		searchOptions["subscriptions.filter.stage"] = params.Stage
+		searchOptions["subscriptions.filter.stages"] = params.Stage
 	}
 	if params.Service != "" {
-		searchOptions["subscriptions.filter.service"] = params.Service
+		searchOptions["subscriptions.filter.services"] = params.Service
 	}
 
 	return searchOptions

@@ -12,7 +12,7 @@ var ErrSubscriptionMissing = errors.New("integration must have at least one subs
 type IUniformIntegrationManager interface {
 	Register(integration models.Integration) error
 	Unregister(id string) error
-	GetRegistrations(params models.GetUniformIntegrationParams) ([]models.Integration, error)
+	GetRegistrations(params models.GetUniformIntegrationsParams) ([]models.Integration, error)
 }
 
 type UniformIntegrationManager struct {
@@ -33,6 +33,6 @@ func (uim *UniformIntegrationManager) Unregister(id string) error {
 	return uim.repo.DeleteUniformIntegration(id)
 }
 
-func (uim *UniformIntegrationManager) GetRegistrations(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
+func (uim *UniformIntegrationManager) GetRegistrations(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 	return uim.repo.GetUniformIntegrations(params)
 }

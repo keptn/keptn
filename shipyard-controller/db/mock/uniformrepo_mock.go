@@ -20,7 +20,7 @@ import (
 // 			DeleteUniformIntegrationFunc: func(id string) error {
 // 				panic("mock out the DeleteUniformIntegration method")
 // 			},
-// 			GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationParams) ([]models.Integration, error) {
+// 			GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 // 				panic("mock out the GetUniformIntegrations method")
 // 			},
 // 		}
@@ -37,7 +37,7 @@ type UniformRepoMock struct {
 	DeleteUniformIntegrationFunc func(id string) error
 
 	// GetUniformIntegrationsFunc mocks the GetUniformIntegrations method.
-	GetUniformIntegrationsFunc func(filter models.GetUniformIntegrationParams) ([]models.Integration, error)
+	GetUniformIntegrationsFunc func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -54,7 +54,7 @@ type UniformRepoMock struct {
 		// GetUniformIntegrations holds details about calls to the GetUniformIntegrations method.
 		GetUniformIntegrations []struct {
 			// Filter is the filter argument value.
-			Filter models.GetUniformIntegrationParams
+			Filter models.GetUniformIntegrationsParams
 		}
 	}
 	lockCreateOrUpdateUniformIntegration sync.RWMutex
@@ -125,12 +125,12 @@ func (mock *UniformRepoMock) DeleteUniformIntegrationCalls() []struct {
 }
 
 // GetUniformIntegrations calls GetUniformIntegrationsFunc.
-func (mock *UniformRepoMock) GetUniformIntegrations(filter models.GetUniformIntegrationParams) ([]models.Integration, error) {
+func (mock *UniformRepoMock) GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 	if mock.GetUniformIntegrationsFunc == nil {
 		panic("UniformRepoMock.GetUniformIntegrationsFunc: method is nil but UniformRepo.GetUniformIntegrations was just called")
 	}
 	callInfo := struct {
-		Filter models.GetUniformIntegrationParams
+		Filter models.GetUniformIntegrationsParams
 	}{
 		Filter: filter,
 	}
@@ -144,10 +144,10 @@ func (mock *UniformRepoMock) GetUniformIntegrations(filter models.GetUniformInte
 // Check the length with:
 //     len(mockedUniformRepo.GetUniformIntegrationsCalls())
 func (mock *UniformRepoMock) GetUniformIntegrationsCalls() []struct {
-	Filter models.GetUniformIntegrationParams
+	Filter models.GetUniformIntegrationsParams
 } {
 	var calls []struct {
-		Filter models.GetUniformIntegrationParams
+		Filter models.GetUniformIntegrationsParams
 	}
 	mock.lockGetUniformIntegrations.RLock()
 	calls = mock.calls.GetUniformIntegrations

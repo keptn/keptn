@@ -13,14 +13,23 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration1 := models.Integration{
 		ID:   "i1",
 		Name: "integration1",
+		Subscription: keptnmodels.Subscription{
+			Topics: []string{"sh.keptn.event.test.triggered"},
+			Status: "active",
+			Filter: keptnmodels.SubscriptionFilter{
+				Project: "pr1",
+				Stage:   "st1,st2",
+				Service: "sv1,sv2",
+			},
+		},
 		Subscriptions: []keptnmodels.Subscription{
 			{
 				Topics: []string{"sh.keptn.event.test.triggered"},
 				Status: "active",
 				Filter: keptnmodels.SubscriptionFilter{
-					Project: []string{"pr1"},
-					Service: []string{"sv1", "sv2"},
-					Stage:   []string{"st1", "st2"},
+					Projects: []string{"pr1"},
+					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1", "st2"},
 				},
 			},
 		},
@@ -29,14 +38,23 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration2 := models.Integration{
 		ID:   "i2",
 		Name: "integration2",
+		Subscription: keptnmodels.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: keptnmodels.SubscriptionFilter{
+				Project: "pr1",
+				Stage:   "st1,st2",
+				Service: "sv1,sv2",
+			},
+		},
 		Subscriptions: []keptnmodels.Subscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
 				Filter: keptnmodels.SubscriptionFilter{
-					Project: []string{"pr1"},
-					Service: []string{"sv1", "sv2"},
-					Stage:   []string{"st1", "st2"},
+					Projects: []string{"pr1"},
+					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1", "st2"},
 				},
 			},
 		},
@@ -45,14 +63,23 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration3 := models.Integration{
 		ID:   "i3",
 		Name: "integration3",
+		Subscription: keptnmodels.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: keptnmodels.SubscriptionFilter{
+				Project: "pr1",
+				Stage:   "st1",
+				Service: "sv1,sv2",
+			},
+		},
 		Subscriptions: []keptnmodels.Subscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
 				Filter: keptnmodels.SubscriptionFilter{
-					Project: []string{"pr1"},
-					Service: []string{"sv1", "sv2"},
-					Stage:   []string{"st1"},
+					Projects: []string{"pr1"},
+					Services: []string{"sv1", "sv2"},
+					Stages:   []string{"st1"},
 				},
 			},
 		},
@@ -61,14 +88,23 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	integration4 := models.Integration{
 		ID:   "i4",
 		Name: "integraiton4",
+		Subscription: keptnmodels.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: keptnmodels.SubscriptionFilter{
+				Project: "pr1",
+				Stage:   "st1",
+				Service: "sv1",
+			},
+		},
 		Subscriptions: []keptnmodels.Subscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
 				Filter: keptnmodels.SubscriptionFilter{
-					Project: []string{"pr1"},
-					Service: []string{"sv1"},
-					Stage:   []string{"st1"},
+					Projects: []string{"pr1"},
+					Services: []string{"sv1"},
+					Stages:   []string{"st1"},
 				},
 			},
 		},
@@ -94,7 +130,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	// check if we can query the newly created entities
 
 	// first, without any filter
-	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{})
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{})
 
 	require.Nil(t, err)
 	require.Len(t, integrations, 4)
@@ -104,7 +140,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.EqualValues(t, integration4, integrations[3])
 
 	// now, let's filter by id
-	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
 		ID: "i1",
 	})
 
@@ -113,7 +149,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.EqualValues(t, integration1, integrations[0])
 
 	// filter by project
-	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
 		Project: "pr1",
 	})
 
@@ -125,7 +161,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.EqualValues(t, integration4, integrations[3])
 
 	// filter by project and service
-	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
 		Project: "pr1",
 		Service: "sv2",
 	})
@@ -137,7 +173,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.EqualValues(t, integration3, integrations[2])
 
 	// filter by project, service and stage
-	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
 		Project: "pr1",
 		Service: "sv1",
 		Stage:   "st2",
@@ -156,7 +192,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	// retrieve it again
-	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
 		ID: "i1",
 	})
 
@@ -169,7 +205,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	// try to retrieve it again
-	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationParams{ID: "my-integration-id-1"})
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "my-integration-id-1"})
 
 	require.Nil(t, err)
 	require.Empty(t, integrations)
