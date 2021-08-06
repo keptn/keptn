@@ -4,9 +4,9 @@ import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-f
 export class UniformSubscription {
   public topics: string[] = [];
   public filter!: {
-    project: [string] | [],
-    stage: [string] | [],
-    service: string[]
+    projects: [string] | [],
+    stages: [string] | [],
+    services: string[]
   };
   public parameters: {key: string, value: string, visible: boolean}[] = [];
   public name!: string;
@@ -18,7 +18,7 @@ export class UniformSubscription {
   }
 
   public get project(): string | undefined {
-    return this.filter.project[0];
+    return this.filter.projects[0];
   }
 
   public addParameter() {
@@ -33,7 +33,7 @@ export class UniformSubscription {
   public getFilter(data: any): DtFilterArray[] {
     data = data as DtFilter;
     const filter = [
-      ...this.filter.service.map(service => {
+      ...this.filter.services.map(service => {
         return [
             data.autocomplete[0],
             {name: service}
@@ -50,7 +50,7 @@ export class UniformSubscription {
   // tslint:disable-next-line:no-any
   public filterChanged(event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
     event = event as DtFilterFieldChangeEvent<DtAutoComplete>;
-    this.filter.service = event.filters.reduce((filters: string[], currentFilter: DtAutoComplete[]) => {
+    this.filter.services = event.filters.reduce((filters: string[], currentFilter: DtAutoComplete[]) => {
       filters.push(currentFilter[1].name);
       return filters;
     }, []);
