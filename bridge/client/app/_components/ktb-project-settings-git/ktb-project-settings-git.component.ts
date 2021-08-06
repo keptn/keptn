@@ -18,12 +18,9 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   set gitData(gitData: GitData) {
     this.gitUrlControl.setValue(gitData.remoteURI || '');
     this.gitUserControl.setValue(gitData.gitUser || '');
-
-    if (gitData.remoteURI && gitData.gitUser) {
-      this.gitTokenControl.setValue('***********************');
-    } else {
-      this.gitTokenControl.setValue('');
-    }
+    this.gitTokenControl.setValue('');
+    this.gitTokenControl.markAsUntouched();
+    this.gitTokenControl.markAsPristine();
   }
 
   @Output()
