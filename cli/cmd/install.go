@@ -308,11 +308,20 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 
 func fetchContinuousDeliveryCharts(helmHelper helm.IHelper, chartRepoURL *string) ([]*chart.Chart, error) {
 	charts := []*chart.Chart{}
+	var serviceChart *chart.Chart
+	var err error
 	for _, service := range continuousDeliveryServices {
 		chartURL := getExecutionPlaneServiceChartRepoURL(chartRepoURL, service)
-		serviceChart, err := helmHelper.DownloadChart(chartURL)
-		if err != nil {
-			return nil, err
+		if goutils.IsValidURL(chartURL) {
+			serviceChart, err = helmHelper.DownloadChart(chartURL)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			serviceChart, err = keptnutils.LoadChartFromPath(chartURL)
+			if err != nil {
+				return nil, err
+			}
 		}
 		charts = append(charts, serviceChart)
 	}
