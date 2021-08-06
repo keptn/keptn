@@ -4,7 +4,7 @@
   <span class="mr-1 mt-1 pr-3" [textContent]="subscription.topics[0]"></span>
   <span class="bold mt-1 pr-2">in stage:</span>
   <div class="pr-3">
-    <dt-select [disabled]="true" [(ngModel)]="subscription.filter.stage[0]" class="item pr-3" placeholder="Choose your stage" aria-label="Choose your stage" required>
+    <dt-select [disabled]="true" [(ngModel)]="subscription.filter.stages[0]" class="item pr-3" placeholder="Choose your stage" aria-label="Choose your stage" required>
       <dt-option *ngFor="let stage of project.stages" [value]="stage.stageName" [textContent]="stage.stageName"></dt-option>
     </dt-select>
   </div>
