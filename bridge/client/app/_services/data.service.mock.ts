@@ -11,13 +11,14 @@ import {Traces} from './_mockData/traces.mock';
 import {Evaluations} from './_mockData/evaluations.mock';
 import {Trace} from '../_models/trace';
 import {map} from 'rxjs/operators';
-import {Observable, of} from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import {Sequence} from '../_models/sequence';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataServiceMock extends DataService {
+  public _projects = new BehaviorSubject<Project[] | undefined>(undefined);
 
   constructor(apiService: ApiService) {
     super(apiService);
@@ -44,6 +45,16 @@ export class DataServiceMock extends DataService {
 
   public deleteProject(projectName: string): Observable<object> {
     return of({});
+  }
+
+  public projectExists(projectName: string): Observable<boolean | undefined> {
+    return this._projects.pipe(map((projects) => {
+      if (projects === undefined) {
+        return undefined;
+      }
+
+      return !!projects.find((project) => (projectName === project.projectName));
+    }));
   }
 
   public loadRoots(project: Project) {
