@@ -94,26 +94,38 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public navigateToTrace<S, U>(traces: Trace[] | undefined, eventselector: string | null) {
     if (traces?.length) {
       if (eventselector) {
-        let trace = traces.find((t: Trace) => t.data.stage === eventselector && !!t.project && !!t.service);
+        let trace = this.findTraceForStage(traces, eventselector);
         if (trace) {
           this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'stage', trace.stage]);
-        } else {
-          trace = [...traces].reverse().find((t: Trace) => t.type === eventselector && !!t.project && !!t.service);
-          if (trace) {
-            this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'event', trace.id]);
-          } else {
-            this._errorSubject.next('trace');
-          }
+          return;
         }
-      } else {
-        const trace = traces.find((t: Trace) => !!t.project && !!t.service);
+        trace = this.findTraceForEvent(traces, eventselector);
         if (trace) {
-          this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext]);
+          this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext, 'event', trace.id]);
+          return;
         }
+        this._errorSubject.next('trace');
+      } else {
+        const trace = this.findTraceForKeptnContext(traces);
+        if (trace) {
+            this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext]);
+          }
       }
     } else {
       this._errorSubject.next('trace');
     }
+  }
+
+  private findTraceForKeptnContext(traces: Trace[]): Trace | undefined {
+    return traces.find((t: Trace) => !!t.project && !!t.service);
+  }
+
+  private findTraceForStage(traces: Trace[], eventselector: string | null): Trace | undefined {
+    return traces.find((t: Trace) => t.data.stage === eventselector && !!t.project && !!t.service);
+  }
+
+  private findTraceForEvent(traces: Trace[], eventselector: string | null): Trace | undefined {
+    return [...traces].reverse().find((t: Trace) => t.type === eventselector && !!t.project && !!t.service);
   }
 
   public loadProjects(): void {
