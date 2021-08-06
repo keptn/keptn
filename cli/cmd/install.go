@@ -19,7 +19,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/keptn/keptn/cli/pkg/common"
@@ -34,6 +33,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 
+	goutils "github.com/keptn/go-utils/pkg/common/httputils"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -197,26 +197,13 @@ type InstallCmdHandler struct {
 	userInput        common.IUserInput
 }
 
-func isValidURL(chartURL string) bool {
-	_, err := url.ParseRequestURI(chartURL)
-	if err != nil {
-		return false
-	}
-
-	u, err := url.Parse(chartURL)
-	if err != nil || u.Scheme == "" || u.Host == "" {
-		return false
-	}
-	return true
-}
-
 func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
 	keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
 	var err error
-	if isValidURL(keptnChartRepoURL) {
+	if goutils.IsValidURL(keptnChartRepoURL) {
 		keptnChart, err = i.helmHelper.DownloadChart(keptnChartRepoURL)
 		if err != nil {
 			return err
