@@ -33,9 +33,12 @@ func TestControlPlaneRegister(t *testing.T) {
 			Subscriptions: []models.Subscription{{
 				Topics: []string{},
 				Filter: models.SubscriptionFilter{
-					Project: []string{"p-filter"},
-					Stage:   []string{"s-filter"},
-					Service: []string{"sv-filter"},
+					Project:  "p-filter",
+					Projects: []string{"p-filter"},
+					Stage:    "s-filter",
+					Stages:   []string{"s-filter"},
+					Service:  "sv-filter",
+					Services: []string{"sv-filter"},
 				},
 			},
 			},

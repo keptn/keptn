@@ -106,9 +106,12 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 		Subscriptions: []models.Subscription{{
 			Topics: topics,
 			Filter: models.SubscriptionFilter{
-				Project: projectFilter,
-				Stage:   stageFilter,
-				Service: serviceFilter,
+				Project:  env.ProjectFilter,
+				Projects: projectFilter,
+				Stage:    env.StageFilter,
+				Stages:   stageFilter,
+				Service:  env.ServiceFilter,
+				Services: serviceFilter,
 			},
 		},
 		},
