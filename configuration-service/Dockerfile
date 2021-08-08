@@ -34,7 +34,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/configuration-service-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.13
+FROM alpine:3
 
 ENV env=production
 
