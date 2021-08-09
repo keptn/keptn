@@ -271,7 +271,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 	}
 
 	if len(states.States) == 0 {
-		return models.SequenceState{}, fmt.Errorf("could not find sequence state for keptnContext %s: %s", eventScope.KeptnContext, err.Error())
+		return models.SequenceState{}, fmt.Errorf("could not find sequence state for keptnContext %s", eventScope.KeptnContext)
 	}
 	state := states.States[0]
 
