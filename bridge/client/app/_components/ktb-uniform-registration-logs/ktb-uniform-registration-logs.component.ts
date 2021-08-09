@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
-import { DataService } from '../../_services/data.service';
 
 @Component({
   selector: 'ktb-uniform-registration-logs',
