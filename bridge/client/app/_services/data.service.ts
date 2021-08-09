@@ -104,13 +104,7 @@ export class DataService {
   }
 
   public projectExists(projectName: string): Observable<boolean | undefined> {
-    return this.projects.pipe(map((projects) => {
-      if (projects === undefined) {
-        return undefined;
-      }
-
-      return !!projects.find((project) => (projectName === project.projectName));
-    }));
+    return this.projects.pipe(map((projects) => projects?.some(project => project.projectName === projectName)));
   }
 
   public createProject(projectName: string, shipyard: string, gitRemoteUrl?: string, gitToken?: string, gitUser?: string): Observable<unknown> {
