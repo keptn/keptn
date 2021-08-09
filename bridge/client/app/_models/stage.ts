@@ -1,20 +1,28 @@
-import {Service} from './service';
-import { Root } from './root';
+import { Service } from './service';
+import { Stage as st} from '../../../shared/models/stage';
+import { ResultTypes } from '../../../shared/models/result-types';
 
-export class Stage {
-  stageName!: string;
-  parentStages?: string[];
+export class Stage extends st {
   services: Service[] = [];
 
-  static fromJSON(data: unknown) {
-    return Object.assign(new this(), data);
+  static fromJSON(data: unknown): Stage {
+    const stage = Object.assign(new this(), data);
+    stage.services = stage.services.map(s => {
+      s.stage = stage.stageName;
+      return Service.fromJSON(s);
+    });
+    return stage;
   }
 
-  public servicesWithOpenApprovals(): Service[] {
+  public getServicesWithOpenApprovals(): Service[] {
     return this.services.filter(s => s.getOpenApprovals().length > 0);
   }
 
-  public getOpenProblems(): Root[] {
-    return this.services.reduce((openProblems: Root[], service: Service) => [...openProblems, ...service.getOpenProblems()], []);
+  public getServicesWithFailedEvaluation(): Service[] {
+    return this.services.filter(service => service.latestSequence?.getEvaluation(this.stageName)?.result === ResultTypes.FAILED);
+  }
+
+  public getServicesWithRemediations(): Service[] {
+    return this.services.filter(service => service.openRemediations.length > 0);
   }
 }

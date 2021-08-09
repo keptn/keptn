@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import { Target } from '../../_models/indicator-result';
+import { Target } from '../../../../shared/interfaces/indicator-result';
 
 @Component({
   selector: 'ktb-sli-breakdown-criteria-item',

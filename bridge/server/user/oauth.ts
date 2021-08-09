@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
-import { sessionAuthentication, removeSession, isAuthenticated, getLogoutHint } from './session.js';
+import { sessionAuthentication, removeSession, isAuthenticated, getLogoutHint } from './session';
 
 const router = Router();
 const AUTHORIZATION = 'authorization';
