@@ -30,14 +30,11 @@ func TestControlPlaneRegister(t *testing.T) {
 					DeploymentName: "k8s-deployment",
 				},
 			},
-			Subscriptions: []models.Subscription{{
+			Subscriptions: []models.TopicSubscription{{
 				Topics: []string{},
-				Filter: models.SubscriptionFilter{
-					Project:  "p-filter",
+				Filter: models.TopicSubscriptionFilter{
 					Projects: []string{"p-filter"},
-					Stage:    "s-filter",
 					Stages:   []string{"s-filter"},
-					Service:  "sv-filter",
 					Services: []string{"sv-filter"},
 				},
 			},

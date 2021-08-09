@@ -103,14 +103,11 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 				DeploymentName: env.K8sDeploymentName,
 			},
 		},
-		Subscriptions: []models.Subscription{{
+		Subscriptions: []models.TopicSubscription{{
 			Topics: topics,
-			Filter: models.SubscriptionFilter{
-				Project:  env.ProjectFilter,
+			Filter: models.TopicSubscriptionFilter{
 				Projects: projectFilter,
-				Stage:    env.StageFilter,
 				Stages:   stageFilter,
-				Service:  env.ServiceFilter,
 				Services: serviceFilter,
 			},
 		},
