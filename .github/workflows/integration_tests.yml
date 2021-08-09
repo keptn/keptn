@@ -562,10 +562,10 @@ jobs:
           export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
           # extract Keptn Bridge Info
-          response=$(keptn configure bridge --output)
-          export KEPTN_BRIDGE_URL=$(echo "$response" | awk -F'available under: ' '{ print $2 }' | xargs)
-          export KEPTN_BRIDGE_USER=$(echo "$response" | awk -F'user: ' '{ print $2 }' | xargs)
-          export KEPTN_BRIDGE_PASSWORD=$(echo "$response" | awk -F'password: ' '{ print $2 }' | xargs)
+          statusresponse=$(keptn status)
+          export KEPTN_BRIDGE_URL=$(echo "$returnstr" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
+          export KEPTN_BRIDGE_USER=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
+          export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
 
           # disable basic auth
           kubectl -n ${KEPTN_NAMESPACE} delete secret bridge-credentials
@@ -578,7 +578,7 @@ jobs:
           ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL --protractor-config=./e2e/protractor-ci.conf.js
 
           # re-enable basic auth of bridge
-          keptn configure bridge --user=$KEPTN_BRIDGE_USER --password=$KEPTN_BRIDGE_PASSWORD
+          kubectl create secret generic my-secret -n keptn --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant

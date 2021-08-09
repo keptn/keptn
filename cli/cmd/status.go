@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
+	"net/url"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// statusCmdCmd represents the auth command
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Checks the status of the CLI",
@@ -17,8 +19,23 @@ var statusCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		credentialManager := credentialmanager.NewCredentialManager(assumeYes)
 		authenticator := NewAuthenticator(namespace, credentialManager)
-		return authenticator.Auth(AuthenticatorOptions{})
+
+		err := authenticator.Auth(AuthenticatorOptions{})
+		if err != nil {
+			return err
+		}
+
+		endpoint, _, err := credentialManager.GetCreds(namespace)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Bridge URL: " + getBridgeURLFromAPIURL(endpoint))
+		return nil
 	},
+}
+
+func getBridgeURLFromAPIURL(endpointURL url.URL) string {
+	return strings.Replace(endpointURL.String(), endpointURL.Path, "/bridge", 1)
 }
 
 func init() {
