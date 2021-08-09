@@ -17,20 +17,19 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
-  public projectName$: Observable<string>;
   public hasProject$: Observable<boolean | undefined>;
   public contextId?: string;
   private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
   public error$: Observable<string | undefined> = this._errorSubject.asObservable();
   public isCreateMode$: Observable<boolean>;
 
-  constructor(private router: Router, private route: ActivatedRoute, public dataService: DataService, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
-    this.projectName$ = this.route.paramMap.pipe(
+  constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
+    const projectName$ = this.route.paramMap.pipe(
       map(params => params.get('projectName')),
       filter((projectName: string | null): projectName is string => !!projectName)
     );
 
-    const timer$ = this.projectName$.pipe(
+    const timer$ = projectName$.pipe(
       switchMap((projectName) => AppUtils.createTimer(initialDelayMillis).pipe(map(() => projectName))),
       takeUntil(this.unsubscribe$)
     );
@@ -41,7 +40,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       this.dataService.loadProject(projectName);
     });
 
-    this.hasProject$ = this.projectName$.pipe(
+    this.hasProject$ = projectName$.pipe(
       switchMap(projectName => this.dataService.projectExists(projectName))
     );
 
@@ -91,7 +90,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     }
   }
 
-  public navigateToTrace<S, U>(traces: Trace[] | undefined, eventselector: string | null) {
+  public navigateToTrace(traces: Trace[] | undefined, eventselector: string | null): void {
     if (traces?.length) {
       if (eventselector) {
         let trace = this.findTraceForStage(traces, eventselector);

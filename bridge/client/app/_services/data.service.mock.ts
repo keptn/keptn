@@ -47,16 +47,6 @@ export class DataServiceMock extends DataService {
     return of({});
   }
 
-  public projectExists(projectName: string): Observable<boolean | undefined> {
-    return this._projects.pipe(map((projects) => {
-      if (projects === undefined) {
-        return undefined;
-      }
-
-      return !!projects.find((project) => (projectName === project.projectName));
-    }));
-  }
-
   public loadRoots(project: Project) {
     project.roots = [...RootEvents || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
     project.stages.forEach(stage => {
