@@ -89,6 +89,11 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queuedSequence models.QueueItem) error {
+	// first, check if the sequence is currently paused
+	if sd.eventQueueRepo.IsSequenceOfEventPaused(queuedSequence.Scope) {
+		log.Infof("Sequence %s is currently paused. Will not start it yet.", queuedSequence.Scope.KeptnContext)
+		return nil
+	}
 	// fetch all sequences that are currently running in the stage of the project where the sequence should run
 	runningSequencesInStage, err := sd.sequenceRepo.GetTaskSequences(queuedSequence.Scope.Project, models.TaskSequenceEvent{
 		Stage:   queuedSequence.Scope.Stage,
