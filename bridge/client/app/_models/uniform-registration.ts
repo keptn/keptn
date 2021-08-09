@@ -25,17 +25,31 @@ export class UniformRegistration {
   }
 
   public getSubscriptions(projectName: string): UniformSubscription[] {
-    return this.subscriptions.filter(subscription => subscription.project === projectName || subscription.project === undefined);
+    const subscriptions = this.subscriptions.filter(subscription => subscription.project === projectName || !subscription.project);
+    subscriptions.sort((a, b) => {
+      let status;
+      if (!a.project) {
+        status = -1;
+      }
+      else if (!b.project) {
+        status = 1;
+      }
+      else {
+        status = a.topics[0].localeCompare(b.topics[0]);
+      }
+      return status;
+    });
+    return subscriptions;
   }
 
   public hasSubscriptions(projectName: string): boolean {
-    return this.subscriptions.some(subscription => subscription.project === projectName || subscription.project === undefined);
+    return this.subscriptions.some(subscription => subscription.project === projectName || !subscription.project);
   }
 
   public formatSubscriptions(projectName: string): string | undefined {
     const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
-      if (subscription.project === projectName) {
-        accSubscriptions.push(subscription.topics[0]);
+      if (subscription.project === projectName || !subscription.project) {
+        accSubscriptions.push(...subscription.topics);
       }
       return accSubscriptions;
     }, []);

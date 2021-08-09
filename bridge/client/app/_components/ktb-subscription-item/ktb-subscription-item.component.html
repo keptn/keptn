@@ -1,20 +1,28 @@
 <ng-container *ngIf="project && subscription as subscription">
   <input class="item" placeholder="Subscription name" dtInput [(ngModel)]="name" required [readonly]="true">
   <span class="bold pl-3 mt-1 pr-2">subscribes to:</span>
-  <span class="mr-1 mt-1 pr-3" [textContent]="subscription.topics[0]"></span>
+  <span class="mr-1 mt-1 pr-3" fxLayout="column">
+    <ng-container *ngFor="let topic of subscription.topics">
+      <p class="mb-0" [textContent]="topic"></p>
+    </ng-container>
+  </span>
+  <span class="bold mt-1 pr-2">in project:</span>
+  <span class="mr-1 mt-1 pr-3" [textContent]="subscription.project || 'all'"></span>
   <span class="bold mt-1 pr-2">in stage:</span>
   <div class="pr-3">
-    <dt-select [disabled]="true" [(ngModel)]="subscription.filter.stages[0]" class="item pr-3" placeholder="Choose your stage" aria-label="Choose your stage" required>
+    <dt-select [disabled]="true" [(ngModel)]="subscription.stage" class="item pr-3" placeholder="Choose your stage" aria-label="Choose your stage" required>
       <dt-option *ngFor="let stage of project.stages" [value]="stage.stageName" [textContent]="stage.stageName"></dt-option>
     </dt-select>
   </div>
-  <dt-filter-field
-    [disabled]="true"
-    [dataSource]="_dataSource"
-    [filters]="subscription.getFilter(_dataSource.data)"
-    (filterChanges)="subscription.filterChanged($event)"
-    label="Filter by service"
-    aria-label="Filter service"
-    clearAllLabel="Clear all"
-  ></dt-filter-field>
+  <div class="mt-1">
+    <dt-filter-field
+      [disabled]="true"
+      [dataSource]="_dataSource"
+      [filters]="subscription.getFilter(_dataSource.data)"
+      (filterChanges)="subscription.filterChanged($event)"
+      label="Filter by service"
+      aria-label="Filter service"
+      clearAllLabel="Clear all"
+    ></dt-filter-field>
+  </div>
 </ng-container>

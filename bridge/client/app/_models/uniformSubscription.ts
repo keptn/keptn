@@ -4,9 +4,9 @@ import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-f
 export class UniformSubscription {
   public topics: string[] = [];
   public filter!: {
-    projects: [string] | [],
-    stages: [string] | [],
-    services: string[]
+    projects: [string] | [] | null,
+    stages: [string] | [] | null,
+    services: string[] | null
   };
   public parameters: {key: string, value: string, visible: boolean}[] = [];
   public name!: string;
@@ -18,7 +18,15 @@ export class UniformSubscription {
   }
 
   public get project(): string | undefined {
-    return this.filter.projects[0];
+    return this.filter.projects?.[0];
+  }
+
+  public get stage(): string | undefined {
+    return this.filter.stages?.[0];
+  }
+
+  public set stage(stage: string | undefined) {
+    this.filter.stages = stage ? [stage] : [];
   }
 
   public addParameter() {
@@ -33,13 +41,13 @@ export class UniformSubscription {
   public getFilter(data: any): DtFilterArray[] {
     data = data as DtFilter;
     const filter = [
-      ...this.filter.services.map(service => {
+      ...this.filter.services?.map(service => {
         return [
             data.autocomplete[0],
             {name: service}
           ] as DtFilterArray;
         }
-      )
+      ) ?? []
     ];
     if (filter.length !== this._filter?.length) {
       this._filter = filter;
