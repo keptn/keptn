@@ -96,7 +96,7 @@ spec:
             cpu: "50m"
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "200m"
       - name: distributor
         image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
