@@ -22,11 +22,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.Subscription{
+		Subscriptions: []keptnmodels.TopicSubscription{
 			{
 				Topics: []string{"sh.keptn.event.test.triggered"},
 				Status: "active",
-				Filter: keptnmodels.SubscriptionFilter{
+				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -47,11 +47,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.Subscription{
+		Subscriptions: []keptnmodels.TopicSubscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
-				Filter: keptnmodels.SubscriptionFilter{
+				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -72,11 +72,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.Subscription{
+		Subscriptions: []keptnmodels.TopicSubscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
-				Filter: keptnmodels.SubscriptionFilter{
+				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1"},
@@ -97,11 +97,11 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1",
 			},
 		},
-		Subscriptions: []keptnmodels.Subscription{
+		Subscriptions: []keptnmodels.TopicSubscription{
 			{
 				Topics: []string{"sh.keptn.event.deployment.triggered"},
 				Status: "active",
-				Filter: keptnmodels.SubscriptionFilter{
+				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1"},
 					Stages:   []string{"st1"},

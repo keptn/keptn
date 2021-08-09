@@ -12,10 +12,6 @@ type GetUniformIntegrationsParams struct {
 	Service string `form:"service" json:"service"`
 }
 
-type GetUniformIntegrationByIDParams struct {
-	ID string `form:"id" json:"id"`
-}
-
 type RegisterResponse struct {
 	ID string `json:"id"`
 }

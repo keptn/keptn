@@ -10,6 +10,7 @@ import (
 
 type IUniformIntegrationHandler interface {
 	Register(context *gin.Context)
+	KeepAlive(context *gin.Context)
 	Unregister(context *gin.Context)
 	GetRegistrations(context *gin.Context)
 }
@@ -45,7 +46,16 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	// for backwards compatibility, we check if there is a Subscriptions field set
 	// if it not the case we are taking the old Subscription field and map it to the new Subscriptions field
 	if integration.Subscriptions == nil {
-		integration.Subscriptions = append(integration.Subscriptions, integration.Subscription)
+		ts := keptnmodels.TopicSubscription{
+			Topics: integration.Subscription.Topics,
+			Status: integration.Subscription.Status,
+			Filter: keptnmodels.TopicSubscriptionFilter{
+				Projects: []string{integration.Subscription.Filter.Project},
+				Stages:   []string{integration.Subscription.Filter.Stage},
+				Services: []string{integration.Subscription.Filter.Service},
+			},
+		}
+		integration.Subscriptions = append(integration.Subscriptions, ts)
 	}
 
 	integrationID := keptnmodels.IntegrationID{
@@ -73,7 +83,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	})
 }
 
-// DeleteRegistration Unregisters a uniform integration
+// Unregister deletes a uniform integration
 // @Summary Unregister a uniform integration
 // @Description Unregister a uniform integration
 // @Tags Uniform
@@ -124,4 +134,40 @@ func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, uniformIntegrations)
+}
+
+// KeepAlive updates a uniform integration and returns its current registration data
+// @Summary Updates a uniform integration and returns its current registration data
+// @Description Updates a uniform integration and returns its current registration data
+// @Tags Uniform
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param id path string true "id"
+// @Success 200 {object} models.Integration "ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /uniform/registration/{id} [put]
+func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
+	integrationID := c.Param("id")
+	registrations, err := rh.integrationManager.GetRegistrations(models.GetUniformIntegrationsParams{ID: integrationID})
+	if err != nil {
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	if len(registrations) != 1 {
+		SetNotFoundErrorResponse(nil, c, "No registration with id "+integrationID+"found")
+		return
+	}
+	registration := registrations[0]
+	registration.MetaData.LastSeen = time.Now().UTC()
+
+	if err := rh.integrationManager.Register(registration); err != nil {
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, registration)
+
 }

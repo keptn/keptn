@@ -85,7 +85,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.Subscription{
+		Subscriptions: []keptnmodels.TopicSubscription{
 			{
 				Topics: []string{
 					"sh.keptn.event.test.triggered",
@@ -101,7 +101,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		MetaData: keptnmodels.MetaData{
 			DistributorVersion: "0.8.3",
 		},
-		Subscriptions: []keptnmodels.Subscription{
+		Subscriptions: []keptnmodels.TopicSubscription{
 			{
 				Topics: []string{
 					"sh.keptn.event.test.triggered",
@@ -177,6 +177,130 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			router := gin.Default()
 			router.POST("/uniform/registration", func(c *gin.Context) {
 				rh.Register(c)
+			})
+			w := performRequest(router, tt.request)
+
+			require.Equal(t, tt.wantStatus, w.Code)
+
+			if tt.wantIntegration != nil {
+				require.NotEmpty(t, tt.fields.integrationManager.RegisterCalls())
+				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.RegisterCalls()[0].Integration.Name)
+				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Hostname)
+				require.Equal(t, tt.wantIntegration.MetaData.DistributorVersion, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.DistributorVersion)
+				require.Equal(t, tt.wantIntegration.MetaData.Location, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Location)
+				require.Equal(t, tt.wantIntegration.Subscriptions, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions)
+			}
+		})
+	}
+}
+
+func TestUniformIntegrationKeepAlive(t *testing.T) {
+
+	existingIntegration := &models.Integration{
+		ID:   "my-id",
+		Name: "my-name",
+		MetaData: keptnmodels.MetaData{
+			Hostname:           "my-host",
+			DistributorVersion: "0.8.3",
+			KubernetesMetaData: keptnmodels.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscriptions: []keptnmodels.TopicSubscription{
+			{
+				Topics: []string{
+					"sh.keptn.event.test.triggered",
+				},
+			},
+		},
+	}
+
+	type fields struct {
+		integrationManager *fake.IUniformIntegrationManagerMock
+	}
+	tests := []struct {
+		name            string
+		fields          fields
+		request         *http.Request
+		wantStatus      int
+		wantIntegration *models.Integration
+	}{
+		{
+			name: "keepalive registration",
+			fields: fields{
+				integrationManager: &fake.IUniformIntegrationManagerMock{
+					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{*existingIntegration}, nil
+					},
+
+					RegisterFunc: func(integration models.Integration) error {
+						return nil
+					},
+				},
+			},
+			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
+			wantStatus:      http.StatusOK,
+			wantIntegration: existingIntegration,
+		},
+		{
+			name: "keepalive registration - no registration found",
+			fields: fields{
+				integrationManager: &fake.IUniformIntegrationManagerMock{
+					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{}, nil
+					},
+
+					RegisterFunc: func(integration models.Integration) error {
+						return nil
+					},
+				},
+			},
+			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
+			wantStatus:      http.StatusNotFound,
+			wantIntegration: nil,
+		},
+		{
+			name: "keepalive registration - fail at getting registration",
+			fields: fields{
+				integrationManager: &fake.IUniformIntegrationManagerMock{
+					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{}, errors.New("some error")
+					},
+
+					RegisterFunc: func(integration models.Integration) error {
+						return nil
+					},
+				},
+			},
+			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
+			wantStatus:      http.StatusInternalServerError,
+			wantIntegration: nil,
+		},
+		{
+			name: "keepalive registration - fail at re-registration",
+			fields: fields{
+				integrationManager: &fake.IUniformIntegrationManagerMock{
+					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+						return []models.Integration{*existingIntegration}, nil
+					},
+
+					RegisterFunc: func(integration models.Integration) error {
+						return errors.New("some error")
+					},
+				},
+			},
+			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
+			wantStatus:      http.StatusInternalServerError,
+			wantIntegration: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rh := handler.NewUniformIntegrationHandler(tt.fields.integrationManager)
+
+			router := gin.Default()
+			router.PUT("/uniform/registration/:id", func(c *gin.Context) {
+				rh.KeepAlive(c)
 			})
 			w := performRequest(router, tt.request)
 

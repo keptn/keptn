@@ -14,7 +14,7 @@ import (
 //
 // 		// make and configure a mocked handler.IUniformIntegrationManager
 // 		mockedIUniformIntegrationManager := &IUniformIntegrationManagerMock{
-// 			GetRegistrationsFunc: func(params models.GetUniformIntegrationParams) ([]models.Integration, error) {
+// 			GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 // 				panic("mock out the GetRegistrations method")
 // 			},
 // 			RegisterFunc: func(integration models.Integration) error {
