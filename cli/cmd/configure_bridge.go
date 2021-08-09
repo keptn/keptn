@@ -25,13 +25,15 @@ var bridgeCmd = &cobra.Command{
 	Example:      `keptn configure bridge --user=<user> --password=<password>`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("This command is not supported anymore!")
+		fmt.Println("Warning: From version 0.9.0 of Keptn this command is not supported anymore!")
 		fmt.Println()
 		fmt.Println("You can get your login credentials e.g. by using the following kubectl commands:")
 		fmt.Println("Username - kubectl get secret -n keptn bridge-credentials -o jsonpath=\"{.data.BASIC_AUTH_USERNAME}\" | base64 --decode")
 		fmt.Println("Password - kubectl get secret -n keptn bridge-credentials -o jsonpath=\"{.data.BASIC_AUTH_PASSWORD}\" | base64 --decode")
 		fmt.Println()
 		fmt.Println("For editing the login credentials please use: 'kubectl edit secrets -n keptn bridge-credentials'")
+		fmt.Println("In order to apply the new credentials you need to restart the Keptn bridge:")
+		fmt.Println("kubectl -n keptn rollout restart deployment bridge")
 		fmt.Println()
 		fmt.Println("The URL to your Keptn Bridge can be retrieved using 'keptn status'")
 		return nil
