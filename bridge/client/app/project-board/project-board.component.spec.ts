@@ -156,6 +156,24 @@ describe('ProjectBoardComponent', () => {
     });
   });
 
+  it('should not show notification indicator', () => {
+    expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeFalsy();
+
+    component.hasUnreadLogs = true;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
+
+    component.hasUnreadLogs = false;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeFalsy();
+  });
+
+  it('should show notification indicator', () => {
+    component.hasUnreadLogs = true;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
+  });
+
   afterEach(fakeAsync(() => {
     fixture.destroy();
     TestBed.resetTestingModule();

@@ -69,10 +69,14 @@ export class DataServiceMock extends DataService {
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    return of(UniformRegistrationsMock);
+    return of(this.copyObject(UniformRegistrationsMock));
   }
 
   public getUniformRegistrationLogs(): Observable<UniformRegistrationLog[]> {
     return of(UniformRegistrationLogsMock);
+  }
+
+  private copyObject<T>(data: T): T {
+    return JSON.parse(JSON.stringify(data));
   }
 }

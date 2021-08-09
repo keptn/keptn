@@ -11,8 +11,6 @@ import { Deployment } from '../_models/deployment';
 import { Sequence } from '../_models/sequence';
 import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
 import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
-import { UniformRegistration } from '../_models/uniform-registration';
-import { UniformRegistrationLog } from '../_models/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { Root } from '../_models/root';
 import { HttpResponse } from '@angular/common/http';
