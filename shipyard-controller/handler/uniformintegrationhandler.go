@@ -44,7 +44,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	}
 
 	// for backwards compatibility, we check if there is a Subscriptions field set
-	// if it not the case we are taking the old Subscription field and map it to the new Subscriptions field
+	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
 	if integration.Subscriptions == nil {
 		ts := keptnmodels.TopicSubscription{
 			Topics: integration.Subscription.Topics,
