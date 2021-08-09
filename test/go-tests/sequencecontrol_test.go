@@ -288,7 +288,18 @@ func Test_SequenceControl_PauseAndResume_2(t *testing.T) {
 		Result: keptnv2.ResultPass,
 	}, source)
 
-	// TODO: the check bellow fails
 	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequencePaused})
 
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/sequence/%s/%s/control", projectName, keptnContextID), operations.SequenceControlCommand{
+		State: common.ResumeSequence,
+		Stage: "",
+	})
+	require.Nil(t, err)
+	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+
+	VerifySequenceEndsUpInState(t, projectName, &models.EventContext{&keptnContextID}, 2*time.Minute, []string{scmodels.SequenceStartedState})
+
+	task2TriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, "prod", keptnv2.GetTriggeredEventType("task2"))
+	require.Nil(t, err)
+	require.NotNil(t, task2TriggeredEvent)
 }
