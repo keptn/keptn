@@ -1,25 +1,23 @@
-import {Injectable} from '@angular/core';
-import {DataService} from './data.service';
-import {ApiService} from './api.service';
-import {Root} from '../_models/root';
-import {Project} from '../_models/project';
-import {DateUtil} from '../_utils/date.utils';
-import {KeptnInfo} from './_mockData/keptnInfo.mock';
-import {Projects} from './_mockData/projects.mock';
-import {RootEvents} from './_mockData/roots.mock';
-import {Traces} from './_mockData/traces.mock';
-import {Evaluations} from './_mockData/evaluations.mock';
-import {Trace} from '../_models/trace';
-import {map} from 'rxjs/operators';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import {Sequence} from '../_models/sequence';
+import { Injectable } from '@angular/core';
+import { DataService } from './data.service';
+import { ApiService } from './api.service';
+import { Root } from '../_models/root';
+import { Project } from '../_models/project';
+import { DateUtil } from '../_utils/date.utils';
+import { KeptnInfo } from './_mockData/keptnInfo.mock';
+import { Projects } from './_mockData/projects.mock';
+import { RootEvents } from './_mockData/roots.mock';
+import { Traces } from './_mockData/traces.mock';
+import { Evaluations } from './_mockData/evaluations.mock';
+import { Trace } from '../_models/trace';
+import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { Sequence } from '../_models/sequence';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataServiceMock extends DataService {
-  public _projects = new BehaviorSubject<Project[] | undefined>(undefined);
-
   constructor(apiService: ApiService) {
     super(apiService);
   }

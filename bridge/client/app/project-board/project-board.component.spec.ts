@@ -8,8 +8,6 @@ import { BehaviorSubject, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../_services/data.service';
 
-
-
 describe('ProjectBoardComponent', () => {
   let component: ProjectBoardComponent;
   let fixture: ComponentFixture<ProjectBoardComponent>;

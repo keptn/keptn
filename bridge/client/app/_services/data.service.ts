@@ -217,8 +217,8 @@ export class DataService {
     }, err => {
       if (err.status === 404) {
         const projects = this._projects.getValue();
-        const projectIdx = projects?.findIndex(p => p.projectName === projectName);
-        if (projectIdx && projectIdx >= 0) {
+        const projectIdx = projects?.findIndex(p => p.projectName === projectName) ?? -1;
+        if (projectIdx >= 0) {
           projects?.splice(projectIdx, 1);
           this._projects.next(projects);
         }
