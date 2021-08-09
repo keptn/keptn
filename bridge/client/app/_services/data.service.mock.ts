@@ -1,25 +1,21 @@
-import {Injectable} from '@angular/core';
-import {DataService} from './data.service';
-import {ApiService} from './api.service';
-import {Root} from '../_models/root';
-import {Project} from '../_models/project';
-import {DateUtil} from '../_utils/date.utils';
-import {KeptnInfo} from './_mockData/keptnInfo.mock';
-import {Projects} from './_mockData/projects.mock';
-import {RootEvents} from './_mockData/roots.mock';
-import {Traces} from './_mockData/traces.mock';
-import {Evaluations} from './_mockData/evaluations.mock';
-import {Trace} from '../_models/trace';
+import { Injectable } from '@angular/core';
+import { DataService } from './data.service';
+import { ApiService } from './api.service';
+import { Project } from '../_models/project';
+import { KeptnInfo } from './_mockData/keptnInfo.mock';
+import { Projects } from './_mockData/projects.mock';
+import { Traces } from './_mockData/traces.mock';
+import { Evaluations } from './_mockData/evaluations.mock';
+import { Trace } from '../_models/trace';
 import { map } from 'rxjs/operators';
-import {Observable, of} from 'rxjs';
-import {Sequence} from '../_models/sequence';
+import { Observable, of } from 'rxjs';
+import { Sequence } from '../_models/sequence';
 import { SequencesData } from './_mockData/sequences.mock';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataServiceMock extends DataService {
-
   constructor(apiService: ApiService) {
     super(apiService);
   }
@@ -70,23 +66,6 @@ export class DataServiceMock extends DataService {
 
   public deleteProject(projectName: string): Observable<object> {
     return of({});
-  }
-
-  public loadRoots(project: Project) {
-    project.roots = [...RootEvents || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
-    project.stages.forEach(stage => {
-      stage.services.forEach(service => {
-        service.roots = project.roots.filter(s => s.service === service.serviceName && s.getStages().includes(stage.stageName));
-        service.openApprovals = service.roots.reduce((openApprovals: Trace[], root: Root) => {
-          const approval = root.getPendingApproval(stage.stageName);
-          if (approval) {
-            openApprovals.push(approval);
-          }
-          return openApprovals;
-        }, []);
-      });
-    });
-    this._roots.next(project.roots);
   }
 
   public loadTraces(sequence: Sequence) {

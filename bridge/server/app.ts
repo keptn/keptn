@@ -5,12 +5,12 @@ import * as https from 'https';
 import * as http from 'http';
 import helmet from 'helmet';
 import express, { Express, NextFunction, Request, Response } from 'express';
-import { parse, fileURLToPath } from 'url';
+import { fileURLToPath, URL } from 'url';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
 import { execSync } from 'child_process';
 import admZip from 'adm-zip';
-import { apiRouter } from './api/index.js';
+import { apiRouter } from './api/index';
 
 // tslint:disable-next-line:variable-name whitespace
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -24,12 +24,14 @@ const requestTimeLimit = (+(process.env.REQUEST_TIME_LIMIT || 60)) * 60 * 1000; 
 const requestsWithinTime = +(process.env.REQUESTS_WITHIN_TIME || 10); // x requests within {requestTimeLimit}
 const cleanBucketsInterval = (+(process.env.CLEAN_BUCKET_INTERVAL || 60)) * 60 * 1000; // clean buckets every x minutes
 const throttleBucket: {[ip: string]: number[]} = {};
+const rootFolder = join(__dirname, '../../../');
+const serverFolder = join(rootFolder, 'server');
 
 try {
   console.log('Installing default Look-and-Feel');
 
-  const destDir = join(__dirname, '../../dist/assets/branding');
-  const srcDir = join(__dirname, `../../${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`);
+  const destDir = join(rootFolder, 'dist/assets/branding');
+  const srcDir = join(rootFolder, `${process.env.NODE_ENV === 'development' ? 'client' : 'dist'}/assets/default-branding`);
   const brandingFiles = ['app-config.json', 'logo.png', 'logo_inverted.png'];
 
   if (!existsSync(destDir)) {
@@ -49,7 +51,7 @@ if (lookAndFeelUrl) {
   try {
     console.log('Downloading custom Look-and-Feel file from', lookAndFeelUrl);
 
-    const destDir = join(__dirname, '../../dist/assets/branding');
+    const destDir = join(rootFolder, 'dist/assets/branding');
     const destFile = join(destDir, '/lookandfeel.zip');
 
     if (!existsSync(destDir)) {
@@ -57,7 +59,7 @@ if (lookAndFeelUrl) {
     }
 
     file = createWriteStream(destFile);
-    const parsedUrl = parse(lookAndFeelUrl);
+    const parsedUrl = new URL(lookAndFeelUrl);
     const lib = parsedUrl.protocol === 'https:' ? https : http;
 
     lib.get(lookAndFeelUrl, async (response) => {
@@ -99,6 +101,9 @@ if (lookAndFeelUrl) {
 const oneWeek = 7 * 24 * 3_600_000;    // 3600000msec == 1hour
 
 async function init(): Promise<Express> {
+  if (!apiUrl) {
+    throw Error('API_URL is not provided');
+  }
   if (!apiToken) {
     console.log('API_TOKEN was not provided. Fetching from kubectl.');
     apiToken = Buffer.from(execSync('kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token}')
@@ -116,10 +121,10 @@ async function init(): Promise<Express> {
   }
 
   // server static files - Images & CSS
-  app.use('/static', express.static(join(__dirname, '../views/static'), {maxAge: oneWeek}));
+  app.use('/static', express.static(join(serverFolder, 'views/static'), {maxAge: oneWeek}));
 
   // UI static files - Angular application
-  app.use(express.static(join(__dirname, '../../dist'), {
+  app.use(express.static(join(rootFolder, 'dist'), {
       maxAge: oneWeek, // cache files for one week
       etag: true, // Just being explicit about the default.
       lastModified: true,  // Just being explicit about the default.
@@ -133,7 +138,7 @@ async function init(): Promise<Express> {
   );
 
   // Server views based on Pug
-  app.set('views', join(__dirname, '../views'));
+  app.set('views', join(serverFolder, 'views'));
   app.set('view engine', 'pug');
 
   // add some middlewares
@@ -146,68 +151,12 @@ async function init(): Promise<Express> {
   let authType: string;
 
   if (process.env.OAUTH_ENABLED === 'true') {
-    const sessionRouter = (await import('./user/session.js')).sessionRouter(app);
-    const oauthRouter = await (await import('./user/oauth.js')).oauthRouter;
-    const authCheck = (await import('./user/session.js')).isAuthenticated;
-
+    await setOAUTH();
     authType = 'OAUTH';
-
-    // Initialise session middleware
-    app.use(sessionRouter);
-    // Initializing OAuth middleware.
-    app.use(oauthRouter);
-
-    // Authentication filter for API requests
-    app.use('/api', (req, resp, next) => {
-      if (!authCheck(req)) {
-        resp.status(401).send('Unauthorized');
-        return;
-      }
-      return next();
-    });
 
   } else if (process.env.BASIC_AUTH_USERNAME && process.env.BASIC_AUTH_PASSWORD) {
     authType = 'BASIC';
-
-    console.error('Installing Basic authentication - please check environment variables!');
-
-    setInterval(cleanIpBuckets, cleanBucketsInterval);
-
-    app.use((req, res, next) => {
-      // parse login and password from headers
-      const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
-      const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
-      let userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      userIP = userIP instanceof Array ? userIP[0] : userIP;
-
-      if (userIP && isIPThrottled(userIP)) {
-        console.error('Request limit reached');
-        res.status(429).send('Reached request limit');
-        return;
-      }
-      else if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
-        // only fill buckets if the user tries to login
-        if (userIP && (login || password)) {
-          if (!throttleBucket[userIP]) {
-            throttleBucket[userIP] = [];
-          }
-          throttleBucket[userIP].push(new Date().getTime());
-
-          // delete old requests. Just keep the latest {requestLimitWithinTime} requests
-          if (throttleBucket[userIP].length > requestsWithinTime) {
-            throttleBucket[userIP].shift();
-          }
-        }
-
-        console.error('Access denied');
-        res.set('WWW-Authenticate', 'Basic realm="Keptn"');
-        res.status(401).send('Authentication required.'); // custom message
-        return;
-      }
-
-      // Access granted
-      return next();
-    });
+    await setBasisAUTH();
   } else {
     authType = 'NONE';
     console.error('Not installing authentication middleware');
@@ -220,7 +169,7 @@ async function init(): Promise<Express> {
 // fallback: go to index.html
   app.use((req, res, next) => {
     console.error('Not found: ' + req.url);
-    res.sendFile(join(`${__dirname}/../../dist/index.html`), {maxAge: 0});
+    res.sendFile(join(rootFolder, 'dist/index.html'), {maxAge: 0});
   });
 
 // error handler
@@ -238,6 +187,72 @@ async function init(): Promise<Express> {
   });
 
   return app;
+}
+
+async function setOAUTH(): Promise<void> {
+  const sessionRouter = (await import('./user/session.js')).sessionRouter(app);
+  const oauthRouter = await (await import('./user/oauth.js')).oauthRouter;
+  const authCheck = (await import('./user/session.js')).isAuthenticated;
+
+  // Initialise session middleware
+  app.use(sessionRouter);
+  // Initializing OAuth middleware.
+  app.use(oauthRouter);
+
+  // Authentication filter for API requests
+  app.use('/api', (req, resp, next) => {
+    if (!authCheck(req)) {
+      resp.status(401).send('Unauthorized');
+      return;
+    }
+    return next();
+  });
+}
+
+async function setBasisAUTH(): Promise<void> {
+  console.error('Installing Basic authentication - please check environment variables!');
+
+  setInterval(cleanIpBuckets, cleanBucketsInterval);
+
+  app.use((req, res, next) => {
+    // parse login and password from headers
+    const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+    const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+    let userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    userIP = userIP instanceof Array ? userIP[0] : userIP;
+
+    if (userIP && isIPThrottled(userIP)) {
+      console.error('Request limit reached');
+      res.status(429).send('Reached request limit');
+      return;
+    }
+    else if (!(login && password && login === process.env.BASIC_AUTH_USERNAME && password === process.env.BASIC_AUTH_PASSWORD)) {
+      updateBucket(!!(login || password), userIP);
+
+      console.error('Access denied');
+      res.set('WWW-Authenticate', 'Basic realm="Keptn"');
+      res.status(401).send('Authentication required.'); // custom message
+      return;
+    }
+
+    // Access granted
+    return next();
+  });
+}
+
+function updateBucket(loginAttempt: boolean, userIP?: string) {
+  // only fill buckets if the user tries to login
+  if (userIP && loginAttempt) {
+    if (!throttleBucket[userIP]) {
+      throttleBucket[userIP] = [];
+    }
+    throttleBucket[userIP].push(new Date().getTime());
+
+    // delete old requests. Just keep the latest {requestLimitWithinTime} requests
+    if (throttleBucket[userIP].length > requestsWithinTime) {
+      throttleBucket[userIP].shift();
+    }
+  }
 }
 
 /**

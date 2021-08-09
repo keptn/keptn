@@ -32,7 +32,7 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3.13
+FROM alpine:3
 ENV env=production
 ARG JMETER_VERSION="5.1.1"
 ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}

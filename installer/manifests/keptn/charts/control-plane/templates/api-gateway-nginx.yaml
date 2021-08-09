@@ -339,7 +339,7 @@ spec:
               cpu: "50m"
             limits:
               memory: "128Mi"
-              cpu: "250m"
+              cpu: "100m"
           securityContext:
             runAsNonRoot: true
             runAsUser: 101
