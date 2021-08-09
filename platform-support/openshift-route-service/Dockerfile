@@ -34,7 +34,7 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o  openshi
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3.13
+FROM alpine:3
 RUN apk add --no-cache ca-certificates libc6-compat
 
 ARG OC_VERSION=3.11.0
