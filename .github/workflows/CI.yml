@@ -318,14 +318,12 @@ jobs:
           if [[ "$BRANCH" == "release-"* ]]; then
             # Release Branch: extract version from branch name
             VERSION=${BRANCH#"release-"}
-            else
-            if [[ "$BRANCH" == "master" ]]; then
-              # master branch = latest
-              VERSION="${GIT_NEXT_TAG}-dev"
-            else
-              # Feature/Development Branch - use last tag with branch slug
-              VERSION="${GIT_NEXT_TAG}-dev-${BRANCH_SLUG}"
-            fi
+          elif [[ "$BRANCH" == "master" ]]; then
+            # master branch = latest
+            VERSION="${GIT_NEXT_TAG}-dev"
+          else
+            # Feature/Development Branch - use last tag with branch slug
+            VERSION="${GIT_NEXT_TAG}-dev-${BRANCH_SLUG}"
           fi
 
           # determine keptn spec version
