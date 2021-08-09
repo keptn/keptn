@@ -204,7 +204,7 @@ export class DataService {
       const projects = this._projects.getValue();
       const existingProject = projects?.find(p => p.projectName === project.projectName);
       if (existingProject) {
-        const {roots, sequences, ...copyProject} = project;
+        const {sequences, ...copyProject} = project;
         Object.assign(existingProject, copyProject);
         this._projects.next(projects);
       }
@@ -329,27 +329,6 @@ export class DataService {
     });
   }
 
-  public loadRoots(project: Project): void {
-    const fromTime: Date = this._rootsLastUpdated[project.projectName];
-    this._rootsLastUpdated[project.projectName] = new Date();
-
-    this.apiService.getRoots(project.projectName, this.DEFAULT_SEQUENCE_PAGE_SIZE, undefined, fromTime?.toISOString())
-      .pipe(
-        map(response => {
-          const lastUpdated = moment(response.headers.get('date'));
-          const lastEvent = response.body?.events[0] ? moment(response.body.events[0]?.time) : null;
-          this._rootsLastUpdated[project.projectName] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
-          return response.body;
-        }),
-        map(result => result?.events || []),
-        mergeMap((roots) => this.rootMapper(roots))
-      ).subscribe((roots: Root[]) => {
-      project.roots = [...roots || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
-      project.stages.forEach(stage => this.stageRootMapper(stage, project));
-      this._roots.next(project.roots);
-    });
-  }
-  
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
     if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
@@ -399,12 +378,6 @@ export class DataService {
     const lastUpdated = moment(response.headers.get('date'));
     const lastEvent = response.body?.states[0] ? moment(response.body.states[0]?.time) : null;
     this._sequencesLastUpdated[projectName] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
-  }
-
-  private updateRootsUpdated(response: HttpResponse<EventResult>, keptnContext: string): void {
-    const lastUpdated = moment(response.headers.get('date'));
-    const lastEvent = response.body?.events[0] ? moment(response.body?.events[0]?.time) : null;
-    this._rootsLastUpdated[keptnContext] = (lastEvent && lastUpdated.isBefore(lastEvent) ? lastEvent : lastUpdated).toDate();
   }
 
   private updateTracesUpdated(response: HttpResponse<EventResult>, keptnContext: string): void {
