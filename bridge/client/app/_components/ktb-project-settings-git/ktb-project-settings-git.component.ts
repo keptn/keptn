@@ -21,7 +21,7 @@ export class KtbProjectSettingsGitComponent implements OnInit {
     this.gitUrlControl.markAsPristine();
     this.gitUserControl.setValue(gitData.gitUser || '');
     this.gitUserControl.markAsUntouched();
-    this.gitUrlControl.markAsPristine();
+    this.gitUserControl.markAsPristine();
     this.gitTokenControl.setValue('');
     this.gitTokenControl.markAsUntouched();
     this.gitTokenControl.markAsPristine();
