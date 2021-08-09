@@ -34,7 +34,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v cmd/configuration-service-server/main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.13
+FROM alpine:3
 
 ENV env=production
 
@@ -42,7 +42,7 @@ ENV env=production
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Install git
-RUN apk --update add --no-cache git=2.30.2-r0
+RUN apk --update add --no-cache git
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/configuration-service/main /configuration-service
