@@ -19,20 +19,22 @@
           <h2 class="m-0 mt-1 mb-1" [textContent]="stage.stageName"></h2>
           <div class="stage-state" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
             <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
-                 *ngIf="filterRoots(project.getLatestProblemEvents(stage)) as problemEvents"
-                 (click)="problemEvents.length > 0 && selectStage($event, stage, 'problem')">
-              <dt-icon class="stage-state-icon" name="criticalevent" [class.error]="problemEvents.length > 0"></dt-icon>
-              <span [textContent]="problemEvents.length"></span>
+                 *ngIf="filterServices(stage.getServicesWithRemediations()) as problemServices"
+                 (click)="problemServices.length > 0 && selectStage($event, stage, 'problem')">
+              <dt-icon class="stage-state-icon" name="criticalevent" [class.error]="problemServices.length > 0"></dt-icon>
+              <span [textContent]="problemServices.length"></span>
             </div>
             <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
-                 *ngIf="filterRoots(project.getLatestFailedRootEvents(stage)) as failedRootEvents"
-                 (click)="failedRootEvents.length > 0 && selectStage($event, stage, 'evaluation')">
-              <dt-icon class="stage-state-icon" name="traffic-light" [class.error]="failedRootEvents.length > 0"></dt-icon>
-              <span [textContent]="failedRootEvents.length"></span>
+                 *ngIf="filterServices(stage.getServicesWithFailedEvaluation()) as failedServices"
+                 (click)="failedServices.length > 0 && selectStage($event, stage, 'evaluation')">
+              <dt-icon class="stage-state-icon" name="traffic-light" [class.error]="failedServices.length > 0"></dt-icon>
+              <span [textContent]="failedServices.length"></span>
             </div>
-            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" (click)="filterServices(stage.servicesWithOpenApprovals()).length > 0 && selectStage($event, stage, 'approval')">
-              <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="filterServices(stage.servicesWithOpenApprovals()).length > 0"></dt-icon>
-              <span [textContent]="filterServices(stage.servicesWithOpenApprovals()).length"></span>
+            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px"
+                 *ngIf="filterServices(stage.getServicesWithOpenApprovals()) as approvalServices"
+                 (click)="approvalServices.length > 0 && selectStage($event, stage, 'approval')">
+              <dt-icon class="stage-state-icon" name="deploy" [class.highlight]="approvalServices.length > 0"></dt-icon>
+              <span [textContent]="approvalServices.length"></span>
             </div>
           </div>
           <ktb-services-list [services]="filterServices(stage.services)"></ktb-services-list>

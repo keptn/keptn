@@ -41,16 +41,16 @@ securityContext: {}                          # Set the security context (e.g. ru
 #  runAsUser: 1000
 
 resources:                                 # Resource limits and requests
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you want to limit the resources, you can uncomment the following lines
+# but be aware that JMeter needs  lots of resources while running load tests.
+#  limits:
+#    cpu: 2
+#    memory: 2Gi
   requests:
-     cpu: 1000m
-     memory: 768Mi
+    cpu: 100m
+    memory: 128Mi
 
 nodeSelector: {}                                # Node selector configuration
 

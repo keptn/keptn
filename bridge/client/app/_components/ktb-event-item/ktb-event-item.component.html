@@ -50,7 +50,7 @@
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="(_event.data.service && _event.data.stage && project.getLatestDeploymentTrace(project.getService(_event.data.service), project.getStage(_event.data.stage))?.getShortImageName()) || 'N/A'"></p></td>
+        <td><p class="m-0" [textContent]="(_event.data.service && _event.data.stage && project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage))?.image) || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>

@@ -4,7 +4,7 @@ import { map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Stage } from '../_models/stage';
 import { Project } from '../_models/project';
-import { EventTypes } from '../_models/event-types';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ApiService } from './api.service';
 import moment from 'moment';
 import { Deployment } from '../_models/deployment';
@@ -13,10 +13,9 @@ import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformRegistrationLog } from '../_models/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { Root } from '../_models/root';
-import { DateUtil } from '../_utils/date.utils';
 import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
-import { EventResult } from '../_models/event-result';
+import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { DeploymentStage } from '../_models/deployment-stage';
@@ -29,7 +28,6 @@ export class DataService {
   protected _projects = new BehaviorSubject<Project[] | undefined>(undefined);
   protected _taskNames = new BehaviorSubject<string[]>([]);
   protected _sequences = new BehaviorSubject<Sequence[] | undefined>(undefined);
-  protected _roots = new BehaviorSubject<Root[] | undefined>(undefined);
   protected _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
   protected _keptnInfo = new BehaviorSubject<KeptnInfo | undefined>(undefined);
@@ -65,10 +63,6 @@ export class DataService {
 
   get sequences(): Observable<Sequence[] | undefined> {
     return this._sequences.asObservable();
-  }
-
-  get roots(): Observable<Root[] | undefined> {
-    return this._roots.asObservable();
   }
 
   get traces(): Observable<Trace[] | undefined> {
@@ -161,7 +155,7 @@ export class DataService {
 
   public setGitUpstreamUrl(projectName: string, gitUrl: string, gitUser: string, gitToken: string): Observable<unknown> {
     return this.apiService.sendGitUpstreamUrl(projectName, gitUrl, gitUser, gitToken).pipe(tap(() => {
-      this.loadProjects();
+      this.loadProject(projectName);
     }));
   }
 
@@ -240,7 +234,7 @@ export class DataService {
       projects = projects.map(project => {
         const existingProject = existingProjects?.find(p => p.projectName === project.projectName);
         if (existingProject) {
-          const {roots, sequences, ...copyProject} = project;
+          const {sequences, ...copyProject} = project;
           return Object.assign(existingProject, copyProject);
         } else {
           return project;
@@ -355,7 +349,7 @@ export class DataService {
       this._roots.next(project.roots);
     });
   }
-
+  
   public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
     if (!beforeTime && !fromTime) { // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[project.projectName];
@@ -467,35 +461,6 @@ export class DataService {
         this.loadOldSequences(project, new Date(sequence.time), sequence);
       }
     });
-  }
-
-  public loadRootTraces(root: Root): void {
-    const projectName = root.project;
-    if (projectName) {
-      const fromTime: Date = this._rootTracesLastUpdated[root.shkeptncontext];
-
-      this.apiService.getTraces(root.shkeptncontext, projectName, fromTime?.toISOString())
-        .pipe(
-          map(response => {
-            this.updateRootsUpdated(response, root.shkeptncontext);
-            return response.body;
-          }),
-          map(result => result?.events || []),
-          map(traces => traces.map(trace => Trace.fromJSON(trace)))
-        )
-        .subscribe((traces: Trace[]) => {
-          root.traces = Trace.traceMapper([...traces || [], ...root.traces || []]);
-          this.getProject(projectName).pipe(take(1))
-            .subscribe(project => {
-              if (project) {
-                project.stages.filter(s => root.getStages().includes(s.stageName)).forEach(stage => {
-                  this.stageRootMapper(stage, project);
-                });
-              }
-            });
-          this._roots.next([...this._roots.getValue() ?? []]);
-        });
-    }
   }
 
   public loadTraces(sequence: Sequence): void {
@@ -624,19 +589,6 @@ export class DataService {
   private stageSequenceMapper(stage: Stage, project: Project): void {
     stage.services.forEach(service => {
       service.sequences = project.sequences.filter(s => s.service === service.serviceName && s.getStages().includes(stage.stageName));
-    });
-  }
-
-  private stageRootMapper(stage: Stage, project: Project): void {
-    stage.services.forEach(service => {
-      service.roots = project.roots.filter(s => s.service === service.serviceName && s.getStages().includes(stage.stageName));
-      service.openApprovals = service.roots.reduce((openApprovals: Trace[], currentRoot: Root) => {
-        const approval = currentRoot.getPendingApproval(stage.stageName);
-        if (approval) {
-          openApprovals.push(approval);
-        }
-        return openApprovals;
-      }, []);
     });
   }
 

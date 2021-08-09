@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-import { init as initApp } from './app.js';
+import { init as initApp } from './app';
 
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';

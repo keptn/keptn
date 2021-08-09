@@ -2,17 +2,13 @@ import {
   ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   Input,
-  OnDestroy,
-  OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Subject} from 'rxjs';
 import {Service} from '../../_models/service';
 import {DateUtil} from '../../_utils/date.utils';
 import {DataService} from '../../_services/data.service';
-import {takeUntil} from 'rxjs/operators';
-import {Root} from '../../_models/root';
+import { Sequence } from '../../_models/sequence';
 
 const DEFAULT_PAGE_SIZE = 3;
 
@@ -27,9 +23,7 @@ const DEFAULT_PAGE_SIZE = 3;
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbServicesListComponent implements OnInit, OnDestroy {
-
-  private readonly unsubscribe$ = new Subject<void>();
+export class KtbServicesListComponent {
   public ServiceClass = Service;
   public _services: Service[] = [];
   public _pageSize: number = DEFAULT_PAGE_SIZE;
@@ -62,14 +56,6 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   constructor(public dataService: DataService, public dateUtil: DateUtil, private _changeDetectorRef: ChangeDetectorRef) { }
 
-  ngOnInit() {
-    this.dataService.roots
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(() => {
-        this.updateDataSource();
-      });
-  }
-
   updateDataSource() {
     this.services.sort(this.compare());
     this.dataSource = new DtTableDataSource(this.services.slice(0, this.pageSize));
@@ -78,14 +64,14 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
 
   private compare() {
     return (a: Service, b: Service) => {
-      if (!a.getRecentRoot()) {
+      if (!a.latestSequence) {
         return 1;
       }
-      else if (!b.getRecentRoot()) {
+      else if (!b.latestSequence) {
         return -1;
       }
       else {
-        return DateUtil.compareTraceTimesAsc(a.getRecentRoot().getLastTrace(), b.getRecentRoot().getLastTrace());
+        return new Date(b.latestSequence.time).getTime() - new Date(a.latestSequence.time).getTime();
       }
     };
   }
@@ -102,13 +88,8 @@ export class KtbServicesListComponent implements OnInit, OnDestroy {
     return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
   }
 
-  getSequenceLink(sequence: Root, service: Service) {
+  getSequenceLink(sequence: Sequence, service: Service) {
     return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 
 }

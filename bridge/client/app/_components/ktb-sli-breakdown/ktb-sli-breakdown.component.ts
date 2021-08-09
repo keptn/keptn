@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
 import { SliResult } from '../../_models/sli-result';
-import { IndicatorResult } from '../../_models/indicator-result';
-import { ResultTypes } from '../../_models/result-types';
+import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
+import { ResultTypes } from '../../../../shared/models/result-types';
 
 @Component({
   selector: 'ktb-sli-breakdown',

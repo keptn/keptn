@@ -5,7 +5,7 @@
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : ServiceClass as service">
-            <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.getOpenProblems().length > 0" class="m-0 overflow-ellipsis">
+            <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.openRemediations.length > 0" class="m-0 overflow-ellipsis">
               <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext, else serviceContent">
                 <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
               </a>
@@ -25,20 +25,20 @@
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : ServiceClass as service">
-            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="service.getRecentRoot() as currentSequence">
-              <dt-icon *ngIf="!currentSequence.getLastSequenceOfStage(service.stage)?.isLoading() || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
-                       [name]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() ? currentSequence.getIcon() : currentSequence.getLastTrace().getIcon()"
+            <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="service.latestSequence as currentSequence">
+              <dt-icon *ngIf="!currentSequence.isLoading(service.stage) || currentSequence.hasPendingApproval(service.stage); else showLoading" class="event-icon"
+                       [name]="currentSequence.getIcon()"
                        [class.error]="currentSequence.isFaulty(service.stage)"
-                       [class.success]="currentSequence.getFirstTraceOfStage(service.stage).isFinished() && !currentSequence.isFaulty(service.stage)"
+                       [class.success]="currentSequence.isSuccessful(service.stage)"
                        [class.highlight]="currentSequence.hasPendingApproval(service.stage)"></dt-icon>
               <ng-template #showLoading>
                 <button class="m-0 p-0" dt-button disabled variant="nested">
                   <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
                 </button>
               </ng-template>
-              <a class="m-0" [routerLink]="getSequenceLink(currentSequence, service)" [class.error]="currentSequence.isProblem() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" uitestid="keptn-services-list-jumpToSequence" [textContent]="currentSequence.getLabel()"></a>
+              <a class="m-0" [routerLink]="getSequenceLink(currentSequence, service)" [class.error]="currentSequence.isRemediation() && currentSequence.isFaulty() && !currentSequence.isSuccessful()" uitestid="keptn-services-list-jumpToSequence" [textContent]="currentSequence.name"></a>
             </div>
-            <p class="m-0" *ngIf="!service.roots">-</p>
+            <p class="m-0" *ngIf="!service.latestSequence">-</p>
           </ng-container>
         </dt-cell>
       </ng-container>
@@ -46,10 +46,10 @@
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : ServiceClass as service">
-            <div *ngIf="service.roots">
-              <ktb-evaluation-info [evaluation]="service.getRecentEvaluation()"></ktb-evaluation-info>
+            <div *ngIf="service.latestSequence">
+              <ktb-evaluation-info [evaluation]="service.latestSequence.getEvaluationTrace(service.stage)"></ktb-evaluation-info>
             </div>
-            <p class="m-0" *ngIf="!service.roots">-</p>
+            <p class="m-0" *ngIf="!service.latestSequence">-</p>
           </ng-container>
         </dt-cell>
       </ng-container>

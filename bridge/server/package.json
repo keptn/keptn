@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Express server specific dependencies.",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node --experimental-specifier-resolution=node dist/server/server.js",
     "build": "tsc --build",
-    "dev": "npm run build && nodemon --config nodemon.json --watch ./"
+    "dev": "nodemon --config nodemon.json"
   },
   "bugs": {
     "url": "https://github.com/keptn/keptn/issues"

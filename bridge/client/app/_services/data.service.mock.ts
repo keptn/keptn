@@ -12,7 +12,6 @@ import { Evaluations } from './_mockData/evaluations.mock';
 import { Trace } from '../_models/trace';
 import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { Sequence } from '../_models/sequence';
 
 @Injectable({
   providedIn: 'root'
@@ -43,23 +42,6 @@ export class DataServiceMock extends DataService {
 
   public deleteProject(projectName: string): Observable<object> {
     return of({});
-  }
-
-  public loadRoots(project: Project) {
-    project.roots = [...RootEvents || [], ...project.roots || []].sort(DateUtil.compareTraceTimesAsc);
-    project.stages.forEach(stage => {
-      stage.services.forEach(service => {
-        service.roots = project.roots.filter(s => s.service === service.serviceName && s.getStages().includes(stage.stageName));
-        service.openApprovals = service.roots.reduce((openApprovals: Trace[], root: Root) => {
-          const approval = root.getPendingApproval(stage.stageName);
-          if (approval) {
-            openApprovals.push(approval);
-          }
-          return openApprovals;
-        }, []);
-      });
-    });
-    this._roots.next(project.roots);
   }
 
   public loadTraces(sequence: Sequence) {
