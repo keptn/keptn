@@ -1,93 +1,50 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output
-} from '@angular/core';
-import {Project} from '../../_models/project';
-import {Stage} from '../../_models/stage';
-import {DataService} from '../../_services/data.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Project } from '../../_models/project';
+import { Stage } from '../../_models/stage';
+import { DataService } from '../../_services/data.service';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import {ApiService} from '../../_services/api.service';
-import {Service} from '../../_models/service';
-import {Root} from '../../_models/root';
-import {filter, takeUntil, tap} from 'rxjs/operators';
-import {Subject, Subscription, timer} from 'rxjs';
+import { ApiService } from '../../_services/api.service';
+import { Service } from '../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../_models/dt-filter';
+import { map, switchMap, filter, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
 
 @Component({
-  selector: 'ktb-stage-overview[project]',
+  selector: 'ktb-stage-overview',
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class KtbStageOverviewComponent implements OnInit, OnDestroy {
-  public _project?: Project;
+export class KtbStageOverviewComponent implements OnDestroy {
+  public project?: Project;
   public selectedStage?: Stage;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
   private filteredServices: string[] = [];
-  private globalFilter: {[projectName: string]: {services: string[]}} = {};
-  private unfinishedRoots: Root[] = [];
-  private _rootsTimerInterval = 10;
-  private _rootsTimer: Subscription = Subscription.EMPTY;
-  private readonly unsubscribe$ = new Subject<void>();
+  private globalFilter: { [projectName: string]: { services: string[] } } = {};
+  private unsubscribe$: Subject<void> = new Subject<void>();
 
   @Output() selectedStageChange: EventEmitter<{ stage: Stage, filterType?: string }> = new EventEmitter();
   @Output() filterChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  @Input()
-  get project(): Project | undefined {
-    return this._project;
-  }
-
-  set project(project: Project | undefined) {
-    if (this._project !== project) {
-      this._project = project;
-      this.setFilter();
-    }
-  }
-
-  constructor(private dataService: DataService, private apiService: ApiService, private _changeDetectorRef: ChangeDetectorRef) {
-  }
-
-  ngOnInit(): void {
-    this._rootsTimer = timer(0, this._rootsTimerInterval * 1000)
-      .subscribe(() => {
-        if (this.project) {
-          this.dataService.loadRoots(this.project);
-          if (this.unfinishedRoots) {
-            this.unfinishedRoots.forEach(root => {
-              this.dataService.loadRootTraces(root);
-            });
-          }
-        }
-      });
-
-    this.dataService.roots
+  constructor(private dataService: DataService, private apiService: ApiService, private _changeDetectorRef: ChangeDetectorRef, private route: ActivatedRoute) {
+    const project$ = this.route.params
       .pipe(
-        takeUntil(this.unsubscribe$),
-        filter((roots: Root[] | undefined): roots is Root[] => !!roots),
-        tap(roots => {
-            // Set unfinished roots so that the traces for updates can be loaded
-            // Also ignore currently selected root, as this is getting already polled
-            this.unfinishedRoots = roots.filter(root => root && !root.isFinished());
-          }
-        )).subscribe();
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this._rootsTimer.unsubscribe();
+        map(params => params.projectName),
+        filter(projectName => !!projectName),
+        switchMap(projectName => this.dataService.getProject(projectName)),
+        takeUntil(this.unsubscribe$)
+      );
+    project$.subscribe(project => {
+      this.project = project;
+      this.setFilter();
+    });
   }
 
   private setFilter(): void {
-    this._dataSource.data =  {
+    this._dataSource.data = {
       autocomplete: [
         {
           name: 'Services',
@@ -104,8 +61,7 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
       const services = this.globalFilter[this.project.projectName]?.services || [];
       // tslint:disable-next-line:no-non-null-assertion
       this.filteredServices = services.filter(service => this.project!.getServices().some(pService => pService.serviceName === service));
-    }
-    else {
+    } else {
       this.filteredServices = [];
     }
     this.filterChange.emit(this.filteredServices);
@@ -138,12 +94,6 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
     return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
   }
 
-  public filterRoots(roots: Root[]): Root[] {
-    return this.filteredServices.length === 0
-          ? roots
-          : roots?.filter(root => root.service ? this.filteredServices.includes(root.service) : false);
-  }
-
   private getServicesOfFilter(event: DtFilterFieldChangeEvent<DtFilter>): string[] {
     const services: string[] = [];
     for (const currentFilter of event.filters) {
@@ -162,4 +112,8 @@ export class KtbStageOverviewComponent implements OnInit, OnDestroy {
     this.selectedStageChange.emit({stage, filterType});
   }
 
+  public ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
 }

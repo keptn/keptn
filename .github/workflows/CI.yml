@@ -607,7 +607,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   prepare_github_pr_comment:
-    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node]
+    needs: [prepare_ci_run, unit-tests-go-microservices]
     name: Prepare GitHub Report Comment
     runs-on: ubuntu-20.04
     steps:
@@ -624,7 +624,7 @@ jobs:
           recreate: true
 
   docker_build:
-    needs: [prepare_ci_run, unit-tests-go-microservices, unit-tests-node, prepare_github_pr_comment]
+    needs: [prepare_ci_run, unit-tests-go-microservices, prepare_github_pr_comment]
     name: Docker Build
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
@@ -668,7 +668,6 @@ jobs:
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
         run: |
-          DATETIME=$(date +'%Y%m%d')$(date +'%H%M')
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
 

@@ -6,7 +6,7 @@ import {Sequence} from '../../_models/sequence';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
-import {ResultTypes} from '../../_models/result-types';
+import {ResultTypes} from '../../../../shared/models/result-types';
 import {DataService} from '../../_services/data.service';
 
 @Component({

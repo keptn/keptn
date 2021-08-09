@@ -2,8 +2,8 @@ import {Component, Input} from '@angular/core';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
 
 import {Trace} from '../../_models/trace';
-import {ResultTypes} from '../../_models/result-types';
-import {EvaluationResult} from '../../_models/evaluation-result';
+import {ResultTypes} from '../../../../shared/models/result-types';
+import {EvaluationResult} from '../../../../shared/interfaces/evaluation-result';
 
 @Component({
   selector: 'ktb-evaluation-info',

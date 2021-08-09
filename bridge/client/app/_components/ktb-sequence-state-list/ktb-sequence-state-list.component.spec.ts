@@ -3,8 +3,8 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {KtbSequenceStateListComponent} from './ktb-sequence-state-list.component';
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {AppModule} from "../../app.module";
-import {ResultTypes} from "../../_models/result-types";
-import {EvaluationResult} from "../../_models/evaluation-result";
+import {ResultTypes} from "../../../../shared/models/result-types";
+import {EvaluationResult} from "../../../../shared/interfaces/evaluation-result";
 import {Sequence} from "../../_models/sequence";
 
 describe('KtbSequenceStateListComponent', () => {

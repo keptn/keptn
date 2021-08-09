@@ -1,4 +1,4 @@
-import { ResultTypes } from './result-types';
+import { ResultTypes } from '../models/result-types';
 
 export type Target = {criteria: string, targetValue: number, violated: boolean};
 

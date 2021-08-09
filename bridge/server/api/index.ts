@@ -1,12 +1,13 @@
-import { Router } from 'express';
-import axios, { Method } from 'axios';
-import * as https from 'https';
-import { currentPrincipal } from '../user/session.js';
+import { NextFunction, Request, Response, Router } from 'express';
+import { Method } from 'axios';
+import { currentPrincipal } from '../user/session';
+import { axios } from '../services/axios-instance';
+import { DataService } from '../services/data-service';
 
 const router = Router();
 
 function apiRouter(params:
-                     {apiUrl: string | undefined, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string}
+                     {apiUrl: string, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string}
                    ): Router {
   // fetch parameters for bridgeInfo endpoint
   const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
@@ -16,11 +17,7 @@ function apiRouter(params:
   const projectsPageSize = process.env.PROJECTS_PAGE_SIZE;
   const servicesPageSize = process.env.SERVICES_PAGE_SIZE;
   const keptnInstallationType = process.env.KEPTN_INSTALLATION_TYPE;
-
-  // accepts self-signed ssl certificate
-  const agent = new https.Agent({
-    rejectUnauthorized: false
-  });
+  const dataService = new DataService(apiUrl, apiToken);
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
@@ -51,7 +48,6 @@ function apiRouter(params:
       const result = await axios({
         method: req.method,
         url: `${integrationsPageLink}`,
-        httpsAgent: agent
       });
       return res.send(result.data);
     } catch (err) {
@@ -66,8 +62,7 @@ function apiRouter(params:
         url: `${apiUrl}${req.url}`,
         headers: {
           'Content-Type': 'application/json'
-        },
-        httpsAgent: agent
+        }
       });
       return res.json(result.data);
     } catch (err) {
@@ -83,12 +78,22 @@ function apiRouter(params:
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': `keptn/bridge:${process.env.VERSION}`
-        },
-        httpsAgent: agent
+        }
       });
       return res.json(result.data);
     } catch (err) {
       return next(err);
+    }
+  });
+
+  router.get('/project/:projectName', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const projectName = req.params.projectName;
+      const project = await dataService.getProject(projectName, req.query.remediation === 'true', req.query.approval === 'true');
+      return res.json(project);
+    }
+    catch (error) {
+      return next(error);
     }
   });
 
@@ -101,8 +106,7 @@ function apiRouter(params:
         headers: {
           'x-token': apiToken,
           'Content-Type': 'application/json'
-        },
-        httpsAgent: agent
+        }
       });
 
       return res.json(result.data);

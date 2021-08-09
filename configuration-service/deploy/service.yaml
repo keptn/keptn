@@ -46,12 +46,12 @@ spec:
         resources:
           requests:
             memory: "32Mi"
-            cpu: "50m"
+            cpu: "25m"
           limits:
             # limits is high on purpose to enable Debugging using skaffold
             # you can monitor memory usage using "kubectl -n keptn top pods"
             memory: "512Mi"
-            cpu: "500m"
+            cpu: "100m"
         volumeMounts:
         - mountPath: /data/config
           name: configuration-volume
