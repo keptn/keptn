@@ -144,6 +144,10 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(event model
 		return
 	}
 
+	if len(states.States) == 0 {
+		log.Errorf("could not fetch sequence state for keptnContext %s", event.Shkeptncontext)
+		return
+	}
 	state := states.States[0]
 
 	state.State = status
