@@ -64,7 +64,7 @@
     "ngx-moment": "^3.5.0",
     "normalize.css": "^8.0.1",
     "rxjs": "^6.6.7",
-    "semver": "^7.3.2",
+    "semver": "^7.3.5",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },
@@ -94,7 +94,7 @@
     "puppeteer": "^10.0.0",
     "ts-node": "^10.1.0",
     "tslint": "~6.1.0",
-    "typescript": "^4.1.5"
+    "typescript": "^4.1.6"
   },
   "resolutions": {
     "minimist": "1.2.5",
