@@ -1,15 +1,15 @@
-import {Injectable} from '@angular/core';
-import {DataService} from './data.service';
-import {ApiService} from './api.service';
-import {Project} from '../_models/project';
-import {KeptnInfo} from './_mockData/keptnInfo.mock';
-import {Projects} from './_mockData/projects.mock';
-import {Traces} from './_mockData/traces.mock';
-import {Evaluations} from './_mockData/evaluations.mock';
-import {Trace} from '../_models/trace';
-import {map} from 'rxjs/operators';
-import {Observable, of} from 'rxjs';
-import {Sequence} from '../_models/sequence';
+import { Injectable } from '@angular/core';
+import { DataService } from './data.service';
+import { ApiService } from './api.service';
+import { Project } from '../_models/project';
+import { KeptnInfo } from './_mockData/keptnInfo.mock';
+import { Projects } from './_mockData/projects.mock';
+import { Traces } from './_mockData/traces.mock';
+import { Evaluations } from './_mockData/evaluations.mock';
+import { Trace } from '../_models/trace';
+import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { Sequence } from '../_models/sequence';
 import { UniformRegistrationsMock } from '../_models/uniform-registrations.mock';
 import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
 import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
@@ -19,7 +19,6 @@ import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-lo
   providedIn: 'root'
 })
 export class DataServiceMock extends DataService {
-
   constructor(apiService: ApiService) {
     super(apiService);
   }

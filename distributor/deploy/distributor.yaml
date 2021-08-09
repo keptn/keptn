@@ -33,11 +33,11 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "500m"
+            memory: "16Mi"
+            cpu: "25m"
           limits:
-            memory: "256Mi"
-            cpu: "500m"
+            memory: "32Mi"
+            cpu: "100m"
         env:
         - name: PUBSUB_URL
           value: 'nats://keptn-nats-cluster'

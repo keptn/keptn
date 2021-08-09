@@ -5,6 +5,8 @@ import (
 	"context"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -86,4 +88,32 @@ func fullTrim(str string) string {
 	s := strings.ReplaceAll(str, " ", "")
 	s = strings.ReplaceAll(s, "\n", "")
 	return s
+}
+
+func stringp(s string) *string {
+	return &s
+}
+
+func boolp(b bool) *bool {
+	return &b
+}
+
+func getTestAPI() *httptest.Server {
+	ts := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.Method == http.MethodPost {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+				w.Write([]byte(``))
+				return
+			} else if r.Method == http.MethodGet {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(200)
+				w.Write([]byte(`{"user":"user", "password":"password"}`))
+				return
+			}
+		}),
+	)
+	return ts
 }

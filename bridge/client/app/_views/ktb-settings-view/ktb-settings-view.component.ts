@@ -77,14 +77,19 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$),
       filter((project: Project | undefined): project is Project => !!project)
     ).subscribe(project => {
-      this.projectName = project.projectName;
-      this.gitData.remoteURI = project.gitRemoteURI;
-      this.gitData.gitUser = project.gitUser;
+      if (project.projectName !== this.projectName) {
+        this.projectName = project.projectName;
 
-      this.projectDeletionData = {
-        type: DeleteType.PROJECT,
-        name: this.projectName
-      };
+        this.gitData = {
+          remoteURI: project.gitRemoteURI,
+          gitUser: project.gitUser
+        };
+
+        this.projectDeletionData = {
+          type: DeleteType.PROJECT,
+          name: this.projectName
+        };
+      }
     });
 
     this.route.queryParams.pipe(
@@ -127,6 +132,8 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
           this.isGitUpstreamInProgress = false;
+          this.gitData.gitToken = '';
+          this.gitData = {... this.gitData};
           this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
         }, (err) => {
           console.log(err);

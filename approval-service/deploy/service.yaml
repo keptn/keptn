@@ -33,10 +33,10 @@ spec:
         resources:
           requests:
             memory: "32Mi"
-            cpu: "50m"
+            cpu: "25m"
           limits:
             memory: "256Mi"
-            cpu: "500m"
+            cpu: "100m"
         env:
         - name: CONFIGURATION_SERVICE
           value: 'http://configuration-service:8080'
@@ -50,11 +50,11 @@ spec:
           - containerPort: 8081
         resources:
           requests:
-            memory: "32Mi"
-            cpu: "50m"
+            memory: "16Mi"
+            cpu: "25m"
           limits:
-            memory: "128Mi"
-            cpu: "500m"
+            memory: "32Mi"
+            cpu: "100m"
         env:
           - name: PUBSUB_URL
             value: 'nats://keptn-nats-cluster'

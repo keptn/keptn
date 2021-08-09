@@ -10,16 +10,12 @@ on:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
-      artifacts_ci_event_type:
-        description: 'Event Type for CI artifacts (e.g., push, pull_request, workflow_dispatch)'
-        required: true
-        default: 'push'
       examples_branch:
         description: 'Branch of Keptn examples to use for integration tests (e.g., master, release-x.y.z)'
         required: true
         default: 'master'
 env:
-  META_KEPTN_VERSION: 0.8.6
+  META_KEPTN_VERSION: 0.8.7
   META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
@@ -98,7 +94,7 @@ jobs:
       GO_VERSION: ^1.16
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
-      ARTIFACTS_CI_EVENT_TYPE: ${{ github.event.inputs.artifacts_ci_event_type }}
+      ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
     steps:
 
       - name: Set up Go 1.x
@@ -148,18 +144,25 @@ jobs:
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
 
+      - name: Find latest successful run ID
+        id: last_run_id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_SLUG: "keptn/keptn"
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+        run: |
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
+          echo "::set-output name=RUN_ID::$RUN_ID"
+
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
-      - name: Download build artifacts from specified branch
+      - name: Download all artifacts from last successful build of specified branch
         uses: dawidd6/action-download-artifact@v2.14.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
-          workflow_conclusion: success
-          # use the following branch
-          branch: ${{ steps.determine_branch.outputs.BRANCH}}
+          run_id: ${{ steps.last_run_id.outputs.RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
 
@@ -336,7 +339,6 @@ jobs:
                --chart-repo=http://0.0.0.0:8000/${HELM_CHART_NAME} --creds=creds.json --verbose $USE_CASE
           fi
           echo "::endgroup::"
-
 
       # Gather resource limits directly after installation of Keptn
       - name: Gather resource limits
@@ -560,10 +562,10 @@ jobs:
           export KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
 
           # extract Keptn Bridge Info
-          response=$(keptn configure bridge --output)
-          export KEPTN_BRIDGE_URL=$(echo "$response" | awk -F'available under: ' '{ print $2 }' | xargs)
-          export KEPTN_BRIDGE_USER=$(echo "$response" | awk -F'user: ' '{ print $2 }' | xargs)
-          export KEPTN_BRIDGE_PASSWORD=$(echo "$response" | awk -F'password: ' '{ print $2 }' | xargs)
+          statusresponse=$(keptn status)
+          export KEPTN_BRIDGE_URL=$(echo "$returnstr" | awk -F'Bridge URL: ' '{ print $2 }' | xargs)
+          export KEPTN_BRIDGE_USER=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_USERNAME}" | base64 --decode)
+          export KEPTN_BRIDGE_PASSWORD=$(kubectl get secret -n keptn bridge-credentials -o jsonpath="{.data.BASIC_AUTH_PASSWORD}" | base64 --decode)
 
           # disable basic auth
           kubectl -n ${KEPTN_NAMESPACE} delete secret bridge-credentials
@@ -576,7 +578,7 @@ jobs:
           ./node_modules/.bin/ng e2e --dev-server-target= --base-url=$KEPTN_BRIDGE_URL --protractor-config=./e2e/protractor-ci.conf.js
 
           # re-enable basic auth of bridge
-          keptn configure bridge --user=$KEPTN_BRIDGE_USER --password=$KEPTN_BRIDGE_PASSWORD
+          kubectl create secret generic my-secret -n keptn --from-literal=BASIC_AUTH_USERNAME=$KEPTN_BRIDGE_USER --from-literal=BASIC_AUTH_PASSWORD=$KEPTN_BRIDGE_PASSWORD
 
       - name: Test Delivery Assistant
         id: test_delivery_assistant
@@ -773,7 +775,6 @@ jobs:
     if: always() # always run, regardless of the outcome of the last job
     runs-on: ubuntu-20.04
     env:
-      ARTIFACTS_CI_EVENT_TYPE: ${{ needs.integration-test.outputs.ARTIFACTS_CI_EVENT_TYPE }}
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
     steps:
       - name: Check out code
@@ -822,10 +823,7 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ env.ARTIFACTS_CI_EVENT_TYPE }} # e.g., push, pull_request
-          workflow_conclusion: success
-          # use the following branch
-          branch: ${{ env.BRANCH}}
+          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
 
@@ -1092,10 +1090,7 @@ jobs:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: CI.yml
-          event: ${{ github.event.inputs.artifacts_ci_event_type }} # e.g., push, pull_request
-          workflow_conclusion: success
-          # use the following branch
-          branch: ${{ env.BRANCH}}
+          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
           # directory where to extract artifacts to
           path: ./dist
 
@@ -1107,6 +1102,7 @@ jobs:
       - name: Authenticate Keptn CLI
         id: authenticate_keptn_cli
         run: |
+          keptn set config KubeContextCheck false
           keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
 
       - name: Deploy Keptn with Keptn
@@ -1128,10 +1124,8 @@ jobs:
 
           stages=('dev' 'hardening' 'production')
           services=('keptn' 'helm-service' 'jmeter-service')
-          for SERVICE in "${services[@]}"
-          do
-            for STAGE in "${stages[@]}"
-            do
+          for SERVICE in "${services[@]}"; do
+            for STAGE in "${stages[@]}"; do
               export SERVICE
               export STAGE
               envsubst < ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}.yaml > ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}-${STAGE}.yaml
@@ -1144,8 +1138,7 @@ jobs:
             done
           done
 
-          for STAGE in "${stages[@]}"
-          do
+          for STAGE in "${stages[@]}"; do
             export STAGE
             envsubst < ${KEPTN_INGRESS_TEMPLATE_FILENAME} > ${ENDPOINTS_TEMPLATE_BASE_PATH}/ingress-${STAGE}.yaml
             keptn add-resource \
@@ -1189,7 +1182,6 @@ jobs:
         if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
         run: curl -sL https://github.com/keptn/keptn/releases/download/${META_KEPTN_VERSION}/keptn-${META_KEPTN_VERSION}-linux-amd64.tar.gz -o ${{ env.KEPTN_ARCHIVE_PATH }}
 
-
       - name: Install Keptn CLI for META_KEPTN
         id: install_keptn_cli
         run: |
@@ -1200,7 +1192,9 @@ jobs:
       - name: Authenticate Keptn CLI
         id: authenticate_keptn_cli
         run: |
+          keptn set config KubeContextCheck false
           keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
+
       - name: Trigger Service Delivery
         id: trigger-service-delivery
         uses: keptn/gh-action-send-event@main
@@ -1230,10 +1224,9 @@ jobs:
       - name: Check if keptn on keptn delivery passed
         id: check-service-delivery
         timeout-minutes: 5
-        run: |
-          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context $KEPTN_CONTEXT --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]];
-          do
-            sleep 10;
-          done
         env:
           KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
+        run: |
+          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]]; do
+            sleep 10;
+          done
