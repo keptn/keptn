@@ -791,8 +791,8 @@ jobs:
           # Push newly tagged image
           docker push "${NEW_TAG1}" && docker push "${NEW_TAG2}"
 
-          report="* Retagged ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
-          echo "::set-output name=build-report::$report"
+          report="* Retagged unchanged image ${IMAGE} with ${NEW_TAG1} and ${NEW_TAG2} (Source: ${DOCKER_FOLDER})"
+          echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
       - name: Report Docker Build to PR
         if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
@@ -803,19 +803,7 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: ${{ steps.docker_build_image.outputs.build-report }}
-          append: true
-
-      - name: Report Docker Re-Tag to PR
-        if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) && matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
-        # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
-        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
-        # that's fine, but it means we can't comment on the PR in this case
-        uses: marocchino/sticky-pull-request-comment@v2.1.0
-        continue-on-error: true
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: ${{ steps.docker_retag_image.outputs.build-report }}
+          message: ${{ env.DOCKER_BUILD_REPORT }}
           append: true
 
       - name: Delete PR comment on failure
