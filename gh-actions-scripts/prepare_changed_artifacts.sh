@@ -83,7 +83,6 @@ for changed_file in $CHANGED_FILES; do
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
-      break
     elif [[ ( $BUILD_EVERYTHING == 'true' ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "No changes in $artifact but build is set to build everything"
       IFS= read -r "${should_build_artifact}" <<< "true"
@@ -96,7 +95,6 @@ for changed_file in $CHANGED_FILES; do
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
-      break
     fi
   done
 done
