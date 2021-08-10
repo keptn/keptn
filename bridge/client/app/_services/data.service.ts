@@ -538,7 +538,7 @@ export class DataService {
   }
 
   public sendSequenceControl(sequence: Sequence, state: string): void {
-    sequence.state = SequenceState.UNKNOWN;
+    sequence.setState(SequenceState.UNKNOWN);
     this.apiService.sendSequenceControl(sequence.project, sequence.shkeptncontext, state)
       .subscribe(() => {
         this.updateSequence(sequence.project, sequence.shkeptncontext);

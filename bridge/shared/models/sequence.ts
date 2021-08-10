@@ -15,7 +15,10 @@ export type SequenceStage = {
   name: string,
 };
 
-enum sequenceState {
+export enum SequenceState {
+  TRIGGERED = 'triggered',
+  STARTED = 'started',
+  FINISHED = 'finished',
   WAITING = 'waiting',
   PAUSED = 'paused',
   UNKNOWN = ''
@@ -27,16 +30,13 @@ export enum SequenceStateControl {
   RESUME = 'resume'
 }
 
-export const SequenceState = {...sequenceState, ...EventState};
-export type SequenceStateType = sequenceState & EventState;
-
 export class Sequence {
   name!: string;
   project!: string;
   service!: string;
   shkeptncontext!: string;
   stages!: SequenceStage[];
-  state!: SequenceStateType;
+  state!: SequenceState;
   time!: string;
   problemTitle?: string;
 }

@@ -160,4 +160,8 @@ export class Sequence extends sq {
   public getRemediationActions(): RemediationAction[] {
     return this.stages[0]?.actions ?? [];
   }
+
+  public setState(state: SequenceState): void {
+    this.state = state;
+  }
 }
