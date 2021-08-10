@@ -317,6 +317,11 @@ jobs:
             echo "::set-output name=BUILD_MATRIX_EMPTY::false"
           fi
 
+      - name: Extract branch name
+        id: extract_branch
+        # see https://github.com/keptn/gh-action-extract-branch-name for details
+        uses: keptn/gh-action-extract-branch-name@main
+
       - name: Find last successful run ID
         if: steps.build_everything.outputs.BUILD_EVERYTHING == 'true'
         id: last_run_id
@@ -327,11 +332,6 @@ jobs:
         run: |
           RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
-
-      - name: Extract branch name
-        id: extract_branch
-        # see https://github.com/keptn/gh-action-extract-branch-name for details
-        uses: keptn/gh-action-extract-branch-name@main
 
       - name: 'Get Previous tag'
         id: get_previous_tag
