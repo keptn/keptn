@@ -773,14 +773,21 @@ jobs:
           LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
           OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
-          MANIFEST=$(docker manifest inspect "${IMAGE}:${OLD_TAG}" || docker manifest inspect "${IMAGE}:${VERSION}")
+          # Pull previous image
+          docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}"
+          docker pull "${IMAGE}:${VERSION}"
 
+          # Retag previous image
           NEW_TAG="${IMAGE}:${VERSION}.${DATETIME}"
           echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
-          curl -i -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
+          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${NEW_TAG}"
+
           NEW_TAG="${IMAGE}:${VERSION}"
           echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
-          curl -i -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
+          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${NEW_TAG}"
+
+          # Push newly tagged image
+          docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
 
           report="* Retagged ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           echo "::set-output name=build-report::$report"
@@ -798,7 +805,7 @@ jobs:
           append: true
 
       - name: Report Docker Re-Tag to PR
-        if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository) && matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
         # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't comment on the PR in this case
