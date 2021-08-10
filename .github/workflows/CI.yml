@@ -175,7 +175,7 @@ jobs:
         env:
           BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
         run: |
-          ./gh-actions-scripts/prepare_changed_artifacts.sh
+          ./gh-actions-scripts/prepare_changed_artifacts.sh "${{ steps.changed_files.outputs.all }}"
 
       - name: Extract branch name
         id: extract_branch

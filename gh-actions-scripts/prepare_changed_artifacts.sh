@@ -1,5 +1,12 @@
 #!/bin/bash
 
+CHANGED_FILES=$1
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 CHANGED_FILES"
+  exit
+fi
+
 # initialize variables with false (make sure they are also set in needs.prepare_ci_run.outputs !!!)
 BUILD_INSTALLER=false
 BUILD_API=false
@@ -36,12 +43,12 @@ artifacts=(
 )
 
 echo "changed files:"
-echo "${{ steps.changed_files.outputs.all }}"
+echo "$CHANGED_FILES"
 matrix_config='{"config":['
 # shellcheck disable=SC2016
 build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "test-folders": $test_folders, "go-flags": $go_flags }'
 
-for changed_file in ${{ steps.changed_files.outputs.all }}; do
+for changed_file in $CHANGED_FILES; do
   echo "Checking if $changed_file leads to a build..."
 
   if [[ $changed_file == "${INSTALLER_FOLDER}"* ]]; then
@@ -64,7 +71,7 @@ for changed_file in ${{ steps.changed_files.outputs.all }}; do
     artifact_go_flags="${artifact}_GO_FLAGS"
     artifact_test_folders="${artifact}_TEST_FOLDERS"
 
-    if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
+    if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) && ( $BUILD_EVERYTHING != 'true' ) ]]; then
       echo "Found changes in $artifact"
       IFS= read -r "${should_build_artifact}" <<< "true"
       artifact_config=$(jq -n \
