@@ -435,40 +435,40 @@ jobs:
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
-  unit-tests-go-microservices:
-    name: Unit Tests Go Microservices
-    needs: prepare_ci_run
-    runs-on: ubuntu-20.04
-    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
-    strategy:
-      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-    steps:
-      # Always skip this job for the bridge
-      - name: Set up Go 1.x
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Checkout Code
-        if: matrix.config.artifact != 'bridge2'
-        uses: actions/checkout@v2.3.4
-
-      # cache go modules
-      - if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-        uses: actions/cache@v2.1.6
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Test ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-        run: |
-          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
-          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
-        working-directory: ${{ matrix.config.working-dir }}
+#  unit-tests-go-microservices:
+#    name: Unit Tests Go Microservices
+#    needs: prepare_ci_run
+#    runs-on: ubuntu-20.04
+#    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
+#    strategy:
+#      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
+#    steps:
+#      # Always skip this job for the bridge
+#      - name: Set up Go 1.x
+#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: ${{ env.GO_VERSION }}
+#
+#      - name: Checkout Code
+#        if: matrix.config.artifact != 'bridge2'
+#        uses: actions/checkout@v2.3.4
+#
+#      # cache go modules
+#      - if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+#        uses: actions/cache@v2.1.6
+#        with:
+#          path: ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-
+#
+#      - name: Test ${{ matrix.config.artifact }}
+#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+#        run: |
+#          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
+#          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
+#        working-directory: ${{ matrix.config.working-dir }}
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
@@ -666,7 +666,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   prepare_github_pr_comment:
-    needs: [prepare_ci_run, unit-tests-go-microservices]
+    needs: [prepare_ci_run]
     name: Prepare GitHub Report Comment
     runs-on: ubuntu-20.04
     steps:
@@ -683,7 +683,7 @@ jobs:
           recreate: true
 
   docker_build:
-    needs: [prepare_ci_run, unit-tests-go-microservices, prepare_github_pr_comment]
+    needs: [prepare_ci_run, prepare_github_pr_comment]
     name: Docker Build
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
@@ -773,7 +773,7 @@ jobs:
           LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
           OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
-          MANIFEST=$(docker manifest inspect "${IMAGE}:${OLD_TAG}")
+          MANIFEST=$(docker manifest inspect "${IMAGE}:${OLD_TAG}" || docker manifest inspect "${IMAGE}:${VERSION}")
           echo "Manifest: $MANIFEST"
 
           NEW_TAG="${IMAGE}:${VERSION}.${DATETIME}"
