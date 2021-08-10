@@ -774,20 +774,22 @@ jobs:
           OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
           # Pull previous image
-          docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}"
-          docker pull "${IMAGE}:${VERSION}"
+          if docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}"; then
+            OLD_IMAGE="${IMAGE}:${VERSION}.${LAST_DATETIME}"
+          elif docker pull "${IMAGE}:${VERSION}"; then
+            OLD_IMAGE="${IMAGE}:${VERSION}"
+          fi
 
           # Retag previous image
-          NEW_TAG="${IMAGE}:${VERSION}.${DATETIME}"
-          echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
-          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${NEW_TAG}"
+          NEW_TAG1="${IMAGE}:${VERSION}.${DATETIME}"
+          NEW_TAG2="${IMAGE}:${VERSION}"
 
-          NEW_TAG="${IMAGE}:${VERSION}"
-          echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
-          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${NEW_TAG}"
+          echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tags ${NEW_TAG1}, ${NEW_TAG2}"
+          docker tag "${OLD_IMAGE}" "${NEW_TAG1}"
+          docker tag "${OLD_IMAGE}" "${NEW_TAG2}"
 
           # Push newly tagged image
-          docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
+          docker push "${NEW_TAG1}" && docker push "${NEW_TAG2}"
 
           report="* Retagged ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           echo "::set-output name=build-report::$report"
