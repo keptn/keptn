@@ -330,16 +330,12 @@ jobs:
           REPO_SLUG: "keptn/keptn"
           BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
         run: |
-          echo "github ref: ${GITHUB_REF}"
           BRANCH_NAME=""
           if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
-            echo "branch name: $BRANCH_NAME"
           elif [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
             PR_NUMBER=${BRANCH_SLUG#PR-}
-            echo "pr number: $PR_NUMBER"
             BRANCH_NAME=$(gh pr view "$PR_NUMBER" --json "headRefName" | jq -r '.headRefName')
-            echo "branch name: $BRANCH_NAME"
           fi
           RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH_NAME" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
