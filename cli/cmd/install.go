@@ -33,6 +33,7 @@ import (
 
 	"github.com/keptn/keptn/cli/pkg/logging"
 
+	goutils "github.com/keptn/go-utils/pkg/common/httputils"
 	keptnutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -196,13 +197,30 @@ type InstallCmdHandler struct {
 	userInput        common.IUserInput
 }
 
+func fetchCharts(helmHelper helm.IHelper, keptnChartRepoURL string) (*chart.Chart, error) {
+	var err error
+	var chart *chart.Chart
+	if goutils.IsValidURL(keptnChartRepoURL) {
+		chart, err = helmHelper.DownloadChart(keptnChartRepoURL)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		chart, err = keptnutils.LoadChartFromPath(keptnChartRepoURL)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return chart, nil
+}
+
 func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
 	keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
 	var err error
-	if keptnChart, err = i.helmHelper.DownloadChart(keptnChartRepoURL); err != nil {
+	if keptnChart, err = fetchCharts(i.helmHelper, keptnChartRepoURL); err != nil {
 		return err
 	}
 
@@ -301,7 +319,7 @@ func fetchContinuousDeliveryCharts(helmHelper helm.IHelper, chartRepoURL *string
 	charts := []*chart.Chart{}
 	for _, service := range continuousDeliveryServices {
 		chartURL := getExecutionPlaneServiceChartRepoURL(chartRepoURL, service)
-		serviceChart, err := helmHelper.DownloadChart(chartURL)
+		serviceChart, err := fetchCharts(helmHelper, chartURL)
 		if err != nil {
 			return nil, err
 		}
