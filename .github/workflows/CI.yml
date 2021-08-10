@@ -774,9 +774,9 @@ jobs:
           OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
           # Pull previous image
-          if docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}"; then
+          if docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}" -q; then
             OLD_IMAGE="${IMAGE}:${VERSION}.${LAST_DATETIME}"
-          elif docker pull "${IMAGE}:${VERSION}"; then
+          elif docker pull "${IMAGE}:${VERSION}" -q; then
             OLD_IMAGE="${IMAGE}:${VERSION}"
           fi
 
@@ -784,7 +784,7 @@ jobs:
           NEW_TAG1="${IMAGE}:${VERSION}.${DATETIME}"
           NEW_TAG2="${IMAGE}:${VERSION}"
 
-          echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tags ${NEW_TAG1}, ${NEW_TAG2}"
+          echo "ℹ️ Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tags ${NEW_TAG1}, ${NEW_TAG2}"
           docker tag "${OLD_IMAGE}" "${NEW_TAG1}"
           docker tag "${OLD_IMAGE}" "${NEW_TAG2}"
 
