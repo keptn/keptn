@@ -16,6 +16,21 @@ env:
   KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
   CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
+  
+  BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
+  API_ARTIFACT_PREFIX: "API"
+  OS_ROUTE_SVC_ARTIFACT_PREFIX: "OS_ROUTE_SVC"
+  JMETER_SVC_ARTIFACT_PREFIX: "JMETER_SVC"
+  HELM_SVC_ARTIFACT_PREFIX: "HELM_SVC"
+  APPROVAL_SVC_ARTIFACT_PREFIX: "APPROVAL_SVC"
+  DISTRIBUTOR_ARTIFACT_PREFIX: "DISTRIBUTOR"
+  SHIPYARD_CONTROLLER_ARTIFACT_PREFIX: "SHIPYARD_CONTROLLER"
+  SECRET_SVC_ARTIFACT_PREFIX: "SECRET_SVC"
+  CONFIGURATION_SVC_ARTIFACT_PREFIX: "CONFIGURATION_SVC"
+  REMEDIATION_SVC_ARTIFACT_PREFIX: "REMEDIATION_SVC"
+  LIGHTHOUSE_SVC_ARTIFACT_PREFIX: "LIGHTHOUSE_SVC"
+  MONGODB_DS_ARTIFACT_PREFIX: "MONGODB_DS"
+  STATISTICS_SVC_ARTIFACT_PREFIX: "STATISTICS_SVC"
 
   BRIDGE_ARTIFACT: "bridge2"
   BRIDGE_FOLDER: "bridge/"
@@ -123,6 +138,7 @@ jobs:
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
+      LAST_SUCCESSFUL_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
 
     steps:
       - name: Prevent PR Build on Release Branch
@@ -178,20 +194,20 @@ jobs:
           BUILD_STATISTICS_SVC=false
 
           artifacts=(
-            "BRIDGE"
-            "API"
-            "OS_ROUTE_SVC"
-            "JMETER_SVC"
-            "HELM_SVC"
-            "APPROVAL_SVC"
-            "DISTRIBUTOR"
-            "SHIPYARD_CONTROLLER"
-            "SECRET_SVC"
-            "CONFIGURATION_SVC"
-            "REMEDIATION_SVC"
-            "LIGHTHOUSE_SVC"
-            "MONGODB_DS"
-            "STATISTICS_SVC"
+            "$BRIDGE_ARTIFACT_PREFIX"
+            "$API_ARTIFACT_PREFIX"
+            "$OS_ROUTE_SVC_ARTIFACT_PREFIX"
+            "$JMETER_SVC_ARTIFACT_PREFIX"
+            "$HELM_SVC_ARTIFACT_PREFIX"
+            "$APPROVAL_SVC_ARTIFACT_PREFIX"
+            "$DISTRIBUTOR_ARTIFACT_PREFIX"
+            "$SHIPYARD_CONTROLLER_ARTIFACT_PREFIX"
+            "$SECRET_SVC_ARTIFACT_PREFIX"
+            "$CONFIGURATION_SVC_ARTIFACT_PREFIX"
+            "$REMEDIATION_SVC_ARTIFACT_PREFIX"
+            "$LIGHTHOUSE_SVC_ARTIFACT_PREFIX"
+            "$MONGODB_DS_ARTIFACT_PREFIX"
+            "$STATISTICS_SVC_ARTIFACT_PREFIX"
           )
 
           echo "changed files:"
@@ -222,6 +238,7 @@ jobs:
 
               if [[ ( $changed_file == ${!artifact_folder}* || $BUILD_EVERYTHING == 'true') && ("${!should_build_artifact}" != 'true')]]; then
                 echo "Found changes in $artifact"
+# TODO if build everything is true but there are no changes, add to matrix but set should build to false
                 IFS= read -r "${should_build_artifact}" <<< "true"
                 artifact_config=$(jq -n \
                 --arg artifact "${!artifact_fullname}" \
@@ -289,6 +306,17 @@ jobs:
             echo "Build matrix is NOT emtpy, setting output..."
             echo "::set-output name=BUILD_MATRIX_EMPTY::false"
           fi
+
+      - name: Find last successful run ID
+        if: steps.build_everything.outputs.BUILD_EVERYTHING == 'true'
+        id: last_run_id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_SLUG: "keptn/keptn"
+          BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+        run: |
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
+          echo "::set-output name=RUN_ID::$RUN_ID"
 
       - name: Extract branch name
         id: extract_branch
@@ -659,7 +687,7 @@ jobs:
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
+        if: matrix.config.should-run == 'true'
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
@@ -676,6 +704,44 @@ jobs:
             report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           fi
 
+          echo "::set-output name=build-report::$report"
+
+      - name: "Download Build Config from last successful build"
+        uses: dawidd6/action-download-artifact@v2.14.0
+        id: download_last_build_config
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true'
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          run_id: ${{ needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID }}
+          name: build-config
+          # directory where to extract artifacts to
+          path: ./last-build-config
+
+      - id: docker_retag_image
+        name: "Docker Retag keptn/${{ matrix.config.artifact }}"
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true'
+        env:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE: keptn/${{ matrix.config.artifact }}
+          DOCKER_FOLDER: ${{ matrix.config.working-dir }}
+        run: |
+          # Fetch last image datetime from build config
+          LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config/build-config.env" | cut -d '=' -f2)
+
+          # Pull previous image
+          docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}"
+
+          # Retag previous image
+          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${IMAGE}:${VERSION}.${DATETIME}"
+          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${IMAGE}:${VERSION}"
+
+          # Push newly tagged image
+          docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
+
+          report="* Retagged ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           echo "::set-output name=build-report::$report"
 
       - name: Report Docker Build to PR
