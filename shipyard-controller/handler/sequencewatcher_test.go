@@ -109,7 +109,7 @@ func TestSequenceWatcher(t *testing.T) {
 		},
 	}
 
-	cancelSequenceChannel := make(chan common.SequenceCancellation)
+	cancelSequenceChannel := make(chan common.SequenceTimeout)
 
 	watcher := handler.NewSequenceWatcher(
 		cancelSequenceChannel,
@@ -135,7 +135,6 @@ func TestSequenceWatcher(t *testing.T) {
 	select {
 	case cancelCall := <-cancelSequenceChannel:
 		require.Equal(t, "my-keptn-context-2", cancelCall.KeptnContext)
-		require.Equal(t, common.Timeout, cancelCall.Reason)
 
 		require.Eventually(t, func() bool {
 			return len(eventRepoMock.DeleteEventCalls()) == 1

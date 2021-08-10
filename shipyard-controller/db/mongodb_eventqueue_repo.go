@@ -15,6 +15,12 @@ import (
 
 const eventQueueCollectionName = "shipyard-controller-event-queue"
 
+// eventQueueSequenceStateCollectionName contains information on whether a task sequence is currently paused and thus outgoing events should be blocked
+const eventQueueSequenceStateCollectionName = "shipyard-controller-event-queue-sequence-state"
+
+const keptnContextScope = "scope.keptnContext"
+const stageScope = "scope.stage"
+
 // MongoDBEventQueueRepo retrieves and stores events in a mongodb collection
 type MongoDBEventQueueRepo struct {
 	DBConnection *MongoDBConnection
@@ -26,18 +32,11 @@ func NewMongoDBEventQueueRepo(dbConnection *MongoDBConnection) *MongoDBEventQueu
 
 // GetQueuedEvents gets all queued events that should be sent next
 func (m *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error) {
-	err := m.DBConnection.EnsureDBConnection()
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueCollectionName)
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
-
-	if collection == nil {
-		return nil, errors.New("invalid event type")
-	}
 
 	searchOptions := bson.M{}
 	searchOptions["timestamp"] = bson.M{
@@ -48,20 +47,187 @@ func (m *MongoDBEventQueueRepo) GetQueuedEvents(timestamp time.Time) ([]models.Q
 }
 
 func (m *MongoDBEventQueueRepo) QueueEvent(item models.QueueItem) error {
-	err := m.DBConnection.EnsureDBConnection()
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueCollectionName)
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
+	return insertQueueItemIntoCollection(ctx, collection, item)
+}
 
-	if collection == nil {
-		return errors.New("invalid event type")
+// DeleteQueuedEvent deletes a queue item from the collection
+func (m *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueCollectionName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	_, err = collection.DeleteMany(ctx, bson.M{"eventID": eventID})
+	if err != nil {
+		log.Errorf("Could not delete event %s : %s\n", eventID, err.Error())
+		return err
+	}
+	log.Infof("Deleted event %s", eventID)
+	return nil
+}
+
+func (m *MongoDBEventQueueRepo) IsEventInQueue(eventID string) (bool, error) {
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueCollectionName)
+	if err != nil {
+		return false, err
+	}
+	defer cancel()
+
+	searchOptions := bson.M{"eventID": eventID}
+
+	queueItems, err := getQueueItemsFromCollection(collection, ctx, searchOptions)
+	if err != nil {
+		if err == ErrNoEventFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return queueItems != nil && len(queueItems) > 0, nil
+}
+
+func (m *MongoDBEventQueueRepo) IsSequenceOfEventPaused(eventScope models.EventScope) bool {
+	states, err := m.GetEventQueueSequenceStates(models.EventQueueSequenceState{Scope: models.EventScope{KeptnContext: eventScope.KeptnContext}})
+	if err != nil {
+		return false
+	} else if len(states) == 0 {
+		log.Infof("no state for sequence %s found", eventScope.KeptnContext)
+		return false
 	}
 
-	return insertQueueItemIntoCollection(ctx, collection, item)
+	for _, state := range states {
+		if state.Scope.Stage == "" && state.State == models.SequencePaused {
+			// if the overall state is set to 'paused', this means that all stages are paused
+			return true
+		} else if state.Scope.Stage == eventScope.Stage && state.State == models.SequencePaused {
+			// if not the overall state is 'paused', but specifically for this stage, we return true as well
+			return true
+		}
+	}
+
+	return false
+}
+
+// DeleteQueuedEvents deletes all matching queue items from the collection
+func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) error {
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueCollectionName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	searchOptions := bson.M{}
+	if scope.KeptnContext != "" {
+		searchOptions[keptnContextScope] = scope.KeptnContext
+	}
+	if scope.Project != "" {
+		searchOptions["scope.project"] = scope.Project
+	}
+	if scope.Stage != "" {
+		searchOptions[stageScope] = scope.Stage
+	}
+	if scope.Service != "" {
+		searchOptions["scope.service"] = scope.Service
+	}
+	_, err = collection.DeleteMany(ctx, searchOptions)
+	if err != nil {
+		log.Errorf("Could not delete queue items : %s\n", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (m *MongoDBEventQueueRepo) CreateOrUpdateEventQueueState(state models.EventQueueSequenceState) error {
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueSequenceStateCollectionName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	opts := options.Update().SetUpsert(true)
+
+	var filter bson.D
+	if state.Scope.Stage == "" {
+		filter = bson.D{
+			{keptnContextScope, state.Scope.KeptnContext},
+		}
+	} else {
+		filter = bson.D{
+			{keptnContextScope, state.Scope.KeptnContext},
+			{stageScope, state.Scope.Stage},
+		}
+	}
+	update := bson.D{{"$set", state}}
+
+	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	return err
+}
+
+func (m *MongoDBEventQueueRepo) GetEventQueueSequenceStates(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueSequenceStateCollectionName)
+	if err != nil {
+		return nil, err
+	}
+	defer cancel()
+
+	searchOptions := bson.M{}
+	if filter.Scope.KeptnContext != "" {
+		searchOptions[keptnContextScope] = filter.Scope.KeptnContext
+	}
+	if filter.Scope.Stage != "" {
+		searchOptions[stageScope] = filter.Scope.Stage
+	}
+	cur, err := collection.Find(ctx, searchOptions)
+	if err != nil && err == mongo.ErrNoDocuments {
+		return nil, ErrNoEventFound
+	} else if err != nil {
+		return nil, err
+	} else if cur.RemainingBatchLength() == 0 {
+		return nil, ErrNoEventFound
+	}
+
+	stateItems := []models.EventQueueSequenceState{}
+
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		stateItem := models.EventQueueSequenceState{}
+		err := cur.Decode(&stateItem)
+		if err != nil {
+			return nil, err
+		}
+		stateItems = append(stateItems, stateItem)
+	}
+
+	return stateItems, nil
+}
+
+func (m *MongoDBEventQueueRepo) DeleteEventQueueStates(filter models.EventQueueSequenceState) error {
+	collection, ctx, cancel, err := m.getCollectionAndContext(eventQueueSequenceStateCollectionName)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	searchOptions := bson.M{}
+	if filter.Scope.KeptnContext != "" {
+		searchOptions[keptnContextScope] = filter.Scope.KeptnContext
+	}
+	if filter.Scope.Stage != "" {
+		searchOptions[stageScope] = filter.Scope.Stage
+	}
+
+	_, err = collection.DeleteMany(ctx, searchOptions)
+	if err != nil {
+		log.Errorf("Could not delete queue items : %s\n", err.Error())
+		return err
+	}
+	return nil
 }
 
 func insertQueueItemIntoCollection(ctx context.Context, collection *mongo.Collection, item models.QueueItem) error {
@@ -78,90 +244,6 @@ func insertQueueItemIntoCollection(ctx context.Context, collection *mongo.Collec
 	if err != nil {
 		log.Errorf("Could not insert event %s: %s", item.EventID, err.Error())
 	}
-	return nil
-}
-
-// DeleteQueuedEvent deletes a queue item from the collection
-func (m *MongoDBEventQueueRepo) DeleteQueuedEvent(eventID string) error {
-	err := m.DBConnection.EnsureDBConnection()
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
-
-	if collection == nil {
-		return errors.New("invalid event type")
-	}
-
-	_, err = collection.DeleteMany(ctx, bson.M{"eventID": eventID})
-	if err != nil {
-		log.Errorf("Could not delete event %s : %s\n", eventID, err.Error())
-		return err
-	}
-	log.Infof("Deleted event %s", eventID)
-	return nil
-}
-
-func (m *MongoDBEventQueueRepo) IsEventInQueue(eventID string) (bool, error) {
-	err := m.DBConnection.EnsureDBConnection()
-	if err != nil {
-		return false, err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
-
-	if collection == nil {
-		return false, errors.New("could not retrieve collection")
-	}
-
-	searchOptions := bson.M{"eventID": eventID}
-
-	queueItems, err := getQueueItemsFromCollection(collection, ctx, searchOptions)
-	if err != nil {
-		return false, err
-	}
-	return queueItems != nil && len(queueItems) > 1, nil
-}
-
-// DeleteQueuedEvent deletes a queue item from the collection
-func (m *MongoDBEventQueueRepo) DeleteQueuedEvents(scope models.EventScope) error {
-	err := m.DBConnection.EnsureDBConnection()
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	collection := m.DBConnection.Client.Database(getDatabaseName()).Collection(eventQueueCollectionName)
-
-	if collection == nil {
-		return errors.New("invalid event type")
-	}
-
-	searchOptions := bson.M{}
-	if scope.KeptnContext != "" {
-		searchOptions["scope.keptnContext"] = scope.KeptnContext
-	}
-	if scope.Project != "" {
-		searchOptions["scope.project"] = scope.Project
-	}
-	if scope.Stage != "" {
-		searchOptions["scope.stage"] = scope.Stage
-	}
-	if scope.Service != "" {
-		searchOptions["scope.service"] = scope.Stage
-	}
-	_, err = collection.DeleteMany(ctx, searchOptions)
-	if err != nil {
-		log.Errorf("Could not delete queue items : %s\n", err.Error())
-		return err
-	}
-	log.Info("Deleted queue items")
 	return nil
 }
 
@@ -188,4 +270,15 @@ func getQueueItemsFromCollection(collection *mongo.Collection, ctx context.Conte
 	}
 
 	return queuedItems, nil
+}
+
+func (mdbrepo *MongoDBEventQueueRepo) getCollectionAndContext(collectionName string) (*mongo.Collection, context.Context, context.CancelFunc, error) {
+	err := mdbrepo.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	return collection, ctx, cancel, nil
 }

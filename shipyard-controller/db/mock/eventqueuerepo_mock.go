@@ -15,17 +15,29 @@ import (
 //
 // 		// make and configure a mocked db.EventQueueRepo
 // 		mockedEventQueueRepo := &EventQueueRepoMock{
+// 			CreateOrUpdateEventQueueStateFunc: func(state models.EventQueueSequenceState) error {
+// 				panic("mock out the CreateOrUpdateEventQueueState method")
+// 			},
+// 			DeleteEventQueueStatesFunc: func(state models.EventQueueSequenceState) error {
+// 				panic("mock out the DeleteEventQueueStates method")
+// 			},
 // 			DeleteQueuedEventFunc: func(eventID string) error {
 // 				panic("mock out the DeleteQueuedEvent method")
 // 			},
 // 			DeleteQueuedEventsFunc: func(scope models.EventScope) error {
 // 				panic("mock out the DeleteQueuedEvents method")
 // 			},
+// 			GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
+// 				panic("mock out the GetEventQueueSequenceStates method")
+// 			},
 // 			GetQueuedEventsFunc: func(timestamp time.Time) ([]models.QueueItem, error) {
 // 				panic("mock out the GetQueuedEvents method")
 // 			},
 // 			IsEventInQueueFunc: func(eventID string) (bool, error) {
 // 				panic("mock out the IsEventInQueue method")
+// 			},
+// 			IsSequenceOfEventPausedFunc: func(eventScope models.EventScope) bool {
+// 				panic("mock out the IsSequenceOfEventPaused method")
 // 			},
 // 			QueueEventFunc: func(item models.QueueItem) error {
 // 				panic("mock out the QueueEvent method")
@@ -37,11 +49,20 @@ import (
 //
 // 	}
 type EventQueueRepoMock struct {
+	// CreateOrUpdateEventQueueStateFunc mocks the CreateOrUpdateEventQueueState method.
+	CreateOrUpdateEventQueueStateFunc func(state models.EventQueueSequenceState) error
+
+	// DeleteEventQueueStatesFunc mocks the DeleteEventQueueStates method.
+	DeleteEventQueueStatesFunc func(state models.EventQueueSequenceState) error
+
 	// DeleteQueuedEventFunc mocks the DeleteQueuedEvent method.
 	DeleteQueuedEventFunc func(eventID string) error
 
 	// DeleteQueuedEventsFunc mocks the DeleteQueuedEvents method.
 	DeleteQueuedEventsFunc func(scope models.EventScope) error
+
+	// GetEventQueueSequenceStatesFunc mocks the GetEventQueueSequenceStates method.
+	GetEventQueueSequenceStatesFunc func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error)
 
 	// GetQueuedEventsFunc mocks the GetQueuedEvents method.
 	GetQueuedEventsFunc func(timestamp time.Time) ([]models.QueueItem, error)
@@ -49,11 +70,24 @@ type EventQueueRepoMock struct {
 	// IsEventInQueueFunc mocks the IsEventInQueue method.
 	IsEventInQueueFunc func(eventID string) (bool, error)
 
+	// IsSequenceOfEventPausedFunc mocks the IsSequenceOfEventPaused method.
+	IsSequenceOfEventPausedFunc func(eventScope models.EventScope) bool
+
 	// QueueEventFunc mocks the QueueEvent method.
 	QueueEventFunc func(item models.QueueItem) error
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CreateOrUpdateEventQueueState holds details about calls to the CreateOrUpdateEventQueueState method.
+		CreateOrUpdateEventQueueState []struct {
+			// State is the state argument value.
+			State models.EventQueueSequenceState
+		}
+		// DeleteEventQueueStates holds details about calls to the DeleteEventQueueStates method.
+		DeleteEventQueueStates []struct {
+			// State is the state argument value.
+			State models.EventQueueSequenceState
+		}
 		// DeleteQueuedEvent holds details about calls to the DeleteQueuedEvent method.
 		DeleteQueuedEvent []struct {
 			// EventID is the eventID argument value.
@@ -63,6 +97,11 @@ type EventQueueRepoMock struct {
 		DeleteQueuedEvents []struct {
 			// Scope is the scope argument value.
 			Scope models.EventScope
+		}
+		// GetEventQueueSequenceStates holds details about calls to the GetEventQueueSequenceStates method.
+		GetEventQueueSequenceStates []struct {
+			// Filter is the filter argument value.
+			Filter models.EventQueueSequenceState
 		}
 		// GetQueuedEvents holds details about calls to the GetQueuedEvents method.
 		GetQueuedEvents []struct {
@@ -74,17 +113,88 @@ type EventQueueRepoMock struct {
 			// EventID is the eventID argument value.
 			EventID string
 		}
+		// IsSequenceOfEventPaused holds details about calls to the IsSequenceOfEventPaused method.
+		IsSequenceOfEventPaused []struct {
+			// EventScope is the eventScope argument value.
+			EventScope models.EventScope
+		}
 		// QueueEvent holds details about calls to the QueueEvent method.
 		QueueEvent []struct {
 			// Item is the item argument value.
 			Item models.QueueItem
 		}
 	}
-	lockDeleteQueuedEvent  sync.RWMutex
-	lockDeleteQueuedEvents sync.RWMutex
-	lockGetQueuedEvents    sync.RWMutex
-	lockIsEventInQueue     sync.RWMutex
-	lockQueueEvent         sync.RWMutex
+	lockCreateOrUpdateEventQueueState sync.RWMutex
+	lockDeleteEventQueueStates        sync.RWMutex
+	lockDeleteQueuedEvent             sync.RWMutex
+	lockDeleteQueuedEvents            sync.RWMutex
+	lockGetEventQueueSequenceStates   sync.RWMutex
+	lockGetQueuedEvents               sync.RWMutex
+	lockIsEventInQueue                sync.RWMutex
+	lockIsSequenceOfEventPaused       sync.RWMutex
+	lockQueueEvent                    sync.RWMutex
+}
+
+// CreateOrUpdateEventQueueState calls CreateOrUpdateEventQueueStateFunc.
+func (mock *EventQueueRepoMock) CreateOrUpdateEventQueueState(state models.EventQueueSequenceState) error {
+	if mock.CreateOrUpdateEventQueueStateFunc == nil {
+		panic("EventQueueRepoMock.CreateOrUpdateEventQueueStateFunc: method is nil but EventQueueRepo.CreateOrUpdateEventQueueState was just called")
+	}
+	callInfo := struct {
+		State models.EventQueueSequenceState
+	}{
+		State: state,
+	}
+	mock.lockCreateOrUpdateEventQueueState.Lock()
+	mock.calls.CreateOrUpdateEventQueueState = append(mock.calls.CreateOrUpdateEventQueueState, callInfo)
+	mock.lockCreateOrUpdateEventQueueState.Unlock()
+	return mock.CreateOrUpdateEventQueueStateFunc(state)
+}
+
+// CreateOrUpdateEventQueueStateCalls gets all the calls that were made to CreateOrUpdateEventQueueState.
+// Check the length with:
+//     len(mockedEventQueueRepo.CreateOrUpdateEventQueueStateCalls())
+func (mock *EventQueueRepoMock) CreateOrUpdateEventQueueStateCalls() []struct {
+	State models.EventQueueSequenceState
+} {
+	var calls []struct {
+		State models.EventQueueSequenceState
+	}
+	mock.lockCreateOrUpdateEventQueueState.RLock()
+	calls = mock.calls.CreateOrUpdateEventQueueState
+	mock.lockCreateOrUpdateEventQueueState.RUnlock()
+	return calls
+}
+
+// DeleteEventQueueStates calls DeleteEventQueueStatesFunc.
+func (mock *EventQueueRepoMock) DeleteEventQueueStates(state models.EventQueueSequenceState) error {
+	if mock.DeleteEventQueueStatesFunc == nil {
+		panic("EventQueueRepoMock.DeleteEventQueueStatesFunc: method is nil but EventQueueRepo.DeleteEventQueueStates was just called")
+	}
+	callInfo := struct {
+		State models.EventQueueSequenceState
+	}{
+		State: state,
+	}
+	mock.lockDeleteEventQueueStates.Lock()
+	mock.calls.DeleteEventQueueStates = append(mock.calls.DeleteEventQueueStates, callInfo)
+	mock.lockDeleteEventQueueStates.Unlock()
+	return mock.DeleteEventQueueStatesFunc(state)
+}
+
+// DeleteEventQueueStatesCalls gets all the calls that were made to DeleteEventQueueStates.
+// Check the length with:
+//     len(mockedEventQueueRepo.DeleteEventQueueStatesCalls())
+func (mock *EventQueueRepoMock) DeleteEventQueueStatesCalls() []struct {
+	State models.EventQueueSequenceState
+} {
+	var calls []struct {
+		State models.EventQueueSequenceState
+	}
+	mock.lockDeleteEventQueueStates.RLock()
+	calls = mock.calls.DeleteEventQueueStates
+	mock.lockDeleteEventQueueStates.RUnlock()
+	return calls
 }
 
 // DeleteQueuedEvent calls DeleteQueuedEventFunc.
@@ -149,6 +259,37 @@ func (mock *EventQueueRepoMock) DeleteQueuedEventsCalls() []struct {
 	return calls
 }
 
+// GetEventQueueSequenceStates calls GetEventQueueSequenceStatesFunc.
+func (mock *EventQueueRepoMock) GetEventQueueSequenceStates(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
+	if mock.GetEventQueueSequenceStatesFunc == nil {
+		panic("EventQueueRepoMock.GetEventQueueSequenceStatesFunc: method is nil but EventQueueRepo.GetEventQueueSequenceStates was just called")
+	}
+	callInfo := struct {
+		Filter models.EventQueueSequenceState
+	}{
+		Filter: filter,
+	}
+	mock.lockGetEventQueueSequenceStates.Lock()
+	mock.calls.GetEventQueueSequenceStates = append(mock.calls.GetEventQueueSequenceStates, callInfo)
+	mock.lockGetEventQueueSequenceStates.Unlock()
+	return mock.GetEventQueueSequenceStatesFunc(filter)
+}
+
+// GetEventQueueSequenceStatesCalls gets all the calls that were made to GetEventQueueSequenceStates.
+// Check the length with:
+//     len(mockedEventQueueRepo.GetEventQueueSequenceStatesCalls())
+func (mock *EventQueueRepoMock) GetEventQueueSequenceStatesCalls() []struct {
+	Filter models.EventQueueSequenceState
+} {
+	var calls []struct {
+		Filter models.EventQueueSequenceState
+	}
+	mock.lockGetEventQueueSequenceStates.RLock()
+	calls = mock.calls.GetEventQueueSequenceStates
+	mock.lockGetEventQueueSequenceStates.RUnlock()
+	return calls
+}
+
 // GetQueuedEvents calls GetQueuedEventsFunc.
 func (mock *EventQueueRepoMock) GetQueuedEvents(timestamp time.Time) ([]models.QueueItem, error) {
 	if mock.GetQueuedEventsFunc == nil {
@@ -208,6 +349,37 @@ func (mock *EventQueueRepoMock) IsEventInQueueCalls() []struct {
 	mock.lockIsEventInQueue.RLock()
 	calls = mock.calls.IsEventInQueue
 	mock.lockIsEventInQueue.RUnlock()
+	return calls
+}
+
+// IsSequenceOfEventPaused calls IsSequenceOfEventPausedFunc.
+func (mock *EventQueueRepoMock) IsSequenceOfEventPaused(eventScope models.EventScope) bool {
+	if mock.IsSequenceOfEventPausedFunc == nil {
+		panic("EventQueueRepoMock.IsSequenceOfEventPausedFunc: method is nil but EventQueueRepo.IsSequenceOfEventPaused was just called")
+	}
+	callInfo := struct {
+		EventScope models.EventScope
+	}{
+		EventScope: eventScope,
+	}
+	mock.lockIsSequenceOfEventPaused.Lock()
+	mock.calls.IsSequenceOfEventPaused = append(mock.calls.IsSequenceOfEventPaused, callInfo)
+	mock.lockIsSequenceOfEventPaused.Unlock()
+	return mock.IsSequenceOfEventPausedFunc(eventScope)
+}
+
+// IsSequenceOfEventPausedCalls gets all the calls that were made to IsSequenceOfEventPaused.
+// Check the length with:
+//     len(mockedEventQueueRepo.IsSequenceOfEventPausedCalls())
+func (mock *EventQueueRepoMock) IsSequenceOfEventPausedCalls() []struct {
+	EventScope models.EventScope
+} {
+	var calls []struct {
+		EventScope models.EventScope
+	}
+	mock.lockIsSequenceOfEventPaused.RLock()
+	calls = mock.calls.IsSequenceOfEventPaused
+	mock.lockIsSequenceOfEventPaused.RUnlock()
 	return calls
 }
 

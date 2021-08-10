@@ -2,21 +2,28 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/operations"
 	"net/http"
 )
 
 type IStateHandler interface {
 	GetSequenceState(context *gin.Context)
+	ControlSequenceState(context *gin.Context)
 }
 
 type StateHandler struct {
-	StateRepo db.SequenceStateRepo
+	StateRepo          db.SequenceStateRepo
+	shipyardController IShipyardController
 }
 
-func NewStateHandler(stateRepo db.SequenceStateRepo) *StateHandler {
-	return &StateHandler{StateRepo: stateRepo}
+func NewStateHandler(stateRepo db.SequenceStateRepo, shipyardController IShipyardController) *StateHandler {
+	return &StateHandler{
+		StateRepo:          stateRepo,
+		shipyardController: shipyardController,
+	}
 }
 
 // GetState godoc
@@ -56,4 +63,42 @@ func (sh *StateHandler) GetSequenceState(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, states)
+}
+
+// ControlSequenceState godoc
+// @Summary Pause/Resume/Abort a task sequence
+// @Description Pause/Resume/Abort a task sequence, either for a specific stage, or for all stages involved in the sequence
+// @Tags Sequence
+// @Security ApiKeyAuth
+// @Accept  json
+// @Produce  json
+// @Param   project     		path    string  true   "The project name"
+// @Param   keptnContext		path	string	true	"The keptnContext ID of the sequence"
+// @Param   sequenceControl     body    operations.SequenceControlCommand true "Sequence Control Command"
+// @Success 200 {object} operations.SequenceControlResponse	"ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Router /sequence/{project}/{keptnContext}/control [post]
+func (sh *StateHandler) ControlSequenceState(c *gin.Context) {
+	keptnContext := c.Param("keptnContext")
+	project := c.Param("project")
+
+	params := &operations.SequenceControlCommand{}
+	if err := c.ShouldBindJSON(params); err != nil {
+		SetBadRequestErrorResponse(err, c, "Invalid request format")
+		return
+	}
+
+	err := sh.shipyardController.ControlSequence(common.SequenceControl{
+		State:        params.State,
+		KeptnContext: keptnContext,
+		Stage:        params.Stage,
+		Project:      project,
+	})
+	if err != nil {
+		SetInternalServerErrorResponse(err, c, "Unable to control sequence")
+		return
+	}
+
+	c.JSON(http.StatusOK, operations.SequenceControlResponse{})
 }

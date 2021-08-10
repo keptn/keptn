@@ -236,16 +236,8 @@ func Test_getEventScope(t *testing.T) {
 			name: "get event scope",
 			args: args{
 				event: models.Event{
-					Contenttype:    "",
-					Data:           keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"},
-					Extensions:     nil,
-					ID:             "",
-					Shkeptncontext: "",
-					Source:         nil,
-					Specversion:    "",
-					Time:           "",
-					Triggeredid:    "",
-					Type:           common.Stringp("my-type"),
+					Data: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"},
+					Type: common.Stringp("my-type"),
 				},
 			},
 			want:    &models.EventScope{EventData: keptnv2.EventData{Project: "sockshop", Stage: "dev", Service: "carts"}, EventType: "my-type"},
@@ -255,36 +247,15 @@ func Test_getEventScope(t *testing.T) {
 			name: "only project available, stage and service missing",
 			args: args{
 				event: models.Event{
-					Contenttype:    "",
-					Data:           keptnv2.EventData{Project: "sockshop"},
-					Extensions:     nil,
-					ID:             "",
-					Shkeptncontext: "",
-					Source:         nil,
-					Specversion:    "",
-					Time:           "",
-					Triggeredid:    "",
-					Type:           nil,
+					Data: keptnv2.EventData{Project: "sockshop"},
 				},
 			},
-			want:    nil,
 			wantErr: true,
 		},
 		{
 			name: "empty data",
 			args: args{
-				event: models.Event{
-					Contenttype:    "",
-					Data:           nil,
-					Extensions:     nil,
-					ID:             "",
-					Shkeptncontext: "",
-					Source:         nil,
-					Specversion:    "",
-					Time:           "",
-					Triggeredid:    "",
-					Type:           nil,
-				},
+				event: models.Event{},
 			},
 			want:    nil,
 			wantErr: true,
@@ -292,18 +263,7 @@ func Test_getEventScope(t *testing.T) {
 		{
 			name: "nonsense data",
 			args: args{
-				event: models.Event{
-					Contenttype:    "",
-					Data:           "invalid",
-					Extensions:     nil,
-					ID:             "",
-					Shkeptncontext: "",
-					Source:         nil,
-					Specversion:    "",
-					Time:           "",
-					Triggeredid:    "",
-					Type:           nil,
-				},
+				event: models.Event{Data: "invalid"},
 			},
 			want:    nil,
 			wantErr: true,
@@ -562,7 +522,6 @@ func Test_eventManager_getEvents(t *testing.T) {
 
 // Scenario 1: Complete task sequence execution + triggering of next task sequence. Events are received in order
 func Test_shipyardController_Scenario1(t *testing.T) {
-
 	t.Logf("Executing Shipyard Controller Scenario 1 with shipyard file %s", testShipyardFile)
 	sc := getTestShipyardController("")
 
@@ -684,7 +643,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 
 	// STEP 7
 	// send evaluation.finished event -> result = warning should not abort the task sequence
-	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning, keptnv2.StatusSucceeded), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, "")
+	triggeredID, done = sendAndVerifyFinishedEvent(t, sc, getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultWarning), keptnv2.EvaluationTaskName, keptnv2.ReleaseTaskName, "")
 	if done {
 		return
 	}
@@ -779,7 +738,7 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	require.Equal(t, 8, len(mockDispatcher.AddCalls()))
 	require.Equal(t, keptnv2.GetTriggeredEventType(keptnv2.TestTaskName), mockDispatcher.AddCalls()[7].Event.Event.Type())
 
-	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 	// make sure that the UpdateEventOfServiceCalls has been called
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 	assert.NotEqual(t, 0, len(eventsDBMock.UpdateShipyardCalls()))
@@ -1038,7 +997,7 @@ func Test_shipyardController_Scenario4(t *testing.T) {
 	done = sendFinishedEventAndVerifyTaskSequenceCompletion(
 		t,
 		sc,
-		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed, keptnv2.StatusSucceeded),
+		getEvaluationTaskFinishedEvent("dev", triggeredID, keptnv2.ResultFailed),
 		keptnv2.EvaluationTaskName,
 		"",
 	)
@@ -1325,7 +1284,7 @@ func Test_shipyardController_UpdateShipyardContentFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 
 	eventsOperations.UpdateShipyardFunc = func(projectName string, shipyardContent string) error {
 		return errors.New("updating shipyard failed")
@@ -1358,7 +1317,7 @@ func Test_shipyardController_UpdateEventOfServiceFailsFails(t *testing.T) {
 	t.Logf("Executing Shipyard Controller with shipyard file %s", testShipyardFileWithInvalidVersion)
 	sc := getTestShipyardController("")
 
-	eventsOperations := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsOperations := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 
 	eventsOperations.UpdateEventOfServiceFunc = func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 		return errors.New("updating event of service failed")
@@ -1411,7 +1370,7 @@ func Test_shipyardController_UpdateServiceShouldNotBeCalledForEmptyService(t *te
 
 	assert.NotNil(t, err)
 
-	eventsDBMock := sc.eventsDbOperations.(*db_mock.EventsDbOperationsMock)
+	eventsDBMock := sc.eventsDBOperations.(*db_mock.EventsDbOperationsMock)
 
 	assert.Equal(t, 0, len(eventsDBMock.UpdateEventOfServiceCalls()))
 }
@@ -1998,7 +1957,7 @@ func getTestTaskFinishedEvent(stage string, triggeredID string) models.Event {
 	}
 }
 
-func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType, status keptnv2.StatusType) models.Event {
+func getEvaluationTaskFinishedEvent(stage string, triggeredID string, result keptnv2.ResultType) models.Event {
 	return models.Event{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationFinishedEventData{
@@ -2133,12 +2092,7 @@ func sendFinishedEventAndVerifyTaskSequenceCompletion(t *testing.T, sc *shipyard
 		Service:     common.Stringp("carts"),
 		TriggeredID: common.Stringp(finishedEvent.Triggeredid),
 	}, common.StartedEvent)
-	done = fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
-	if done {
-		return true
-	}
-
-	return false
+	return fake.ShouldNotContainEvent(t, startedEvents, keptnv2.GetStartedEventType(eventType), scope.Stage)
 }
 
 func sendAndVerifyPartialFinishedEvent(t *testing.T, sc *shipyardController, finishedEvent models.Event, eventType, nextEventType string, nextStage string) bool {
@@ -2232,17 +2186,18 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 		},
 		eventRepo: &db_mock.EventRepoMock{
 			GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
-				if status[0] == common.TriggeredEvent {
+				switch {
+				case status[0] == common.TriggeredEvent:
 					if triggeredEventsCollection == nil || len(triggeredEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
 					return filterEvents(triggeredEventsCollection, filter)
-				} else if status[0] == common.StartedEvent {
+				case status[0] == common.StartedEvent:
 					if startedEventsCollection == nil || len(startedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
 					return filterEvents(startedEventsCollection, filter)
-				} else if status[0] == common.FinishedEvent {
+				case status[0] == common.FinishedEvent:
 					if finishedEventsCollection == nil || len(finishedEventsCollection) == 0 {
 						return nil, db.ErrNoEventFound
 					}
@@ -2261,21 +2216,22 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 				return nil
 			},
 			DeleteEventFunc: func(project string, eventID string, status common.EventStatus) error {
-				if status == common.TriggeredEvent {
+				switch {
+				case status == common.TriggeredEvent:
 					for index, event := range triggeredEventsCollection {
 						if event.ID == eventID {
 							triggeredEventsCollection = append(triggeredEventsCollection[:index], triggeredEventsCollection[index+1:]...)
 							return nil
 						}
 					}
-				} else if status == common.StartedEvent {
+				case status == common.StartedEvent:
 					for index, event := range startedEventsCollection {
 						if event.ID == eventID {
 							startedEventsCollection = append(startedEventsCollection[:index], startedEventsCollection[index+1:]...)
 							return nil
 						}
 					}
-				} else if status == common.FinishedEvent {
+				case status == common.FinishedEvent:
 					for index, event := range finishedEventsCollection {
 						if event.ID == eventID {
 							finishedEventsCollection = append(finishedEventsCollection[:index], finishedEventsCollection[index+1:]...)
@@ -2312,7 +2268,7 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 				return nil
 			},
 		},
-		eventsDbOperations: &db_mock.EventsDbOperationsMock{
+		eventsDBOperations: &db_mock.EventsDbOperationsMock{
 			UpdateEventOfServiceFunc: func(event interface{}, eventType string, keptnContext string, eventID string, triggeredID string) error {
 				return nil
 			},
@@ -2332,7 +2288,10 @@ func getTestShipyardController(shipyardContent string) *shipyardController {
 
 	em.eventDispatcher.(*fake.IEventDispatcherMock).AddFunc = func(event models.DispatcherEvent) error {
 		ev := &models.Event{}
-		keptnv2.Decode(&event.Event, ev)
+		err := keptnv2.Decode(&event.Event, ev)
+		if err != nil {
+			return err
+		}
 		_ = em.HandleIncomingEvent(*ev, true)
 		return nil
 	}
@@ -2365,7 +2324,6 @@ func filterEvents(eventsCollection []models.Event, filter common.EventFilter) ([
 }
 
 func Test_shipyardController_CancelSequence(t *testing.T) {
-
 	sc := getTestShipyardController("")
 
 	fakeTimeoutHook := &fakehooks.ISequenceTimeoutHookMock{OnSequenceTimeoutFunc: func(event models.Event) {}}
@@ -2392,9 +2350,8 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 	})
 
 	// invoke the CancelSequence function
-	err := sc.cancelSequence(common.SequenceCancellation{
+	err := sc.timeoutSequence(common.SequenceTimeout{
 		KeptnContext: "my-keptn-context-id",
-		Reason:       common.Timeout,
 		LastEvent: models.Event{
 			Data: keptnv2.EventData{
 				Project: "my-project",
@@ -2413,7 +2370,8 @@ func Test_shipyardController_CancelSequence(t *testing.T) {
 
 func TestGetShipyardControllerInstance(t *testing.T) {
 	sequenceStartChannel := make(chan models.Event)
-	sequenceCancelChannel := make(chan common.SequenceCancellation)
+	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
+	sequenceControlChannel := make(chan common.SequenceControl)
 	ctx, cancel := context.WithCancel(context.TODO())
 	sc := GetShipyardControllerInstance(
 		ctx,
@@ -2423,7 +2381,8 @@ func TestGetShipyardControllerInstance(t *testing.T) {
 		},
 		&fake.ISequenceDispatcherMock{},
 		sequenceStartChannel,
-		sequenceCancelChannel,
+		sequenceTimeoutChannel,
+		sequenceControlChannel,
 	)
 	require.NotNil(t, sc)
 	cancel()
