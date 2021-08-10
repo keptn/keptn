@@ -13,8 +13,8 @@ import { ActivatedRoute } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { Subject } from 'rxjs';
 import { Project } from '../../_models/project';
-import { Sequence, SequenceStateControl } from '../../_models/sequence';
-import { Trace } from '../../_models/trace';
+import { Sequence } from '../../_models/sequence';
+import { SequenceStateControl } from '../../../../shared/models/sequence';
 import { KtbConfirmationDialogComponent } from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
