@@ -418,7 +418,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Node
-        uses: actions/setup-node@v2.3.1
+        uses: actions/setup-node@v2.4.0
         with:
           node-version: 14
       - name: Checkout Code
