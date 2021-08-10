@@ -6,7 +6,7 @@ import {Sequence} from '../../_models/sequence';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
-import {ResultTypes} from '../../_models/result-types';
+import {ResultTypes} from '../../../../shared/models/result-types';
 import {DataService} from '../../_services/data.service';
 
 @Component({
@@ -24,7 +24,7 @@ export class KtbSequenceListComponent implements OnInit, OnDestroy {
   @Input() stage?: string;
   @Input() shkeptncontext?: string;
   @Input()
-  get sequences() {
+  get sequences(): Trace[] {
     return this._sequences;
   }
   set sequences(sequences: Trace[]) {

@@ -110,7 +110,6 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           this.currentSequence = undefined;
           this.selectedStage = undefined;
           this.updateFilterDataSource(project);
-          this.dataService.loadRoots(project);
         }
         this.project = project;
         this._changeDetectorRef.markForCheck();
@@ -168,7 +167,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectSequence(event: {sequence: Sequence, stage: string, eventId: string}): void {
+  selectSequence(event: {sequence: Sequence, stage?: string, eventId?: string}): void {
     if (event.eventId) {
       const routeUrl = this.router.createUrlTree(['/project', event.sequence.project, 'sequence',
                                                           event.sequence.shkeptncontext, 'event', event.eventId]);

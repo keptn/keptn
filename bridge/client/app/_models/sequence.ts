@@ -1,40 +1,31 @@
-import {ResultTypes} from './result-types';
-import {Trace} from './trace';
-import {EventTypes} from './event-types';
-import {EvaluationResult} from './evaluation-result';
-import {EVENT_ICONS} from './event-icons';
+import { ResultTypes } from '../../../shared/models/result-types';
+import { Trace } from './trace';
+import { EventTypes } from '../../../shared/interfaces/event-types';
+import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
+import { EVENT_ICONS } from './event-icons';
+import { RemediationAction } from '../../../shared/models/remediation-action';
+import { Sequence as sq, SequenceStage, SequenceState } from '../../../shared/models/sequence';
+import { DtIconType } from '@dynatrace/barista-icons';
 
-const DEFAULT_ICON = 'information';
-
-export class Sequence {
-  name!: string;
-  project!: string;
-  service!: string;
-  shkeptncontext!: string;
-  stages!: [
-    {
-      image?: string,
-      latestEvaluation?: EvaluationResult,
-      latestEvent?: {
-        id: string,
-        time: string,
-        type: string
-      },
-      latestFailedEvent?: {
-        id: string,
-        time: string,
-        type: string
-      },
-      name: string
-    }
-  ];
-  state!: 'triggered' | 'finished' | 'waiting';
-  time!: string;
+export class Sequence extends sq {
+  stages!: (SequenceStage &
+     {
+      latestEvaluationTrace?: Trace,
+      actions?: RemediationAction[]
+    })[]
+  ;
   problemTitle?: string;
   traces: Trace[] = [];
 
   public static fromJSON(data: unknown): Sequence {
-    return Object.assign(new this(), data);
+    const sequence = Object.assign(new this(), data);
+    for (const stage of sequence.stages) {
+      stage.actions = stage.actions?.map(s => RemediationAction.fromJSON(s)) ?? [];
+      if (stage.latestEvaluationTrace) {
+        stage.latestEvaluationTrace = Trace.fromJSON(stage.latestEvaluationTrace);
+      }
+    }
+    return sequence;
   }
 
   public static getShortType(type: string): string {
@@ -69,22 +60,26 @@ export class Sequence {
   }
 
   public isFinished(stageName?: string): boolean {
-    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith('finished') ?? false) : this.state === 'finished';
+    return stageName ? (this.getStage(stageName)?.latestEvent?.type.endsWith(SequenceState.FINISHED) ?? false) : this.state === SequenceState.FINISHED;
   }
 
   public getEvaluation(stage: string): EvaluationResult | undefined {
     return this.getStage(stage)?.latestEvaluation;
   }
 
+  public getEvaluationTrace(stage: string): Trace | undefined {
+    return this.getStage(stage)?.latestEvaluationTrace;
+  }
+
   public hasPendingApproval(stageName?: string): boolean {
     return stageName ?
-        this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED
-      : this.stages.some(stage => stage.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED);
+        this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_STARTED
+      : this.stages.some(stage => stage.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || stage.latestEvent?.type === EventTypes.APPROVAL_STARTED);
   }
 
   public getStatus(): string {
     let status: string = this.state;
-    if (this.state === 'finished') {
+    if (this.state === SequenceState.FINISHED) {
       if (this.stages.some(stage => stage.latestFailedEvent)) {
         status = 'failed';
       }
@@ -92,18 +87,18 @@ export class Sequence {
         status = 'succeeded';
       }
     }
-    else if (this.state === 'triggered') {
+    else if (this.state === SequenceState.TRIGGERED) {
       status = 'started';
     }
     return status;
   }
 
   public isLoading(stageName?: string): boolean {
-    return stageName ? this.state === 'triggered' && !this.isFinished(stageName) : this.state === 'triggered';
+    return stageName ? this.state === SequenceState.TRIGGERED && !this.isFinished(stageName) : this.state === SequenceState.TRIGGERED;
   }
 
   public isSuccessful(stageName?: string): boolean {
-    return stageName ? !this.isFaulty(stageName) && this.isFinished(stageName) : this.state === 'finished' && !this.isFaulty();
+    return stageName ? !this.isFaulty(stageName) && this.isFinished(stageName) : this.state === SequenceState.FINISHED && !this.isFaulty();
   }
 
   public isWarning(stageName: string): boolean {
@@ -111,25 +106,25 @@ export class Sequence {
   }
 
   public isWaiting(stageName?: string): boolean {
-    return stageName ? !this.isFinished(stageName) && this.state === 'waiting' : this.state === 'waiting';
+    return stageName ? !this.isFinished(stageName) && this.state === SequenceState.WAITING : this.state === SequenceState.WAITING;
   }
 
   public isRemediation(): boolean {
     return this.name === 'remediation';
   }
 
-  public getLatestEvent() {
+  public getLatestEvent(): {id: string, time: string, type: string} | undefined {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
 
-  public getIcon(stageName?: string): string {
+  public getIcon(stageName?: string): DtIconType {
     let icon;
-    if (this.state === 'waiting') {
+    if (this.state === SequenceState.WAITING) {
       icon = EVENT_ICONS.waiting;
     }
     else {
       const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
-      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || DEFAULT_ICON : DEFAULT_ICON;
+      icon = stage?.latestEvent?.type ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default : EVENT_ICONS.default;
     }
     return icon;
   }
@@ -154,7 +149,11 @@ export class Sequence {
     return this.traces[this.traces.length - 1];
   }
 
-  private getFirstTrace(): Trace | null {
+  private getFirstTrace(): Trace | undefined {
     return this.traces[0];
+  }
+
+  public getRemediationActions(): RemediationAction[] {
+    return this.stages[0]?.actions ?? [];
   }
 }

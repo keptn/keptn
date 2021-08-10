@@ -8,4 +8,4 @@ build:
 deploy:
   kubectl:
     manifests:
-      - deploy/bridge.yaml
+      - deploy/service.yaml

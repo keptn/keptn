@@ -1,5 +1,5 @@
 import {Trace} from './trace';
-import {EventTypes} from './event-types';
+import {EventTypes} from '../../../shared/interfaces/event-types';
 
 export class Root extends Trace {
   traces: Trace[] = [];
@@ -83,7 +83,7 @@ export class Root extends Trace {
   }
 
   getTracesOfStage(stage: string): Trace[] {
-    return this.traces?.filter(trace => trace.data.stage === stage);
+    return this.traces?.filter(trace => trace.data.stage === stage) ?? [];
   }
 
   getFirstTraceOfStage(stage: string): Trace {

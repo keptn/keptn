@@ -14,7 +14,6 @@ import {DataService} from '../../_services/data.service';
 import {Subject} from 'rxjs';
 import {Project} from '../../_models/project';
 import {Sequence} from '../../_models/sequence';
-import { Trace } from '../../_models/trace';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -84,7 +83,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     this.selectedEventChange.emit({ sequence, stage });
   }
 
-  identifyEvent(index: number, item: Trace) {
+  identifyEvent(index: number, item: Sequence) {
     return item?.time;
   }
 
@@ -100,8 +99,8 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
   }
 
-  public getShortType(type: string): string {
-    return Sequence.getShortType(type);
+  public getShortType(type: string | undefined): string | undefined{
+    return type ? Sequence.getShortType(type) : undefined;
   }
 
   public toDate(time: string): Date {

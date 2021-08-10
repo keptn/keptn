@@ -1,4 +1,4 @@
-<ktb-selectable-tile [error]="_event.isFaulty()" [warning]="_event.isWarning()" [success]="_event.isSuccessful()" [highlight]="_event.isApproval()" *ngIf="_event && (project$ | async) as project">
+<ktb-selectable-tile [error]="_event.isFaulty()" [warning]="_event.isWarning()" [success]="_event.isSuccessful()" [highlight]="!!_event.isApproval()" *ngIf="_event && (project$ | async) as project">
   <div fxLayout="row">
     <div fxFlex>
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
@@ -50,7 +50,7 @@
     <table>
       <tr>
         <td><p class="m-0">Currently deployed artifact: </p></td>
-        <td><p class="m-0" [textContent]="project.getLatestDeploymentTrace(project.getService(_event.data.service), project.getStage(_event.data.stage))?.getShortImageName() || 'N/A'"></p></td>
+        <td><p class="m-0" [textContent]="(_event.data.service && _event.data.stage && project.getLatestDeployment(project.getService(_event.data.service), project.getStage(_event.data.stage))?.image) || 'N/A'"></p></td>
       </tr>
       <tr>
         <td><p class="m-0">Deployable artifact: </p></td>

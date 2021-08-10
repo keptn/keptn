@@ -60,53 +60,6 @@ paths:
           schema:
             $ref: "#/definitions/error"
 
-  /config/bridge:
-    post:
-      tags:
-        - configuration
-      summary: Configures bridge credentials
-      parameters:
-        - $ref: "#/parameters/configureBridge"
-      responses:
-        200:
-          description: Bridge credentials were set successfully
-          schema:
-            type: string
-        400:
-          description: Bridge credentials could not be set
-          schema:
-            $ref: "#/definitions/error"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/error"
-
-    get:
-      tags:
-        - configuration
-      summary: Get bridge credentials
-      responses:
-        200:
-          description: Bridge credentials have been retrieved
-          schema:
-            $ref: "#/definitions/configureBridge"
-        400:
-          description: Bridge credentials could not be retrieved
-          schema:
-            $ref: "#/definitions/error"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/error"
-
-parameters:
-  configureBridge:
-    in: body
-    name: configureBridge
-    description: Parameters for configuring the bridge access
-    schema:
-      $ref: "#/definitions/configureBridge"
-
 definitions:
   eventContext:
     type: object
@@ -167,18 +120,9 @@ definitions:
         type: string
       keptnversion:
         type: string
+      shipyardversion:
+        type: string
       bridgeversion:
         type: string
       keptnservices:
         type: [ "object", "string" ]
-
-  configureBridge:
-    type: object
-    required:
-      - user
-      - password
-    properties:
-      user:
-        type: string
-      password:
-        type: string

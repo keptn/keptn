@@ -17,13 +17,14 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   @Input()
   set gitData(gitData: GitData) {
     this.gitUrlControl.setValue(gitData.remoteURI || '');
+    this.gitUrlControl.markAsUntouched();
+    this.gitUrlControl.markAsPristine();
     this.gitUserControl.setValue(gitData.gitUser || '');
-
-    if (gitData.remoteURI && gitData.gitUser) {
-      this.gitTokenControl.setValue('***********************');
-    } else {
-      this.gitTokenControl.setValue('');
-    }
+    this.gitUserControl.markAsUntouched();
+    this.gitUserControl.markAsPristine();
+    this.gitTokenControl.setValue('');
+    this.gitTokenControl.markAsUntouched();
+    this.gitTokenControl.markAsPristine();
   }
 
   @Output()

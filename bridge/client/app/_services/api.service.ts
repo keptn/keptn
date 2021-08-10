@@ -3,12 +3,10 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Resource } from '../_models/resource';
 import { Stage } from '../_models/stage';
-import { ProjectResult } from '../_models/project-result';
 import { ServiceResult } from '../_models/service-result';
-import { EventResult } from '../_models/event-result';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../_models/approval-states';
-import { EventTypes } from '../_models/event-types';
+import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Metadata } from '../_models/metadata';
 import { TaskNames } from '../_models/task-names.mock';
 import { Deployment } from '../_models/deployment';
@@ -20,6 +18,8 @@ import { UniformRegistrationLogResponse } from '../_models/uniform-registration-
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
+import { EventResult } from '../_interfaces/event-result';
+import { ProjectResult } from '../_interfaces/project-result';
 
 @Injectable({
   providedIn: 'root'
@@ -92,9 +92,9 @@ export class ApiService {
 
   public deleteProject(projectName: string): Observable<object> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
-    return this.http.delete<any>(url);
+    return this.http.delete<object>(url);
   }
-  
+
   /**
    * Creates a new project
    *
@@ -117,9 +117,10 @@ export class ApiService {
   }
 
   public getProject(projectName: string): Observable<Project> {
-    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}`;
+    const url = `${this._baseUrl}/project/${projectName}`;
     const params = {
-      disableUpstreamSync: 'true'
+      approval: 'true',
+      remediation: 'true'
     };
     return this.http
       .get<Project>(url, {params});
@@ -257,7 +258,7 @@ export class ApiService {
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, fromTime?: string): Observable<EventResult> {
     const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
     const params = {
-      filter: `data.project:${projectName}%20AND%20data.service:${serviceName}%20AND%20data.stage:${stageName}`,
+      filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}`,
       excludeInvalidated: 'true',
       limit: '50',
       ...fromTime && {fromTime}

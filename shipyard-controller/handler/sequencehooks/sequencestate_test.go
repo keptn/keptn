@@ -247,6 +247,31 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 			},
 			expectUpdateToBeCalled: false,
 		},
+		{
+			name: "cannot find sequence - do not update (2)",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				event: models.Event{
+					Data: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+					},
+					Shkeptncontext: "my-context",
+					Type:           common.Stringp("my-type"),
+				},
+			},
+			expectUpdateToBeCalled: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

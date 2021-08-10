@@ -1,9 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {filter, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
-import {Observable, Subject, timer} from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
-import {Project} from '../../_models/project';
-import {DataService} from '../../_services/data.service';
+import { Component } from '@angular/core';
+import { map, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { Project } from '../../_models/project';
+import { DataService } from '../../_services/data.service';
 
 @Component({
   selector: 'ktb-environment-view',
@@ -14,10 +14,7 @@ import {DataService} from '../../_services/data.service';
   },
   preserveWhitespaces: false
 })
-export class KtbEnvironmentViewComponent implements OnInit, OnDestroy {
-
-  private readonly unsubscribe$ = new Subject<void>();
-  private readonly _rootEventsTimerInterval = 30_000;
+export class KtbEnvironmentViewComponent {
   public project$: Observable<Project | undefined>;
 
   constructor(private dataService: DataService, private route: ActivatedRoute) {
@@ -26,21 +23,5 @@ export class KtbEnvironmentViewComponent implements OnInit, OnDestroy {
         map(params => params.projectName),
         switchMap(projectName => this.dataService.getProject(projectName))
       );
-  }
-
-  ngOnInit(): void {
-    timer(0, this._rootEventsTimerInterval)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.project$),
-        filter((project: Project | undefined): project is Project => !!project && !!project.getServices()),
-        takeUntil(this.unsubscribe$)
-      ).subscribe(project => {
-      this.dataService.loadRoots(project);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
   }
 }

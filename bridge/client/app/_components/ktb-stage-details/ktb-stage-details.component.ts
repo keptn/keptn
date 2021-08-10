@@ -1,12 +1,9 @@
 import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { DtToggleButtonChange, DtToggleButtonItem } from '@dynatrace/barista-components/toggle-button-group';
 import {DtOverlayConfig} from '@dynatrace/barista-components/overlay';
-
 import {Project} from '../../_models/project';
 import {Stage} from '../../_models/stage';
 import {Service} from '../../_models/service';
-import {Root} from '../../_models/root';
-
 import {DataService} from '../../_services/data.service';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
@@ -86,18 +83,6 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasProblemEvent(problemEvents: Root[], service: Service): boolean {
-    return problemEvents.filter(root => root?.data.service === service.serviceName).length > 0;
-  }
-
-  findProblemEvent(problemEvents: Root[], service: Service): Root[] {
-    return problemEvents.filter(root => root?.data.service === service.serviceName);
-  }
-
-  findFailedRootEvent(failedRootEvents: Root[], service: Service): Root | undefined {
-    return failedRootEvents.find(root => root.data.service === service.serviceName);
-  }
-
   getServiceLink(service: Service) {
     return ['service', service.serviceName, 'context', service.deploymentContext, 'stage', service.stage];
   }
@@ -106,14 +91,9 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     return this.filteredServices.length === 0 ? services : services.filter(service => this.filteredServices.includes(service.serviceName));
   }
 
-  public filterRoots(roots: Root[]): Root[] {
-    return this.filteredServices.length === 0
-          ? roots
-          : roots?.filter(root => root.service ? this.filteredServices.includes(root.service) : false);
-  }
-
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
 }

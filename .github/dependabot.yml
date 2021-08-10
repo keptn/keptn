@@ -7,6 +7,21 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 5
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: gomod
+    directory: "/test/go-tests"
+    schedule:
+      interval: weekly
+      day: "wednesday"
+    open-pull-requests-limit: 4
+    rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/approval-service"
     schedule:
@@ -14,6 +29,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/cli"
     schedule:
@@ -21,6 +40,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/api"
     schedule:
@@ -28,6 +51,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/distributor"
     schedule:
@@ -35,6 +62,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/configuration-service"
     schedule:
@@ -42,6 +73,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/helm-service"
     schedule:
@@ -49,6 +84,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/jmeter-service"
     schedule:
@@ -56,6 +95,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/lighthouse-service"
     schedule:
@@ -63,6 +106,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/mongodb-datastore"
     schedule:
@@ -70,6 +117,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/platform-support/openshift-route-service"
     schedule:
@@ -77,6 +128,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/remediation-service"
     schedule:
@@ -84,6 +139,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/secret-service"
     schedule:
@@ -91,6 +150,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/shipyard-controller"
     schedule:
@@ -98,6 +161,10 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: gomod
     directory: "/statistics-service"
     schedule:
@@ -105,13 +172,24 @@ updates:
       day: "wednesday"
     open-pull-requests-limit: 4
     rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: npm
     directory: "/bridge"
     schedule:
       interval: weekly
       day: "wednesday"
+    commit-message:
+      prefix: build
+      include: scope
+
   - package-ecosystem: npm
     directory: "/bridge/server"
     schedule:
       interval: weekly
       day: "wednesday"
+    commit-message:
+      prefix: build
+      include: scope

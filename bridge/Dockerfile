@@ -1,4 +1,4 @@
-FROM node:14-alpine3.13 as bridgeBuilder
+FROM node:14-alpine3.14 as bridgeBuilder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -12,7 +12,7 @@ RUN npm ci
 COPY . /usr/src/app
 RUN npm run build
 
-FROM node:14-alpine3.13 as bridgeServerBuilder
+FROM node:14-alpine3.14 as bridgeServerBuilder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -20,16 +20,17 @@ ENV VERSION="${version}"
 # Prepare app directory
 WORKDIR /usr/src/app/server
 
-# copy package.json only to install angular dependencies first
+# copy package.json only to install dependencies first
 COPY ./server/package.json ./server/package-lock.json ./
-RUN npm ci
+RUN npm i
 COPY ./server ./
+COPY ./shared /usr/src/app/shared
 RUN npm run build && \
   npm ci --production
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:14-alpine3.13 as bridgeProduction
+FROM node:14-alpine3.14 as bridgeProduction
 
 EXPOSE 3000
 

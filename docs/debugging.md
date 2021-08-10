@@ -32,7 +32,7 @@ Most of our services should already have a working setup. But just in case the s
     RUN GOOS=linux go build -gcflags "all=-N -l" -v -o some-go-binary
     
     # Use a Docker multi-stage build to create a lean production image.
-    FROM alpine:3.7
+    FROM alpine:3.14
     # we need to install ca-certificates and libc6-compat for go programs to work properly
     RUN apk add --no-cache ca-certificates libc6-compat
     

@@ -46,65 +46,6 @@ func init() {
         }
       }
     },
-    "/config/bridge": {
-      "get": {
-        "tags": [
-          "configuration"
-        ],
-        "summary": "Get bridge credentials",
-        "responses": {
-          "200": {
-            "description": "Bridge credentials have been retrieved",
-            "schema": {
-              "$ref": "#/definitions/configureBridge"
-            }
-          },
-          "400": {
-            "description": "Bridge credentials could not be retrieved",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "configuration"
-        ],
-        "summary": "Configures bridge credentials",
-        "parameters": [
-          {
-            "$ref": "#/parameters/configureBridge"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bridge credentials were set successfully",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "400": {
-            "description": "Bridge credentials could not be set",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/event": {
       "post": {
         "tags": [
@@ -155,21 +96,6 @@ func init() {
     }
   },
   "definitions": {
-    "configureBridge": {
-      "type": "object",
-      "required": [
-        "user",
-        "password"
-      ],
-      "properties": {
-        "password": {
-          "type": "string"
-        },
-        "user": {
-          "type": "string"
-        }
-      }
-    },
     "error": {
       "type": "object",
       "required": [
@@ -264,17 +190,10 @@ func init() {
         },
         "namespace": {
           "type": "string"
+        },
+        "shipyardversion": {
+          "type": "string"
         }
-      }
-    }
-  },
-  "parameters": {
-    "configureBridge": {
-      "description": "Parameters for configuring the bridge access",
-      "name": "configureBridge",
-      "in": "body",
-      "schema": {
-        "$ref": "#/definitions/configureBridge"
       }
     }
   },
@@ -320,70 +239,6 @@ func init() {
         }
       }
     },
-    "/config/bridge": {
-      "get": {
-        "tags": [
-          "configuration"
-        ],
-        "summary": "Get bridge credentials",
-        "responses": {
-          "200": {
-            "description": "Bridge credentials have been retrieved",
-            "schema": {
-              "$ref": "#/definitions/configureBridge"
-            }
-          },
-          "400": {
-            "description": "Bridge credentials could not be retrieved",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "configuration"
-        ],
-        "summary": "Configures bridge credentials",
-        "parameters": [
-          {
-            "description": "Parameters for configuring the bridge access",
-            "name": "configureBridge",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/configureBridge"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bridge credentials were set successfully",
-            "schema": {
-              "type": "string"
-            }
-          },
-          "400": {
-            "description": "Bridge credentials could not be set",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          },
-          "default": {
-            "description": "Error",
-            "schema": {
-              "$ref": "#/definitions/error"
-            }
-          }
-        }
-      }
-    },
     "/event": {
       "post": {
         "tags": [
@@ -434,21 +289,6 @@ func init() {
     }
   },
   "definitions": {
-    "configureBridge": {
-      "type": "object",
-      "required": [
-        "user",
-        "password"
-      ],
-      "properties": {
-        "password": {
-          "type": "string"
-        },
-        "user": {
-          "type": "string"
-        }
-      }
-    },
     "error": {
       "type": "object",
       "required": [
@@ -543,17 +383,10 @@ func init() {
         },
         "namespace": {
           "type": "string"
+        },
+        "shipyardversion": {
+          "type": "string"
         }
-      }
-    }
-  },
-  "parameters": {
-    "configureBridge": {
-      "description": "Parameters for configuring the bridge access",
-      "name": "configureBridge",
-      "in": "body",
-      "schema": {
-        "$ref": "#/definitions/configureBridge"
       }
     }
   },

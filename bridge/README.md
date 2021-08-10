@@ -11,10 +11,10 @@ The Keptn bridge is installed as a part of [Keptn](https://keptn.sh).
 
 ### Deploy in your Kubernetes cluster
 
-To deploy the current version of the bridge in your Keptn Kubernetes cluster, use the file `deploy/bridge.yaml` from this repository and apply it:
+To deploy the current version of the bridge in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it:
 
 ```console
-kubectl apply -f deploy/bridge.yaml
+kubectl apply -f deploy/service.yaml
 ```
 
 ### Setting up Basic Authentication
@@ -99,10 +99,10 @@ If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.pn
 
 ### Delete in your Kubernetes cluster
 
-To delete a deployed bridge, use the file `deploy/bridge.yaml` from this repository and delete the Kubernetes resources:
+To delete a deployed bridge, use the file `deploy/service.yaml` from this repository and delete the Kubernetes resources:
 
 ```console
-kubectl delete -f deploy/bridge.yaml
+kubectl delete -f deploy/service.yaml
 ```
 
 ## Local development
