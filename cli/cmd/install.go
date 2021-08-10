@@ -197,22 +197,31 @@ type InstallCmdHandler struct {
 	userInput        common.IUserInput
 }
 
+func fetchCharts(helmHelper helm.IHelper, keptnChartRepoURL string) (*chart.Chart, error) {
+	var err error
+	var chart *chart.Chart
+	if goutils.IsValidURL(keptnChartRepoURL) {
+		chart, err = helmHelper.DownloadChart(keptnChartRepoURL)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		chart, err = keptnutils.LoadChartFromPath(keptnChartRepoURL)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return chart, nil
+}
+
 func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error {
 	keptnNamespace := namespace
 	showFallbackConnectMessage := true
 
 	keptnChartRepoURL := getKeptnHelmChartRepoURL(installParams.ChartRepoURL)
 	var err error
-	if goutils.IsValidURL(keptnChartRepoURL) {
-		keptnChart, err = i.helmHelper.DownloadChart(keptnChartRepoURL)
-		if err != nil {
-			return err
-		}
-	} else {
-		keptnChart, err = keptnutils.LoadChartFromPath(keptnChartRepoURL)
-		if err != nil {
-			return err
-		}
+	if keptnChart, err = fetchCharts(i.helmHelper, keptnChartRepoURL); err != nil {
+		return err
 	}
 
 	if installParams.UseCase == ContinuousDelivery {
@@ -308,20 +317,11 @@ func (i *InstallCmdHandler) doInstallation(installParams installCmdParams) error
 
 func fetchContinuousDeliveryCharts(helmHelper helm.IHelper, chartRepoURL *string) ([]*chart.Chart, error) {
 	charts := []*chart.Chart{}
-	var serviceChart *chart.Chart
-	var err error
 	for _, service := range continuousDeliveryServices {
 		chartURL := getExecutionPlaneServiceChartRepoURL(chartRepoURL, service)
-		if goutils.IsValidURL(chartURL) {
-			serviceChart, err = helmHelper.DownloadChart(chartURL)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			serviceChart, err = keptnutils.LoadChartFromPath(chartURL)
-			if err != nil {
-				return nil, err
-			}
+		serviceChart, err := fetchCharts(helmHelper, chartURL)
+		if err != nil {
+			return nil, err
 		}
 		charts = append(charts, serviceChart)
 	}
