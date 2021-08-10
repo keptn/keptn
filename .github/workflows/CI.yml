@@ -778,10 +778,10 @@ jobs:
 
           NEW_TAG="${IMAGE}:${VERSION}.${DATETIME}"
           echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
-          curl -s -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
+          curl -v -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
           NEW_TAG="${IMAGE}:${VERSION}"
           echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
-          curl -s -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
+          curl -v -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
 
           report="* Retagged ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           echo "::set-output name=build-report::$report"
