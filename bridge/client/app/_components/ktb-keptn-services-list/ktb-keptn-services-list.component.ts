@@ -79,6 +79,9 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
       if (this.selectedUniformRegistration) {
         this.selectedUniformRegistration.unreadEvents = 0;
+        if (this.uniformRegistrations.data.some(registration => registration.unreadEvents !== 0)) {
+          this.dataService.setHasUnreadUniformRegistrationLogs(false);
+        }
       }
       this.selectedUniformRegistration = uniformRegistration;
       this.selectedUniformRegistrationId$.next(this.selectedUniformRegistration.id);

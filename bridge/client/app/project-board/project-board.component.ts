@@ -22,7 +22,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   private _errorSubject: BehaviorSubject<string | undefined> = new BehaviorSubject<string | undefined>(undefined);
   public error$: Observable<string | undefined> = this._errorSubject.asObservable();
   public isCreateMode$: Observable<boolean>;
-  public hasUnreadLogs = false;
+  public hasUnreadLogs$: Observable<boolean>;
 
   constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
     const projectName$ = this.route.paramMap.pipe(
@@ -34,14 +34,13 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       switchMap((projectName) => AppUtils.createTimer(initialDelayMillis).pipe(map(() => projectName))),
       takeUntil(this.unsubscribe$)
     );
+    this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
 
     timer$.subscribe(projectName => {
       // this is on project-board level because we need the project in environment, service, sequence and settings screen
       // sequence screen because there is a check for the latest deployment context (lastEventTypes)
       this.dataService.loadProject(projectName);
-      this.dataService.hasUnreadUniformRegistrationLogs().subscribe(status => {
-        this.hasUnreadLogs = status;
-      });
+      this.dataService.loadUnreadUniformRegistrationLogs();
     });
 
     this.hasProject$ = projectName$.pipe(

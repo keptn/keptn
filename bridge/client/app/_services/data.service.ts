@@ -38,6 +38,7 @@ export class DataService {
   protected _rootTracesLastUpdated: { [key: string]: Date } = {};
   protected _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
   protected _uniformDates: {[key: string]: string} = this.apiService.uniformLogDates;
+  protected _hasUnreadUniformRegistrationLogs = new BehaviorSubject<boolean>(false);
   private readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private readonly MAX_SEQUENCE_PAGE_SIZE = 100;
@@ -94,6 +95,14 @@ export class DataService {
     return this._projectName.asObservable();
   }
 
+  get hasUnreadUniformRegistrationLogs(): Observable<boolean> {
+    return this._hasUnreadUniformRegistrationLogs.asObservable();
+  }
+
+  public setHasUnreadUniformRegistrationLogs(status: boolean): void {
+    this._hasUnreadUniformRegistrationLogs.next(status);
+  }
+
   public setProjectName(projectName: string): void {
     this._projectName.next(projectName);
   }
@@ -131,8 +140,10 @@ export class DataService {
     );
   }
 
-  public hasUnreadUniformRegistrationLogs(): Observable<boolean> {
-    return this.apiService.hasUnreadUniformRegistrationLogs(this._uniformDates);
+  public loadUnreadUniformRegistrationLogs(): void {
+    this.apiService.hasUnreadUniformRegistrationLogs(this._uniformDates).subscribe(status => {
+      this.setHasUnreadUniformRegistrationLogs(status);
+    });
   }
 
   public getSecrets(): Observable<Secret[]> {

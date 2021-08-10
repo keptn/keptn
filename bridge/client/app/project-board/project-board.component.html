@@ -57,7 +57,7 @@
         <dt-icon name="hops"></dt-icon>
       </button>
       <div class="relative">
-        <div *ngIf="hasUnreadLogs" class="notification-indicator notification-indicator-absolute"></div>
+        <div *ngIf="hasUnreadLogs$ | async" class="notification-indicator notification-indicator-absolute"></div>
         <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
           <dt-icon name="infrastructure"></dt-icon>
         </button>

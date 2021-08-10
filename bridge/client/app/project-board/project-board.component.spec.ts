@@ -1,5 +1,4 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { ProjectBoardComponent } from './project-board.component';
 import { AppModule, INITIAL_DELAY_MILLIS } from '../app.module';
 import { DataServiceMock } from '../_services/data.service.mock';
@@ -159,17 +158,17 @@ describe('ProjectBoardComponent', () => {
   it('should not show notification indicator', () => {
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeFalsy();
 
-    component.hasUnreadLogs = true;
+    component.hasUnreadLogs$ = of(true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
 
-    component.hasUnreadLogs = false;
+    component.hasUnreadLogs$ = of(false);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeFalsy();
   });
 
   it('should show notification indicator', () => {
-    component.hasUnreadLogs = true;
+    component.hasUnreadLogs$ = of(true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
   });
