@@ -1,7 +1,6 @@
 package sequencehooks
 
 import (
-	"errors"
 	"fmt"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -173,7 +172,7 @@ func (smv *SequenceStateMaterializedView) findSequenceState(project, keptnContex
 		return nil, err
 	}
 	if len(states.States) == 0 {
-		return nil, errors.New("no state found")
+		return nil, fmt.Errorf("could not fetch sequence state for keptnContext %s", keptnContext)
 	}
 
 	state := states.States[0]
