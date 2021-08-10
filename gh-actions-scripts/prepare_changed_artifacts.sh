@@ -71,7 +71,7 @@ for changed_file in $CHANGED_FILES; do
     artifact_go_flags="${artifact}_GO_FLAGS"
     artifact_test_folders="${artifact}_TEST_FOLDERS"
 
-    if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) && ( $BUILD_EVERYTHING != 'true' ) ]]; then
+    if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
       IFS= read -r "${should_build_artifact}" <<< "true"
       artifact_config=$(jq -n \
@@ -83,8 +83,10 @@ for changed_file in $CHANGED_FILES; do
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
+      break
     elif [[ ( $BUILD_EVERYTHING == 'true' ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "No changes in $artifact but build is set to build everything"
+      IFS= read -r "${should_build_artifact}" <<< "true"
       artifact_config=$(jq -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
@@ -94,6 +96,7 @@ for changed_file in $CHANGED_FILES; do
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
+      break
     fi
   done
 done
@@ -109,21 +112,8 @@ matrix_config="${matrix_config//$'\r'/'%0D'}"
 
 # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
 echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"
-echo "::set-output name=BUILD_API::$BUILD_API"
 echo "::set-output name=BUILD_CLI::$BUILD_CLI"
-echo "::set-output name=BUILD_OS_ROUTE_SVC::$BUILD_OS_ROUTE_SVC"
 echo "::set-output name=BUILD_BRIDGE::$BUILD_BRIDGE"
-echo "::set-output name=BUILD_JMETER::$BUILD_JMETER"
-echo "::set-output name=BUILD_HELM_SVC::$BUILD_HELM_SVC"
-echo "::set-output name=BUILD_APPROVAL_SVC::$BUILD_APPROVAL_SVC"
-echo "::set-output name=BUILD_DISTRIBUTOR::$BUILD_DISTRIBUTOR"
-echo "::set-output name=BUILD_SHIPYARD_CONTROLLER::$BUILD_SHIPYARD_CONTROLLER"
-echo "::set-output name=BUILD_SECRET_SVC::$BUILD_SECRET_SVC"
-echo "::set-output name=BUILD_CONFIGURATION_SVC::$BUILD_CONFIGURATION_SVC"
-echo "::set-output name=BUILD_REMEDIATION_SVC::$BUILD_REMEDIATION_SVC"
-echo "::set-output name=BUILD_LIGHTHOUSE_SVC::$BUILD_LIGHTHOUSE_SVC"
-echo "::set-output name=BUILD_MONGODB_DS::$BUILD_MONGODB_DS"
-echo "::set-output name=BUILD_STATISTICS_SVC::$BUILD_STATISTICS_SVC"
 echo "::set-output name=BUILD_MATRIX::$matrix_config"
 
 echo "The following artifacts will be tested and built:"
