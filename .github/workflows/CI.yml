@@ -336,6 +336,7 @@ jobs:
             echo "branch name: $BRANCH_NAME"
           elif [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
             PR_NUMBER=${BRANCH_SLUG#PR-}
+            echo "pr number: $PR_NUMBER"
             BRANCH_NAME=$(gh pr view "$PR_NUMBER" --json "headRefName" | jq -r '.headRefName')
             echo "branch name: $BRANCH_NAME"
           fi
