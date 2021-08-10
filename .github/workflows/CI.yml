@@ -236,9 +236,8 @@ jobs:
               artifact_go_flags="${artifact}_GO_FLAGS"
               artifact_test_folders="${artifact}_TEST_FOLDERS"
 
-              if [[ ( $changed_file == ${!artifact_folder}* || $BUILD_EVERYTHING == 'true') && ("${!should_build_artifact}" != 'true')]]; then
+              if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
                 echo "Found changes in $artifact"
-# TODO if build everything is true but there are no changes, add to matrix but set should build to false
                 IFS= read -r "${should_build_artifact}" <<< "true"
                 artifact_config=$(jq -n \
                 --arg artifact "${!artifact_fullname}" \
@@ -249,6 +248,17 @@ jobs:
                 "$build_artifact_template"
                 )
                 matrix_config="$matrix_config $artifact_config,"
+              elif [[ ( $BUILD_EVERYTHING == 'true' ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
+                echo "No changes in artifact but build is set to build everything"
+               artifact_config=$(jq -n \
+               --arg artifact "${!artifact_fullname}" \
+               --arg working_dir "${!artifact_folder}" \
+               --arg should_run "${!should_build_artifact}" \
+               --arg test_folders "${!artifact_test_folders}" \
+               --arg go_flags "${!artifact_go_flags}" \
+               "$build_artifact_template"
+               )
+               matrix_config="$matrix_config $artifact_config,"
               fi
             done
           done
