@@ -215,19 +215,7 @@ jobs:
           matrix_config='{"config":['
           build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "test-folders": $test_folders, "go-flags": $go_flags }'
 
-          for changed_file in ${{ steps.changed_files.outputs.all }}; do
-            echo "Checking if $changed_file leads to a build..."
-
-            if [[ $changed_file == "${INSTALLER_FOLDER}"* ]]; then
-              echo "Found changes in Installer"
-              BUILD_INSTALLER=true
-            fi
-
-            if [[ $changed_file == "${CLI_FOLDER}"* ]]; then
-              echo "Found changes in CLI"
-              BUILD_CLI=true
-            fi
-
+          if [[ $BUILD_EVERYTHING == 'true' ]]; then
             for artifact in "${artifacts[@]}"; do
               # Prepare variables
               artifact_fullname="${artifact}_ARTIFACT"
@@ -236,32 +224,59 @@ jobs:
               artifact_go_flags="${artifact}_GO_FLAGS"
               artifact_test_folders="${artifact}_TEST_FOLDERS"
 
-              if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
-                echo "Found changes in $artifact"
-                IFS= read -r "${should_build_artifact}" <<< "true"
-                artifact_config=$(jq -n \
-                --arg artifact "${!artifact_fullname}" \
-                --arg working_dir "${!artifact_folder}" \
-                --arg should_run "${!should_build_artifact}" \
-                --arg test_folders "${!artifact_test_folders}" \
-                --arg go_flags "${!artifact_go_flags}" \
-                "$build_artifact_template"
-                )
-                matrix_config="$matrix_config $artifact_config,"
-              elif [[ ( $BUILD_EVERYTHING == 'true' ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
-                echo "No changes in $artifact but build is set to build everything"
-               artifact_config=$(jq -n \
-               --arg artifact "${!artifact_fullname}" \
-               --arg working_dir "${!artifact_folder}" \
-               --arg should_run "${!should_build_artifact}" \
-               --arg test_folders "${!artifact_test_folders}" \
-               --arg go_flags "${!artifact_go_flags}" \
-               "$build_artifact_template"
-               )
-               matrix_config="$matrix_config $artifact_config,"
-              fi
+              echo "Adding $artifact to build matrix because build is set to build everything"
+              IFS= read -r "${should_build_artifact}" <<< "true"
+              artifact_config=$(jq -n \
+              --arg artifact "${!artifact_fullname}" \
+              --arg working_dir "${!artifact_folder}" \
+              --arg should_run "false" \
+              --arg test_folders "${!artifact_test_folders}" \
+              --arg go_flags "${!artifact_go_flags}" \
+              "$build_artifact_template"
+              )
+              matrix_config="$matrix_config $artifact_config,"
             done
-          done
+          else
+            for changed_file in ${{ steps.changed_files.outputs.all }}; do
+              echo "Checking if $changed_file leads to a build..."
+
+              if [[ $changed_file == "${INSTALLER_FOLDER}"* ]]; then
+                echo "Found changes in Installer"
+                BUILD_INSTALLER=true
+                continue
+              fi
+
+              if [[ $changed_file == "${CLI_FOLDER}"* ]]; then
+                echo "Found changes in CLI"
+                BUILD_CLI=true
+                continue
+              fi
+
+              for artifact in "${artifacts[@]}"; do
+                # Prepare variables
+                artifact_fullname="${artifact}_ARTIFACT"
+                artifact_folder="${artifact}_FOLDER"
+                should_build_artifact="BUILD_${artifact}"
+                artifact_go_flags="${artifact}_GO_FLAGS"
+                artifact_test_folders="${artifact}_TEST_FOLDERS"
+
+                if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
+                  echo "Found changes in $artifact"
+                  IFS= read -r "${should_build_artifact}" <<< "true"
+                  artifact_config=$(jq -n \
+                    --arg artifact "${!artifact_fullname}" \
+                    --arg working_dir "${!artifact_folder}" \
+                    --arg should_run "${!should_build_artifact}" \
+                    --arg test_folders "${!artifact_test_folders}" \
+                    --arg go_flags "${!artifact_go_flags}" \
+                    "$build_artifact_template"
+                  )
+                  matrix_config="$matrix_config $artifact_config,"
+                  break
+                fi
+              done
+            done
+          fi
 
           # Terminate matrix JSON config and remove trailing comma
           matrix_config="${matrix_config%,}]}"
