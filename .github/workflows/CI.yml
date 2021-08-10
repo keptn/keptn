@@ -731,7 +731,7 @@ jobs:
 
       - id: docker_retag_image
         name: "Docker Retag keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true'
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
