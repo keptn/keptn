@@ -249,7 +249,7 @@ jobs:
                 )
                 matrix_config="$matrix_config $artifact_config,"
               elif [[ ( $BUILD_EVERYTHING == 'true' ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
-                echo "No changes in artifact but build is set to build everything"
+                echo "No changes in $artifact but build is set to build everything"
                artifact_config=$(jq -n \
                --arg artifact "${!artifact_fullname}" \
                --arg working_dir "${!artifact_folder}" \
@@ -332,6 +332,7 @@ jobs:
         run: |
           RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
+          echo "Last successful run ID was: $RUN_ID"
 
       - name: 'Get Previous tag'
         id: get_previous_tag
@@ -675,6 +676,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
 
+      - name: Debug
+        run: |
+          echo "last successful run ID: ${{ needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID }}"
+          echo "build everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}"
+
       - id: docker_login
         name: Docker Login
         # only run docker login on pushes; also for PRs, but only if this is not a fork
@@ -688,6 +694,7 @@ jobs:
 
       - id: docker_cache
         name: Docker Cache
+        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
         with:
@@ -737,19 +744,19 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
+          REGISTRY_NAME: "https://registry.hub.docker.com"
+          CONTENT_TYPE: "application/vnd.docker.distribution.manifest.v2+json"
         run: |
           # Fetch last image datetime from build config
           LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config/build-config.env" | cut -d '=' -f2)
+          OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
-          # Pull previous image
-          docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}"
+          MANIFEST=$(curl -H "Accept: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${OLD_TAG}")
 
-          # Retag previous image
-          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${IMAGE}:${VERSION}.${DATETIME}"
-          docker tag "${IMAGE}:${VERSION}.${LAST_DATETIME}" "${IMAGE}:${VERSION}"
-
-          # Push newly tagged image
-          docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
+          NEW_TAG="${IMAGE}:${VERSION}.${DATETIME}"
+          curl -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
+          NEW_TAG="${IMAGE}:${VERSION}"
+          curl -X PUT -H "Content-Type: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" -d "${MANIFEST}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${NEW_TAG}"
 
           report="* Retagged ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           echo "::set-output name=build-report::$report"
