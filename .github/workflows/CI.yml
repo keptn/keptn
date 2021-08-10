@@ -754,12 +754,8 @@ jobs:
           REGISTRY_NAME: "https://registry.hub.docker.com"
           CONTENT_TYPE: "application/vnd.docker.distribution.manifest.v2+json"
         run: |
-          ls -la "./"
-          ls -la "./last-build-config"
-          ls -la "./last-build-config/build-config"
-
           # Fetch last image datetime from build config
-          LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config/build-config.env" | cut -d '=' -f2)
+          LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
           OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
           MANIFEST=$(curl -H "Accept: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${OLD_TAG}")
