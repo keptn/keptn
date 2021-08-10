@@ -758,7 +758,8 @@ jobs:
           LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
           OLD_TAG="${VERSION}.${LAST_DATETIME}"
 
-          MANIFEST=$(curl -H "Accept: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${OLD_TAG}")
+          MANIFEST=$(curl -s -H "Accept: ${CONTENT_TYPE}" -u "${{ secrets.REGISTRY_USER }}:${{ secrets.REGISTRY_PASSWORD }}" "${REGISTRY_NAME}/v2/${IMAGE}/manifests/${OLD_TAG}")
+          echo "Manifest: $MANIFEST"
 
           NEW_TAG="${IMAGE}:${VERSION}.${DATETIME}"
           echo "Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tag ${NEW_TAG}"
@@ -780,6 +781,18 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           message: ${{ steps.docker_build_image.outputs.build-report }}
+          append: true
+
+      - name: Report Docker Re-Tag to PR
+        if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
+        # only run if this is not a fork - see https://github.com/marocchino/sticky-pull-request-comment/issues/227
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't comment on the PR in this case
+        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        continue-on-error: true
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: ${{ steps.docker_retag_image.outputs.build-report }}
           append: true
 
       - name: Delete PR comment on failure
