@@ -45,12 +45,31 @@ IMAGES=(
   "lighthouse-service"
   "mongodb-datastore"
   "remediation-service"
+  "secret-service"
   "shipyard-controller"
+  "statistics-service"
 )
 # additional old images that we want to keep
-ADDITIONAL_OLD_IMAGES=("installer" "bridge" "upgrader" "shipyard-service" "wait-service" "pitometer-service")
+ADDITIONAL_OLD_IMAGES=(
+  "installer"
+  "bridge"
+  "upgrader"
+  "shipyard-service"
+  "wait-service"
+  "pitometer-service"
+)
 # Older than version 0.5
-ADDITIONAL_VERY_OLD_IMAGES=("keptn-authenticator" "keptn-control" "keptn-event-broker" "keptn-event-broker-ext" "slack-service" "control" "eventbroker" "eventbroker-ext" "github-service")
+ADDITIONAL_VERY_OLD_IMAGES=(
+  "keptn-authenticator"
+  "keptn-control"
+  "keptn-event-broker"
+  "keptn-event-broker-ext"
+  "slack-service"
+  "control"
+  "eventbroker"
+  "eventbroker-ext"
+  "github-service"
+)
 
 # merge IMAGES and ADDITIONAL_OLD_IMAGES
 IMAGES=("${IMAGES[@]}" "${ADDITIONAL_OLD_IMAGES[@]}")
