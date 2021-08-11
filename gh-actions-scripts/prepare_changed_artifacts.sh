@@ -83,9 +83,21 @@ for changed_file in $CHANGED_FILES; do
         "$build_artifact_template"
       )
       matrix_config="$matrix_config $artifact_config,"
-    elif [[ ( $BUILD_EVERYTHING == 'true' ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
-      echo "No changes in $artifact but build is set to build everything"
-      IFS= read -r "${should_build_artifact}" <<< "true"
+    fi
+  done
+done
+
+if [[ $BUILD_EVERYTHING == 'true' ]]; then
+  for artifact in "${artifacts[@]}"; do
+    # Prepare variables
+    artifact_fullname="${artifact}_ARTIFACT"
+    artifact_folder="${artifact}_FOLDER"
+    should_build_artifact="BUILD_${artifact}"
+    artifact_go_flags="${artifact}_GO_FLAGS"
+    artifact_test_folders="${artifact}_TEST_FOLDERS"
+
+    if [[ "${!should_build_artifact}" != 'true' ]]; then
+      echo "Adding unchanged artifact $artifact to build matrix since build everything was requested"
       artifact_config=$(jq -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
@@ -97,7 +109,8 @@ for changed_file in $CHANGED_FILES; do
       matrix_config="$matrix_config $artifact_config,"
     fi
   done
-done
+fi
+
 
 # Terminate matrix JSON config and remove trailing comma
 matrix_config="${matrix_config%,}]}"
