@@ -15,4 +15,5 @@ func NewStateController(sequenceStateHandler handler.IStateHandler) Controller {
 
 func (controller StateController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.GET("/sequence/:project", controller.SequenceStateHandler.GetSequenceState)
+	apiGroup.POST("/sequence/:project/:keptnContext/control", controller.SequenceStateHandler.ControlSequenceState)
 }

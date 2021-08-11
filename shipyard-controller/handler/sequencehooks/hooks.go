@@ -43,3 +43,13 @@ type ISequenceFinishedHook interface {
 type ISequenceTimeoutHook interface {
 	OnSequenceTimeout(event models.Event)
 }
+
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencepause.go . ISequencePausedHook
+type ISequencePausedHook interface {
+	OnSequencePaused(pause models.EventScope)
+}
+
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencepause.go . ISequenceResumedHook
+type ISequenceResumedHook interface {
+	OnSequenceResumed(resume models.EventScope)
+}

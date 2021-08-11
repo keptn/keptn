@@ -166,6 +166,7 @@ func Test_SequenceQueue(t *testing.T) {
 	// Scenario 3: special case approval: once an approval has been triggered, another sequence should take over
 	// ------------------------------------
 
+	require.Nil(t, err)
 	// increase the task timeout again
 	err = setShipyardControllerTaskTimeout(t, "20m")
 	require.Nil(t, err)
@@ -176,14 +177,11 @@ func Test_SequenceQueue(t *testing.T) {
 	// check if approval.triggered has been sent for sequence - now it should be available
 	approvalTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.ApprovalTaskName))
 	require.Nil(t, err)
-	require.NotNil(t, triggeredEventOfSecondSequence)
+	require.NotNil(t, approvalTriggeredEvent)
 
 	// send the approval.started event to make sure the sequence will not be cancelled due to a timeout
 	approvalTriggeredCE := keptnv2.ToCloudEvent(*approvalTriggeredEvent)
 	keptnHandler, err := keptnv2.NewKeptn(&approvalTriggeredCE, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
-	require.Nil(t, err)
-
-	_, err = keptnHandler.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
 	// now let's trigger the other sequence

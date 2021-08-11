@@ -100,6 +100,7 @@ func main() {
 	sequenceDispatcherChannel := make(chan models.Event)
 	sequenceDispatcher := handler.NewSequenceDispatcher(
 		createEventsRepo(),
+		createEventQueueRepo(),
 		createSequenceQueueRepo(),
 		createTaskSequenceRepo(),
 		getDurationFromEnvVar(envVarSequenceDispatchIntervalSec, envVarSequenceDispatchIntervalSecDefault),
@@ -107,8 +108,16 @@ func main() {
 		clock.New(),
 	)
 
-	cancelSequenceChannel := make(chan common.SequenceCancellation)
-	shipyardController := handler.GetShipyardControllerInstance(context.Background(), eventDispatcher, sequenceDispatcher, sequenceDispatcherChannel, cancelSequenceChannel)
+	sequenceTimeoutChannel := make(chan common.SequenceTimeout)
+	sequenceControlChannel := make(chan common.SequenceControl)
+	shipyardController := handler.GetShipyardControllerInstance(
+		context.Background(),
+		eventDispatcher,
+		sequenceDispatcher,
+		sequenceDispatcherChannel,
+		sequenceTimeoutChannel,
+		sequenceControlChannel,
+	)
 	sequenceDispatcher.Run(context.Background())
 
 	engine := gin.Default()
@@ -139,7 +148,7 @@ func main() {
 	evaluationController := controller.NewEvaluationController(evaluationHandler)
 	evaluationController.Inject(apiV1)
 
-	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()))
+	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()), shipyardController)
 	stateController := controller.NewStateController(stateHandler)
 	stateController.Inject(apiV1)
 
@@ -152,11 +161,16 @@ func main() {
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
+	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequencePausedHook(eventDispatcher)
+	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceResumedHook(eventDispatcher)
 
 	taskStartedWaitDuration := getDurationFromEnvVar(envVarTaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 
 	watcher := handler.NewSequenceWatcher(
-		cancelSequenceChannel,
+		sequenceTimeoutChannel,
 		createEventsRepo(),
 		createEventQueueRepo(),
 		createProjectRepo(),
@@ -195,7 +209,10 @@ func main() {
 	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
-	engine.Run()
+	err = engine.Run()
+	if err != nil {
+		log.WithError(err).Error("could not start API server")
+	}
 }
 
 func createMaterializedView() *db.ProjectsMaterializedView {

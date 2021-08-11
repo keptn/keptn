@@ -121,6 +121,16 @@ func TestRateLimiter(t *testing.T) {
 	wg.Wait()
 	require.Equal(t, 1, mh.calls)
 
+	// now simulate a request with a valid token - this should however still be throttled due to previous burst of invalid requests
+	tokenValidator.ValidateTokenFunc = func(token string) (*models.Principal, error) {
+		return nil, nil
+	}
+	req, err = http.NewRequest(http.MethodGet, "", nil)
+	require.Nil(t, err)
+
+	rl.Apply(&httptest.ResponseRecorder{}, req, mh)
+	require.Equal(t, 1, mh.calls)
+
 	// wait a bit - the next one should pass
 	<-time.After(1 * time.Second)
 	rl.Apply(&httptest.ResponseRecorder{}, req, mh)

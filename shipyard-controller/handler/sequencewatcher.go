@@ -13,7 +13,7 @@ import (
 )
 
 type SequenceWatcher struct {
-	cancelSequenceChannel chan common.SequenceCancellation
+	cancelSequenceChannel chan common.SequenceTimeout
 	eventRepo             db.EventRepo
 	eventQueueRepo        db.EventQueueRepo
 	projectRepo           db.ProjectRepo
@@ -22,7 +22,7 @@ type SequenceWatcher struct {
 	theClock              clock.Clock
 }
 
-func NewSequenceWatcher(cancelSequenceChannel chan common.SequenceCancellation, eventRepo db.EventRepo, eventQueueRepo db.EventQueueRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
+func NewSequenceWatcher(cancelSequenceChannel chan common.SequenceTimeout, eventRepo db.EventRepo, eventQueueRepo db.EventQueueRepo, projectRepo db.ProjectRepo, eventTimeout time.Duration, syncInterval time.Duration, theClock clock.Clock) *SequenceWatcher {
 	return &SequenceWatcher{
 		cancelSequenceChannel: cancelSequenceChannel,
 		eventRepo:             eventRepo,
@@ -115,9 +115,8 @@ func (sw *SequenceWatcher) cleanUpOrphanedTasksOfProject(project string) error {
 			}
 			if len(responseEvents) == 0 {
 				// time out -> tell shipyard controller to complete the task sequence
-				sequenceCancellation := common.SequenceCancellation{
+				sequenceCancellation := common.SequenceTimeout{
 					KeptnContext: event.Shkeptncontext,
-					Reason:       common.Timeout,
 					LastEvent:    event,
 				}
 

@@ -4,6 +4,7 @@ import (
 	openapierrors "github.com/go-openapi/errors"
 	"github.com/keptn/keptn/api/models"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 	"os"
 )
 
@@ -20,5 +21,5 @@ func (b *BasicTokenValidator) ValidateToken(token string) (*models.Principal, er
 		return &prin, nil
 	}
 	log.Errorf("Access attempt with incorrect api key auth: %s", token)
-	return nil, openapierrors.New(401, "incorrect api key auth")
+	return nil, openapierrors.New(http.StatusUnauthorized, "incorrect api key auth")
 }

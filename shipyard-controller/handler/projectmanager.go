@@ -26,7 +26,7 @@ type IProjectManager interface {
 	GetByName(projectName string) (*models.ExpandedProject, error)
 	Create(params *operations.CreateProjectParams) (error, common.RollbackFunc)
 	Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc)
-	Delete(projectName string) (error, string)
+	Delete(projectName string) (string, error)
 }
 
 type ProjectManager struct {
@@ -141,7 +141,7 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 	}
 
 	decodedShipyard, _ := base64.StdEncoding.DecodeString(*params.Shipyard)
-	shipyard, err := common.UnmarshalShipyard(string(decodedShipyard))
+	shipyard, _ := common.UnmarshalShipyard(string(decodedShipyard))
 	for _, shipyardStage := range shipyard.Spec.Stages {
 		if err := pm.ConfigurationStore.CreateStage(*params.Name, shipyardStage.Name); err != nil {
 			return err, rollbackFunc
@@ -166,11 +166,9 @@ func (pm *ProjectManager) Create(params *operations.CreateProjectParams) (error,
 		return err, rollbackFunc
 	}
 	return nil, nilRollback
-
 }
 
 func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error, common.RollbackFunc) {
-
 	// old secret for rollback
 	oldSecret, err := pm.getGITRepositorySecret(*params.Name)
 	if err != nil {
@@ -262,7 +260,6 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	err = pm.ProjectMaterializedView.UpdateProject(&updateProject)
 	if err != nil {
 		return err, func() error {
-
 			// try to rollback already updated project resource in configuration service
 			if err = pm.ConfigurationStore.UpdateProjectResource(*params.Name, &apimodels.Resource{
 				ResourceContent: oldProject.Shipyard,
@@ -287,7 +284,7 @@ func (pm *ProjectManager) Update(params *operations.UpdateProjectParams) (error,
 	return nil, nilRollback
 }
 
-func (pm *ProjectManager) Delete(projectName string) (error, string) {
+func (pm *ProjectManager) Delete(projectName string) (string, error) {
 	log.Infof("Deleting project %s", projectName)
 	var resultMessage strings.Builder
 
@@ -311,7 +308,7 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 	}
 
 	if err := pm.ConfigurationStore.DeleteProject(projectName); err != nil {
-		return pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error())), resultMessage.String()
+		return resultMessage.String(), pm.logAndReturnError(fmt.Sprintf("could not delete project: %s", err.Error()))
 	}
 
 	resultMessage.WriteString(pm.getDeleteInfoMessage(projectName))
@@ -344,7 +341,7 @@ func (pm *ProjectManager) Delete(projectName string) (error, string) {
 		log.Errorf("could not delete queued events: %s", err.Error())
 	}
 
-	return nil, resultMessage.String()
+	return resultMessage.String(), nil
 
 }
 

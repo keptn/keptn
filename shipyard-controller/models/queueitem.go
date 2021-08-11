@@ -10,3 +10,8 @@ type QueueItem struct {
 	EventID   string     `json:"eventID" bson:"eventID"`
 	Timestamp time.Time  `json:"timestamp" bson:"timestamp"`
 }
+
+type EventQueueSequenceState struct {
+	Scope EventScope `json:"scope" bson:"scope"`
+	State string     `json:"state" bson:"state"`
+}

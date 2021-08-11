@@ -71,7 +71,7 @@ func TestStateHandler_GetState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sh := handler.NewStateHandler(tt.fields.StateRepo)
+			sh := handler.NewStateHandler(tt.fields.StateRepo, nil)
 
 			router := gin.Default()
 			router.GET("/state/:project", func(c *gin.Context) {
