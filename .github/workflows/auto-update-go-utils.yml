@@ -34,7 +34,7 @@ jobs:
           delete-branch: true
           base: master
           labels: "area:go-utils,automated pr,dependencies"
-          title: "build: Auto-update go-utils to latest version"
+          title: "build(deps): Auto-update go-utils to latest version"
           body: |
             :robot: **This is an automated PR!** :robot:
 
