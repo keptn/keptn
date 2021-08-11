@@ -11,6 +11,8 @@ on:
         description: 'Which branch to create the release from (e.g., master, release-0.8.0)'
         default: 'master'
         required: true
+env:
+  KEPTN_BOT_USER: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
 jobs:
   createrelease:
     runs-on: ubuntu-20.04
@@ -76,8 +78,8 @@ jobs:
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           commit-message: "Prepare release ${{ github.event.inputs.versionName }}"
-          committer: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
-          author: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          committer: ${{ secrets.KEPTN_BOT_USER }}
+          author: ${{ secrets.KEPTN_BOT_USER }}
           signoff: true
           branch: ${{ env.RELEASE_BRANCH_NAME }}
           delete-branch: true
