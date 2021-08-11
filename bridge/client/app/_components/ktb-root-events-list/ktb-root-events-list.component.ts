@@ -78,12 +78,12 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectEvent(sequence: Sequence, stage?: string) {
+  selectEvent(sequence: Sequence, stage?: string): void {
     this.selectedEvent = sequence;
     this.selectedEventChange.emit({ sequence, stage });
   }
 
-  identifyEvent(index: number, item: Sequence) {
+  identifyEvent(index: number, item: Sequence): string | undefined {
     return item?.time;
   }
 
@@ -97,13 +97,10 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   public getShortType(type: string | undefined): string | undefined{
     return type ? Sequence.getShortType(type) : undefined;
-  }
-
-  public toDate(time: string): Date {
-    return new Date(time);
   }
 }

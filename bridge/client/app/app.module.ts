@@ -111,6 +111,7 @@ import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger
 import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { EventService } from './_services/event.service';
 import { ToType } from './_pipes/to-type';
+import { ToDatePipe } from './_pipes/to-date.pipe';
 
 registerLocaleData(localeEn, 'en');
 
@@ -183,6 +184,7 @@ export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in
     KtbDangerZoneComponent,
     KtbDeletionDialogComponent,
     ToType,
+    ToDatePipe,
   ],
   imports: [
     BrowserModule,
