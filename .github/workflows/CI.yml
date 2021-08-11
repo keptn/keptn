@@ -16,6 +16,21 @@ env:
   KUBE_CONSTRAINTS: ">= 1.14, <= 1.21"
   CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
+  
+  BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
+  API_ARTIFACT_PREFIX: "API"
+  OS_ROUTE_SVC_ARTIFACT_PREFIX: "OS_ROUTE_SVC"
+  JMETER_SVC_ARTIFACT_PREFIX: "JMETER_SVC"
+  HELM_SVC_ARTIFACT_PREFIX: "HELM_SVC"
+  APPROVAL_SVC_ARTIFACT_PREFIX: "APPROVAL_SVC"
+  DISTRIBUTOR_ARTIFACT_PREFIX: "DISTRIBUTOR"
+  SHIPYARD_CONTROLLER_ARTIFACT_PREFIX: "SHIPYARD_CONTROLLER"
+  SECRET_SVC_ARTIFACT_PREFIX: "SECRET_SVC"
+  CONFIGURATION_SVC_ARTIFACT_PREFIX: "CONFIGURATION_SVC"
+  REMEDIATION_SVC_ARTIFACT_PREFIX: "REMEDIATION_SVC"
+  LIGHTHOUSE_SVC_ARTIFACT_PREFIX: "LIGHTHOUSE_SVC"
+  MONGODB_DS_ARTIFACT_PREFIX: "MONGODB_DS"
+  STATISTICS_SVC_ARTIFACT_PREFIX: "STATISTICS_SVC"
 
   BRIDGE_ARTIFACT: "bridge2"
   BRIDGE_FOLDER: "bridge/"
@@ -97,21 +112,8 @@ jobs:
       # build config
       BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
       BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
-      BUILD_API: ${{ steps.check_modified_files.outputs.BUILD_API }}
-      BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
-      BUILD_OS_ROUTE_SVC: ${{ steps.check_modified_files.outputs.BUILD_OS_ROUTE_SVC }}
       BUILD_BRIDGE: ${{ steps.check_modified_files.outputs.BUILD_BRIDGE }}
-      BUILD_JMETER: ${{ steps.check_modified_files.outputs.BUILD_JMETER }}
-      BUILD_HELM_SVC: ${{ steps.check_modified_files.outputs.BUILD_HELM_SVC }}
-      BUILD_APPROVAL_SVC: ${{ steps.check_modified_files.outputs.BUILD_APPROVAL_SVC }}
-      BUILD_DISTRIBUTOR: ${{ steps.check_modified_files.outputs.BUILD_DISTRIBUTOR }}
-      BUILD_SHIPYARD_CONTROLLER: ${{ steps.check_modified_files.outputs.BUILD_SHIPYARD_CONTROLLER }}
-      BUILD_SECRET_SVC: ${{ steps.check_modified_files.outputs.BUILD_SECRET_SVC }}
-      BUILD_CONFIGURATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_CONFIGURATION_SVC }}
-      BUILD_REMEDIATION_SVC: ${{ steps.check_modified_files.outputs.BUILD_REMEDIATION_SVC }}
-      BUILD_LIGHTHOUSE_SVC: ${{ steps.check_modified_files.outputs.BUILD_LIGHTHOUSE_SVC }}
-      BUILD_MONGODB_DS: ${{ steps.check_modified_files.outputs.BUILD_MONGODB_DS }}
-      BUILD_STATISTICS_SVC: ${{ steps.check_modified_files.outputs.BUILD_STATISTICS_SVC }}
+      BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
       BUILD_MATRIX: ${{ steps.check_modified_files.outputs.BUILD_MATRIX }}
       BUILD_MATRIX_EMPTY: ${{ steps.check_modified_files.outputs.BUILD_MATRIX_EMPTY }}
       # metadata
@@ -123,6 +125,7 @@ jobs:
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
+      LAST_SUCCESSFUL_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
 
     steps:
       - name: Prevent PR Build on Release Branch
@@ -146,154 +149,44 @@ jobs:
         uses: jitterbit/get-changed-files@v1
         continue-on-error: true
 
-      - name: Process all artifacts (for push on master/release branches)
+      - name: Prepare for build-everything run
         if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
           echo "##[set-output name=BUILD_EVERYTHING;]$(echo ${BUILD_EVERYTHING})"
 
-      - name: Process only certain artifacts based on changed files (for PRs only)
+      - name: Prepare artifacts with changes
         if: (github.event_name == 'pull_request') || (github.event_name == 'push')
         id: check_modified_files
         env:
           BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
         run: |
-          # initialize variables with false (make sure they are also set in needs.prepare_ci_run.outputs !!!)
-          BUILD_INSTALLER=false
-          BUILD_API=false
-          BUILD_CLI=false
-          BUILD_OS_ROUTE_SVC=false
-          BUILD_BRIDGE=false
-          BUILD_JMETER=false
-          BUILD_HELM_SVC=false
-          BUILD_APPROVAL_SVC=false
-          BUILD_DISTRIBUTOR=false
-          BUILD_SHIPYARD_CONTROLLER=false
-          BUILD_SECRET_SVC=false
-          BUILD_CONFIGURATION_SVC=false
-          BUILD_REMEDIATION_SVC=false
-          BUILD_LIGHTHOUSE_SVC=false
-          BUILD_MONGODB_DS=false
-          BUILD_STATISTICS_SVC=false
-
-          artifacts=(
-            "BRIDGE"
-            "API"
-            "OS_ROUTE_SVC"
-            "JMETER_SVC"
-            "HELM_SVC"
-            "APPROVAL_SVC"
-            "DISTRIBUTOR"
-            "SHIPYARD_CONTROLLER"
-            "SECRET_SVC"
-            "CONFIGURATION_SVC"
-            "REMEDIATION_SVC"
-            "LIGHTHOUSE_SVC"
-            "MONGODB_DS"
-            "STATISTICS_SVC"
-          )
-
-          echo "changed files:"
-          echo "${{ steps.changed_files.outputs.all }}"
-          matrix_config='{"config":['
-          build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "test-folders": $test_folders, "go-flags": $go_flags }'
-
-          for changed_file in ${{ steps.changed_files.outputs.all }}; do
-            echo "Checking if $changed_file leads to a build..."
-
-            if [[ $changed_file == "${INSTALLER_FOLDER}"* ]]; then
-              echo "Found changes in Installer"
-              BUILD_INSTALLER=true
-            fi
-
-            if [[ $changed_file == "${CLI_FOLDER}"* ]]; then
-              echo "Found changes in CLI"
-              BUILD_CLI=true
-            fi
-
-            for artifact in "${artifacts[@]}"; do
-              # Prepare variables
-              artifact_fullname="${artifact}_ARTIFACT"
-              artifact_folder="${artifact}_FOLDER"
-              should_build_artifact="BUILD_${artifact}"
-              artifact_go_flags="${artifact}_GO_FLAGS"
-              artifact_test_folders="${artifact}_TEST_FOLDERS"
-
-              if [[ ( $changed_file == ${!artifact_folder}* || $BUILD_EVERYTHING == 'true') && ("${!should_build_artifact}" != 'true')]]; then
-                echo "Found changes in $artifact"
-                IFS= read -r "${should_build_artifact}" <<< "true"
-                artifact_config=$(jq -n \
-                --arg artifact "${!artifact_fullname}" \
-                --arg working_dir "${!artifact_folder}" \
-                --arg should_run "${!should_build_artifact}" \
-                --arg test_folders "${!artifact_test_folders}" \
-                --arg go_flags "${!artifact_go_flags}" \
-                "$build_artifact_template"
-                )
-                matrix_config="$matrix_config $artifact_config,"
-              fi
-            done
-          done
-
-          # Terminate matrix JSON config and remove trailing comma
-          matrix_config="${matrix_config%,}]}"
-
-          # Escape newlines for multiline string support in GH actions
-          # Reference: https://github.community/t/set-output-truncates-multiline-strings/16852
-          matrix_config="${matrix_config//'%'/'%25'}"
-          matrix_config="${matrix_config//$'\n'/'%0A'}"
-          matrix_config="${matrix_config//$'\r'/'%0D'}"
-
-          # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
-          echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"
-          echo "::set-output name=BUILD_API::$BUILD_API"
-          echo "::set-output name=BUILD_CLI::$BUILD_CLI"
-          echo "::set-output name=BUILD_OS_ROUTE_SVC::$BUILD_OS_ROUTE_SVC"
-          echo "::set-output name=BUILD_BRIDGE::$BUILD_BRIDGE"
-          echo "::set-output name=BUILD_JMETER::$BUILD_JMETER"
-          echo "::set-output name=BUILD_HELM_SVC::$BUILD_HELM_SVC"
-          echo "::set-output name=BUILD_APPROVAL_SVC::$BUILD_APPROVAL_SVC"
-          echo "::set-output name=BUILD_DISTRIBUTOR::$BUILD_DISTRIBUTOR"
-          echo "::set-output name=BUILD_SHIPYARD_CONTROLLER::$BUILD_SHIPYARD_CONTROLLER"
-          echo "::set-output name=BUILD_SECRET_SVC::$BUILD_SECRET_SVC"
-          echo "::set-output name=BUILD_CONFIGURATION_SVC::$BUILD_CONFIGURATION_SVC"
-          echo "::set-output name=BUILD_REMEDIATION_SVC::$BUILD_REMEDIATION_SVC"
-          echo "::set-output name=BUILD_LIGHTHOUSE_SVC::$BUILD_LIGHTHOUSE_SVC"
-          echo "::set-output name=BUILD_MONGODB_DS::$BUILD_MONGODB_DS"
-          echo "::set-output name=BUILD_STATISTICS_SVC::$BUILD_STATISTICS_SVC"
-          echo "::set-output name=BUILD_MATRIX::$matrix_config"
-
-          echo "The following artifacts will be tested and built:"
-          echo "BUILD_INSTALLER: $BUILD_INSTALLER"
-          echo "BUILD_API: $BUILD_API"
-          echo "BUILD_CLI: $BUILD_CLI"
-          echo "BUILD_OS_ROUTE_SVC: $BUILD_OS_ROUTE_SVC"
-          echo "BUILD_BRIDGE: $BUILD_BRIDGE"
-          echo "BUILD_JMETER: $BUILD_JMETER"
-          echo "BUILD_HELM_SVC: $BUILD_HELM_SVC"
-          echo "BUILD_APPROVAL_SVC: $BUILD_APPROVAL_SVC"
-          echo "BUILD_DISTRIBUTOR: $BUILD_DISTRIBUTOR"
-          echo "BUILD_SHIPYARD_CONTROLLER: $BUILD_SHIPYARD_CONTROLLER"
-          echo "BUILD_SECRET_SVC: $BUILD_SECRET_SVC"
-          echo "BUILD_CONFIGURATION_SVC: $BUILD_CONFIGURATION_SVC"
-          echo "BUILD_REMEDIATION_SVC: $BUILD_REMEDIATION_SVC"
-          echo "BUILD_LIGHTHOUSE_SVC: $BUILD_LIGHTHOUSE_SVC"
-          echo "BUILD_MONGODB_DS: $BUILD_MONGODB_DS"
-          echo "BUILD_STATISTICS_SVC: $BUILD_STATISTICS_SVC"
-
-          if [[ "$matrix_config" == '{"config":[]}' ]]; then
-            echo "Build matrix is emtpy, setting output..."
-            echo "::set-output name=BUILD_MATRIX_EMPTY::true"
-          else
-            echo "Build matrix is NOT emtpy, setting output..."
-            echo "::set-output name=BUILD_MATRIX_EMPTY::false"
-          fi
+          ./gh-actions-scripts/prepare_changed_artifacts.sh "${{ steps.changed_files.outputs.all }}"
 
       - name: Extract branch name
         id: extract_branch
         # see https://github.com/keptn/gh-action-extract-branch-name for details
         uses: keptn/gh-action-extract-branch-name@main
+
+      - name: Find last successful run ID
+        if: steps.build_everything.outputs.BUILD_EVERYTHING == 'true'
+        id: last_run_id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_SLUG: "keptn/keptn"
+          BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
+        run: |
+          BRANCH_NAME=""
+          if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          elif [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
+            PR_NUMBER=${BRANCH_SLUG#PR-}
+            BRANCH_NAME=$(gh pr view "$PR_NUMBER" --json "headRefName" | jq -r '.headRefName')
+          fi
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH_NAME" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
+          echo "::set-output name=RUN_ID::$RUN_ID"
+          echo "Last successful run ID was: $RUN_ID"
 
       - name: 'Get Previous tag'
         id: get_previous_tag
@@ -318,14 +211,12 @@ jobs:
           if [[ "$BRANCH" == "release-"* ]]; then
             # Release Branch: extract version from branch name
             VERSION=${BRANCH#"release-"}
-            else
-            if [[ "$BRANCH" == "master" ]]; then
-              # master branch = latest
-              VERSION="${GIT_NEXT_TAG}-dev"
-            else
-              # Feature/Development Branch - use last tag with branch slug
-              VERSION="${GIT_NEXT_TAG}-dev-${BRANCH_SLUG}"
-            fi
+          elif [[ "$BRANCH" == "master" ]]; then
+            # master branch = latest
+            VERSION="${GIT_NEXT_TAG}-dev"
+          else
+            # Feature/Development Branch - use last tag with branch slug
+            VERSION="${GIT_NEXT_TAG}-dev-${BRANCH_SLUG}"
           fi
 
           # determine keptn spec version
@@ -652,6 +543,7 @@ jobs:
 
       - id: docker_cache
         name: Docker Cache
+        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
         with:
@@ -661,7 +553,7 @@ jobs:
 
       - id: docker_build_image
         name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')
+        if: matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' )
         env:
           VERSION: ${{ env.VERSION }}
           DATETIME: ${{ env.DATETIME }}
@@ -678,7 +570,56 @@ jobs:
             report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           fi
 
-          echo "::set-output name=build-report::$report"
+          echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
+
+      - name: "Download Build Config from last successful build"
+        uses: dawidd6/action-download-artifact@v2.14.0
+        id: download_last_build_config
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
+        with:
+          # Download last successful artifact from a CI build
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: CI.yml
+          run_id: ${{ needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID }}
+          name: build-config
+          # directory where to extract artifacts to
+          path: ./last-build-config
+
+      - id: docker_retag_image
+        name: "Docker Retag keptn/${{ matrix.config.artifact }}"
+        if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
+        env:
+          VERSION: ${{ env.VERSION }}
+          DATETIME: ${{ env.DATETIME }}
+          IMAGE: keptn/${{ matrix.config.artifact }}
+          DOCKER_FOLDER: ${{ matrix.config.working-dir }}
+          REGISTRY_NAME: "https://registry.hub.docker.com"
+          CONTENT_TYPE: "application/vnd.docker.distribution.manifest.v2+json"
+        run: |
+          # Fetch last image datetime from build config
+          LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
+          OLD_TAG="${VERSION}.${LAST_DATETIME}"
+
+          # Pull previous image
+          if docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}" -q; then
+            OLD_IMAGE="${IMAGE}:${VERSION}.${LAST_DATETIME}"
+          elif docker pull "${IMAGE}:${VERSION}" -q; then
+            OLD_IMAGE="${IMAGE}:${VERSION}"
+          fi
+
+          # Retag previous image
+          NEW_TAG1="${IMAGE}:${VERSION}.${DATETIME}"
+          NEW_TAG2="${IMAGE}:${VERSION}"
+
+          echo "ℹ️ Re-Tagging ${IMAGE} from old tag ${OLD_TAG} to new tags ${NEW_TAG1}, ${NEW_TAG2}"
+          docker tag "${OLD_IMAGE}" "${NEW_TAG1}"
+          docker tag "${OLD_IMAGE}" "${NEW_TAG2}"
+
+          # Push newly tagged image
+          docker push "${NEW_TAG1}" && docker push "${NEW_TAG2}"
+
+          report="* Retagged unchanged image ${IMAGE} with ${NEW_TAG1} and ${NEW_TAG2} (Source: ${DOCKER_FOLDER})"
+          echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
       - name: Report Docker Build to PR
         if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)
@@ -689,7 +630,7 @@ jobs:
         continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: ${{ steps.docker_build_image.outputs.build-report }}
+          message: ${{ env.DOCKER_BUILD_REPORT }}
           append: true
 
       - name: Delete PR comment on failure
