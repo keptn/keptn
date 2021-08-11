@@ -9,6 +9,7 @@ jobs:
   update-spec:
     env:
       GO_UTILS_TARGET: ${{ github.event.client_payload.go-utils-target }}
+      KEPTN_BOT_USER: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
     runs-on: ubuntu-20.04
     steps:
       - name: Install Go
@@ -27,8 +28,8 @@ jobs:
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           commit-message: "Update keptn/go-utils to ${{ env.GO_UTILS_TARGET }}"
-          committer: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
-          author: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          committer: ${{ env.KEPTN_BOT_USER }}
+          author: ${{ env.KEPTN_BOT_USER }}
           signoff: true
           branch: patch/go_utils_${{ env.GO_UTILS_TARGET }}
           delete-branch: true
