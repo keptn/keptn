@@ -17,9 +17,6 @@ FROM node:14-alpine3.14 as bridgeServerBuilder
 ARG version=develop
 ENV VERSION="${version}"
 
-
-
-
 # Prepare app directory
 WORKDIR /usr/src/app/server
 
