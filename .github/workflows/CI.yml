@@ -267,40 +267,40 @@ jobs:
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
-#  unit-tests-go-microservices:
-#    name: Unit Tests Go Microservices
-#    needs: prepare_ci_run
-#    runs-on: ubuntu-20.04
-#    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
-#    strategy:
-#      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-#    steps:
-#      # Always skip this job for the bridge
-#      - name: Set up Go 1.x
-#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: ${{ env.GO_VERSION }}
-#
-#      - name: Checkout Code
-#        if: matrix.config.artifact != 'bridge2'
-#        uses: actions/checkout@v2.3.4
-#
-#      # cache go modules
-#      - if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-#        uses: actions/cache@v2.1.6
-#        with:
-#          path: ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-
-#
-#      - name: Test ${{ matrix.config.artifact }}
-#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
-#        run: |
-#          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
-#          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
-#        working-directory: ${{ matrix.config.working-dir }}
+  unit-tests-go-microservices:
+    name: Unit Tests Go Microservices
+    needs: prepare_ci_run
+    runs-on: ubuntu-20.04
+    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
+    strategy:
+      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
+    steps:
+      # Always skip this job for the bridge
+      - name: Set up Go 1.x
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Checkout Code
+        if: matrix.config.artifact != 'bridge2'
+        uses: actions/checkout@v2.3.4
+
+      # cache go modules
+      - if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        uses: actions/cache@v2.1.6
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Test ${{ matrix.config.artifact }}
+        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true')) && (matrix.config.artifact != 'bridge2')
+        run: |
+          go test ${{ matrix.config.go-flags }} -coverprofile=coverage.txt -covermode=atomic -v ${{ matrix.config.test-folders }}
+          bash <(curl -s https://codecov.io/bash) -c -F ${{ matrix.config.artifact }}
+        working-directory: ${{ matrix.config.working-dir }}
 
   unit-tests-node:
     name: Unit Tests Bridge/NodeJS
@@ -368,95 +368,95 @@ jobs:
   ############################################################################
   # Build CLI                                                                #
   ############################################################################
-#  build-cli:
-#    name: Build Keptn CLI
-#    needs: [prepare_ci_run, unit-tests-cli]
-#    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-#    strategy:
-#      matrix:
-#        include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
-#          - platform: "ubuntu-20.04"
-#            GOOS: "linux"
-#            GOARCH: "amd64"
-#          - platform: "ubuntu-20.04"
-#            GOOS: "linux"
-#            GOARCH: "arm"
-#          - platform: "ubuntu-20.04"
-#            GOOS: "linux"
-#            GOARCH: "arm64"
-#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
-#            GOOS: "darwin"
-#            GOARCH: "amd64"
-#          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
-#            GOOS: "darwin"
-#            GOARCH: "arm64"
-#          - platform: "ubuntu-20.04"
-#            GOOS: "windows"
-#            GOARCH: "amd64"
-#
-#    runs-on: ${{ matrix.platform }}
-#    steps:
-#      - name: Set up Go 1.x
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: ${{ env.GO_VERSION }}
-#      - name: Checkout Code
-#        uses: actions/checkout@v2.3.4
-#      # cache go modules
-#      - uses: actions/cache@v2.1.6
-#        with:
-#          path: ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-cli
-#      - name: Build cli
-#        env:
-#          PLATFORM: "${{ matrix.platform }}"
-#          GOARCH: "${{ matrix.GOARCH }}"
-#          GOOS: "${{ matrix.GOOS }}"
-#          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-#          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-#          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-#          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-#        run: |
-#          FILE_ENDING=""
-#          # overwrite file ending for windows binaries
-#          if [[ "$GOOS" == "windows" ]]; then
-#            FILE_ENDING=".exe"
-#          fi
-#
-#          # determine output file name based on version, go os, architecture
-#          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
-#          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
-#
-#          if [[ "$BRANCH" == "master" ]]; then
-#            # use VERSION.DATETIME for the cli version (e.g., nightly build)
-#            VERSION=${VERSION}.${DATETIME}
-#          fi
-#
-#          if [[ "$GOOS" == "linux" ]]; then
-#            # enable static build for linux
-#            export CGO_ENABLED=0
-#          fi
-#
-#          if [[ "$GOOS" == "darwin" ]]; then
-#            # enable CGO for compiling docker credential helper natively
-#            export CGO_ENABLED=1
-#          fi
-#
-#          # build the binary using makefile
-#          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
-#          # verify output file exists
-#          ls bin/${OUTPUT_EXECUTABLE_NAME}
-#
-#          # create a .tar.gz archive of the binary
-#          mkdir dist
-#          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
-#      - name: Upload Keptn CLI as an artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: keptn-cli
-#          path: dist/
+  build-cli:
+    name: Build Keptn CLI
+    needs: [prepare_ci_run, unit-tests-cli]
+    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
+    strategy:
+      matrix:
+        include: # see https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63#a-list-of-valid-goarch-values
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "amd64"
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "arm"
+          - platform: "ubuntu-20.04"
+            GOOS: "linux"
+            GOARCH: "arm64"
+          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+            GOOS: "darwin"
+            GOARCH: "amd64"
+          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+            GOOS: "darwin"
+            GOARCH: "arm64"
+          - platform: "ubuntu-20.04"
+            GOOS: "windows"
+            GOARCH: "amd64"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Checkout Code
+        uses: actions/checkout@v2.3.4
+      # cache go modules
+      - uses: actions/cache@v2.1.6
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cli
+      - name: Build cli
+        env:
+          PLATFORM: "${{ matrix.platform }}"
+          GOARCH: "${{ matrix.GOARCH }}"
+          GOOS: "${{ matrix.GOOS }}"
+          BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+          VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+          DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+          GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+        run: |
+          FILE_ENDING=""
+          # overwrite file ending for windows binaries
+          if [[ "$GOOS" == "windows" ]]; then
+            FILE_ENDING=".exe"
+          fi
+
+          # determine output file name based on version, go os, architecture
+          OUTPUT_EXECUTABLE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}${FILE_ENDING}"
+          OUTPUT_ARCHIVE_NAME="keptn-${VERSION}-${GOOS}-${GOARCH}" # no need for file-ending in the archive name
+
+          if [[ "$BRANCH" == "master" ]]; then
+            # use VERSION.DATETIME for the cli version (e.g., nightly build)
+            VERSION=${VERSION}.${DATETIME}
+          fi
+
+          if [[ "$GOOS" == "linux" ]]; then
+            # enable static build for linux
+            export CGO_ENABLED=0
+          fi
+
+          if [[ "$GOOS" == "darwin" ]]; then
+            # enable CGO for compiling docker credential helper natively
+            export CGO_ENABLED=1
+          fi
+
+          # build the binary using makefile
+          make build-cli OUTPUT_EXECUTABLE_NAME="$OUTPUT_EXECUTABLE_NAME"
+          # verify output file exists
+          ls bin/${OUTPUT_EXECUTABLE_NAME}
+
+          # create a .tar.gz archive of the binary
+          mkdir dist
+          tar -zcvf dist/${OUTPUT_ARCHIVE_NAME}.tar.gz -C bin ${OUTPUT_EXECUTABLE_NAME}
+      - name: Upload Keptn CLI as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: keptn-cli
+          path: dist/
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)                   #
@@ -498,7 +498,7 @@ jobs:
   # Build Docker Images                                                      #
   ############################################################################
   prepare_github_pr_comment:
-    needs: [prepare_ci_run]
+    needs: [prepare_ci_run, unit-tests-go-microservices]
     name: Prepare GitHub Report Comment
     runs-on: ubuntu-20.04
     steps:
@@ -515,7 +515,7 @@ jobs:
           recreate: true
 
   docker_build:
-    needs: [prepare_ci_run, prepare_github_pr_comment]
+    needs: [prepare_ci_run, unit-tests-go-microservices, prepare_github_pr_comment]
     name: Docker Build
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
@@ -529,11 +529,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
-
-      - name: Debug
-        run: |
-          echo "last successful run ID: ${{ needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID }}"
-          echo "build everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}"
 
       - id: docker_login
         name: Docker Login
