@@ -20,7 +20,6 @@ jobs:
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
-          token: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
 
       - name: Verify version is semantic
         env:
@@ -34,11 +33,6 @@ jobs:
             echo "::error::Version $VERSION does not match the semver scheme 'X.Y.Z(-PRERELEASE)(+BUILD)'"
             exit 1
           fi
-
-      - name: Initialize mandatory git config
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email noreply@github.com
 
       - name: Export branch name
         id: export_branch_name
@@ -74,33 +68,26 @@ jobs:
       - name: List changed files
         run: git status
 
-      - name: Commit
-        id: make-commit
-        run: |
-          git add .
-          git commit -s -m "Prepare release ${{ github.event.inputs.versionName }}"
-          echo "::set-output name=commit::$(git rev-parse HEAD)"
-
-      - name: Push new branch
-        env:
-          RELEASE_BRANCH_NAME: ${{ steps.export_branch_name.outputs.RELEASE_BRANCH_NAME }}
-        run: git push origin ${RELEASE_BRANCH_NAME}
-
       - name: Create PR into master
+        uses: peter-evans/create-pull-request@v3
         env:
           VERSION: ${{ github.event.inputs.versionName }}
-          GITHUB_TOKEN: ${{ secrets.KEPTN_KEPTN_GITHUB_TOKEN }}
           RELEASE_BRANCH_NAME: ${{ steps.export_branch_name.outputs.RELEASE_BRANCH_NAME }}
-          TARGET_BRANCH: 'master'
-        run: |
-          curl -XPOST -H "Authorization: token $GITHUB_TOKEN" \
-            -d "{\"title\":\"Version ${VERSION} into ${TARGET_BRANCH}\", \
-                 \"base\":\"${TARGET_BRANCH}\", \"head\":\"${RELEASE_BRANCH_NAME}\", \
-                 \"draft\": true, \
-                 \"body\":\":robot: **Beep boop I am a bot**\n\
-                            This is an automatically created PR for version ${VERSION} to merge changes from ${RELEASE_BRANCH_NAME} to ${TARGET_BRANCH}.\n \
-                            Next steps for release process:\n \
-                            - Run CI to build Container images and CLI and Helm Charts\n \
-                            - Run Integration Tests to verify everything works and publish the release\n \
-                            \"}" \
-                 https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls || true
+        with:
+          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          commit-message: "Prepare release ${{ github.event.inputs.versionName }}"
+          committer: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          author: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
+          signoff: true
+          branch: ${{ env.RELEASE_BRANCH_NAME }}
+          delete-branch: true
+          draft: true
+          base: master
+          title: "Version ${{ env.VERSION }} into master"
+          body: |
+            :robot: **This is an automated PR!**
+
+            This is an automatically created PR for version ${{ env.VERSION }} to merge changes from ${RELEASE_BRANCH_NAME} to ${TARGET_BRANCH}.\n
+            Next steps for release process:\n
+            - Run CI to build Container images and CLI and Helm Charts\n
+            - Run Integration Tests to verify everything works and publish the release\n
