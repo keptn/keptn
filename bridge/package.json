@@ -45,7 +45,7 @@
     "@angular/router": "^11.2.8",
     "@dynatrace/barista-components": "^9.10.0",
     "@dynatrace/barista-fonts": ">= 1.0.0 < 2",
-    "@dynatrace/barista-icons": "^7.5.0",
+    "@dynatrace/barista-icons": "^7.15.0",
     "@ngrx/core": "^1.2.0",
     "@ngrx/effects": "^11.1.1",
     "@ngrx/router-store": "^11.1.1",
