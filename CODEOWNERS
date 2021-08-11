@@ -33,3 +33,7 @@ releasenotes/ @johannes-b @warber
 # Keptn Spec subfolder (git submodule)
 specification/ @johannes-b @warber
 
+# Pipeline related things
+.github/ @mowies @christian-kreuzberger-dtx
+gh-actions-scripts/ @mowies @christian-kreuzberger-dtx
+
