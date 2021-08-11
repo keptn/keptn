@@ -9,10 +9,9 @@ echo "Go-Utils Target Commit/Branch/Tag: ${GO_UTILS_TARGET}"
 for file in ./*; do
   if [[ -f "$file/go.mod" ]]; then
     echo "Checking if $file/go.mod contains go-utils"
-    grep "github.com/keptn/go-utils" $file/go.mod
-    if [[ $? -eq 0 ]]; then
+    if grep "github.com/keptn/go-utils" "$file/go.mod"; then
       echo "Yes, updating go-utils now..."
-      cd $file || exit
+      cd "$file" || exit
       # fetch the desired version (this will update go.mod and go.sum)
       go get "github.com/keptn/go-utils@$GO_UTILS_TARGET" && \
       go get ./... && \
