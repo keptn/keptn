@@ -23,6 +23,6 @@ export interface UniformRegistration {
     status: string,
     topics: string []
   };
-  unreadEvents?: number;
+  unreadEventsCount?: number;
 }
 

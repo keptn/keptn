@@ -29,7 +29,7 @@ const services: UniformRegistration[] = [
         'sh.keptn.test.triggered'
       ]
     },
-    unreadEvents: 10
+    unreadEventsCount: 10
   } as UniformRegistration,
   {
     id: 'keptn-uniform-helm-service-cc9da31fa4c9f5e58985149029c598c4',

@@ -85,7 +85,7 @@ describe('KtbKeptnServicesListComponent', () => {
     let indicator = firstCell.querySelector('.notification-indicator');
     const registration = component.selectedUniformRegistration;
     expect(indicator).toBeTruthy();
-    expect(registration?.unreadEvents).toEqual(10);
+    expect(registration?.unreadEventsCount).toEqual(10);
     expect(spySave).toHaveBeenCalledOnceWith(UniformRegistrationsMock[0].id, UniformRegistrationLogsMock[0].time);
 
     secondRow.click();
@@ -94,7 +94,7 @@ describe('KtbKeptnServicesListComponent', () => {
     // then
     indicator = firstCell.querySelector('.notification-indicator');
     expect(indicator).toBeFalsy();
-    expect(registration?.unreadEvents).toEqual(0);
+    expect(registration?.unreadEventsCount).toEqual(0);
   });
 
   it('should show error events list', () => {

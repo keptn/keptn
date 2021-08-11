@@ -198,7 +198,7 @@ export class DataService {
     const registrations = response.data;
     for (const registration of registrations) {
       const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
-      registration.unreadEvents = logResponse.data.logs.length;
+      registration.unreadEventsCount = logResponse.data.logs.length;
     }
     return registrations;
   }

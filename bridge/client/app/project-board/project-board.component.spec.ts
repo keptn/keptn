@@ -155,9 +155,11 @@ describe('ProjectBoardComponent', () => {
     });
   });
 
-  it('should not show notification indicator', () => {
+  it('should not show notification indicator on component creation', () => {
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeFalsy();
+  });
 
+  it('should not show notification indicator after changing hasUnreadLogs from true to false', () => {
     component.hasUnreadLogs$ = of(true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
@@ -167,7 +169,7 @@ describe('ProjectBoardComponent', () => {
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeFalsy();
   });
 
-  it('should show notification indicator', () => {
+  it('should show notification indicator if hasUnreadLogs is set to true', () => {
     component.hasUnreadLogs$ = of(true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();

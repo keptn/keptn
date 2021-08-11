@@ -112,8 +112,8 @@ export class DataService {
     this.apiService.uniformLogDates = this._uniformDates;
   }
 
-  public getUniformDate(id: string): string | undefined {
-    return this._uniformDates[id];
+  public getUniformDate(id: string): Date | undefined {
+    return this._uniformDates[id] ? new Date(this._uniformDates[id]) : undefined;
   }
 
   public getProject(projectName: string): Observable<Project | undefined> {

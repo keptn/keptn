@@ -12,7 +12,7 @@
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="toRegistration(row) as registration">
             <span [textContent]="registration.name || 'n/a'"></span>
-            <div *ngIf="registration.unreadEvents" class="notification-indicator ml-2" [textContent]="registration.unreadEvents"></div>
+            <div *ngIf="registration.unreadEventsCount" class="notification-indicator ml-2" [textContent]="registration.unreadEventsCount"></div>
           </ng-container>
         </dt-cell>
       </ng-container>

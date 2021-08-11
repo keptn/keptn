@@ -23,7 +23,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   public isLoadingLogs = false;
 
   public projectName?: string;
-  public lastSeen?: string;
+  public lastSeen?: Date;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
@@ -78,8 +78,8 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     if (this.selectedUniformRegistration !== uniformRegistration) {
       this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
       if (this.selectedUniformRegistration) {
-        this.selectedUniformRegistration.unreadEvents = 0;
-        if (this.uniformRegistrations.data.some(registration => registration.unreadEvents !== 0)) {
+        this.selectedUniformRegistration.unreadEventsCount = 0;
+        if (!this.uniformRegistrations.data.some(registration => registration.unreadEventsCount !== 0)) {
           this.dataService.setHasUnreadUniformRegistrationLogs(false);
         }
       }

@@ -9,9 +9,9 @@ import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-re
 export class KtbUniformRegistrationLogsComponent {
   @Input() logs: UniformRegistrationLog[] = [];
   @Input() projectName?: string;
-  @Input() lastSeen?: string;
+  @Input() lastSeen?: Date;
 
   public isUnread(time: string): boolean {
-    return this.lastSeen ? new Date(this.lastSeen) < new Date(time) : true;
+    return this.lastSeen ? this.lastSeen < new Date(time) : true;
   }
 }
