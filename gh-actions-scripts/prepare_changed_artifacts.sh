@@ -42,12 +42,14 @@ artifacts=(
   "$STATISTICS_SVC_ARTIFACT_PREFIX"
 )
 
-echo "changed files:"
+echo "Changed files:"
 echo "$CHANGED_FILES"
 matrix_config='{"config":['
 # shellcheck disable=SC2016
 build_artifact_template='{"artifact": $artifact, "working-dir": $working_dir, "should-run": $should_run, "test-folders": $test_folders, "go-flags": $go_flags }'
 
+echo "Checking changed files against artifacts now"
+echo "::group::Check output"
 for changed_file in $CHANGED_FILES; do
   echo "Checking if $changed_file leads to a build..."
 
@@ -87,6 +89,9 @@ for changed_file in $CHANGED_FILES; do
   done
 done
 
+echo "Done checking changed files"
+echo "Checking for build-everything build"
+
 if [[ $BUILD_EVERYTHING == 'true' ]]; then
   for artifact in "${artifacts[@]}"; do
     # Prepare variables
@@ -110,6 +115,7 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     fi
   done
 fi
+echo "::endgroup::"
 
 
 # Terminate matrix JSON config and remove trailing comma
@@ -126,8 +132,8 @@ echo "::set-output name=BUILD_INSTALLER::$BUILD_INSTALLER"
 echo "::set-output name=BUILD_CLI::$BUILD_CLI"
 echo "::set-output name=BUILD_BRIDGE::$BUILD_BRIDGE"
 echo "::set-output name=BUILD_MATRIX::$matrix_config"
-
-echo "The following artifacts will be tested and built:"
+echo ""
+echo "The following artifacts have changes and will be built fresh:"
 echo "BUILD_INSTALLER: $BUILD_INSTALLER"
 echo "BUILD_API: $BUILD_API"
 echo "BUILD_CLI: $BUILD_CLI"
