@@ -149,14 +149,14 @@ jobs:
         uses: jitterbit/get-changed-files@v1
         continue-on-error: true
 
-      - name: Process all artifacts (for push on master/release branches)
+      - name: Prepare for build-everything run
         if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
           echo "##[set-output name=BUILD_EVERYTHING;]$(echo ${BUILD_EVERYTHING})"
 
-      - name: Process only certain artifacts based on changed files (for PRs only)
+      - name: Prepare artifacts with changes
         if: (github.event_name == 'pull_request') || (github.event_name == 'push')
         id: check_modified_files
         env:
@@ -575,7 +575,7 @@ jobs:
             report="* Pushed ${IMAGE}:${VERSION}.${DATETIME} and ${IMAGE}:${VERSION} (Source: ${DOCKER_FOLDER})"
           fi
 
-          echo "::set-output name=build-report::$report"
+          echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
       - name: "Download Build Config from last successful build"
         uses: dawidd6/action-download-artifact@v2.14.0

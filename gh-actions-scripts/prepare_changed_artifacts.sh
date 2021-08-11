@@ -73,7 +73,7 @@ for changed_file in $CHANGED_FILES; do
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
       echo "Found changes in $artifact"
-      IFS= read -r "${should_build_artifact}" <<< "true"
+      IFS= read -r "${should_build_artifact?}" <<< "true"
       artifact_config=$(jq -n \
         --arg artifact "${!artifact_fullname}" \
         --arg working_dir "${!artifact_folder}" \
