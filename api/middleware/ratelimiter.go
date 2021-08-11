@@ -52,25 +52,22 @@ func (r *RateLimiter) Handle(handler http.Handler) http.Handler {
 }
 
 func (r *RateLimiter) Apply(w http.ResponseWriter, req *http.Request, handler http.Handler) {
-	// check if authentication is valid
-	_, err := r.tokenValidator.ValidateToken(req.Header.Get("x-token"))
-	if err != nil {
-		// if not, apply rate limiting
-		ipAddress := getRemoteIP(req)
-		limiter := r.getIPBucket(ipAddress)
-		if limiter.Allow() == false {
-			http.Error(w, http.StatusText(429), http.StatusTooManyRequests)
-			return
-		}
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+	ipAddress := getRemoteIP(req)
+	limiter := r.getIPBucket(ipAddress)
+	if limiter.Allow() == false {
+		http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
+		return
 	}
-
+	_, err := r.tokenValidator.ValidateToken(req.Header.Get("x-token"))
+	if err == nil {
+		r.clearIPBucket(ipAddress)
+	}
 	handler.ServeHTTP(w, req)
 }
 
 func (r *RateLimiter) getIPBucket(ip string) *rate.Limiter {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-
 	v, exists := r.visitors[ip]
 	if !exists {
 		limiter := rate.NewLimiter(rate.Limit(r.RequestsPerSecond), r.MaxBurstSize)
@@ -80,6 +77,11 @@ func (r *RateLimiter) getIPBucket(ip string) *rate.Limiter {
 	// Update the last seen time for the visitor.
 	v.lastSeen = r.theClock.Now().UTC()
 	return v.limiter
+}
+
+func (r *RateLimiter) clearIPBucket(ip string) {
+	limiter := rate.NewLimiter(rate.Limit(r.RequestsPerSecond), r.MaxBurstSize)
+	r.visitors[ip] = &visitor{limiter, r.theClock.Now().UTC()}
 }
 
 func (r *RateLimiter) cleanIPBuckets() {
