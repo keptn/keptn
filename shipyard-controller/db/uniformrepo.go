@@ -7,4 +7,7 @@ type UniformRepo interface {
 	GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
 	DeleteUniformIntegration(id string) error
 	CreateOrUpdateUniformIntegration(integration models.Integration) error
+	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
+	DeleteSubscription(integrationID, subscriptionID string) error
+	UpdateLastSeen(integrationID string) (*models.Integration, error)
 }

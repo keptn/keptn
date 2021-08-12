@@ -14,6 +14,12 @@ import (
 //
 // 		// make and configure a mocked handler.IUniformIntegrationManager
 // 		mockedIUniformIntegrationManager := &IUniformIntegrationManagerMock{
+// 			CreateOrUpdateSubscriptionFunc: func(integrationID string, subscription models.Subscription) error {
+// 				panic("mock out the CreateOrUpdateSubscription method")
+// 			},
+// 			DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
+// 				panic("mock out the DeleteSubscription method")
+// 			},
 // 			GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 // 				panic("mock out the GetRegistrations method")
 // 			},
@@ -23,6 +29,9 @@ import (
 // 			UnregisterFunc: func(id string) error {
 // 				panic("mock out the Unregister method")
 // 			},
+// 			UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+// 				panic("mock out the UpdateLastSeen method")
+// 			},
 // 		}
 //
 // 		// use mockedIUniformIntegrationManager in code that requires handler.IUniformIntegrationManager
@@ -30,6 +39,12 @@ import (
 //
 // 	}
 type IUniformIntegrationManagerMock struct {
+	// CreateOrUpdateSubscriptionFunc mocks the CreateOrUpdateSubscription method.
+	CreateOrUpdateSubscriptionFunc func(integrationID string, subscription models.Subscription) error
+
+	// DeleteSubscriptionFunc mocks the DeleteSubscription method.
+	DeleteSubscriptionFunc func(integrationID string, subscriptionID string) error
+
 	// GetRegistrationsFunc mocks the GetRegistrations method.
 	GetRegistrationsFunc func(params models.GetUniformIntegrationsParams) ([]models.Integration, error)
 
@@ -39,8 +54,25 @@ type IUniformIntegrationManagerMock struct {
 	// UnregisterFunc mocks the Unregister method.
 	UnregisterFunc func(id string) error
 
+	// UpdateLastSeenFunc mocks the UpdateLastSeen method.
+	UpdateLastSeenFunc func(integrationID string) (*models.Integration, error)
+
 	// calls tracks calls to the methods.
 	calls struct {
+		// CreateOrUpdateSubscription holds details about calls to the CreateOrUpdateSubscription method.
+		CreateOrUpdateSubscription []struct {
+			// IntegrationID is the integrationID argument value.
+			IntegrationID string
+			// Subscription is the subscription argument value.
+			Subscription models.Subscription
+		}
+		// DeleteSubscription holds details about calls to the DeleteSubscription method.
+		DeleteSubscription []struct {
+			// IntegrationID is the integrationID argument value.
+			IntegrationID string
+			// SubscriptionID is the subscriptionID argument value.
+			SubscriptionID string
+		}
 		// GetRegistrations holds details about calls to the GetRegistrations method.
 		GetRegistrations []struct {
 			// Params is the params argument value.
@@ -56,10 +88,88 @@ type IUniformIntegrationManagerMock struct {
 			// ID is the id argument value.
 			ID string
 		}
+		// UpdateLastSeen holds details about calls to the UpdateLastSeen method.
+		UpdateLastSeen []struct {
+			// IntegrationID is the integrationID argument value.
+			IntegrationID string
+		}
 	}
-	lockGetRegistrations sync.RWMutex
-	lockRegister         sync.RWMutex
-	lockUnregister       sync.RWMutex
+	lockCreateOrUpdateSubscription sync.RWMutex
+	lockDeleteSubscription         sync.RWMutex
+	lockGetRegistrations           sync.RWMutex
+	lockRegister                   sync.RWMutex
+	lockUnregister                 sync.RWMutex
+	lockUpdateLastSeen             sync.RWMutex
+}
+
+// CreateOrUpdateSubscription calls CreateOrUpdateSubscriptionFunc.
+func (mock *IUniformIntegrationManagerMock) CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error {
+	if mock.CreateOrUpdateSubscriptionFunc == nil {
+		panic("IUniformIntegrationManagerMock.CreateOrUpdateSubscriptionFunc: method is nil but IUniformIntegrationManager.CreateOrUpdateSubscription was just called")
+	}
+	callInfo := struct {
+		IntegrationID string
+		Subscription  models.Subscription
+	}{
+		IntegrationID: integrationID,
+		Subscription:  subscription,
+	}
+	mock.lockCreateOrUpdateSubscription.Lock()
+	mock.calls.CreateOrUpdateSubscription = append(mock.calls.CreateOrUpdateSubscription, callInfo)
+	mock.lockCreateOrUpdateSubscription.Unlock()
+	return mock.CreateOrUpdateSubscriptionFunc(integrationID, subscription)
+}
+
+// CreateOrUpdateSubscriptionCalls gets all the calls that were made to CreateOrUpdateSubscription.
+// Check the length with:
+//     len(mockedIUniformIntegrationManager.CreateOrUpdateSubscriptionCalls())
+func (mock *IUniformIntegrationManagerMock) CreateOrUpdateSubscriptionCalls() []struct {
+	IntegrationID string
+	Subscription  models.Subscription
+} {
+	var calls []struct {
+		IntegrationID string
+		Subscription  models.Subscription
+	}
+	mock.lockCreateOrUpdateSubscription.RLock()
+	calls = mock.calls.CreateOrUpdateSubscription
+	mock.lockCreateOrUpdateSubscription.RUnlock()
+	return calls
+}
+
+// DeleteSubscription calls DeleteSubscriptionFunc.
+func (mock *IUniformIntegrationManagerMock) DeleteSubscription(integrationID string, subscriptionID string) error {
+	if mock.DeleteSubscriptionFunc == nil {
+		panic("IUniformIntegrationManagerMock.DeleteSubscriptionFunc: method is nil but IUniformIntegrationManager.DeleteSubscription was just called")
+	}
+	callInfo := struct {
+		IntegrationID  string
+		SubscriptionID string
+	}{
+		IntegrationID:  integrationID,
+		SubscriptionID: subscriptionID,
+	}
+	mock.lockDeleteSubscription.Lock()
+	mock.calls.DeleteSubscription = append(mock.calls.DeleteSubscription, callInfo)
+	mock.lockDeleteSubscription.Unlock()
+	return mock.DeleteSubscriptionFunc(integrationID, subscriptionID)
+}
+
+// DeleteSubscriptionCalls gets all the calls that were made to DeleteSubscription.
+// Check the length with:
+//     len(mockedIUniformIntegrationManager.DeleteSubscriptionCalls())
+func (mock *IUniformIntegrationManagerMock) DeleteSubscriptionCalls() []struct {
+	IntegrationID  string
+	SubscriptionID string
+} {
+	var calls []struct {
+		IntegrationID  string
+		SubscriptionID string
+	}
+	mock.lockDeleteSubscription.RLock()
+	calls = mock.calls.DeleteSubscription
+	mock.lockDeleteSubscription.RUnlock()
+	return calls
 }
 
 // GetRegistrations calls GetRegistrationsFunc.
@@ -152,5 +262,36 @@ func (mock *IUniformIntegrationManagerMock) UnregisterCalls() []struct {
 	mock.lockUnregister.RLock()
 	calls = mock.calls.Unregister
 	mock.lockUnregister.RUnlock()
+	return calls
+}
+
+// UpdateLastSeen calls UpdateLastSeenFunc.
+func (mock *IUniformIntegrationManagerMock) UpdateLastSeen(integrationID string) (*models.Integration, error) {
+	if mock.UpdateLastSeenFunc == nil {
+		panic("IUniformIntegrationManagerMock.UpdateLastSeenFunc: method is nil but IUniformIntegrationManager.UpdateLastSeen was just called")
+	}
+	callInfo := struct {
+		IntegrationID string
+	}{
+		IntegrationID: integrationID,
+	}
+	mock.lockUpdateLastSeen.Lock()
+	mock.calls.UpdateLastSeen = append(mock.calls.UpdateLastSeen, callInfo)
+	mock.lockUpdateLastSeen.Unlock()
+	return mock.UpdateLastSeenFunc(integrationID)
+}
+
+// UpdateLastSeenCalls gets all the calls that were made to UpdateLastSeen.
+// Check the length with:
+//     len(mockedIUniformIntegrationManager.UpdateLastSeenCalls())
+func (mock *IUniformIntegrationManagerMock) UpdateLastSeenCalls() []struct {
+	IntegrationID string
+} {
+	var calls []struct {
+		IntegrationID string
+	}
+	mock.lockUpdateLastSeen.RLock()
+	calls = mock.calls.UpdateLastSeen
+	mock.lockUpdateLastSeen.RUnlock()
 	return calls
 }

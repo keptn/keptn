@@ -10,6 +10,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -87,9 +88,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{
-					"sh.keptn.event.test.triggered",
-				},
+				Topics: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -103,9 +102,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{
-					"sh.keptn.event.test.triggered",
-				},
+				Topics: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -208,9 +205,7 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{
-					"sh.keptn.event.test.triggered",
-				},
+				Topics: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -219,79 +214,40 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 		integrationManager *fake.IUniformIntegrationManagerMock
 	}
 	tests := []struct {
-		name            string
-		fields          fields
-		request         *http.Request
-		wantStatus      int
-		wantIntegration *models.Integration
+		name              string
+		fields            fields
+		request           *http.Request
+		wantStatus        int
+		wantIntegrationID string
+		wantIntegration   *models.Integration
 	}{
 		{
 			name: "keepalive registration",
 			fields: fields{
 				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{*existingIntegration}, nil
-					},
-
-					RegisterFunc: func(integration models.Integration) error {
-						return nil
+					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+						return &models.Integration{}, nil
 					},
 				},
 			},
-			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
-			wantStatus:      http.StatusOK,
-			wantIntegration: existingIntegration,
+			request:           httptest.NewRequest("PUT", "/uniform/registration/my-id/ping", nil),
+			wantStatus:        http.StatusOK,
+			wantIntegrationID: "my-id",
+			wantIntegration:   existingIntegration,
 		},
 		{
 			name: "keepalive registration - no registration found",
 			fields: fields{
 				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{}, nil
-					},
-
-					RegisterFunc: func(integration models.Integration) error {
-						return nil
+					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
+						return nil, mongo.ErrNoDocuments
 					},
 				},
 			},
-			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
-			wantStatus:      http.StatusNotFound,
-			wantIntegration: nil,
-		},
-		{
-			name: "keepalive registration - fail at getting registration",
-			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{}, errors.New("some error")
-					},
-
-					RegisterFunc: func(integration models.Integration) error {
-						return nil
-					},
-				},
-			},
-			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
-			wantStatus:      http.StatusInternalServerError,
-			wantIntegration: nil,
-		},
-		{
-			name: "keepalive registration - fail at re-registration",
-			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
-						return []models.Integration{*existingIntegration}, nil
-					},
-
-					RegisterFunc: func(integration models.Integration) error {
-						return errors.New("some error")
-					},
-				},
-			},
-			request:         httptest.NewRequest("PUT", "/uniform/registration/my-id", nil),
-			wantStatus:      http.StatusInternalServerError,
-			wantIntegration: nil,
+			request:           httptest.NewRequest("PUT", "/uniform/registration/my-id/ping", nil),
+			wantStatus:        http.StatusNotFound,
+			wantIntegrationID: "my-id",
+			wantIntegration:   nil,
 		},
 	}
 	for _, tt := range tests {
@@ -299,21 +255,14 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 			rh := handler.NewUniformIntegrationHandler(tt.fields.integrationManager)
 
 			router := gin.Default()
-			router.PUT("/uniform/registration/:id", func(c *gin.Context) {
+			router.PUT("/uniform/registration/:integrationID/ping", func(c *gin.Context) {
 				rh.KeepAlive(c)
 			})
 			w := performRequest(router, tt.request)
 
 			require.Equal(t, tt.wantStatus, w.Code)
-
-			if tt.wantIntegration != nil {
-				require.NotEmpty(t, tt.fields.integrationManager.RegisterCalls())
-				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.RegisterCalls()[0].Integration.Name)
-				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Hostname)
-				require.Equal(t, tt.wantIntegration.MetaData.DistributorVersion, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.DistributorVersion)
-				require.Equal(t, tt.wantIntegration.MetaData.Location, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Location)
-				require.Equal(t, tt.wantIntegration.Subscriptions, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions)
-			}
+			require.NotEmpty(t, tt.fields.integrationManager.UpdateLastSeenCalls())
+			require.Equal(t, tt.wantIntegrationID, tt.fields.integrationManager.UpdateLastSeenCalls()[0].IntegrationID)
 		})
 	}
 }
@@ -360,7 +309,7 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 			rh := handler.NewUniformIntegrationHandler(tt.fields.integrationManager)
 
 			router := gin.Default()
-			router.DELETE("/uniform/registration/:id", func(c *gin.Context) {
+			router.DELETE("/uniform/registration/:integrationID", func(c *gin.Context) {
 				rh.Unregister(c)
 			})
 			w := performRequest(router, tt.request)

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
@@ -9,7 +10,6 @@ import (
 )
 
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
-
 	integration1 := models.Integration{
 		ID:   "i1",
 		Name: "integration1",
@@ -24,7 +24,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{"sh.keptn.event.test.triggered"},
+				Topics: "sh.keptn.event.test.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -49,7 +49,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{"sh.keptn.event.deployment.triggered"},
+				Topics: "sh.keptn.event.deployment.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -74,7 +74,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{"sh.keptn.event.deployment.triggered"},
+				Topics: "sh.keptn.event.deployment.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -99,7 +99,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: []string{"sh.keptn.event.deployment.triggered"},
+				Topics: "sh.keptn.event.deployment.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -108,6 +108,17 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				},
 			},
 		},
+	}
+
+	integration5 := models.Integration{
+		ID:   "i5",
+		Name: "integraiton5",
+		Subscription: keptnmodels.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: keptnmodels.SubscriptionFilter{},
+		},
+		Subscriptions: []keptnmodels.TopicSubscription{},
 	}
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
@@ -127,17 +138,22 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	err = mdbrepo.CreateOrUpdateUniformIntegration(integration4)
 	require.Nil(t, err)
+
+	err = mdbrepo.CreateOrUpdateUniformIntegration(integration5)
+	require.Nil(t, err)
+
 	// check if we can query the newly created entities
 
 	// first, without any filter
 	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{})
 
 	require.Nil(t, err)
-	require.Len(t, integrations, 4)
+	require.Len(t, integrations, 5)
 	require.EqualValues(t, integration1, integrations[0])
 	require.EqualValues(t, integration2, integrations[1])
 	require.EqualValues(t, integration3, integrations[2])
 	require.EqualValues(t, integration4, integrations[3])
+	require.EqualValues(t, integration5, integrations[4])
 
 	// now, let's filter by id
 	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{
@@ -209,4 +225,74 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Empty(t, integrations)
+
+	// add subscription
+	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
+		ID:     "new-subscription",
+		Topics: "a-topic",
+		Filter: keptnmodels.TopicSubscriptionFilter{
+			Projects: []string{"a-project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	})
+	require.Nil(t, err)
+
+	// validate adding of subscription
+	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i5"})
+	require.Equal(t, 1, len(integrations))
+	require.Equal(t, 1, len(integrations[0].Subscriptions))
+	fmt.Println(integrations)
+
+	// update subscription
+	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
+		ID:     "new-subscription",
+		Topics: "a-topic",
+		Filter: keptnmodels.TopicSubscriptionFilter{
+			Projects: []string{"a-project", "another-project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	})
+	require.Nil(t, err)
+
+	// validate update of subscription
+	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i5"})
+	require.Equal(t, 1, len(integrations))
+	require.Equal(t, 1, len(integrations[0].Subscriptions))
+	require.Equal(t, []string{"a-project", "another-project"}, integrations[0].Subscriptions[0].Filter.Projects)
+
+	//delete subscription
+	err = mdbrepo.DeleteSubscription("i5", "new-subscription")
+	require.Nil(t, err)
+
+	// validate deletion of subscription
+	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i5"})
+	require.Equal(t, 1, len(integrations))
+	require.Equal(t, 0, len(integrations[0].Subscriptions))
+
+	// update lastseen
+	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i5"})
+	require.Equal(t, 1, len(integrations))
+	integrationBeforeUpdate := integrations[0]
+	updatedIntegration, err := mdbrepo.UpdateLastSeen("i5")
+	require.Nil(t, err)
+
+	// validate update of lastseen field
+	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i5"})
+	require.Equal(t, 1, len(integrations))
+
+	fetchedIntegrationAfterUpdate := integrations[0]
+	require.Equal(t, *updatedIntegration, fetchedIntegrationAfterUpdate)
+
+	require.NotEqual(t, integrationBeforeUpdate.MetaData.LastSeen, fetchedIntegrationAfterUpdate.MetaData.LastSeen)
+	require.Equal(t, integrationBeforeUpdate.Subscriptions, fetchedIntegrationAfterUpdate.Subscriptions)
+	require.Equal(t, integrationBeforeUpdate.ID, fetchedIntegrationAfterUpdate.ID)
+	require.Equal(t, integrationBeforeUpdate.Name, fetchedIntegrationAfterUpdate.Name)
+	require.Equal(t, integrationBeforeUpdate.MetaData.KubernetesMetaData, fetchedIntegrationAfterUpdate.MetaData.KubernetesMetaData)
+	require.Equal(t, integrationBeforeUpdate.MetaData.Location, fetchedIntegrationAfterUpdate.MetaData.Location)
+	require.Equal(t, integrationBeforeUpdate.MetaData.Hostname, fetchedIntegrationAfterUpdate.MetaData.Hostname)
+	require.Equal(t, integrationBeforeUpdate.MetaData.IntegrationVersion, fetchedIntegrationAfterUpdate.MetaData.IntegrationVersion)
+	require.Equal(t, integrationBeforeUpdate.MetaData.DistributorVersion, fetchedIntegrationAfterUpdate.MetaData.DistributorVersion)
+
 }

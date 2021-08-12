@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"time"
 )
@@ -13,6 +16,8 @@ type IUniformIntegrationHandler interface {
 	KeepAlive(context *gin.Context)
 	Unregister(context *gin.Context)
 	GetRegistrations(context *gin.Context)
+	CreateSubscription(c *gin.Context)
+	DeleteSubscription(c *gin.Context)
 }
 
 type UniformIntegrationHandler struct {
@@ -46,8 +51,12 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	// for backwards compatibility, we check if there is a Subscriptions field set
 	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
 	if integration.Subscriptions == nil {
+		topic := ""
+		if len(integration.Subscription.Topics) > 0 {
+			topic = integration.Subscription.Topics[0]
+		}
 		ts := keptnmodels.TopicSubscription{
-			Topics: integration.Subscription.Topics,
+			Topics: topic,
 			Status: integration.Subscription.Status,
 			Filter: keptnmodels.TopicSubscriptionFilter{
 				Projects: []string{integration.Subscription.Filter.Project},
@@ -90,13 +99,13 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept json
 // @Produce json
-// @Param id path string true "id"
+// @Param id path string true "integrationID"
 // @Success 200
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{id} [delete]
+// @Router /uniform/registration/{integrationID} [delete]
 func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
-	integrationID := c.Param("id")
+	integrationID := c.Param("integrationID")
 
 	if err := rh.integrationManager.Unregister(integrationID); err != nil {
 		SetInternalServerErrorResponse(err, c)
@@ -136,38 +145,96 @@ func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 	c.JSON(http.StatusOK, uniformIntegrations)
 }
 
-// KeepAlive updates a uniform integration and returns its current registration data
-// @Summary Updates a uniform integration and returns its current registration data
-// @Description Updates a uniform integration and returns its current registration data
+// KeepAlive returns current registration data of an integration
+// @Summary Returns current registration data of an integration
+// @Description Returns current registration data of an integration
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
 // @Produce json
-// @Param id path string true "id"
+// @Param integrationID path string true "integrationID"
 // @Success 200 {object} models.Integration "ok"
-// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 404 {object} models.Error "Not found"
 // @Failure 500 {object} models.Error "Internal error"
-// @Router /uniform/registration/{id} [put]
+// @Router /uniform/registration/{integrationID}/ping [PUT]
 func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
-	integrationID := c.Param("id")
-	registrations, err := rh.integrationManager.GetRegistrations(models.GetUniformIntegrationsParams{ID: integrationID})
+	integrationID := c.Param("integrationID")
+
+	registration, err := rh.integrationManager.UpdateLastSeen(integrationID)
 	if err != nil {
-		SetInternalServerErrorResponse(err, c)
-		return
-	}
-
-	if len(registrations) != 1 {
-		SetNotFoundErrorResponse(nil, c, "No registration with id "+integrationID+"found")
-		return
-	}
-	registration := registrations[0]
-	registration.MetaData.LastSeen = time.Now().UTC()
-
-	if err := rh.integrationManager.Register(registration); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			SetNotFoundErrorResponse(err, c)
+			return
+		}
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
 
 	c.JSON(http.StatusOK, registration)
+
+}
+
+// CreateSubscription creates a new subscription
+// @Summary  Creates a new subscription
+// @Description  Creates a new subscription
+// @Tags Uniform
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param integrationID path string true "integrationID"
+// @Param subscription body models.Subscription true "Subscription"
+// @Success 201
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Failure 404 {object} models.Error "Not found"
+// @Router /uniform/registration/{integrationID}/subscription [post]
+func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
+
+	integrationID := c.Param("integrationID")
+	subscription := &models.Subscription{}
+
+	if err := c.ShouldBindJSON(subscription); err != nil {
+		SetBadRequestErrorResponse(err, c)
+		return
+	}
+	subscription.ID = uuid.New().String()
+
+	err := rh.integrationManager.CreateOrUpdateSubscription(integrationID, *subscription)
+	if err != nil {
+		//TODO: set appropriate http codes
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusCreated, &models.CreateSubscriptionResponse{
+		ID: subscription.ID,
+	})
+}
+
+// DeleteSubscription deletes a new subscription
+// @Summary  Deletes a subscription
+// @Description  Deletes a subscription
+// @Tags Uniform
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param integrationID path string true "integrationID"
+// @Param subscriptionID path string true "subscriptionID"
+// @Success 200
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Failure 404 {object} models.Error "Not found"
+// @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [delete]
+func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
+	integrationID := c.Param("integrationID")
+	subscriptionID := c.Param("subscriptionID")
+
+	err := rh.integrationManager.DeleteSubscription(integrationID, subscriptionID)
+	if err != nil {
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, models.DeleteSubscriptionResponse{})
 
 }

@@ -15,8 +15,10 @@ func NewUniformIntegrationController(uniformIntegrationHandler handler.IUniformI
 
 func (controller UniformIntegrationController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.GET("/uniform/registration", controller.UniformIntegrationHandler.GetRegistrations)
-	apiGroup.PUT("/uniform/registration/:id", controller.UniformIntegrationHandler.KeepAlive)
+	apiGroup.PUT("/uniform/registration/:integrationID/ping", controller.UniformIntegrationHandler.KeepAlive)
 	apiGroup.POST("/uniform/registration", controller.UniformIntegrationHandler.Register)
-	apiGroup.DELETE("/uniform/registration/:id", controller.UniformIntegrationHandler.Unregister)
+	apiGroup.POST("/uniform/registration/:integrationID/subscription", controller.UniformIntegrationHandler.CreateSubscription)
+	apiGroup.DELETE("/uniform/registration/:integrationID", controller.UniformIntegrationHandler.Unregister)
+	apiGroup.DELETE("/uniform/registration/:integrationID/subscription/:subscriptionID", controller.UniformIntegrationHandler.DeleteSubscription)
 
 }

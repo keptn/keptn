@@ -15,6 +15,14 @@ type GetUniformIntegrationsParams struct {
 type RegisterResponse struct {
 	ID string `json:"id"`
 }
+
+type CreateSubscriptionResponse struct {
+	ID string `json:"id"`
+}
 type UnregisterResponse struct{}
 
+type DeleteSubscriptionResponse struct{}
+
 type Integration keptnmodels.Integration
+
+type Subscription keptnmodels.TopicSubscription
