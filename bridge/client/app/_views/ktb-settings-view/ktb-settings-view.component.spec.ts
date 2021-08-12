@@ -1,35 +1,38 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { KtbSettingsViewComponent } from './ktb-settings-view.component';
-import {AppModule} from '../../app.module';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {DataService} from '../../_services/data.service';
-import {DataServiceMock} from '../../_services/data.service.mock';
-import {of} from 'rxjs';
-import {ActivatedRoute, Router} from '@angular/router';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { DataService } from '../../_services/data.service';
+import { DataServiceMock } from '../../_services/data.service.mock';
+import { BehaviorSubject, of } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
-describe('KtbSettingsViewComponent - Create', () => {
+
+describe('KtbSettingsViewComponent', () => {
+  const UNSAVED_DIALOG_STATE = 'unsaved';
   let component: KtbSettingsViewComponent;
   let fixture: ComponentFixture<KtbSettingsViewComponent>;
   let dataService: DataService;
+  const routeDataSubject = new BehaviorSubject<{ isCreateMode: boolean }>({isCreateMode: false});
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbSettingsViewComponent ],
-      imports: [ AppModule, HttpClientTestingModule ],
+      declarations: [KtbSettingsViewComponent],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
         {
           provide: ActivatedRoute,
           useValue: {
-            data: of({isCreateMode: true}),
-            params: of({}),
+            params: of({projectName: 'sockshop'}),
+            data: routeDataSubject.asObservable(),
             queryParams: of({})
           }
         }
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
@@ -44,11 +47,18 @@ describe('KtbSettingsViewComponent - Create', () => {
   });
 
   it('should have create mode enabled when routed to route data contains {isCreateMode: true}', () => {
+    // given
+    routeDataSubject.next({isCreateMode: true});
+    fixture.detectChanges();
+
+    // then
     expect(component.isCreateMode).toBeTrue();
   });
 
   it('should have a validation error if project name already exists in projects', async () => {
     // given
+    component.isCreateMode = true;
+    fixture.detectChanges();
 
     // when
     await dataService.loadProjects();
@@ -70,42 +80,6 @@ describe('KtbSettingsViewComponent - Create', () => {
 
     // then
     expect(routeSpy).toHaveBeenCalled();
-  });
-});
-
-describe('KtbSettingsViewComponent - Edit', () => {
-  let component: KtbSettingsViewComponent;
-  let fixture: ComponentFixture<KtbSettingsViewComponent>;
-  let dataService: DataService;
-
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [KtbSettingsViewComponent],
-      imports: [AppModule, HttpClientTestingModule],
-      providers: [
-        {provide: DataService, useClass: DataServiceMock},
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            params: of({projectName: 'sockshop'}),
-            data: of({isCreateMode: false}),
-            queryParams: of({})
-          }
-        }
-      ]
-    })
-      .compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSettingsViewComponent);
-    component = fixture.componentInstance;
-    dataService = fixture.debugElement.injector.get(DataService);
-    fixture.detectChanges();
-  });
-
-  it('should create settings view component', () => {
-    expect(component).toBeTruthy();
   });
 
   it('should call DataService.setGitUpstreamUrl on setGitUpstream', () => {
@@ -178,6 +152,93 @@ describe('KtbSettingsViewComponent - Edit', () => {
 
     // then
     expect(routeSpy).toHaveBeenCalled();
+  });
+
+  it('should not show a notification when the component is initialized', () => {
+    // given
+    // Has to be retrieved by document, as it is not created at component level
+    const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+    expect(notifications.length).toEqual(0);
+  });
+
+  it('should show a notification for unsaved changes when project name is changed', () => {
+    // given
+    component.isCreateMode = true;
+    fixture.detectChanges();
+
+    // when
+    const inputEl = fixture.nativeElement.querySelector('#projectNameInput');
+    inputEl.value = 'sockshop';
+    inputEl.dispatchEvent(new InputEvent('input'));
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
+    expect(notification.length).toEqual(1);
+  });
+
+  it('should show a notification for unsaved changes when git data is changed in create mode', () => {
+    // given
+    component.isCreateMode = true;
+    fixture.detectChanges();
+
+    // when
+    component.updateGitData({gitUser: 'someUser'});
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
+    expect(notification.length).toEqual(1);
+  });
+
+  it('should show a notification for unsaved changes when git data is changed in update mode', () => {
+    // given
+    component.isCreateMode = false;
+    fixture.detectChanges();
+
+    // when
+    component.updateGitData({gitUser: 'someUser'});
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
+    expect(notification.length).toEqual(1);
+  });
+
+  it('should show a notification for unsaved changes when shipyard file is changed', () => {
+    // given
+    component.isCreateMode = true;
+    fixture.detectChanges();
+
+    // when
+    component.updateShipyardFile(new File(['test'], 'test.yaml'));
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
+    expect(notification.length).toEqual(1);
+  });
+
+  it('should not show a notification when the notification was closed', () => {
+    // given
+    component.unsavedDialogState = UNSAVED_DIALOG_STATE;
+    fixture.detectChanges();
+
+    // when
+    component.unsavedDialogState = null;
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state')[0];
+    // It still exists in the dom but is hidden - so we test for aria-hidden
+    expect(notification.getAttribute('aria-hidden')).toEqual('true');
   });
 });
 

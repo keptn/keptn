@@ -4,7 +4,7 @@
     <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
       <h2>Project name *</h2>
       <dt-form-field>
-        <input type="text" formControlName="projectName" (input)="unsavedDialogState = 'unsaved'" required dtInput
+        <input type="text" formControlName="projectName" id="projectNameInput" (input)="unsavedDialogState = 'unsaved'" required dtInput
                placeholder="e.g. sockshop"/>
         <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
           hyphens.
