@@ -114,8 +114,8 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   triggerAbortSequence(sequence: Sequence): void {
     const data = {
       sequence,
-      confirmCallback: (data: any) => {
-        this.abortSequence(data.sequence);
+      confirmCallback: (params: any) => {
+        this.abortSequence(params.sequence);
       }
     };
     this.confirmationDialogRef = this.dialog.open(KtbConfirmationDialogComponent, {
