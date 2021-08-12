@@ -202,7 +202,10 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 
 	err := rh.integrationManager.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
-		//TODO: set appropriate http codes
+		if err == mongo.ErrNoDocuments {
+			SetNotFoundErrorResponse(err, c)
+			return
+		}
 		SetInternalServerErrorResponse(err, c)
 		return
 	}
