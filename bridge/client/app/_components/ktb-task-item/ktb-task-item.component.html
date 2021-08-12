@@ -1,4 +1,4 @@
-<ktb-expandable-tile [expanded]="isExpanded" [error]="task.isFaulty()" [warning]="task.isWarning()" [success]="task.isSuccessful()" [highlight]="!!task.isApproval()" *ngIf="task && (project$ | async) as project">
+<ktb-expandable-tile [disabled]="task.traces.length == 0" [expanded]="isExpanded" [error]="task.isFaulty()" [warning]="task.isWarning()" [success]="task.isSuccessful()" [highlight]="!!task.isApproval()" *ngIf="task && (project$ | async) as project">
   <ktb-expandable-tile-header>
     <div fxLayout="row">
       <div fxFlex>
