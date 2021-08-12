@@ -4,8 +4,8 @@ import { KtbEvaluationDetailsComponent } from '../ktb-evaluation-details/ktb-eva
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
 import { Evaluations } from '../../_services/_mockData/evaluations.mock';
-import { Trace } from '../../_models/trace';
-enum ColumnIndices {
+
+enum Column {
   DETAILS = 0,
   NAME = 1,
   VALUE = 2,
@@ -37,24 +37,15 @@ describe('KtbEvaluationDetailsComponent', () => {
   }));
 
   it('should have expandable row', () => {
-    // tslint:disable:no-non-null-assertion
     // given
-    // @ts-ignore
-    const selectedEvaluation: Trace = Evaluations.data.evaluationHistory[1]!;
-    // @ts-ignore
-    component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
-    // @ts-ignore
-    component.score = selectedEvaluation.data.evaluation.score;
-    // @ts-ignore
-    component.comparedIndicatorResults = Evaluations.data.evaluationHistory[0].data.evaluation.indicatorResults;
-    // tslint:enable:no-non-null-assertion
+    initEvaluation(1, 0);
 
     // then
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll('dt-row');
     const rowBefore = rows[0].innerText;
     const cells = rows[0].querySelectorAll('dt-cell');
-    const firstCell = cells[ColumnIndices.NAME];
+    const firstCell = cells[Column.NAME];
 
     expect(rows.length).toBe(1);
     expect(fixture.nativeElement.querySelector('dt-table')).toBeTruthy();
@@ -74,13 +65,7 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   it('should not have expandable row', () => {
     // given
-    // @ts-ignore
-    const selectedEvaluation = Evaluations.data.evaluationHistory[1];
-    // @ts-ignore
-    component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
-    // @ts-ignore
-    component.score = selectedEvaluation.data.evaluation.score;
-    component.comparedIndicatorResults = [];
+    initEvaluation(1);
 
     // then
     fixture.detectChanges();
@@ -88,7 +73,7 @@ describe('KtbEvaluationDetailsComponent', () => {
     const rowBefore = rows[0].innerText;
     const cells = rows[0].querySelectorAll('dt-cell');
 
-    expect(cells[ColumnIndices.DETAILS].querySelector('button')).toBeFalsy();
+    expect(cells[Column.DETAILS].querySelector('button')).toBeFalsy();
 
     rows[0].click();
     fixture.detectChanges();
@@ -97,72 +82,115 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   it('should have success values', () => {
     // given
-    // @ts-ignore
-    const selectedEvaluation = Evaluations.data.evaluationHistory[7];
-    // @ts-ignore
-    component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
-    // @ts-ignore
-    component.score = selectedEvaluation.data.evaluation.score;
-    // @ts-ignore
-    component.comparedIndicatorResults = Evaluations.data.evaluationHistory[5].data.evaluation.indicatorResults;
+    initEvaluation(7, 5);
 
-    // then
+    // when
     fixture.detectChanges();
     const firstRow = fixture.nativeElement.querySelectorAll('dt-row')[0];
     firstRow.click();
     fixture.detectChanges();
 
+    // then
     const cells = firstRow.querySelectorAll('dt-cell');
-    const values = cells[2].querySelectorAll('span.success');
+    validateIndicatorResult(cells, true, '370.2', '334.5', '1', '+35.65',
+      '+10.65%', '<=+10% and <600', '<=800', 'passed', '100');
 
-    expect(values.length).toBe(2);
-    expect(cells[ColumnIndices.VALUE].innerText).toContain('370.2');
-    expect(cells[ColumnIndices.VALUE].innerText).toContain('334.5');
-    expect(cells[ColumnIndices.WEIGHT].innerText).toContain('1');
-    expect(values[ColumnIndices.DETAILS].innerText).toBe('+35.65');
-    expect(values[ColumnIndices.NAME].innerText).toBe('+10.65%');
-    expect(cells[ColumnIndices.PASS_CRITERIA].innerText).toBe('<=+10% and <600');
-    expect(cells[ColumnIndices.WARNING_CRITERIA].innerText).toBe('<=800');
-    expect(cells[ColumnIndices.RESULT].innerText).toBe('passed');
-    expect(cells[ColumnIndices.SCORE].innerText).toBe('100');
     expect(firstRow.querySelector('.error, .error-line')).toBeFalsy();
   });
 
   it('should have error values', () => {
     // given
-    // @ts-ignore
-    const selectedEvaluation = Evaluations.data.evaluationHistory[6];
-    // @ts-ignore
-    component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
-    // @ts-ignore
-    component.score = selectedEvaluation.data.evaluation.score;
-    // @ts-ignore
-    component.comparedIndicatorResults = Evaluations.data.evaluationHistory[5].data.evaluation.indicatorResults;
+    initEvaluation(6, 5);
 
-    // then
+    // when
     fixture.detectChanges();
     const firstRow = fixture.nativeElement.querySelectorAll('dt-row')[0];
     firstRow.click();
     fixture.detectChanges();
 
+    // then
     const cells = firstRow.querySelectorAll('dt-cell');
-    const values = cells[ColumnIndices.VALUE].querySelectorAll('span.error');
+    validateIndicatorResult(cells, false, '370.2', '1082', '0', '-712.42',
+      '-65.805%', '<=+10% and <600', '<=800', 'failed', '0');
 
-    expect(values.length).toBe(2);
-    expect(cells[ColumnIndices.VALUE].innerText).toContain('370.2');
-    expect(cells[ColumnIndices.VALUE].innerText).toContain('1082');
-    expect(cells[ColumnIndices.WEIGHT].innerText).toBe('0');
-    expect(values[0].innerText).toBe('-712.42');
-    expect(values[1].innerText).toBe('-65.805%');
-    expect(cells[ColumnIndices.PASS_CRITERIA].innerText).toBe('<=+10% and <600');
-    expect(cells[ColumnIndices.WARNING_CRITERIA].innerText).toBe('<=800');
-    expect(cells[ColumnIndices.RESULT].innerText).toBe('failed');
-    expect(cells[ColumnIndices.SCORE].innerText).toBe('0');
-    expect(cells[ColumnIndices.PASS_CRITERIA].querySelectorAll('.error.error-line').length).toBe(2);
-    expect(cells[ColumnIndices.WARNING_CRITERIA].querySelectorAll('.error.error-line').length).toBe(1);
-    expect(cells[ColumnIndices.SCORE].querySelector('.error')).toBeTruthy();
+    expect(cells[Column.PASS_CRITERIA].querySelectorAll('.error.error-line').length).toBe(2);
+    expect(cells[Column.WARNING_CRITERIA].querySelectorAll('.error.error-line').length).toBe(1);
+    expect(cells[Column.SCORE].querySelector('.error')).toBeTruthy();
     expect(firstRow.querySelector('.success')).toBeFalsy();
   });
+
+  it('should sort by weight asc', () => {
+    validateOrder(0, Column.WEIGHT, true, 0, 2, 1);
+  });
+
+  it('should sort by weight desc', () => {
+    validateOrder(0, Column.WEIGHT, false, 1, 2, 0);
+  });
+
+  it('should sort by name asc', () => {
+    validateOrder(0, Column.NAME, true, 2, 1, 0);
+  });
+
+  it('should sort by name desc', () => {
+    validateOrder(0, Column.NAME, false, 0, 1, 2);
+  });
+
+  it('should sort by score asc', () => {
+    validateOrder(0, Column.SCORE, true, 1, 2, 0);
+  });
+
+  it('should sort by score desc', () => {
+    validateOrder(0, Column.SCORE, false, 0, 2, 1);
+  });
+
+  function validateOrder(selectedEvaluationIndex: number, column: Column, isAsc: boolean, ...indices: number[]) {
+    // given
+    initEvaluation(selectedEvaluationIndex);
+    fixture.detectChanges();
+
+    // when
+    for (let i = isAsc ? 1 : 0; i < 2; ++i) {
+      fixture.nativeElement.querySelectorAll('dt-header-cell')[column].click();
+      fixture.detectChanges();
+    }
+    // then
+    // @ts-ignore
+    const selectedEvaluation = Evaluations.data.evaluationHistory[selectedEvaluationIndex];
+    // @ts-ignore
+    const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row>dt-cell:nth-child(${Column.NAME + 1})`);
+    for (let i = 0; i < indices.length; ++i) {
+      // @ts-ignore
+      expect(indicatorNames[i].innerText).toEqual(selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric);
+    }
+  }
+
+  function initEvaluation(selectedEvaluationIndex: number, comparedEvaluationIndex: number = -1) {
+    // @ts-ignore
+    const selectedEvaluation = Evaluations.data.evaluationHistory[selectedEvaluationIndex];
+    // @ts-ignore
+    component.indicatorResults = selectedEvaluation.data.evaluation.indicatorResults;
+    // @ts-ignore
+    component.score = selectedEvaluation.data.evaluation.score;
+    // @ts-ignore
+    component.comparedIndicatorResults = comparedEvaluationIndex === -1 ? [] : Evaluations.data.evaluationHistory[comparedEvaluationIndex].data.evaluation.indicatorResults;
+  }
+
+  function validateIndicatorResult(cells: HTMLElement[], isSuccess: boolean, firstValue: string, secondValue: string, weight: string,
+                                   comparedValueAbsolute: string, comparedValueRelative: string, passCriteria: string,
+                                   warningCriteria: string, result: string, score: string) {
+    const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(`span.${isSuccess ? 'success' : 'error'}`);
+
+    expect(calculatedValues.length).toBe(2);
+    expect(cells[Column.VALUE].innerText).toContain(firstValue);
+    expect(cells[Column.VALUE].innerText).toContain(secondValue);
+    expect(cells[Column.WEIGHT].innerText).toContain(weight);
+    expect(calculatedValues[0].innerText).toBe(comparedValueAbsolute);
+    expect(calculatedValues[1].innerText).toBe(comparedValueRelative);
+    expect(cells[Column.PASS_CRITERIA].innerText).toBe(passCriteria);
+    expect(cells[Column.WARNING_CRITERIA].innerText).toBe(warningCriteria);
+    expect(cells[Column.RESULT].innerText).toBe(result);
+    expect(cells[Column.SCORE].innerText).toBe(score);
+  }
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

@@ -82,6 +82,32 @@ const evaluationData = {
               "warningTargets": null,
               "keySli": false,
               "status": "pass"
+            },
+            {
+              "score": 4,
+              "value": {
+                "metric": "response_time_p90",
+                "value": 250.18637492576534,
+                "success": true
+              },
+              "displayName": "",
+              "passTargets": null,
+              "warningTargets": null,
+              "keySli": false,
+              "status": "pass"
+            },
+            {
+              "score": 2,
+              "value": {
+                "metric": "response_time_p50",
+                "value": 200.18637492576534,
+                "success": true
+              },
+              "displayName": "",
+              "passTargets": null,
+              "warningTargets": null,
+              "keySli": false,
+              "status": "pass"
             }
           ],
           "comparedEvents": [
