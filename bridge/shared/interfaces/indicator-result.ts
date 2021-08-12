@@ -7,13 +7,13 @@ export interface IndicatorResult {
     value: number,
     metric: string,
     success: boolean,
-    message: string
+    message?: string
   };
   score: number;
   displayName?: string;
   status: ResultTypes;
-  passTargets?: Target[];
-  warningTargets?: Target[];
+  passTargets?: Target[] | null;
+  warningTargets?: Target[] | null;
   targets?: Target[];
   keySli: boolean;
 }
