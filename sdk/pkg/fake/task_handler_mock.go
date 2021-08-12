@@ -4,21 +4,21 @@
 package fake
 
 import (
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/sdk/pkg"
 	"sync"
 )
 
-// Ensure, that TaskHandlerMock does implement sdk.TaskHandler.
+// Ensure, that TaskHandlerMock does implement pkg.TaskHandler.
 // If this is not the case, regenerate this file with moq.
-var _ sdk.TaskHandler = &TaskHandlerMock{}
+var _ pkg.TaskHandler = &TaskHandlerMock{}
 
-// TaskHandlerMock is a mock implementation of sdk.TaskHandler.
+// TaskHandlerMock is a mock implementation of pkg.TaskHandler.
 //
 // 	func TestSomethingThatUsesTaskHandler(t *testing.T) {
 //
-// 		// make and configure a mocked sdk.TaskHandler
+// 		// make and configure a mocked pkg.TaskHandler
 // 		mockedTaskHandler := &TaskHandlerMock{
-// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
+// 			ExecuteFunc: func(keptnHandle pkg.IKeptn, data interface{}) (interface{}, *pkg.Error) {
 // 				panic("mock out the Execute method")
 // 			},
 // 			InitDataFunc: func() interface{} {
@@ -26,13 +26,13 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 // 			},
 // 		}
 //
-// 		// use mockedTaskHandler in code that requires sdk.TaskHandler
+// 		// use mockedTaskHandler in code that requires pkg.TaskHandler
 // 		// and then make assertions.
 //
 // 	}
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error)
+	ExecuteFunc func(keptnHandle pkg.IKeptn, data interface{}) (interface{}, *pkg.Error)
 
 	// InitDataFunc mocks the InitData method.
 	InitDataFunc func() interface{}
@@ -42,7 +42,7 @@ type TaskHandlerMock struct {
 		// Execute holds details about calls to the Execute method.
 		Execute []struct {
 			// KeptnHandle is the keptnHandle argument value.
-			KeptnHandle sdk.IKeptn
+			KeptnHandle pkg.IKeptn
 			// Data is the data argument value.
 			Data interface{}
 		}
@@ -55,12 +55,12 @@ type TaskHandlerMock struct {
 }
 
 // Execute calls ExecuteFunc.
-func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}) (interface{}, *sdk.Error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle pkg.IKeptn, data interface{}) (interface{}, *pkg.Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but TaskHandler.Execute was just called")
 	}
 	callInfo := struct {
-		KeptnHandle sdk.IKeptn
+		KeptnHandle pkg.IKeptn
 		Data        interface{}
 	}{
 		KeptnHandle: keptnHandle,
@@ -76,11 +76,11 @@ func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}) (
 // Check the length with:
 //     len(mockedTaskHandler.ExecuteCalls())
 func (mock *TaskHandlerMock) ExecuteCalls() []struct {
-	KeptnHandle sdk.IKeptn
+	KeptnHandle pkg.IKeptn
 	Data        interface{}
 } {
 	var calls []struct {
-		KeptnHandle sdk.IKeptn
+		KeptnHandle pkg.IKeptn
 		Data        interface{}
 	}
 	mock.lockExecute.RLock()

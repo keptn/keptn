@@ -1,4 +1,4 @@
-package sdk
+package pkg
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"

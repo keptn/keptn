@@ -1,11 +1,11 @@
-package sdk_test
+package pkg_test
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
-	"github.com/keptn/keptn/remediation-service/internal/sdk/fake"
+	sdk "github.com/keptn/keptn/sdk/pkg"
+	"github.com/keptn/keptn/sdk/pkg/fake"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/keptn/keptn/remediation-service/handler"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	sdk "github.com/keptn/keptn/sdk/pkg"
 	"log"
 )
 

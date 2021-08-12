@@ -5,19 +5,19 @@ package fake
 
 import (
 	"github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	"github.com/keptn/keptn/sdk/pkg"
 	"sync"
 )
 
-// Ensure, that ResourceHandlerMock does implement sdk.ResourceHandler.
+// Ensure, that ResourceHandlerMock does implement pkg.ResourceHandler.
 // If this is not the case, regenerate this file with moq.
-var _ sdk.ResourceHandler = &ResourceHandlerMock{}
+var _ pkg.ResourceHandler = &ResourceHandlerMock{}
 
-// ResourceHandlerMock is a mock implementation of sdk.ResourceHandler.
+// ResourceHandlerMock is a mock implementation of pkg.ResourceHandler.
 //
 // 	func TestSomethingThatUsesResourceHandler(t *testing.T) {
 //
-// 		// make and configure a mocked sdk.ResourceHandler
+// 		// make and configure a mocked pkg.ResourceHandler
 // 		mockedResourceHandler := &ResourceHandlerMock{
 // 			GetServiceResourceFunc: func(project string, stage string, service string, resourceURI string) (*models.Resource, error) {
 // 				panic("mock out the GetServiceResource method")
@@ -27,7 +27,7 @@ var _ sdk.ResourceHandler = &ResourceHandlerMock{}
 // 			},
 // 		}
 //
-// 		// use mockedResourceHandler in code that requires sdk.ResourceHandler
+// 		// use mockedResourceHandler in code that requires pkg.ResourceHandler
 // 		// and then make assertions.
 //
 // 	}

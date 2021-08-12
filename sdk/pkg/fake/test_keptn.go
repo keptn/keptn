@@ -2,7 +2,7 @@ package fake
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	sdk "github.com/keptn/keptn/sdk/pkg"
 )
 
 type FakeKeptn struct {

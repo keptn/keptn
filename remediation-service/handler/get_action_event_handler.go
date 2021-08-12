@@ -6,7 +6,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/remediation-service/internal/sdk"
+	sdk "github.com/keptn/keptn/sdk/pkg"
 )
 
 const remediationSpecVersion = "spec.keptn.sh/0.1.4"
