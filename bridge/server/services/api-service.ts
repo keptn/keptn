@@ -5,6 +5,8 @@ import { Project } from '../models/project';
 import { ResultTypes } from '../../shared/models/result-types';
 import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
+import { UniformRegistration } from '../interfaces/uniform-registration';
+import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
 
 export class ApiService {
   private readonly defaultHeaders: object;
@@ -73,5 +75,18 @@ export class ApiService {
       service: serviceName,
     };
     return axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, {params, headers: this.defaultHeaders});
+  }
+
+  public getUniformRegistrations(): Promise<AxiosResponse<UniformRegistration[]>> {
+    return axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`, {headers: this.defaultHeaders});
+  }
+
+  public getUniformRegistrationLogs(integrationId: string, fromTime?: string, pageSize = 100): Promise<AxiosResponse<UniformRegistrationLogResponse>> {
+    const params = {
+      integrationId,
+      ...fromTime && {fromTime: new Date(new Date(fromTime).getTime() + 1).toISOString()}, // > fromTime instead of >= fromTime
+      pageSize: pageSize.toString()
+    };
+    return axios.get<UniformRegistrationLogResponse>(`${this.baseUrl}/controlPlane/v1/log`, {params, headers: this.defaultHeaders});
   }
 }

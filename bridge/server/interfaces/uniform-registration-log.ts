@@ -1,7 +1,7 @@
 export interface UniformRegistrationLog {
   integrationid: string;
   message: string;
-  time: Date;
+  time: string;
   shkeptncontext?: string;
   task?: string;
   triggeredid?: string;

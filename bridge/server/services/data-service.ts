@@ -9,6 +9,7 @@ import { Remediation } from '../models/remediation';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
+import { UniformRegistration } from '../interfaces/uniform-registration';
 
 export class DataService {
   private apiService: ApiService;
@@ -176,6 +177,30 @@ export class DataService {
       });
     }
     return approvals;
+  }
+
+  public async hasUnreadUniformRegistrationLogs(uniformDates: { [key: string]: string }): Promise<boolean> {
+    const response = await this.apiService.getUniformRegistrations();
+    const registrations = response.data;
+    let status = false;
+    for (let i = 0; i < registrations.length && !status; ++i) {
+      const registration = registrations[i];
+      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id], 1);
+      if (logResponse.data.logs.length !== 0) {
+        status = true;
+      }
+    }
+    return status;
+  }
+
+  public async getUniformRegistrations(uniformDates: {[key: string]: string}): Promise<UniformRegistration[]> {
+    const response = await this.apiService.getUniformRegistrations();
+    const registrations = response.data;
+    for (const registration of registrations) {
+      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
+      registration.unreadEventsCount = logResponse.data.logs.length;
+    }
+    return registrations;
   }
 
   private buildRemediationEvent(stageName: string) {
