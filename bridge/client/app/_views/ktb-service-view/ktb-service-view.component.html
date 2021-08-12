@@ -14,7 +14,7 @@
         <ktb-no-service-info></ktb-no-service-info>
       </ng-container>
 
-      <ktb-expandable-tile *ngFor="let service of project.getServices()" [expanded]="service.serviceName == serviceName" (click)="selectService(project.projectName, service.serviceName)">
+      <ktb-expandable-tile *ngFor="let service of project.getServices()" [disabled]="service.deployments?.length == 0" [expanded]="service.serviceName == serviceName" (click)="selectService(project.projectName, service.serviceName)">
         <ktb-expandable-tile-header [attr.uitestid]="'keptn-service-view-service-' + service.serviceName">
           <dt-info-group>
             <dt-info-group-title>
