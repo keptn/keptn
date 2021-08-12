@@ -97,8 +97,11 @@ export class KtbExpandableTileComponent {
     return this._disabled;
   }
   set disabled(value: boolean) {
-    if (this._disabled && this._selected) {
-      this._selected = false;
+    if (this._disabled !== value) {
+      this._disabled = value;
+      if (this._disabled) {
+        this.selected = false;
+      }
       this._changeDetectorRef.markForCheck();
     }
   }

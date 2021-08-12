@@ -5,10 +5,10 @@
     ktb-expandable-tile-header,
     [ktb-expandable-tile-header],
     [ktbTileHeader]"></ng-content>
-    <button class="show-more" dt-show-more [showLess]="expanded"></button>
+    <button class="show-more" dt-show-more [disabled]="disabled" [showLess]="!disabled && expanded"></button>
   </div>
   <div class="ktb-expandable-tile-content">
-    <dt-expandable-panel [expanded]="expanded">
+    <dt-expandable-panel [disabled]="disabled" [expanded]="!disabled && expanded">
       <div class="container">
         <ng-content></ng-content>
       </div>
