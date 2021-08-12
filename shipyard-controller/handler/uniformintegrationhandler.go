@@ -18,6 +18,7 @@ type IUniformIntegrationHandler interface {
 	GetRegistrations(context *gin.Context)
 	CreateSubscription(c *gin.Context)
 	DeleteSubscription(c *gin.Context)
+	UpdateSubscription(c *gin.Context)
 }
 
 type UniformIntegrationHandler struct {
@@ -198,6 +199,46 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 		return
 	}
 	subscription.ID = uuid.New().String()
+
+	err := rh.integrationManager.CreateOrUpdateSubscription(integrationID, *subscription)
+	if err != nil {
+		//TODO: set appropriate http codes
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusCreated, &models.CreateSubscriptionResponse{
+		ID: subscription.ID,
+	})
+}
+
+// UpdateSubscription updates or creates a subscription
+// @Summary  Updates or creates a subscription
+// @Description Updates or creates a subscription
+// @Tags Uniform
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param integrationID path string true "integrationID"
+// @Param subscriptionID path string true "subscriptionID"
+// @Param subscription body models.Subscription true "Subscription"
+// @Success 201
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Failure 404 {object} models.Error "Not found"
+// @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [put]
+func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
+
+	integrationID := c.Param("integrationID")
+	subscriptionID := c.Param("subscriptionID")
+
+	subscription := &models.Subscription{}
+
+	if err := c.ShouldBindJSON(subscription); err != nil {
+		SetBadRequestErrorResponse(err, c)
+		return
+	}
+	subscription.ID = subscriptionID
 
 	err := rh.integrationManager.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
