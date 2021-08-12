@@ -4,14 +4,16 @@
     <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
       <h2>Project name *</h2>
       <dt-form-field>
-        <input type="text" formControlName="projectName" required dtInput placeholder="e.g. sockshop"/>
+        <input type="text" formControlName="projectName" (input)="unsavedDialogState = 'unsaved'" required dtInput
+               placeholder="e.g. sockshop"/>
         <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
           hyphens.
         </dt-hint>
         <dt-error>
           <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
           <ng-container *ngIf="projectNameControl.hasError('projectName')">Project name already exists</ng-container>
-          <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
+          <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter.
+            Allowed characters: lower case letters, numbers and
             hyphens.
           </ng-container>
         </dt-error>
@@ -26,8 +28,10 @@
         (gitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
     </div>
     <div class="mb-3 settings-section" *ngIf="isCreateMode">
-      <ktb-project-settings-shipyard (shipyardFileChanged)="shipyardFile=$event"
+
+      <ktb-project-settings-shipyard (shipyardFileChanged)="updateShipyardFile($event)"
                                      [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>
+
     </div>
     <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
       <button
@@ -47,3 +51,15 @@
   </div>
 </div>
 
+<dt-confirmation-dialog [state]="unsavedDialogState" aria-label="Dialog for notifying about unsaved data">
+  <dt-confirmation-dialog-state name="unsaved">
+    <div fxLayout="row" fxLayoutAlign="space-between center">
+      <div>
+        You have unsaved changes. Make sure to save your data before you continue.
+      </div>
+      <div>
+        <button dt-button variant="secondary" (click)="unsavedDialogState = null">Close</button>
+      </div>
+    </div>
+  </dt-confirmation-dialog-state>
+</dt-confirmation-dialog>

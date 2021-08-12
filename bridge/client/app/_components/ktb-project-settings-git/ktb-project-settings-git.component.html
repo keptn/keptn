@@ -5,7 +5,7 @@
   <br/>Instructions, how to set your Git provider can be found in the
   <a [href]="'/manage/git_upstream/' | keptnUrl" target="_blank">Git-based upstream documentation</a>
 </p>
-<form [formGroup]="gitUpstreamForm" (change)="onGitUpstreamFormChange()" id="git-upstream-form" fxLayout="row" fxLayoutAlign=" end">
+<form [formGroup]="gitUpstreamForm" (input)="onGitUpstreamFormChange()" id="git-upstream-form" fxLayout="row" fxLayoutAlign=" end">
   <div fxLayout="column" [ngClass]="{'full-width': isCreateMode}">
     <dt-form-field>
       <dt-label>Git remote URL</dt-label>

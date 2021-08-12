@@ -26,6 +26,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
 
+  public unsavedDialogState: string | null = null;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
   public isCreateMode = false;
@@ -78,6 +79,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       filter((project: Project | undefined): project is Project => !!project)
     ).subscribe(project => {
       if (project.projectName !== this.projectName) {
+        this.unsavedDialogState = null;
         this.projectName = project.projectName;
 
         this.gitData = {
@@ -96,6 +98,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     ).subscribe((queryParams) => {
       if (queryParams.created) {
+        this.unsavedDialogState = null;
         this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {
           projectName: this.projectName,
           routerLink: `/project/${this.projectName}/service`
@@ -120,9 +123,15 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   }
 
   public updateGitData(gitData: GitData): void {
+    this.unsavedDialogState = 'unsaved';
     this.gitData.remoteURI = gitData.remoteURI;
     this.gitData.gitUser = gitData.gitUser;
     this.gitData.gitToken = gitData.gitToken;
+  }
+
+  public updateShipyardFile(shipyardFile: File | undefined): void {
+    this.unsavedDialogState = 'unsaved';
+    this.shipyardFile = shipyardFile;
   }
 
   public setGitUpstream(): void {
@@ -133,7 +142,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         .subscribe(() => {
           this.isGitUpstreamInProgress = false;
           this.gitData.gitToken = '';
-          this.gitData = {... this.gitData};
+          this.gitData = {...this.gitData};
           this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
         }, (err) => {
           console.log(err);
