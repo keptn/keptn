@@ -1,5 +1,4 @@
 import { EvaluationResult } from '../interfaces/evaluation-result';
-import { EventState } from './event-state';
 
 export type SequenceEvent = {
   id: string,
