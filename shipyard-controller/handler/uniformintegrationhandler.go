@@ -57,7 +57,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 			topic = integration.Subscription.Topics[0]
 		}
 		ts := keptnmodels.TopicSubscription{
-			Topics: topic,
+			Topic:  topic,
 			Status: integration.Subscription.Status,
 			Filter: keptnmodels.TopicSubscriptionFilter{
 				Projects: []string{integration.Subscription.Filter.Project},

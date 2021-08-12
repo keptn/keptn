@@ -24,7 +24,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.test.triggered",
+				Topic:  "sh.keptn.event.test.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -49,7 +49,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.deployment.triggered",
+				Topic:  "sh.keptn.event.deployment.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -74,7 +74,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.deployment.triggered",
+				Topic:  "sh.keptn.event.deployment.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -99,7 +99,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.deployment.triggered",
+				Topic:  "sh.keptn.event.deployment.triggered",
 				Status: "active",
 				Filter: keptnmodels.TopicSubscriptionFilter{
 					Projects: []string{"pr1"},
@@ -228,8 +228,8 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	// add subscription
 	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
-		ID:     "new-subscription",
-		Topics: "a-topic",
+		ID:    "new-subscription",
+		Topic: "a-topic",
 		Filter: keptnmodels.TopicSubscriptionFilter{
 			Projects: []string{"a-project"},
 			Stages:   []string{"a-stage"},
@@ -246,8 +246,8 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
 	// update subscription
 	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
-		ID:     "new-subscription",
-		Topics: "a-topic",
+		ID:    "new-subscription",
+		Topic: "a-topic",
 		Filter: keptnmodels.TopicSubscriptionFilter{
 			Projects: []string{"a-project", "another-project"},
 			Stages:   []string{"a-stage"},

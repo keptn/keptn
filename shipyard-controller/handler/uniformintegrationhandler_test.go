@@ -88,7 +88,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.test.triggered",
+				Topic: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -102,7 +102,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.test.triggered",
+				Topic: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -205,7 +205,7 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 		},
 		Subscriptions: []keptnmodels.TopicSubscription{
 			{
-				Topics: "sh.keptn.event.test.triggered",
+				Topic: "sh.keptn.event.test.triggered",
 			},
 		},
 	}

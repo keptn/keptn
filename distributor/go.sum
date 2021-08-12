@@ -31,6 +31,12 @@ github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dv
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/keptn/go-utils v0.8.5-0.20210809151406-091b9423bc1b h1:hf+SGD8f/BIkIx3rOs2iwTKBet7vtyNkPFiTEpECaNo=
 github.com/keptn/go-utils v0.8.5-0.20210809151406-091b9423bc1b/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210811091138-cb2aa980a89e h1:uxKfHZoF8EeMMDDjL7FBUS7a/HSueyTCMyHQHo4IT14=
+github.com/keptn/go-utils v0.8.5-0.20210811091138-cb2aa980a89e/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210812071403-068a8fb7e7c9 h1:ZSgMQkRLYt0tVE8ePP1TnYfdt7DRUAcX1lGxDIyH7Yw=
+github.com/keptn/go-utils v0.8.5-0.20210812071403-068a8fb7e7c9/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210812155255-c157a8a5573a h1:9c4Dqk/NRx06iNYhp/Uq0qyCUagnH2GVIRD5w6gYtU4=
+github.com/keptn/go-utils v0.8.5-0.20210812155255-c157a8a5573a/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/klauspost/compress v1.11.12 h1:famVnQVu7QwryBN4jNseQdUKES71ZAOnB6UQQJPZvqk=
 github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
