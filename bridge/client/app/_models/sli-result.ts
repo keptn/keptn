@@ -7,8 +7,8 @@ export class SliResult {
   value!: string | number;
   result!: ResultTypes;
   score!: number;
-  passTargets?: Target[];
-  warningTargets?: Target[];
+  passTargets?: Target[] | null;
+  warningTargets?: Target[] | null;
   targets?: Target[];
   keySli!: boolean;
   success!: boolean;
@@ -17,4 +17,5 @@ export class SliResult {
     absolute: number,
     relative: number
   };
+  weight!: number;
 }

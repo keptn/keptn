@@ -102,6 +102,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         'details',
         'name',
         'value',
+        'weight',
         'targets',
         'result',
         'score'
@@ -111,6 +112,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         'details',
         'name',
         'value',
+        'weight',
         'passTargets',
         'warningTargets',
         'result',
@@ -141,6 +143,7 @@ export class KtbSliBreakdownComponent implements OnInit {
         keySli: indicatorResult.keySli,
         success: indicatorResult.value.success,
         expanded: false,
+        weight: indicatorResult.score,
         ...compared,
       };
     });
