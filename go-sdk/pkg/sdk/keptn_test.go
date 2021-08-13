@@ -1,11 +1,11 @@
-package pkg_test
+package sdk_test
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
-	sdk "github.com/keptn/keptn/sdk/pkg"
-	"github.com/keptn/keptn/sdk/pkg/fake"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/fake"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -13,15 +13,13 @@ import (
 
 func Test_WhenReceivingAnEvent_StartedEventAndFinishedEventsAreSent(t *testing.T) {
 	taskHandler := &fake.TaskHandlerMock{}
-	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}) (interface{}, *sdk.Error) {
+	taskHandler.ExecuteFunc = func(keptnHandle sdk.IKeptn, ce interface{}, eventType string) (interface{}, *sdk.Error) {
 		return FakeTaskData{}, nil
-	}
-	taskHandler.InitDataFunc = func() interface{} {
-		return FakeTaskData{}
 	}
 
 	taskEntry := sdk.TaskEntry{
-		TaskHandler: taskHandler,
+		TaskHandler:    taskHandler,
+		ReceivingEvent: &FakeTaskData{},
 	}
 
 	taskEntries := map[string]sdk.TaskEntry{"sh.keptn.event.faketask.triggered": taskEntry}

@@ -1,8 +1,9 @@
 package main
 
 import (
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/remediation-service/handler"
-	sdk "github.com/keptn/keptn/sdk/pkg"
 	"log"
 )
 
@@ -12,6 +13,9 @@ const serviceName = "remediation-service"
 func main() {
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
-		sdk.WithHandler(getActionTriggeredEventType, handler.NewGetActionEventHandler()),
+		sdk.WithHandler(
+			getActionTriggeredEventType,
+			handler.NewGetActionEventHandler(),
+			&keptnv2.GetActionTriggeredEventData{}),
 	).Start())
 }

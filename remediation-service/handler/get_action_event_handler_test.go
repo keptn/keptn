@@ -7,9 +7,9 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/lib/v0_1_4"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk/fake"
 	"github.com/keptn/keptn/remediation-service/handler"
-	sdk "github.com/keptn/keptn/sdk/pkg"
-	"github.com/keptn/keptn/sdk/pkg/fake"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"log"
@@ -30,7 +30,7 @@ func newGetActionTriggeredEvent(filename string) cloudevents.Event {
 
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 
-	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler()))
+	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler(), &keptnv2.GetActionTriggeredEventData{}))
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))

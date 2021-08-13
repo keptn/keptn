@@ -1,4 +1,4 @@
-package pkg
+package sdk
 
 import (
 	"context"
@@ -19,6 +19,7 @@ const ConfigurationServiceURL = "configuration-service:8080"
 type ResourceHandler interface {
 	GetServiceResource(project string, stage string, service string, resourceURI string) (*models.Resource, error)
 	GetStageResource(project string, stage string, resourceURI string) (*models.Resource, error)
+	GetProjectResource(project string, resourceURI string) (*models.Resource, error)
 }
 
 type Error struct {
@@ -35,19 +36,15 @@ type TaskHandler interface {
 	//
 	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
 	// or nil, if there was no error during execution.
-	Execute(keptnHandle IKeptn, data interface{}) (interface{}, *Error)
-
-	// InitData is called when a new event was received. It is expected that this method returns a pointer to
-	// a struct value of the event data the service is supposed to process.
-	InitData() interface{}
+	Execute(keptnHandle IKeptn, data interface{}, eventType string) (interface{}, *Error)
 }
 
 type KeptnOption func(IKeptn)
 
 // WithHandler registers a handler which is responsible for processing a .triggered event
-func WithHandler(eventType string, handler TaskHandler) KeptnOption {
+func WithHandler(eventType string, handler TaskHandler, receivingEvent interface{}) KeptnOption {
 	return func(k IKeptn) {
-		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler})
+		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler, ReceivingEvent: receivingEvent})
 	}
 }
 
@@ -69,6 +66,7 @@ type Keptn struct {
 	Source          string
 	TaskRegistry    *TaskRegistry
 	SyncProcessing  bool
+	ReceivingEvent  interface{}
 }
 
 // NewKeptn creates a new Keptn
@@ -114,7 +112,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 	k.runEventTaskAction(func() {
 		{
 			if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
-				data := handler.TaskHandler.InitData()
+				data := handler.ReceivingEvent
 				if err := event.DataAs(&data); err != nil {
 					log.Errorf("error during decoding of .triggered event: %v", err)
 					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
@@ -127,7 +125,16 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 					return
 				}
 
-				result, err := handler.TaskHandler.Execute(k, data)
+				// do not use handler.ReceivingEvent to pass data to the executor to avoid concurrency issues
+				var passData interface{}
+				if err := event.DataAs(passData); err != nil {
+					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
+						log.Errorf("unable to send .finished event: %v", err)
+						return
+					}
+					return
+				}
+				result, err := handler.TaskHandler.Execute(k, passData, event.Type())
 				if err != nil {
 					log.Errorf("error during task execution %v", err.Err)
 					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, result, err)); err != nil {

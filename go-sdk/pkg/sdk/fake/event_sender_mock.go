@@ -5,26 +5,26 @@ package fake
 
 import (
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/keptn/keptn/sdk/pkg"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"sync"
 )
 
-// Ensure, that EventSenderMock does implement pkg.EventSender.
+// Ensure, that EventSenderMock does implement sdk.EventSender.
 // If this is not the case, regenerate this file with moq.
-var _ pkg.EventSender = &EventSenderMock{}
+var _ sdk.EventSender = &EventSenderMock{}
 
-// EventSenderMock is a mock implementation of pkg.EventSender.
+// EventSenderMock is a mock implementation of sdk.EventSender.
 //
 // 	func TestSomethingThatUsesEventSender(t *testing.T) {
 //
-// 		// make and configure a mocked pkg.EventSender
+// 		// make and configure a mocked sdk.EventSender
 // 		mockedEventSender := &EventSenderMock{
 // 			SendEventFunc: func(eventMoqParam event.Event) error {
 // 				panic("mock out the SendEvent method")
 // 			},
 // 		}
 //
-// 		// use mockedEventSender in code that requires pkg.EventSender
+// 		// use mockedEventSender in code that requires sdk.EventSender
 // 		// and then make assertions.
 //
 // 	}

@@ -1,4 +1,4 @@
-package pkg
+package sdk
 
 import "sync"
 
@@ -8,7 +8,8 @@ type TaskRegistry struct {
 }
 
 type TaskEntry struct {
-	TaskHandler TaskHandler
+	TaskHandler    TaskHandler
+	ReceivingEvent interface{}
 }
 
 func NewTasksMap() *TaskRegistry {
@@ -21,6 +22,8 @@ func (t *TaskRegistry) Contains(name string) (*TaskEntry, bool) {
 	t.Lock()
 	defer t.Unlock()
 	if e, ok := t.Entries[name]; ok {
+		return &e, true
+	} else if e, ok := t.Entries["*"]; ok { // check if we have registered a wildcard handler
 		return &e, true
 	}
 	return nil, false
