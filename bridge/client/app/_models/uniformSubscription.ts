@@ -2,10 +2,10 @@ import { DtAutoComplete, DtFilter, DtFilterArray } from './dt-filter';
 import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-field';
 
 export class UniformSubscription {
-  public topics: string[] = [];
+  public topics!: string;
   public filter!: {
-    projects: [string] | [] | null,
-    stages: [string] | [] | null,
+    projects: string[] | null,
+    stages: string[] | null,
     services: string[] | null
   };
   public parameters: {key: string, value: string, visible: boolean}[] = [];
@@ -41,6 +41,12 @@ export class UniformSubscription {
   public getFilter(data: any): DtFilterArray[] {
     data = data as DtFilter;
     const filter = [
+      ...this.filter.stages?.map(stage => {
+        return [
+          data.autocomplete[0],
+          {name: stage}
+        ] as DtFilterArray;
+      }) ?? [],
       ...this.filter.services?.map(service => {
         return [
             data.autocomplete[0],
@@ -58,9 +64,15 @@ export class UniformSubscription {
   // tslint:disable-next-line:no-any
   public filterChanged(event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
     event = event as DtFilterFieldChangeEvent<DtAutoComplete>;
-    this.filter.services = event.filters.reduce((filters: string[], currentFilter: DtAutoComplete[]) => {
-      filters.push(currentFilter[1].name);
+    const result = event.filters.reduce((filters: {Stage: string[], Service: string[]}, filter) => {
+      filters[filter[0].name as 'Stage' | 'Service'].push(filter[1].name);
       return filters;
-    }, []);
+    }, {Stage: [], Service: []});
+    this.filter.services = result.Service;
+    this.filter.stages = result.Stage;
+  }
+
+  public formatFilter(key: 'services' | 'stages'): string {
+    return this.filter[key]?.join(', ') || 'all';
   }
 }

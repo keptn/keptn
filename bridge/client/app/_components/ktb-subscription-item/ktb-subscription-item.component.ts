@@ -17,7 +17,6 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   private _subscription?: UniformSubscription;
   public project?: Project;
   public tasks: string[] = [];
-  public _dataSource = new DtFilterFieldDefaultDataSource();
   private readonly unsubscribe$ = new Subject<void>();
 
   @Input() name?: string;
@@ -51,23 +50,7 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
         takeUntil(this.unsubscribe$)
       ).subscribe(project => {
         this.project = project;
-        this.updateDataSource(project);
       });
-  }
-
-  public updateDataSource(project: Project) {
-    this._dataSource.data = {
-      autocomplete: [
-        {
-          name: 'Service',
-          autocomplete: project.getServices().map(service => {
-            return {
-              name: service.serviceName
-            };
-          })
-        }
-      ]
-    };
   }
 
   ngOnDestroy(): void {

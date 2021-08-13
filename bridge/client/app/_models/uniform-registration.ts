@@ -49,7 +49,7 @@ export class UniformRegistration {
   public formatSubscriptions(projectName: string): string | undefined {
     const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
       if (subscription.project === projectName || !subscription.project) {
-        accSubscriptions.push(...subscription.topics);
+        accSubscriptions.push(subscription.topics);
       }
       return accSubscriptions;
     }, []);
