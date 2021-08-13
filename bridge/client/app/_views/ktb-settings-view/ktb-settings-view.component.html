@@ -4,7 +4,8 @@
     <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
       <h2>Project name *</h2>
       <dt-form-field>
-        <input type="text" formControlName="projectName" id="projectNameInput" (input)="unsavedDialogState = 'unsaved'" required dtInput
+        <input type="text" formControlName="projectName" id="projectNameInput" (input)="unsavedDialogState = 'unsaved'"
+               required dtInput
                placeholder="e.g. sockshop"/>
         <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
           hyphens.
@@ -35,7 +36,7 @@
     </div>
     <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
       <button
-        [disabled]="!shipyardFile || projectNameForm.invalid || !isGitFormValid() || isCreatingProjectInProgress"
+        [disabled]="!shipyardFile || projectNameForm.invalid || !gitData.gitFormValid || isCreatingProjectInProgress"
         (click)="createProject()"
         dt-button>
         <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
@@ -45,21 +46,19 @@
         <span class="small">* fields are required</span>
       </div>
     </div>
-    <div class="mb-3 settings-section settings-section-bottom" *ngIf="!isCreateMode">
+    <div [ngClass]="['mb-3', 'settings-section settings-section-bottom', unsavedDialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
       <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
     </div>
   </div>
 </div>
 
-<dt-confirmation-dialog [state]="unsavedDialogState" aria-label="Dialog for notifying about unsaved data">
+<dt-confirmation-dialog [state]="unsavedDialogState" aria-label="Dialog for notifying about unsaved data"
+                        *ngIf="!isCreateMode">
   <dt-confirmation-dialog-state name="unsaved">
-    <div fxLayout="row" fxLayoutAlign="space-between center">
-      <div>
-        You have unsaved changes. Make sure to save your data before you continue.
-      </div>
-      <div>
-        <button dt-button variant="secondary" (click)="unsavedDialogState = null">Close</button>
-      </div>
-    </div>
+    You have pending changes. Make sure to save your data before you continue.
+    <dt-confirmation-dialog-actions>
+      <button dt-button variant="secondary" (click)="reset()">Discard changes</button>
+      <button dt-button (click)="saveAll()">Save changes</button>
+    </dt-confirmation-dialog-actions>
   </dt-confirmation-dialog-state>
 </dt-confirmation-dialog>

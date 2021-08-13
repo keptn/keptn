@@ -72,6 +72,7 @@ describe('KtbSettingsViewComponent', () => {
     // given
     component.isCreateMode = true;
     component.projectName = 'sockshop';
+    fixture.detectChanges();
 
     // when
     const router = TestBed.inject(Router);
@@ -101,6 +102,10 @@ describe('KtbSettingsViewComponent', () => {
   });
 
   it('should have create mode disabled when routed to route data contains {isCreateMode: false}', () => {
+    // given
+    routeDataSubject.next({isCreateMode: false});
+    fixture.detectChanges();
+
     expect(component.isCreateMode).toBeFalse();
   });
 
@@ -111,6 +116,7 @@ describe('KtbSettingsViewComponent', () => {
   it('should have an pattern validation error when project name does not match: first letter lowercase, only lowercase, numbers and hyphens allowed', () => {
     // given
     component.isCreateMode = true;
+    fixture.detectChanges();
 
     component.projectNameControl.setValue('Sockshop');
     component.projectNameForm.updateValueAndValidity();
@@ -143,7 +149,9 @@ describe('KtbSettingsViewComponent', () => {
 
   it('should delete a project and navigate to dashboard', () => {
     // given
+    component.isCreateMode = false;
     component.projectName = 'sockshop';
+    fixture.detectChanges();
 
     // when
     const router = TestBed.inject(Router);
@@ -156,44 +164,14 @@ describe('KtbSettingsViewComponent', () => {
 
   it('should not show a notification when the component is initialized', () => {
     // given
+    component.isCreateMode = false;
+    fixture.detectChanges();
+
+    // then
     // Has to be retrieved by document, as it is not created at component level
     const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
-
-    // then
     expect(component.unsavedDialogState).toBeNull();
     expect(notifications.length).toEqual(0);
-  });
-
-  it('should show a notification for unsaved changes when project name is changed', () => {
-    // given
-    component.isCreateMode = true;
-    fixture.detectChanges();
-
-    // when
-    const inputEl = fixture.nativeElement.querySelector('#projectNameInput');
-    inputEl.value = 'sockshop';
-    inputEl.dispatchEvent(new InputEvent('input'));
-    fixture.detectChanges();
-
-    // then
-    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
-    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-    expect(notification.length).toEqual(1);
-  });
-
-  it('should show a notification for unsaved changes when git data is changed in create mode', () => {
-    // given
-    component.isCreateMode = true;
-    fixture.detectChanges();
-
-    // when
-    component.updateGitData({gitUser: 'someUser'});
-    fixture.detectChanges();
-
-    // then
-    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
-    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-    expect(notification.length).toEqual(1);
   });
 
   it('should show a notification for unsaved changes when git data is changed in update mode', () => {
@@ -202,7 +180,7 @@ describe('KtbSettingsViewComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.updateGitData({gitUser: 'someUser'});
+    component.updateGitData({gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true});
     fixture.detectChanges();
 
     // then
@@ -211,22 +189,38 @@ describe('KtbSettingsViewComponent', () => {
     expect(notification.length).toEqual(1);
   });
 
-  it('should show a notification for unsaved changes when shipyard file is changed', () => {
+  it('should not show a notification when not all git data fields are set', () => {
     // given
-    component.isCreateMode = true;
+    component.isCreateMode = false;
     fixture.detectChanges();
 
     // when
-    component.updateShipyardFile(new File(['test'], 'test.yaml'));
+    component.updateGitData({gitUser: 'someUser', remoteURI: 'someUri'});
     fixture.detectChanges();
 
     // then
-    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
-    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-    expect(notification.length).toEqual(1);
+    expect(component.unsavedDialogState).toBeNull();
+
+    // when
+    component.updateGitData({gitUser: 'someUser', gitToken: 'someToken'});
+    fixture.detectChanges();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
+
+    // when
+    component.updateGitData({remoteURI: 'someUri', gitToken: 'someToken'});
+    fixture.detectChanges();
+
+    // then
+    expect(component.unsavedDialogState).toBeNull();
   });
 
   it('should not show a notification when the notification was closed', () => {
+    // given
+    component.isCreateMode = false;
+    fixture.detectChanges();
+
     // given
     component.unsavedDialogState = UNSAVED_DIALOG_STATE;
     fixture.detectChanges();
