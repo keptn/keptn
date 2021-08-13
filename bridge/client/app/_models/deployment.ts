@@ -46,4 +46,13 @@ export class Deployment {
   public hasRemediation(stageName?: string): boolean {
     return stageName ? !!this.getStage(stageName)?.remediations.length : this.stages.some(s => s.remediations.length !== 0);
   }
+
+  public setEvaluation(evaluation: Trace | undefined) {
+    if (evaluation?.stage) {
+      const stage = this.getStage(evaluation.stage);
+      if (stage) {
+        stage.evaluation = evaluation;
+      }
+    }
+  }
 }

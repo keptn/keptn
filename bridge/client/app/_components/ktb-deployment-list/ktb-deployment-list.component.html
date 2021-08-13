@@ -22,5 +22,5 @@
     </dt-cell>
   </ng-container>
 
-  <dt-row *dtRowDef="let row; columns: ['version', 'stages']" (click)="selectDeployment(row)" [class.active]="selectedDeployment?.shkeptncontext === (row | toType : DeploymentClass).shkeptncontext"></dt-row>
+  <dt-row *dtRowDef="let row; columns: ['version', 'stages']" (click)="selectDeployment(row)" [class.active]="selectedDeploymentInfo?.deployment?.shkeptncontext === (row | toType : DeploymentClass).shkeptncontext"></dt-row>
 </dt-table>

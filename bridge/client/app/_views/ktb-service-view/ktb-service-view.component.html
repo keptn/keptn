@@ -33,7 +33,7 @@
             </ng-container>
           </dt-info-group>
         </ktb-expandable-tile-header>
-        <ktb-deployment-list [service]="service" [(selectedDeployment)]="selectedDeployment" (selectedStageChange)="selectedStage = $event"></ktb-deployment-list>
+        <ktb-deployment-list [service]="service" [(selectedDeploymentInfo)]="selectedDeploymentInfo"></ktb-deployment-list>
       </ktb-expandable-tile>
 
       <div class="mb-3"></div>
@@ -41,7 +41,7 @@
   </div>
 
   <div class="container dark" fxFlex="66" fxLayout="column" fxLayoutGap="15px">
-    <ktb-service-details [deployment]="selectedDeployment" [selectedStage]="selectedStage"></ktb-service-details>
+    <ktb-service-details [deploymentInfo]="selectedDeploymentInfo"></ktb-service-details>
   </div>
 
   <ng-template #noDeployment>
