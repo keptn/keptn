@@ -23,8 +23,6 @@ export class KtbExpandableTileHeader {}
     '[class.ktb-tile-error]': 'error',
     '[attr.aria-success]': 'success',
     '[class.ktb-tile-success]': 'success',
-    '[attr.aria-selected]': 'selected',
-    '[class.ktb-tile-selected]': 'selected',
     '[attr.aria-disabled]': 'disabled',
     '[class.ktb-tile-disabled]': 'disabled',
     '[attr.aria-warning]': 'warning',
@@ -41,7 +39,6 @@ export class KtbExpandableTileComponent {
   private _error = false;
   private _success = false;
   private _expanded = false;
-  private _selected = false;
   private _disabled = false;
   private _warning = false;
   private _highlight = false;
@@ -79,26 +76,14 @@ export class KtbExpandableTileComponent {
     }
   }
 
-  /** Whether the tile is selected. */
-  @Input()
-  get selected(): boolean {
-    return this._selected && !this.disabled;
-  }
-  set selected(value: boolean) {
-    if (this._selected !== value) {
-      this._selected = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
   /** Whether the tile is disabled. */
   @Input()
   get disabled(): boolean {
     return this._disabled;
   }
   set disabled(value: boolean) {
-    if (this._disabled && this._selected) {
-      this._selected = false;
+    if (this._disabled !== value) {
+      this._disabled = value;
       this._changeDetectorRef.markForCheck();
     }
   }
