@@ -21,28 +21,32 @@ apiGatewayNginx:
   port: 80
   nodePort: 31090
   image:
-    repository: docker.io/nginxinc/nginx-unprivileged
+    registry: docker.io
+    repository: nginxinc/nginx-unprivileged
     tag: 1.19.4-alpine
 
 remediationService:
   image:
-    repository: docker.io/keptn/remediation-service
     tag: ""
+    registry: docker.io
+    repository: keptn/remediation-service
 
 apiService:
   image:
-    repository: docker.io/keptn/api
     tag: ""
+    registry: docker.io
+    repository: keptn/api
   config:
     maxAuthRequestsPerSecond: "1.0"
     maxAuthRequestBurst: "2"
 
 bridge:
   image:
-    repository: docker.io/keptn/bridge2
     tag: ""
   cliDownloadLink: null
   integrationsPageLink: null
+    registry: docker.io
+    repository: keptn/bridge2
   secret:
     enabled: true
   versionCheck:
@@ -62,46 +66,61 @@ distributor:
     hostname:
     namespace:
   image:
-    repository: docker.io/keptn/distributor
     tag: ""
+    registry: docker.io
+    repository: keptn/distributor
 
 shipyardController:
   image:
-    repository: docker.io/keptn/shipyard-controller
     tag: ""
+    registry: docker.io
+    repository: keptn/shipyard-controller
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
 
 secretService:
   image:
-    repository: docker.io/keptn/secret-service
     tag: ""
+    registry: docker.io
+    repository: keptn/secret-service
 
 configurationService:
   image:
-    repository: docker.io/keptn/configuration-service
     tag: ""
+    registry: docker.io
+    repository: keptn/configuration-service
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
   storageClass: null
 
 mongodbDatastore:
   image:
-    repository: docker.io/keptn/mongodb-datastore
     tag: ""
+    registry: docker.io
+    repository: keptn/mongodb-datastore
 
 lighthouseService:
   image:
-    repository: docker.io/keptn/lighthouse-service
     tag: ""
+    registry: docker.io
+    repository: keptn/lighthouse-service
 
 statisticsService:
   image:
-    repository: docker.io/keptn/statistics-service
     tag: ""
+    registry: docker.io
+    repository: keptn/statistics-service
+    tag: ''
 
 approvalService:
   image:
-    repository: docker.io/keptn/approval-service
     tag: ""
+    registry: docker.io
+    repository: keptn/approval-service
+
+alpine:
+  image:
+    registry: docker.io
+    repository: alpine
+    tag: '3.13'

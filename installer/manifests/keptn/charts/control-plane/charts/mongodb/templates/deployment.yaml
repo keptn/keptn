@@ -29,11 +29,12 @@ spec:
         app.kubernetes.io/version: "{{ .Values.image.tag }}"
         helm.sh/chart: {{ include "mongodb.chart" . }}
     spec:
+      {{- list .Values | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       serviceAccountName: keptn-default
       securityContext:
         fsGroup: 184
       containers:
-        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        - image: {{ dict "space" .Values "context" . | include "keptn.image.name" }}
           name: mongodb
           env:
             - name: MONGODB_DATABASE

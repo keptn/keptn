@@ -297,11 +297,12 @@ spec:
       annotations: # add randomizer to restart the deployment if anything changes - see https://github.com/keptn/keptn/issues/3320
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
+      {{- list .Values.apiGatewayNginx | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 101
       containers:
         - name: api-gateway-nginx
-          image: {{ .Values.apiGatewayNginx.image.repository }}:{{ .Values.apiGatewayNginx.image.tag }}
+          image: {{ dict "space" .Values.apiGatewayNginx "context" . | include "keptn.image.name" }}
           ports:
             - containerPort: 8080
           livenessProbe:

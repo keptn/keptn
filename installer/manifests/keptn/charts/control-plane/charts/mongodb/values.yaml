@@ -1,5 +1,6 @@
 image:
-  repository: docker.io/centos/mongodb-36-centos7
+  registry: docker.io
+  repository: centos/mongodb-36-centos7
   tag: 1
 
 # storage and storageClass are the settings for the used PVC

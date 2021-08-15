@@ -29,11 +29,12 @@ spec:
         app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}         
     spec:
+      {{- list .Values.lighthouseService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       containers:
         - name: lighthouse-service
-          image: {{ .Values.lighthouseService.image.repository }}:{{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
+          image: {{ dict "space" .Values.lighthouseService "context" . | include "keptn.image.name" }}
           livenessProbe:
             httpGet:
               path: /health
@@ -74,7 +75,7 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: distributor
-          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          image: {{ include "keptn.distributor.imageName" . }}
           {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
           {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
           imagePullPolicy: IfNotPresent

@@ -30,12 +30,13 @@ spec:
         app.kubernetes.io/version: {{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "control-plane.chart" . }}     
     spec:
+      {{- list .Values.mongodbDatastore .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
         fsGroup: 65532
       serviceAccountName: keptn-default
       containers:
       - name: mongodb-datastore
-        image: {{ .Values.mongodbDatastore.image.repository }}:{{ .Values.mongodbDatastore.image.tag | default .Chart.AppVersion }}
+        image: {{ dict "space" .Values.mongodbDatastore "context" . | include "keptn.image.name" }}
         livenessProbe:
           httpGet:
             path: /health
@@ -81,7 +82,7 @@ spec:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
       - name: distributor
-        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+        image: {{ include "keptn.distributor.imageName" . }}
         {{- include "control-plane.dist.livenessProbe" . | nindent 8 }}
         {{- include "control-plane.dist.readinessProbe" . | nindent 8 }}
         imagePullPolicy: IfNotPresent

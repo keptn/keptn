@@ -84,9 +84,10 @@ spec:
         app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
         helm.sh/chart: {{ include "openshift.chart" . }}        
     spec:
+      {{- list .Values.openshiftRouteService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       containers:
       - name: openshift-route-service
-        image: {{ .Values.openshiftRouteService.image.repository }}:{{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
+        image: {{ dict "space" .Values.openshiftRouteService "context" . | include "keptn.image.name" }}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -98,7 +99,7 @@ spec:
             memory: "128Mi"
             cpu: "200m"
       - name: distributor
-        image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+        image: {{ include "keptn.distributor.imageName" . }}
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 8080

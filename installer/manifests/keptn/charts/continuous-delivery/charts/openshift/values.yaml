@@ -1,9 +1,11 @@
 distributor:
   image:
-    repository: docker.io/keptn/distributor
     tag: ""
+    registry: docker.io
+    repository: keptn/distributor
 
 openshiftRouteService:
   image:
-    repository: docker.io/keptn/openshift-route-service
     tag: ""
+    registry: docker.io
+    repository: keptn/openshift-route-service
