@@ -1,16 +1,13 @@
 import { DtAutoComplete, DtFilter, DtFilterArray } from './dt-filter';
 import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-field';
+import { UniformSubscription as us } from '../../../shared/interfaces/uniform-subscription';
 
-export class UniformSubscription {
-  public topics!: string;
-  public filter!: {
-    projects: string[] | null,
-    stages: string[] | null,
-    services: string[] | null
-  };
-  public parameters: {key: string, value: string, visible: boolean}[] = [];
+export class UniformSubscription implements us {
+  public filter!: { projects: string[] | null; stages: string[] | null; services: string[] | null };
   public name!: string;
+  public topic!: string;
   public expanded = false;
+  public parameters: {key: string, value: string, visible: boolean}[] = [];
   private _filter?: DtFilterArray[];
 
   public static fromJSON(data: unknown): UniformSubscription {

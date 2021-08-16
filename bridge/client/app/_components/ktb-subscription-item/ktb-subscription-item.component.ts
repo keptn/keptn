@@ -1,10 +1,9 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {UniformSubscription} from '../../_models/uniformSubscription';
+import {UniformSubscription} from '../../_models/uniform-subscription';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute} from '@angular/router';
 import {Project} from '../../_models/project';
-import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import {Subject} from 'rxjs';
 
 @Component({

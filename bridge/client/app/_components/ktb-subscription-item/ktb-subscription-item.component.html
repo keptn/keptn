@@ -2,7 +2,7 @@
   <input class="item" placeholder="Subscription name" dtInput [(ngModel)]="name" required [readonly]="true">
   <div class="mt-1">
     <span class="bold pl-3 pr-2">subscribes to:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.topics"></span>
+    <span class="mr-1 pr-3" [textContent]="subscription.topic"></span>
     <span class="bold pr-2">in project:</span>
     <span class="mr-1 pr-3" [textContent]="subscription.project || 'all'"></span>
     <span class="bold pr-2">in stages:</span>
