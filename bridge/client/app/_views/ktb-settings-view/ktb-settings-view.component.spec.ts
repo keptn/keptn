@@ -189,6 +189,21 @@ describe('KtbSettingsViewComponent', () => {
     expect(notification.length).toEqual(1);
   });
 
+  it('should not show a notification for unsaved changes when git data is changed in create mode', () => {
+    // given
+    component.isCreateMode = true;
+    fixture.detectChanges();
+
+    // when
+    component.updateGitData({gitUser: 'someUser', remoteURI: 'someUri', gitToken: 'someToken', gitFormValid: true});
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
+    expect(notification.length).toEqual(0);
+  });
+
   it('should not show a notification when not all git data fields are set', () => {
     // given
     component.isCreateMode = false;

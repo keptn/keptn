@@ -130,7 +130,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     this.gitData.gitUser = gitData.gitUser;
     this.gitData.gitToken = gitData.gitToken;
     this.gitData.gitFormValid = gitData.gitFormValid;
-    if (gitData.gitFormValid !== undefined && gitData.gitFormValid) {
+    if (gitData.gitFormValid) {
       this.unsavedDialogState = 'unsaved';
     } else {
       this.unsavedDialogState = null;
