@@ -7,7 +7,7 @@ import {
   TemplateRef,
   ViewChild
 } from '@angular/core';
-import {Deployment} from '../../_models/deployment';
+import { Deployment, DeploymentSelection } from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {takeUntil} from 'rxjs/operators';
@@ -23,36 +23,37 @@ import {ClipboardService} from '../../_services/clipboard.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbServiceDetailsComponent implements OnDestroy{
-  private _deployment?: Deployment;
+  private _deploymentInfo?: DeploymentSelection;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
-  private _selectedStage?: string;
   @ViewChild('remediationDialog')
   // tslint:disable-next-line:no-any
   public remediationDialog?: TemplateRef<any>;
   // tslint:disable-next-line:no-any
   public remediationDialogRef?: MatDialogRef<any, any>;
   public projectName?: string;
+  public isLoading = false;
 
   @Input()
-  get selectedStage(): string | undefined {
-    return this._selectedStage;
-  }
-  set selectedStage(stageName: string | undefined) {
-    this.selectStage(stageName);
+  get deploymentInfo(): DeploymentSelection | undefined {
+    return this._deploymentInfo;
   }
 
-  @Input()
-  get deployment(): Deployment | undefined {
-    return this._deployment;
-  }
-
-  set deployment(deployment: Deployment | undefined) {
-    if (deployment && this._deployment !== deployment) {
-      if (!deployment.sequence) {
-        this.loadSequence(deployment);
-      } else {
-        this._deployment = deployment;
+  set deploymentInfo(info: DeploymentSelection | undefined) {
+    if (info && this._deploymentInfo !== info) {
+      if (this.deploymentInfo?.deployment.shkeptncontext !== info.deployment.shkeptncontext) {
+        this._deploymentInfo = undefined;
+        if (!info.deployment.sequence) {
+          this.isLoading = true;
+        }
       }
+      if (!info.deployment.sequence) {
+        this.loadSequence(info);
+      } else {
+        this.isLoading = false;
+        this.validateStage(info);
+        this._deploymentInfo = info;
+      }
+      this._changeDetectorRef.markForCheck();
     }
   }
 
@@ -66,25 +67,31 @@ export class KtbServiceDetailsComponent implements OnDestroy{
     });
   }
 
-  private loadSequence(deployment: Deployment) {
+  private loadSequence(info: DeploymentSelection) {
     if (this.projectName) {
-      this.dataService.getRoot(this.projectName, deployment.shkeptncontext).subscribe(sequence => {
-        deployment.sequence = sequence;
-        const evaluations$: Observable<Trace | undefined>[] = this.fetchEvaluations(deployment);
+      this.dataService.getRoot(this.projectName, info.deployment.shkeptncontext).subscribe(sequence => {
+        info.deployment.sequence = sequence;
+        const evaluations$: Observable<Trace | undefined>[] = this.fetchEvaluations(info.deployment);
         if (evaluations$.length !== 0) {
           forkJoin(evaluations$)
             .subscribe((evaluations: (Trace | undefined)[]) => {
               for (const evaluation of evaluations) {
-                this.setEvaluation(deployment, evaluation);
+                info.deployment.setEvaluation(evaluation);
               }
-              this._deployment = deployment;
-              this._changeDetectorRef.markForCheck();
+              this.deploymentInfo = info;
             });
         } else {
-          this._deployment = deployment;
-          this._changeDetectorRef.markForCheck();
+          this.deploymentInfo = info;
         }
       });
+    }
+  }
+
+  private validateStage(info: DeploymentSelection): void {
+    if (!info.deployment.sequence?.getStages().includes(info.stage)){
+      info.stage = info.deployment.stages[info.deployment.stages.length - 1].stageName;
+      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', info.deployment.service, 'context', info.deployment.shkeptncontext, 'stage', info.stage]);
+      this.location.go(routeUrl.toString());
     }
   }
 
@@ -98,23 +105,14 @@ export class KtbServiceDetailsComponent implements OnDestroy{
     return evaluations$;
   }
 
-  private setEvaluation(deployment: Deployment, evaluation: Trace | undefined) {
-    if (evaluation?.stage) {
-      const stage = deployment.getStage(evaluation.stage);
-      if (stage) {
-        stage.evaluation = evaluation;
-      }
-    }
-  }
-
-  public selectStage(stageName: string | undefined) {
-    this._selectedStage = stageName;
-    if (this.deployment?.sequence) {
-      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', this.deployment.service, 'context',
-                                                            this.deployment.sequence.shkeptncontext, 'stage', stageName]);
+  public selectStage(stageName: string) {
+    if (this.deploymentInfo) {
+      this.deploymentInfo.stage = stageName;
+      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', this.deploymentInfo.deployment.service, 'context',
+        this.deploymentInfo.deployment.shkeptncontext, 'stage', stageName]);
       this.location.go(routeUrl.toString());
+      this._changeDetectorRef.markForCheck();
     }
-    this._changeDetectorRef.markForCheck();
   }
 
   public isUrl(value: string): boolean {
@@ -128,8 +126,8 @@ export class KtbServiceDetailsComponent implements OnDestroy{
   }
 
   public showRemediationConfigDialog(): void {
-    if (this.remediationDialog && this.deployment && this.selectedStage) {
-      this.remediationDialogRef = this.dialog.open(this.remediationDialog, {data: this.deployment.getStage(this.selectedStage)?.config});
+    if (this.remediationDialog && this.deploymentInfo) {
+      this.remediationDialogRef = this.dialog.open(this.remediationDialog, {data: this.deploymentInfo.deployment.getStage(this.deploymentInfo.stage)?.config});
     }
   }
 
