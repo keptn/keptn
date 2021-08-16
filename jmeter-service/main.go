@@ -15,7 +15,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
-
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -32,38 +31,6 @@ type envConfig struct {
 	Job bool `envconfig:"JOB" default:"false"`
 	Event string `envconfig:"EVENT" default:""`
 }
-
-var testevent string = `
-{
-  "specversion": "1.0",
-  "id": "c4d3a334-6cb9-4e8c-a372-7e0b45942f53",
-  "source": "source-service",
-  "type": "sh.keptn.event.test.triggered",
-  "datacontenttype": "application/json",
-  "data": {
-    "project": "sockshop",
-    "stage": "dev",
-    "service": "carts",
-    "labels": {
-      "label-key": "label-value"
-    },
-    "status": "succeeded",
-    "result": "pass",
-    "message": "a message",
-    "test": {
-      "teststrategy": "functional"
-    },
-    "deployment": {
-      "deploymentURIsLocal": [
-        "http://carts.sockshop-staging.svc.cluster.local"
-      ],
-      "deploymentURIsPublic": [
-        "http://carts.sockshot.local:80"
-      ]
-    }
-  },
-  "shkeptncontext": "a3e5f16d-8888-4720-82c7-6995062905c1"
-}`
 
 var env envConfig
 
@@ -83,7 +50,9 @@ func main() {
 		ctx = cloudevents.WithEncodingStructured(ctx)
 
 		var event cloudevents.Event
-		json.Unmarshal([]byte(testevent), &event)
+		if err := json.Unmarshal([]byte(env.Event), &event); err != nil {
+			log.Fatalf("Error converting event: %e", err)
+		}
 
 		gotEvent(ctx, event)
 	}
