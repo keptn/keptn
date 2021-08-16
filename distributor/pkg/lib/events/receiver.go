@@ -30,7 +30,7 @@ type NATSEventReceiver struct {
 func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
 
 	eventMatcher := NewEventMatcherFromEnv(env)
-	nch := NewNatsConnectionHandler(env.PubSubURL, strings.Split(env.PubSubTopic, ","))
+	nch := NewNatsConnectionHandler(env.PubSubURL)
 
 	return &NATSEventReceiver{
 		env:                   env,
@@ -52,13 +52,9 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 		ctx.Wg.Done()
 		return
 	}
-	//uptimeTicker := time.NewTicker(1 * time.Second)
-
-	//topics := strings.Split(n.env.PubSubTopic, ",")
-	//nch := NewNatsConnectionHandler(n.env.PubSubURL, topics)
 
 	n.natsConnectionHandler.MessageHandler = n.handleMessage
-	err := n.natsConnectionHandler.SubscribeToTopics()
+	err := n.natsConnectionHandler.SubscribeToTopics(strings.Split(n.env.PubSubTopic, ","))
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -91,7 +87,7 @@ func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.TopicSubs
 	for _, s := range subscriptions {
 		topics = append(topics, s.Topic)
 	}
-	err := n.natsConnectionHandler.SubscribeToTopics(topics...)
+	err := n.natsConnectionHandler.SubscribeToTopics(topics)
 	if err != nil {
 		logger.Errorf("Unable to subscribe to topics %v", topics)
 	}

@@ -34,11 +34,11 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 	defer natsPublisher.Close()
 
 	messagesReceived := make(chan int)
-	nch := NewNatsConnectionHandler(natsURL, []string{"test-topic"})
+	nch := NewNatsConnectionHandler(natsURL)
 	nch.MessageHandler = func(m *nats.Msg) {
 		messagesReceived <- 1
 	}
-	err := nch.SubscribeToTopics()
+	err := nch.SubscribeToTopics([]string{"test-topic"})
 	require.Nil(t, err)
 
 	<-time.After(1 * time.Second)
@@ -64,7 +64,7 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 		t.Error("SubscribeToTopics(): did not clean up subscriptions")
 	}
 
-	nch.SubscribeToTopics("another-topic")
+	nch.SubscribeToTopics([]string{"another-topic"})
 	require.Nil(t, err)
 
 	<-time.After(1 * time.Second)
@@ -99,7 +99,6 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 		Topics         []string
 		NatsURL        string
 		MessageHandler func(m *nats.Msg)
-		uptimeTicker   *time.Ticker
 		mux            sync.Mutex
 	}
 	tests := []struct {
@@ -120,26 +119,9 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				MessageHandler: func(m *nats.Msg) {
 					messagesReceived <- 1
 				},
-				uptimeTicker: nil,
-				mux:          sync.Mutex{},
+				mux: sync.Mutex{},
 			},
 			wantErr:      false,
-			sendMessages: []string{"test-message"},
-		},
-		{
-			name: "Empty topic list",
-			fields: fields{
-				NatsConnection: nil,
-				Subscriptions:  nil,
-				Topics:         []string{},
-				NatsURL:        natsURL,
-				MessageHandler: func(m *nats.Msg) {
-					messagesReceived <- 1
-				},
-				uptimeTicker: nil,
-				mux:          sync.Mutex{},
-			},
-			wantErr:      true,
 			sendMessages: []string{"test-message"},
 		},
 		{
@@ -152,8 +134,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				MessageHandler: func(m *nats.Msg) {
 					messagesReceived <- 1
 				},
-				uptimeTicker: nil,
-				mux:          sync.Mutex{},
+				mux: sync.Mutex{},
 			},
 			wantErr:      true,
 			sendMessages: []string{"test-message"},
@@ -164,13 +145,11 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 			nch := &NatsConnectionHandler{
 				NatsConnection: tt.fields.NatsConnection,
 				Subscriptions:  tt.fields.Subscriptions,
-				Topics:         tt.fields.Topics,
-				NatsURL:        tt.fields.NatsURL,
+				natsURL:        tt.fields.NatsURL,
 				MessageHandler: tt.fields.MessageHandler,
-				uptimeTicker:   tt.fields.uptimeTicker,
 				mux:            tt.fields.mux,
 			}
-			err := nch.SubscribeToTopics()
+			err := nch.SubscribeToTopics(tt.fields.Topics)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SubscribeToTopics() error = %v, wantErr %v", err, tt.wantErr)
 				return
