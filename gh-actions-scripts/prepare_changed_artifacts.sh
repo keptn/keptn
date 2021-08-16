@@ -152,6 +152,7 @@ echo "BUILD_REMEDIATION_SVC: $BUILD_REMEDIATION_SVC"
 echo "BUILD_LIGHTHOUSE_SVC: $BUILD_LIGHTHOUSE_SVC"
 echo "BUILD_MONGODB_DS: $BUILD_MONGODB_DS"
 echo "BUILD_STATISTICS_SVC: $BUILD_STATISTICS_SVC"
+echo "BUILD_WEBHOOK_SVC: $BUILD_WEBHOOK_SVC"
 
 if [[ "$matrix_config" == '{"config":[]}' ]]; then
   echo "Build matrix is emtpy, setting output..."
