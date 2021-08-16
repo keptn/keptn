@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "control-plane.name" . }}
     app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -20,14 +20,14 @@ spec:
   replicas: 1
   template:
     metadata:
-      labels:        
+      labels:
         app.kubernetes.io/name: lighthouse-service
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "control-plane.name" . }}
         app.kubernetes.io/version: {{ .Values.lighthouseService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "control-plane.chart" . }}         
+        helm.sh/chart: {{ include "control-plane.chart" . }}
     spec:
       {{- list .Values.lighthouseService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       securityContext:
@@ -106,8 +106,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
-    app.kubernetes.io/component: {{ include "control-plane.name" . }}    
-    helm.sh/chart: {{ include "control-plane.chart" . }} 
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    helm.sh/chart: {{ include "control-plane.chart" . }}
 spec:
   ports:
     - port: 8080

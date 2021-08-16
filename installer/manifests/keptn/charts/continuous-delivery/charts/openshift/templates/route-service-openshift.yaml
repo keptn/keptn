@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    helm.sh/chart: {{ include "openshift.chart" . }}   
+    helm.sh/chart: {{ include "openshift.chart" . }}
 rules:
   - apiGroups:
       - ""
@@ -45,7 +45,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    helm.sh/chart: {{ include "openshift.chart" . }}   
+    helm.sh/chart: {{ include "openshift.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -66,7 +66,7 @@ metadata:
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
     app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
-    helm.sh/chart: {{ include "openshift.chart" . }}     
+    helm.sh/chart: {{ include "openshift.chart" . }}
 spec:
   selector:
     matchLabels:
@@ -82,7 +82,7 @@ spec:
         app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
         app.kubernetes.io/component: {{ include "openshift.name" . }}
         app.kubernetes.io/version: {{ .Values.openshiftRouteService.image.tag | default .Chart.AppVersion }}
-        helm.sh/chart: {{ include "openshift.chart" . }}        
+        helm.sh/chart: {{ include "openshift.chart" . }}
     spec:
       {{- list .Values.openshiftRouteService .Values.distributor | dict "context" . "indent" 6 "bases" | include "keptn.image.pullSecrets" }}
       containers:
@@ -124,7 +124,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
     app.kubernetes.io/component: {{ include "openshift.name" . }}
-    helm.sh/chart: {{ include "openshift.chart" . }}       
+    helm.sh/chart: {{ include "openshift.chart" . }}
 spec:
   ports:
   - port: 8080

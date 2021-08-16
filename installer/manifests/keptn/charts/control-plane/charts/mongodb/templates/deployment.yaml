@@ -13,9 +13,9 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels:      
+    matchLabels:
       app.kubernetes.io/name: mongodb
-      app.kubernetes.io/instance: {{ .Release.Name }}      
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     type: Recreate
   template:

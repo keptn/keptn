@@ -1,11 +1,11 @@
 mongodb:
   enabled: true
   host: mongodb:27017
-  user: null
-  password: null
-  adminPassword: null
+  user:
+  password:
+  adminPassword:
 
-prefixPath: ""
+prefixPath: ''
 
 keptnSpecVersion: latest
 
@@ -27,97 +27,96 @@ apiGatewayNginx:
 
 remediationService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/remediation-service
+    tag: ''
 
 apiService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/api
+    tag: ''
   config:
-    maxAuthRequestsPerSecond: "1.0"
-    maxAuthRequestBurst: "2"
+    maxAuthRequestsPerSecond: '1.0'
+    maxAuthRequestBurst: '2'
 
 bridge:
   image:
-    tag: ""
-  cliDownloadLink: null
-  integrationsPageLink: null
     registry: docker.io
     repository: keptn/bridge2
+    tag: ''
+  cliDownloadLink:
+  integrationsPageLink:
   secret:
     enabled: true
   versionCheck:
     enabled: true
   showApiToken:
     enabled: true
-  installationType: null
-  lookAndFeelUrl: null
+  installationType:
+  lookAndFeelUrl:
   oauth:
     enabled: false
-    discovery: ""
+    discovery: ''
     secureCookie: false
-    trustProxy: ""
+    trustProxy: ''
 
 distributor:
   metadata:
     hostname:
     namespace:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/distributor
+    tag: ''
 
 shipyardController:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/shipyard-controller
+    tag: ''
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
 
 secretService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/secret-service
+    tag: ''
 
 configurationService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/configuration-service
+    tag: ''
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
-  storageClass: null
+  storageClass:
 
 mongodbDatastore:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/mongodb-datastore
+    tag: ''
 
 lighthouseService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/lighthouse-service
+    tag: ''
 
 statisticsService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/statistics-service
     tag: ''
 
 approvalService:
   image:
-    tag: ""
     registry: docker.io
     repository: keptn/approval-service
+    tag: ''
 
 alpine:
   image:
