@@ -174,6 +174,17 @@ describe('KtbSettingsViewComponent', () => {
     expect(notifications.length).toEqual(0);
   });
 
+  it('should show a notification when "unsaved" is set', () => {
+    // given
+    component.isCreateMode = false;
+    component.unsavedDialogState = UNSAVED_DIALOG_STATE;
+    fixture.detectChanges();
+
+    // then
+    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
+    expect(notification.length).toEqual(1);
+  });
+
   it('should show a notification for unsaved changes when git data is changed in update mode', () => {
     // given
     component.isCreateMode = false;
@@ -184,9 +195,7 @@ describe('KtbSettingsViewComponent', () => {
     fixture.detectChanges();
 
     // then
-    const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
     expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-    expect(notification.length).toEqual(1);
   });
 
   it('should not show a notification for unsaved changes when git data is changed in create mode', () => {
