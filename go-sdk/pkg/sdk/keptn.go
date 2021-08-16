@@ -120,6 +120,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 						return
 					}
 				}
+				// TODO: when subscribing via a wildcard, a .started event is sent for every incoming event - we need to figure out how to handle this
 				if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
 					log.Errorf("unable to send .started event: %v", err)
 					return
