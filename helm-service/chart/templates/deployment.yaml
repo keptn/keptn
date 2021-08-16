@@ -110,7 +110,7 @@ spec:
               memory: "16Mi"
               cpu: "25m"
             limits:
-              memory: "32Mi"
+              memory: "256Mi"
               cpu: "100m"
           env:
             - name: PUBSUB_TOPIC
