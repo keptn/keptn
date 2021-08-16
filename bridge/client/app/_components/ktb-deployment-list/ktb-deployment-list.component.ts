@@ -14,10 +14,9 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {combineLatest, Subject} from 'rxjs';
 import {DataService} from '../../_services/data.service';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Deployment} from '../../_models/deployment';
+import { Deployment, DeploymentSelection } from '../../_models/deployment';
 import {Location} from '@angular/common';
 
-type DeploymentInfo = { deployment: Deployment, stage: string };
 @Component({
   selector: 'ktb-deployment-list[service]',
   templateUrl: './ktb-deployment-list.component.html',
@@ -28,12 +27,12 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   private _service?: Service;
   private projectName?: string;
   private readonly unsubscribe$ = new Subject<void>();
-  public _selectedDeploymentInfo?: DeploymentInfo;
+  public _selectedDeploymentInfo?: DeploymentSelection;
   public dataSource = new DtTableDataSource<Deployment>();
   public loading = false;
   public DeploymentClass = Deployment;
 
-  @Output() selectedDeploymentInfoChange: EventEmitter<DeploymentInfo> = new EventEmitter();
+  @Output() selectedDeploymentInfoChange: EventEmitter<DeploymentSelection> = new EventEmitter();
 
   @Input()
   get service(): Service | undefined {
@@ -47,10 +46,10 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     }
   }
   @Input()
-  get selectedDeploymentInfo(): DeploymentInfo | undefined {
+  get selectedDeploymentInfo(): DeploymentSelection | undefined {
     return this._selectedDeploymentInfo;
   }
-  set selectedDeploymentInfo(deployment: DeploymentInfo | undefined) {
+  set selectedDeploymentInfo(deployment: DeploymentSelection | undefined) {
     if (this._selectedDeploymentInfo !== deployment) {
       this._selectedDeploymentInfo = deployment;
       this._changeDetectorRef.markForCheck();

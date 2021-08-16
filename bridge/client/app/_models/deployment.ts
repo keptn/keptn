@@ -2,6 +2,8 @@ import {Root} from './root';
 import {DeploymentStage} from './deployment-stage';
 import { Trace } from './trace';
 
+export type DeploymentSelection = { deployment: Deployment, stage: string };
+
 export class Deployment {
   public version?: string;
   public stages: DeploymentStage[];

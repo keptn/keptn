@@ -7,7 +7,7 @@ import {
   TemplateRef,
   ViewChild
 } from '@angular/core';
-import {Deployment} from '../../_models/deployment';
+import { Deployment, DeploymentSelection } from '../../_models/deployment';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {takeUntil} from 'rxjs/operators';
@@ -16,7 +16,6 @@ import {Trace} from '../../_models/trace';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {ClipboardService} from '../../_services/clipboard.service';
 
-type DeploymentInfo = { deployment: Deployment, stage: string };
 @Component({
   selector: 'ktb-service-details',
   templateUrl: './ktb-service-details.component.html',
@@ -24,7 +23,7 @@ type DeploymentInfo = { deployment: Deployment, stage: string };
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbServiceDetailsComponent implements OnDestroy{
-  private _deploymentInfo?: DeploymentInfo;
+  private _deploymentInfo?: DeploymentSelection;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   @ViewChild('remediationDialog')
   // tslint:disable-next-line:no-any
@@ -35,11 +34,11 @@ export class KtbServiceDetailsComponent implements OnDestroy{
   public isLoading = false;
 
   @Input()
-  get deploymentInfo(): DeploymentInfo | undefined {
+  get deploymentInfo(): DeploymentSelection | undefined {
     return this._deploymentInfo;
   }
 
-  set deploymentInfo(info: DeploymentInfo | undefined) {
+  set deploymentInfo(info: DeploymentSelection | undefined) {
     if (info && this._deploymentInfo !== info) {
       if (this.deploymentInfo?.deployment.shkeptncontext !== info.deployment.shkeptncontext) {
         this._deploymentInfo = undefined;
@@ -66,7 +65,7 @@ export class KtbServiceDetailsComponent implements OnDestroy{
     });
   }
 
-  private loadSequence(info: DeploymentInfo) {
+  private loadSequence(info: DeploymentSelection) {
     if (this.projectName) {
       this.dataService.getRoot(this.projectName, info.deployment.shkeptncontext).subscribe(sequence => {
         info.deployment.sequence = sequence;

@@ -11,7 +11,7 @@ import { combineLatest, Subject } from 'rxjs';
 import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
-import { Deployment } from 'client/app/_models/deployment';
+import { Deployment, DeploymentSelection } from 'client/app/_models/deployment';
 import { Location } from '@angular/common';
 
 @Component({
@@ -29,7 +29,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public project?: Project;
   public serviceName?: string;
-  public selectedDeploymentInfo?: { deployment: Deployment, stage: string};
+  public selectedDeploymentInfo?: DeploymentSelection;
   public isQualityGatesOnly = false;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
