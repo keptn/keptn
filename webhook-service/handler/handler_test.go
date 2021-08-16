@@ -26,6 +26,19 @@ spec:
       requests:
         - "curl http://localhost:8080 {{.project}} {{.env.mysecret}}"`
 
+const webHookContentWithMultipleRequests = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.deployment.triggered"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - "curl http://localhost:8080 {{.project}} {{.env.mysecret}}"`
+
 const webHookContentWithMissingTemplateData = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:

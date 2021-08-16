@@ -127,7 +127,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 
 				// do not use handler.ReceivingEvent to pass data to the executor to avoid concurrency issues
 				var passData interface{}
-				if err := event.DataAs(passData); err != nil {
+				if err := event.DataAs(&passData); err != nil {
 					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
 						log.Errorf("unable to send .finished event: %v", err)
 						return
