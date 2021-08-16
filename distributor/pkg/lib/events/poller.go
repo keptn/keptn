@@ -23,22 +23,21 @@ type EventSender interface {
 
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
-	eventSender  EventSender
-	ceCache      *CloudEventsCache
-	env          config.EnvConfig
-	httpClient   *http.Client
-	eventMatcher *EventMatcher
-	uniformWatch IUniformWatch
+	eventSender          EventSender
+	ceCache              *CloudEventsCache
+	env                  config.EnvConfig
+	httpClient           *http.Client
+	eventMatcher         *EventMatcher
+	currentSubscriptions []keptnmodels.TopicSubscription
 }
 
-func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client, uniformWatch IUniformWatch) *Poller {
+func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
 	return &Poller{
 		eventSender:  eventSender,
 		ceCache:      NewCloudEventsCache(),
 		env:          envConfig,
 		httpClient:   httpClient,
 		eventMatcher: NewEventMatcherFromEnv(envConfig),
-		uniformWatch: uniformWatch,
 	}
 }
 
@@ -49,6 +48,7 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 	}
 
 	eventEndpoint := p.env.GetHTTPPollingEndpoint()
+	apiToken := p.env.KeptnAPIToken
 
 	pollingInterval, err := strconv.ParseInt(p.env.HTTPPollingInterval, 10, 64)
 	if err != nil {
@@ -58,10 +58,7 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 	for {
 		select {
 		case <-time.After(time.Duration(pollingInterval) * time.Second):
-			//topics = p.uniformWatch.GetCurrent()
-
-			subscriptions := p.uniformWatch.GetCurrentUniformSubscriptions()
-			p.doPollEvents(subscriptions, eventEndpoint, p.env.KeptnAPIToken)
+			p.doPollEvents(eventEndpoint, apiToken)
 		case <-ctx.Done():
 			logger.Info("Terminating HTTP event poller")
 			ctx.Wg.Done()
@@ -70,9 +67,15 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 	}
 }
 
-func (p *Poller) doPollEvents(subscriptions []keptnmodels.TopicSubscription, endpoint, token string) {
+func (p *Poller) UpdateSubscriptions(subscriptions []keptnmodels.TopicSubscription) {
+	logger.Infof("Got subscription update... ")
+	logger.Info(len(subscriptions))
+	p.currentSubscriptions = subscriptions
+}
+
+func (p *Poller) doPollEvents(endpoint, token string) {
 	logger.Infof("Polling events from: %s", endpoint)
-	for _, sub := range subscriptions {
+	for _, sub := range p.currentSubscriptions {
 		p.pollEventsForSubscription(sub, endpoint, token)
 	}
 }

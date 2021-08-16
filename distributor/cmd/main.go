@@ -19,7 +19,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/common/retry"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
@@ -32,7 +31,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
 var env config.EnvConfig
@@ -63,36 +61,10 @@ func _main(env config.EnvConfig) int {
 
 	// Eventually start registration process
 	if shallRegister(env) {
-		go func() {
-			logger.Infof("Registering Keptn Intgration")
-			_ = retry.Retry(func() error {
-				id, err := controlPlane.Register()
-				if err != nil {
-					logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
-					return err
-				}
-				logger.Infof("Registered Keptn Integration with id %s", id)
-
-				logHandler := uniformLogHandler
-				uniformLogger := controlplane.NewEventUniformLog(id, logHandler)
-				uniformLogger.Start(executionContext, forwarder.EventChannel)
-				logger.Infof("Started UniformLogger for Keptn Integration")
-				return nil
-			})
-
-			uniformWatch.Start(executionContext)
-			for {
-				select {
-				case <-executionContext.Done():
-					return
-				case <-time.After(config.GetRegistrationInterval(env)):
-					_, err := controlPlane.Ping()
-					if err != nil {
-						logger.Warnf("Unable to ping Keptn's control plane: %s", err.Error())
-					}
-				}
-			}
-		}()
+		id := uniformWatch.Start(executionContext)
+		logHandler := uniformLogHandler
+		uniformLogger := controlplane.NewEventUniformLog(id, logHandler)
+		uniformLogger.Start(executionContext, forwarder.EventChannel)
 
 		defer func() {
 			err := controlPlane.Unregister()
@@ -111,17 +83,16 @@ func _main(env config.EnvConfig) int {
 			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
 		}
 		logger.Info("Starting HTTP event poller")
-		httpEventPoller :=
-			events.NewPoller(env, eventSender, httpClient, uniformWatch)
+		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
+		uniformWatch.RegisterListener(httpEventPoller)
 		go httpEventPoller.Start(executionContext)
 	} else {
-		logger.Info("Starting Nats event Receiver")
+		logger.Info("Starting NATS event Receiver")
 		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
+		uniformWatch.RegisterListener(natsEventReceiver)
 		go natsEventReceiver.Start(executionContext)
 	}
-
 	executionContext.Wg.Wait()
-
 	return 0
 }
 
@@ -172,9 +143,7 @@ func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.Uniform
 }
 
 func setupUniformWatch(controlPlane *controlplane.ControlPlane) *events.UniformWatch {
-	return &events.UniformWatch{
-		ControlPlane: controlPlane,
-	}
+	return events.NewUniformWatch(controlPlane)
 }
 
 func setupHTTPClient() *http.Client {

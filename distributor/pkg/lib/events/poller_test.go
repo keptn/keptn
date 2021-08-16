@@ -27,7 +27,6 @@ func Test_PollAndForwardEvents(t *testing.T) {
 		args              args
 		serverHandlerFunc http.HandlerFunc
 		eventSender       EventSender
-		uniformWatch      IUniformWatch
 	}{
 		{
 			name: "poll multiple topics",
@@ -79,14 +78,6 @@ func Test_PollAndForwardEvents(t *testing.T) {
 				w.Write(marshal)
 			},
 			eventSender: &keptnv2.TestSender{},
-			uniformWatch: NewTestUniformWatch([]keptnmodels.TopicSubscription{{
-				ID:    "id1",
-				Topic: "sh.keptn.event.task.triggered",
-			},
-				{
-					ID:    "id2",
-					Topic: "sh.keptn.event.task2.triggered",
-				}}),
 		},
 	}
 
@@ -94,11 +85,21 @@ func Test_PollAndForwardEvents(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ts.Config.Handler = tt.serverHandlerFunc
 
-			poller := NewPoller(tt.args.envConfig, tt.eventSender, &http.Client{}, tt.uniformWatch)
+			poller := NewPoller(tt.args.envConfig, tt.eventSender, &http.Client{})
 
 			ctx, cancel := context.WithCancel(context.Background())
 			executionContext := NewExecutionContext(ctx, 1)
 			go poller.Start(executionContext)
+
+			poller.UpdateSubscriptions([]keptnmodels.TopicSubscription{{
+				ID:    "id1",
+				Topic: "sh.keptn.event.task.triggered",
+			},
+				{
+					ID:    "id2",
+					Topic: "sh.keptn.event.task2.triggered",
+				}},
+			)
 
 			assert.Eventually(t, func() bool {
 				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
