@@ -21,8 +21,12 @@ type TaskHandler struct {
 	secretReader   lib.ISecretReader
 }
 
-func NewTaskHandler() *TaskHandler {
-	return &TaskHandler{}
+func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlExecutor, secretReader lib.ISecretReader) *TaskHandler {
+	return &TaskHandler{
+		templateEngine: templateEngine,
+		curlExecutor:   curlExecutor,
+		secretReader:   secretReader,
+	}
 }
 
 func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventType string) (interface{}, *sdk.Error) {
@@ -32,9 +36,9 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventT
 		return nil, sdkError("could not decode incoming event payload", err)
 	}
 
-	result := map[string]interface{}{}
+	eventDataMap := map[string]interface{}{}
 	// apply the EventData attributes to the result
-	if err := keptnv2.Decode(data, result); err != nil {
+	if err := keptnv2.Decode(data, &eventDataMap); err != nil {
 		return nil, sdkError("could not apply attributes from incoming event", err)
 	}
 
@@ -51,23 +55,18 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventT
 	responses := []string{}
 	for _, webhook := range whConfig.Spec.Webhooks {
 		if webhook.Type == eventType {
-			secretEnvVars := SecretEnv{}
+			secretEnvVars := map[string]string{}
 			for _, secretRef := range webhook.EnvFrom {
 				secretValue, err := th.secretReader.ReadSecret(secretRef.SecretRef.Name, secretRef.SecretRef.Key)
 				if err != nil {
 					return nil, sdkError(fmt.Sprintf("could not read secret %s.%s", secretRef.SecretRef.Name, secretRef.SecretRef.Key), err)
 				}
-				secretEnvVars.Env[secretRef.Name] = secretValue
+				secretEnvVars[secretRef.Name] = secretValue
 			}
+			eventDataMap["env"] = secretEnvVars
 			for _, req := range webhook.Requests {
-				// first, parse the secret environment variables
-				parsedCurlCommand, err := th.templateEngine.ParseTemplate(secretEnvVars, req)
-				if err != nil {
-					return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
-				}
-
-				// then parse the data from the event
-				parsedCurlCommand, err = th.templateEngine.ParseTemplate(data, parsedCurlCommand)
+				// parse the data from the event, together with the secret env vars
+				parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventDataMap, req)
 				if err != nil {
 					return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
 				}
@@ -75,18 +74,18 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventT
 				// perform the request
 				response, err := th.curlExecutor.Curl(parsedCurlCommand)
 				if err != nil {
-					return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
+					return nil, sdkError(fmt.Sprintf("could not execute request '%s'", req), err)
 				}
 				responses = append(responses, response)
 			}
 		}
 	}
 
-	result[eventType] = map[string]interface{}{
+	eventDataMap[eventType] = map[string]interface{}{
 		"responses": responses,
 	}
 
-	return result, nil
+	return eventDataMap, nil
 }
 
 func sdkError(msg string, err error) *sdk.Error {
@@ -105,19 +104,19 @@ func (th *TaskHandler) performCurlRequest() (string, error) {
 func (th *TaskHandler) getWebHookConfigResource(keptnHandler sdk.IKeptn, eventData *keptnv2.EventData) (*models.Resource, error) {
 	// first try to retrieve the webhook config at the service level
 	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, webhookConfigFileName)
-	if err == nil {
+	if err == nil && resource != nil {
 		return resource, nil
 	}
 
 	// if we didn't find a config in the service directory, look at the stage
 	resource, err = keptnHandler.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, webhookConfigFileName)
-	if err == nil {
+	if err == nil && resource != nil {
 		return resource, nil
 	}
 
 	// finally, look at project level
 	resource, err = keptnHandler.GetResourceHandler().GetProjectResource(eventData.Project, webhookConfigFileName)
-	if err == nil {
+	if err == nil && resource != nil {
 		return resource, nil
 	}
 	return nil, errors.New("no webhook config found")

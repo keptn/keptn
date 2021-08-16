@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"io/ioutil"
-	"log"
 )
 
 type TestResourceHandler struct {
@@ -25,7 +24,7 @@ func (t TestResourceHandler) GetProjectResource(project string, resourceURI stri
 func newResourceFromFile(filename string) *models.Resource {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatalf("Unable to locate resources requested by the service: %s", err.Error())
+		return nil
 	}
 
 	return &models.Resource{
