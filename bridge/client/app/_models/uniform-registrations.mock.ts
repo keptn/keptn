@@ -1,6 +1,8 @@
-import {UniformRegistration} from '../../../server/interfaces/uniform-registration';
+import { UniformRegistration as ur } from '../../../server/interfaces/uniform-registration';
+import { UniformRegistration } from './uniform-registration';
 
-const services: UniformRegistration[] = [
+
+const services: ur[] = [
   {
     id: 'keptn-uniform-ansible-service-f01334c8312486183460649bab6cd4a7',
     metadata: {
@@ -17,20 +19,17 @@ const services: UniformRegistration[] = [
       status: 'active'
     },
     name: 'ansible-service',
-    subscription:
-    {
-      filter: {
-        project: '',
-        service: '',
-        stage: ''
-      },
-      status: '',
-      topics: [
-        'sh.keptn.test.triggered'
-      ]
-    },
+    subscriptions:
+      [{
+        filter: {
+          projects: [],
+          services: [],
+          stages: []
+        },
+        topic: 'sh.keptn.test.triggered'
+      }],
     unreadEventsCount: 10
-  } as UniformRegistration,
+  },
   {
     id: 'keptn-uniform-helm-service-cc9da31fa4c9f5e58985149029c598c4',
     metadata: {
@@ -47,19 +46,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'ansible-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.deployment.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.deployment.triggered'
+      }]
+  },
   {
     id: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
     metadata: {
@@ -76,19 +72,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'jmeter-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.test.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.test.triggered'
+      }]
+  },
   {
     id: 'keptn-lighthouse-service-8feec7146c19fa08bd65664b8d47f153',
     metadata: {
@@ -105,19 +98,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'lighthouse-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.evaluation.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.evaluation.triggered'
+      }]
+  },
   {
     id: 'keptn-approval-service-bcd13872eb35b0f1f5a730c4c4832af8',
     metadata: {
@@ -134,19 +124,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'lighthouse-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.deployment.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.deployment.triggered'
+      }]
+  },
   {
     id: 'keptn-remediation-service-10fedadd2e37e75383df1405f9e55d05',
     metadata: {
@@ -163,21 +150,34 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'remediation-service',
-    subscription:
-      {
-        filter: {
-          project: '',
-          service: '',
-          stage: ''
+    subscriptions:
+      [
+        {
+          filter: {
+            projects: [],
+            services: [],
+            stages: []
+          },
+          topic: 'sh.keptn.test.triggered'
         },
-        status: '',
-        topics: [
-          'sh.keptn.test.triggered',
-          'sh.keptn.evaluation.triggered',
-          'sh.keptn.deployment.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        {
+          filter: {
+            projects: [],
+            services: [],
+            stages: []
+          },
+          topic: 'sh.keptn.evaluation.triggered'
+        },
+        {
+          filter: {
+            projects: [],
+            services: [],
+            stages: []
+          },
+          topic: 'sh.keptn.deployment.triggered'
+        },
+      ]
+  },
   {
     id: 'keptn-uniform-jenkins-service-9d93d3deeb00f19131e6b56c247d7293',
     metadata: {
@@ -194,19 +194,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'jenkins-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.deployment.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.deployment.triggered'
+      }]
+  },
   {
     id: 'keptn-dynatrace-sli-service-1fc1cf9407a50e8505ef7684e27c7416',
     metadata: {
@@ -223,19 +220,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'dynatrace-sli-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.evaluation.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.evaluation.triggered'
+      }]
+  },
   {
     id: 'keptn-dynatrace-service-c578c5d7254641d061b5bbb5fb8dd224',
     metadata: {
@@ -252,19 +246,16 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'dynatrace-service',
-    subscription:
-      {
+    subscriptions:
+      [{
         filter: {
-          project: '',
-          service: '',
-          stage: ''
+          projects: [],
+          services: [],
+          stages: []
         },
-        status: '',
-        topics: [
-          'sh.keptn.evaluation.triggered'
-        ]
-      }
-  } as UniformRegistration,
+        topic: 'sh.keptn.evaluation.triggered'
+      }]
+  },
   {
     id: 'keptn-uniform-servicenow-service-55875464c5b6d3e313e58b99d2ed7e09',
     metadata: {
@@ -281,20 +272,19 @@ const services: UniformRegistration[] = [
       status: 'healthy'
     },
     name: 'servicenow-service',
-    subscription:
-    {
-      filter: {
-        project: '',
-        service: '',
-        stage: ''
-      },
-      status: '',
-      topics: [
-        'sh.keptn.deployment.triggered'
+    subscriptions:
+      [
+        {
+          filter: {
+            projects: [],
+            services: [],
+            stages: []
+          },
+          topic: 'sh.keptn.deployment.triggered'
+        }
       ]
-    }
-  } as UniformRegistration
+  }
 ];
 
-const UniformRegistrationsMock: UniformRegistration[] = JSON.parse(JSON.stringify(services));
-export {UniformRegistrationsMock};
+const UniformRegistrationsMock: UniformRegistration[] = services.map(registration => UniformRegistration.fromJSON(registration));
+export { UniformRegistrationsMock };

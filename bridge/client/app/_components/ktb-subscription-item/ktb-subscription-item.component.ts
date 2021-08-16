@@ -41,9 +41,10 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
         this.tasks = ['all', ...tasks];
       });
 
-    this.route.params
+    this.route.paramMap
       .pipe(
-        map(params => params.projectName),
+        map(params => params.get('projectName')),
+        filter((projectName: string | null): projectName is string => !!projectName ),
         switchMap(projectName => this.dataService.getProject(projectName)),
         filter((project: Project | undefined): project is Project => !!project),
         takeUntil(this.unsubscribe$)

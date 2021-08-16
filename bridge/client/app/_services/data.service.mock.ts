@@ -11,10 +11,10 @@ import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Sequence } from '../_models/sequence';
 import { UniformRegistrationsMock } from '../_models/uniform-registrations.mock';
-import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
 import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
 import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-logs.mock';
 import { SequencesData } from './_mockData/sequences.mock';
+import { UniformRegistration } from '../_models/uniform-registration';
 
 @Injectable({
   providedIn: 'root'
@@ -95,7 +95,8 @@ export class DataServiceMock extends DataService {
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    return of(this.copyObject(UniformRegistrationsMock));
+    const copyUniform = this.copyObject(UniformRegistrationsMock);
+    return of(copyUniform.map(registration => UniformRegistration.fromJSON(registration)));
   }
 
   public getUniformRegistrationLogs(): Observable<UniformRegistrationLog[]> {

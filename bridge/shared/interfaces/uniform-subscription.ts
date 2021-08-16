@@ -5,6 +5,5 @@ export interface UniformSubscription {
     stages: string[] | null,
     services: string[] | null
   };
-  parameters: {key: string, value: string, visible: boolean}[];
-  name: string;
+  parameters?: {key: string, value: string, visible: boolean}[];
 }
