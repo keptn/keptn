@@ -23,9 +23,9 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{{
-			Topic: keptnv2.GetTriggeredEventType(keptnv2.TestTaskName),
-			Filter: keptnmodels.TopicSubscriptionFilter{
+		Subscriptions: []keptnmodels.EventSubscription{{
+			Event: keptnv2.GetTriggeredEventType(keptnv2.TestTaskName),
+			Filter: keptnmodels.EventSubscriptionFilter{
 				Projects: []string{},
 				Stages:   []string{},
 				Services: []string{},
@@ -140,7 +140,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Equal(t, "echo-service", fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
 	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
-	require.Equal(t, "sh.keptn.>", fetchedEchoIntegration.Subscriptions[0].Topic)
+	require.Equal(t, "sh.keptn.>", fetchedEchoIntegration.Subscriptions[0].Event)
 
 	// uninstall echo integration
 	err = deleteEchoIntegration()

@@ -12,12 +12,12 @@ import (
 
 type IUniformWatch interface {
 	Start(ctx context.Context) string
-	GetCurrentUniformSubscriptions() []models.TopicSubscription
+	GetCurrentUniformSubscriptions() []models.EventSubscription
 }
 
 type UniformWatch struct {
 	controlPlane         *controlplane.ControlPlane
-	currentSubscriptions []models.TopicSubscription
+	currentSubscriptions []models.EventSubscription
 	listeners            []SubscriptionListener
 	mtx                  sync.Mutex
 }
@@ -66,32 +66,32 @@ func (sw *UniformWatch) RegisterListener(listener SubscriptionListener) {
 	sw.listeners = append(sw.listeners, listener)
 }
 
-func (sw *UniformWatch) setCurrentSubscriptions(subs []models.TopicSubscription) {
+func (sw *UniformWatch) setCurrentSubscriptions(subs []models.EventSubscription) {
 	sw.mtx.Lock()
 	defer sw.mtx.Unlock()
 	sw.currentSubscriptions = subs
 }
 
-func (sw *UniformWatch) GetCurrentUniformSubscriptions() []models.TopicSubscription {
+func (sw *UniformWatch) GetCurrentUniformSubscriptions() []models.EventSubscription {
 	return sw.currentSubscriptions
 }
 
 type SubscriptionListener interface {
-	UpdateSubscriptions([]models.TopicSubscription)
+	UpdateSubscriptions([]models.EventSubscription)
 }
 
-func NewTestUniformWatch(subscriptions []models.TopicSubscription) *TestUniformWatch {
+func NewTestUniformWatch(subscriptions []models.EventSubscription) *TestUniformWatch {
 	t := &TestUniformWatch{subscriptions}
 	return t
 }
 
 type TestUniformWatch struct {
-	subscriptions []models.TopicSubscription
+	subscriptions []models.EventSubscription
 }
 
 func (t *TestUniformWatch) Start(ctx context.Context) string {
 	return "uniform-id"
 }
-func (t *TestUniformWatch) GetCurrentUniformSubscriptions() []models.TopicSubscription {
+func (t *TestUniformWatch) GetCurrentUniformSubscriptions() []models.EventSubscription {
 	return t.subscriptions
 }

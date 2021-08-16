@@ -95,11 +95,11 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 	} else {
 		topics = strings.Split(env.PubSubTopic, ",")
 	}
-	var subscriptions []models.TopicSubscription
+	var subscriptions []models.EventSubscription
 	for _, t := range topics {
-		ts := models.TopicSubscription{
-			Topic: t,
-			Filter: models.TopicSubscriptionFilter{
+		ts := models.EventSubscription{
+			Event: t,
+			Filter: models.EventSubscriptionFilter{
 				Projects: projectFilter,
 				Stages:   stageFilter,
 				Services: serviceFilter,

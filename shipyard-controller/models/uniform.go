@@ -25,4 +25,4 @@ type DeleteSubscriptionResponse struct{}
 
 type Integration keptnmodels.Integration
 
-type Subscription keptnmodels.TopicSubscription
+type Subscription keptnmodels.EventSubscription

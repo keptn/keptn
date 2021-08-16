@@ -86,9 +86,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic: "sh.keptn.event.test.triggered",
+				Event: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -100,9 +100,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		MetaData: keptnmodels.MetaData{
 			DistributorVersion: "0.8.3",
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic: "sh.keptn.event.test.triggered",
+				Event: "sh.keptn.event.test.triggered",
 			},
 		},
 	}
@@ -203,9 +203,9 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 				Namespace: "my-namespace",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic: "sh.keptn.event.test.triggered",
+				Event: "sh.keptn.event.test.triggered",
 			},
 		},
 	}

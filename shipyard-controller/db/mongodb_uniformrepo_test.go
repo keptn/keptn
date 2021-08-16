@@ -22,11 +22,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic:  "sh.keptn.event.test.triggered",
-				Status: "active",
-				Filter: keptnmodels.TopicSubscriptionFilter{
+				Event: "sh.keptn.event.test.triggered",
+				Filter: keptnmodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -47,11 +46,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic:  "sh.keptn.event.deployment.triggered",
-				Status: "active",
-				Filter: keptnmodels.TopicSubscriptionFilter{
+				Event: "sh.keptn.event.deployment.triggered",
+				Filter: keptnmodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1", "st2"},
@@ -72,11 +70,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1,sv2",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic:  "sh.keptn.event.deployment.triggered",
-				Status: "active",
-				Filter: keptnmodels.TopicSubscriptionFilter{
+				Event: "sh.keptn.event.deployment.triggered",
+				Filter: keptnmodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1", "sv2"},
 					Stages:   []string{"st1"},
@@ -97,11 +94,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 				Service: "sv1",
 			},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{
+		Subscriptions: []keptnmodels.EventSubscription{
 			{
-				Topic:  "sh.keptn.event.deployment.triggered",
-				Status: "active",
-				Filter: keptnmodels.TopicSubscriptionFilter{
+				Event: "sh.keptn.event.deployment.triggered",
+				Filter: keptnmodels.EventSubscriptionFilter{
 					Projects: []string{"pr1"},
 					Services: []string{"sv1"},
 					Stages:   []string{"st1"},
@@ -118,7 +114,7 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 			Status: "active",
 			Filter: keptnmodels.SubscriptionFilter{},
 		},
-		Subscriptions: []keptnmodels.TopicSubscription{},
+		Subscriptions: []keptnmodels.EventSubscription{},
 	}
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
@@ -229,8 +225,8 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	// add subscription
 	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
 		ID:    "new-subscription",
-		Topic: "a-topic",
-		Filter: keptnmodels.TopicSubscriptionFilter{
+		Event: "a-topic",
+		Filter: keptnmodels.EventSubscriptionFilter{
 			Projects: []string{"a-project"},
 			Stages:   []string{"a-stage"},
 			Services: []string{"a-service"},
@@ -247,8 +243,8 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	// update subscription
 	err = mdbrepo.CreateOrUpdateSubscription("i5", models.Subscription{
 		ID:    "new-subscription",
-		Topic: "a-topic",
-		Filter: keptnmodels.TopicSubscriptionFilter{
+		Event: "a-topic",
+		Filter: keptnmodels.EventSubscriptionFilter{
 			Projects: []string{"a-project", "another-project"},
 			Stages:   []string{"a-stage"},
 			Services: []string{"a-service"},

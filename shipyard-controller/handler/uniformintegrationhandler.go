@@ -56,10 +56,9 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		if len(integration.Subscription.Topics) > 0 {
 			topic = integration.Subscription.Topics[0]
 		}
-		ts := keptnmodels.TopicSubscription{
-			Topic:  topic,
-			Status: integration.Subscription.Status,
-			Filter: keptnmodels.TopicSubscriptionFilter{
+		ts := keptnmodels.EventSubscription{
+			Event: topic,
+			Filter: keptnmodels.EventSubscriptionFilter{
 				Projects: []string{integration.Subscription.Filter.Project},
 				Stages:   []string{integration.Subscription.Filter.Stage},
 				Services: []string{integration.Subscription.Filter.Service},

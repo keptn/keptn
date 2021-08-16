@@ -27,7 +27,7 @@ func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
 	}
 }
 
-func NewEventMatcherFromSubscription(subscription keptnmodels.TopicSubscription) *EventMatcher {
+func NewEventMatcherFromSubscription(subscription keptnmodels.EventSubscription) *EventMatcher {
 	return &EventMatcher{
 		Project: strings.Join(subscription.Filter.Projects, ","),
 		Stage:   strings.Join(subscription.Filter.Stages, ","),

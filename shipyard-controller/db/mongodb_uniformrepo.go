@@ -89,14 +89,14 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 	}
 
 	integration := integrations[0]
-	var keepSubscriptions []keptnmodels.TopicSubscription
+	var keepSubscriptions []keptnmodels.EventSubscription
 	subscriptions := integration.Subscriptions
 	for _, s := range subscriptions {
 		if s.ID != subscription.ID {
 			keepSubscriptions = append(keepSubscriptions, s)
 		}
 	}
-	keepSubscriptions = append(keepSubscriptions, keptnmodels.TopicSubscription(subscription))
+	keepSubscriptions = append(keepSubscriptions, keptnmodels.EventSubscription(subscription))
 	integration.Subscriptions = keepSubscriptions
 
 	opts := options.Update().SetUpsert(true)
@@ -125,7 +125,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 	}
 	integration := integrations[0]
 
-	var keepSubscriptions []keptnmodels.TopicSubscription
+	var keepSubscriptions []keptnmodels.EventSubscription
 	subscriptions := integration.Subscriptions
 	for _, s := range subscriptions {
 		if s.ID != subscriptionID {

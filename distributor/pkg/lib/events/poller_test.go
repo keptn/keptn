@@ -91,13 +91,13 @@ func Test_PollAndForwardEvents(t *testing.T) {
 			executionContext := NewExecutionContext(ctx, 1)
 			go poller.Start(executionContext)
 
-			poller.UpdateSubscriptions([]keptnmodels.TopicSubscription{{
+			poller.UpdateSubscriptions([]keptnmodels.EventSubscription{{
 				ID:    "id1",
-				Topic: "sh.keptn.event.task.triggered",
+				Event: "sh.keptn.event.task.triggered",
 			},
 				{
 					ID:    "id2",
-					Topic: "sh.keptn.event.task2.triggered",
+					Event: "sh.keptn.event.task2.triggered",
 				}},
 			)
 

@@ -80,12 +80,12 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 	}
 }
 
-func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.TopicSubscription) {
+func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubscription) {
 	logger.Infof("Got subscription update... ")
 	logger.Info(len(subscriptions))
 	var topics []string
 	for _, s := range subscriptions {
-		topics = append(topics, s.Topic)
+		topics = append(topics, s.Event)
 	}
 	err := n.natsConnectionHandler.SubscribeToTopics(topics)
 	if err != nil {
