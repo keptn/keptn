@@ -49,6 +49,8 @@ export class KtbServiceDetailsComponent implements OnDestroy{
       if (!info.deployment.sequence) {
         this.loadSequence(info);
       } else {
+        this.isLoading = false;
+        this.validateStage(info);
         this._deploymentInfo = info;
       }
       this._changeDetectorRef.markForCheck();
@@ -76,16 +78,20 @@ export class KtbServiceDetailsComponent implements OnDestroy{
               for (const evaluation of evaluations) {
                 info.deployment.setEvaluation(evaluation);
               }
-              this.isLoading = false;
-              this._deploymentInfo = info;
-              this._changeDetectorRef.markForCheck();
+              this.deploymentInfo = info;
             });
         } else {
-          this.isLoading = false;
-          this._deploymentInfo = info;
-          this._changeDetectorRef.markForCheck();
+          this.deploymentInfo = info;
         }
       });
+    }
+  }
+
+  private validateStage(info: DeploymentSelection): void {
+    if (!info.deployment.sequence?.getStages().includes(info.stage)){
+      info.stage = info.deployment.stages[info.deployment.stages.length - 1].stageName;
+      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', info.deployment.service, 'context', info.deployment.shkeptncontext, 'stage', info.stage]);
+      this.location.go(routeUrl.toString());
     }
   }
 

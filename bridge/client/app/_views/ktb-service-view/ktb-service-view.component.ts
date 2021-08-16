@@ -103,7 +103,7 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   private setDeploymentInfo(projectName: string, selectedDeployment?: Deployment, paramStage?: string) {
     if (selectedDeployment) {
       let stage;
-      if (paramStage && selectedDeployment.hasStage(paramStage)) {
+      if (paramStage) {
         stage = paramStage;
       }
       else {
