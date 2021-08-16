@@ -448,6 +448,8 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/keptn/go-utils v0.8.0/go.mod h1:LqZZxEeJokovG/lG+J3uKHnPDAqk5m65grNNyNW9d2Q=
+github.com/keptn/go-utils v0.8.5-0.20210812155255-c157a8a5573a h1:9c4Dqk/NRx06iNYhp/Uq0qyCUagnH2GVIRD5w6gYtU4=
+github.com/keptn/go-utils v0.8.5-0.20210812155255-c157a8a5573a/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/keptn/go-utils v0.8.6-0.20210720145525-6bb5ac02cb04 h1:NWBdzZnRh12Njt4Zva5zjvI9jLKgzdE9dmRfOx+icQ8=
 github.com/keptn/go-utils v0.8.6-0.20210720145525-6bb5ac02cb04/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/keptn/kubernetes-utils v0.8.1 h1:y02DIIiXeFWU+XfO8Y7y8U8u4HPZx1Lcy3ZVCM27guQ=

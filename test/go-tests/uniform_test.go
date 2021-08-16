@@ -18,13 +18,19 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 		Name: "my-uniform-service",
 		MetaData: keptnmodels.MetaData{
 			DistributorVersion: "0.8.3",
+			Hostname:           "hostname",
 			KubernetesMetaData: keptnmodels.KubernetesMetaData{
 				Namespace: "my-namespace",
 			},
 		},
-		Subscription: keptnmodels.Subscription{
-			Topics: []string{keptnv2.GetTriggeredEventType(keptnv2.TestTaskName)},
-		},
+		Subscriptions: []keptnmodels.TopicSubscription{{
+			Topic: keptnv2.GetTriggeredEventType(keptnv2.TestTaskName),
+			Filter: keptnmodels.TopicSubscriptionFilter{
+				Projects: []string{},
+				Stages:   []string{},
+				Services: []string{},
+			},
+		}},
 	}
 
 	// Scenario 1: Simple API Test (create, read, delete)
@@ -51,7 +57,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Equal(t, uniformIntegration.Name, integrations[0].Name)
 	require.Equal(t, uniformIntegration.MetaData.DistributorVersion, integrations[0].MetaData.DistributorVersion)
 	require.Equal(t, uniformIntegration.MetaData.KubernetesMetaData, integrations[0].MetaData.KubernetesMetaData)
-	require.Equal(t, uniformIntegration.Subscription, integrations[0].Subscription)
+	require.Equal(t, uniformIntegration.Subscriptions, integrations[0].Subscriptions)
 	require.NotEmpty(t, integrations[0].MetaData.LastSeen)
 
 	// delete the integration
@@ -117,7 +123,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// install echo integration
-	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/c7c97bb1b5affa938adb2f65260bcba8619a343f/deploy/service.yaml")
+	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/05e20244e525b1eec94b6f5bf46f86bc6e54128e/deploy/service.yaml")
 	require.Nil(t, err)
 
 	// wait for echo integration registered
@@ -134,7 +140,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Equal(t, "echo-service", fetchedEchoIntegration.MetaData.KubernetesMetaData.DeploymentName)
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
 	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
-	require.Equal(t, StringArr("sh.keptn.>"), fetchedEchoIntegration.Subscription.Topics)
+	require.Equal(t, "sh.keptn.>", fetchedEchoIntegration.Subscriptions[0].Topic)
 
 	// uninstall echo integration
 	err = deleteEchoIntegration()
