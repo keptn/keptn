@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
 	"time"
@@ -21,6 +22,63 @@ func RunServerOnPort(port int) *server.Server {
 
 func RunServerWithOptions(opts *server.Options) *server.Server {
 	return natsserver.RunServer(opts)
+}
+
+func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+
+	natsPublisher, _ := nats.Connect(natsURL)
+	defer natsPublisher.Close()
+
+	messagesReceived := make(chan int)
+	nch := NewNatsConnectionHandler(natsURL, []string{"test-topic"})
+	nch.MessageHandler = func(m *nats.Msg) {
+		messagesReceived <- 1
+	}
+	err := nch.SubscribeToTopics()
+	require.Nil(t, err)
+
+	<-time.After(1 * time.Second)
+	natsPublisher.Publish("test-topic", []byte("hello"))
+
+	count := 0
+	select {
+	case count = <-messagesReceived:
+	case <-time.After(5 * time.Second):
+		t.Error("SubscribeToTopics(): timed out waiting for messages")
+	}
+	if count != 1 {
+		t.Error("SubscribeToTopics(): did not receive messages for subscribed topic")
+	}
+
+	nch.RemoveAllSubscriptions()
+
+	if !nch.NatsConnection.IsClosed() {
+		t.Error("SubscribeToTopics(): did not properly close NATS connection")
+	}
+
+	if len(nch.Subscriptions) != 0 {
+		t.Error("SubscribeToTopics(): did not clean up subscriptions")
+	}
+
+	nch.SubscribeToTopics("another-topic")
+	require.Nil(t, err)
+
+	<-time.After(1 * time.Second)
+	natsPublisher.Publish("another-topic", []byte("hello"))
+	count = 0
+	select {
+	case count = <-messagesReceived:
+	case <-time.After(5 * time.Second):
+		t.Error("SubscribeToTopics(): timed out waiting for messages")
+	}
+	if count != 1 {
+		t.Error("SubscribeToTopics(): did not receive messages for subscribed topic")
+	}
+
 }
 
 func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {

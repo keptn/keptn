@@ -47,36 +47,25 @@ func main() {
 }
 
 func _main(env config.EnvConfig) int {
-	context := createExecutionContext()
+	connectionType := config.GetPubSubConnectionType(env)
+	executionContext := createExecutionContext()
 	eventSender := setupEventSender()
 	httpClient := setupHTTPClient()
-	connectionType := config.GetPubSubConnectionType(env)
-	logger.Infof("Connection type: %s", connectionType)
-	if connectionType == config.ConnectionTypeHTTP {
-		err := env.ValidateKeptnAPIEndpointURL()
-		if err != nil {
-			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
-		}
-		logger.Info("Starting HTTP event poller")
-		httpEventPoller :=
-			events.NewPoller(env, eventSender, httpClient)
-		go httpEventPoller.Start(context)
-	} else {
-		logger.Info("Starting Nats event Receiver")
-		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
-		go natsEventReceiver.Start(context)
-	}
 
-	logger.Info("Starting Event Forwarder")
+	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
+	controlPlane := controlplane.NewControlPlane(uniformHandler, controlplane.CreateRegistrationData(connectionType, env))
+	uniformWatch := setupUniformWatch(controlPlane)
 	forwarder := events.NewForwarder(env, httpClient)
-	go forwarder.Start(context)
 
+	// Start event forwarder
+	logger.Info("Starting Event Forwarder")
+	go forwarder.Start(executionContext)
+
+	// Eventually start registration process
 	if shallRegister(env) {
-		logger.Infof("Registering Keptn Intgration")
-		uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
-		controlPlane := controlplane.NewControlPlane(uniformHandler, controlplane.CreateRegistrationData(connectionType, env))
 		go func() {
-			retry.Retry(func() error {
+			logger.Infof("Registering Keptn Intgration")
+			_ = retry.Retry(func() error {
 				id, err := controlPlane.Register()
 				if err != nil {
 					logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
@@ -86,18 +75,20 @@ func _main(env config.EnvConfig) int {
 
 				logHandler := uniformLogHandler
 				uniformLogger := controlplane.NewEventUniformLog(id, logHandler)
-				uniformLogger.Start(context, forwarder.EventChannel)
+				uniformLogger.Start(executionContext, forwarder.EventChannel)
 				logger.Infof("Started UniformLogger for Keptn Integration")
 				return nil
 			})
+
+			uniformWatch.Start(executionContext)
 			for {
 				select {
-				case <-context.Done():
+				case <-executionContext.Done():
 					return
 				case <-time.After(config.GetRegistrationInterval(env)):
-					_, err := controlPlane.Register()
+					_, err := controlPlane.Ping()
 					if err != nil {
-						logger.Warnf("Unable to (re)register to Keptn's control plane: %s", err.Error())
+						logger.Warnf("Unable to ping Keptn's control plane: %s", err.Error())
 					}
 				}
 			}
@@ -113,7 +104,23 @@ func _main(env config.EnvConfig) int {
 		}()
 	}
 
-	context.Wg.Wait()
+	logger.Infof("Connection type: %s", connectionType)
+	if connectionType == config.ConnectionTypeHTTP {
+		err := env.ValidateKeptnAPIEndpointURL()
+		if err != nil {
+			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
+		}
+		logger.Info("Starting HTTP event poller")
+		httpEventPoller :=
+			events.NewPoller(env, eventSender, httpClient, uniformWatch)
+		go httpEventPoller.Start(executionContext)
+	} else {
+		logger.Info("Starting Nats event Receiver")
+		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
+		go natsEventReceiver.Start(executionContext)
+	}
+
+	executionContext.Wg.Wait()
 
 	return 0
 }
@@ -162,6 +169,12 @@ func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.Uniform
 		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
+}
+
+func setupUniformWatch(controlPlane *controlplane.ControlPlane) *events.UniformWatch {
+	return &events.UniformWatch{
+		ControlPlane: controlPlane,
+	}
 }
 
 func setupHTTPClient() *http.Client {

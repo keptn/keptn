@@ -24,6 +24,10 @@ func NewControlPlane(uniformHandler *api.UniformHandler, integrationData models.
 	}
 }
 
+func (c *ControlPlane) Ping() (*models.Integration, error) {
+	return c.uniformHandler.Ping(c.currentID)
+}
+
 func (c *ControlPlane) Register() (string, error) {
 	c.Lock()
 	defer c.Unlock()
@@ -50,12 +54,6 @@ func (c *ControlPlane) Unregister() error {
 }
 
 func CreateRegistrationData(connectionType config.ConnectionType, env config.EnvConfig) models.Integration {
-	var topics []string
-	if env.PubSubTopic == "" {
-		topics = []string{}
-	} else {
-		topics = strings.Split(env.PubSubTopic, ",")
-	}
 
 	var location string
 	if env.Location == "" {
@@ -90,6 +88,26 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 		env.K8sNodeName = "keptn-node"
 	}
 
+	//create subscription
+	topics := []string{}
+	if env.PubSubTopic == "" {
+		topics = []string{}
+	} else {
+		topics = strings.Split(env.PubSubTopic, ",")
+	}
+	var subscriptions []models.TopicSubscription
+	for _, t := range topics {
+		ts := models.TopicSubscription{
+			Topic: t,
+			Filter: models.TopicSubscriptionFilter{
+				Projects: projectFilter,
+				Stages:   stageFilter,
+				Services: serviceFilter,
+			},
+		}
+		subscriptions = append(subscriptions, ts)
+	}
+
 	return models.Integration{
 		Name: env.K8sDeploymentName,
 		MetaData: models.MetaData{
@@ -103,14 +121,6 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 				DeploymentName: env.K8sDeploymentName,
 			},
 		},
-		Subscriptions: []models.TopicSubscription{{
-			Topics: topics,
-			Filter: models.TopicSubscriptionFilter{
-				Projects: projectFilter,
-				Stages:   stageFilter,
-				Services: serviceFilter,
-			},
-		},
-		},
+		Subscriptions: subscriptions,
 	}
 }

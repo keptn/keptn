@@ -44,7 +44,7 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 		ctx.Wg.Done()
 		return
 	}
-	uptimeTicker := time.NewTicker(1 * time.Second)
+	//uptimeTicker := time.NewTicker(1 * time.Second)
 
 	topics := strings.Split(n.env.PubSubTopic, ",")
 	nch := NewNatsConnectionHandler(n.env.PubSubURL, topics)
@@ -65,8 +65,8 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 
 	for {
 		select {
-		case <-uptimeTicker.C:
-			_ = nch.SubscribeToTopics()
+		//case <-uptimeTicker.C:
+		//	_ = nch.SubscribeToTopics()
 		case <-n.closeChan:
 			return
 		case <-ctx.Done():

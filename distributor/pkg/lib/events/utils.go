@@ -27,6 +27,14 @@ func NewEventMatcherFromEnv(config config.EnvConfig) *EventMatcher {
 	}
 }
 
+func NewEventMatcherFromSubscription(subscription keptnmodels.TopicSubscription) *EventMatcher {
+	return &EventMatcher{
+		Project: strings.Join(subscription.Filter.Projects, ","),
+		Stage:   strings.Join(subscription.Filter.Stages, ","),
+		Service: strings.Join(subscription.Filter.Services, ","),
+	}
+}
+
 func (ef EventMatcher) Matches(e cloudevents.Event) bool {
 	keptnBase := &v0_2_0.EventData{}
 	if err := e.DataAs(keptnBase); err != nil {

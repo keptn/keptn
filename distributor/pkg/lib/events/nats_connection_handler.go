@@ -41,7 +41,11 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 	nch.Subscriptions = nch.Subscriptions[:0]
 }
 
-func (nch *NatsConnectionHandler) SubscribeToTopics() error {
+// SubscribeToTopics expresses interest in the given subject on the NATS message broker.
+// Note, that when you pass in subjects via the topics parameter, the NatsConnectionHandler will
+// try to subscribe to these topics. If you don't pass any subjects via the topics parameter
+// the NatsConnectionHandler will subscribe to the topics configured at instatiation time
+func (nch *NatsConnectionHandler) SubscribeToTopics(topics ...string) error {
 	if nch.NatsURL == "" {
 		return errors.New("no PubSub URL defined")
 	}
@@ -50,12 +54,16 @@ func (nch *NatsConnectionHandler) SubscribeToTopics() error {
 		return errors.New("no PubSub Topics defined")
 	}
 
-	var err error
-
 	if nch.NatsConnection == nil || !nch.NatsConnection.IsConnected() {
+		var err error
 		nch.RemoveAllSubscriptions()
 		nch.mux.Lock()
 		defer nch.mux.Unlock()
+
+		if len(topics) > 0 {
+			nch.Topics = topics
+		}
+
 		logger.Infof("Connecting to NATS server at %s ...", nch.NatsURL)
 		nch.NatsConnection, err = nats.Connect(nch.NatsURL)
 
@@ -64,16 +72,17 @@ func (nch *NatsConnectionHandler) SubscribeToTopics() error {
 		}
 
 		logger.Info("Connected to NATS server")
-
-		for _, topic := range nch.Topics {
-			logger.Infof("Subscribing to topic %s ...", topic)
-			sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
-			if err != nil {
-				return errors.New("failed to subscribe to topic: " + err.Error())
-			}
-			logger.Infof("Subscribed to topic %s", topic)
-			nch.Subscriptions = append(nch.Subscriptions, sub)
-		}
 	}
+
+	for _, topic := range nch.Topics {
+		logger.Infof("Subscribing to topic %s ...", topic)
+		sub, err := nch.NatsConnection.Subscribe(topic, nch.MessageHandler)
+		if err != nil {
+			return errors.New("failed to subscribe to topic: " + err.Error())
+		}
+		logger.Infof("Subscribed to topic %s", topic)
+		nch.Subscriptions = append(nch.Subscriptions, sub)
+	}
+	//}
 	return nil
 }

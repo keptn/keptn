@@ -31,13 +31,21 @@ func TestControlPlaneRegister(t *testing.T) {
 				},
 			},
 			Subscriptions: []models.TopicSubscription{{
-				Topics: []string{},
+				Topic: "t1",
 				Filter: models.TopicSubscriptionFilter{
 					Projects: []string{"p-filter"},
 					Stages:   []string{"s-filter"},
 					Services: []string{"sv-filter"},
 				},
 			},
+				{
+					Topic: "t2",
+					Filter: models.TopicSubscriptionFilter{
+						Projects: []string{"p-filter"},
+						Stages:   []string{"s-filter"},
+						Services: []string{"sv-filter"},
+					},
+				},
 			},
 		}, data)
 		rw.Write([]byte(`{"id": "abcde"}`))
@@ -55,6 +63,7 @@ func TestControlPlaneRegister(t *testing.T) {
 		K8sNamespace:       "k8s-namespace",
 		K8sPodName:         "k8s-podname",
 		K8sNodeName:        "k8s-nodename",
+		PubSubTopic:        "t1,t2",
 	}
 
 	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, envConfig))
