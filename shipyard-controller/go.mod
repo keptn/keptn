@@ -22,5 +22,3 @@ require (
 	k8s.io/apimachinery v0.21.3
 	k8s.io/client-go v0.21.2
 )
-
-replace github.com/keptn/go-utils => ../../go-utils
