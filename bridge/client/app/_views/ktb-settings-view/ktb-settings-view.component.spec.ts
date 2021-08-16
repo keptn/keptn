@@ -199,10 +199,7 @@ describe('KtbSettingsViewComponent', () => {
     fixture.detectChanges();
 
     // then
-    const notification = document.getElementsByTagName('dt-confirmation-dialog-state')[0];
     expect(component.unsavedDialogState).toEqual(UNSAVED_DIALOG_STATE);
-    // It exists in the dom but is hidden - so we test for aria-hidden
-    expect(notification.getAttribute('aria-hidden')).toEqual('true');
   });
 
   it('should not show a notification when not all git data fields are set', () => {
