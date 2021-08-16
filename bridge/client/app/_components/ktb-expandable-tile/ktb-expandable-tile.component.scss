@@ -46,6 +46,12 @@ $offset: 24px;
     }
   }
 
+  &.ktb-tile-disabled {
+    .ktb-expandable-tile-container {
+      cursor: default;
+    }
+  }
+
   &:hover .ktb-expandable-tile-container {
     border-color: $gray-300;
   }

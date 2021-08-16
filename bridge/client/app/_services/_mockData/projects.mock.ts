@@ -1176,7 +1176,7 @@ const projectsData: any = [
   }
 ];
 
-const Projects = projectsData.map((project: Project) => {
+const Projects: Project[] = projectsData.map((project: Project) => {
   project.stages = project.stages.map(stage => {
     stage.services = stage.services.map(service => {
       return Service.fromJSON(service);

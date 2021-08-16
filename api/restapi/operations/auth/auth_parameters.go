@@ -13,7 +13,8 @@ import (
 )
 
 // NewAuthParams creates a new AuthParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewAuthParams() AuthParams {
 
 	return AuthParams{}

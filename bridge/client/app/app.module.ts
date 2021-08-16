@@ -1,7 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, InjectionToken, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -112,12 +112,15 @@ import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-
 import { EventService } from './_services/event.service';
 import { ToType } from './_pipes/to-type';
 import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.component';
+import { ToDatePipe } from './_pipes/to-date.pipe';
 
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService) {
   return () => appLoadService.init();
 }
+
+export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in millis');
 
 @NgModule({
   declarations: [
@@ -183,6 +186,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbDeletionDialogComponent,
     ToType,
     KtbUniformSubscriptionsComponent,
+    ToDatePipe,
   ],
   imports: [
     BrowserModule,
@@ -258,6 +262,10 @@ export function init_app(appLoadService: AppInitService) {
       useClass: HttpLoadingInterceptor,
       multi: true,
     },
+    {
+      provide: INITIAL_DELAY_MILLIS,
+      useValue: 30_000
+    }
   ],
   bootstrap: [AppComponent],
 })

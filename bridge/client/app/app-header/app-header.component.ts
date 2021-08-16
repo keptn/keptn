@@ -131,16 +131,38 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
       prerelease: []
     };
     if (currentVersion) {
-      newerVersions.stable = availableVersions.stable.filter((stableVersion: string) => semver.lt(currentVersion, stableVersion));
+      const stable = availableVersions.stable.filter((stableVersion: string) => semver.lt(currentVersion, stableVersion));
+      newerVersions.stable = this.reduceVersions(stable, currentVersion);
 
       // It is only necessary to check prerelease versions when no stable update is available
       if (newerVersions.stable.length === 0) {
-        newerVersions.prerelease = availableVersions.prerelease
+        const prerelease = availableVersions.prerelease
                                   .filter((prereleaseVersion: string) => semver.lt(currentVersion, prereleaseVersion));
+        newerVersions.prerelease = this.reduceVersions(prerelease, currentVersion);
       }
     }
 
     return newerVersions;
+  }
+
+  private reduceVersions(stable: string[], currentVersion: string): string[] {
+    let latestMinor: string | undefined;
+    let latestMajor: string | undefined;
+
+    for (const version of stable) {
+      if (!latestMajor || semver.gt(version, latestMajor)) {
+        latestMajor = version;
+      }
+      if (semver.minor(version) === semver.minor(currentVersion) && (!latestMinor || semver.gt(version, latestMinor))) {
+        latestMinor = version;
+      }
+    }
+
+    if (latestMajor === latestMinor) {
+      latestMajor = undefined;
+    }
+
+    return [...latestMinor ? [latestMinor] : [], ...latestMajor ? [latestMajor] : []];
   }
 
   showVersionCheckInfoDialog() {

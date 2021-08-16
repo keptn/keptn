@@ -30,6 +30,7 @@
 
         <ng-container *ngFor="let service of filterServices(selectedStage.services)">
           <ktb-expandable-tile class="mt-1" [expanded]="service.getOpenApprovals().length > 0"
+                               [disabled]="!service.hasFailedEvaluation() && !service.hasRemediations() && service.getOpenApprovals().length == 0"
                                *ngIf="!filterEventType || filterEventType == 'problem' && service.hasRemediations() || filterEventType == 'evaluation' && service.hasFailedEvaluation() || filterEventType == 'approval' && service.getOpenApprovals().length > 0">
             <ktb-expandable-tile-header>
               <dt-info-group>
@@ -84,8 +85,8 @@
                     <ktb-evaluation-details [evaluationData]="evaluation.getFinishedEvent()" [showChart]="false"></ktb-evaluation-details>
                   </ng-template>
                 </dt-tag-list>
-                <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.project, 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               </div>
+              <button dt-button variant="secondary" [routerLink]="['/project', failedRootEvent.project, 'service', service.serviceName, 'context', failedRootEvent.shkeptncontext, 'stage', selectedStage.stageName]">View evaluation result</button>
               <p class="m-0" *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
                 Rollback to <span [textContent]="deployment.image"></span> performed.
               </p>

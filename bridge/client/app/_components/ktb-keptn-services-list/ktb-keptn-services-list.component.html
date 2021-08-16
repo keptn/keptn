@@ -9,7 +9,12 @@
     <dt-table uitestid="keptn-uniform-integrations-table" [dataSource]="uniformRegistrations" dtSort (dtSortChange)="sortData($event)" interactiveRows *ngIf="uniformRegistrations.data && uniformRegistrations.data.length > 0">
       <ng-container dtColumnDef="name" dtColumnAlign="text" dtColumnProportion="2">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Name</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).name || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row">
+          <ng-container *ngIf="row | toType : UniformRegistrationClass as registration">
+            <span [textContent]="registration.name || 'n/a'"></span>
+            <div *ngIf="registration.unreadEventsCount" class="notification-indicator ml-2" [textContent]="registration.unreadEventsCount"></div>
+          </ng-container>
+        </dt-cell>
       </ng-container>
 
       <ng-container dtColumnDef="version" dtColumnAlign="text" dtColumnProportion="2">
@@ -86,7 +91,9 @@
         <dt-loading-spinner *ngIf="isLoadingLogs"></dt-loading-spinner>
 
         <div fxLayout="column" *ngIf="!isLoadingLogs">
-          <ktb-uniform-registration-logs *ngIf="uniformRegistrationLogs$ | async as logs" [projectName]="projectName"
+          <ktb-uniform-registration-logs *ngIf="uniformRegistrationLogs$ | async as logs"
+                                         [projectName]="projectName"
+                                         [lastSeen]="lastSeen"
                                          [logs]="logs"></ktb-uniform-registration-logs>
         </div>
       </ktb-expandable-tile>

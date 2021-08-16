@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { UniformRegistrationLog } from '../../_models/uniform-registration-log';
+import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
 
 @Component({
   selector: 'ktb-uniform-registration-logs',
@@ -9,4 +9,9 @@ import { UniformRegistrationLog } from '../../_models/uniform-registration-log';
 export class KtbUniformRegistrationLogsComponent {
   @Input() logs: UniformRegistrationLog[] = [];
   @Input() projectName?: string;
+  @Input() lastSeen?: Date;
+
+  public isUnread(time: string): boolean {
+    return this.lastSeen ? this.lastSeen < new Date(time) : true;
+  }
 }

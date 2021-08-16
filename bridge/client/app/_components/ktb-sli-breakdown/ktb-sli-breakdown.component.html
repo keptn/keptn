@@ -47,15 +47,22 @@
     </dt-cell>
   </ng-container>
 
+  <ng-container dtColumnDef="weight" dtColumnProportion="0.1" dtColumnMinWidth="80" dtColumnAlign="number">
+    <dt-header-cell dt-sort-header *dtHeaderCellDef>Weight</dt-header-cell>
+    <dt-cell *dtCellDef="let row">
+      <span [textContent]="(row | toType : SliResultClass).weight"></span>
+    </dt-cell>
+  </ng-container>
+
   <ng-container dtColumnDef="passTargets" dtColumnAlign="number" dtColumnProportion="2">
-    <dt-header-cell *dtHeaderCellDef>pass Criteria</dt-header-cell>
+    <dt-header-cell *dtHeaderCellDef>Pass criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
       <ktb-sli-breakdown-criteria-item *ngIf="(row | toType : SliResultClass) as result" [isInformative]="!result.success" [targets]="result.passTargets || []"></ktb-sli-breakdown-criteria-item>
     </dt-cell>
   </ng-container>
 
   <ng-container dtColumnDef="warningTargets" dtColumnAlign="number" dtColumnProportion="2">
-    <dt-header-cell *dtHeaderCellDef>warning Criteria</dt-header-cell>
+    <dt-header-cell *dtHeaderCellDef>Warning criteria</dt-header-cell>
     <dt-cell *dtCellDef="let row">
       <ktb-sli-breakdown-criteria-item *ngIf="(row | toType : SliResultClass) as result" [isInformative]="!result.success" [targets]="result.warningTargets || []"></ktb-sli-breakdown-criteria-item>
     </dt-cell>

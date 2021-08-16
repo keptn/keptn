@@ -82,10 +82,6 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', sequence.getLastStage()];
   }
 
-  public toDate(time: string): Date {
-    return new Date(time);
-  }
-
   ngOnDestroy(): void {
     this._timer.unsubscribe();
   }

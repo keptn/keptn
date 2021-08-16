@@ -1,21 +1,25 @@
-import {Injectable} from '@angular/core';
-import {DataService} from './data.service';
-import {ApiService} from './api.service';
-import {Project} from '../_models/project';
-import {KeptnInfo} from './_mockData/keptnInfo.mock';
-import {Projects} from './_mockData/projects.mock';
-import {Traces} from './_mockData/traces.mock';
-import {Evaluations} from './_mockData/evaluations.mock';
-import {Trace} from '../_models/trace';
-import {map} from 'rxjs/operators';
-import {Observable, of} from 'rxjs';
-import {Sequence} from '../_models/sequence';
+import { Injectable } from '@angular/core';
+import { DataService } from './data.service';
+import { ApiService } from './api.service';
+import { Project } from '../_models/project';
+import { KeptnInfo } from './_mockData/keptnInfo.mock';
+import { Projects } from './_mockData/projects.mock';
+import { Traces } from './_mockData/traces.mock';
+import { Evaluations } from './_mockData/evaluations.mock';
+import { Trace } from '../_models/trace';
+import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { Sequence } from '../_models/sequence';
+import { UniformRegistrationsMock } from '../_models/uniform-registrations.mock';
+import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
+import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
+import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-logs.mock';
+import { SequencesData } from './_mockData/sequences.mock';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataServiceMock extends DataService {
-
   constructor(apiService: ApiService) {
     super(apiService);
   }
@@ -25,17 +29,42 @@ export class DataServiceMock extends DataService {
   }
 
   public loadProjects() {
-    this._projects.next(Projects);
+    this._projects.next(Projects.map(project => Project.fromJSON(project)));
   }
 
   public loadProject(projectName: string) {
     this._projects.next([...Projects]);
   }
 
+  public loadSequences(project: Project, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
+    let totalCount;
+    let sequences;
+    if (beforeTime) {
+      sequences = SequencesData.slice(project.sequences.length, project.sequences.length + this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE);
+      totalCount = sequences.length;
+    }
+    else {
+      totalCount = SequencesData.length;
+      sequences = SequencesData.slice(0, this.DEFAULT_SEQUENCE_PAGE_SIZE);
+    }
+    this.addNewSequences(project, sequences, !!beforeTime, oldSequence);
+
+    if (this.allSequencesLoaded(project.sequences.length, totalCount, fromTime, beforeTime)) {
+      project.allSequencesLoaded = true;
+    }
+    project.stages.forEach(stage => {
+      this.stageSequenceMapper(stage, project);
+    });
+    this._sequences.next(project.sequences);
+  }
+
   public getProject(projectName: string): Observable<Project | undefined> {
-    this.loadProjects();
-    return this._projects.pipe(map(projects => {
-      return projects?.find(project => project.projectName === projectName);
+    if (!this._projects.getValue()?.length) {
+      this.loadProjects();
+    }
+    return this._projects.pipe(
+      map(projects => {
+        return projects?.find(project => project.projectName === projectName);
     }));
   }
 
@@ -64,5 +93,16 @@ export class DataServiceMock extends DataService {
     this.loadProjects();
     return of(true);
   }
-}
 
+  public getUniformRegistrations(): Observable<UniformRegistration[]> {
+    return of(this.copyObject(UniformRegistrationsMock));
+  }
+
+  public getUniformRegistrationLogs(): Observable<UniformRegistrationLog[]> {
+    return of(UniformRegistrationLogsMock);
+  }
+
+  private copyObject<T>(data: T): T {
+    return JSON.parse(JSON.stringify(data));
+  }
+}

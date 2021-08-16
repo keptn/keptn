@@ -1,3 +1,5 @@
+import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
+
 const logs = [
   {
     integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
@@ -60,5 +62,5 @@ const logs = [
     time: '2021-05-10T11:04:05.000Z'
   }
 ];
-const UniformRegistrationLogsMock = JSON.parse(JSON.stringify(logs));
+const UniformRegistrationLogsMock: UniformRegistrationLog[] = JSON.parse(JSON.stringify(logs));
 export {UniformRegistrationLogsMock};

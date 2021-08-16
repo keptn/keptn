@@ -1,4 +1,4 @@
-import {UniformRegistration} from "./uniform-registration";
+import {UniformRegistration} from '../../../server/interfaces/uniform-registration';
 
 const services: UniformRegistration[] = [
   {
@@ -18,17 +18,18 @@ const services: UniformRegistration[] = [
     },
     name: 'ansible-service',
     subscription:
-      {
-        filter: {
-          project: '',
-          service: '',
-          stage: ''
-        },
-        status: '',
-        topics: [
-          'sh.keptn.test.triggered'
-        ]
-      }
+    {
+      filter: {
+        project: '',
+        service: '',
+        stage: ''
+      },
+      status: '',
+      topics: [
+        'sh.keptn.test.triggered'
+      ]
+    },
+    unreadEventsCount: 10
   } as UniformRegistration,
   {
     id: 'keptn-uniform-helm-service-cc9da31fa4c9f5e58985149029c598c4',
@@ -281,19 +282,19 @@ const services: UniformRegistration[] = [
     },
     name: 'servicenow-service',
     subscription:
-      {
-        filter: {
-          project: '',
-          service: '',
-          stage: ''
-        },
-        status: '',
-        topics: [
-          'sh.keptn.deployment.triggered'
-        ]
-      }
+    {
+      filter: {
+        project: '',
+        service: '',
+        stage: ''
+      },
+      status: '',
+      topics: [
+        'sh.keptn.deployment.triggered'
+      ]
+    }
   } as UniformRegistration
 ];
 
-const UniformRegistrationsMock = JSON.parse(JSON.stringify(services));
+const UniformRegistrationsMock: UniformRegistration[] = JSON.parse(JSON.stringify(services));
 export {UniformRegistrationsMock};

@@ -12,6 +12,17 @@ updates:
       include: scope
 
   - package-ecosystem: gomod
+    directory: "/test/go-tests"
+    schedule:
+      interval: weekly
+      day: "wednesday"
+    open-pull-requests-limit: 4
+    rebase-strategy: "disabled"
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: gomod
     directory: "/approval-service"
     schedule:
       interval: weekly

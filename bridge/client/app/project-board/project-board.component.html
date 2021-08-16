@@ -24,13 +24,13 @@
     </dt-empty-state-item>
   </dt-empty-state>
 </div>
-<div class="container" *ngIf="!(isCreateMode$ | async) && !(error$ | async) && (project$ | async) === undefined">
+<div class="container" *ngIf="!(isCreateMode$ | async) && !(error$ | async) && (hasProject$ | async) === undefined">
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <dt-loading-spinner></dt-loading-spinner>
     <p>Loading ...</p>
   </div>
 </div>
-<div class="project-board" fxLayout="row" *ngIf="(project$ | async) || (isCreateMode$ | async)">
+<div class="project-board" fxLayout="row" *ngIf="(hasProject$ | async) || (isCreateMode$ | async)">
   <ng-container
     [ngTemplateOutlet]="keptnMenu"
     [ngTemplateOutletContext]="{isCreateMode: (isCreateMode$ | async)}"></ng-container>
@@ -56,10 +56,12 @@
       <button dt-icon-button dtMenuItem variant="nested" aria-label="Open sequences view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Sequences'}}" routerLinkActive="active" routerLink="sequence">
         <dt-icon name="hops"></dt-icon>
       </button>
-
-      <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
-        <dt-icon name="infrastructure"></dt-icon>
-      </button>
+      <div class="relative">
+        <div *ngIf="hasUnreadLogs$ | async" class="notification-indicator notification-indicator-absolute"></div>
+        <button dt-icon-button dtMenuItem variant="nested" aria-label="Open uniform view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Uniform'}}" routerLinkActive="active" routerLink="uniform">
+          <dt-icon name="infrastructure"></dt-icon>
+        </button>
+      </div>
 
       <button dt-icon-button dtMenuItem variant="nested" aria-label="Open integration view" [disabled]="isCreateMode" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: 'Integration'}}" routerLinkActive="active" routerLink="integration">
         <dt-icon name="plugin-connection"></dt-icon>

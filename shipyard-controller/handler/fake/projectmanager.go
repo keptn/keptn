@@ -19,7 +19,7 @@ import (
 // 			CreateFunc: func(params *operations.CreateProjectParams) (error, common.RollbackFunc) {
 // 				panic("mock out the Create method")
 // 			},
-// 			DeleteFunc: func(projectName string) (error, string) {
+// 			DeleteFunc: func(projectName string) (string, error) {
 // 				panic("mock out the Delete method")
 // 			},
 // 			GetFunc: func() ([]*models.ExpandedProject, error) {
@@ -42,7 +42,7 @@ type IProjectManagerMock struct {
 	CreateFunc func(params *operations.CreateProjectParams) (error, common.RollbackFunc)
 
 	// DeleteFunc mocks the Delete method.
-	DeleteFunc func(projectName string) (error, string)
+	DeleteFunc func(projectName string) (string, error)
 
 	// GetFunc mocks the Get method.
 	GetFunc func() ([]*models.ExpandedProject, error)
@@ -118,7 +118,7 @@ func (mock *IProjectManagerMock) CreateCalls() []struct {
 }
 
 // Delete calls DeleteFunc.
-func (mock *IProjectManagerMock) Delete(projectName string) (error, string) {
+func (mock *IProjectManagerMock) Delete(projectName string) (string, error) {
 	if mock.DeleteFunc == nil {
 		panic("IProjectManagerMock.DeleteFunc: method is nil but IProjectManager.Delete was just called")
 	}

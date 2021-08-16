@@ -25,7 +25,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should add an obfuscated token value to the control when git uri and git user are set', () => {
+  it('should set token value to empty string if git uri and git user are set', () => {
     // given
     component.gitData = {
       remoteURI: 'https://some-repo.git',
@@ -33,7 +33,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     };
 
     // then
-    expect(component.gitTokenControl.value).toEqual('***********************');
+    expect(component.gitTokenControl.value).toEqual('');
   });
 
   it('should not set git token control when only git uri is set', () => {

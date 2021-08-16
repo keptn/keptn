@@ -445,8 +445,8 @@ func TestDeleteProject(t *testing.T) {
 			name: "Delete Project deleting project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					DeleteFunc: func(projectName string) (error, string) {
-						return errors.New("whoops"), ""
+					DeleteFunc: func(projectName string) (string, error) {
+						return "", errors.New("whoops")
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -462,8 +462,8 @@ func TestDeleteProject(t *testing.T) {
 			name: "Delete Project deleting project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					DeleteFunc: func(projectName string) (error, string) {
-						return errors.New("whoops"), ""
+					DeleteFunc: func(projectName string) (string, error) {
+						return "", errors.New("whoops")
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -479,8 +479,8 @@ func TestDeleteProject(t *testing.T) {
 			name: "Delete Project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					DeleteFunc: func(projectName string) (error, string) {
-						return nil, "a-message"
+					DeleteFunc: func(projectName string) (string, error) {
+						return "a-message", nil
 					},
 				},
 				EventSender: &fake.IEventSenderMock{

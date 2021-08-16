@@ -13,8 +13,8 @@ import { Deployment } from '../_models/deployment';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
-import { UniformRegistration } from '../_models/uniform-registration';
-import { UniformRegistrationLogResponse } from '../_models/uniform-registration-log';
+import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
+import { UniformRegistrationLogResponse } from '../../../server/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
@@ -27,8 +27,9 @@ import { ProjectResult } from '../_interfaces/project-result';
 export class ApiService {
 
   private _baseUrl: string;
-  private VERSION_CHECK_COOKIE = 'keptn_versioncheck';
-  private ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
+  private readonly VERSION_CHECK_COOKIE = 'keptn_versioncheck';
+  private readonly ENVIRONMENT_FILTER_COOKIE = 'keptn_environment_filter';
+  private readonly INTEGRATION_DATES = 'keptn_integration_dates';
 
   constructor(private http: HttpClient) {
     this._baseUrl = `./api`;
@@ -52,6 +53,14 @@ export class ApiService {
     localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(filter));
   }
 
+  public get uniformLogDates(): {[key: string]: string} {
+    const data = localStorage.getItem(this.INTEGRATION_DATES);
+    return data ? JSON.parse(data) : {};
+  }
+
+  public set uniformLogDates(dates: {[key: string]: string}) {
+    localStorage.setItem(this.INTEGRATION_DATES, JSON.stringify(dates));
+  }
 
   public getKeptnInfo(): Observable<KeptnInfoResult> {
     const url = `${this._baseUrl}/bridgeInfo`;
@@ -136,14 +145,19 @@ export class ApiService {
       .get<ProjectResult>(url, {params});
   }
 
-  public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration`;
-    return this.http.get<UniformRegistration[]>(url);
+  public getUniformRegistrations(uniformDates: {[key: string]: string}): Observable<UniformRegistration[]> {
+    const url = `${this._baseUrl}/uniform/registration`;
+    return this.http.post<UniformRegistration[]>(url, uniformDates);
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLogResponse> {
     const url = `${this._baseUrl}/controlPlane/v1/log?integrationId=${uniformRegistrationId}&pageSize=${pageSize}`;
     return this.http.get<UniformRegistrationLogResponse>(url);
+  }
+
+  public hasUnreadUniformRegistrationLogs(uniformDates: {[key: string]: string}): Observable<boolean> {
+    const url = `${this._baseUrl}/hasUnreadUniformRegistrationLogs`;
+    return this.http.post<boolean>(url, uniformDates);
   }
 
   public getSecrets(): Observable<{ Secrets: Secret[] }> {

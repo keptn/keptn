@@ -15,6 +15,9 @@ import (
 //
 // 		// make and configure a mocked handler.IShipyardController
 // 		mockedIShipyardController := &IShipyardControllerMock{
+// 			ControlSequenceFunc: func(controlSequence common.SequenceControl) error {
+// 				panic("mock out the ControlSequence method")
+// 			},
 // 			GetAllTriggeredEventsFunc: func(filter common.EventFilter) ([]models.Event, error) {
 // 				panic("mock out the GetAllTriggeredEvents method")
 // 			},
@@ -31,6 +34,9 @@ import (
 //
 // 	}
 type IShipyardControllerMock struct {
+	// ControlSequenceFunc mocks the ControlSequence method.
+	ControlSequenceFunc func(controlSequence common.SequenceControl) error
+
 	// GetAllTriggeredEventsFunc mocks the GetAllTriggeredEvents method.
 	GetAllTriggeredEventsFunc func(filter common.EventFilter) ([]models.Event, error)
 
@@ -42,6 +48,11 @@ type IShipyardControllerMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// ControlSequence holds details about calls to the ControlSequence method.
+		ControlSequence []struct {
+			// ControlSequence is the controlSequence argument value.
+			ControlSequence common.SequenceControl
+		}
 		// GetAllTriggeredEvents holds details about calls to the GetAllTriggeredEvents method.
 		GetAllTriggeredEvents []struct {
 			// Filter is the filter argument value.
@@ -62,9 +73,41 @@ type IShipyardControllerMock struct {
 			WaitForCompletion bool
 		}
 	}
+	lockControlSequence             sync.RWMutex
 	lockGetAllTriggeredEvents       sync.RWMutex
 	lockGetTriggeredEventsOfProject sync.RWMutex
 	lockHandleIncomingEvent         sync.RWMutex
+}
+
+// ControlSequence calls ControlSequenceFunc.
+func (mock *IShipyardControllerMock) ControlSequence(controlSequence common.SequenceControl) error {
+	if mock.ControlSequenceFunc == nil {
+		panic("IShipyardControllerMock.ControlSequenceFunc: method is nil but IShipyardController.ControlSequence was just called")
+	}
+	callInfo := struct {
+		ControlSequence common.SequenceControl
+	}{
+		ControlSequence: controlSequence,
+	}
+	mock.lockControlSequence.Lock()
+	mock.calls.ControlSequence = append(mock.calls.ControlSequence, callInfo)
+	mock.lockControlSequence.Unlock()
+	return mock.ControlSequenceFunc(controlSequence)
+}
+
+// ControlSequenceCalls gets all the calls that were made to ControlSequence.
+// Check the length with:
+//     len(mockedIShipyardController.ControlSequenceCalls())
+func (mock *IShipyardControllerMock) ControlSequenceCalls() []struct {
+	ControlSequence common.SequenceControl
+} {
+	var calls []struct {
+		ControlSequence common.SequenceControl
+	}
+	mock.lockControlSequence.RLock()
+	calls = mock.calls.ControlSequence
+	mock.lockControlSequence.RUnlock()
+	return calls
 }
 
 // GetAllTriggeredEvents calls GetAllTriggeredEventsFunc.
