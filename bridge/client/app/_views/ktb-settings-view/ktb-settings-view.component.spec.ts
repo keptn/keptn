@@ -39,6 +39,15 @@ describe('KtbSettingsViewComponent', () => {
     fixture = TestBed.createComponent(KtbSettingsViewComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
+
+    const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
+    if (notifications.length > 0) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < notifications.length; i++) {
+        notifications[i].remove();
+      }
+    }
+
     fixture.detectChanges();
   });
 
