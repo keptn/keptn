@@ -11,7 +11,7 @@ require (
 	github.com/go-test/deep v1.0.5
 	github.com/google/uuid v1.3.0
 	github.com/jeremywohl/flatten v1.0.1
-	github.com/keptn/go-utils v0.8.5-0.20210816143533-9f25ac3a2771
+	github.com/keptn/go-utils v0.8.5-0.20210816151837-a850d4726296
 	github.com/ory/dockertest/v3 v3.6.5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

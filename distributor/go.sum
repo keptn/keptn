@@ -39,6 +39,8 @@ github.com/keptn/go-utils v0.8.5-0.20210812155255-c157a8a5573a h1:9c4Dqk/NRx06iN
 github.com/keptn/go-utils v0.8.5-0.20210812155255-c157a8a5573a/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/keptn/go-utils v0.8.5-0.20210816143533-9f25ac3a2771 h1:QVqvWifg9ueTWLxriuHl4NaNidiV6YHDchcftBGEW4c=
 github.com/keptn/go-utils v0.8.5-0.20210816143533-9f25ac3a2771/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
+github.com/keptn/go-utils v0.8.5-0.20210816151837-a850d4726296 h1:AzQqWbnNGQA0NKZRFBK4SzVlGam57ksvmx/sjQkt2Zg=
+github.com/keptn/go-utils v0.8.5-0.20210816151837-a850d4726296/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
 github.com/klauspost/compress v1.11.12 h1:famVnQVu7QwryBN4jNseQdUKES71ZAOnB6UQQJPZvqk=
 github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
