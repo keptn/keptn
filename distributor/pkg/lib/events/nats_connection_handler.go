@@ -44,7 +44,7 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 // SubscribeToTopics expresses interest in the given subject on the NATS message broker.
 // Note, that when you pass in subjects via the topics parameter, the NatsConnectionHandler will
 // try to subscribe to these topics. If you don't pass any subjects via the topics parameter
-// the NatsConnectionHandler will subscribe to the topics configured at instatiation time
+// the NatsConnectionHandler will subscribe to the topics configured at instantiation time
 func (nch *NatsConnectionHandler) SubscribeToTopics(topics ...string) error {
 	if nch.NatsURL == "" {
 		return errors.New("no PubSub URL defined")
@@ -60,10 +60,6 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics ...string) error {
 		nch.mux.Lock()
 		defer nch.mux.Unlock()
 
-		if len(topics) > 0 {
-			nch.Topics = topics
-		}
-
 		logger.Infof("Connecting to NATS server at %s ...", nch.NatsURL)
 		nch.NatsConnection, err = nats.Connect(nch.NatsURL)
 
@@ -72,6 +68,10 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics ...string) error {
 		}
 
 		logger.Info("Connected to NATS server")
+	}
+
+	if len(topics) > 0 {
+		nch.Topics = topics
 	}
 
 	for _, topic := range nch.Topics {
