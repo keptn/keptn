@@ -13,7 +13,7 @@ type ITemplateEngine interface {
 type TemplateEngine struct{}
 
 func (t *TemplateEngine) ParseTemplate(data interface{}, templateStr string) (string, error) {
-	tmpl, err := template.New("").Parse(templateStr)
+	tmpl, err := template.New("").Option("missingkey=error").Parse(templateStr)
 	if err != nil {
 		return "", err
 	}

@@ -97,10 +97,6 @@ func sdkError(msg string, err error) *sdk.Error {
 	}
 }
 
-func (th *TaskHandler) performCurlRequest() (string, error) {
-	return "", nil
-}
-
 func (th *TaskHandler) getWebHookConfigResource(keptnHandler sdk.IKeptn, eventData *keptnv2.EventData) (*models.Resource, error) {
 	// first try to retrieve the webhook config at the service level
 	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, webhookConfigFileName)
