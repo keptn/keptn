@@ -636,6 +636,7 @@ jobs:
             # No previous image was found, need to build from scratch
             echo "No previous image was found, building new image"
             docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
+            OLD_IMAGE="${IMAGE}:${VERSION}"
           fi
 
           # Retag previous image
