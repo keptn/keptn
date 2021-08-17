@@ -26,7 +26,7 @@ type EnvConfig struct {
 	DisableRegistration  bool   `envconfig:"DISABLE_REGISTRATION" default:"false"`
 	RegistrationInterval string `envconfig:"REGISTRATION_INTERVAL" default:"10s"`
 	Location             string `envconfig:"LOCATION" default:""`
-	DistributorVersion   string `envconfig:"DISTRIBUTOR_VERSION" default:""`
+	DistributorVersion   string `envconfig:"DISTRIBUTOR_VERSION" default:"0.9.0"` // TODO: set this automatically
 	Version              string `envconfig:"VERSION" default:""`
 	K8sDeploymentName    string `envconfig:"K8S_DEPLOYMENT_NAME" default:""`
 	K8sNamespace         string `envconfig:"K8S_NAMESPACE" default:""`

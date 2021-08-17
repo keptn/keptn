@@ -75,19 +75,17 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
 	// Note: "old" registrations will NOT get subscription IDs
 	if integration.Subscriptions == nil {
-		topic := ""
-		if len(integration.Subscription.Topics) > 0 {
-			topic = integration.Subscription.Topics[0]
+		for _, t := range integration.Subscription.Topics {
+			ts := keptnmodels.EventSubscription{
+				Event: t,
+				Filter: keptnmodels.EventSubscriptionFilter{
+					Projects: []string{integration.Subscription.Filter.Project},
+					Stages:   []string{integration.Subscription.Filter.Stage},
+					Services: []string{integration.Subscription.Filter.Service},
+				},
+			}
+			integration.Subscriptions = append(integration.Subscriptions, ts)
 		}
-		ts := keptnmodels.EventSubscription{
-			Event: topic,
-			Filter: keptnmodels.EventSubscriptionFilter{
-				Projects: []string{integration.Subscription.Filter.Project},
-				Stages:   []string{integration.Subscription.Filter.Stage},
-				Services: []string{integration.Subscription.Filter.Service},
-			},
-		}
-		integration.Subscriptions = append(integration.Subscriptions, ts)
 	}
 
 	if err := rh.integrationManager.Register(*integration); err != nil {
