@@ -36,6 +36,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.14
+LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
+    org.opencontainers.image.url = "https://keptn.sh" \
+    org.opencontainers.image.title="Keptn Distributor" \
+    org.opencontainers.image.vendor="Keptn" \
+    org.opencontainers.image.documentation="https://keptn.sh/docs/" \
+    org.opencontainers.image.licenses="Apache-2.0"
+
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Copy the binary to the production image from the builder stage.

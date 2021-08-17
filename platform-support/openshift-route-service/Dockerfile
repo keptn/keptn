@@ -35,6 +35,13 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o  openshi
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.14
+LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
+    org.opencontainers.image.url = "https://keptn.sh" \
+    org.opencontainers.image.title="Keptn OpenShift Route Service" \
+    org.opencontainers.image.vendor="Keptn" \
+    org.opencontainers.image.documentation="https://keptn.sh/docs/" \
+    org.opencontainers.image.licenses="Apache-2.0"
+
 RUN apk add --no-cache ca-certificates libc6-compat
 
 ARG OC_VERSION=3.11.0
