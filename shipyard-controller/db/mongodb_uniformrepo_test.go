@@ -258,7 +258,15 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	require.Equal(t, 1, len(integrations[0].Subscriptions))
 	require.Equal(t, []string{"a-project", "another-project"}, integrations[0].Subscriptions[0].Filter.Projects)
 
-	//delete subscription
+	// get subscription
+	sub, err := mdbrepo.GetSubscription("i5", "new-subscription")
+	require.Nil(t, err)
+	require.NotNil(t, sub)
+	sub, err = mdbrepo.GetSubscription("i5", "not-existent-subscription")
+	require.NotNil(t, err)
+	require.Nil(t, sub)
+
+	// delete subscription
 	err = mdbrepo.DeleteSubscription("i5", "new-subscription")
 	require.Nil(t, err)
 

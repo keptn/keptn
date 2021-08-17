@@ -16,6 +16,7 @@ type IUniformIntegrationHandler interface {
 	KeepAlive(context *gin.Context)
 	Unregister(context *gin.Context)
 	GetRegistrations(context *gin.Context)
+	GetSubscription(context *gin.Context)
 	CreateSubscription(c *gin.Context)
 	DeleteSubscription(c *gin.Context)
 	UpdateSubscription(c *gin.Context)
@@ -119,9 +120,9 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 	c.JSON(http.StatusOK, &models.UnregisterResponse{})
 }
 
-// GetRegistrations Retrieves uniform integrations matching the provided filter
-// @Summary Retrieve uniform integrations
-// @Description Retrieve uniform integrations
+// GetRegistrations Retrieve uniform integrations matching the provided filter
+// @Summary Retrieve uniform integrations matching the provided filter
+// @Description Retrieve uniform integrations matching the provided filter
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
@@ -151,8 +152,8 @@ func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 }
 
 // KeepAlive returns current registration data of an integration
-// @Summary Returns current registration data of an integration
-// @Description Returns current registration data of an integration
+// @Summary Heartbeat for uniform integrations
+// @Description Heartbeat for uniform integrations
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
@@ -180,8 +181,8 @@ func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 }
 
 // CreateSubscription creates a new subscription
-// @Summary  Creates a new subscription
-// @Description  Creates a new subscription
+// @Summary  Create a new subscription
+// @Description  Create a new subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
@@ -206,7 +207,7 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 
 	err := rh.integrationManager.CreateOrUpdateSubscription(integrationID, *subscription)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			SetNotFoundErrorResponse(err, c)
 			return
 		}
@@ -220,8 +221,8 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 }
 
 // UpdateSubscription updates or creates a subscription
-// @Summary  Updates or creates a subscription
-// @Description Updates or creates a subscription
+// @Summary  Update or create a subscription
+// @Description Update or create a subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
@@ -260,8 +261,8 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 }
 
 // DeleteSubscription deletes a new subscription
-// @Summary  Deletes a subscription
-// @Description  Deletes a subscription
+// @Summary  Delete a subscription
+// @Description  Delete a subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
@@ -284,5 +285,35 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.DeleteSubscriptionResponse{})
+}
 
+// GetSubscription retrieves an already existing subscription
+// @Summary  Retrieve an already existing subscription
+// @Description  Retrieve an already existing subscription
+// @Tags Uniform
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param integrationID path string true "integrationID"
+// @Param subscriptionID path string true "subscriptionID"
+// @Success 200 {object} models.Subscription "ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Failure 404 {object} models.Error "Not found"
+// @Router /uniform/registration/{integrationID}/subscription/{subscriptionID} [get]
+func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
+	integrationID := c.Param("integrationID")
+	subscriptionID := c.Param("subscriptionID")
+
+	subscription, err := rh.integrationManager.GetSubscription(integrationID, subscriptionID)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			SetNotFoundErrorResponse(err, c)
+			return
+		}
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, subscription)
 }
