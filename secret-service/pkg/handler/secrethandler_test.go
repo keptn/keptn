@@ -245,11 +245,11 @@ func TestHandler_Update(t *testing.T) {
 			name: "UPDATE Secret - missing scope",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{
-					UpdateSecretFunc: func(secret model.Secret) error { return backend.ErrSecretNotFound },
+					UpdateSecretFunc: func(secret model.Secret) error { return nil },
 				},
 			},
 			request:            httptest.NewRequest("PUT", "/secret", bytes.NewBuffer([]byte(`{"name":"my-secret","data":{"username":"keptn"}}`))),
-			expectedHTTPStatus: http.StatusBadRequest,
+			expectedHTTPStatus: http.StatusOK,
 		},
 		{
 			name: "UPDATE Secret - missing name",
