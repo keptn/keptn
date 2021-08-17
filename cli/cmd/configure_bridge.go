@@ -21,12 +21,8 @@ var bridgeCmd = &cobra.Command{
 	Example:      `keptn configure bridge --user=<user> --password=<password>`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Warning: From version 0.9.0 of Keptn this command is not supported anymore!")
-		fmt.Println()
 		if isBoolFlagSet(configureBridgeParams.Read) {
-			fmt.Println("You can get your login credentials e.g. by using the following kubectl commands:")
-			fmt.Println("Username - kubectl get secret -n keptn bridge-credentials -o jsonpath=\"{.data.BASIC_AUTH_USERNAME}\" | base64 --decode")
-			fmt.Println("Password - kubectl get secret -n keptn bridge-credentials -o jsonpath=\"{.data.BASIC_AUTH_PASSWORD}\" | base64 --decode")
+			fmt.Println(getPrintSecretCommand())
 		} else {
 			fmt.Println(getReplaceSecretCommand(*configureBridgeParams))
 		}
@@ -45,6 +41,16 @@ func init() {
 	configureBridgeParams.Password = bridgeCmd.Flags().StringP("password", "p", "", "The password to login to the bridge")
 }
 
+func getPrintSecretCommand() string {
+	builder := strings.Builder{}
+
+	builder.WriteString("You can get your login credentials e.g. by using the following kubectl commands:\n\n")
+	builder.WriteString("Username - kubectl get secret -n keptn bridge-credentials -o jsonpath=\"{.data.BASIC_AUTH_USERNAME}\" | base64 --decode\n")
+	builder.WriteString("Password - kubectl get secret -n keptn bridge-credentials -o jsonpath=\"{.data.BASIC_AUTH_PASSWORD}\" | base64 --decode\n")
+
+	return builder.String()
+}
+
 func getReplaceSecretCommand(cmdParams configureBridgeCmdParams) string {
 	user := "${BRIDGE_USER}"
 	password := "${BRIDGE_PASSWORD}"
@@ -57,8 +63,8 @@ func getReplaceSecretCommand(cmdParams configureBridgeCmdParams) string {
 
 	builder := strings.Builder{}
 
-	builder.WriteString("For editing the login credentials please use the following command:\n\n")
-	builder.WriteString(fmt.Sprintf("kubectl create secret -n ${KEPTN_NAMESPACE} generic bridge-credentials --from-literal=\"BASIC_AUTH_USERNAME=%s\" --from-literal=\"BASIC_AUTH_PASSWORD=%s\" -oyaml --dry-run=client | kubectl replace -f -\n", user, password))
+	builder.WriteString("For editing the bridge login credentials please use the following command:\n\n")
+	builder.WriteString(fmt.Sprintf("kubectl create secret -n keptn generic bridge-credentials --from-literal=\"BASIC_AUTH_USERNAME=%s\" --from-literal=\"BASIC_AUTH_PASSWORD=%s\" -oyaml --dry-run=client | kubectl replace -f -\n", user, password))
 	builder.WriteString("kubectl -n keptn rollout restart deployment bridge")
 
 	return builder.String()
