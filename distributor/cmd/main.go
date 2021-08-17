@@ -51,7 +51,7 @@ func _main(env config.EnvConfig) int {
 	httpClient := setupHTTPClient()
 
 	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
-	controlPlane := controlplane.NewControlPlane(uniformHandler, controlplane.CreateRegistrationData(connectionType, env))
+	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType, env)
 	uniformWatch := setupUniformWatch(controlPlane)
 	forwarder := events.NewForwarder(env, httpClient)
 

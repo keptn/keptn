@@ -51,7 +51,6 @@ func (sw *UniformWatch) Start(ctx context.Context) string {
 					logger.Errorf("Unable to send heart beat to Keptn's control plane: %s", err.Error())
 					continue
 				}
-
 				sw.setCurrentSubscriptions(integrationData.Subscriptions)
 				for _, l := range sw.listeners {
 					l.UpdateSubscriptions(sw.currentSubscriptions)

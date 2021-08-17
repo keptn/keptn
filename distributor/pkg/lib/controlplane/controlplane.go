@@ -12,15 +12,17 @@ import (
 
 type ControlPlane struct {
 	sync.Mutex
-	uniformHandler  *api.UniformHandler
-	currentID       string
-	integrationData models.Integration
+	uniformHandler *api.UniformHandler
+	connectionType config.ConnectionType
+	env            config.EnvConfig
+	currentID      string
 }
 
-func NewControlPlane(uniformHandler *api.UniformHandler, integrationData models.Integration) *ControlPlane {
+func NewControlPlane(uniformHandler *api.UniformHandler, connectionType config.ConnectionType, env config.EnvConfig) *ControlPlane {
 	return &ControlPlane{
-		uniformHandler:  uniformHandler,
-		integrationData: integrationData,
+		uniformHandler: uniformHandler,
+		connectionType: connectionType,
+		env:            env,
 	}
 }
 
@@ -31,7 +33,7 @@ func (c *ControlPlane) Ping() (*models.Integration, error) {
 func (c *ControlPlane) Register() (string, error) {
 	c.Lock()
 	defer c.Unlock()
-	id, err := c.uniformHandler.RegisterIntegration(c.integrationData)
+	id, err := c.uniformHandler.RegisterIntegration(c.createRegistrationData())
 	if err != nil {
 		return "", err
 	}
@@ -53,47 +55,47 @@ func (c *ControlPlane) Unregister() error {
 	return nil
 }
 
-func CreateRegistrationData(connectionType config.ConnectionType, env config.EnvConfig) models.Integration {
+func (c *ControlPlane) createRegistrationData() models.Integration {
 
 	var location string
-	if env.Location == "" {
-		location = config.ConnectionTypeToLocation[connectionType]
+	if c.env.Location == "" {
+		location = config.ConnectionTypeToLocation[c.connectionType]
 	} else {
-		location = env.Location
+		location = c.env.Location
 	}
 
 	var stageFilter []string
-	if env.StageFilter == "" {
+	if c.env.StageFilter == "" {
 		stageFilter = []string{}
 	} else {
-		stageFilter = strings.Split(env.StageFilter, ",")
+		stageFilter = strings.Split(c.env.StageFilter, ",")
 	}
 
 	var serviceFilter []string
-	if env.ServiceFilter == "" {
+	if c.env.ServiceFilter == "" {
 		serviceFilter = []string{}
 	} else {
-		serviceFilter = strings.Split(env.ServiceFilter, ",")
+		serviceFilter = strings.Split(c.env.ServiceFilter, ",")
 	}
 
 	var projectFilter []string
-	if env.ProjectFilter == "" {
+	if c.env.ProjectFilter == "" {
 		projectFilter = []string{}
 	} else {
-		projectFilter = strings.Split(env.ProjectFilter, ",")
+		projectFilter = strings.Split(c.env.ProjectFilter, ",")
 	}
 
-	if env.K8sNodeName == "" {
+	if c.env.K8sNodeName == "" {
 		logger.Warn("K8S_NODE_NAME is not set. Using default value: 'keptn-node'")
-		env.K8sNodeName = "keptn-node"
+		c.env.K8sNodeName = "keptn-node"
 	}
 
 	//create subscription
 	topics := []string{}
-	if env.PubSubTopic == "" {
+	if c.env.PubSubTopic == "" {
 		topics = []string{}
 	} else {
-		topics = strings.Split(env.PubSubTopic, ",")
+		topics = strings.Split(c.env.PubSubTopic, ",")
 	}
 	var subscriptions []models.EventSubscription
 	for _, t := range topics {
@@ -109,16 +111,16 @@ func CreateRegistrationData(connectionType config.ConnectionType, env config.Env
 	}
 
 	return models.Integration{
-		Name: env.K8sDeploymentName,
+		Name: c.env.K8sDeploymentName,
 		MetaData: models.MetaData{
-			Hostname:           env.K8sNodeName,
-			IntegrationVersion: env.Version,
-			DistributorVersion: env.DistributorVersion,
+			Hostname:           c.env.K8sNodeName,
+			IntegrationVersion: c.env.Version,
+			DistributorVersion: c.env.DistributorVersion,
 			Location:           location,
 			KubernetesMetaData: models.KubernetesMetaData{
-				Namespace:      env.K8sNamespace,
-				PodName:        env.K8sPodName,
-				DeploymentName: env.K8sDeploymentName,
+				Namespace:      c.env.K8sNamespace,
+				PodName:        c.env.K8sPodName,
+				DeploymentName: c.env.K8sDeploymentName,
 			},
 		},
 		Subscriptions: subscriptions,

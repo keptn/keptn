@@ -68,8 +68,6 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 }
 
 func (p *Poller) UpdateSubscriptions(subscriptions []keptnmodels.EventSubscription) {
-	logger.Infof("Got subscription update... ")
-	logger.Info(len(subscriptions))
 	p.currentSubscriptions = subscriptions
 }
 

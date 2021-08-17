@@ -66,8 +66,7 @@ func TestControlPlaneRegister(t *testing.T) {
 		PubSubTopic:        "t1,t2",
 	}
 
-	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, envConfig))
-
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), config.ConnectionTypeNATS, envConfig)
 	id, err := controlPlane.Register()
 	assert.Nil(t, err)
 	assert.Equal(t, "abcde", id)
@@ -84,7 +83,7 @@ func TestControlPlaneRegisterFails(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), config.ConnectionTypeNATS, config.EnvConfig{})
 	id, err := controlPlane.Register()
 	assert.NotNil(t, err)
 	assert.Equal(t, "", id)
@@ -101,7 +100,7 @@ func TestControlPlaneUnregister(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), config.ConnectionTypeNATS, config.EnvConfig{})
 	controlPlane.Register()
 	err := controlPlane.Unregister()
 	assert.Nil(t, err)
@@ -119,7 +118,7 @@ func TestControlPlaneUnregisterFails(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), config.ConnectionTypeNATS, config.EnvConfig{})
 	controlPlane.Register()
 	err := controlPlane.Unregister()
 	assert.NotNil(t, err)
@@ -132,7 +131,7 @@ func TestControlPlaneUnregisterWithoutPreviousRegister(t *testing.T) {
 	}))
 	defer server.Close()
 
-	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), CreateRegistrationData(config.ConnectionTypeNATS, config.EnvConfig{}))
+	controlPlane := NewControlPlane(api.NewUniformHandler(server.URL), config.ConnectionTypeNATS, config.EnvConfig{})
 	err := controlPlane.Unregister()
 	assert.NotNil(t, err)
 	assert.False(t, endpointInvoked)
