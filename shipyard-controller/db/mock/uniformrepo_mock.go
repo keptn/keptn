@@ -29,6 +29,9 @@ import (
 // 			GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*models.Subscription, error) {
 // 				panic("mock out the GetSubscription method")
 // 			},
+// 			GetSubscriptionsFunc: func(integrationID string) ([]models.Subscription, error) {
+// 				panic("mock out the GetSubscriptions method")
+// 			},
 // 			GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 // 				panic("mock out the GetUniformIntegrations method")
 // 			},
@@ -56,6 +59,9 @@ type UniformRepoMock struct {
 
 	// GetSubscriptionFunc mocks the GetSubscription method.
 	GetSubscriptionFunc func(integrationID string, subscriptionID string) (*models.Subscription, error)
+
+	// GetSubscriptionsFunc mocks the GetSubscriptions method.
+	GetSubscriptionsFunc func(integrationID string) ([]models.Subscription, error)
 
 	// GetUniformIntegrationsFunc mocks the GetUniformIntegrations method.
 	GetUniformIntegrationsFunc func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
@@ -96,6 +102,11 @@ type UniformRepoMock struct {
 			// SubscriptionID is the subscriptionID argument value.
 			SubscriptionID string
 		}
+		// GetSubscriptions holds details about calls to the GetSubscriptions method.
+		GetSubscriptions []struct {
+			// IntegrationID is the integrationID argument value.
+			IntegrationID string
+		}
 		// GetUniformIntegrations holds details about calls to the GetUniformIntegrations method.
 		GetUniformIntegrations []struct {
 			// Filter is the filter argument value.
@@ -112,6 +123,7 @@ type UniformRepoMock struct {
 	lockDeleteSubscription               sync.RWMutex
 	lockDeleteUniformIntegration         sync.RWMutex
 	lockGetSubscription                  sync.RWMutex
+	lockGetSubscriptions                 sync.RWMutex
 	lockGetUniformIntegrations           sync.RWMutex
 	lockUpdateLastSeen                   sync.RWMutex
 }
@@ -280,6 +292,37 @@ func (mock *UniformRepoMock) GetSubscriptionCalls() []struct {
 	mock.lockGetSubscription.RLock()
 	calls = mock.calls.GetSubscription
 	mock.lockGetSubscription.RUnlock()
+	return calls
+}
+
+// GetSubscriptions calls GetSubscriptionsFunc.
+func (mock *UniformRepoMock) GetSubscriptions(integrationID string) ([]models.Subscription, error) {
+	if mock.GetSubscriptionsFunc == nil {
+		panic("UniformRepoMock.GetSubscriptionsFunc: method is nil but UniformRepo.GetSubscriptions was just called")
+	}
+	callInfo := struct {
+		IntegrationID string
+	}{
+		IntegrationID: integrationID,
+	}
+	mock.lockGetSubscriptions.Lock()
+	mock.calls.GetSubscriptions = append(mock.calls.GetSubscriptions, callInfo)
+	mock.lockGetSubscriptions.Unlock()
+	return mock.GetSubscriptionsFunc(integrationID)
+}
+
+// GetSubscriptionsCalls gets all the calls that were made to GetSubscriptions.
+// Check the length with:
+//     len(mockedUniformRepo.GetSubscriptionsCalls())
+func (mock *UniformRepoMock) GetSubscriptionsCalls() []struct {
+	IntegrationID string
+} {
+	var calls []struct {
+		IntegrationID string
+	}
+	mock.lockGetSubscriptions.RLock()
+	calls = mock.calls.GetSubscriptions
+	mock.lockGetSubscriptions.RUnlock()
 	return calls
 }
 

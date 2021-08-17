@@ -17,6 +17,7 @@ type IUniformIntegrationHandler interface {
 	Unregister(context *gin.Context)
 	GetRegistrations(context *gin.Context)
 	GetSubscription(context *gin.Context)
+	GetSubscriptions(c *gin.Context)
 	CreateSubscription(c *gin.Context)
 	DeleteSubscription(c *gin.Context)
 	UpdateSubscription(c *gin.Context)
@@ -316,4 +317,32 @@ func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, subscription)
+}
+
+// GetSubscriptions retrieves all subscriptions of a uniform integration
+// @Summary  Retrieve all subscriptions of a uniform integration
+// @Description  Retrieve all subscriptions of a uniform integration
+// @Tags Uniform
+// @Security ApiKeyAuth
+// @Accept json
+// @Produce json
+// @Param integrationID path string true "integrationID"
+// @Success 200 {object} []models.Subscription "ok"
+// @Failure 400 {object} models.Error "Invalid payload"
+// @Failure 500 {object} models.Error "Internal error"
+// @Failure 404 {object} models.Error "Not found"
+// @Router /uniform/registration/{integrationID}/subscription [get]
+func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
+	integrationID := c.Param("integrationID")
+
+	subscriptions, err := rh.integrationManager.GetSubscriptions(integrationID)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			SetNotFoundErrorResponse(err, c)
+			return
+		}
+		SetInternalServerErrorResponse(err, c)
+		return
+	}
+	c.JSON(http.StatusOK, subscriptions)
 }

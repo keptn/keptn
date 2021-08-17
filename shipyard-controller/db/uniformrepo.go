@@ -10,5 +10,6 @@ type UniformRepo interface {
 	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
 	DeleteSubscription(integrationID, subscriptionID string) error
 	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
+	GetSubscriptions(integrationID string) ([]models.Subscription, error)
 	UpdateLastSeen(integrationID string) (*models.Integration, error)
 }

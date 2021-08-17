@@ -169,6 +169,31 @@ func (mdbrepo *MongoDBUniformRepo) GetSubscription(integrationID, subscriptionID
 	return nil, mongo.ErrNoDocuments
 }
 
+func (mdbrepo *MongoDBUniformRepo) GetSubscriptions(integrationID string) ([]models.Subscription, error) {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	if err != nil {
+		return nil, err
+	}
+	defer cancel()
+
+	integrations, err := mdbrepo.findIntegrations(models.GetUniformIntegrationsParams{ID: integrationID}, collection, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(integrations) == 0 {
+		return nil, mongo.ErrNoDocuments
+	}
+	integration := integrations[0]
+
+	var subscriptions []models.Subscription
+	for _, s := range integration.Subscriptions {
+		subscriptions = append(subscriptions, models.Subscription(s))
+	}
+
+	return subscriptions, nil
+}
+
 func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models.Integration, error) {
 	now := time.Now().UTC()
 	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()

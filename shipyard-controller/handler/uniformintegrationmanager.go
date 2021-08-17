@@ -13,6 +13,7 @@ type IUniformIntegrationManager interface {
 	Register(integration models.Integration) error
 	Unregister(id string) error
 	GetRegistrations(params models.GetUniformIntegrationsParams) ([]models.Integration, error)
+	GetSubscriptions(integrationID string) ([]models.Subscription, error)
 	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
 	DeleteSubscription(integrationID, subscriptionID string) error
 	GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error)
@@ -50,6 +51,10 @@ func (uim *UniformIntegrationManager) DeleteSubscription(integrationID, subscrip
 
 func (uim *UniformIntegrationManager) GetSubscription(integrationID, subscriptionID string) (*models.Subscription, error) {
 	return uim.repo.GetSubscription(integrationID, subscriptionID)
+}
+
+func (uim *UniformIntegrationManager) GetSubscriptions(integrationID string) ([]models.Subscription, error) {
+	return uim.repo.GetSubscriptions(integrationID)
 }
 
 func (uim *UniformIntegrationManager) UpdateLastSeen(integrationID string) (*models.Integration, error) {
