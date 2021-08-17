@@ -132,7 +132,7 @@ function sessionRouter(app: Express)  {
 
 export { sessionRouter };
 export { isAuthenticated };
-export { authenticateSession as authenticateSession };
+export { authenticateSession };
 export { removeSession };
 export { getLogoutHint };
 export { getCurrentPrincipal as currentPrincipal };
