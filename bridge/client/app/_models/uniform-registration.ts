@@ -23,7 +23,7 @@ export class UniformRegistration extends ur {
         status = 1;
       }
       else {
-        status = a.topic.localeCompare(b.topic);
+        status = a.event.localeCompare(b.event);
       }
       return status;
     });
@@ -37,7 +37,7 @@ export class UniformRegistration extends ur {
   public formatSubscriptions(projectName: string): string | undefined {
     const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
       if (subscription.project === projectName || !subscription.project) {
-        accSubscriptions.push(subscription.topic);
+        accSubscriptions.push(subscription.event);
       }
       return accSubscriptions;
     }, []);

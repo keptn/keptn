@@ -1,5 +1,5 @@
 export interface UniformSubscription {
-  topic: string;
+  event: string;
   filter: {
     projects: string[] | null,
     stages: string[] | null,

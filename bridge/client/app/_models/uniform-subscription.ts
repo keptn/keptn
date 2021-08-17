@@ -5,7 +5,7 @@ import { UniformSubscription as us } from '../../../shared/interfaces/uniform-su
 export class UniformSubscription implements us {
   public filter!: { projects: string[] | null; stages: string[] | null; services: string[] | null };
   public name!: string;
-  public topic!: string;
+  public event!: string;
   public expanded = false;
   public parameters: {key: string, value: string, visible: boolean}[] = [];
   private _filter?: DtFilterArray[];
