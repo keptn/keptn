@@ -1,4 +1,4 @@
-import { Router, Request, Express } from 'express';
+import { Express, Request, Router } from 'express';
 import expressSession from 'express-session';
 import mS from 'memorystore';
 import random from 'crypto-random-string';
@@ -62,18 +62,23 @@ function isAuthenticated(req: Request) {
  * We require a mandatory principal for session authentication. Logout hint is optional and only require when there is
  * logout supported from OAuth service.
  */
-function setAuthenticatedSession(req: Request, principal: string, logoutHint: string) {
+function authenticateSession(req: Request, principal: string, logoutHint: string, callback: () => void) {
 
   if (!principal) {
     throw Error('Invalid session initialisation. Principal is mandatory.');
   }
 
-  req.session.authenticated = true;
-  req.session.principal = principal;
+  // Regenerate session for the successful login
+  req.session.regenerate(() => {
+    req.session.authenticated = true;
+    req.session.principal = principal;
 
-  if (logoutHint) {
-    req.session.logoutHint = logoutHint;
-  }
+    if (logoutHint) {
+      req.session.logoutHint = logoutHint;
+    }
+
+    callback();
+  });
 }
 
 /**
@@ -127,7 +132,7 @@ function sessionRouter(app: Express)  {
 
 export { sessionRouter };
 export { isAuthenticated };
-export { setAuthenticatedSession as sessionAuthentication };
+export { authenticateSession as authenticateSession };
 export { removeSession };
 export { getLogoutHint };
 export { getCurrentPrincipal as currentPrincipal };
