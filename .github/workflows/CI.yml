@@ -648,7 +648,6 @@ jobs:
           docker tag "${OLD_IMAGE}" "${NEW_TAG2}"
 
           # Push newly tagged image
-          echo "pushing new tags"
           docker push "${NEW_TAG1}" && docker push "${NEW_TAG2}"
 
           report="* Retagged unchanged image ${IMAGE} with ${NEW_TAG1} and ${NEW_TAG2} (Source: ${DOCKER_FOLDER})"
@@ -658,11 +657,8 @@ jobs:
             DOCKER_REGISTRIES=('ghcr.io')
             for DOCKER_REGISTRY in "${DOCKER_REGISTRIES[@]}"; do
               NEW_TAG="$DOCKER_REGISTRY/${IMAGE}:${VERSION}"
-              echo "new tag: $NEW_TAG"
               docker tag "${OLD_IMAGE}" "${NEW_TAG}"
-              echo "tagged image"
               docker push "${NEW_TAG}"
-              echo "pushed image"
             done
           fi
 
