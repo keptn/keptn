@@ -651,11 +651,12 @@ jobs:
           if [[ $RELEASE_BUILD == 'true' ]]; then
             DOCKER_REGISTRIES=('ghcr.io')
             for DOCKER_REGISTRY in "${DOCKER_REGISTRIES[@]}"; do
-              # Retag previous image
               NEW_TAG="$DOCKER_REGISTRY/${IMAGE}:${VERSION}"
-
+              echo "new tag: $NEW_TAG"
               docker tag "${OLD_IMAGE}" "${NEW_TAG}"
+              echo "tagged image"
               docker push "${NEW_TAG}"
+              echo "pushed image"
             done
           fi
 
