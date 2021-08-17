@@ -185,7 +185,9 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Hostname)
 				require.Equal(t, tt.wantIntegration.MetaData.DistributorVersion, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.DistributorVersion)
 				require.Equal(t, tt.wantIntegration.MetaData.Location, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Location)
-				require.Equal(t, tt.wantIntegration.Subscriptions, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions)
+				require.True(t, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions[0].ID != "")
+				require.Equal(t, tt.wantIntegration.Subscriptions[0].Event, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions[0].Event)
+				require.Equal(t, tt.wantIntegration.Subscriptions[0].Filter, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions[0].Filter)
 			}
 		})
 	}
