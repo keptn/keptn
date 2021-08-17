@@ -547,7 +547,8 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+#        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         with:
@@ -618,7 +619,6 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
-          REGISTRY_NAME: "https://registry.hub.docker.com"
           CONTENT_TYPE: "application/vnd.docker.distribution.manifest.v2+json"
           RELEASE_BUILD: "true"
 #          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
@@ -649,8 +649,8 @@ jobs:
           echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
           if [[ $RELEASE_BUILD == 'true' ]]; then
-            DOCKER_REGISTRIES=(ghcr.io)
-            for DOCKER_REGISTRY in "${DOCKER_REGISTRIES}"; do
+            DOCKER_REGISTRIES=('ghcr.io')
+            for DOCKER_REGISTRY in "${DOCKER_REGISTRIES[@]}"; do
               # Retag previous image
               NEW_TAG="$DOCKER_REGISTRY/${IMAGE}:${VERSION}"
 
