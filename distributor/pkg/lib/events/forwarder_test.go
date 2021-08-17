@@ -41,9 +41,8 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 	s := RunServerOnPort(TEST_PORT)
 	defer s.Shutdown()
 
-	var env config.EnvConfig
-	envconfig.Process("", &env)
-	env.PubSubURL = natsURL
+	envconfig.Process("", &config.Global)
+	config.Global.PubSubURL = natsURL
 
 	natsClient, err := nats.Connect(natsURL)
 	if err != nil {
@@ -56,7 +55,6 @@ func Test_ForwardEventsToNATS(t *testing.T) {
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		env:               env,
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
@@ -83,13 +81,11 @@ func Test_ForwardEventsToKeptnAPI(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) { receivedMessageCount++ }))
 
-	var env config.EnvConfig
-	envconfig.Process("", &env)
-	env.KeptnAPIEndpoint = ts.URL
+	envconfig.Process("", &config.Global)
+	config.Global.KeptnAPIEndpoint = ts.URL
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		env:               env,
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}
@@ -116,14 +112,12 @@ func Test_APIProxy(t *testing.T) {
 			proxyEndpointCalled++
 		}))
 
-	var env config.EnvConfig
-	envconfig.Process("", &env)
-	env.KeptnAPIEndpoint = ""
+	envconfig.Process("", &config.Global)
+	config.Global.KeptnAPIEndpoint = ""
 	config.InClusterAPIProxyMappings["/testpath"] = strings.TrimPrefix(ts.URL, "http://")
 
 	f := &Forwarder{
 		EventChannel:      make(chan cloudevents.Event),
-		env:               env,
 		httpClient:        &http.Client{},
 		pubSubConnections: map[string]*cenats.Sender{},
 	}

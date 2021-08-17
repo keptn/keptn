@@ -14,15 +14,13 @@ type ControlPlane struct {
 	sync.Mutex
 	uniformHandler *api.UniformHandler
 	connectionType config.ConnectionType
-	env            config.EnvConfig
 	currentID      string
 }
 
-func NewControlPlane(uniformHandler *api.UniformHandler, connectionType config.ConnectionType, env config.EnvConfig) *ControlPlane {
+func NewControlPlane(uniformHandler *api.UniformHandler, connectionType config.ConnectionType) *ControlPlane {
 	return &ControlPlane{
 		uniformHandler: uniformHandler,
 		connectionType: connectionType,
-		env:            env,
 	}
 }
 
@@ -58,44 +56,44 @@ func (c *ControlPlane) Unregister() error {
 func (c *ControlPlane) createRegistrationData() models.Integration {
 
 	var location string
-	if c.env.Location == "" {
+	if config.Global.Location == "" {
 		location = config.ConnectionTypeToLocation[c.connectionType]
 	} else {
-		location = c.env.Location
+		location = config.Global.Location
 	}
 
 	var stageFilter []string
-	if c.env.StageFilter == "" {
+	if config.Global.StageFilter == "" {
 		stageFilter = []string{}
 	} else {
-		stageFilter = strings.Split(c.env.StageFilter, ",")
+		stageFilter = strings.Split(config.Global.StageFilter, ",")
 	}
 
 	var serviceFilter []string
-	if c.env.ServiceFilter == "" {
+	if config.Global.ServiceFilter == "" {
 		serviceFilter = []string{}
 	} else {
-		serviceFilter = strings.Split(c.env.ServiceFilter, ",")
+		serviceFilter = strings.Split(config.Global.ServiceFilter, ",")
 	}
 
 	var projectFilter []string
-	if c.env.ProjectFilter == "" {
+	if config.Global.ProjectFilter == "" {
 		projectFilter = []string{}
 	} else {
-		projectFilter = strings.Split(c.env.ProjectFilter, ",")
+		projectFilter = strings.Split(config.Global.ProjectFilter, ",")
 	}
 
-	if c.env.K8sNodeName == "" {
+	if config.Global.K8sNodeName == "" {
 		logger.Warn("K8S_NODE_NAME is not set. Using default value: 'keptn-node'")
-		c.env.K8sNodeName = "keptn-node"
+		config.Global.K8sNodeName = "keptn-node"
 	}
 
 	//create subscription
 	topics := []string{}
-	if c.env.PubSubTopic == "" {
+	if config.Global.PubSubTopic == "" {
 		topics = []string{}
 	} else {
-		topics = strings.Split(c.env.PubSubTopic, ",")
+		topics = strings.Split(config.Global.PubSubTopic, ",")
 	}
 	var subscriptions []models.EventSubscription
 	for _, t := range topics {
@@ -111,16 +109,16 @@ func (c *ControlPlane) createRegistrationData() models.Integration {
 	}
 
 	return models.Integration{
-		Name: c.env.K8sDeploymentName,
+		Name: config.Global.K8sDeploymentName,
 		MetaData: models.MetaData{
-			Hostname:           c.env.K8sNodeName,
-			IntegrationVersion: c.env.Version,
-			DistributorVersion: c.env.DistributorVersion,
+			Hostname:           config.Global.K8sNodeName,
+			IntegrationVersion: config.Global.Version,
+			DistributorVersion: config.Global.DistributorVersion,
 			Location:           location,
 			KubernetesMetaData: models.KubernetesMetaData{
-				Namespace:      c.env.K8sNamespace,
-				PodName:        c.env.K8sPodName,
-				DeploymentName: c.env.K8sDeploymentName,
+				Namespace:      config.Global.K8sNamespace,
+				PodName:        config.Global.K8sPodName,
+				DeploymentName: config.Global.K8sDeploymentName,
 			},
 		},
 		Subscriptions: subscriptions,

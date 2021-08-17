@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var Global EnvConfig
+
 type EnvConfig struct {
 	KeptnAPIEndpoint     string `envconfig:"KEPTN_API_ENDPOINT" default:""`
 	KeptnAPIToken        string `envconfig:"KEPTN_API_TOKEN" default:""`
@@ -43,8 +45,8 @@ func GetRegistrationInterval(env EnvConfig) time.Duration {
 	return duration
 }
 
-func GetPubSubConnectionType(env EnvConfig) ConnectionType {
-	if env.KeptnAPIEndpoint == "" {
+func GetPubSubConnectionType() ConnectionType {
+	if Global.KeptnAPIEndpoint == "" {
 		// if no Keptn API URL has been defined, this means that run inside the Keptn cluster -> we can subscribe to events directly via NATS
 		return ConnectionTypeNATS
 	}

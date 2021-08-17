@@ -33,34 +33,32 @@ import (
 	"syscall"
 )
 
-var env config.EnvConfig
-
 func main() {
-	if err := envconfig.Process("", &env); err != nil {
+	if err := envconfig.Process("", &config.Global); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
 	go keptnapi.RunHealthEndpoint("10999")
-	os.Exit(_main(env))
+	os.Exit(_main(config.Global))
 }
 
 func _main(env config.EnvConfig) int {
-	connectionType := config.GetPubSubConnectionType(env)
+	connectionType := config.GetPubSubConnectionType()
 	executionContext := createExecutionContext()
 	eventSender := setupEventSender()
 	httpClient := setupHTTPClient()
 
 	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
-	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType, env)
+	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType)
 	uniformWatch := setupUniformWatch(controlPlane)
-	forwarder := events.NewForwarder(env, httpClient)
+	forwarder := events.NewForwarder(httpClient)
 
 	// Start event forwarder
 	logger.Info("Starting Event Forwarder")
 	go forwarder.Start(executionContext)
 
 	// Eventually start registration process
-	if shallRegister(env) {
+	if shallRegister() {
 		id := uniformWatch.Start(executionContext)
 		logHandler := uniformLogHandler
 		uniformLogger := controlplane.NewEventUniformLog(id, logHandler)
@@ -115,13 +113,13 @@ func createExecutionContext() *events.ExecutionContext {
 	return &context
 }
 
-func shallRegister(env config.EnvConfig) bool {
-	if env.DisableRegistration {
+func shallRegister() bool {
+	if config.Global.DisableRegistration {
 		logger.Infof("Registration to Keptn's control plane disabled")
 		return false
 	}
 
-	if env.K8sNamespace == "" || env.K8sDeploymentName == "" {
+	if config.Global.K8sNamespace == "" || config.Global.K8sDeploymentName == "" {
 		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
 		return false
 	}
@@ -131,12 +129,12 @@ func shallRegister(env config.EnvConfig) bool {
 func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
 		scheme := "http" // default
-		parsed, _ := url.Parse(env.KeptnAPIEndpoint)
+		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, scheme)
-		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, scheme)
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
 		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
@@ -148,7 +146,7 @@ func setupUniformWatch(controlPlane *controlplane.ControlPlane) *events.UniformW
 
 func setupHTTPClient() *http.Client {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL}, //nolint:gosec
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
 	}
 	client := &http.Client{Transport: tr}
 	return client
