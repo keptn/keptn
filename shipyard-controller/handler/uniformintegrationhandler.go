@@ -79,9 +79,13 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 		return
 	}
 
+	//setting IDs and last seen timestamp
 	integration.ID = hash
-
 	integration.MetaData.LastSeen = time.Now().UTC()
+	for i := range integration.Subscriptions {
+		s := &integration.Subscriptions[i]
+		s.ID = uuid.New().String()
+	}
 
 	if err := rh.integrationManager.Register(*integration); err != nil {
 		SetInternalServerErrorResponse(err, c)
