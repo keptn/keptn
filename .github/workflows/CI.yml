@@ -647,10 +647,11 @@ jobs:
           docker tag "${OLD_IMAGE}" "${NEW_TAG2}"
 
           # Push newly tagged image
+          echo "pushing new tags"
           docker push "${NEW_TAG1}" && docker push "${NEW_TAG2}"
 
           report="* Retagged unchanged image ${IMAGE} with ${NEW_TAG1} and ${NEW_TAG2} (Source: ${DOCKER_FOLDER})"
-          echo "DOCKER_BUILD_REPORT=$report" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_REPORT=$report" >> "$GITHUB_ENV"
 
           if [[ $RELEASE_BUILD == 'true' ]]; then
             DOCKER_REGISTRIES=('ghcr.io')
