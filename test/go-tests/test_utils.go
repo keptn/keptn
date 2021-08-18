@@ -302,10 +302,20 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 
 func GetDiagnostics(service string) string {
 	outputBuilder := strings.Builder{}
-	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, service)
+	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, service)
 
-	outputBuilder.WriteString(fmt.Sprintf("Logs of %s: \n\n", service))
+	outputBuilder.WriteString(fmt.Sprintf("Logs of  of %s: \n\n", service))
 	logOutput, err := ExecuteCommand(getLogsCmd)
+	if err != nil {
+		outputBuilder.WriteString(err.Error())
+	}
+
+	outputBuilder.WriteString(logOutput)
+	outputBuilder.WriteString("\n-------------------------\n")
+	getLogsCmd = fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, service)
+
+	outputBuilder.WriteString(fmt.Sprintf("Logs of crashed instances of %s: \n\n", service))
+	logOutput, err = ExecuteCommand(getLogsCmd)
 	if err != nil {
 		outputBuilder.WriteString(err.Error())
 	}
