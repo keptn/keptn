@@ -32,12 +32,13 @@ func (sw *UniformWatch) Start(ctx context.Context) string {
 	logger.Infof("Registering Keptn Intgration")
 	var id string
 	_ = retry.Retry(func() error {
-		id, err := sw.controlPlane.Register()
+		integrationID, err := sw.controlPlane.Register()
 		if err != nil {
 			logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
 			return err
 		}
-		logger.Infof("Registered Keptn Integration with id %s", id)
+		logger.Infof("Registered Keptn Integration with id %s", integrationID)
+		id = integrationID
 		return nil
 	})
 	go func() {
