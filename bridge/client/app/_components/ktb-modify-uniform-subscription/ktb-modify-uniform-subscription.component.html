@@ -1,52 +1,54 @@
-<div class="container" *ngIf="data$ | async as data, else loading">
-  <h2>{{editMode ? 'Edit' : 'Create'}} subscription</h2>
-  <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
-    <div fxLayout="column" fxLayoutGap="10px">
-      <div fxLayout="row" fxLayoutGap="5px">
+<div class="container">
+  <ng-container *ngIf="data$ | async as data, else loading">
+    <h2>{{editMode ? 'Edit' : 'Create'}} subscription</h2>
+    <form [formGroup]="subscriptionForm" fxLayout="row" fxLayoutAlign=" end">
+      <div fxLayout="column" fxLayoutGap="10px">
         <dt-form-field>
-          <dt-label class="required">Task</dt-label>
-          <dt-select formControlName="taskPrefix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
-            <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
-          </dt-select>
-          <dt-error>Must not be empty</dt-error>
+          <dt-checkbox formControlName="isGlobal">Use for all projects</dt-checkbox>
         </dt-form-field>
-        <dt-form-field>
-          <dt-label class="required">Task suffix</dt-label>
-          <dt-select formControlName="taskSuffix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
-            <dt-option *ngFor="let affix of affixes" [value]="affix.value" [textContent]="affix.displayValue"></dt-option>
-          </dt-select>
-        </dt-form-field>
-      </div>
-      <dt-form-field>
-        <dt-checkbox formControlName="isGlobal">Use for all projects</dt-checkbox>
-      </dt-form-field>
-      <div>
-        <label>Filter by stages and services</label>
-        <dt-filter-field
-          [dataSource]="_dataSource"
-          [filters]="data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)"
-          (filterChanges)="data.subscription.filterChanged($event)"
-          class="mb-2"
-          aria-label="Filter by stage and service"
-          clearAllLabel="Clear all"
-        ></dt-filter-field>
-      </div>
+        <div fxLayout="row" fxLayoutGap="5px">
+          <dt-form-field>
+            <dt-label class="required">Task</dt-label>
+            <dt-select formControlName="taskPrefix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
+              <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
+            </dt-select>
+            <dt-error>Must not be empty</dt-error>
+          </dt-form-field>
+          <dt-form-field>
+            <dt-label class="required">Task suffix</dt-label>
+            <dt-select formControlName="taskSuffix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
+              <dt-option *ngFor="let affix of affixes" [value]="affix.value" [textContent]="affix.displayValue"></dt-option>
+            </dt-select>
+          </dt-form-field>
+        </div>
+        <div>
+          <label>Filter by stages and services</label>
+          <dt-filter-field
+            [dataSource]="_dataSource"
+            [filters]="data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)"
+            (filterChanges)="data.subscription.filterChanged($event)"
+            class="mb-2"
+            aria-label="Filter by stage and service"
+            clearAllLabel="Clear all"
+          ></dt-filter-field>
+        </div>
 
-      <div fxLayout="row">
-        <button class="mr-2" [disabled]="!subscriptionForm.valid" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
-          <dt-loading-spinner *ngIf="updating" aria-label="Setting Git upstream URL"></dt-loading-spinner>
-          {{editMode ? 'Update' : 'Create'}} subscription
-        </button>
-        <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
-          Cancel
-        </button>
+        <div fxLayout="row">
+          <button class="mr-2" [disabled]="!subscriptionForm.valid" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
+            <dt-loading-spinner *ngIf="updating" aria-label="Setting Git upstream URL"></dt-loading-spinner>
+            {{editMode ? 'Update' : 'Create'}} subscription
+          </button>
+          <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
+            Cancel
+          </button>
+        </div>
       </div>
+    </form>
+    <div class="mt-2 required-info">
+      fields are required
     </div>
-  </form>
-  <div class="mt-2 required-info">
-    fields are required
-  </div>
+  </ng-container>
+  <ng-template #loading>
+    <dt-loading-spinner></dt-loading-spinner>
+  </ng-template>
 </div>
-<ng-template #loading>
-  <dt-loading-spinner></dt-loading-spinner>
-</ng-template>
