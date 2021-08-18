@@ -1,0 +1,178 @@
+# Release Notes 0.9.0
+
+Keptn 0.9
+
+---
+
+**Key announcements:**
+
+:tada: **: 
+
+:star: **: 
+
+:rocket: **: 
+
+---
+
+
+## Keptn Enhancement Proposals
+
+This release implements the KEPs: [KEP 39](https://github.com/keptn/enhancement-proposals/pull/39) and parts of [KEP 53](https://github.com/keptn/enhancement-proposals/pull/53)
+
+## Keptn Specification
+
+Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0.2.3)
+
+## New Features
+
+<details><summary>Platform Support / Installer</summary>
+<p>
+
+- Reduce K8s resource limits/requests of Keptn core services [3018](https://github.com/keptn/keptn/issues/3018)
+- Enhance readiness probes of Keptn core services [4518](https://github.com/keptn/keptn/issues/4518)
+- Create a list of dependencies of Keptn Core [4409](https://github.com/keptn/keptn/issues/4409)
+- Migrate old sequences to materialized view [4140](https://github.com/keptn/keptn/issues/4140)
+- Installing/Upgrading Keptn in an air-gapped environment does not work for configuration-service and nats [4183](https://github.com/keptn/keptn/issues/4183)
+- *Fixed:* Bridge `LOOK_AND_FEEL_URL` is missing in Keptn installer Helm Chart [4476](https://github.com/keptn/keptn/issues/4476)
+
+</p>
+</details>
+
+<details><summary>API</summary>
+<p>
+
+- Provide description for `From` and `To` on GET `/api/statistics/v1` endpoint [3921](https://github.com/keptn/keptn/issues/3921)
+- Add parameter `keptnContext` for `/sequence` endpoint [4433](https://github.com/keptn/keptn/issues/4433)
+- Remove the `/config/bridge/` endpoint [4589](https://github.com/keptn/keptn/issues/4589)
+- Introduce rate limiation on `/auth` endpoint: 429 responses contain information on whether token was valid or not [4906](https://github.com/keptn/keptn/issues/4906)
+
+</p>
+</details>
+
+<details><summary>CLI</summary>
+<p>
+
+- Support of MacOS M1/Apple Silicon Build [3987](https://github.com/keptn/keptn/issues/3987)
+- Commands for pausing/resuming/aborting task sequences [3785](https://github.com/keptn/keptn/issues/3785)
+
+</p>
+</details>
+
+<details><summary>Keptn Core</summary>
+<p>
+
+- *approval-service*:
+  - Excluded open approvals from task timeout [4620](https://github.com/keptn/keptn/issues/4620)
+  - *Fixed:* Approval-service does not automatically approve in case it is the first task in a sequence [4391](https://github.com/keptn/keptn/issues/4391)
+
+- *distributor*:
+  - Allow setting environment details sent by the distributor [4590](https://github.com/keptn/keptn/issues/4590)
+
+- *helm-service & jmeter-service*: 
+  - Cleanup of README.md and Manifests for jmeter-service and helm-service [4503](https://github.com/keptn/keptn/issues/4503)
+  - JMeter- & Helm-service missing timestamp in tag [4403](https://github.com/keptn/keptn/issues/4403)
+  - *Fixed:* Installing jmeter-service/helm-service from a registry with a non-default port does not work [4422](https://github.com/keptn/keptn/issues/4422)
+
+- *lighthouse-service*:
+  - Remove override of evaluation result using previous test result [4930](https://github.com/keptn/keptn/issues/4930)
+
+- *remediation-service*:
+  - Improve error messages for remediation-services [4412](https://github.com/keptn/keptn/issues/4412)
+
+- *shipyard-controller*: 
+  - Handle Sequences sequentially per stage [3776](https://github.com/keptn/keptn/issues/3776)
+  - Termination of orphaned tasks [3778](https://github.com/keptn/keptn/issues/3778)
+  - *Fixed:* Run into errors when using an image object for a configuration change [4384](https://github.com/keptn/keptn/issues/4384)
+  - *Fixed:* Panics with out of range error [4772](https://github.com/keptn/keptn/issues/4772)
+  - *Fixed:* Crashes when receiving event for non-existent project [4797](https://github.com/keptn/keptn/issues/4797)
+
+
+</p>
+</details>
+
+<details><summary>Bridge</summary>
+<p>
+
+- *Enhancements:*
+  - Provide a warning if data will be lost in Project Creation [4677](https://github.com/keptn/keptn/issues/4677)
+  - Add weight to the SLI breakdown [4758](https://github.com/keptn/keptn/issues/4758)
+  - Prevent from expanding tile when there is no content [4057](https://github.com/keptn/keptn/issues/4057)
+  - Text inside "View Evaluation" is cropped [4760](https://github.com/keptn/keptn/issues/4760)
+  - Indicate errors happening in integrations [4381](https://github.com/keptn/keptn/issues/4381)
+  - Add service name to sequence tile [4653](https://github.com/keptn/keptn/issues/4653)
+  - Show action name and description for a remediation action [4410](https://github.com/keptn/keptn/issues/4410) 
+  - Rename `error logs` to `error events` [4426](https://github.com/keptn/keptn/issues/4426) 
+  - Delete project via Bridge [4379](https://github.com/keptn/keptn/issues/4379) 
+  - Show recent task sequences on project level [2506](https://github.com/keptn/keptn/issues/2506) 
+  - Create project with shipyard [4493](https://github.com/keptn/keptn/issues/4493) 
+  - Show waiting status of successive sequence executions [3777](https://github.com/keptn/keptn/issues/3777) 
+  - Improve layout of configuring Git upstream repository [4623](https://github.com/keptn/keptn/issues/4623)
+  - Show alt text / tooltip for icon buttons [3803](https://github.com/keptn/keptn/issues/3803)
+  - Display comparison value and absolute/relative delta of SLI [4305](https://github.com/keptn/keptn/issues/4305)
+  - Environment screen always has scrollbars when having more than 2 stages [4146](https://github.com/keptn/keptn/issues/4146)
+  - Collapsevaluation Heatmap to top 10 [4255](https://github.com/keptn/keptn/issues/4255)
+  - Show `keptn create service` when Bridge is used for quality gates only use case [4172](https://github.com/keptn/keptn/issues/4172)
+  - Better UX to show which sequence is currently selected [3976](https://github.com/keptn/keptn/issues/3976)
+  - Project does not reflect current status after creating a service [4170](https://github.com/keptn/keptn/issues/4170)
+  - Add `X-Frame-Options` header to Bridge responses [4257](https://github.com/keptn/keptn/issues/4257)
+
+- *Refactoring:* 
+  - Add null-check to tsconfig [4628](https://github.com/keptn/keptn/issues/4628)
+  - Update Bridge server to TS and ESM [4443](https://github.com/keptn/keptn/issues/4443)
+  - Refactor Angular router usage [4022](https://github.com/keptn/keptn/issues/4022)
+  - Refactor observables inside of router parameter subscription [4188](https://github.com/keptn/keptn/issues/4188)
+
+- *Fixes:*
+  - *OAuth:* Regenerating the session cookie after login [4947](https://github.com/keptn/keptn/issues/4947)
+  - *Service Screen:* Keptn context in URI is not properly updated [4912](https://github.com/keptn/keptn/issues/4912)
+  - *Sequence screen:* Is blank caused by JavaScript error [4442](https://github.com/keptn/keptn/issues/4442)
+  - *Environment screen:* The sequences of services are not loaded [4667](https://github.com/keptn/keptn/issues/4667)
+  - *Environment screen:* Is broken caused by JavaScript error [4446](https://github.com/keptn/keptn/issues/4446)
+  - *Integration screen:* Update URL for API calls [4830](https://github.com/keptn/keptn/issues/4830)
+  - Evaluation results chart is being hidden after page refresh [4927](https://github.com/keptn/keptn/issues/4927)
+  - Update message should not print all possible upgradable versions [4831](https://github.com/keptn/keptn/issues/4831)
+  - Settings screen is not updated when the project is changed [4781](https://github.com/keptn/keptn/issues/4781)
+  - Redirect to dashboard if project is deleted [4765](https://github.com/keptn/keptn/issues/4765)
+  - The environment does not always show the right information [4538](https://github.com/keptn/keptn/issues/4538)
+  - Report the project on the evaluation page [4759](https://github.com/keptn/keptn/issues/4759)
+  - Setting upstream failed, but the error is not shown  [4374](https://github.com/keptn/keptn/issues/4374)
+  - Bridge maps deployment event to wrong stage in case of multiple parallel stages with approval [4392](https://github.com/keptn/keptn/issues/4392)
+  - Wrong stage focused on deployment selection of a service [4438](https://github.com/keptn/keptn/issues/4438)
+  - SLI results in the heatmap are missing if the chart is collapsed [4569](https://github.com/keptn/keptn/issues/4569)
+  - Selected deployment gets lost if project is updated [4396](https://github.com/keptn/keptn/issues/4396)
+  - Selected service is not reset on project change [4166](https://github.com/keptn/keptn/issues/4166)
+  - Bridge throws JavaScript errors - not showing approval option until refresh [4521](https://github.com/keptn/keptn/issues/4521)
+  - Cannot read property of 'score' undefined [Bridge] [4936](https://github.com/keptn/keptn/issues/4936)
+
+</p>
+</details>
+
+
+## Development Process / Testing
+
+- *Keptn on Keptn:* Mark test as failed if delivery fails [4186](https://github.com/keptn/keptn/issues/4186)
+- *go-utils/kubernetes-utils:* Add go get and go mod tidy to auto-upgrade PR [4341](https://github.com/keptn/keptn/issues/4341)
+- *Integration test report:* Note down the actor or whether it was scheduled [3999](https://github.com/keptn/keptn/issues/3999)
+- Unify Go versions in CI workflow [4331](https://github.com/keptn/keptn/issues/4331)
+- Fix random error messages in integration test workflow [4385](https://github.com/keptn/keptn/issues/4385)
+- Create GH-Action bot-user for Keptn organization [3825](https://github.com/keptn/keptn/issues/3825)
+- Create auto-PR for Keptn Spec and Keptn Docs [2927](https://github.com/keptn/keptn/issues/2927)
+- Create draft release on triggered release workflow for keptn/go-utils [4762](https://github.com/keptn/keptn/issues/4762)
+- Create a PR that updates the specification subfolder in keptn/keptn when a new Keptn spec is released [4366](https://github.com/keptn/keptn/issues/4366)
+- Activate Snyk protection [417](https://github.com/keptn/keptn/issues/417)
+- Unify automated PRs to have the pipeline logic in the target repo [4533](https://github.com/keptn/keptn/issues/4533)
+ 
+## Good to know / Known Limitations
+
+<details><summary>Open issues that will be fixed in upcoming releases</summary>
+<p>
+
+  <!--TODO: final check-->
+  - 
+
+</p>
+</details>
+
+## Upgrade to 0.9.0
+
+- The upgrade from 0.8.x to 0.9.0 is supported by the `keptn upgrade` command. Find the documentation here: [Upgrade from Keptn 0.8.x to 0.9.0](https://keptn.sh/docs/0.9.x/operate/upgrade/#upgrade-from-keptn-0-8-x-to-0-9-0)
