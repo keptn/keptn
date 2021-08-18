@@ -417,13 +417,15 @@ button.action-btn {
 }
 
 button.small-btn {
-  &.dt-button.dt-icon-button {
-    width: 28px;
-
+  &.dt-button {
     .dt-button-icon {
       width: 16px;
       height: 16px;
     }
+  }
+
+  &.dt-button.dt-icon-button {
+    width: 28px;
   }
 }
 

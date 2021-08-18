@@ -19,7 +19,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 export class KtbSequenceControlsComponent {
 
   private _sequence?: Sequence;
-  private _showLabel = false;
+  private _smallButtons = false;
   public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
 
   @Input()
@@ -33,12 +33,12 @@ export class KtbSequenceControlsComponent {
   }
 
   @Input()
-  get showLabel(): boolean {
-    return this._showLabel;
+  get smallButtons(): boolean {
+    return this._smallButtons;
   }
-  set showLabel(value: boolean) {
-    if (this._showLabel !== value) {
-      this._showLabel = value;
+  set smallButtons(value: boolean) {
+    if (this._smallButtons !== value) {
+      this._smallButtons = value;
     }
   }
 
