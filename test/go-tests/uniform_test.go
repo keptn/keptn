@@ -115,6 +115,23 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Len(t, integrations[0].Subscriptions, 2)
 	require.Equal(t, newSubscription, integrations[0].Subscriptions[1])
 
+	// delete the subscription
+	resp, err = ApiDELETERequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", integrations[0].ID, newSubscription.ID))
+	require.Nil(t, err)
+
+	// retrieve the integration again
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+
+	integrations = []models.Integration{}
+	require.Nil(t, err)
+
+	// now there should only be one subscription again
+	err = resp.ToJSON(&integrations)
+	require.Nil(t, err)
+	require.NotEmpty(t, integrations)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+
 	// delete the integration
 	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/" + registrationResponse.ID)
 
