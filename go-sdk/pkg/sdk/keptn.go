@@ -114,31 +114,31 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 			if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
 				data := handler.ReceivingEvent
 				if err := event.DataAs(&data); err != nil {
-					log.Errorf("error during decoding of .triggered event: %v", err)
-					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
+					if err := k.send(k.createErrorEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
 						log.Errorf("unable to send .finished event: %v", err)
 						return
 					}
 				}
-				// TODO: when subscribing via a wildcard, a .started event is sent for every incoming event - we need to figure out how to handle this
-				if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
-					log.Errorf("unable to send .started event: %v", err)
-					return
+				// only respond with .started event if the incoming event is a task.triggered event
+				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) {
+					if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
+						log.Errorf("unable to send .started event: %v", err)
+						return
+					}
 				}
 
 				// do not use handler.ReceivingEvent to pass data to the executor to avoid concurrency issues
 				var passData interface{}
 				if err := event.DataAs(&passData); err != nil {
-					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
+					if err := k.send(k.createErrorEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
 						log.Errorf("unable to send .finished event: %v", err)
-						return
 					}
 					return
 				}
 				result, err := handler.TaskHandler.Execute(k, passData, event.Type())
 				if err != nil {
 					log.Errorf("error during task execution %v", err.Err)
-					if err := k.send(k.createErrorFinishedEventForTriggeredEvent(event, result, err)); err != nil {
+					if err := k.send(k.createErrorEvent(event, result, err)); err != nil {
 						log.Errorf("unable to send .finished event: %v", err)
 						return
 					}
@@ -146,8 +146,10 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				}
 				if result == nil {
 					log.Errorf("no finished data set by task executor for event %s. Skipping sending finished event", event.Type())
-				} else if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
-					log.Errorf("unable to send .finished event: %v", err)
+				} else if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) {
+					if err := k.send(k.createFinishedEventForTriggeredEvent(event, result)); err != nil {
+						log.Errorf("unable to send .finished event: %v", err)
+					}
 				}
 			}
 		}
@@ -210,24 +212,58 @@ func (k *Keptn) createFinishedEventForTriggeredEvent(triggeredEvent cloudevents.
 	return c
 }
 
-func (k *Keptn) createErrorFinishedEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
+func (k *Keptn) createErrorEvent(event cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
+	if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) {
+		return k.createErrorFinishedEventForTriggeredEvent(event, eventData, err)
+	}
+	return k.createErrorLogEventForTriggeredEvent(event, eventData, err)
+}
+
+func (k *Keptn) createErrorLogEventForTriggeredEvent(triggeredEvent cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
+	errorEventData := keptnv2.ErrorLogEvent{}
+	if eventData == nil {
+		triggeredEvent.DataAs(&errorEventData)
+	}
+
+	if keptnv2.IsTaskEventType(triggeredEvent.Type()) {
+		taskName, _, err2 := keptnv2.ParseTaskEventType(triggeredEvent.Type())
+		if err2 == nil && taskName != "" {
+			errorEventData.Task = taskName
+		}
+	}
+
+	errorEventData.Message = err.Message
+
+	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	c := cloudevents.NewEvent()
+	c.SetID(uuid.New().String())
+	c.SetType(keptnv2.ErrorLogEventName)
+	c.SetDataContentType(cloudevents.ApplicationJSON)
+	c.SetExtension(KeptnContextCEExtension, keptnContext)
+	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
+	c.SetSource(k.Source)
+	c.SetData(cloudevents.ApplicationJSON, errorEventData)
+	return c
+}
+
+func (k *Keptn) createErrorFinishedEventForTriggeredEvent(event cloudevents.Event, eventData interface{}, err *Error) cloudevents.Event {
 	commonEventData := keptnv2.EventData{}
 	if eventData == nil {
-		triggeredEvent.DataAs(&commonEventData)
+		event.DataAs(&commonEventData)
 	}
 
 	commonEventData.Result = err.ResultType
 	commonEventData.Status = err.StatusType
 	commonEventData.Message = err.Message
 
-	finishedEventType, _ := keptnv2.ReplaceEventTypeKind(triggeredEvent.Type(), "finished")
-	keptnContext, _ := triggeredEvent.Context.GetExtension(KeptnContextCEExtension)
+	finishedEventType, _ := keptnv2.ReplaceEventTypeKind(event.Type(), "finished")
+	keptnContext, _ := event.Context.GetExtension(KeptnContextCEExtension)
 	c := cloudevents.NewEvent()
 	c.SetID(uuid.New().String())
 	c.SetType(finishedEventType)
 	c.SetDataContentType(cloudevents.ApplicationJSON)
 	c.SetExtension(KeptnContextCEExtension, keptnContext)
-	c.SetExtension(TriggeredIDCEExtension, triggeredEvent.ID())
+	c.SetExtension(TriggeredIDCEExtension, event.ID())
 	c.SetSource(k.Source)
 	c.SetData(cloudevents.ApplicationJSON, commonEventData)
 	return c
