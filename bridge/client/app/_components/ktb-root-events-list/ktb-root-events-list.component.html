@@ -26,10 +26,8 @@
                 </p>
               </div>
             </div>
-            <div class="mb-2" fxLayout="row" fxLayoutAlign="start center">
-              <button *ngIf="!sequence.isPaused()" class="action-btn small-btn" dt-icon-button variant="nested" title="Pause sequence" (click)="$event.stopPropagation(); triggerPauseSequence(sequence)" [disabled]="sequence.isFinished() || sequence.isUnkownState()"><dt-icon name="pause"></dt-icon></button>
-              <button *ngIf="sequence.isPaused()" class="action-btn small-btn" dt-icon-button variant="nested" title="Resume sequence" (click)="$event.stopPropagation(); triggerResumeSequence(sequence)" [disabled]="sequence.isFinished() || sequence.isUnkownState()"><dt-icon name="resume"></dt-icon></button>
-              <button class="action-btn small-btn" dt-icon-button variant="nested" title="Abort sequence" (click)="$event.stopPropagation(); triggerAbortSequence(sequence)" [disabled]="sequence.isFinished() || sequence.isUnkownState()"><dt-icon name="abort"></dt-icon></button>
+            <div class="mb-2">
+              <ktb-sequence-controls [sequence]="sequence"></ktb-sequence-controls>
             </div>
           </div>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" uitestid="keptn-root-events-list-stageDetails">

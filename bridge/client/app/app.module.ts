@@ -115,6 +115,7 @@ import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbConfirmationDialogComponent } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
+import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { environment } from '../environments/environment';
 
 registerLocaleData(localeEn, 'en');
@@ -186,6 +187,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbDangerZoneComponent,
     KtbDeletionDialogComponent,
     KtbConfirmationDialogComponent,
+    KtbSequenceControlsComponent,
     ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,

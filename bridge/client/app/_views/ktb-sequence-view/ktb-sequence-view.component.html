@@ -24,10 +24,8 @@
                   <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
                 </div>
               </div>
-              <div fxLayout="row" fxLayoutAlign="start center">
-                <button *ngIf="!currentSequence.isPaused()" class="action-btn" dt-button variant="nested" title="Pause sequence" (click)="$event.stopPropagation(); triggerPauseSequence(currentSequence)" [disabled]="currentSequence.isFinished() || currentSequence.isUnkownState()"><dt-icon name="pause"></dt-icon> Pause</button>
-                <button *ngIf="currentSequence.isPaused()" class="action-btn" dt-button variant="nested" title="Resume sequence" (click)="$event.stopPropagation(); triggerResumeSequence(currentSequence)" [disabled]="currentSequence.isFinished() || currentSequence.isUnkownState()"><dt-icon name="resume"></dt-icon> Resume</button>
-                <button class="action-btn" dt-button variant="nested" title="Abort sequence" (click)="$event.stopPropagation(); triggerAbortSequence(currentSequence)" [disabled]="currentSequence.isFinished() || currentSequence.isUnkownState()"><dt-icon name="abort"></dt-icon> Abort</button>
+              <div>
+                <ktb-sequence-controls [sequence]="currentSequence" [showLabel]="true"></ktb-sequence-controls>
               </div>
             </div>
           </dt-info-group-title>
