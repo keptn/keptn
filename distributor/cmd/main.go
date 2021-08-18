@@ -60,8 +60,7 @@ func _main(env config.EnvConfig) int {
 	// Eventually start registration process
 	if shallRegister() {
 		id := uniformWatch.Start(executionContext)
-		logHandler := uniformLogHandler
-		uniformLogger := controlplane.NewEventUniformLog(id, logHandler)
+		uniformLogger := controlplane.NewEventUniformLog(id, uniformLogHandler)
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
 
 		defer func() {
