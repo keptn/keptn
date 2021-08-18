@@ -19,9 +19,6 @@ COPY go.mod go.sum ./
 # Download dependencies
 RUN go mod download
 
-
-
-
 ARG debugBuild
 
 # set buildflags for debug build
