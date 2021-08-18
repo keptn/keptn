@@ -599,7 +599,7 @@ jobs:
           echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
           if [[ $RELEASE_BUILD == 'true' ]]; then
-            DOCKER_REGISTRIES=('quay.io')
+            DOCKER_REGISTRIES=('ghcr.io' 'quay.io')
             for DOCKER_REGISTRY in "${DOCKER_REGISTRIES}"; do
               TAG="$DOCKER_REGISTRY/$IMAGE:$VERSION"
               docker build "$DOCKER_FOLDER" -t "$TAG" --build-arg version="$VERSION"
