@@ -14,6 +14,7 @@ import (
 const eventScopeErrorMessage = "could not determine event scope of event"
 const sequenceStateRetrievalErrorMsg = "could not fetch sequence state for keptnContext %s: %s"
 
+// prefix for the sequence state locks
 const stateLockPrefix = "states:"
 
 type SequenceStateMaterializedView struct {
@@ -37,8 +38,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		return
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.Project)
-	defer common.UnlockProject(stateLockPrefix + eventScope.Project)
+	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
+	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 
 	state := models.SequenceState{
 		Name:           sequenceName,
@@ -191,8 +192,8 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 		return
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.Project)
-	defer common.UnlockProject(stateLockPrefix + eventScope.Project)
+	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
+	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	state.State = status
 	if err := smv.SequenceStateRepo.UpdateSequenceState(*state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -200,8 +201,8 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 }
 
 func (smv *SequenceStateMaterializedView) updateSequenceStateInStage(eventScope models.EventScope, status string) {
-	common.LockProject(stateLockPrefix + eventScope.Project)
-	defer common.UnlockProject(stateLockPrefix + eventScope.Project)
+	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
+	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	state, err := smv.findSequenceState(eventScope.Project, eventScope.KeptnContext)
 	if err != nil {
 		log.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
@@ -268,8 +269,8 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		return models.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.Project)
-	defer common.UnlockProject(stateLockPrefix + eventScope.Project)
+	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
+	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project:      eventScope.Project,
