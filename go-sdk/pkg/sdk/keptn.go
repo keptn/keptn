@@ -38,13 +38,13 @@ type TaskHandler interface {
 	//
 	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
 	// or nil, if there was no error during execution.
-	Execute(keptnHandle IKeptn, event KeptnEvent, eventType string) (interface{}, *Error)
+	Execute(keptnHandle IKeptn, event KeptnEvent) (interface{}, *Error)
 }
 
 type KeptnOption func(IKeptn)
 
 // WithHandler registers a handler which is responsible for processing a .triggered event
-func WithHandler(eventType string, handler TaskHandler, filters ...func(event KeptnEvent) bool) KeptnOption {
+func WithHandler(eventType string, handler TaskHandler, filters ...func(keptnHandle IKeptn, event KeptnEvent) bool) KeptnOption {
 	return func(k IKeptn) {
 		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 	}
@@ -126,7 +126,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 				// execute the filtering functions of the task handler to determine whether the incoming event should be handled
 				// only if all functions return true, the event will be handled
 				for _, filterFn := range handler.EventFilters {
-					if !filterFn(*keptnEvent) {
+					if !filterFn(k, *keptnEvent) {
 						log.Infof("Will not handle incoming %s event", event.Type())
 						return
 					}
@@ -140,7 +140,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 					}
 				}
 
-				result, err := handler.TaskHandler.Execute(k, *keptnEvent, event.Type())
+				result, err := handler.TaskHandler.Execute(k, *keptnEvent)
 				if err != nil {
 					log.Errorf("error during task execution %v", err.Err)
 					if err := k.send(k.createErrorEvent(event, result, err)); err != nil {

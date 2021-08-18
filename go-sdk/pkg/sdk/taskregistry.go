@@ -10,7 +10,7 @@ type TaskRegistry struct {
 type TaskEntry struct {
 	TaskHandler TaskHandler
 	// EventFilters is a list of functions that are executed before a task is handled by the TaskHandler. Only if all functions return 'true', the task will be handled
-	EventFilters []func(event KeptnEvent) bool
+	EventFilters []func(keptnHandle IKeptn, event KeptnEvent) bool
 }
 
 func NewTasksMap() *TaskRegistry {
