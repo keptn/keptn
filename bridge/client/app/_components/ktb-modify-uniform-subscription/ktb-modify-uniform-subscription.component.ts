@@ -139,7 +139,7 @@ export class KtbModifyUniformSubscriptionComponent {
   public updateSubscription(projectName: string, integrationId: string, subscription: UniformSubscription): void {
     this.updating = true;
     let update;
-    subscription.event = `${EventTypes.PREFIX}.${this.taskControl.value}.${this.taskSuffixControl.value}`;
+    subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
     subscription.setIsGlobal(this.isGlobalControl.value, projectName);
 
     if (this.editMode) {
