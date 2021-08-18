@@ -57,7 +57,10 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Equal(t, uniformIntegration.Name, integrations[0].Name)
 	require.Equal(t, uniformIntegration.MetaData.DistributorVersion, integrations[0].MetaData.DistributorVersion)
 	require.Equal(t, uniformIntegration.MetaData.KubernetesMetaData, integrations[0].MetaData.KubernetesMetaData)
-	require.Equal(t, uniformIntegration.Subscriptions, integrations[0].Subscriptions)
+	//require.Equal(t, uniformIntegration.Subscriptions, integrations[0].Subscriptions)
+	require.True(t, integrations[0].Subscriptions[0].ID != "")
+	require.Equal(t, uniformIntegration.Subscriptions[0].Event, integrations[0].Subscriptions[0].Event)
+	require.Equal(t, uniformIntegration.Subscriptions[0].Filter, integrations[0].Subscriptions[0].Filter)
 	require.NotEmpty(t, integrations[0].MetaData.LastSeen)
 
 	// delete the integration
@@ -123,7 +126,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	// install echo integration
-	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/05e20244e525b1eec94b6f5bf46f86bc6e54128e/deploy/service.yaml")
+	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
 	require.Nil(t, err)
 
 	// wait for echo integration registered

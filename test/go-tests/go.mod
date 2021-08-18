@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.0
-	github.com/keptn/go-utils v0.8.5-0.20210816151837-a850d4726296
+	github.com/keptn/go-utils v0.8.5-0.20210817140649-aeaaeb74252c
 	github.com/keptn/keptn/shipyard-controller v0.0.0-20210503133401-8c1194432b46
 	github.com/keptn/kubernetes-utils v0.8.1
 	github.com/stretchr/testify v1.7.0
