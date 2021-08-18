@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { ActivatedRoute } from '@angular/router';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Subject } from 'rxjs';
 import { Secret } from '../../_models/secret';
-import { DeleteDialogState, KtbDeleteConfirmationComponent } from '../_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
+import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 
 @Component({
   selector: 'ktb-secrets-view',

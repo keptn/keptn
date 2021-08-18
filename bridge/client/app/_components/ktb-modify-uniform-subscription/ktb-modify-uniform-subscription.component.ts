@@ -13,7 +13,6 @@ import { EventTypes } from '../../../../shared/interfaces/event-types';
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
-  styleUrls: ['./ktb-modify-uniform-subscription.component.scss']
 })
 export class KtbModifyUniformSubscriptionComponent {
   private taskControl = new FormControl();

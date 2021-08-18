@@ -1,9 +1,9 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbSubscriptionItemComponent } from './ktb-subscription-item.component';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {AppModule} from '../../app.module';
-import {KtbStageDetailsComponent} from "../ktb-stage-details/ktb-stage-details.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { of } from 'rxjs';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
@@ -16,6 +16,13 @@ describe('KtbSubscriptionItemComponent', () => {
         AppModule,
         HttpClientTestingModule,
       ],
+      providers: [
+        {
+          provide: ActivatedRoute, useValue: {
+            paramMap: of(convertToParamMap({projectName: 'sockshop'}))
+          }
+        }
+      ]
     })
       .compileComponents()
       .then(() => {
