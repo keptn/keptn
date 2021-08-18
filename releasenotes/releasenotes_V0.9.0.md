@@ -168,7 +168,6 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
   <!--TODO: final check-->
-  - 
 
 </p>
 </details>
