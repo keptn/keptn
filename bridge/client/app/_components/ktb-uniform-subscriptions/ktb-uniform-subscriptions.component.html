@@ -1,5 +1,5 @@
 <ng-container *ngIf="uniformRegistration as uniformRegistration">
-  <button dt-button routerLink="subscriptions/add" class="mb-2" *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
+  <button dt-button routerLink="./subscriptions/add" class="mb-2" *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
     <dt-icon name="plus-add"></dt-icon>
     Add subscription
   </button>

@@ -207,7 +207,9 @@ export class DataService {
     for (const stage of shipyard.spec.stages) {
       for (const sequence of stage.sequences) {
         for (const task of sequence.tasks) {
-          tasks.push(task.name);
+          if (!tasks.includes(task.name)) {
+            tasks.push(task.name);
+          }
         }
       }
     }
