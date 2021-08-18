@@ -565,7 +565,7 @@ jobs:
         # that's fine, but it means we can't push images to dockerhub
         with:
           registry: "quay.io"
-          username: ${{ secrest.QUAY_USER }}
+          username: ${{ secrets.QUAY_USER }}
           password: ${{ secrets.QUAY_TOKEN }}
 
       - id: docker_cache
