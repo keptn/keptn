@@ -122,7 +122,27 @@ func shallRegister() bool {
 		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
 		return false
 	}
+
+	if isOneOfFilteredServices(config.Global.K8sDeploymentName) {
+		logger.Infof("Skipping Registration because service name %s is actively filtered", config.Global.K8sDeploymentName)
+		return false
+	}
+
 	return true
+}
+
+func isOneOfFilteredServices(serviceName string) bool {
+	switch serviceName {
+	case
+		"statistics-service",
+		"api-service",
+		"mongodb-datastore",
+		"configuration-service",
+		"secret-service",
+		"shipyard-controller":
+		return true
+	}
+	return false
 }
 
 func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {

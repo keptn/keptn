@@ -16,13 +16,13 @@ type IUniformWatch interface {
 }
 
 type UniformWatch struct {
-	controlPlane         *controlplane.ControlPlane
+	controlPlane         controlplane.IControlPlane
 	currentSubscriptions []models.EventSubscription
 	listeners            []SubscriptionListener
 	mtx                  sync.Mutex
 }
 
-func NewUniformWatch(controlPlane *controlplane.ControlPlane) *UniformWatch {
+func NewUniformWatch(controlPlane controlplane.IControlPlane) *UniformWatch {
 	return &UniformWatch{
 		controlPlane: controlPlane,
 	}

@@ -10,6 +10,12 @@ import (
 	"sync"
 )
 
+type IControlPlane interface {
+	Ping() (*models.Integration, error)
+	Register() (string, error)
+	Unregister() error
+}
+
 type ControlPlane struct {
 	sync.Mutex
 	uniformHandler *api.UniformHandler
