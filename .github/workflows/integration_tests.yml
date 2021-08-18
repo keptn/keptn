@@ -658,14 +658,14 @@ jobs:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
         run: test/test_manage_secrets.sh
 
-      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
-        id: test_continuous_delivery
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: |
-          test/test_self_healing_scaling.sh
+#      - name: Test Self Healing with Scaling using Prometheus (with sockshop)
+#        id: test_continuous_delivery
+#        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true' # run only if variable is set
+#        continue-on-error: true
+#        env:
+#          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+#        run: |
+#          test/test_self_healing_scaling.sh
 
       # for debugging etc... it makes sense to have the support archive attached as an artifact
 
