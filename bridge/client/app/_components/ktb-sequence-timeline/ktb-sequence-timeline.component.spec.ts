@@ -1,10 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbSequenceTimelineComponent } from './ktb-sequence-timeline.component';
-import {RouterTestingModule} from '@angular/router/testing';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbSequenceTasksListComponent} from "../ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbSequenceTimelineComponent', () => {
   let component: KtbSequenceTimelineComponent;
@@ -26,12 +23,12 @@ describe('KtbSequenceTimelineComponent', () => {
       });
   }));
 
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
   afterEach(fakeAsync(() => {
     fixture.destroy();
     TestBed.resetTestingModule();
   }));
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
 });

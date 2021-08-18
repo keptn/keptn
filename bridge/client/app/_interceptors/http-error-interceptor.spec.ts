@@ -1,13 +1,30 @@
 import { TestBed } from '@angular/core/testing';
-import {AppModule} from "../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpErrorInterceptor } from './http-error-interceptor';
+import { Overlay } from '@angular/cdk/overlay';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 
 describe('HttpErrorInterceptorService', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    declarations: [],
-    imports: [
-      AppModule,
-      HttpClientTestingModule,
-    ]
-  }));
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [
+        Overlay,
+        {
+          provide: HTTP_INTERCEPTORS,
+          useClass: HttpErrorInterceptor,
+          multi: true
+        },
+        {provide: RETRY_ON_HTTP_ERROR, useValue: false}
+      ]
+    }).compileComponents().then(() => {
+    });
+  });
+
+  it('should be an instance', () => {
+    const interceptor = TestBed.inject(HttpErrorInterceptor);
+    expect(interceptor).toBeTruthy();
+  });
 });

@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
-import {KtbEventItemComponent} from './ktb-event-item.component';
-import {AppModule} from '../../app.module';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbEvaluationDetailsComponent} from "../ktb-evaluation-details/ktb-evaluation-details.component";
+import { KtbEventItemComponent } from './ktb-event-item.component';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbEventItemComponent', () => {
   let component: KtbEventItemComponent;
@@ -11,7 +9,6 @@ describe('KtbEventItemComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -24,6 +21,10 @@ describe('KtbEventItemComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

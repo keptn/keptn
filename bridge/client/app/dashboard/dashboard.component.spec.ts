@@ -1,9 +1,8 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { DashboardComponent } from './dashboard.component';
 import { AppModule } from '../app.module';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppHeaderComponent} from "../app-header/app-header.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { INITIAL_DELAY_MILLIS } from '../_utils/app.utils';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -11,11 +10,13 @@ describe('DashboardComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
+      providers: [
+        {provide: INITIAL_DELAY_MILLIS, value: 0}
+      ]
     })
       .compileComponents()
       .then(() => {
@@ -24,6 +25,10 @@ describe('DashboardComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

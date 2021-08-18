@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { KtbIntegrationViewComponent } from './ktb-integration-view.component';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
+import { AppModule } from '../../app.module';
 
 describe('KtbIntegrationViewComponent', () => {
   let component: KtbIntegrationViewComponent;
@@ -10,18 +10,28 @@ describe('KtbIntegrationViewComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbIntegrationViewComponent ],
       imports: [
         AppModule,
         HttpClientTestingModule,
-      ]
+      ],
+      providers: [
+        {provide: INITIAL_DELAY_MILLIS, useValue: 0},
+      ],
     })
-    .compileComponents();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbIntegrationViewComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbIntegrationViewComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

@@ -1,8 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { KtbStageOverviewComponent } from './ktb-stage-overview.component';
-import {AppModule} from '../../app.module';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbStageOverviewComponent', () => {
   let component: KtbStageOverviewComponent;
@@ -10,18 +9,25 @@ describe('KtbStageOverviewComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbStageOverviewComponent ],
       imports: [
         AppModule,
         HttpClientTestingModule,
-      ]
+      ],
     })
-    .compileComponents();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbStageOverviewComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbStageOverviewComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

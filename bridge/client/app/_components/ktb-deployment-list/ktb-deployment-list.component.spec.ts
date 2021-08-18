@@ -1,8 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { KtbDeploymentListComponent } from './ktb-deployment-list.component';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {AppModule} from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 
 describe('KtbArtifactListComponent', () => {
   let component: KtbDeploymentListComponent;
@@ -10,15 +9,22 @@ describe('KtbArtifactListComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ KtbDeploymentListComponent ],
-      imports: [AppModule, HttpClientTestingModule]
+      imports: [AppModule, HttpClientTestingModule],
     })
-    .compileComponents();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbDeploymentListComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbDeploymentListComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

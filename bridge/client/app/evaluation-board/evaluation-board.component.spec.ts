@@ -1,8 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import {EvaluationBoardComponent} from './evaluation-board.component';
-import {AppModule} from '../app.module';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { EvaluationBoardComponent } from './evaluation-board.component';
+import { AppModule } from '../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ProjectBoardComponent', () => {
   let component: EvaluationBoardComponent;
@@ -16,12 +15,21 @@ describe('ProjectBoardComponent', () => {
         HttpClientTestingModule,
       ],
     })
-    .compileComponents();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(EvaluationBoardComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(EvaluationBoardComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
+
 });

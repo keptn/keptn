@@ -1,5 +1,10 @@
 {
   "extends": "tslint:recommended",
+  "linterOptions": {
+    "exclude": [
+      "client/app/_models/trace.mock.ts"
+    ]
+  },
   "rules": {
     "align": {
       "options": [

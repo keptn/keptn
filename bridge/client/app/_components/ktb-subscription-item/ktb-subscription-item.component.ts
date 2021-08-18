@@ -16,16 +16,16 @@ import { DtAutoComplete } from '../../_models/dt-filter';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
-  private _subscription!: Subscription;
+  private _subscription?: Subscription;
   public tasks: string[] = [];
   public _dataSource = new DtFilterFieldDefaultDataSource();
   private readonly unsubscribe$ = new Subject<void>();
 
   @Input()
-  get subscription(): Subscription {
+  get subscription(): Subscription | undefined {
     return this._subscription;
   }
-  set subscription(subscription: Subscription) {
+  set subscription(subscription: Subscription | undefined) {
     if (this._subscription !== subscription) {
       this._subscription = subscription;
       this.changeDetectorRef.markForCheck();

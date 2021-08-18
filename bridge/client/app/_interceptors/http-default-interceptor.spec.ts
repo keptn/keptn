@@ -1,8 +1,7 @@
-import { fakeAsync, TestBed, waitForAsync } from "@angular/core/testing";
-import {AppModule} from "../app.module";
-import {HttpClientTestingModule, HttpTestingController} from "@angular/common/http/testing";
-import {ApiService} from "../_services/api.service";
-import {KtbTaskItemComponent} from "../_components/ktb-task-item/ktb-task-item.component";
+import { TestBed } from '@angular/core/testing';
+import { AppModule } from '../app.module';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { ApiService } from '../_services/api.service';
 
 describe(`HttpDefaultInterceptor`, () => {
   let service: ApiService;
@@ -10,16 +9,13 @@ describe(`HttpDefaultInterceptor`, () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      declarations: [
-      ],
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-      providers: []
     }).compileComponents().then(() => {
-      service = TestBed.get(ApiService);
-      httpMock = TestBed.get(HttpTestingController);
+      service = TestBed.inject(ApiService);
+      httpMock = TestBed.inject(HttpTestingController);
     });
   });
 

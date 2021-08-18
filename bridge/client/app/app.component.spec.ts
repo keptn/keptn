@@ -1,14 +1,14 @@
-import { TestBed, ComponentFixture, fakeAsync, tick, discardPeriodicTasks, flush, flushMicrotasks, waitForAsync } from '@angular/core/testing';
-import {AppComponent} from './app.component';
-import {By} from "@angular/platform-browser";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {Location} from '@angular/common';
-import {DataService} from "./_services/data.service";
-import {DataServiceMock} from "./_services/data.service.mock";
-import {Router} from "@angular/router";
-import {AppModule} from "./app.module";
-import {RouterTestingModule} from "@angular/router/testing";
-import {routes} from "./app.routing";
+import { TestBed, ComponentFixture, fakeAsync, tick, discardPeriodicTasks, waitForAsync } from '@angular/core/testing';
+import { AppComponent } from './app.component';
+import { By } from '@angular/platform-browser';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Location } from '@angular/common';
+import { DataService } from './_services/data.service';
+import { DataServiceMock } from './_services/data.service.mock';
+import { Router } from '@angular/router';
+import { AppModule } from './app.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { routes } from './app.routing';
 
 describe('AppComponent', () => {
   let router: Router;
@@ -26,8 +26,8 @@ describe('AppComponent', () => {
         RouterTestingModule.withRoutes(routes),
       ],
       providers: [
-        {provide: DataService, useClass: DataServiceMock}
-      ]
+        {provide: DataService, useClass: DataServiceMock},
+      ],
     }).compileComponents().then(() => {
       router = TestBed.get(Router);
       location = TestBed.get(Location);
@@ -71,35 +71,36 @@ describe('AppComponent', () => {
 
     // NOTE: function used in index.html, this is a duplicate only for testing
     function getBridgeBaseHref(origin: string, path: string) {
-      if (path.indexOf('/bridge') != -1)
+      if (path.indexOf('/bridge') !== -1) {
         return [origin, path.substring(0, path.indexOf('/bridge')), '/bridge/'].join('');
-      else
+      } else {
         return origin;
+      }
     }
 
     // base = 'http://localhost:8000/'
-    expect(getBridgeBaseHref('http://localhost:8000', '/dashboard')).toBe('http://localhost:8000');
-    expect(getBridgeBaseHref('http://localhost:8000', '/project/sockshop')).toBe('http://localhost:8000');
+    expect(getBridgeBaseHref('http://localhost:8000', '/dashboard')).toEqual('http://localhost:8000');
+    expect(getBridgeBaseHref('http://localhost:8000', '/project/sockshop')).toEqual('http://localhost:8000');
 
     // base = 'http://localhost:8000/bridge/'
-    expect(getBridgeBaseHref('http://localhost:8000', '/bridge/dashboard')).toBe('http://localhost:8000/bridge/');
-    expect(getBridgeBaseHref('http://localhost:8000', '/bridge/project/sockshop')).toBe('http://localhost:8000/bridge/');
+    expect(getBridgeBaseHref('http://localhost:8000', '/bridge/dashboard')).toEqual('http://localhost:8000/bridge/');
+    expect(getBridgeBaseHref('http://localhost:8000', '/bridge/project/sockshop')).toEqual('http://localhost:8000/bridge/');
 
     // base 'http://0.0.0.1.xip.io/bridge/'
-    expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/dashboard')).toBe('http://0.0.0.1.xip.io/bridge/');
-    expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/project/sockshop')).toBe('http://0.0.0.1.xip.io/bridge/');
+    expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/dashboard')).toEqual('http://0.0.0.1.xip.io/bridge/');
+    expect(getBridgeBaseHref('http://0.0.0.1.xip.io', '/bridge/project/sockshop')).toEqual('http://0.0.0.1.xip.io/bridge/');
 
     // base = 'https://demo.keptn.sh/bridge/'
-    expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/dashboard')).toBe('https://demo.keptn.sh/bridge/');
-    expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/project/sockshop')).toBe('https://demo.keptn.sh/bridge/');
+    expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/dashboard')).toEqual('https://demo.keptn.sh/bridge/');
+    expect(getBridgeBaseHref('https://demo.keptn.sh', '/bridge/project/sockshop')).toEqual('https://demo.keptn.sh/bridge/');
 
     // base = 'https://demo.io/keptn/bridge/'
-    expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/dashboard')).toBe('https://demo.io/keptn/bridge/');
-    expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/project/sockshop')).toBe('https://demo.io/keptn/bridge/');
+    expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/dashboard')).toEqual('https://demo.io/keptn/bridge/');
+    expect(getBridgeBaseHref('https://demo.io', '/keptn/bridge/project/sockshop')).toEqual('https://demo.io/keptn/bridge/');
 
     // base = 'https://bridge.demo.keptn.sh'
-    expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/dashboard')).toBe('https://bridge.demo.keptn.sh');
-    expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/project/sockshop')).toBe('https://bridge.demo.keptn.sh');
+    expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/dashboard')).toEqual('https://bridge.demo.keptn.sh');
+    expect(getBridgeBaseHref('https://bridge.demo.keptn.sh', '/project/sockshop')).toEqual('https://bridge.demo.keptn.sh');
   });
 
   it('should render project board for "sockshop"', fakeAsync(() => {
@@ -108,35 +109,31 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop');
+    expect(location.path()).toEqual('/project/sockshop');
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName', fakeAsync(() => {
     router.navigate(['project', 'sockshop']);
 
-    tick();
+    tick(3000);
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop');
-
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).toHaveClass('active');
+    expect(location.path()).toEqual('/project/sockshop');
+    assertMenuItems(MENU_ITEM.ENVIRONMENT);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/service', fakeAsync(() => {
@@ -145,21 +142,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/service');
+    expect(location.path()).toEqual('/project/sockshop/service');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SERVICES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/service/:serviceName', fakeAsync(() => {
@@ -168,21 +160,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/service/carts');
+    expect(location.path()).toEqual('/project/sockshop/service/carts');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SERVICES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext', fakeAsync(() => {
@@ -191,21 +178,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432');
+    expect(location.path()).toEqual('/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SERVICES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/service/:serviceName/context/:shkeptncontext/stage/:stage', fakeAsync(() => {
@@ -214,21 +196,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
+    expect(location.path()).toEqual('/project/sockshop/service/carts/context/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SERVICES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/sequence', fakeAsync(() => {
@@ -237,23 +214,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence');
+    expect(location.path()).toEqual('/project/sockshop/sequence');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/sequence/:shkeptncontext', fakeAsync(() => {
@@ -262,23 +232,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
+    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/sequence/:shkeptncontext/stage/:stage', fakeAsync(() => {
@@ -287,23 +250,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/dev');
+    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/dev');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink project/:projectName/sequence/:shkeptncontext/event/:eventId', fakeAsync(() => {
@@ -312,23 +268,16 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/e8f12220-b0f7-4e2f-898a-b6b7e699f12a');
+    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/e8f12220-b0f7-4e2f-898a-b6b7e699f12a');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink trace/:shkeptncontext', fakeAsync(() => {
@@ -337,28 +286,21 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432');
+    expect(location.path()).toEqual('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432');
 
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
+    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/staging');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink trace/:shkeptncontext/:stage', fakeAsync(() => {
@@ -367,28 +309,21 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/dev');
+    expect(location.path()).toEqual('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/dev');
 
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/dev');
+    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/stage/dev');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
   xit('deepLink trace/:shkeptncontext/:eventtype', fakeAsync(() => {
@@ -397,28 +332,70 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/sh.keptn.event.evaluation.triggered');
+    expect(location.path()).toEqual('/trace/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/sh.keptn.event.evaluation.triggered');
 
     tick();
     fixture.detectChanges();
 
-    expect(location.path()).toBe('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/7c105021-3a50-47c7-aaa9-2e6286b17d89');
+    expect(location.path()).toEqual('/project/sockshop/sequence/6f1327d2-ded2-48ab-a1c6-e4f3d0ebe432/event/7c105021-3a50-47c7-aaa9-2e6286b17d89');
 
-    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
-    expect(menuItems.length).toBe(4);
-    expect(menuItems[0].nativeElement.textContent).toContain('Environment');
-    expect(menuItems[0].nativeElement).not.toHaveClass('active');
-    expect(menuItems[1].nativeElement.textContent).toContain('Services');
-    expect(menuItems[1].nativeElement).not.toHaveClass('active');
-    expect(menuItems[2].nativeElement.textContent).toContain('Sequences');
-    expect(menuItems[2].nativeElement).toHaveClass('active');
+    assertMenuItems(MENU_ITEM.SEQUENCES);
 
     router.navigate(['/']);
     tick();
     fixture.detectChanges();
     discardPeriodicTasks(); // fixes "x timer(s) still in the queue"; TODO: check if that message means that subscriptions are not correctly unsubscribed?
 
-    expect(location.path()).toBe('/dashboard');
+    expect(location.path()).toEqual('/dashboard');
   }));
 
+  function assertMenuItems(activeItem: MENU_ITEM): void {
+    const menuItems = fixture.debugElement.queryAll(By.css('.dt-menu .dt-menu-item'));
+    expect(menuItems.length).toEqual(6);
+
+    if (activeItem === MENU_ITEM.ENVIRONMENT) {
+      expect(menuItems[0].nativeElement.getAttribute('class')).toContain('active');
+    } else {
+      expect(menuItems[0].nativeElement.getAttribute('class')).not.toContain('active');
+    }
+
+    if (activeItem === MENU_ITEM.SERVICES) {
+      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+    } else {
+      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+    }
+
+    if (activeItem === MENU_ITEM.SEQUENCES) {
+      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+    } else {
+      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+    }
+
+    if (activeItem === MENU_ITEM.INTEGRATIONS) {
+      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+    } else {
+      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+    }
+
+    if (activeItem === MENU_ITEM.UNIFORM) {
+      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+    } else {
+      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+    }
+
+    if (activeItem === MENU_ITEM.SETTINGS) {
+      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+    } else {
+      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+    }
+  }
+
+  enum MENU_ITEM {
+    ENVIRONMENT,
+    SERVICES,
+    SEQUENCES,
+    INTEGRATIONS,
+    UNIFORM,
+    SETTINGS
+  }
 });

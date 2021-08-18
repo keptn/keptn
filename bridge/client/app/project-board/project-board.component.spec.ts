@@ -1,11 +1,12 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { ProjectBoardComponent } from './project-board.component';
-import { AppModule, INITIAL_DELAY_MILLIS } from '../app.module';
+import { AppModule } from '../app.module';
 import { DataServiceMock } from '../_services/data.service.mock';
 import { ActivatedRoute, convertToParamMap, ParamMap, UrlSegment } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../_services/data.service';
+import { INITIAL_DELAY_MILLIS } from '../_utils/app.utils';
 
 describe('ProjectBoardComponent', () => {
   let component: ProjectBoardComponent;
@@ -135,7 +136,7 @@ describe('ProjectBoardComponent', () => {
 
     // then
     component.hasProject$.subscribe(hasProject => {
-      expect(hasProject).toBeTrue();
+      expect(hasProject).toBe(true);
       done();
     });
   });
@@ -150,7 +151,7 @@ describe('ProjectBoardComponent', () => {
 
     // then
     component.hasProject$.subscribe(hasProject => {
-      expect(hasProject).toBeFalse();
+      expect(hasProject).toBe(false);
       done();
     });
   });

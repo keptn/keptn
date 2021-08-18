@@ -1,7 +1,7 @@
-import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {AppModule} from '../app.module';
-import {DataServiceMock} from './data.service.mock';
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../app.module';
+import { DataServiceMock } from './data.service.mock';
 
 describe('MockDataService', () => {
   beforeEach(() => TestBed.configureTestingModule({
@@ -9,7 +9,7 @@ describe('MockDataService', () => {
     imports: [
       AppModule,
       HttpClientTestingModule,
-    ]
+    ],
   }));
 
   it('should return 1 project', () => {

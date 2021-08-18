@@ -1,7 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { KtbUniformRegistrationLogsComponent } from './ktb-uniform-registration-logs.component';
 import { UniformRegistrationLogsMock } from '../../_models/uniform-registrations-logs.mock';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbUniformRegistrationLogsComponent', () => {
   let component: KtbUniformRegistrationLogsComponent;
@@ -9,16 +10,15 @@ describe('KtbUniformRegistrationLogsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KtbUniformRegistrationLogsComponent ]
+      imports: [AppModule, HttpClientTestingModule],
     })
-    .compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbUniformRegistrationLogsComponent);
-    component = fixture.componentInstance;
-    component.logs = UniformRegistrationLogsMock;
-    fixture.detectChanges();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbUniformRegistrationLogsComponent);
+        component = fixture.componentInstance;
+        component.logs = UniformRegistrationLogsMock;
+        fixture.detectChanges();
+      });
   });
 
   it('should create', () => {
@@ -29,7 +29,7 @@ describe('KtbUniformRegistrationLogsComponent', () => {
     component.logs = [];
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.uniform-registration-error-log')).toBeFalsy();
-    expect(fixture.nativeElement.innerText).toEqual('No logs for this integration available');
+    expect(fixture.nativeElement.textContent.trim()).toEqual('No logs for this integration available');
   });
 
   it('should have 10 logs', () => {
@@ -51,16 +51,21 @@ describe('KtbUniformRegistrationLogsComponent', () => {
 
   it('should be unread without initial date', () => {
     component.lastSeen = undefined;
-    expect(component.isUnread('2021-05-10T09:04:05.000Z')).toBeTrue();
+    expect(component.isUnread('2021-05-10T09:04:05.000Z')).toBe(true);
   });
 
   it('should be unread', () => {
     component.lastSeen = new Date('2021-05-10T09:04:05.000Z');
-    expect(component.isUnread('2021-05-10T09:04:05.000Z')).toBeFalse();
+    expect(component.isUnread('2021-05-10T09:04:05.000Z')).toBe(false);
   });
 
   it('should be read', () => {
     component.lastSeen = new Date('2021-05-10T09:04:05.000Z');
-    expect(component.isUnread('2021-05-10T10:04:05.000Z')).toBeTrue();
+    expect(component.isUnread('2021-05-10T10:04:05.000Z')).toBe(true);
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

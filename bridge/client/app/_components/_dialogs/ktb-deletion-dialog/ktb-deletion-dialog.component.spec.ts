@@ -1,9 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbDeletionDialogComponent } from './ktb-deletion-dialog.component';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AppModule } from '../../../app.module';
 import { DeleteResult, DeleteType } from '../../../_interfaces/delete';
 import { EventService } from '../../../_services/event.service';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 
 describe('KtbDeletionDialogComponent', () => {
@@ -12,26 +13,25 @@ describe('KtbDeletionDialogComponent', () => {
   const dialogData = {name: 'sockshop', type: DeleteType.PROJECT};
   let eventService: EventService;
   const dialogRefMock = {
-    close: () => { }
+    close: () => {
+    },
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbDeletionDialogComponent],
-      imports: [AppModule, MatDialogModule],
+      imports: [AppModule, MatDialogModule, HttpClientTestingModule],
       providers: [
         EventService,
         {provide: MAT_DIALOG_DATA, useValue: dialogData},
-        {provide: MatDialogRef, useValue: dialogRefMock}
-      ]
+        {provide: MatDialogRef, useValue: dialogRefMock},
+      ],
     })
-      .compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbDeletionDialogComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbDeletionDialogComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+      });
   });
 
   it('should create', () => {
@@ -47,7 +47,7 @@ describe('KtbDeletionDialogComponent', () => {
     component.deletionConfirmationForm.updateValueAndValidity();
 
     // then
-    expect(component.deletionConfirmationForm.valid).toBeTrue();
+    expect(component.deletionConfirmationForm.valid).toBe(true);
   });
 
   it('should be an invalid form when input is empty', () => {
@@ -59,7 +59,7 @@ describe('KtbDeletionDialogComponent', () => {
     component.deletionConfirmationForm.updateValueAndValidity();
 
     // then
-    expect(component.deletionConfirmationForm.invalid).toBeTrue();
+    expect(component.deletionConfirmationForm.invalid).toBe(true);
   });
 
   it('should be an invalid form when name and input do not match', () => {
@@ -70,7 +70,7 @@ describe('KtbDeletionDialogComponent', () => {
     values.forEach(val => {
       input.setValue(val);
       component.deletionConfirmationForm.updateValueAndValidity();
-      expect(component.deletionConfirmationForm.invalid).toBeTrue();
+      expect(component.deletionConfirmationForm.invalid).toBe(true);
     });
   });
 
@@ -85,7 +85,7 @@ describe('KtbDeletionDialogComponent', () => {
 
     // then
     const button = fixture.nativeElement.querySelector('.danger-button');
-    expect(button.disabled).toBeTrue();
+    expect(button.disabled).toBe(true);
   });
 
   it('should have a disabled button when input was first valid and then is invalid', () => {
@@ -99,7 +99,7 @@ describe('KtbDeletionDialogComponent', () => {
 
     // then
     let button = fixture.nativeElement.querySelector('.danger-button');
-    expect(button.disabled).toBeFalse();
+    expect(button.disabled).toBe(false);
 
     // when
     input.setValue('sock');
@@ -108,7 +108,7 @@ describe('KtbDeletionDialogComponent', () => {
 
     // then
     button = fixture.nativeElement.querySelector('.danger-button');
-    expect(button.disabled).toBeTrue();
+    expect(button.disabled).toBe(true);
   });
 
   it('should have an enabled button when form is valid', () => {
@@ -122,13 +122,13 @@ describe('KtbDeletionDialogComponent', () => {
 
     // then
     const button = fixture.nativeElement.querySelector('.danger-button');
-    expect(button.disabled).toBeFalse();
+    expect(button.disabled).toBe(false);
   });
 
   it('should trigger an deletion event when deletion button is clicked', () => {
     // given
     const button = fixture.nativeElement.querySelector('.danger-button');
-    const spy = spyOn(component, 'deleteProject');
+    const spy = jest.spyOn(component, 'deleteProject');
 
     // when
     button.dispatchEvent(new Event('click'));
@@ -141,20 +141,20 @@ describe('KtbDeletionDialogComponent', () => {
   it('should call EventService.deletionTriggeredEvent when deleteProject is called', () => {
     // given
     eventService = TestBed.inject(EventService);
-    const spy = spyOn(eventService.deletionTriggeredEvent, 'next');
+    const spy = jest.spyOn(eventService.deletionTriggeredEvent, 'next');
 
     // when
     component.deleteProject();
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy.calls.mostRecent().args[0]).toEqual(dialogData);
+    expect(spy).toHaveBeenCalledWith({...dialogData});
   });
 
   it('should close the dialog when deletionProgressEvent result is SUCCESS', () => {
     // given
     eventService = TestBed.inject(EventService);
-    const spy = spyOn(component.dialogRef, 'close').and.callThrough();
+    const spy = jest.spyOn(component.dialogRef, 'close');
 
     // when
     eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
@@ -162,4 +162,9 @@ describe('KtbDeletionDialogComponent', () => {
     // then
     expect(spy).toHaveBeenCalled();
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });

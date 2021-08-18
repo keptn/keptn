@@ -1,4 +1,4 @@
-<div fxLayout="column">
+<div fxLayout="column" *ngIf="subscription">
   <div fxLayout="row">
     <input fxFlex="200px" class="mr-2 item" placeholder="Subscription name" dtInput [(ngModel)]="subscription.name" required>
     <span fxFlex="100px" class="bold mr-1">subscribes to:</span>

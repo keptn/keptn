@@ -1,5 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { KtbSettingsViewComponent } from './ktb-settings-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -18,7 +17,6 @@ describe('KtbSettingsViewComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [KtbSettingsViewComponent],
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
@@ -27,29 +25,28 @@ describe('KtbSettingsViewComponent', () => {
           useValue: {
             params: of({projectName: 'sockshop'}),
             data: routeDataSubject.asObservable(),
-            queryParams: of({})
+            queryParams: of({}),
+          },
+        },
+      ],
+    })
+      .compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbSettingsViewComponent);
+        component = fixture.componentInstance;
+        dataService = fixture.debugElement.injector.get(DataService);
+
+        const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
+        if (notifications.length > 0) {
+          // tslint:disable-next-line:prefer-for-of
+          for (let i = 0; i < notifications.length; i++) {
+            notifications[i].remove();
           }
         }
-      ]
-    })
-      .compileComponents();
+
+        fixture.detectChanges();
+      });
   }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(KtbSettingsViewComponent);
-    component = fixture.componentInstance;
-    dataService = fixture.debugElement.injector.get(DataService);
-
-    const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
-    if (notifications.length > 0) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let i = 0; i < notifications.length; i++) {
-        notifications[i].remove();
-      }
-    }
-
-    fixture.detectChanges();
-  });
 
   it('should create settings view component', () => {
     expect(component).toBeTruthy();
@@ -61,7 +58,7 @@ describe('KtbSettingsViewComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(component.isCreateMode).toBeTrue();
+    expect(component.isCreateMode).toBe(true);
   });
 
   it('should have a validation error if project name already exists in projects', async () => {
@@ -74,7 +71,7 @@ describe('KtbSettingsViewComponent', () => {
     component.projectNameControl.setValue('sockshop');
 
     // then
-    expect(component.projectNameControl.hasError('projectName')).toBeTrue();
+    expect(component.projectNameControl.hasError('projectName')).toBe(true);
   });
 
   it('should navigate to created project', async () => {
@@ -85,7 +82,7 @@ describe('KtbSettingsViewComponent', () => {
 
     // when
     const router = TestBed.inject(Router);
-    const routeSpy = spyOn(router, 'navigate');
+    const routeSpy = jest.spyOn(router, 'navigate');
     await dataService.loadProjects();
 
     // then
@@ -97,12 +94,12 @@ describe('KtbSettingsViewComponent', () => {
     const gitData = {
       remoteURI: 'https://test.git',
       gitUser: 'username',
-      gitToken: 'token'
+      gitToken: 'token',
     };
     component.projectName = 'sockshop';
 
     // when
-    const spy = spyOn(dataService, 'setGitUpstreamUrl').and.callThrough();
+    const spy = jest.spyOn(dataService, 'setGitUpstreamUrl');
     component.updateGitData(gitData);
     component.setGitUpstream();
 
@@ -115,7 +112,7 @@ describe('KtbSettingsViewComponent', () => {
     routeDataSubject.next({isCreateMode: false});
     fixture.detectChanges();
 
-    expect(component.isCreateMode).toBeFalse();
+    expect(component.isCreateMode).toBe(false);
   });
 
   it('should set project name to projectName retrieved by route', () => {
@@ -164,7 +161,7 @@ describe('KtbSettingsViewComponent', () => {
 
     // when
     const router = TestBed.inject(Router);
-    const routeSpy = spyOn(router, 'navigate');
+    const routeSpy = jest.spyOn(router, 'navigate');
     component.deleteProject('sockshop');
 
     // then
@@ -183,7 +180,7 @@ describe('KtbSettingsViewComponent', () => {
     expect(notifications.length).toEqual(0);
   });
 
-  it('should show a notification when "unsaved" is set', () => {
+  it('should show a notification when "unsaved" is set', async () => {
     // given
     component.isCreateMode = false;
     component.unsavedDialogState = UNSAVED_DIALOG_STATE;
@@ -192,11 +189,16 @@ describe('KtbSettingsViewComponent', () => {
     // then
     const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
     expect(notification.length).toEqual(1);
+
+    // We have to reset the state, as the dt-confirmation-dialog component has some pending timer open
+    // and the test will not complete
+    component.unsavedDialogState = null;
+    fixture.detectChanges();
   });
 
   it('should show a notification for unsaved changes when git data is changed in update mode', () => {
     // given
-    component.isCreateMode = false;
+    component.isCreateMode = true;
     fixture.detectChanges();
 
     // when
@@ -265,6 +267,11 @@ describe('KtbSettingsViewComponent', () => {
     // It still exists in the dom but is hidden - so we test for aria-hidden
     expect(notification.getAttribute('aria-hidden')).toEqual('true');
   });
+
+  afterEach(fakeAsync(() => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+  }));
 });
 
 

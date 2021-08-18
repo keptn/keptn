@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
-import {KtbMarkdownComponent} from './ktb-markdown.component';
-import {AppModule} from '../../app.module';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbKeptnServicesListComponent} from "../ktb-keptn-services-list/ktb-keptn-services-list.component";
+import { KtbMarkdownComponent } from './ktb-markdown.component';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbExpandableTileComponent', () => {
   let component: KtbMarkdownComponent;
@@ -24,6 +22,10 @@ describe('KtbExpandableTileComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

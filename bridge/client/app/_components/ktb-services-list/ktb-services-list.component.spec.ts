@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbServicesListComponent } from './ktb-services-list.component';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppModule} from "../../app.module";
-import {KtbSequenceTimelineComponent} from "../ktb-sequence-timeline/ktb-sequence-timeline.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 
 describe('KtbServicesListComponent', () => {
   let component: KtbServicesListComponent;
@@ -11,7 +9,6 @@ describe('KtbServicesListComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -24,6 +21,10 @@ describe('KtbServicesListComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

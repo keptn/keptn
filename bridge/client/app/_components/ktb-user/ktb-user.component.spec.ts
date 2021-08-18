@@ -1,5 +1,7 @@
-import {KtbUserComponent} from './ktb-user.component';
-import {ComponentFixture, fakeAsync, TestBed} from '@angular/core/testing';
+import { KtbUserComponent } from './ktb-user.component';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ktbUserComponentTest', () => {
 
@@ -8,14 +10,15 @@ describe('ktbUserComponentTest', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [KtbUserComponent],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(KtbUserComponent);
-    component = fixture.componentInstance;
+      imports: [AppModule, HttpClientTestingModule],
+    }).compileComponents()
+      .then(() => {
+        fixture = TestBed.createComponent(KtbUserComponent);
+        component = fixture.componentInstance;
+      });
   });
 
-  it('should be created successfully.', () => {
+  it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeDefined();
   });
@@ -24,5 +27,4 @@ describe('ktbUserComponentTest', () => {
     fixture.destroy();
     TestBed.resetTestingModule();
   }));
-
 });

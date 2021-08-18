@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
-import {KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle} from './ktb-horizontal-separator.component';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppModule} from "../../app.module";
-import {KtbExpandableTileComponent} from "../ktb-expandable-tile/ktb-expandable-tile.component";
+import { KtbHorizontalSeparatorComponent } from './ktb-horizontal-separator.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 
 describe('KtbHorizontalSeparatorComponent', () => {
   let component: KtbHorizontalSeparatorComponent;
@@ -11,7 +9,6 @@ describe('KtbHorizontalSeparatorComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -24,6 +21,10 @@ describe('KtbHorizontalSeparatorComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbHttpLoadingBarComponent } from './ktb-http-loading-bar.component';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppModule} from "../../app.module";
-import {KtbHorizontalSeparatorComponent} from "../ktb-horizontal-separator/ktb-horizontal-separator.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 
 describe('HttpLoadingBarComponent', () => {
   let component: KtbHttpLoadingBarComponent;
@@ -11,7 +9,6 @@ describe('HttpLoadingBarComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -24,6 +21,10 @@ describe('HttpLoadingBarComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

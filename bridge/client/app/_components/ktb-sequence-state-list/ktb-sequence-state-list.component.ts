@@ -1,17 +1,27 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, NgZone, OnDestroy, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  Input,
+  NgZone,
+  OnDestroy,
+  ViewEncapsulation,
+} from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
-import { Subscription, timer } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { Project } from '../../_models/project';
+import { AppUtils, INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-sequence-state-list',
   templateUrl: './ktb-sequence-state-list.component.html',
   styleUrls: ['./ktb-sequence-state-list.component.scss'],
   host: {
-    class: 'ktb-sequence-state-list'
+    class: 'ktb-sequence-state-list',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
@@ -20,12 +30,9 @@ import { Project } from '../../_models/project';
 export class KtbSequenceStateListComponent implements OnDestroy {
   private _project?: Project;
   private _sequenceStates: Sequence[] = [];
+  private _timer: Subscription = Subscription.EMPTY;
   public dataSource: DtTableDataSource<Sequence> = new DtTableDataSource();
   public SequenceClass = Sequence;
-
-  private _timerInterval = 30;
-  private _timer: Subscription = Subscription.EMPTY;
-
   public PAGE_SIZE = 5;
 
   @Input()
@@ -38,7 +45,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
       this._project = value;
       this._timer.unsubscribe();
       this.ngZone.runOutsideAngular(() => {
-        this._timer = timer(0, this._timerInterval * 1000)
+        this._timer = AppUtils.createTimer(this.initialDelayMillis)
           .subscribe(() => {
             this.loadLatestSequences();
           });
@@ -58,7 +65,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
   }
 
   loadLatestSequences() {

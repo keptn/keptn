@@ -1,5 +1,5 @@
 import {Directive, Output, EventEmitter, HostListener, HostBinding, Input} from '@angular/core';
-import {FormUtils} from '../_utils/form.utils';
+import {FormUtils} from '../../_utils/form.utils';
 
 @Directive({
   selector: '[ktbDragAndDrop]'
@@ -40,8 +40,10 @@ export class KtbDragAndDropDirective {
 
   @HostListener('drop', ['$event'])
   public onDrop(evt: DragEvent) {
+    // if (evt.preventDefault) {
     evt.preventDefault();
     evt.stopPropagation();
+    // }
     const files: FileList | undefined = evt.dataTransfer?.files;
     if (files) {
       this.styleClass = this.BASE_STYLE_CLASS;

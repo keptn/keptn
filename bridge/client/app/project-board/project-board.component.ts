@@ -5,8 +5,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Trace } from '../_models/trace';
 import { DataService } from '../_services/data.service';
 import { environment } from '../../environments/environment';
-import { INITIAL_DELAY_MILLIS } from '../app.module';
-import { AppUtils } from '../_utils/app.utils';
+import { AppUtils, INITIAL_DELAY_MILLIS } from '../_utils/app.utils';
 
 @Component({
   selector: 'ktb-project-board',

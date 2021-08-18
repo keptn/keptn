@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbSliBreakdownCriteriaItemComponent } from './ktb-sli-breakdown-criteria-item.component';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbServicesListComponent} from "../ktb-services-list/ktb-services-list.component";
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbSliBreakdownCriteriaItemComponent', () => {
   let component: KtbSliBreakdownCriteriaItemComponent;
@@ -11,7 +9,6 @@ describe('KtbSliBreakdownCriteriaItemComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -24,6 +21,10 @@ describe('KtbSliBreakdownCriteriaItemComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

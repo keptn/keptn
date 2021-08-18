@@ -1,10 +1,11 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import {Observable, Subject, timer} from 'rxjs';
+import { Component, Inject, NgZone, OnDestroy, OnInit } from '@angular/core';
+import {Observable, Subject} from 'rxjs';
 import {Project} from '../_models/project';
 import {DataService} from '../_services/data.service';
 import {environment} from '../../environments/environment';
 import {takeUntil} from 'rxjs/operators';
 import {DtOverlay} from '@dynatrace/barista-components/overlay';
+import { AppUtils, INITIAL_DELAY_MILLIS } from '../_utils/app.utils';
 
 @Component({
   selector: 'ktb-dashboard',
@@ -15,11 +16,9 @@ export class DashboardComponent implements OnInit, OnDestroy{
   public projects$: Observable<Project[] | undefined>;
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
   public isQualityGatesOnly = false;
-
-  private readonly _projectTimerInterval = 30 * 1000;
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
 
-  constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay) {
+  constructor(private dataService: DataService, private ngZone: NgZone, private _dtOverlay: DtOverlay, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
     this.projects$ = this.dataService.projects;
   }
 
@@ -30,16 +29,11 @@ export class DashboardComponent implements OnInit, OnDestroy{
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
 
-    // If we don't run this outside angular e2e tests will fail
-    // because Protractor waits for async tasks to complete - in case of timer they do not finish so the tests time out
-    // https://github.com/angular/protractor/blob/master/docs/timeouts.md#waiting-for-angular
     this.ngZone.runOutsideAngular(() => {
-      timer(this._projectTimerInterval, this._projectTimerInterval)
+      AppUtils.createTimer(this.initialDelayMillis, this.initialDelayMillis)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
-          this.ngZone.run(() => {
-            this.loadProjects();
-          });
+          this.loadProjects();
         });
     });
   }

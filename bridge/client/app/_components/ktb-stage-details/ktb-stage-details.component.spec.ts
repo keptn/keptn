@@ -1,9 +1,7 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { KtbStageDetailsComponent } from './ktb-stage-details.component';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {AppModule} from '../../app.module';
-import {KtbStageBadgeComponent} from "../ktb-stage-badge/ktb-stage-badge.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 
 describe('KtbStageDetailsComponent', () => {
   let component: KtbStageDetailsComponent;
@@ -11,7 +9,6 @@ describe('KtbStageDetailsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -24,6 +21,10 @@ describe('KtbStageDetailsComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();

@@ -1,9 +1,8 @@
 import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
 import { AppHeaderComponent } from './app-header.component';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppModule} from "../app.module";
-import {KtbServiceViewComponent} from "../_views/ktb-service-view/ktb-service-view.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../app.module';
+import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 
 describe('AppHeaderComponent', () => {
   let component: AppHeaderComponent;
@@ -16,6 +15,9 @@ describe('AppHeaderComponent', () => {
         AppModule,
         HttpClientTestingModule,
       ],
+      providers: [
+        {provide: RETRY_ON_HTTP_ERROR, useValue: false}
+      ]
     })
       .compileComponents()
       .then(() => {
@@ -24,6 +26,10 @@ describe('AppHeaderComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
   afterEach(fakeAsync(() => {
     fixture.destroy();
