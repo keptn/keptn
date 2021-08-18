@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -75,13 +76,26 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
 	// Note: "old" registrations will NOT get subscription IDs
 	if integration.Subscriptions == nil {
+		var projectFilter []string
+		var stageFilter []string
+		var serviceFilter []string
+		if integration.Subscription.Filter.Project != "" {
+			projectFilter = strings.Split(integration.Subscription.Filter.Project, ",")
+		}
+		if integration.Subscription.Filter.Stage != "" {
+			stageFilter = strings.Split(integration.Subscription.Filter.Stage, ",")
+		}
+		if integration.Subscription.Filter.Service != "" {
+			serviceFilter = strings.Split(integration.Subscription.Filter.Service, ",")
+		}
+
 		for _, t := range integration.Subscription.Topics {
 			ts := keptnmodels.EventSubscription{
 				Event: t,
 				Filter: keptnmodels.EventSubscriptionFilter{
-					Projects: []string{integration.Subscription.Filter.Project},
-					Stages:   []string{integration.Subscription.Filter.Stage},
-					Services: []string{integration.Subscription.Filter.Service},
+					Projects: projectFilter,
+					Stages:   stageFilter,
+					Services: serviceFilter,
 				},
 			}
 			integration.Subscriptions = append(integration.Subscriptions, ts)
