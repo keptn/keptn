@@ -18,7 +18,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 //
 // 		// make and configure a mocked sdk.TaskHandler
 // 		mockedTaskHandler := &TaskHandlerMock{
-// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, data interface{}, eventType string) (interface{}, *sdk.Error) {
+// 			ExecuteFunc: func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent, eventType string) (interface{}, *sdk.Error) {
 // 				panic("mock out the Execute method")
 // 			},
 // 		}
@@ -29,7 +29,7 @@ var _ sdk.TaskHandler = &TaskHandlerMock{}
 // 	}
 type TaskHandlerMock struct {
 	// ExecuteFunc mocks the Execute method.
-	ExecuteFunc func(keptnHandle sdk.IKeptn, data interface{}, eventType string) (interface{}, *sdk.Error)
+	ExecuteFunc func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent, eventType string) (interface{}, *sdk.Error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -37,8 +37,8 @@ type TaskHandlerMock struct {
 		Execute []struct {
 			// KeptnHandle is the keptnHandle argument value.
 			KeptnHandle sdk.IKeptn
-			// Data is the data argument value.
-			Data interface{}
+			// Event is the event argument value.
+			Event sdk.KeptnEvent
 			// EventType is the eventType argument value.
 			EventType string
 		}
@@ -47,23 +47,23 @@ type TaskHandlerMock struct {
 }
 
 // Execute calls ExecuteFunc.
-func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}, eventType string) (interface{}, *sdk.Error) {
+func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, event sdk.KeptnEvent, eventType string) (interface{}, *sdk.Error) {
 	if mock.ExecuteFunc == nil {
 		panic("TaskHandlerMock.ExecuteFunc: method is nil but TaskHandler.Execute was just called")
 	}
 	callInfo := struct {
 		KeptnHandle sdk.IKeptn
-		Data        interface{}
+		Event       sdk.KeptnEvent
 		EventType   string
 	}{
 		KeptnHandle: keptnHandle,
-		Data:        data,
+		Event:       event,
 		EventType:   eventType,
 	}
 	mock.lockExecute.Lock()
 	mock.calls.Execute = append(mock.calls.Execute, callInfo)
 	mock.lockExecute.Unlock()
-	return mock.ExecuteFunc(keptnHandle, data, eventType)
+	return mock.ExecuteFunc(keptnHandle, event, eventType)
 }
 
 // ExecuteCalls gets all the calls that were made to Execute.
@@ -71,12 +71,12 @@ func (mock *TaskHandlerMock) Execute(keptnHandle sdk.IKeptn, data interface{}, e
 //     len(mockedTaskHandler.ExecuteCalls())
 func (mock *TaskHandlerMock) ExecuteCalls() []struct {
 	KeptnHandle sdk.IKeptn
-	Data        interface{}
+	Event       sdk.KeptnEvent
 	EventType   string
 } {
 	var calls []struct {
 		KeptnHandle sdk.IKeptn
-		Data        interface{}
+		Event       sdk.KeptnEvent
 		EventType   string
 	}
 	mock.lockExecute.RLock()

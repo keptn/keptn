@@ -22,6 +22,8 @@ type ResourceHandler interface {
 	GetProjectResource(project string, resourceURI string) (*models.Resource, error)
 }
 
+type KeptnEvent models.KeptnContextExtendedCE
+
 type Error struct {
 	StatusType keptnv2.StatusType
 	ResultType keptnv2.ResultType
@@ -36,15 +38,15 @@ type TaskHandler interface {
 	//
 	// Note, that the contract of the method is to return the payload of the .finished event to be sent out as well as a Error Pointer
 	// or nil, if there was no error during execution.
-	Execute(keptnHandle IKeptn, data interface{}, eventType string) (interface{}, *Error)
+	Execute(keptnHandle IKeptn, event KeptnEvent, eventType string) (interface{}, *Error)
 }
 
 type KeptnOption func(IKeptn)
 
 // WithHandler registers a handler which is responsible for processing a .triggered event
-func WithHandler(eventType string, handler TaskHandler, receivingEvent interface{}) KeptnOption {
+func WithHandler(eventType string, handler TaskHandler, filters ...func(event KeptnEvent) bool) KeptnOption {
 	return func(k IKeptn) {
-		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler, ReceivingEvent: receivingEvent})
+		k.GetTaskRegistry().Add(eventType, TaskEntry{TaskHandler: handler, EventFilters: filters})
 	}
 }
 
@@ -112,13 +114,24 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 	k.runEventTaskAction(func() {
 		{
 			if handler, ok := k.TaskRegistry.Contains(event.Type()); ok {
-				data := handler.ReceivingEvent
-				if err := event.DataAs(&data); err != nil {
-					if err := k.send(k.createErrorEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
+				keptnEvent := &KeptnEvent{}
+				if err := keptnv2.Decode(&event, keptnEvent); err != nil {
+					// no started event sent yet, so it only makes sense to send an error log event at this point
+					if err := k.send(k.createErrorLogEventForTriggeredEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
 						log.Errorf("unable to send .finished event: %v", err)
 						return
 					}
 				}
+
+				// execute the filtering functions of the task handler to determine whether the incoming event should be handled
+				// only if all functions return true, the event will be handled
+				for _, filterFn := range handler.EventFilters {
+					if !filterFn(*keptnEvent) {
+						log.Infof("Will not handle incoming %s event", event.Type())
+						return
+					}
+				}
+
 				// only respond with .started event if the incoming event is a task.triggered event
 				if keptnv2.IsTaskEventType(event.Type()) && keptnv2.IsTriggeredEventType(event.Type()) {
 					if err := k.send(k.createStartedEventForTriggeredEvent(event)); err != nil {
@@ -127,15 +140,7 @@ func (k *Keptn) gotEvent(event cloudevents.Event) {
 					}
 				}
 
-				// do not use handler.ReceivingEvent to pass data to the executor to avoid concurrency issues
-				var passData interface{}
-				if err := event.DataAs(&passData); err != nil {
-					if err := k.send(k.createErrorEvent(event, nil, &Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed})); err != nil {
-						log.Errorf("unable to send .finished event: %v", err)
-					}
-					return
-				}
-				result, err := handler.TaskHandler.Execute(k, passData, event.Type())
+				result, err := handler.TaskHandler.Execute(k, *keptnEvent, event.Type())
 				if err != nil {
 					log.Errorf("error during task execution %v", err.Err)
 					if err := k.send(k.createErrorEvent(event, result, err)); err != nil {
