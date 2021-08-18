@@ -150,6 +150,22 @@ func ApiPOSTRequest(path string, payload interface{}) (*req.Resp, error) {
 	return r, nil
 }
 
+func ApiPUTRequest(path string, payload interface{}) (*req.Resp, error) {
+	apiToken, keptnAPIURL, err := GetApiCredentials()
+	if err != nil {
+		return nil, err
+	}
+
+	authHeader := getAuthHeader(apiToken)
+
+	r, err := req.Put(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
 func GetApiCredentials() (string, string, error) {
 	apiToken, err := keptnkubeutils.GetKeptnAPITokenFromSecret(false, GetKeptnNameSpaceFromEnv(), "keptn-api-token")
 	if err != nil {

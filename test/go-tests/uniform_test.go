@@ -63,6 +63,58 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	require.Equal(t, uniformIntegration.Subscriptions[0].Filter, integrations[0].Subscriptions[0].Filter)
 	require.NotEmpty(t, integrations[0].MetaData.LastSeen)
 
+	// add a subscription to the integration
+	newSubscription := keptnmodels.EventSubscription{
+		Event: keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName),
+		Filter: keptnmodels.EventSubscriptionFilter{
+			Projects: []string{"my-project"},
+			Stages:   []string{"my-stage"},
+			Services: []string{"my-service"},
+		},
+	}
+
+	resp, err = ApiPOSTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription", integrations[0].ID), newSubscription)
+
+	require.Nil(t, err)
+
+	// retrieve the integration again
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+
+	integrations = []models.Integration{}
+	require.Nil(t, err)
+
+	// check if the new subscription is available
+	err = resp.ToJSON(&integrations)
+	require.Nil(t, err)
+	require.NotEmpty(t, integrations)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 2)
+	require.True(t, integrations[0].Subscriptions[1].ID != "")
+	require.Equal(t, newSubscription.Event, integrations[0].Subscriptions[1].Event)
+	require.Equal(t, newSubscription.Filter, integrations[0].Subscriptions[1].Filter)
+
+	// update the previously created subscription
+	newSubscription.Event = keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)
+	newSubscription.Filter.Projects = append(newSubscription.Filter.Projects, "other-project")
+	newSubscription.ID = integrations[0].Subscriptions[1].ID
+
+	resp, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", integrations[0].ID, newSubscription.ID), newSubscription)
+	require.Nil(t, err)
+
+	// retrieve the integration again
+	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
+
+	integrations = []models.Integration{}
+	require.Nil(t, err)
+
+	// check if the new subscription is available
+	err = resp.ToJSON(&integrations)
+	require.Nil(t, err)
+	require.NotEmpty(t, integrations)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 2)
+	require.Equal(t, newSubscription, integrations[0].Subscriptions[1])
+
 	// delete the integration
 	resp, err = ApiDELETERequest("/controlPlane/v1/uniform/registration/" + registrationResponse.ID)
 
