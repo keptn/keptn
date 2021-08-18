@@ -384,10 +384,10 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "amd64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "arm64"
           - platform: "ubuntu-20.04"
