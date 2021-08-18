@@ -21,12 +21,16 @@ func main() {
 
 	secretReader := lib.NewK8sSecretReader(kubeAPI)
 
+	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, &lib.CmdCurlExecutor{}, secretReader)
+
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
 		sdk.WithHandler(
 			eventTypeWildcard,
-			handler.NewTaskHandler(&lib.TemplateEngine{}, &lib.CmdCurlExecutor{}, secretReader),
-			map[string]interface{}{},
+			taskHandler,
+			func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
+				return taskHandler.WebhookAvailableForEvent(keptnHandle, event)
+			},
 		),
 	).Start())
 }

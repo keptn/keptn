@@ -19,10 +19,10 @@ func NewGetActionEventHandler() *GetActionEventHandler {
 	return &GetActionEventHandler{}
 }
 
-func (g *GetActionEventHandler) Execute(k sdk.IKeptn, data interface{}, _ string) (interface{}, *sdk.Error) {
+func (g *GetActionEventHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 	getActionTriggeredData := &keptnv2.GetActionTriggeredEventData{}
 
-	if err := keptnv2.Decode(data, getActionTriggeredData); err != nil {
+	if err := keptnv2.Decode(event.Data, getActionTriggeredData); err != nil {
 		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "Could not decode input event data"}
 	}
 

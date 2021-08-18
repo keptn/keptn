@@ -7,6 +7,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
+	log "github.com/sirupsen/logrus"
 )
 
 const webhookConfigFileName = "webhook.yaml"
@@ -29,16 +30,16 @@ func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlEx
 	}
 }
 
-func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventType string) (interface{}, *sdk.Error) {
+func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 
 	eventData := &keptnv2.EventData{}
-	if err := keptnv2.Decode(data, eventData); err != nil {
+	if err := keptnv2.Decode(event.Data, eventData); err != nil {
 		return nil, sdkError("could not decode incoming event payload", err)
 	}
 
 	eventDataMap := map[string]interface{}{}
 	// apply the EventData attributes to the result
-	if err := keptnv2.Decode(data, &eventDataMap); err != nil {
+	if err := keptnv2.Decode(event, &eventDataMap); err != nil {
 		return nil, sdkError("could not apply attributes from incoming event", err)
 	}
 
@@ -54,7 +55,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventT
 
 	responses := []string{}
 	for _, webhook := range whConfig.Spec.Webhooks {
-		if webhook.Type == eventType {
+		if webhook.Type == *event.Type {
 			secretEnvVars := map[string]string{}
 			for _, secretRef := range webhook.EnvFrom {
 				secretValue, err := th.secretReader.ReadSecret(secretRef.SecretRef.Name, secretRef.SecretRef.Key)
@@ -81,11 +82,25 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, data interface{}, eventT
 		}
 	}
 
-	eventDataMap[eventType] = map[string]interface{}{
+	eventDataMap[*event.Type] = map[string]interface{}{
 		"responses": responses,
 	}
 
 	return eventDataMap, nil
+}
+
+func (th *TaskHandler) WebhookAvailableForEvent(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
+	eventData := &keptnv2.EventData{}
+	if err := keptnv2.Decode(event.Data, eventData); err != nil {
+		log.WithError(err).Errorf("could not decode event")
+		return false
+	}
+	resource, err := th.getWebHookConfigResource(keptnHandle, eventData)
+	if err != nil || resource == nil {
+		log.Infof("no webhook available for %s event", event.Type)
+		return false
+	}
+	return true
 }
 
 func sdkError(msg string, err error) *sdk.Error {
