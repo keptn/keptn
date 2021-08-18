@@ -1,5 +1,6 @@
 import { UniformRegistration as ur } from '../../../server/interfaces/uniform-registration';
 import { UniformSubscription } from './uniform-subscription';
+import semver from 'semver/preload';
 
 
 export class UniformRegistration extends ur {
@@ -13,34 +14,24 @@ export class UniformRegistration extends ur {
   }
 
   public getSubscriptions(projectName: string): UniformSubscription[] {
-    const subscriptions = this.subscriptions.filter(subscription => subscription.project === projectName || !subscription.project);
-    subscriptions.sort((a, b) => {
-      let status;
-      if (!a.project) {
-        status = -1;
-      }
-      else if (!b.project) {
-        status = 1;
-      }
-      else {
-        status = a.topic.localeCompare(b.topic);
-      }
-      return status;
-    });
-    return subscriptions;
+    return this.subscriptions.filter(subscription => subscription.hasProject(projectName, true));
   }
 
   public hasSubscriptions(projectName: string): boolean {
-    return this.subscriptions.some(subscription => subscription.project === projectName || !subscription.project);
+    return this.subscriptions.some(subscription => subscription.hasProject(projectName, true));
   }
 
   public formatSubscriptions(projectName: string): string | undefined {
     const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
-      if (subscription.project === projectName || !subscription.project) {
-        accSubscriptions.push(subscription.topic);
+      if (subscription.hasProject(projectName, true)) {
+        accSubscriptions.push(subscription.event);
       }
       return accSubscriptions;
     }, []);
     return subscriptions.length !== 0 ? subscriptions.join('<br/>') : undefined;
+  }
+
+  public canEditSubscriptions(): boolean {
+    return !!(semver.valid(this.metadata.distributorversion) && semver.gte(this.metadata.distributorversion, '0.9.0'));
   }
 }

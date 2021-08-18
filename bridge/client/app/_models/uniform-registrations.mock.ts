@@ -26,7 +26,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.test.triggered'
+        event: 'sh.keptn.test.triggered'
       }],
     unreadEventsCount: 10
   },
@@ -53,7 +53,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.deployment.triggered'
+        event: 'sh.keptn.deployment.triggered'
       }]
   },
   {
@@ -79,7 +79,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.test.triggered'
+        event: 'sh.keptn.test.triggered'
       }]
   },
   {
@@ -105,7 +105,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.evaluation.triggered'
+        event: 'sh.keptn.evaluation.triggered'
       }]
   },
   {
@@ -131,7 +131,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.deployment.triggered'
+        event: 'sh.keptn.deployment.triggered'
       }]
   },
   {
@@ -158,7 +158,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          topic: 'sh.keptn.test.triggered'
+          event: 'sh.keptn.test.triggered'
         },
         {
           filter: {
@@ -166,7 +166,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          topic: 'sh.keptn.evaluation.triggered'
+          event: 'sh.keptn.evaluation.triggered'
         },
         {
           filter: {
@@ -174,7 +174,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          topic: 'sh.keptn.deployment.triggered'
+          event: 'sh.keptn.deployment.triggered'
         },
       ]
   },
@@ -201,7 +201,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.deployment.triggered'
+        event: 'sh.keptn.deployment.triggered'
       }]
   },
   {
@@ -227,7 +227,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.evaluation.triggered'
+        event: 'sh.keptn.evaluation.triggered'
       }]
   },
   {
@@ -253,7 +253,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        topic: 'sh.keptn.evaluation.triggered'
+        event: 'sh.keptn.evaluation.triggered'
       }]
   },
   {
@@ -280,7 +280,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          topic: 'sh.keptn.deployment.triggered'
+          event: 'sh.keptn.deployment.triggered'
         }
       ]
   }

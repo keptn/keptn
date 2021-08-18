@@ -1,0 +1,6 @@
+@import '../../../../../node_modules/@dynatrace/barista-components/core/src/style/variables';
+
+.error {
+  color: $red-500;
+  font-weight: bold;
+}

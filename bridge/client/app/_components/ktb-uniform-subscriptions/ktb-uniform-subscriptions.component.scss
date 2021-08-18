@@ -1,3 +1,5 @@
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
 ::ng-deep .subscription-list {
   display: table;
 
@@ -7,5 +9,15 @@
     > * {
       display: table-cell;
     }
+  }
+}
+
+button[dt-button].disabled {
+  background: $gray-600;
+  border-color: $gray-600;
+
+  &:hover {
+    background: $gray-500;
+    border-color: $gray-500;
   }
 }

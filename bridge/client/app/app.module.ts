@@ -113,6 +113,8 @@ import { EventService } from './_services/event.service';
 import { ToType } from './_pipes/to-type';
 import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.component';
 import { ToDatePipe } from './_pipes/to-date.pipe';
+import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
+import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -187,6 +189,8 @@ export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in
     ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
+    KtbDeleteConfirmationComponent,
+    KtbModifyUniformSubscriptionComponent,
   ],
   imports: [
     BrowserModule,

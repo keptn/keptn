@@ -1,7 +1,15 @@
+@import '~@dynatrace/barista-components/core/src/style/variables';
+
 .dt-icon {
   width: 20px;
 }
 
 .item {
   height: 30px;
+}
+
+button.disabled {
+  --dt-button-default-color: #6d6d6d;
+  --dt-button-hover-color: #898989;
+  --dt-button-active-color: #6d6d6d;
 }

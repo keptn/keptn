@@ -1,4 +1,4 @@
-<div fxFlexFill fxLayout="column" class="container" *ngIf="projectName$ | async as projectName">
+<div fxFlexFill fxLayout="column" class="container" *ngIf="projectName as projectName">
   <div fxLayout="column" fxFlex="0 0 60%" class="overflow-y-scroll">
     <dt-loading-spinner *ngIf="!uniformRegistrations.data"></dt-loading-spinner>
 
@@ -22,7 +22,7 @@
         <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).metadata.integrationversion || 'n/a'"></dt-cell>
       </ng-container>
 
-      <ng-container dtColumnDef="host" dtColumnAlign="text" dtColumnProportion="3" >
+      <ng-container dtColumnDef="host" dtColumnAlign="text" dtColumnProportion="3">
         <dt-header-cell dt-sort-header *dtHeaderCellDef>Cluster / Host</dt-header-cell>
         <dt-cell *dtCellDef="let row" [textContent]="(row | toType : UniformRegistrationClass).metadata.hostname || 'n/a'"></dt-cell>
       </ng-container>
@@ -77,10 +77,7 @@
         <ktb-expandable-tile-header>
           <h3 class="mt-0 mb-0">Subscriptions</h3>
         </ktb-expandable-tile-header>
-        <ktb-uniform-subscriptions *ngIf="selectedUniformRegistration.hasSubscriptions(projectName), else noSubscriptions" [uniformRegistration]="selectedUniformRegistration"></ktb-uniform-subscriptions>
-        <ng-template #noSubscriptions>
-          No subscriptions for this integration available
-        </ng-template>
+        <ktb-uniform-subscriptions [uniformRegistration]="selectedUniformRegistration"></ktb-uniform-subscriptions>
       </ktb-expandable-tile>
 
       <ktb-expandable-tile [alignment]="'left'" [expanded]="true">
@@ -99,6 +96,4 @@
       </ktb-expandable-tile>
     </ng-container>
   </div>
-
-
 </div>

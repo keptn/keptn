@@ -1,13 +1,41 @@
 <ng-container *ngIf="project && subscription as subscription">
-  <input class="item" placeholder="Subscription name" dtInput [(ngModel)]="name" required [readonly]="true">
-  <div class="mt-1">
-    <span class="bold pl-3 pr-2">subscribes to:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.topic"></span>
-    <span class="bold pr-2">in project:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.project || 'all'"></span>
-    <span class="bold pr-2">in stages:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('stages') || 'all'"></span>
-    <span class="bold pr-2">for services:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
+  <span class="pl-3 pr-4" [textContent]="name"></span>
+  <span class="bold pl-3 pr-2">subscribes to:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.event"></span>
+  <span class="bold pr-2">in projects:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('projects') || 'all'"></span>
+  <span class="bold pr-2">in stages:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('stages') || 'all'"></span>
+  <span class="bold pr-2">for services:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
+  <div>
+    <ng-container *ngIf="subscription.id, else oldSubscription">
+      <button dt-icon-button variant="nested" title="Edit" (click)="editSubscription(subscription)">
+        <dt-icon name="edit1"></dt-icon>
+      </button>
+      <button dt-icon-button variant="nested" title="Delete" (click)="triggerDeleteSubscription(subscription)">
+        <dt-icon name="delete"></dt-icon>
+      </button>
+    </ng-container>
+    <ng-template #oldSubscription>
+      <button dt-icon-button variant="nested" class="disabled" [dtOverlay]="updateDistributor">
+        <dt-icon name="edit1"></dt-icon>
+      </button>
+      <button dt-icon-button variant="nested" class="disabled" [dtOverlay]="updateDistributor">
+        <dt-icon name="delete"></dt-icon>
+      </button>
+    </ng-template>
   </div>
+
+  <ktb-delete-confirmation
+    type="subscription"
+    [dialogState]="deleteState"
+    [deleteMessage]="subscription.isGlobal ? 'Deleting this subscription will affect all projects!' : undefined"
+    [name]="name"
+    (confirmClicked)="deleteSubscription()"
+  ></ktb-delete-confirmation>
+  <ng-template #updateDistributor>
+    Action denied. Please update your distributor to version 0.9.0 or higher
+  </ng-template>
 </ng-container>
+
