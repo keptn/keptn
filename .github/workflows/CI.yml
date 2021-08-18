@@ -547,8 +547,7 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
-#        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         with:
@@ -559,8 +558,7 @@ jobs:
       - name: Login to Quay.io
         uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
-#        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
         with:
@@ -586,8 +584,7 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
-          RELEASE_BUILD: "true"
-#          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
+          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
         run: |
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
@@ -632,8 +629,7 @@ jobs:
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
           CONTENT_TYPE: "application/vnd.docker.distribution.manifest.v2+json"
-          RELEASE_BUILD: "true"
-#          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
+          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
         run: |
           # Fetch last image datetime from build config
           LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
