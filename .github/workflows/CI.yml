@@ -384,10 +384,10 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "amd64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "arm64"
           - platform: "ubuntu-20.04"
@@ -573,7 +573,7 @@ jobs:
           echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
       - name: "Download Build Config from last successful build"
-        uses: dawidd6/action-download-artifact@v2.14.0
+        uses: dawidd6/action-download-artifact@v2.14.1
         id: download_last_build_config
         if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
         with:
