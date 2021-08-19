@@ -6,6 +6,7 @@ import "github.com/keptn/keptn/shipyard-controller/models"
 type UniformRepo interface {
 	GetUniformIntegrations(filter models.GetUniformIntegrationsParams) ([]models.Integration, error)
 	DeleteUniformIntegration(id string) error
+	CreateUniformIntegration(integration models.Integration) error
 	CreateOrUpdateUniformIntegration(integration models.Integration) error
 	CreateOrUpdateSubscription(integrationID string, subscription models.Subscription) error
 	DeleteSubscription(integrationID, subscriptionID string) error

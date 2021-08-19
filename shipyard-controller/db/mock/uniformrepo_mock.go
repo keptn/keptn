@@ -20,6 +20,9 @@ import (
 // 			CreateOrUpdateUniformIntegrationFunc: func(integration models.Integration) error {
 // 				panic("mock out the CreateOrUpdateUniformIntegration method")
 // 			},
+// 			CreateUniformIntegrationFunc: func(integration models.Integration) error {
+// 				panic("mock out the CreateUniformIntegration method")
+// 			},
 // 			DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
 // 				panic("mock out the DeleteSubscription method")
 // 			},
@@ -51,6 +54,9 @@ type UniformRepoMock struct {
 	// CreateOrUpdateUniformIntegrationFunc mocks the CreateOrUpdateUniformIntegration method.
 	CreateOrUpdateUniformIntegrationFunc func(integration models.Integration) error
 
+	// CreateUniformIntegrationFunc mocks the CreateUniformIntegration method.
+	CreateUniformIntegrationFunc func(integration models.Integration) error
+
 	// DeleteSubscriptionFunc mocks the DeleteSubscription method.
 	DeleteSubscriptionFunc func(integrationID string, subscriptionID string) error
 
@@ -80,6 +86,11 @@ type UniformRepoMock struct {
 		}
 		// CreateOrUpdateUniformIntegration holds details about calls to the CreateOrUpdateUniformIntegration method.
 		CreateOrUpdateUniformIntegration []struct {
+			// Integration is the integration argument value.
+			Integration models.Integration
+		}
+		// CreateUniformIntegration holds details about calls to the CreateUniformIntegration method.
+		CreateUniformIntegration []struct {
 			// Integration is the integration argument value.
 			Integration models.Integration
 		}
@@ -120,6 +131,7 @@ type UniformRepoMock struct {
 	}
 	lockCreateOrUpdateSubscription       sync.RWMutex
 	lockCreateOrUpdateUniformIntegration sync.RWMutex
+	lockCreateUniformIntegration         sync.RWMutex
 	lockDeleteSubscription               sync.RWMutex
 	lockDeleteUniformIntegration         sync.RWMutex
 	lockGetSubscription                  sync.RWMutex
@@ -191,6 +203,37 @@ func (mock *UniformRepoMock) CreateOrUpdateUniformIntegrationCalls() []struct {
 	mock.lockCreateOrUpdateUniformIntegration.RLock()
 	calls = mock.calls.CreateOrUpdateUniformIntegration
 	mock.lockCreateOrUpdateUniformIntegration.RUnlock()
+	return calls
+}
+
+// CreateUniformIntegration calls CreateUniformIntegrationFunc.
+func (mock *UniformRepoMock) CreateUniformIntegration(integration models.Integration) error {
+	if mock.CreateUniformIntegrationFunc == nil {
+		panic("UniformRepoMock.CreateUniformIntegrationFunc: method is nil but UniformRepo.CreateUniformIntegration was just called")
+	}
+	callInfo := struct {
+		Integration models.Integration
+	}{
+		Integration: integration,
+	}
+	mock.lockCreateUniformIntegration.Lock()
+	mock.calls.CreateUniformIntegration = append(mock.calls.CreateUniformIntegration, callInfo)
+	mock.lockCreateUniformIntegration.Unlock()
+	return mock.CreateUniformIntegrationFunc(integration)
+}
+
+// CreateUniformIntegrationCalls gets all the calls that were made to CreateUniformIntegration.
+// Check the length with:
+//     len(mockedUniformRepo.CreateUniformIntegrationCalls())
+func (mock *UniformRepoMock) CreateUniformIntegrationCalls() []struct {
+	Integration models.Integration
+} {
+	var calls []struct {
+		Integration models.Integration
+	}
+	mock.lockCreateUniformIntegration.RLock()
+	calls = mock.calls.CreateUniformIntegration
+	mock.lockCreateUniformIntegration.RUnlock()
 	return calls
 }
 

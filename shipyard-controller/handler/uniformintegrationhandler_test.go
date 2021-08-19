@@ -6,11 +6,11 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/db"
+	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/handler"
-	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,7 +18,7 @@ import (
 
 func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 	type fields struct {
-		integrationManager *fake.IUniformIntegrationManagerMock
+		integrationManager *db_mock.UniformRepoMock
 	}
 	tests := []struct {
 		name       string
@@ -30,12 +30,13 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 		{
 			name: "registrations can be retrieved",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+				integrationManager: &db_mock.UniformRepoMock{
+					GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 						return []models.Integration{}, nil
 					},
 				},
 			},
+
 			request: httptest.NewRequest("GET", "/uniform/registration?project=my-project", nil),
 			wantParams: &models.GetUniformIntegrationsParams{
 				Project: "my-project",
@@ -45,8 +46,8 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 		{
 			name: "registrations can not be retrieved",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					GetRegistrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
+				integrationManager: &db_mock.UniformRepoMock{
+					GetUniformIntegrationsFunc: func(params models.GetUniformIntegrationsParams) ([]models.Integration, error) {
 						return nil, errors.New("oops")
 					},
 				},
@@ -68,8 +69,8 @@ func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
 			require.Equal(t, tt.wantStatus, w.Code)
 
 			if tt.wantParams != nil {
-				require.NotEmpty(t, tt.fields.integrationManager.GetRegistrationsCalls())
-				require.EqualValues(t, *tt.wantParams, tt.fields.integrationManager.GetRegistrationsCalls()[0].Params)
+				require.NotEmpty(t, tt.fields.integrationManager.GetUniformIntegrationsCalls())
+				require.EqualValues(t, *tt.wantParams, tt.fields.integrationManager.GetUniformIntegrationsCalls()[0].Filter)
 			}
 		})
 	}
@@ -108,7 +109,7 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 	}
 	invalidPayload, _ := json.Marshal(myInvalidIntegration)
 	type fields struct {
-		integrationManager *fake.IUniformIntegrationManagerMock
+		integrationManager *db_mock.UniformRepoMock
 	}
 	tests := []struct {
 		name            string
@@ -120,23 +121,19 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		{
 			name: "create registration",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					RegisterFunc: func(integration models.Integration) error {
-						return nil
-					},
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc: func(integration models.Integration) error { return nil },
 				},
 			},
 			request:         httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
-			wantStatus:      http.StatusOK,
+			wantStatus:      http.StatusCreated,
 			wantIntegration: myValidIntegration,
 		},
 		{
 			name: "create registration fails",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					RegisterFunc: func(integration models.Integration) error {
-						return errors.New("oops")
-					},
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc: func(integration models.Integration) error { return errors.New("oops") },
 				},
 			},
 			request:    httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(validPayload)),
@@ -145,8 +142,8 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		{
 			name: "invalid validPayload",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					RegisterFunc: func(integration models.Integration) error {
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc: func(integration models.Integration) error {
 						return errors.New("oops")
 					},
 				},
@@ -157,8 +154,8 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		{
 			name: "invalid validPayload - kubernetes namespace missing",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					RegisterFunc: func(integration models.Integration) error {
+				integrationManager: &db_mock.UniformRepoMock{
+					CreateUniformIntegrationFunc: func(integration models.Integration) error {
 						return errors.New("oops")
 					},
 				},
@@ -180,14 +177,14 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 			require.Equal(t, tt.wantStatus, w.Code)
 
 			if tt.wantIntegration != nil {
-				require.NotEmpty(t, tt.fields.integrationManager.RegisterCalls())
-				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.RegisterCalls()[0].Integration.Name)
-				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Hostname)
-				require.Equal(t, tt.wantIntegration.MetaData.DistributorVersion, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.DistributorVersion)
-				require.Equal(t, tt.wantIntegration.MetaData.Location, tt.fields.integrationManager.RegisterCalls()[0].Integration.MetaData.Location)
-				require.True(t, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions[0].ID != "")
-				require.Equal(t, tt.wantIntegration.Subscriptions[0].Event, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions[0].Event)
-				require.Equal(t, tt.wantIntegration.Subscriptions[0].Filter, tt.fields.integrationManager.RegisterCalls()[0].Integration.Subscriptions[0].Filter)
+				require.NotEmpty(t, tt.fields.integrationManager.CreateUniformIntegrationCalls())
+				require.Equal(t, tt.wantIntegration.Name, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Name)
+				require.Equal(t, tt.wantIntegration.MetaData.Hostname, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.MetaData.Hostname)
+				require.Equal(t, tt.wantIntegration.MetaData.DistributorVersion, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.MetaData.DistributorVersion)
+				require.Equal(t, tt.wantIntegration.MetaData.Location, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.MetaData.Location)
+				require.True(t, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Subscriptions[0].ID != "")
+				require.Equal(t, tt.wantIntegration.Subscriptions[0].Event, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Subscriptions[0].Event)
+				require.Equal(t, tt.wantIntegration.Subscriptions[0].Filter, tt.fields.integrationManager.CreateUniformIntegrationCalls()[0].Integration.Subscriptions[0].Filter)
 			}
 		})
 	}
@@ -213,7 +210,7 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 	}
 
 	type fields struct {
-		integrationManager *fake.IUniformIntegrationManagerMock
+		integrationManager *db_mock.UniformRepoMock
 	}
 	tests := []struct {
 		name              string
@@ -226,7 +223,7 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 		{
 			name: "keepalive registration",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
+				integrationManager: &db_mock.UniformRepoMock{
 					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
 						return &models.Integration{}, nil
 					},
@@ -240,9 +237,9 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 		{
 			name: "keepalive registration - no registration found",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
+				integrationManager: &db_mock.UniformRepoMock{
 					UpdateLastSeenFunc: func(integrationID string) (*models.Integration, error) {
-						return nil, mongo.ErrNoDocuments
+						return nil, db.ErrUniformRegistrationNotFound
 					},
 				},
 			},
@@ -271,7 +268,7 @@ func TestUniformIntegrationKeepAlive(t *testing.T) {
 
 func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 	type fields struct {
-		integrationManager *fake.IUniformIntegrationManagerMock
+		integrationManager *db_mock.UniformRepoMock
 	}
 	tests := []struct {
 		name       string
@@ -283,8 +280,8 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 		{
 			name: "delete registration",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					UnregisterFunc: func(id string) error {
+				integrationManager: &db_mock.UniformRepoMock{
+					DeleteUniformIntegrationFunc: func(id string) error {
 						return nil
 					},
 				},
@@ -296,8 +293,8 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 		{
 			name: "delete registration fails",
 			fields: fields{
-				integrationManager: &fake.IUniformIntegrationManagerMock{
-					UnregisterFunc: func(id string) error {
+				integrationManager: &db_mock.UniformRepoMock{
+					DeleteUniformIntegrationFunc: func(id string) error {
 						return errors.New("oops")
 					},
 				},
@@ -319,8 +316,8 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 			require.Equal(t, tt.wantStatus, w.Code)
 
 			if tt.wantID != "" {
-				require.NotEmpty(t, tt.fields.integrationManager.UnregisterCalls())
-				require.Equal(t, tt.wantID, tt.fields.integrationManager.UnregisterCalls()[0].ID)
+				require.NotEmpty(t, tt.fields.integrationManager.DeleteUniformIntegrationCalls())
+				require.Equal(t, tt.wantID, tt.fields.integrationManager.DeleteUniformIntegrationCalls()[0].ID)
 			}
 		})
 	}

@@ -138,6 +138,10 @@ func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 	err = mdbrepo.CreateOrUpdateUniformIntegration(integration5)
 	require.Nil(t, err)
 
+	// insert integration twice shall fail
+	err = mdbrepo.CreateUniformIntegration(integration5)
+	require.NotNil(t, err)
+
 	// check if we can query the newly created entities
 
 	// first, without any filter

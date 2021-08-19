@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -13,6 +14,9 @@ import (
 )
 
 const uniformCollectionName = "keptnUniform"
+
+var ErrUniformRegistrationAlreadyExists = errors.New("uniform integration already exists")
+var ErrUniformRegistrationNotFound = errors.New("uniform integration not found")
 
 type MongoDBUniformRepo struct {
 	DbConnection *MongoDBConnection
@@ -49,6 +53,20 @@ func (mdbrepo *MongoDBUniformRepo) DeleteUniformIntegration(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration models.Integration) error {
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	if err != nil {
+		return err
+	}
+	defer cancel()
+
+	_, err = collection.InsertOne(ctx, integration)
+	if mongo.IsDuplicateKeyError(err) {
+		return ErrUniformRegistrationAlreadyExists
+	}
+	return err
 }
 
 func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration models.Integration) error {
@@ -208,6 +226,9 @@ func (mdbrepo *MongoDBUniformRepo) UpdateLastSeen(integrationID string) (*models
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 	result := collection.FindOneAndUpdate(ctx, filter, update, opts)
 	if result.Err() != nil {
+		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+			return nil, ErrUniformRegistrationNotFound
+		}
 		return nil, result.Err()
 	}
 
