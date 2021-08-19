@@ -15,6 +15,7 @@ import (
 	"github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"strings"
@@ -314,4 +315,46 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return "", err
+	}
+	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	for _, container := range depl.Spec.Template.Spec.Containers {
+		if containerName == container.Name {
+			return container.Image, nil
+		}
+	}
+	return "", fmt.Errorf("container %s not found in deployment %s", containerName, deploymentName)
+}
+
+func SetImageOfDeploymentContainer(deploymentName, containerName, image string) error {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+
+	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	for index, container := range depl.Spec.Template.Spec.Containers {
+		if containerName == container.Name {
+			depl.Spec.Template.Spec.Containers[index].Image = image
+		}
+	}
+	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }

@@ -7,9 +7,28 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 )
+
+const filteredUniformTestShipyard = `--- 
+apiVersion: "spec.keptn.sh/0.2.3"
+kind: Shipyard
+metadata:
+  name: "shipyard-echo-service"
+spec:
+  stages:
+    - name: "unfiltered-stage"
+      sequences:
+        - name: "mysequence"
+          tasks:
+            - name: "anytask"
+    - name: "filtered-stage"
+      sequences:
+        - name: "mysequence"
+          tasks:
+            - name: "echo"`
 
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
@@ -194,8 +213,35 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
+
+	projectName := "uniform-filter"
+	serviceName := "myservice"
+	sequencename := "mysequence"
+
+	shipyardFilePath, err := CreateTmpShipyardFile(filteredUniformTestShipyard)
+	require.Nil(t, err)
+	defer os.Remove(shipyardFilePath)
+
+	t.Logf("creating project %s", projectName)
+	err = CreateProject(projectName, shipyardFilePath, true)
+	require.Nil(t, err)
+
+	t.Logf("creating service %s", serviceName)
+	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
+
+	require.Nil(t, err)
+	require.Contains(t, output, "created successfully")
+
 	// install echo integration
 	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+	require.Nil(t, err)
+
+	// get the image of the distributor of the build being tested
+	currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	// make sure the echo service uses the correct distributor image
+	err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
 	require.Nil(t, err)
 
 	// wait for echo integration registered
@@ -213,6 +259,53 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Equal(t, GetKeptnNameSpaceFromEnv(), fetchedEchoIntegration.MetaData.KubernetesMetaData.Namespace)
 	require.Equal(t, "control-plane", fetchedEchoIntegration.MetaData.Location)
 	require.Equal(t, "sh.keptn.>", fetchedEchoIntegration.Subscriptions[0].Event)
+
+	// check if events are received by the echo service
+	unfilteredStageName := "unfiltered-stage"
+	t.Logf("triggering sequence %s in stage %s", sequencename, unfilteredStageName)
+
+	// first, trigger a sequence
+	keptnContextID, _ := TriggerSequence(projectName, serviceName, unfilteredStageName, sequencename, nil)
+
+	// make sure the echo service has received the task event and reacted with a .started event
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, unfilteredStageName, keptnv2.GetStartedEventType("anytask"))
+		if err != nil || taskTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 5*time.Second)
+
+	// update the subscription to only receive "echo.triggered" events for a given project/stage/service combination
+	fetchedEchoIntegration.Subscriptions[0].Event = keptnv2.GetTriggeredEventType("echo")
+	fetchedEchoIntegration.Subscriptions[0].Filter.Stages = []string{"filtered-stage"}
+
+	_, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", fetchedEchoIntegration.ID, fetchedEchoIntegration.Subscriptions[0].ID), fetchedEchoIntegration.Subscriptions[0])
+	require.Nil(t, err)
+
+	// wait some time to make sure the echo service has pulled the updated subscription
+	<-time.After(20 * time.Second) // sorry :(
+
+	// trigger the previous sequence again - now the echo service should not react with a .started event anymore
+	keptnContextID, _ = TriggerSequence(projectName, serviceName, unfilteredStageName, sequencename, nil)
+	<-time.After(10 * time.Second) // sorry :(
+
+	taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, unfilteredStageName, keptnv2.GetStartedEventType("anytask"))
+	require.Nil(t, err)
+	require.Nil(t, taskTriggeredEvent)
+
+	// now, trigger the sequence that matches the filter - now we should get a response from the echo service again
+	filteredStageName := "filtered-stage"
+	keptnContextID, _ = TriggerSequence(projectName, serviceName, filteredStageName, sequencename, nil)
+
+	// make sure the echo service has received the task event and reacted with a .started event
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent, err := GetLatestEventOfType(keptnContextID, projectName, filteredStageName, keptnv2.GetStartedEventType("echo"))
+		if err != nil || taskTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 5*time.Second)
 
 	// uninstall echo integration
 	err = deleteEchoIntegration()
@@ -235,7 +328,7 @@ func getIntegrationWithName(name string) (models.Integration, error) {
 		return models.Integration{}, err
 	}
 	for _, r := range integrations {
-		if r.Name == "echo-service" {
+		if r.Name == name {
 			return r, nil
 		}
 	}
