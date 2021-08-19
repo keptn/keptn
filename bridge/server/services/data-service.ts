@@ -194,11 +194,17 @@ export class DataService {
   public async getUniformRegistrations(uniformDates: { [key: string]: string }): Promise<UniformRegistration[]> {
     const response = await this.apiService.getUniformRegistrations();
     const registrations = response.data;
+    const currentDate = new Date().getTime();
+    const validRegistrations: UniformRegistration[] = [];
     for (const registration of registrations) {
-      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
-      registration.unreadEventsCount = logResponse.data.logs.length;
+      const diffMins = (currentDate - new Date(registration.metadata.lastseen).getTime()) / 60_000;
+      if (diffMins < 2) {
+        const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
+        registration.unreadEventsCount = logResponse.data.logs.length;
+        validRegistrations.push(registration);
+      }
     }
-    return registrations;
+    return validRegistrations;
   }
 
   public async getTasks(projectName: string): Promise<string[]> {
