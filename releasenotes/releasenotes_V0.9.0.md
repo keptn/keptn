@@ -1,16 +1,22 @@
 # Release Notes 0.9.0
 
-Keptn 0.9
+Keptn 0.9.0 gives you more control over sequence executions and allows creating/deleting a Keptn project in the Bridge. 
 
 ---
 
 **Key announcements:**
 
-:tada: **: 
+:tada: *Advanced sequences handling*: Keptn core provides new capabilities for handling a task sequence execution:  
 
-:star: **: 
+  * *Controls for sequence executions*: Controls for `pausing`, `resuming`, and `aborting` a task sequence have been implemented. These controls can be used either by the CLI or directly in the Bridge.
 
-:rocket: **: 
+  * *Smart defaults for sequence executions*:  Keptn automatically terminates a sequence execution when now Keptn-service is acting upon a triggered task. Besides, it queues a delivery or remediation sequence if there is currently one running for a service in the same stage. 
+
+:star: *Improved UX in Keptn Bridge*: With this release, creating or deleting a Keptn project is now possible via the Bridge. Additionally, cross-linking elements have been added to components for optimizing user flows.
+
+:pick: *Hardening Keptn Core / Bridge*: Hardening of Keptn core components has been conducted concerning resource optimization and enhancing readiness probes. Besides, refactoring in the Bridge was performed in order to reliably deal with custom sequences and tasks.
+
+:apple: *MacOS M1 Support*: For all Apple users, the Keptn CLI is now ready for your new MacOS M1.  
 
 ---
 
@@ -32,7 +38,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - Enhance readiness probes of Keptn core services [4518](https://github.com/keptn/keptn/issues/4518)
 - Create a list of dependencies of Keptn Core [4409](https://github.com/keptn/keptn/issues/4409)
 - Migrate old sequences to materialized view [4140](https://github.com/keptn/keptn/issues/4140)
-- Installing/Upgrading Keptn in an air-gapped environment does not work for configuration-service and nats [4183](https://github.com/keptn/keptn/issues/4183)
+- *Fixed:* Installing/Upgrading Keptn in an air-gapped environment does not work for configuration-service and nats [4183](https://github.com/keptn/keptn/issues/4183)
 - *Fixed:* Bridge `LOOK_AND_FEEL_URL` is missing in Keptn installer Helm Chart [4476](https://github.com/keptn/keptn/issues/4476)
 
 </p>
@@ -69,8 +75,8 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Allow setting environment details sent by the distributor [4590](https://github.com/keptn/keptn/issues/4590)
 
 - *helm-service & jmeter-service*: 
-  - Cleanup of README.md and Manifests for jmeter-service and helm-service [4503](https://github.com/keptn/keptn/issues/4503)
-  - JMeter- & Helm-service missing timestamp in tag [4403](https://github.com/keptn/keptn/issues/4403)
+  - Cleanup of README.md and Manifests for jmeter-service/helm-service [4503](https://github.com/keptn/keptn/issues/4503)
+  - jmeter-service/helm-service are missing timestamp in tag [4403](https://github.com/keptn/keptn/issues/4403)
   - *Fixed:* Installing jmeter-service/helm-service from a registry with a non-default port does not work [4422](https://github.com/keptn/keptn/issues/4422)
 
 - *lighthouse-service*:
@@ -80,12 +86,11 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Improve error messages for remediation-services [4412](https://github.com/keptn/keptn/issues/4412)
 
 - *shipyard-controller*: 
-  - Handle Sequences sequentially per stage [3776](https://github.com/keptn/keptn/issues/3776)
+  - Handle sequences sequentially per stage [3776](https://github.com/keptn/keptn/issues/3776)
   - Termination of orphaned tasks [3778](https://github.com/keptn/keptn/issues/3778)
   - *Fixed:* Run into errors when using an image object for a configuration change [4384](https://github.com/keptn/keptn/issues/4384)
   - *Fixed:* Panics with out of range error [4772](https://github.com/keptn/keptn/issues/4772)
   - *Fixed:* Crashes when receiving event for non-existent project [4797](https://github.com/keptn/keptn/issues/4797)
-
 
 </p>
 </details>
@@ -94,14 +99,14 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
 - *Enhancements:*
-  - Provide a warning if data will be lost in Project Creation [4677](https://github.com/keptn/keptn/issues/4677)
+  - Provide a warning if data will be lost in project creation [4677](https://github.com/keptn/keptn/issues/4677)
   - Add weight to the SLI breakdown [4758](https://github.com/keptn/keptn/issues/4758)
   - Prevent from expanding tile when there is no content [4057](https://github.com/keptn/keptn/issues/4057)
   - Text inside "View Evaluation" is cropped [4760](https://github.com/keptn/keptn/issues/4760)
   - Indicate errors happening in integrations [4381](https://github.com/keptn/keptn/issues/4381)
-  - Add service name to sequence tile [4653](https://github.com/keptn/keptn/issues/4653)
+  - Show service name at sequence tile [4653](https://github.com/keptn/keptn/issues/4653)
   - Show action name and description for a remediation action [4410](https://github.com/keptn/keptn/issues/4410) 
-  - Rename `error logs` to `error events` [4426](https://github.com/keptn/keptn/issues/4426) 
+  - Rename `Error logs` to `Error events` [4426](https://github.com/keptn/keptn/issues/4426) 
   - Delete project via Bridge [4379](https://github.com/keptn/keptn/issues/4379) 
   - Show recent task sequences on project level [2506](https://github.com/keptn/keptn/issues/2506) 
   - Create project with shipyard [4493](https://github.com/keptn/keptn/issues/4493) 
@@ -110,7 +115,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Show alt text / tooltip for icon buttons [3803](https://github.com/keptn/keptn/issues/3803)
   - Display comparison value and absolute/relative delta of SLI [4305](https://github.com/keptn/keptn/issues/4305)
   - Environment screen always has scrollbars when having more than 2 stages [4146](https://github.com/keptn/keptn/issues/4146)
-  - Collapsevaluation Heatmap to top 10 [4255](https://github.com/keptn/keptn/issues/4255)
+  - Collapsevaluation heatmap to top 10 [4255](https://github.com/keptn/keptn/issues/4255)
   - Show `keptn create service` when Bridge is used for quality gates only use case [4172](https://github.com/keptn/keptn/issues/4172)
   - Better UX to show which sequence is currently selected [3976](https://github.com/keptn/keptn/issues/3976)
   - Project does not reflect current status after creating a service [4170](https://github.com/keptn/keptn/issues/4170)
@@ -151,12 +156,12 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 ## Development Process / Testing
 
 - *Keptn on Keptn:* Mark test as failed if delivery fails [4186](https://github.com/keptn/keptn/issues/4186)
-- *go-utils/kubernetes-utils:* Add go get and go mod tidy to auto-upgrade PR [4341](https://github.com/keptn/keptn/issues/4341)
 - *Integration test report:* Note down the actor or whether it was scheduled [3999](https://github.com/keptn/keptn/issues/3999)
+- *go-utils/kubernetes-utils:* Add go get and go mod tidy to auto-upgrade PR [4341](https://github.com/keptn/keptn/issues/4341)
 - Unify Go versions in CI workflow [4331](https://github.com/keptn/keptn/issues/4331)
 - Fix random error messages in integration test workflow [4385](https://github.com/keptn/keptn/issues/4385)
-- Create GH-Action bot-user for Keptn organization [3825](https://github.com/keptn/keptn/issues/3825)
-- Create auto-PR for Keptn Spec and Keptn Docs [2927](https://github.com/keptn/keptn/issues/2927)
+- Create GH-action bot-user for Keptn organization [3825](https://github.com/keptn/keptn/issues/3825)
+- Create Auto-PR for Keptn Spec and Keptn Docs [2927](https://github.com/keptn/keptn/issues/2927)
 - Create draft release on triggered release workflow for keptn/go-utils [4762](https://github.com/keptn/keptn/issues/4762)
 - Create a PR that updates the specification subfolder in keptn/keptn when a new Keptn spec is released [4366](https://github.com/keptn/keptn/issues/4366)
 - Activate Snyk protection [417](https://github.com/keptn/keptn/issues/417)
@@ -168,6 +173,10 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
   <!--TODO: final check-->
+  - `keptn upgrade` does not respect cluster choice [4583](https://github.com/keptn/keptn/issues/4583)
+  - Vague error message when setting Git upstream [4399](https://github.com/keptn/keptn/issues/4399)
+  - Response time degradation in configuration-service when using a Git upstream (e.g., GitHub) [4066](https://github.com/keptn/keptn/issues/4066)
+  - Prometheus self-healing example based on response time does not work [3439](https://github.com/keptn/keptn/issues/3439)
 
 </p>
 </details>
