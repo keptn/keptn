@@ -26,14 +26,11 @@ func NewNatsConnectionHandler(natsURL string) *NatsConnectionHandler {
 }
 
 func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
-	nch.mux.Lock()
-	defer nch.mux.Unlock()
 	for _, sub := range nch.Subscriptions {
 		// Unsubscribe
 		_ = sub.Unsubscribe()
 		logger.Infof("Unsubscribed from NATS topic: %s", sub.Subject)
 	}
-	nch.NatsConnection.Close()
 	nch.Subscriptions = nch.Subscriptions[:0]
 }
 
@@ -42,6 +39,8 @@ func (nch *NatsConnectionHandler) RemoveAllSubscriptions() {
 // try to subscribe to these topics. If you don't pass any subjects via the topics parameter
 // the NatsConnectionHandler will subscribe to the topics configured at instantiation time
 func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
+	nch.mux.Lock()
+	defer nch.mux.Unlock()
 	if nch.natsURL == "" {
 		return errors.New("no PubSub URL defined")
 	}
@@ -49,8 +48,6 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 	if nch.NatsConnection == nil || !nch.NatsConnection.IsConnected() {
 		var err error
 		nch.RemoveAllSubscriptions()
-		nch.mux.Lock()
-		defer nch.mux.Unlock()
 
 		logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
 		nch.NatsConnection, err = nats.Connect(nch.natsURL)
@@ -63,6 +60,7 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 	}
 
 	if len(topics) > 0 && !IsEqual(nch.topics, topics) {
+		nch.RemoveAllSubscriptions()
 		nch.topics = topics
 
 		for _, topic := range nch.topics {
@@ -75,7 +73,6 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 			nch.Subscriptions = append(nch.Subscriptions, sub)
 		}
 	}
-	//}
 	return nil
 }
 

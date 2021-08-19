@@ -62,15 +62,6 @@ func _main(env config.EnvConfig) int {
 		id := uniformWatch.Start(executionContext)
 		uniformLogger := controlplane.NewEventUniformLog(id, uniformLogHandler)
 		uniformLogger.Start(executionContext, forwarder.EventChannel)
-
-		defer func() {
-			err := controlPlane.Unregister()
-			if err != nil {
-				logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
-			} else {
-				logger.Infof("Unregistered Keptn Integration")
-			}
-		}()
 	}
 
 	logger.Infof("Connection type: %s", connectionType)

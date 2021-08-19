@@ -25,6 +25,7 @@ type NATSEventReceiver struct {
 	closeChan             chan bool
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
+	currentSubscriptions  []models.EventSubscription
 }
 
 func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
@@ -81,6 +82,7 @@ func (n *NATSEventReceiver) Start(ctx *ExecutionContext) {
 }
 
 func (n *NATSEventReceiver) UpdateSubscriptions(subscriptions []models.EventSubscription) {
+	n.currentSubscriptions = subscriptions
 	var topics []string
 	for _, s := range subscriptions {
 		topics = append(topics, s.Event)
@@ -96,9 +98,15 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 	go func() {
 		logger.Infof("Received a message for topic [%s]\n", m.Subject)
 		e, err := DecodeCloudEvent(m.Data)
-
 		if e != nil && err == nil {
-			err = n.sendEvent(*e)
+			var subscriptionForTopic *models.EventSubscription
+			for _, subscription := range n.currentSubscriptions {
+				if subscription.Event == m.Sub.Subject { // need to check against the name of the subscription because this can be a wildcard as well
+					subscriptionForTopic = &subscription
+					break
+				}
+			}
+			err = n.sendEvent(*e, subscriptionForTopic)
 			if err != nil {
 				logger.Errorf("Could not send CloudEvent: %v", err)
 			}
@@ -107,8 +115,13 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 }
 
 // TODO: remove duplication of this method (poller.go)
-func (n *NATSEventReceiver) sendEvent(event cloudevents.Event) error {
-	if !n.eventMatcher.Matches(event) {
+func (n *NATSEventReceiver) sendEvent(event cloudevents.Event, subscription *models.EventSubscription) error {
+	if subscription != nil {
+		matcher := NewEventMatcherFromSubscription(*subscription)
+		if !matcher.Matches(event) {
+			return nil
+		}
+	} else if !n.eventMatcher.Matches(event) {
 		return nil
 	}
 
