@@ -14,7 +14,6 @@ import { DataService } from '../../_services/data.service';
 import { Subject } from 'rxjs';
 import { Project } from '../../_models/project';
 import { Sequence } from '../../_models/sequence';
-import { SequenceStateControl } from '../../../../shared/models/sequence';
 import { KtbConfirmationDialogComponent } from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
@@ -35,8 +34,6 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   public _events: Sequence[] = [];
   public _selectedEvent?: Sequence;
   public loading = true;
-
-  public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
 
   @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence, stage?: string }>();
 
