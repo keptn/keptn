@@ -6,7 +6,7 @@ import moment from 'moment';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { ApiService } from '../../_services/api.service';
 import { KeptnInfo } from '../../_models/keptn-info';
-import { INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
+import { AppUtils, INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-integration-view',
@@ -46,11 +46,11 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    // AppUtils.createTimer(this.initialDelayMillis)
-    //   .pipe(takeUntil(this.unsubscribe$))
-    //   .subscribe(() => {
-    //     this.updateIntegrations();
-    //   });
+    AppUtils.createTimer(this.initialDelayMillis)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.updateIntegrations();
+    });
   }
 
   updateIntegrations() {

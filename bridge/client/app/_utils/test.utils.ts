@@ -6,10 +6,10 @@ export class TestUtils {
       value: dataTransfer
     });
     Object.defineProperty(event.constructor.prototype, 'preventDefault', {
-      value: () => {}
+      value: () => { return; }
     });
     Object.defineProperty(event.constructor.prototype, 'stopPropagation', {
-      value: () => {}
+      value: () => { return; }
     });
     return event;
   }
