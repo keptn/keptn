@@ -33,4 +33,7 @@ func UnlockProject(project string) {
 		Unlock()
 	}
 	projectLocks[project].Unlock()
+	Lock()
+	delete(projectLocks, project)
+	Unlock()
 }
