@@ -113,6 +113,10 @@ We are running automated code style checks for pull requests using the following
   * ``gofmt -l -s .`` 
 * [codecov.io](codecov.yml) - tracks code coverage based on unit tests
 
+### Following Coding Style for Bridge
+
+For Bridge development setup and coding guidelines, please consult the Bridge [README.md](https://github.com/keptn/keptn/blob/master/bridge/README.md).
+
 ### Boy Scout Rule
 
 > Always leave the code better than you found it!
