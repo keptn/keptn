@@ -2,9 +2,7 @@
 
 Keptn bridge allows to browse the Keptn events.
 
-Note that npm dependencies are separated into two parts. Root level ```package.json``` contains dependencies for angular
-and other general requirements. Express server dependencies are located inside ```package.json``` located in server
-folder.
+Note that npm dependencies are separated into two parts. Root level ```package.json``` contains dependencies for angular and other general requirements. Express server dependencies are located inside ```package.json``` located in server folder.
 
 ## Installation
 
@@ -12,8 +10,7 @@ The Keptn bridge is installed as a part of [Keptn](https://keptn.sh).
 
 ### Deploy in your Kubernetes cluster
 
-To deploy the current version of the bridge in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from
-this repository and apply it:
+To deploy the current version of the bridge in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it:
 
 ```console
 kubectl apply -f deploy/service.yaml
@@ -21,14 +18,12 @@ kubectl apply -f deploy/service.yaml
 
 ### Setting up Basic Authentication
 
-Keptn Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two
-environment variables:
+Keptn Bridge comes with a very simple basic authentication feature, which can be controlled by setting the following two environment variables:
 
 * `BASIC_AUTH_USERNAME` - username
 * `BASIC_AUTH_PASSWORD` - password
 
-To enable it within your Kubernetes cluster, we recommend first creating a secret which holds the two variables, and
-then apply this secret within the Kubernetes deployment for Keptn Bridge.
+To enable it within your Kubernetes cluster, we recommend first creating a secret which holds the two variables, and then apply this secret within the Kubernetes deployment for Keptn Bridge.
 
 1. Create the secret using
 
@@ -63,8 +58,7 @@ then apply this secret within the Kubernetes deployment for Keptn Bridge.
             ...
     ```
 
-**Note 1**: To disable authentication, just delete the secret
-using ``kubectl -n keptn delete secret bridge-credentials``.
+**Note 1**: To disable authentication, just delete the secret using ``kubectl -n keptn delete secret bridge-credentials``.
 
 **Note 2**: If you delete or edit the secret, you need to restart the respective pod by executing
 
@@ -75,26 +69,20 @@ kubectl -n keptn scale deployment bridge --replicas=1
 
 #### Throttling
 
-Per default login attempts are throttled to 10 requests within 60 minutes. This behavior can be adjusted with the
-following environment variables:
+Per default login attempts are throttled to 10 requests within 60 minutes. This behavior can be adjusted with the following environment variables:
 
-* `REQUESTS_WITHIN_TIME` - how many login attempts in which timespan `REQUEST_TIME_LIMIT` (in minutes) are allowed per
-  IP.
-* `CLEAN_BUCKET_INTERVAL` - the interval (in minutes) the saved login attempts should be checked and deleted if the last
-  request of an IP is older than `REQUEST_TIME_LIMIT` minutes. Default is 60 minutes.
+* `REQUESTS_WITHIN_TIME` - how many login attempts in which timespan `REQUEST_TIME_LIMIT` (in minutes) are allowed per IP.
+* `CLEAN_BUCKET_INTERVAL` - the interval (in minutes) the saved login attempts should be checked and deleted if the last request of an IP is older than `REQUEST_TIME_LIMIT` minutes. Default is 60 minutes.
 
 ### Custom Look And Feel
 
-You can change the Look And Feel of the Keptn Bridge by creating a zip archive with your resources and make it
-downloadable from an URL.
+You can change the Look And Feel of the Keptn Bridge by creating a zip archive with your resources and make it downloadable from an URL.
 
-When the `LOOK_AND_FEEL_URL` environment variable is set and points to a zip archive the Keptn Bridge will download that
-file on startup and extract its content into `/assets/branding`.
+When the `LOOK_AND_FEEL_URL` environment variable is set and points to a zip archive the Keptn Bridge will download that file on startup and extract its content into `/assets/branding`.
 
 The zip archive must contain an `app-config.json` and can have optionally a logo and a stylesheet. The `app-config.json`
-must define an `appTitle`, `logoUrl` and `logoInvertedUrl` and can have optionally a `stylesheetUrl`. The `logoUrl` will
-be used as logo in the app header, `logoInvertedUrl` will be used as app favicon and as placeholder in some empty state
-messages. If a `stylesheetUrl` is provided, the stylesheet will be injected in the app header on page load.
+must define an `appTitle`, `logoUrl` and `logoInvertedUrl` and can have optionally a `stylesheetUrl`. The `logoUrl` will be used as logo in the app header, `logoInvertedUrl` will be used as app favicon and as placeholder in some empty state messages. If a `stylesheetUrl` is provided, the stylesheet
+will be injected in the app header on page load.
 
 ```app-config.json
 {
@@ -105,13 +93,11 @@ messages. If a `stylesheetUrl` is provided, the stylesheet will be injected in t
 }
 ```
 
-If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.png`, `logo_inverted.png` and
-an `app-config.json`.
+If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.png`, `logo_inverted.png` and an `app-config.json`.
 
 ### Delete in your Kubernetes cluster
 
-To delete a deployed bridge, use the file `deploy/service.yaml` from this repository and delete the Kubernetes
-resources:
+To delete a deployed bridge, use the file `deploy/service.yaml` from this repository and delete the Kubernetes resources:
 
 ```console
 kubectl delete -f deploy/service.yaml
@@ -139,12 +125,11 @@ kubectl delete -f deploy/service.yaml
 
 ### Create workspace
 
-Before creating the workspace, make sure that you already cloned the keptn/keptn repository to your local file system.<br/>
-For IntelliJ we would recommend cloning the entire repository to the `Idea Projects` folder as it is easier to import modules.
+Before creating the workspace, make sure that you already cloned the keptn/keptn repository to your local file system. For IntelliJ we would recommend cloning the entire repository to the `Idea Projects` folder as it is easier to import modules.
 
 #### IntelliJ
 
-##### From the start screen, when no project is opened 
+##### From the start screen, when no project is opened
 
 1. In the menu make sure that `Projects` is selected
 2. Click on the button `New Project`
@@ -178,8 +163,8 @@ If the imported module doesn't show up immediately, close the IDE and re-open it
 
 `File > Settings... > Editor > Code Style > TypeScript`
 
-* Select `Project` as scheme 
-* Click on the cogwheel next to Scheme. A dropdown menu opens. 
+* Select `Project` as scheme
+* Click on the cogwheel next to Scheme. A dropdown menu opens.
 * In the opened menu click on `Import Scheme > IntellJ IDEA code style XML`
 * Open the provided `IntelliJ.xml` file - the code styles get applied on project scope
 * Apply the changes
@@ -187,7 +172,8 @@ If the imported module doesn't show up immediately, close the IDE and re-open it
 #### Visual Studio Code
 
 In the opened folder:
-* If there is no `.vscode` directory  create one
+
+* If there is no `.vscode` directory create one
 * Copy the `settings.json` to the `.vscode` directory
 
 ### Save Actions
@@ -213,8 +199,7 @@ The save actions are handled within the `settings.json` file. Please follow the 
 
 Select `Automatic TSLint configuration`
 
-The automatic TSLint configuration detects automatically the `tslint.json` file in the bridge directory and applies the
-set rules.
+The automatic TSLint configuration detects automatically the `tslint.json` file in the bridge directory and applies the set rules.
 
 #### Visual Studio Code
 
@@ -226,10 +211,16 @@ set rules.
 * Select `Enable workspace library execution`
 * Close and re-open VSCode for TSLint to work properly
 
+### Additional configurations
+
+#### IntelliJ
+
+* Disable Checkbox: `File > Settings... > Editor > Inspections > JavaScript and TypeScript > General > Method can be static`
+
 ### Recommended Plugins
 
 #### IntelliJ
-* [Karma](https://plugins.jetbrains.com/plugin/7287-karma)
+
 * [Snyk Vulnerability Scanner](https://plugins.jetbrains.com/plugin/10972-snyk-vulnerability-scanner)
 * [SonarLint](https://plugins.jetbrains.com/plugin/7973-sonarlint)
 * [Conventional Commit](https://plugins.jetbrains.com/plugin/13389-conventional-commit)
@@ -239,10 +230,12 @@ set rules.
 
 * [TSLint](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-tslint-plugin)
 * [Angular Language Service](https://marketplace.visualstudio.com/items?itemName=Angular.ng-template)
+* [Jest](https://marketplace.visualstudio.com/items?itemName=Orta.vscode-jest)
+* [Jest Runner](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner)
 * [Snyk Vulnerability Scanner](https://marketplace.visualstudio.com/items?itemName=snyk-security.snyk-vulnerability-scanner)
 * [SonarLint](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode)
 * [Conventional Commit](https://marketplace.visualstudio.com/items?itemName=vivaxy.vscode-conventional-commits)
-  <br/>Conventional Commit settings are also already defined in `settings.json` 
+  <br/>Conventional Commit settings are also already defined in `settings.json`
 
 ## Production deployment
 
