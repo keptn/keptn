@@ -213,7 +213,52 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
+	testUniformIntegration(t, func() {
+		// install echo integration
+		_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		require.Nil(t, err)
 
+		// get the image of the distributor of the build being tested
+		currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+		require.Nil(t, err)
+
+		// make sure the echo service uses the correct distributor image
+		err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
+		require.Nil(t, err)
+	}, func() {
+		err := KubeCtlDeleteFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		require.Nil(t, err)
+	})
+}
+
+// Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
+// registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
+func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
+	//testUniformIntegration(t, func() {
+	//	// install echo integration
+	//	_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+	//	require.Nil(t, err)
+	//
+	//	// get the image of the distributor of the build being tested
+	//	currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	//	require.Nil(t, err)
+	//
+	//	// make sure the echo service uses the correct distributor image
+	//	err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
+	//	require.Nil(t, err)
+	//
+	//	apiEndpoint, apiToken, err := GetApiCredentials()
+	//	require.Nil(t, err)
+	//
+	//	// TODO set env vars of distributor to configure remote exec plane
+	//
+	//}, func() {
+	//	err := KubeCtlDeleteFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+	//	require.Nil(t, err)
+	//})
+}
+
+func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), cleanupIntegrationFunc func()) {
 	projectName := "uniform-filter"
 	serviceName := "myservice"
 	sequencename := "mysequence"
@@ -232,17 +277,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
-	// install echo integration
-	deleteEchoIntegration, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
-	require.Nil(t, err)
-
-	// get the image of the distributor of the build being tested
-	currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-	require.Nil(t, err)
-
-	// make sure the echo service uses the correct distributor image
-	err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-	require.Nil(t, err)
+	configureIntegrationFunc()
 
 	// wait a little bit and restart the echo-service to make sure it's not affected by a previous version that unsubscribes itself before being shut down
 	<-time.After(10 * time.Second)
@@ -297,8 +332,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Nil(t, taskTriggeredEvent)
 
 	// uninstall echo integration
-	err = deleteEchoIntegration()
-	require.Nil(t, err)
+	cleanupIntegrationFunc()
 
 	// Note: Uninstalling the integration + unregistering usually takes a while on GH Actions with K3s
 
