@@ -103,30 +103,6 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
     }
   }
 
-  triggerResumeSequence(sequence: Sequence): void {
-    this.dataService.sendSequenceControl(sequence, SequenceStateControl.RESUME);
-  }
-
-  triggerPauseSequence(sequence: Sequence): void {
-    this.dataService.sendSequenceControl(sequence, SequenceStateControl.PAUSE);
-  }
-
-  triggerAbortSequence(sequence: Sequence): void {
-    const data = {
-      sequence,
-      confirmCallback: (params: any) => {
-        this.abortSequence(params.sequence);
-      }
-    };
-    this.confirmationDialogRef = this.dialog.open(KtbConfirmationDialogComponent, {
-      data,
-    });
-  }
-
-  abortSequence(sequence: Sequence): void {
-    this.dataService.sendSequenceControl(sequence, SequenceStateControl.ABORT);
-  }
-
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
