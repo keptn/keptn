@@ -6,25 +6,23 @@ import (
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	logger "github.com/sirupsen/logrus"
-	"sync"
 	"time"
 )
 
 type IUniformWatch interface {
 	Start(ctx context.Context) string
-	GetCurrentUniformSubscriptions() []models.EventSubscription
 }
 
 type UniformWatch struct {
-	controlPlane         controlplane.IControlPlane
-	currentSubscriptions []models.EventSubscription
-	listeners            []SubscriptionListener
-	mtx                  sync.Mutex
+	controlPlane controlplane.IControlPlane
+	listeners    []SubscriptionListener
+	pingInterval time.Duration
 }
 
 func NewUniformWatch(controlPlane controlplane.IControlPlane) *UniformWatch {
 	return &UniformWatch{
 		controlPlane: controlPlane,
+		pingInterval: 10 * time.Second,
 	}
 }
 
@@ -46,15 +44,15 @@ func (sw *UniformWatch) Start(ctx context.Context) string {
 			select {
 			case <-ctx.Done():
 				return
-			case <-time.After(10 * time.Second):
+			case <-time.After(sw.pingInterval):
 				integrationData, err := sw.controlPlane.Ping()
 				if err != nil {
 					logger.Errorf("Unable to send heart beat to Keptn's control plane: %s", err.Error())
 					continue
 				}
-				sw.setCurrentSubscriptions(integrationData.Subscriptions)
+
 				for _, l := range sw.listeners {
-					l.UpdateSubscriptions(sw.currentSubscriptions)
+					l.UpdateSubscriptions(integrationData.Subscriptions)
 				}
 			}
 		}
@@ -64,16 +62,6 @@ func (sw *UniformWatch) Start(ctx context.Context) string {
 
 func (sw *UniformWatch) RegisterListener(listener SubscriptionListener) {
 	sw.listeners = append(sw.listeners, listener)
-}
-
-func (sw *UniformWatch) setCurrentSubscriptions(subs []models.EventSubscription) {
-	sw.mtx.Lock()
-	defer sw.mtx.Unlock()
-	sw.currentSubscriptions = subs
-}
-
-func (sw *UniformWatch) GetCurrentUniformSubscriptions() []models.EventSubscription {
-	return sw.currentSubscriptions
 }
 
 type SubscriptionListener interface {

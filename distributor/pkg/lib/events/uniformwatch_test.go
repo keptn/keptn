@@ -2,42 +2,61 @@ package events
 
 import (
 	"context"
-	"fmt"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func Test_UniformWatchReturnsRegistrationID(t *testing.T) {
-	uw := NewUniformWatch(TestControlPlane{})
-	uw.RegisterListener(TestListener{})
+	uw := NewUniformWatch(&testControlPlane{})
+	uw.RegisterListener(&testListener{})
 
 	id := uw.Start(context.TODO())
 	assert.Equal(t, "a-id", id)
 }
 
 func Test_UniformWatchUpdatesListeners(t *testing.T) {
-
+	expectedUpdateData := models.Integration{
+		Subscriptions: []models.EventSubscription{{
+			ID:     "id",
+			Event:  "event",
+			Filter: models.EventSubscriptionFilter{},
+		}},
+	}
+	listener := &testListener{}
+	controlPlane := &testControlPlane{
+		integrationData: expectedUpdateData,
+	}
+	uw := NewUniformWatch(controlPlane)
+	uw.pingInterval = 100 * time.Millisecond
+	uw.RegisterListener(listener)
+	uw.Start(context.TODO())
+	time.Sleep(2 * time.Second)
+	assert.Eventually(t, func() bool { return len(listener.latestUpdate) > 0 }, 10*time.Second, 100*time.Millisecond)
+	assert.Equal(t, expectedUpdateData.Subscriptions, listener.latestUpdate)
 }
 
-type TestControlPlane struct {
+type testControlPlane struct {
+	integrationData models.Integration
 }
 
-func (t TestControlPlane) Ping() (*models.Integration, error) {
-	return nil, nil
+func (t *testControlPlane) Ping() (*models.Integration, error) {
+	return &t.integrationData, nil
 }
 
-func (t TestControlPlane) Register() (string, error) {
+func (t *testControlPlane) Register() (string, error) {
 	return "a-id", nil
 }
 
-func (t TestControlPlane) Unregister() error {
+func (t *testControlPlane) Unregister() error {
 	return nil
 }
 
-type TestListener struct {
+type testListener struct {
+	latestUpdate []models.EventSubscription
 }
 
-func (t TestListener) UpdateSubscriptions(subscriptions []models.EventSubscription) {
-	fmt.Println("update")
+func (t *testListener) UpdateSubscriptions(subscriptions []models.EventSubscription) {
+	t.latestUpdate = subscriptions
 }
