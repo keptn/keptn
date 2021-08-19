@@ -49,6 +49,7 @@ func (nch *NatsConnectionHandler) SubscribeToTopics(topics []string) error {
 		var err error
 		nch.RemoveAllSubscriptions()
 
+		nch.NatsConnection.Close()
 		logger.Infof("Connecting to NATS server at %s ...", nch.natsURL)
 		nch.NatsConnection, err = nats.Connect(nch.natsURL)
 

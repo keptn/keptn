@@ -56,10 +56,6 @@ func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
 
 	nch.RemoveAllSubscriptions()
 
-	if !nch.NatsConnection.IsClosed() {
-		t.Error("SubscribeToTopics(): did not properly close NATS connection")
-	}
-
 	if len(nch.Subscriptions) != 0 {
 		t.Error("SubscribeToTopics(): did not clean up subscriptions")
 	}
@@ -181,10 +177,6 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 			}
 
 			nch.RemoveAllSubscriptions()
-
-			if !nch.NatsConnection.IsClosed() {
-				t.Error("SubscribeToTopics(): did not properly close NATS connection")
-			}
 
 			if len(nch.Subscriptions) != 0 {
 				t.Error("SubscribeToTopics(): did not clean up subscriptions")
