@@ -14,8 +14,6 @@ import { DataService } from '../../_services/data.service';
 import { Subject } from 'rxjs';
 import { Project } from '../../_models/project';
 import { Sequence } from '../../_models/sequence';
-import { KtbConfirmationDialogComponent } from '../_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -62,7 +60,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil,
-              private route: ActivatedRoute, private dataService: DataService, public dialog: MatDialog) {
+              private route: ActivatedRoute, private dataService: DataService) {
   }
 
   ngOnInit() {
