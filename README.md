@@ -43,7 +43,13 @@ Please find details on regular hosted community events as well as our Slack work
 
 ## Keptn Versions compatibilities
 
-We manage the Keptn *core components* in versions. The respective images in their versions are stored on [DockerHub](https://hub.docker.com/?namespace=keptn).
+We manage the Keptn *core components* in versions.
+The respective images in their versions are stored on the  following container registries:
+
+* [DockerHub](https://hub.docker.com/?namespace=keptn)
+* [GitHub Container Registry](https://github.com/orgs/keptn/packages?repo_name=keptn)
+* [Quay.io Container Registry](https://quay.io/organization/keptn)
+
 The versions of the Keptn *core components* and the services are compatible with each other. However, contributed services
 as well as services that are not considered *core components* might not follow the same versioning schema.
 
