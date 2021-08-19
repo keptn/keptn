@@ -349,6 +349,7 @@ func SetImageOfDeploymentContainer(deploymentName, containerName, image string) 
 	for index, container := range depl.Spec.Template.Spec.Containers {
 		if containerName == container.Name {
 			depl.Spec.Template.Spec.Containers[index].Image = image
+			depl.Spec.Template.Spec.Containers[index].ImagePullPolicy = "Always"
 		}
 	}
 	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})

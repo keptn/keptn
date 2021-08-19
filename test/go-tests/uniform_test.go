@@ -237,12 +237,17 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	require.Nil(t, err)
 
 	// get the image of the distributor of the build being tested
-	//currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-	//require.Nil(t, err)
-	//
-	//// make sure the echo service uses the correct distributor image
-	//err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-	//require.Nil(t, err)
+	currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+	require.Nil(t, err)
+
+	// make sure the echo service uses the correct distributor image
+	err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
+	require.Nil(t, err)
+
+	// wait a little bit and restart the echo-service to make sure it's not affected by a previous version that unsubscribes itself before being shut down
+	<-time.After(10 * time.Second)
+	err = RestartPod("echo-service")
+	require.Nil(t, err)
 
 	// wait for echo integration registered
 	var fetchedEchoIntegration models.Integration
@@ -302,7 +307,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		fetchedEchoIntegration, err = getIntegrationWithName("echo-service")
 		// we expect error to be "No Keptn Integration with name echo-service found"
 		return err != nil
-	}, time.Second*30, time.Second*3)
+	}, time.Second*90, time.Second*3)
 }
 
 func getIntegrationWithName(name string) (models.Integration, error) {
