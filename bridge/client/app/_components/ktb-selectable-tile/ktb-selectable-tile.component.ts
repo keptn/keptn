@@ -11,7 +11,7 @@ import {
   selector: `ktb-selectable-tile-header, [ktb-selectable-tile-header], [ktbSelectableTileHeader]`,
   exportAs: 'ktbSelectableTileHeader',
 })
-export class KtbSelectableTileHeader {}
+export class KtbSelectableTileHeaderDirective {}
 
 @Component({
   selector: 'ktb-selectable-tile',

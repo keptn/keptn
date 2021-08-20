@@ -1,5 +1,5 @@
-import {KtbDragAndDropDirective} from './ktb-drag-and-drop.directive';
-import {TestUtils} from '../_utils/test.utils';
+import { KtbDragAndDropDirective } from './ktb-drag-and-drop.directive';
+import { TestUtils } from '../../_utils/test.utils';
 
 describe('KtbDragAndDropDirective', () => {
   let directive: KtbDragAndDropDirective;
@@ -18,12 +18,12 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml', {type: 'some'}), new File(['test'], 'test2.yaml', {type: 'some'})]);
 
     // when
-    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
+    const emitSpy = jest.spyOn(directive.dropError, 'emit');
     directive.onDrop(event);
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0]).toEqual('Please select only one file');
+    expect(emitSpy).toHaveBeenCalledWith('Please select only one file');
   });
 
   it('should allow more than one file when multiple is true', () => {
@@ -32,30 +32,29 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.yaml', {type: 'some'}), new File(['test'], 'test2.yaml', {type: 'some'})]);
 
     // when
-    const emitSpy = spyOn(directive.dropped, 'emit').and.callThrough();
+    const emitSpy = jest.spyOn(directive.dropped, 'emit');
     directive.onDrop(event);
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0]?.length).toEqual(2);
-    expect(emitSpy.calls.mostRecent().args[0]?.[0].name).toEqual('test1.yaml');
+    expect(emitSpy).toHaveBeenCalledWith(event.dataTransfer?.files);
   });
 
   it('should allow only files and not directories', () => {
     // given
     const file = new File(['test'], 'test-folder', {type: ''});
     Object.defineProperty(file.constructor.prototype, 'size', {
-      value: 4096
+      value: 4096,
     });
     const event = TestUtils.createNewDropEventWithFiles([file]);
 
     // when
-    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
+    const emitSpy = jest.spyOn(directive.dropError, 'emit');
     directive.onDrop(event);
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0]).toEqual('Please select only files');
+    expect(emitSpy).toHaveBeenCalledWith('Please select only files');
   });
 
   it('should allow only a predefined set of file extensions when given', () => {
@@ -65,12 +64,12 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.png', {type: 'image/png'})]);
 
     // when
-    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
+    const emitSpy = jest.spyOn(directive.dropError, 'emit');
     directive.onDrop(event);
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0]).toEqual(`Only ${allowedExtensions.join(', ')} files allowed`);
+    expect(emitSpy).toHaveBeenCalledWith(`Only ${allowedExtensions.join(', ')} files allowed`);
   });
 
   it('should should allow only a predefined set of file extensions also for multiple files', () => {
@@ -81,12 +80,12 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test1.pdf', {type: 'document/pdf'}), new File(['test'], 'test2.png', {type: 'image/png'})]);
 
     // when
-    const emitSpy = spyOn(directive.dropError, 'emit').and.callThrough();
+    const emitSpy = jest.spyOn(directive.dropError, 'emit');
     directive.onDrop(event);
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0]).toEqual(`Only ${allowedExtensions.join(', ')} files allowed`);
+    expect(emitSpy).toHaveBeenCalledWith(`Only ${allowedExtensions.join(', ')} files allowed`);
   });
 
   it('should allow all file extensions when not set', () => {
@@ -94,12 +93,11 @@ describe('KtbDragAndDropDirective', () => {
     const event = TestUtils.createNewDropEventWithFiles([new File(['test'], 'test.jpeg', {type: 'image/jpeg'})]);
 
     // when
-    const emitSpy = spyOn(directive.dropped, 'emit').and.callThrough();
+    const emitSpy = jest.spyOn(directive.dropped, 'emit');
     directive.onDrop(event);
 
     // then
     expect(emitSpy).toHaveBeenCalled();
-    expect(emitSpy.calls.mostRecent().args[0]?.length).toEqual(1);
-    expect(emitSpy.calls.mostRecent().args[0]?.[0].name).toEqual('test.jpeg');
+    expect(emitSpy).toHaveBeenCalledWith(event.dataTransfer?.files);
   });
 });

@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { DtToast, DtToastModule } from '@dynatrace/barista-components/toast';
-
 import { ClipboardService } from './clipboard.service';
-import {AppModule} from "../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { AppModule } from '../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ClipboardService', () => {
   let service: ClipboardService;
@@ -13,7 +12,7 @@ describe('ClipboardService', () => {
       imports: [
         AppModule,
         HttpClientTestingModule,
-        DtToastModule
+        DtToastModule,
       ],
       providers: [DtToast],
     });
@@ -21,16 +20,9 @@ describe('ClipboardService', () => {
   });
 
   it('should return beautified JSON strings', () => {
-    expect(service.stringify(1))
-      .toBe('1');
-
-    expect(service.stringify('foobar'))
-      .toBe('foobar');
-
-    expect(service.stringify({ foo: 'bar' }))
-      .toBe('{\n  "foo": "bar"\n}');
-
-    expect(service.stringify([{ foo: 'bar' }]))
-      .toBe('[\n  {\n    "foo": "bar"\n  }\n]');
+    expect(service.stringify(1)).toEqual('1');
+    expect(service.stringify('foobar')).toEqual('foobar');
+    expect(service.stringify({foo: 'bar'})).toEqual('{\n  "foo": "bar"\n}');
+    expect(service.stringify([{foo: 'bar'}])).toEqual('[\n  {\n    "foo": "bar"\n  }\n]');
   });
 });

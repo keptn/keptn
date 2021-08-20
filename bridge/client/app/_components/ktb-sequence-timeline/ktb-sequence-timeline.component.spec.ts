@@ -1,35 +1,25 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceTimelineComponent } from './ktb-sequence-timeline.component';
-import {RouterTestingModule} from '@angular/router/testing';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbSequenceTasksListComponent} from "../ktb-sequence-tasks-list/ktb-sequence-tasks-list.component";
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbSequenceTimelineComponent', () => {
   let component: KtbSequenceTimelineComponent;
   let fixture: ComponentFixture<KtbSequenceTimelineComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbSequenceTimelineComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
 
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
+    fixture = TestBed.createComponent(KtbSequenceTimelineComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

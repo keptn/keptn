@@ -1,32 +1,30 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DashboardComponent } from './dashboard.component';
 import { AppModule } from '../app.module';
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppHeaderComponent} from "../app-header/app-header.component";
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(DashboardComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+      providers: [
+        {provide: POLLING_INTERVAL_MILLIS, value: 0},
+      ],
+    }).compileComponents();
 
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
+    fixture = TestBed.createComponent(DashboardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

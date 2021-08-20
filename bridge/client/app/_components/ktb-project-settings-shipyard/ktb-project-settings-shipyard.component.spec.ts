@@ -1,8 +1,9 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {KtbProjectSettingsShipyardComponent} from './ktb-project-settings-shipyard.component';
-import {AppModule} from '../../app.module';
-import {TestUtils} from '../../_utils/test.utils';
+import { KtbProjectSettingsShipyardComponent } from './ktb-project-settings-shipyard.component';
+import { AppModule } from '../../app.module';
+import { TestUtils } from '../../_utils/test.utils';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbProjectSettingsEditProjectComponent', () => {
   let component: KtbProjectSettingsShipyardComponent;
@@ -10,12 +11,9 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbProjectSettingsShipyardComponent],
-      imports: [AppModule]
+      imports: [AppModule, HttpClientTestingModule],
     }).compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbProjectSettingsShipyardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -52,7 +50,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     const button = fixture.nativeElement.querySelector('button.shipyard-upload-button');
 
     // then
-    expect(button.disabled).toBeTrue();
+    expect(button.disabled).toBe(true);
   });
 
   it('should enable the "Update shipyard" button when a file is selected', () => {
@@ -65,7 +63,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
     // then
     const button = fixture.nativeElement.querySelector('button.shipyard-upload-button');
-    expect(button.disabled).toBeFalse();
+    expect(button.disabled).toBe(false);
   });
 
   it('should show an error when an error handling is triggered', () => {
@@ -85,7 +83,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     const errorContainer = fixture.nativeElement.querySelector('p.drop-error');
     const file = new File(['test content'], 'test-directory', {type: ''});
     Object.defineProperty(file.constructor.prototype, 'size', {
-      value: 4096
+      value: 4096,
     });
     const fileList = TestUtils.createNewDropEventWithFiles([file]).dataTransfer?.files ?? null;
 
@@ -124,7 +122,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
   it('should call validateAndUpdateFile when file input was changed', () => {
     // given
-    const spy = spyOn(component, 'validateAndUpdateFile');
+    const spy = jest.spyOn(component, 'validateAndUpdateFile');
     const input = fixture.nativeElement.querySelector('#shipyard-file-input');
 
     // when
@@ -137,7 +135,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   it('should emit the updated files', () => {
     // given
     const fileList = TestUtils.createNewDropEventWithFiles([new File(['test content'], 'test1.yaml')]).dataTransfer?.files;
-    const spy = spyOn(component.shipyardFileChanged, 'emit');
+    const spy = jest.spyOn(component.shipyardFileChanged, 'emit');
 
     // when
     component.updateFile(fileList);
@@ -155,7 +153,7 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
     // then
     const div = fixture.nativeElement.querySelector('.shipyard-file-name');
-    expect(div.innerText).toEqual('test1.yaml');
+    expect(div.textContent).toEqual('test1.yaml');
   });
 
   it('should show a delete button when a shipyard file is set', () => {
@@ -205,6 +203,6 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
 
     // then
     const div = fixture.nativeElement.querySelector('.shipyard-file-name');
-    expect(div.innerText).toEqual('test2.yaml');
+    expect(div.textContent).toEqual('test2.yaml');
   });
 });

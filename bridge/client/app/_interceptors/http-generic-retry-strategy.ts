@@ -20,6 +20,7 @@ const defaultParams: RetryParams = {
   shouldRetry: ({status}) => (status >= 400 && !avoidRetryFor.includes(status))
 };
 
+// tslint:disable-next-line:no-any
 export const genericRetryStrategy = (params: RetryParams = {}) => (attempts: Observable<any>) => attempts.pipe(
   mergeMap((error, i) => {
     const { maxAttempts, scalingDuration, shouldRetry } = { ...defaultParams, ...params };
@@ -32,3 +33,4 @@ export const genericRetryStrategy = (params: RetryParams = {}) => (attempts: Obs
     return timer(retryAttempt * scalingDuration);
   })
 );
+

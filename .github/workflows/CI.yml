@@ -332,7 +332,7 @@ jobs:
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
         run: |
           npm install
-          npm run test:ci
+          npm run test
         working-directory: ./bridge
       - name: Coverage report
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_BRIDGE == 'true')
