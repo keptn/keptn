@@ -148,60 +148,80 @@ func (sc *shipyardController) AddSequenceResumedHook(hook sequencehooks.ISequenc
 }
 
 func (sc *shipyardController) onSequenceTriggered(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceTriggeredHooks {
 		hook.OnSequenceTriggered(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceStarted(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceStartedHooks {
 		hook.OnSequenceStarted(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTaskStarted(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceTaskStartedHooks {
 		hook.OnSequenceTaskStarted(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTaskTriggered(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceTaskTriggeredHooks {
 		hook.OnSequenceTaskTriggered(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTaskFinished(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceTaskFinishedHooks {
 		hook.OnSequenceTaskFinished(event)
 	}
 }
 
 func (sc *shipyardController) onSubSequenceFinished(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.subSequenceFinishedHooks {
 		hook.OnSubSequenceFinished(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceFinished(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceFinishedHooks {
 		hook.OnSequenceFinished(event)
 	}
 }
 
 func (sc *shipyardController) onSequenceTimeout(event models.Event) {
+	common.LockProject(event.Shkeptncontext)
+	defer common.UnlockProject(event.Shkeptncontext)
 	for _, hook := range sc.sequenceTimoutHooks {
 		hook.OnSequenceTimeout(event)
 	}
 }
 
 func (sc *shipyardController) onSequencePaused(pause models.EventScope) {
+	common.LockProject(pause.KeptnContext)
+	defer common.UnlockProject(pause.KeptnContext)
 	for _, hook := range sc.sequencePausedHooks {
 		hook.OnSequencePaused(pause)
 	}
 }
 
 func (sc *shipyardController) onSequenceResumed(resume models.EventScope) {
+	common.LockProject(resume.KeptnContext)
+	defer common.UnlockProject(resume.KeptnContext)
 	for _, hook := range sc.sequenceResumedHooks {
 		hook.OnSequenceResumed(resume)
 	}
