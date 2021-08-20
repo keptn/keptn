@@ -1,23 +1,25 @@
-<ng-container *ngIf="uniformRegistration as uniformRegistration">
-  <button dt-button routerLink="./subscriptions/add" class="mb-2" *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
-    <dt-icon name="plus-add"></dt-icon>
-    Add subscription
-  </button>
-  <ng-template #disabledButton>
-    <button dt-button class="mb-2 disabled" [dtOverlay]="updateDistributor">
+<ng-container *ngIf="projectName$ | async as projectName">
+  <ng-container *ngIf="uniformRegistration as uniformRegistration">
+    <button dt-button [routerLink]="['/project', projectName, 'uniform', 'services',  uniformRegistration.id, 'subscriptions', 'add']" class="mb-2" *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
       <dt-icon name="plus-add"></dt-icon>
       Add subscription
     </button>
-    <ng-template #updateDistributor>
-      Action denied. Please update your distributor to version 0.9.0 or higher
+    <ng-template #disabledButton>
+      <button dt-button class="mb-2 disabled" [dtOverlay]="updateDistributor">
+        <dt-icon name="plus-add"></dt-icon>
+        Add subscription
+      </button>
+      <ng-template #updateDistributor>
+        Action denied. Please update your distributor to version 0.9.0 or higher
+      </ng-template>
     </ng-template>
-  </ng-template>
-  <div *ngIf="projectName$ | async as projectName" class="subscription-list">
-    <ktb-subscription-item *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName), let index = index"
-                           [subscription]="subscription"
-                           [integrationId]="uniformRegistration.id"
-                           name="Subscription {{index + 1}}"
-                           (subscriptionDeleted)="deleteSubscription($event)"
-    ></ktb-subscription-item>
-  </div>
+    <div class="subscription-list">
+      <ktb-subscription-item *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName), let index = index"
+                             [subscription]="subscription"
+                             [integrationId]="uniformRegistration.id"
+                             name="Subscription {{index + 1}}"
+                             (subscriptionDeleted)="deleteSubscription($event)"
+      ></ktb-subscription-item>
+    </div>
+  </ng-container>
 </ng-container>
