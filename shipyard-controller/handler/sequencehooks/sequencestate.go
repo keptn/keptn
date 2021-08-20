@@ -186,14 +186,14 @@ func (smv *SequenceStateMaterializedView) findSequenceState(project, keptnContex
 }
 
 func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope models.EventScope, status string) {
+	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
+	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	state, err := smv.findSequenceStateForEvent(eventScope)
 	if err != nil {
 		log.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
 		return
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
-	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	state.State = status
 	if err := smv.SequenceStateRepo.UpdateSequenceState(*state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
