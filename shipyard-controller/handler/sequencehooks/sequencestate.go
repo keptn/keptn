@@ -38,8 +38,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		return
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
-	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
+	//common.LockProject(stateLockPrefix + eventScope.KeptnContext)
+	//defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 
 	state := models.SequenceState{
 		Name:           sequenceName,
