@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
@@ -77,6 +80,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	// for backwards compatibility, we check if there is a Subscriptions field set
 	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
 	// Note: "old" registrations will NOT get subscription IDs
+	// This code can be deleted with later versions of Keptn
 	if integration.Subscriptions == nil {
 		var projectFilter []string
 		var stageFilter []string
@@ -102,6 +106,12 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 			}
 			integration.Subscriptions = append(integration.Subscriptions, ts)
 		}
+
+		raw := fmt.Sprintf("%s-%s-%s-%s-%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace, integration.Subscription.Filter.Project, integration.Subscription.Filter.Stage, integration.Subscription.Filter.Service)
+		hasher := sha1.New() //nolint:gosec
+		hasher.Write([]byte(raw))
+		hash = hex.EncodeToString(hasher.Sum(nil))
+		integration.ID = hash
 	}
 
 	err = rh.uniformRepo.CreateUniformIntegration(*integration)
