@@ -16,7 +16,7 @@ describe('KtbEventsListComponent', () => {
   const projectName = 'sockshop';
   let project: Project;
 
-  beforeEach(async () => {
+  beforeEach(async (done) => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [
@@ -47,6 +47,7 @@ describe('KtbEventsListComponent', () => {
     dataService.getProject(projectName).subscribe((pr: Project) => {
       project = pr;
       fixture.detectChanges();
+      done();
     });
   });
 
