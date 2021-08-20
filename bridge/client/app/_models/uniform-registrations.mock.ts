@@ -16,7 +16,8 @@ const services: ur[] = [
         podname: 'ansible-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'active'
+      status: 'active',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'ansible-service',
     subscriptions:
@@ -43,7 +44,8 @@ const services: ur[] = [
         podname: 'helm-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'ansible-service',
     subscriptions:
@@ -69,7 +71,8 @@ const services: ur[] = [
         podname: 'jmeter-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'jmeter-service',
     subscriptions:
@@ -95,7 +98,8 @@ const services: ur[] = [
         podname: 'lighthouse-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'lighthouse-service',
     subscriptions:
@@ -121,7 +125,8 @@ const services: ur[] = [
         podname: 'approval-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'lighthouse-service',
     subscriptions:
@@ -147,7 +152,8 @@ const services: ur[] = [
         podname: 'remediation-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'remediation-service',
     subscriptions:
@@ -191,7 +197,8 @@ const services: ur[] = [
         podname: 'jenkins-service-123456789'
       },
       location: 'Execution plane-B',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'jenkins-service',
     subscriptions:
@@ -217,7 +224,8 @@ const services: ur[] = [
         podname: 'dynatrace-sli-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'dynatrace-sli-service',
     subscriptions:
@@ -243,7 +251,8 @@ const services: ur[] = [
         podname: 'dynatrace-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'dynatrace-service',
     subscriptions:
@@ -269,7 +278,8 @@ const services: ur[] = [
         podname: 'servicenow-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'servicenow-service',
     subscriptions:
