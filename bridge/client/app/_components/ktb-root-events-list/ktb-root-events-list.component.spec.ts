@@ -16,7 +16,7 @@ describe('KtbEventsListComponent', () => {
   const projectName = 'sockshop';
   let project: Project;
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [
@@ -44,11 +44,8 @@ describe('KtbEventsListComponent', () => {
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
     // @ts-ignore
-    dataService.getProject(projectName).subscribe((pr: Project) => {
-      project = pr;
-      fixture.detectChanges();
-      done();
-    });
+    project = await dataService.getProject(projectName).toPromise();
+    fixture.detectChanges();
   });
 
   it('should create root-events-list component', () => {
