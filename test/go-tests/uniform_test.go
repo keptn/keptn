@@ -5,6 +5,7 @@ import (
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -216,6 +217,9 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	testUniformIntegration(t, func() {
 		// install echo integration
 		_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		require.Nil(t, err)
+
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
 		// get the image of the distributor of the build being tested
