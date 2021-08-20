@@ -143,6 +143,8 @@ func Test_SequenceQueue(t *testing.T) {
 
 	err = setShipyardControllerTaskTimeout(t, "10s")
 	defer func() {
+		diagnosticsOutput := GetDiagnostics("shipyard-controller")
+		t.Log(diagnosticsOutput)
 		// increase the timeout value again
 		err = setShipyardControllerTaskTimeout(t, "20m")
 		require.Nil(t, err)
