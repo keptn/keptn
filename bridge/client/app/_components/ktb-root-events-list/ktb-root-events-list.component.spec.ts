@@ -44,8 +44,10 @@ describe('KtbEventsListComponent', () => {
     dataService = fixture.debugElement.injector.get(DataService);
     dataService.loadProjects(); // reset project.sequences
     // @ts-ignore
-    project = await dataService.getProject(projectName).toPromise();
-    fixture.detectChanges();
+    dataService.getProject(projectName).subscribe((pr: Project) => {
+      project = pr;
+      fixture.detectChanges();
+    });
   });
 
   it('should create root-events-list component', () => {
