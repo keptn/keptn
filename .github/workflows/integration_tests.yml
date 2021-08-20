@@ -486,25 +486,25 @@ jobs:
       #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
       #  run: cd test/go-tests && go test -run LogForwarding -v
 
-      - name: Test Sequence States
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_states
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
-
-      - name: Test Sequence Loop
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_loop
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
+     # - name: Test Sequence States
+     #   # do not run this test for the airgapped scenario
+     #   if: env.RUN_AIRGAPPED_TEST != 'true'
+     #   id: test_sequence_states
+     #   timeout-minutes: 5
+     #   continue-on-error: true
+     #   env:
+     #     KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+     #   run: cd test/go-tests && go test -run SequenceStateIntegrationTest -v
+#
+     # - name: Test Sequence Loop
+     #   # do not run this test for the airgapped scenario
+     #   if: env.RUN_AIRGAPPED_TEST != 'true'
+     #   id: test_sequence_loop
+     #   timeout-minutes: 5
+     #   continue-on-error: true
+     #   env:
+     #     KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+     #   run: cd test/go-tests && go test -run SequenceLoopIntegrationTest -v
 
       #- name: Test Delayed Tasks
       #  # do not run this test for the airgapped scenario
@@ -669,25 +669,25 @@ jobs:
 #
       ## for debugging etc... it makes sense to have the support archive attached as an artifact
 #
-      - name: Test Sequence Timeout
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_timeout
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceTimeout -v
-
-      - name: Test Sequence Control
-        # do not run this test for the airgapped scenario
-        if: env.RUN_AIRGAPPED_TEST != 'true'
-        id: test_sequence_control
-        timeout-minutes: 5
-        continue-on-error: true
-        env:
-          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-        run: cd test/go-tests && go test -run SequenceControl -v
+      #- name: Test Sequence Timeout
+      #  # do not run this test for the airgapped scenario
+      #  if: env.RUN_AIRGAPPED_TEST != 'true'
+      #  id: test_sequence_timeout
+      #  timeout-minutes: 5
+      #  continue-on-error: true
+      #  env:
+      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+      #  run: cd test/go-tests && go test -run SequenceTimeout -v
+#
+      #- name: Test Sequence Control
+      #  # do not run this test for the airgapped scenario
+      #  if: env.RUN_AIRGAPPED_TEST != 'true'
+      #  id: test_sequence_control
+      #  timeout-minutes: 5
+      #  continue-on-error: true
+      #  env:
+      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+      #  run: cd test/go-tests && go test -run SequenceControl -v
 
       - name: Test Sequence Queue
         # do not run this test for the airgapped scenario
