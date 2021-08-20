@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
 
@@ -16,17 +17,16 @@ const sequenceStateRetrievalErrorMsg = "could not fetch sequence state for keptn
 
 type SequenceStateMaterializedView struct {
 	SequenceStateRepo db.SequenceStateRepo
+	mutex             *sync.Mutex
 }
 
 func NewSequenceStateMaterializedView(stateRepo db.SequenceStateRepo) *SequenceStateMaterializedView {
-	return &SequenceStateMaterializedView{SequenceStateRepo: stateRepo}
+	return &SequenceStateMaterializedView{SequenceStateRepo: stateRepo, mutex: &sync.Mutex{}}
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
 	if err != nil {
 		log.Errorf("could not determine stage/sequence name: %s", err.Error())
@@ -58,10 +58,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -71,10 +69,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -94,10 +90,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.E
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -110,10 +104,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -132,10 +124,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 }
 
 func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -148,10 +138,8 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -161,10 +149,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
-	if event.Shkeptncontext != "" {
-		common.LockProject(event.Shkeptncontext)
-		defer common.UnlockProject(event.Shkeptncontext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -174,10 +160,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) 
 }
 
 func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventScope) {
-	if pause.KeptnContext != "" {
-		common.LockProject(pause.KeptnContext)
-		defer common.UnlockProject(pause.KeptnContext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	if pause.Stage == "" {
 		smv.updateOverallSequenceState(pause, models.SequencePaused)
 	} else {
@@ -186,10 +170,8 @@ func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventSco
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceResumed(resume models.EventScope) {
-	if resume.KeptnContext != "" {
-		common.LockProject(resume.KeptnContext)
-		defer common.UnlockProject(resume.KeptnContext)
-	}
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	if resume.Stage == "" {
 		smv.updateOverallSequenceState(resume, models.SequenceStartedState)
 	} else {
