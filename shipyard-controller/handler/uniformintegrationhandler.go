@@ -128,7 +128,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 // @Security ApiKeyAuth
 // @Accept json
 // @Produce json
-// @Param id path string true "integrationID"
+// @Param integrationID path string true "integrationID"
 // @Success 200
 // @Failure 400 {object} models.Error "Invalid payload"
 // @Failure 500 {object} models.Error "Internal error"
