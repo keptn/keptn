@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbDangerZoneComponent } from './ktb-danger-zone.component';
 import { AppModule } from '../../app.module';
 import { DeleteType } from '../../_interfaces/delete';
+import { KtbDeletionDialogComponent } from '../_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbDeletionComponent', () => {
   let component: KtbDangerZoneComponent;
@@ -9,13 +11,9 @@ describe('KtbDeletionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbDangerZoneComponent],
-      imports: [AppModule],
-    })
-      .compileComponents();
-  });
+      imports: [AppModule, HttpClientTestingModule],
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbDangerZoneComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -27,11 +25,10 @@ describe('KtbDeletionComponent', () => {
 
   it('should open the deletion dialog', () => {
     // given
-    const data = {name: 'sockshop', type: DeleteType.PROJECT};
-    component.data = data;
+    component.data = {name: 'sockshop', type: DeleteType.PROJECT};
     fixture.detectChanges();
     const button = fixture.nativeElement.querySelector('.danger-button');
-    const spy = spyOn(component.dialog, 'open');
+    const spy = jest.spyOn(component.dialog, 'open');
 
     // when
     button.click();
@@ -39,7 +36,6 @@ describe('KtbDeletionComponent', () => {
 
     // then
     expect(spy).toHaveBeenCalled();
-    const spyData = spy.calls.mostRecent().args[1]?.data;
-    expect(spyData).toEqual(data);
+    expect(spy).toHaveBeenCalledWith(KtbDeletionDialogComponent, {data: {name: 'sockshop', type: 'project'}});
   });
 });

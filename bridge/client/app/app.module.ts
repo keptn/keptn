@@ -1,7 +1,7 @@
-import { registerLocaleData } from '@angular/common';
+import { APP_BASE_HREF, registerLocaleData } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import localeEn from '@angular/common/locales/en';
-import { APP_INITIALIZER, InjectionToken, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -39,13 +39,9 @@ import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-
 import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-clipboard';
 import { DtToggleButtonGroupModule } from '@dynatrace/barista-components/toggle-button-group';
 import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter';
-
-import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
-
 import { MomentModule } from 'ngx-moment';
-
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import { KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
@@ -54,7 +50,7 @@ import { KtbNotificationBarComponent } from './_components/ktb-notification-bar/
 import { KtbProjectListComponent } from './_components/ktb-project-list/ktb-project-list.component';
 import { KtbProjectTileComponent } from './_components/ktb-project-tile/ktb-project-tile.component';
 import { KtbRootEventsListComponent } from './_components/ktb-root-events-list/ktb-root-events-list.component';
-import { KtbSelectableTileComponent, KtbSelectableTileHeader } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
+import { KtbSelectableTileComponent, KtbSelectableTileHeaderDirective } from './_components/ktb-selectable-tile/ktb-selectable-tile.component';
 import { KtbSliBreakdownComponent } from './_components/ktb-sli-breakdown/ktb-sli-breakdown.component';
 import { KtbHideHttpLoadingDirective } from './_directives/ktb-hide-http-loading/ktb-hide-http-loading.directive';
 import { KtbShowHttpLoadingDirective } from './_directives/ktb-show-http-loading/ktb-show-http-loading.directive';
@@ -66,11 +62,9 @@ import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/kt
 import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetail } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
-
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
 import { HttpDefaultInterceptor } from './_interceptors/http-default-interceptor';
-
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 import { AppHeaderComponent } from './app-header/app-header.component';
@@ -91,7 +85,6 @@ import { KtbStageBadgeComponent } from './_components/ktb-stage-badge/ktb-stage-
 import { KtbUniformViewComponent } from './_views/ktb-uniform-view/ktb-uniform-view.component';
 import { KtbKeptnServicesListComponent } from './_components/ktb-keptn-services-list/ktb-keptn-services-list.component';
 import { DtFilterFieldModule } from '@dynatrace/barista-components/filter-field';
-import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { KtbDeploymentListComponent } from './_components/ktb-deployment-list/ktb-deployment-list.component';
 import { KtbUserComponent } from './_components/ktb-user/ktb-user.component';
 import { KtbServiceDetailsComponent } from './_components/ktb-service-details/ktb-service-details.component';
@@ -100,13 +93,13 @@ import { KtbDeploymentStageTimelineComponent } from './_components/ktb-deploymen
 import { KtbSequenceListComponent } from './_components/ktb-sequence-list/ktb-sequence-list.component';
 import { KtbUniformRegistrationLogsComponent } from './_components/ktb-uniform-registration-logs/ktb-uniform-registration-logs.component';
 import { AppInitService } from './_services/app.init';
-import {KtbSecretsListComponent} from './_components/ktb-secrets-list/ktb-secrets-list.component';
-import {KtbCreateSecretFormComponent} from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
+import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secrets-list.component';
+import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbNoServiceInfoComponent } from './_components/ktb-no-service-info/ktb-no-service-info.component';
 import { KtbSequenceStateListComponent } from './_components/ktb-sequence-state-list/ktb-sequence-state-list.component';
 import { KtbProjectSettingsGitComponent } from './_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { KtbProjectSettingsShipyardComponent } from './_components/ktb-project-settings-shipyard/ktb-project-settings-shipyard.component';
-import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop.directive';
+import { KtbDragAndDropDirective } from './_directives/ktb-drag-and-drop/ktb-drag-and-drop.directive';
 import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger-zone.component';
 import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { EventService } from './_services/event.service';
@@ -115,14 +108,15 @@ import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subs
 import { ToDatePipe } from './_pipes/to-date.pipe';
 import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
+import { DtThemingModule } from '@dynatrace/barista-components/theming';
+import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
+import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
 
 registerLocaleData(localeEn, 'en');
 
 export function init_app(appLoadService: AppInitService) {
   return () => appLoadService.init();
 }
-
-export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in millis');
 
 @NgModule({
   declarations: [
@@ -139,7 +133,7 @@ export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in
     KtbExpandableTileComponent,
     KtbExpandableTileHeader,
     KtbSelectableTileComponent,
-    KtbSelectableTileHeader,
+    KtbSelectableTileHeaderDirective,
     KtbHorizontalSeparatorComponent,
     KtbHorizontalSeparatorTitle,
     KtbRootEventsListComponent,
@@ -240,16 +234,23 @@ export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in
     }),
     BrowserAnimationsModule,
     DtFilterFieldModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+  ],
+  entryComponents: [
+    KtbDeletionDialogComponent,
   ],
   providers: [
     EventService,
     AppInitService,
     {
+      provide: APP_BASE_HREF,
+      useValue: '/',
+    },
+    {
       provide: APP_INITIALIZER,
       useFactory: init_app,
       deps: [AppInitService],
-      multi: true
+      multi: true,
     },
     {
       provide: HTTP_INTERCEPTORS,
@@ -267,9 +268,13 @@ export const INITIAL_DELAY_MILLIS = new InjectionToken<number>('Initial delay in
       multi: true,
     },
     {
-      provide: INITIAL_DELAY_MILLIS,
-      useValue: 30_000
-    }
+      provide: POLLING_INTERVAL_MILLIS,
+      useValue: 30_000,
+    },
+    {
+      provide: RETRY_ON_HTTP_ERROR,
+      useValue: true,
+    },
   ],
   bootstrap: [AppComponent],
 })

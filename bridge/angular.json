@@ -94,28 +94,6 @@
             "browserTarget": "bridge:build"
           }
         },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "client/test.ts",
-            "polyfills": "client/polyfills.ts",
-            "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
-            "sourceMap": true,
-            "codeCoverage": true,
-            "watch": false,
-            "assets": [
-              "client/favicon.ico",
-              "client/assets"
-            ],
-            "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "./node_modules/highlight.js/styles/default.css",
-              "client/styles.scss"
-            ],
-            "scripts": []
-          }
-        },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {

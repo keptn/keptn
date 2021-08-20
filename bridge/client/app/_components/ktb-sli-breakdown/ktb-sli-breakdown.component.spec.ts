@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSliBreakdownComponent } from './ktb-sli-breakdown.component';
 import { KtbEvaluationDetailsComponent } from '../ktb-evaluation-details/ktb-evaluation-details.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -20,21 +20,18 @@ describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbSliBreakdownComponent;
   let fixture: ComponentFixture<KtbSliBreakdownComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbSliBreakdownComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbSliBreakdownComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should have expandable row', () => {
     // given
@@ -43,24 +40,24 @@ describe('KtbEvaluationDetailsComponent', () => {
     // then
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll('dt-row');
-    const rowBefore = rows[0].innerText;
+    const rowBefore = rows[0].textContent;
     const cells = rows[0].querySelectorAll('dt-cell');
     const firstCell = cells[Column.NAME];
 
     expect(rows.length).toBe(1);
     expect(fixture.nativeElement.querySelector('dt-table')).toBeTruthy();
     expect(cells[0].querySelector('button')).toBeTruthy();
-    expect(firstCell.innerText).not.toContain('compared with');
-    expect(firstCell.innerText).toContain('response_time_p95');
+    expect(firstCell.textContent).not.toContain('compared with');
+    expect(firstCell.textContent).toContain('response_time_p95');
 
     rows[0].click();
     fixture.detectChanges();
-    expect(firstCell.innerText).toContain('compared with');
+    expect(firstCell.textContent).toContain('compared with');
 
     rows[0].click();
     fixture.detectChanges();
-    expect(firstCell.innerText).not.toContain('compared with');
-    expect(rowBefore).toBe(rows[0].innerText);
+    expect(firstCell.textContent).not.toContain('compared with');
+    expect(rowBefore).toBe(rows[0].textContent);
   });
 
   it('should not have expandable row', () => {
@@ -70,14 +67,14 @@ describe('KtbEvaluationDetailsComponent', () => {
     // then
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll('dt-row');
-    const rowBefore = rows[0].innerText;
+    const rowBefore = rows[0].textContent;
     const cells = rows[0].querySelectorAll('dt-cell');
 
     expect(cells[Column.DETAILS].querySelector('button')).toBeFalsy();
 
     rows[0].click();
     fixture.detectChanges();
-    expect(rowBefore).toBe(rows[0].innerText);
+    expect(rowBefore).toBe(rows[0].textContent);
   });
 
   it('should have success values', () => {
@@ -157,10 +154,10 @@ describe('KtbEvaluationDetailsComponent', () => {
     // @ts-ignore
     const selectedEvaluation = Evaluations.data.evaluationHistory[selectedEvaluationIndex];
     // @ts-ignore
-    const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row>dt-cell:nth-child(${Column.NAME + 1})`);
+    const indicatorNames = fixture.nativeElement.querySelectorAll(`dt-row > dt-cell:nth-child(${Column.NAME + 1})`);
     for (let i = 0; i < indices.length; ++i) {
       // @ts-ignore
-      expect(indicatorNames[i].innerText).toEqual(selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric);
+      expect(indicatorNames[i].textContent).toEqual(selectedEvaluation.data.evaluation.indicatorResults[indices[i]].value.metric);
     }
   }
 
@@ -181,19 +178,14 @@ describe('KtbEvaluationDetailsComponent', () => {
     const calculatedValues: NodeListOf<HTMLElement> = cells[Column.VALUE].querySelectorAll(`span.${isSuccess ? 'success' : 'error'}`);
 
     expect(calculatedValues.length).toBe(2);
-    expect(cells[Column.VALUE].innerText).toContain(firstValue);
-    expect(cells[Column.VALUE].innerText).toContain(secondValue);
-    expect(cells[Column.WEIGHT].innerText).toContain(weight);
-    expect(calculatedValues[0].innerText).toBe(comparedValueAbsolute);
-    expect(calculatedValues[1].innerText).toBe(comparedValueRelative);
-    expect(cells[Column.PASS_CRITERIA].innerText).toBe(passCriteria);
-    expect(cells[Column.WARNING_CRITERIA].innerText).toBe(warningCriteria);
-    expect(cells[Column.RESULT].innerText).toBe(result);
-    expect(cells[Column.SCORE].innerText).toBe(score);
+    expect(cells[Column.VALUE].textContent).toContain(firstValue);
+    expect(cells[Column.VALUE].textContent).toContain(secondValue);
+    expect(cells[Column.WEIGHT].textContent).toContain(weight);
+    expect(calculatedValues[0].textContent).toBe(comparedValueAbsolute);
+    expect(calculatedValues[1].textContent).toBe(comparedValueRelative);
+    expect(cells[Column.PASS_CRITERIA].textContent?.replace(/\s/g, '')).toBe(passCriteria.replace(/\s/g, ''));
+    expect(cells[Column.WARNING_CRITERIA].textContent?.replace(/\s/g, '')).toBe(warningCriteria.replace(/\s/g, ''));
+    expect(cells[Column.RESULT].textContent).toBe(result);
+    expect(cells[Column.SCORE].textContent).toBe(score);
   }
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

@@ -1,7 +1,8 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {KtbProjectSettingsGitComponent} from './ktb-project-settings-git.component';
-import {AppModule} from '../../app.module';
+import { KtbProjectSettingsGitComponent } from './ktb-project-settings-git.component';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbProjectSettingsGitComponent', () => {
   let component: KtbProjectSettingsGitComponent;
@@ -9,13 +10,9 @@ describe('KtbProjectSettingsGitComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbProjectSettingsGitComponent],
-      imports: [AppModule],
-    })
-      .compileComponents();
-  });
+      imports: [AppModule, HttpClientTestingModule],
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbProjectSettingsGitComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -29,7 +26,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     // given
     component.gitData = {
       remoteURI: 'https://some-repo.git',
-      gitUser: 'username'
+      gitUser: 'username',
     };
 
     // then
@@ -82,7 +79,7 @@ describe('KtbProjectSettingsGitComponent', () => {
   });
 
   it('should be an invalid form when no fields are set', () => {
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a invalid form when only remoteUri field is set', () => {
@@ -90,7 +87,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitUrlControl.setValue('https://some-repo.git');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a invalid form when only user field is set', () => {
@@ -98,7 +95,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitUserControl.setValue('username');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a invalid form when only token field is set', () => {
@@ -106,7 +103,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitTokenControl.setValue('testToken');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a invalid form when only remoteUri and username fields are set', () => {
@@ -115,7 +112,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitUrlControl.setValue('https://some-repo.git');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a invalid form when only remoteUri and token fields are set', () => {
@@ -124,7 +121,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitTokenControl.setValue('testToken');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a invalid form when only username and token fields are set', () => {
@@ -133,7 +130,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitTokenControl.setValue('testToken');
 
     // then
-    expect(component.gitUpstreamForm.invalid).toBeTrue();
+    expect(component.gitUpstreamForm.invalid).toBe(true);
   });
 
   it('should be a valid form when remoteUri, username and token fields are set', () => {
@@ -143,7 +140,7 @@ describe('KtbProjectSettingsGitComponent', () => {
     component.gitTokenControl.setValue('testToken');
 
     // then
-    expect(component.gitUpstreamForm.valid).toBeTrue();
+    expect(component.gitUpstreamForm.valid).toBe(true);
   });
 
   it('should show a disabled button when form is invalid', () => {
@@ -183,17 +180,16 @@ describe('KtbProjectSettingsGitComponent', () => {
     // given
     component.gitData = {
       remoteURI: 'https://some-repo.git',
-      gitUser: 'username'
+      gitUser: 'username',
     };
 
     // when
-    const spy = spyOn(component.gitDataChanged, 'emit');
+    const spy = jest.spyOn(component.gitDataChanged, 'emit');
     component.gitUrlControl.setValue('https://some-other-repo.git', {emitEvent: true});
     component.onGitUpstreamFormChange();
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy.calls.mostRecent().args[0]?.remoteURI).toEqual('https://some-other-repo.git');
-    expect(spy.calls.mostRecent().args[0]?.gitUser).toEqual('username');
+    expect(spy).toHaveBeenCalledWith({gitToken: '', gitFormValid: false, remoteURI: 'https://some-other-repo.git', gitUser: 'username'});
   });
 });

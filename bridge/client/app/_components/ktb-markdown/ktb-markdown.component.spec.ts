@@ -1,20 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbServiceViewComponent } from './ktb-service-view.component';
+import { KtbMarkdownComponent } from './ktb-markdown.component';
 import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-describe('KtbEventsListComponent', () => {
-  let component: KtbServiceViewComponent;
-  let fixture: ComponentFixture<KtbServiceViewComponent>;
+describe('KtbExpandableTileComponent', () => {
+  let component: KtbMarkdownComponent;
+  let fixture: ComponentFixture<KtbMarkdownComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
+        HttpClientTestingModule,
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(KtbServiceViewComponent);
+    fixture = TestBed.createComponent(KtbMarkdownComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

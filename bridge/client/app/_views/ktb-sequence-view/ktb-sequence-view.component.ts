@@ -1,29 +1,23 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation
-} from '@angular/core';
-import {Location} from '@angular/common';
-import {ActivatedRoute, Params, Router} from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Location } from '@angular/common';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { DtQuickFilterChangeEvent, DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig } from '@dynatrace/barista-components/quick-filter';
-import {isObject} from '@dynatrace/barista-components/core';
-import {combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
+import { isObject } from '@dynatrace/barista-components/core';
+import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { filter, map, startWith, switchMap, takeUntil, takeWhile } from 'rxjs/operators';
 import moment from 'moment';
-import {Project} from '../../_models/project';
-import {DataService} from '../../_services/data.service';
-import {DateUtil} from '../../_utils/date.utils';
-import {Sequence} from '../../_models/sequence';
+import { Project } from '../../_models/project';
+import { DataService } from '../../_services/data.service';
+import { DateUtil } from '../../_utils/date.utils';
+import { Sequence } from '../../_models/sequence';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-sequence-view',
   templateUrl: './ktb-sequence-view.component.html',
   styleUrls: ['./ktb-sequence-view.component.scss'],
   host: {
-    class: 'ktb-sequence-view'
+    class: 'ktb-sequence-view',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
@@ -46,16 +40,15 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       }, {
         name: 'Sequence',
         showInSidebar: true,
-        autocomplete: [
-        ],
+        autocomplete: [],
       }, {
         name: 'Status',
         showInSidebar: true,
         autocomplete: [
-          { name: 'Active', value: 'started' },
-          { name: 'Failed', value: 'failed' },
-          { name: 'Succeeded', value: 'succeeded' },
-          { name: 'Waiting', value: 'waiting' }
+          {name: 'Active', value: 'started'},
+          {name: 'Failed', value: 'failed'},
+          {name: 'Succeeded', value: 'succeeded'},
+          {name: 'Waiting', value: 'waiting'},
         ],
       },
     ],
@@ -64,13 +57,12 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     // Method to decide if a node should be displayed in the quick filter
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
-  private sequenceFilters: {[key: string]: string[]} = {};
+  private sequenceFilters: { [key: string]: string[] } = {};
   private project?: Project;
   private unfinishedSequences: Sequence[] = [];
   private _tracesTimerInterval = 10_000;
   private _sequenceTimerInterval = 30_000;
   private _tracesTimer: Subscription = Subscription.EMPTY;
-  private _rootsTimer: Subscription = Subscription.EMPTY;
 
   public project$: Observable<Project | undefined>;
   public sequences$: Observable<Sequence[]>;
@@ -84,26 +76,32 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public _seqFilters: any[] = [];
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute,
-              public dateUtil: DateUtil, private router: Router, private location: Location) {
+              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
+
+    if (this.initialDelayMillis === 0) {
+      this._sequenceTimerInterval = 0;
+      this._tracesTimerInterval = 0;
+    }
+
     const projectName$ = this.route.params
       .pipe(
-        map(params => params.projectName)
+        map(params => params.projectName),
       );
 
     this.sequences$ = this.dataService.sequences
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter((sequences: Sequence[] | undefined): sequences is Sequence[] => !!sequences?.length)
+        filter((sequences: Sequence[] | undefined): sequences is Sequence[] => !!sequences?.length),
       );
 
     this.project$ = projectName$.pipe(
-      switchMap(projectName => this.dataService.getProject(projectName))
+      switchMap(projectName => this.dataService.getProject(projectName)),
     );
 
     this.project$
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter((project: Project | undefined): project is Project => !!project && !!project.getServices() && !!project.stages)
+        filter((project: Project | undefined): project is Project => !!project && !!project.getServices() && !!project.stages),
       )
       .subscribe(project => {
         if (project.projectName !== this.project?.projectName) {
@@ -117,19 +115,17 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-
-
-    timer(0, this._sequenceTimerInterval)
+    AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
         startWith(0),
         switchMap(() => this.project$),
         filter((project: Project | undefined): project is Project => !!project && !!project.getServices()),
-        takeUntil(this.unsubscribe$)
+        takeUntil(this.unsubscribe$),
       ).subscribe(project => {
       this.dataService.loadSequences(project);
     });
 
-    this._rootsTimer = timer(0, this._tracesTimerInterval)
+    AppUtils.createTimer(0, this._tracesTimerInterval)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         // This triggers the subscription for sequences$
@@ -138,13 +134,13 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
             this.dataService.updateSequence(this.project.projectName, sequence.shkeptncontext);
           }
         }
-    });
+      });
 
     // init; set parameters
     combineLatest([this.route.params, this.sequences$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        takeWhile( ([params]) => !this.currentSequence && params.shkeptncontext)
+        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext),
       )
       .subscribe(([params, sequences]: [Params, Sequence[]]) => {
         if (params.shkeptncontext) {
@@ -157,7 +153,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
             this.dataService.loadUntilRoot(this.project, params.shkeptncontext);
           }
         }
-    });
+      });
 
     this.sequences$.subscribe(sequences => {
       this.updateFilterSequence(sequences);
@@ -167,15 +163,15 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectSequence(event: {sequence: Sequence, stage?: string, eventId?: string}): void {
+  selectSequence(event: { sequence: Sequence, stage?: string, eventId?: string }): void {
     if (event.eventId) {
       const routeUrl = this.router.createUrlTree(['/project', event.sequence.project, 'sequence',
-                                                          event.sequence.shkeptncontext, 'event', event.eventId]);
+        event.sequence.shkeptncontext, 'event', event.eventId]);
       this.location.go(routeUrl.toString());
     } else {
       const stage = event.stage || event.sequence.getStages().pop();
       const routeUrl = this.router.createUrlTree(['/project', event.sequence.project, 'sequence', event.sequence.shkeptncontext,
-                                                            ...(stage ? ['stage', stage] : [])]);
+        ...(stage ? ['stage', stage] : [])]);
       this.location.go(routeUrl.toString());
     }
 
@@ -187,7 +183,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   loadTraces(sequence: Sequence): void {
     this._tracesTimer.unsubscribe();
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
-      this._tracesTimer = timer(0, this._tracesTimerInterval)
+      this._tracesTimer = AppUtils.createTimer(0, this._tracesTimerInterval)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
           this.dataService.loadTraces(sequence);
@@ -199,7 +195,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   // tslint:disable-next-line:no-any
-  filtersChanged(event: DtQuickFilterChangeEvent<any> | {filters: []}) {
+  filtersChanged(event: DtQuickFilterChangeEvent<any> | { filters: [] }) {
     this._seqFilters = event.filters;
     this.sequenceFilters = this._seqFilters.reduce((filters, currentFilter) => {
       if (!filters[currentFilter[0].name]) {
@@ -216,14 +212,14 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       if (filterItem) {
         filterItem.autocomplete = sequences.map(s => s.name).filter((v, i, a) => a.indexOf(v) === i).map(seqName => Object.assign({}, {
           name: seqName,
-          value: seqName
+          value: seqName,
         }));
       }
     }
   }
 
   updateFilterDataSource(project: Project) {
-    let filterItem  = this.filterFieldData.autocomplete.find(f => f.name === 'Service');
+    let filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Service');
     if (filterItem) {
       filterItem.autocomplete = project.getServices().map(s => Object.assign({}, {name: s.serviceName, value: s.serviceName}));
     }
@@ -234,7 +230,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     this.updateFilterSequence(project.sequences);
     this.refreshFilterDataSource();
 
-    this.filtersChanged({ filters: [] });
+    this.filtersChanged({filters: []});
     this._changeDetectorRef.markForCheck();
   }
 
@@ -289,9 +285,8 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this._tracesTimer.unsubscribe();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-    this._tracesTimer.unsubscribe();
-    this._rootsTimer.unsubscribe();
   }
 }

@@ -1,5 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSettingsViewComponent } from './ktb-settings-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -16,9 +15,8 @@ describe('KtbSettingsViewComponent', () => {
   let dataService: DataService;
   const routeDataSubject = new BehaviorSubject<{ isCreateMode: boolean }>({isCreateMode: false});
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [KtbSettingsViewComponent],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
@@ -27,15 +25,11 @@ describe('KtbSettingsViewComponent', () => {
           useValue: {
             params: of({projectName: 'sockshop'}),
             data: routeDataSubject.asObservable(),
-            queryParams: of({})
-          }
-        }
-      ]
-    })
-      .compileComponents();
-  }));
-
-  beforeEach(() => {
+            queryParams: of({}),
+          },
+        },
+      ],
+    }).compileComponents();
     fixture = TestBed.createComponent(KtbSettingsViewComponent);
     component = fixture.componentInstance;
     dataService = fixture.debugElement.injector.get(DataService);
@@ -61,7 +55,7 @@ describe('KtbSettingsViewComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(component.isCreateMode).toBeTrue();
+    expect(component.isCreateMode).toBe(true);
   });
 
   it('should have a validation error if project name already exists in projects', async () => {
@@ -74,7 +68,7 @@ describe('KtbSettingsViewComponent', () => {
     component.projectNameControl.setValue('sockshop');
 
     // then
-    expect(component.projectNameControl.hasError('projectName')).toBeTrue();
+    expect(component.projectNameControl.hasError('projectName')).toBe(true);
   });
 
   it('should navigate to created project', async () => {
@@ -85,7 +79,7 @@ describe('KtbSettingsViewComponent', () => {
 
     // when
     const router = TestBed.inject(Router);
-    const routeSpy = spyOn(router, 'navigate');
+    const routeSpy = jest.spyOn(router, 'navigate');
     await dataService.loadProjects();
 
     // then
@@ -97,12 +91,12 @@ describe('KtbSettingsViewComponent', () => {
     const gitData = {
       remoteURI: 'https://test.git',
       gitUser: 'username',
-      gitToken: 'token'
+      gitToken: 'token',
     };
     component.projectName = 'sockshop';
 
     // when
-    const spy = spyOn(dataService, 'setGitUpstreamUrl').and.callThrough();
+    const spy = jest.spyOn(dataService, 'setGitUpstreamUrl');
     component.updateGitData(gitData);
     component.setGitUpstream();
 
@@ -115,7 +109,7 @@ describe('KtbSettingsViewComponent', () => {
     routeDataSubject.next({isCreateMode: false});
     fixture.detectChanges();
 
-    expect(component.isCreateMode).toBeFalse();
+    expect(component.isCreateMode).toBe(false);
   });
 
   it('should set project name to projectName retrieved by route', () => {
@@ -164,7 +158,7 @@ describe('KtbSettingsViewComponent', () => {
 
     // when
     const router = TestBed.inject(Router);
-    const routeSpy = spyOn(router, 'navigate');
+    const routeSpy = jest.spyOn(router, 'navigate');
     component.deleteProject('sockshop');
 
     // then
@@ -192,11 +186,16 @@ describe('KtbSettingsViewComponent', () => {
     // then
     const notification = document.getElementsByTagName('dt-confirmation-dialog-state');
     expect(notification.length).toEqual(1);
+
+    // We have to reset the state, as the dt-confirmation-dialog component has some pending timer open
+    // and the test will not complete
+    component.unsavedDialogState = null;
+    fixture.detectChanges();
   });
 
   it('should show a notification for unsaved changes when git data is changed in update mode', () => {
     // given
-    component.isCreateMode = false;
+    component.isCreateMode = true;
     fixture.detectChanges();
 
     // when

@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbNoServiceInfoComponent } from './ktb-no-service-info.component';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbNoServiceInfoComponent', () => {
   let component: KtbNoServiceInfoComponent;
@@ -10,16 +9,12 @@ describe('KtbNoServiceInfoComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KtbNoServiceInfoComponent ],
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-    .compileComponents();
-  });
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbNoServiceInfoComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
