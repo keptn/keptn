@@ -80,7 +80,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	// for backwards compatibility, we check if there is a Subscriptions field set
 	// if not, we are taking the old Subscription field and map it to the new Subscriptions field
 	// Note: "old" registrations will NOT get subscription IDs
-	// This code can be deleted with later versions of Keptn
+	// This code block can be deleted with later versions of Keptn
 	if integration.Subscriptions == nil {
 		var projectFilter []string
 		var stageFilter []string
@@ -116,7 +116,10 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 
 	err = rh.uniformRepo.CreateUniformIntegration(*integration)
 	if err != nil {
+		// if the integration already exists, update only the last seen field
+		// and return integration ID
 		if errors.Is(err, db.ErrUniformRegistrationAlreadyExists) {
+			_, _ = rh.uniformRepo.UpdateLastSeen(integration.ID)
 			c.JSON(http.StatusOK, &models.RegisterResponse{
 				ID: integration.ID,
 			})
