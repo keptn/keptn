@@ -8,19 +8,18 @@ import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 describe('HttpErrorInterceptorService', () => {
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         Overlay,
         {
           provide: HTTP_INTERCEPTORS,
           useClass: HttpErrorInterceptor,
-          multi: true
+          multi: true,
         },
-        {provide: RETRY_ON_HTTP_ERROR, useValue: false}
-      ]
-    }).compileComponents().then(() => {
-    });
+        {provide: RETRY_ON_HTTP_ERROR, useValue: false},
+      ],
+    }).compileComponents();
   });
 
   it('should be an instance', () => {

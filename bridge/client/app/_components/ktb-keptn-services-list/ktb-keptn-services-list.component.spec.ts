@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbKeptnServicesListComponent } from './ktb-keptn-services-list.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -13,8 +13,8 @@ describe('KtbKeptnServicesListComponent', () => {
   let component: KtbKeptnServicesListComponent;
   let fixture: ComponentFixture<KtbKeptnServicesListComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -31,15 +31,13 @@ describe('KtbKeptnServicesListComponent', () => {
           },
         },
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        localStorage.setItem('keptn_integration_dates', '');
-        fixture = TestBed.createComponent(KtbKeptnServicesListComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
+
+    localStorage.setItem('keptn_integration_dates', '');
+    fixture = TestBed.createComponent(KtbKeptnServicesListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -106,9 +104,4 @@ describe('KtbKeptnServicesListComponent', () => {
     expect(logs).toBeTruthy();
     expect(fixture.nativeElement.querySelector('h3').textContent).toEqual('ansible-service');
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

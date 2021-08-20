@@ -8,15 +8,15 @@ describe(`HttpDefaultInterceptor`, () => {
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    }).compileComponents().then(() => {
-      service = TestBed.inject(ApiService);
-      httpMock = TestBed.inject(HttpTestingController);
-    });
+    }).compileComponents();
+
+    service = TestBed.inject(ApiService);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   it('should add Content-Type header', () => {

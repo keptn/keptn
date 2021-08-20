@@ -2,7 +2,6 @@ import { Secret } from './secret';
 import { waitForAsync } from '@angular/core/testing';
 
 describe('Secret', () => {
-
   it('should create with default scope "keptn-default"', waitForAsync(() => {
     // given
     const secret: Secret = new Secret();

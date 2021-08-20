@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEvaluationDetailsComponent } from './ktb-evaluation-details.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -11,8 +11,8 @@ describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbEvaluationDetailsComponent;
   let fixture: ComponentFixture<KtbEvaluationDetailsComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -21,14 +21,12 @@ describe('KtbEvaluationDetailsComponent', () => {
       providers: [
         DataServiceMock,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbEvaluationDetailsComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbEvaluationDetailsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -92,10 +90,4 @@ describe('KtbEvaluationDetailsComponent', () => {
     // then
     expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(17);
   });
-
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

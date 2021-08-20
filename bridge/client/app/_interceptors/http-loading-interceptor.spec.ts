@@ -7,20 +7,19 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 describe('HttpErrorInterceptorService', () => {
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule
+        HttpClientTestingModule,
       ],
       providers: [
         Overlay,
         {
           provide: HTTP_INTERCEPTORS,
           useClass: HttpLoadingInterceptor,
-          multi: true
-        }
-      ]
-    }).compileComponents().then(() => {
-    });
+          multi: true,
+        },
+      ],
+    }).compileComponents();
   });
 
   it('should be an instance', () => {

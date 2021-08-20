@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbNotificationBarComponent } from './ktb-notification-bar.component';
 import { By } from '@angular/platform-browser';
 import { NotificationsService } from '../../_services/notifications.service';
@@ -12,8 +12,8 @@ describe('KtbNotificationBarComponent', () => {
   let component: KtbNotificationBarComponent;
   let fixture: ComponentFixture<KtbNotificationBarComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
@@ -23,15 +23,13 @@ describe('KtbNotificationBarComponent', () => {
         }),
       ],
       providers: [NotificationsService],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbNotificationBarComponent);
-        component = fixture.componentInstance;
-        service = TestBed.get(NotificationsService);
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbNotificationBarComponent);
+    component = fixture.componentInstance;
+    service = TestBed.inject(NotificationsService);
+    fixture.detectChanges();
+  });
 
   it('should add and remove notifications', () => {
     let notifications = fixture.debugElement.queryAll(By.css('.page-note'));
@@ -52,9 +50,4 @@ describe('KtbNotificationBarComponent', () => {
     expect(notifications[2].nativeElement.classList).toContain('warning-note');
     expect(notifications[3].nativeElement.classList).toContain('error-note');
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

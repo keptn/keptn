@@ -112,7 +112,8 @@ import { ToType } from './_pipes/to-type';
 import { ToDatePipe } from './_pipes/to-date.pipe';
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
-import { INITIAL_DELAY_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
+import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
+import { SomeTestComponent } from './some-test/some-test.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -184,6 +185,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbDeletionDialogComponent,
     ToType,
     ToDatePipe,
+    SomeTestComponent,
   ],
   imports: [
     BrowserModule,
@@ -267,13 +269,13 @@ export function init_app(appLoadService: AppInitService) {
       multi: true,
     },
     {
-      provide: INITIAL_DELAY_MILLIS,
-      useValue: 30_000
+      provide: POLLING_INTERVAL_MILLIS,
+      useValue: 30_000,
     },
     {
       provide: RETRY_ON_HTTP_ERROR,
-      useValue: true
-    }
+      useValue: true,
+    },
   ],
   bootstrap: [AppComponent],
 })

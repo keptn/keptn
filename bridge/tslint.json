@@ -2,7 +2,7 @@
   "extends": "tslint:recommended",
   "linterOptions": {
     "exclude": [
-      "client/app/_models/trace.mock.ts"
+      "client/app/_models/*.mock.ts"
     ]
   },
   "rules": {

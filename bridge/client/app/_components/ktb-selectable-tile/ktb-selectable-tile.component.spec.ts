@@ -1,26 +1,24 @@
-import {ComponentFixture, TestBed, fakeAsync} from '@angular/core/testing';
-import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
-import {AppModule} from '../../app.module';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { KtbSelectableTileComponent } from './ktb-selectable-tile.component';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbSelectableTileComponent', () => {
   let component: KtbSelectableTileComponent;
   let fixture: ComponentFixture<KtbSelectableTileComponent>;
 
-  beforeEach(fakeAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbSelectableTileComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbSelectableTileComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should add and remove the selected state', () => {
     const nativeElement = fixture.nativeElement;
@@ -40,9 +38,4 @@ describe('KtbSelectableTileComponent', () => {
     expect(component.selected).toEqual(false);
     expect(nativeElement.getAttribute('class')).not.toContain('ktb-tile-selected');
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

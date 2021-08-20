@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbExpandableTileComponent } from './ktb-expandable-tile.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -10,13 +10,11 @@ describe('KtbExpandableTileComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbExpandableTileComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbExpandableTileComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -56,9 +54,4 @@ describe('KtbExpandableTileComponent', () => {
     expect(expandablePanel.getAttribute('class')).not.toContain('dt-expandable-panel-opened');
     expect(showMoreButton.disabled).toBe(true);
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

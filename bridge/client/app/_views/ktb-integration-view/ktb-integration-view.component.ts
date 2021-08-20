@@ -6,7 +6,7 @@ import moment from 'moment';
 import { ClipboardService } from '../../_services/clipboard.service';
 import { ApiService } from '../../_services/api.service';
 import { KeptnInfo } from '../../_models/keptn-info';
-import { AppUtils, INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-integration-view',
@@ -23,7 +23,7 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
     api: [],
   };
 
-  constructor(private dataService: DataService, private clipboard: ClipboardService, private apiService: ApiService, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
+  constructor(private dataService: DataService, private clipboard: ClipboardService, private apiService: ApiService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
   }
 
   ngOnInit(): void {
@@ -46,11 +46,11 @@ export class KtbIntegrationViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    AppUtils.createTimer(this.initialDelayMillis)
+    AppUtils.createTimer(0, this.initialDelayMillis)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.updateIntegrations();
-    });
+      });
   }
 
   updateIntegrations() {

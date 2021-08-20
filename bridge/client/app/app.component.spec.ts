@@ -1,4 +1,4 @@
-import { TestBed, ComponentFixture, fakeAsync, tick, discardPeriodicTasks, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -17,8 +17,8 @@ describe('AppComponent', () => {
   let mockDataService: DataServiceMock;
   let fixture: ComponentFixture<AppComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -28,21 +28,16 @@ describe('AppComponent', () => {
       providers: [
         {provide: DataService, useClass: DataServiceMock},
       ],
-    }).compileComponents().then(() => {
-      router = TestBed.get(Router);
-      location = TestBed.get(Location);
-      fixture = TestBed.createComponent(AppComponent);
-      mockDataService = TestBed.inject(DataServiceMock);
-      comp = fixture.componentInstance;
+    }).compileComponents();
 
-      router.initialNavigation();
-    });
-  }));
+    router = TestBed.inject(Router);
+    location = TestBed.inject(Location);
+    fixture = TestBed.createComponent(AppComponent);
+    mockDataService = TestBed.inject(DataServiceMock);
+    comp = fixture.componentInstance;
 
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
+    router.initialNavigation();
+  });
 
   it('should create the app', () => {
     expect(comp).toBeTruthy();
@@ -366,27 +361,27 @@ describe('AppComponent', () => {
     }
 
     if (activeItem === MENU_ITEM.SEQUENCES) {
-      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+      expect(menuItems[2].nativeElement.getAttribute('class')).toContain('active');
     } else {
-      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+      expect(menuItems[2].nativeElement.getAttribute('class')).not.toContain('active');
     }
 
     if (activeItem === MENU_ITEM.INTEGRATIONS) {
-      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+      expect(menuItems[3].nativeElement.getAttribute('class')).toContain('active');
     } else {
-      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+      expect(menuItems[3].nativeElement.getAttribute('class')).not.toContain('active');
     }
 
     if (activeItem === MENU_ITEM.UNIFORM) {
-      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+      expect(menuItems[4].nativeElement.getAttribute('class')).toContain('active');
     } else {
-      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+      expect(menuItems[4].nativeElement.getAttribute('class')).not.toContain('active');
     }
 
     if (activeItem === MENU_ITEM.SETTINGS) {
-      expect(menuItems[1].nativeElement.getAttribute('class')).toContain('active');
+      expect(menuItems[5].nativeElement.getAttribute('class')).toContain('active');
     } else {
-      expect(menuItems[1].nativeElement.getAttribute('class')).not.toContain('active');
+      expect(menuItems[5].nativeElement.getAttribute('class')).not.toContain('active');
     }
   }
 

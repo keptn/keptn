@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectBoardComponent } from './project-board.component';
 import { AppModule } from '../app.module';
 import { DataServiceMock } from '../_services/data.service.mock';
@@ -6,7 +6,7 @@ import { ActivatedRoute, convertToParamMap, ParamMap, UrlSegment } from '@angula
 import { BehaviorSubject, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DataService } from '../_services/data.service';
-import { INITIAL_DELAY_MILLIS } from '../_utils/app.utils';
+import { POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
 
 describe('ProjectBoardComponent', () => {
   let component: ProjectBoardComponent;
@@ -21,35 +21,33 @@ describe('ProjectBoardComponent', () => {
     component = fixture.componentInstance;
   }
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async () => {
     paramsSubject = new BehaviorSubject(convertToParamMap({projectName: 'sockshop'}));
-    TestBed.configureTestingModule({
+
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
-        HttpClientTestingModule
+        HttpClientTestingModule,
       ],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
-        {provide: INITIAL_DELAY_MILLIS, useValue: 0},
+        {provide: POLLING_INTERVAL_MILLIS, useValue: 0},
         {
           provide: ActivatedRoute,
           useValue: {
             paramMap: paramsSubject.asObservable(),
             snapshot: {url: [{path: 'project'}, {path: 'sockshop'}]},
-            url: of([new UrlSegment('project', {}), new UrlSegment('sockshop', {})])
-          }
-        }
-      ]
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(ProjectBoardComponent);
-        component = fixture.componentInstance;
+            url: of([new UrlSegment('project', {}), new UrlSegment('sockshop', {})]),
+          },
+        },
+      ],
+    }).compileComponents();
 
-        fixture.detectChanges();
-      });
-  }));
+    fixture = TestBed.createComponent(ProjectBoardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should have "project" error when project can not be found', (done) => {
     // given
@@ -175,11 +173,6 @@ describe('ProjectBoardComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.notification-indicator.notification-indicator-absolute')).toBeTruthy();
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });
 
 

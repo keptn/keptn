@@ -12,13 +12,11 @@ describe('KtbDeletionComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbDangerZoneComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbDangerZoneComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {

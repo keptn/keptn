@@ -3,7 +3,7 @@ import { AppModule } from '../../../app.module';
 import { DeleteResult, DeleteType } from '../../../_interfaces/delete';
 import { EventService } from '../../../_services/event.service';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 
@@ -25,13 +25,11 @@ describe('KtbDeletionDialogComponent', () => {
         {provide: MAT_DIALOG_DATA, useValue: dialogData},
         {provide: MatDialogRef, useValue: dialogRefMock},
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbDeletionDialogComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbDeletionDialogComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -162,9 +160,4 @@ describe('KtbDeletionDialogComponent', () => {
     // then
     expect(spy).toHaveBeenCalled();
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

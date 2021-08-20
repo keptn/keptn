@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSliBreakdownComponent } from './ktb-sli-breakdown.component';
 import { KtbEvaluationDetailsComponent } from '../ktb-evaluation-details/ktb-evaluation-details.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -20,20 +20,18 @@ describe('KtbEvaluationDetailsComponent', () => {
   let component: KtbSliBreakdownComponent;
   let fixture: ComponentFixture<KtbSliBreakdownComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbSliBreakdownComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbSliBreakdownComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should have expandable row', () => {
     // given
@@ -190,9 +188,4 @@ describe('KtbEvaluationDetailsComponent', () => {
     expect(cells[Column.RESULT].textContent).toBe(result);
     expect(cells[Column.SCORE].textContent).toBe(score);
   }
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

@@ -1,20 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Inject,
-  Input,
-  NgZone,
-  OnDestroy,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, NgZone, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../_utils/date.utils';
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
 import { Subscription } from 'rxjs';
 import { Project } from '../../_models/project';
-import { AppUtils, INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -45,7 +36,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
       this._project = value;
       this._timer.unsubscribe();
       this.ngZone.runOutsideAngular(() => {
-        this._timer = AppUtils.createTimer(this.initialDelayMillis)
+        this._timer = AppUtils.createTimer(0, this.initialDelayMillis)
           .subscribe(() => {
             this.loadLatestSequences();
           });
@@ -65,7 +56,7 @@ export class KtbSequenceStateListComponent implements OnDestroy {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, public dataService: DataService, public dateUtil: DateUtil, private ngZone: NgZone, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
   }
 
   loadLatestSequences() {

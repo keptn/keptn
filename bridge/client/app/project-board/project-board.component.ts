@@ -1,16 +1,16 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { catchError, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { Observable, Subject, combineLatest, BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Trace } from '../_models/trace';
 import { DataService } from '../_services/data.service';
 import { environment } from '../../environments/environment';
-import { AppUtils, INITIAL_DELAY_MILLIS } from '../_utils/app.utils';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../_utils/app.utils';
 
 @Component({
   selector: 'ktb-project-board',
   templateUrl: './project-board.component.html',
-  styleUrls: ['./project-board.component.scss']
+  styleUrls: ['./project-board.component.scss'],
 })
 export class ProjectBoardComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
@@ -23,16 +23,17 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
   public isCreateMode$: Observable<boolean>;
   public hasUnreadLogs$: Observable<boolean>;
 
-  constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
+  constructor(private router: Router, private route: ActivatedRoute, private dataService: DataService, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
     const projectName$ = this.route.paramMap.pipe(
       map(params => params.get('projectName')),
-      filter((projectName: string | null): projectName is string => !!projectName)
+      filter((projectName: string | null): projectName is string => !!projectName),
     );
 
     const timer$ = projectName$.pipe(
-      switchMap((projectName) => AppUtils.createTimer(initialDelayMillis).pipe(map(() => projectName))),
-      takeUntil(this.unsubscribe$)
-    );
+      takeUntil(this.unsubscribe$),
+      switchMap((projectName) => AppUtils.createTimer(0, initialDelayMillis).pipe(
+        map(() => projectName)),
+      ));
     this.hasUnreadLogs$ = this.dataService.hasUnreadUniformRegistrationLogs;
 
     timer$.subscribe(projectName => {
@@ -43,7 +44,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
     });
 
     this.hasProject$ = projectName$.pipe(
-      switchMap(projectName => this.dataService.projectExists(projectName))
+      switchMap(projectName => this.dataService.projectExists(projectName)),
     );
 
     this.isCreateMode$ = this.route.url.pipe(map(urlSegment => {
@@ -66,7 +67,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
         this._errorSubject.next('projects');
         return of(false);
       }),
-      takeUntil(this.unsubscribe$)
+      takeUntil(this.unsubscribe$),
     ).subscribe();
 
     if (this.route.snapshot.url[0].path === 'trace') {
@@ -85,7 +86,7 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
 
       combineLatest([traces$, eventselector$])
         .pipe(
-          takeUntil(this.unsubscribe$)
+          takeUntil(this.unsubscribe$),
         ).subscribe(([traces, eventselector]: [Trace[] | undefined, string | null]) => {
         this.navigateToTrace(traces, eventselector);
       });
@@ -109,8 +110,8 @@ export class ProjectBoardComponent implements OnInit, OnDestroy {
       } else {
         const trace = this.findTraceForKeptnContext(traces);
         if (trace) {
-            this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext]);
-          }
+          this.router.navigate(['/project', trace.project, 'sequence', trace.shkeptncontext]);
+        }
       }
     } else {
       this._errorSubject.next('trace');

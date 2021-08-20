@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component, Inject,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { DtQuickFilterChangeEvent, DtQuickFilterDefaultDataSource, DtQuickFilterDefaultDataSourceConfig } from '@dynatrace/barista-components/quick-filter';
@@ -17,7 +10,7 @@ import { Project } from '../../_models/project';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
-import { AppUtils, INITIAL_DELAY_MILLIS } from '../../_utils/app.utils';
+import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -83,7 +76,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public _seqFilters: any[] = [];
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute,
-              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(INITIAL_DELAY_MILLIS) private initialDelayMillis: number) {
+              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
 
     if (this.initialDelayMillis === 0) {
       this._sequenceTimerInterval = 0;
@@ -122,7 +115,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    AppUtils.createTimer(this._sequenceTimerInterval)
+    AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
         startWith(0),
         switchMap(() => this.project$),
@@ -132,7 +125,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
       this.dataService.loadSequences(project);
     });
 
-    AppUtils.createTimer(this._tracesTimerInterval)
+    AppUtils.createTimer(0, this._tracesTimerInterval)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         // This triggers the subscription for sequences$
@@ -190,7 +183,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   loadTraces(sequence: Sequence): void {
     this._tracesTimer.unsubscribe();
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
-      this._tracesTimer = AppUtils.createTimer(this._tracesTimerInterval)
+      this._tracesTimer = AppUtils.createTimer(0, this._tracesTimerInterval)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe(() => {
           this.dataService.loadTraces(sequence);

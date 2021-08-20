@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSettingsViewComponent } from './ktb-settings-view.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -15,8 +15,8 @@ describe('KtbSettingsViewComponent', () => {
   let dataService: DataService;
   const routeDataSubject = new BehaviorSubject<{ isCreateMode: boolean }>({isCreateMode: false});
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
@@ -29,24 +29,21 @@ describe('KtbSettingsViewComponent', () => {
           },
         },
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbSettingsViewComponent);
-        component = fixture.componentInstance;
-        dataService = fixture.debugElement.injector.get(DataService);
+    }).compileComponents();
+    fixture = TestBed.createComponent(KtbSettingsViewComponent);
+    component = fixture.componentInstance;
+    dataService = fixture.debugElement.injector.get(DataService);
 
-        const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
-        if (notifications.length > 0) {
-          // tslint:disable-next-line:prefer-for-of
-          for (let i = 0; i < notifications.length; i++) {
-            notifications[i].remove();
-          }
-        }
+    const notifications = document.getElementsByTagName('dt-confirmation-dialog-state');
+    if (notifications.length > 0) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < notifications.length; i++) {
+        notifications[i].remove();
+      }
+    }
 
-        fixture.detectChanges();
-      });
-  }));
+    fixture.detectChanges();
+  });
 
   it('should create settings view component', () => {
     expect(component).toBeTruthy();
@@ -180,7 +177,7 @@ describe('KtbSettingsViewComponent', () => {
     expect(notifications.length).toEqual(0);
   });
 
-  it('should show a notification when "unsaved" is set', async () => {
+  it('should show a notification when "unsaved" is set', () => {
     // given
     component.isCreateMode = false;
     component.unsavedDialogState = UNSAVED_DIALOG_STATE;
@@ -267,11 +264,6 @@ describe('KtbSettingsViewComponent', () => {
     // It still exists in the dom but is hidden - so we test for aria-hidden
     expect(notification.getAttribute('aria-hidden')).toEqual('true');
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });
 
 

@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbProjectSettingsGitComponent } from './ktb-project-settings-git.component';
 import { AppModule } from '../../app.module';
@@ -11,15 +11,12 @@ describe('KtbProjectSettingsGitComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbProjectSettingsGitComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  });
+    }).compileComponents();
 
+    fixture = TestBed.createComponent(KtbProjectSettingsGitComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -195,9 +192,4 @@ describe('KtbProjectSettingsGitComponent', () => {
     expect(spy).toHaveBeenCalled();
     expect(spy).toHaveBeenCalledWith({gitToken: '', gitFormValid: false, remoteURI: 'https://some-other-repo.git', gitUser: 'username'});
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

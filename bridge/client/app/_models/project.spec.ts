@@ -2,7 +2,6 @@ import { Project } from './project';
 import { waitForAsync } from '@angular/core/testing';
 
 describe('Project', () => {
-
   it('should create instances from json', waitForAsync(() => {
     const projects: Project[] = [{
       projectName: 'sockshop',

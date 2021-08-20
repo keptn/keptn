@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KtbProjectSettingsShipyardComponent } from './ktb-project-settings-shipyard.component';
 import { AppModule } from '../../app.module';
@@ -12,13 +12,11 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbProjectSettingsShipyardComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbProjectSettingsShipyardComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -207,9 +205,4 @@ describe('KtbProjectSettingsEditProjectComponent', () => {
     const div = fixture.nativeElement.querySelector('.shipyard-file-name');
     expect(div.textContent).toEqual('test2.yaml');
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbUniformRegistrationLogsComponent } from './ktb-uniform-registration-logs.component';
 import { UniformRegistrationLogsMock } from '../../_models/uniform-registrations-logs.mock';
 import { AppModule } from '../../app.module';
@@ -11,14 +11,12 @@ describe('KtbUniformRegistrationLogsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppModule, HttpClientTestingModule],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbUniformRegistrationLogsComponent);
-        component = fixture.componentInstance;
-        component.logs = UniformRegistrationLogsMock;
-        fixture.detectChanges();
-      });
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbUniformRegistrationLogsComponent);
+    component = fixture.componentInstance;
+    component.logs = UniformRegistrationLogsMock;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -63,9 +61,4 @@ describe('KtbUniformRegistrationLogsComponent', () => {
     component.lastSeen = new Date('2021-05-10T09:04:05.000Z');
     expect(component.isUnread('2021-05-10T10:04:05.000Z')).toBe(true);
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });
