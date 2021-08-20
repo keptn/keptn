@@ -1,3 +1,4 @@
+// tslint:disable-next-line:no-any
 declare var window: any;
 
 export class DynamicEnvironment {
@@ -5,7 +6,7 @@ export class DynamicEnvironment {
     return window.config || {
       appTitle: 'keptn',
       logoUrl: 'assets/default-branding/logo.png',
-      logoInvertedUrl: 'assets/default-branding/logo_inverted.png'
+      logoInvertedUrl: 'assets/default-branding/logo_inverted.png',
     };
   }
 }

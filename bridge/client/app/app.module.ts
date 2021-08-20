@@ -113,6 +113,7 @@ import { ToDatePipe } from './_pipes/to-date.pipe';
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
+import { environment } from '../environments/environment';
 
 registerLocaleData(localeEn, 'en');
 
@@ -243,7 +244,7 @@ export function init_app(appLoadService: AppInitService) {
     AppInitService,
     {
       provide: APP_BASE_HREF,
-      useValue: '/',
+      useValue: environment.baseUrl,
     },
     {
       provide: APP_INITIALIZER,
