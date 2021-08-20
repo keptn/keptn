@@ -679,15 +679,15 @@ jobs:
       #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
       #  run: cd test/go-tests && go test -run SequenceTimeout -v
 #
-      #- name: Test Sequence Control
-      #  # do not run this test for the airgapped scenario
-      #  if: env.RUN_AIRGAPPED_TEST != 'true'
-      #  id: test_sequence_control
-      #  timeout-minutes: 5
-      #  continue-on-error: true
-      #  env:
-      #    KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
-      #  run: cd test/go-tests && go test -run SequenceControl -v
+      - name: Test Sequence Control
+        # do not run this test for the airgapped scenario
+        if: env.RUN_AIRGAPPED_TEST != 'true'
+        id: test_sequence_control
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
+        run: cd test/go-tests && go test -run SequenceControl -v
 
       - name: Test Sequence Queue
         # do not run this test for the airgapped scenario
