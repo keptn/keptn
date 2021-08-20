@@ -337,15 +337,6 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 
 	// uninstall echo integration
 	cleanupIntegrationFunc()
-
-	// Note: Uninstalling the integration + unregistering usually takes a while on GH Actions with K3s
-
-	// wait for echo integration unregistered
-	require.Eventually(t, func() bool {
-		fetchedEchoIntegration, err = getIntegrationWithName("echo-service")
-		// we expect error to be "No Keptn Integration with name echo-service found"
-		return err != nil
-	}, time.Second*90, time.Second*3)
 }
 
 func getIntegrationWithName(name string) (models.Integration, error) {
