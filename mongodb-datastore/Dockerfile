@@ -38,6 +38,13 @@ RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=e
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.14
+LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
+    org.opencontainers.image.url = "https://keptn.sh" \
+    org.opencontainers.image.title="Keptn MongoDB Datastore" \
+    org.opencontainers.image.vendor="Keptn" \
+    org.opencontainers.image.documentation="https://keptn.sh/docs/" \
+    org.opencontainers.image.licenses="Apache-2.0"
+
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
 

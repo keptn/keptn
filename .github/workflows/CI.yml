@@ -121,6 +121,7 @@ jobs:
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
       BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
       VERSION: ${{ steps.get_version.outputs.VERSION }}
+      RELEASE_BUILD: ${{ steps.get_version.outputs.RELEASE_BUILD }}
       KEPTN_SPEC_VERSION: ${{ steps.get_version.outputs.KEPTN_SPEC_VERSION }}
       DATE: ${{ steps.get_datetime.outputs.DATE }}
       TIME: ${{ steps.get_datetime.outputs.TIME }}
@@ -184,7 +185,7 @@ jobs:
             PR_NUMBER=${BRANCH_SLUG#PR-}
             BRANCH_NAME=$(gh pr view "$PR_NUMBER" --json "headRefName" | jq -r '.headRefName')
           fi
-          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs" | jq --arg branch "$BRANCH_NAME" -c '[.workflow_runs[] | select( .conclusion == "success" and .head_branch == $branch)][0] | .id')
+          RUN_ID=$(curl -sLH 'Accept: application/vnd.github.v3+json' -H "Authorization: token $GITHUB_TOKEN" "api.github.com/repos/$REPO_SLUG/actions/workflows/CI.yml/runs?branch=$BRANCH" | jq -c '[.workflow_runs[] | select( .conclusion == "success" )][0] | .id')
           echo "::set-output name=RUN_ID::$RUN_ID"
           echo "Last successful run ID was: $RUN_ID"
 
@@ -207,10 +208,12 @@ jobs:
           GIT_LAST_TAG=${{ steps.get_previous_tag.outputs.tag }}
           GIT_NEXT_TAG=${{ steps.get_next_semver_tag.outputs.patch }}
           echo "GIT_LAST_TAG=${GIT_LAST_TAG}, GIT_NEXT_TAG=${GIT_NEXT_TAG}"
+          RELEASE_BUILD=false
 
           if [[ "$BRANCH" == "release-"* ]]; then
             # Release Branch: extract version from branch name
             VERSION=${BRANCH#"release-"}
+            RELEASE_BUILD=true
           elif [[ "$BRANCH" == "master" ]]; then
             # master branch = latest
             VERSION="${GIT_NEXT_TAG}-dev"
@@ -227,8 +230,9 @@ jobs:
           echo "VERSION=${VERSION}"
           echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
 
-          echo "##[set-output name=VERSION;]$(echo ${VERSION})"
-          echo "##[set-output name=KEPTN_SPEC_VERSION;]$(echo ${KEPTN_SPEC_VERSION})"
+          echo "::set-output name=VERSION::${VERSION}"
+          echo "::set-output name=KEPTN_SPEC_VERSION::${KEPTN_SPEC_VERSION}"
+          echo "::set-output name=RELEASE_BUILD::${RELEASE_BUILD}"
       - name: Get current date and time
         id: get_datetime
         run: |
@@ -384,10 +388,10 @@ jobs:
           - platform: "ubuntu-20.04"
             GOOS: "linux"
             GOARCH: "arm64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "amd64"
-          - platform: "macOS-11.0" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
+          - platform: "macos-11" # cross-compiling the CLI for macOS does not work - see https://github.com/keptn/keptn/issues/2738
             GOOS: "darwin"
             GOARCH: "arm64"
           - platform: "ubuntu-20.04"
@@ -530,16 +534,37 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2.3.4
 
-      - id: docker_login
-        name: Docker Login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
         # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (github.event.pull_request.head.repo.full_name == github.repository)
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
         # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
         # that's fine, but it means we can't push images to dockerhub
-        env:
-          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-        run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't push images to dockerhub
+        with:
+          registry: "ghcr.io"
+          username: "keptn-bot"
+          password: ${{ secrets.KEPTN_BOT_TOKEN }}
+
+      - name: Login to Quay.io
+        uses: docker/login-action@v1
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: needs.prepare_ci_run.outputs.RELEASE_BUILD == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't push images to dockerhub
+        with:
+          registry: "quay.io"
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
 
       - id: docker_cache
         name: Docker Cache
@@ -559,6 +584,7 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
+          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
         run: |
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
@@ -572,8 +598,17 @@ jobs:
 
           echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
 
+          if [[ $RELEASE_BUILD == 'true' ]]; then
+            DOCKER_REGISTRIES=('ghcr.io' 'quay.io')
+            for DOCKER_REGISTRY in "${DOCKER_REGISTRIES}"; do
+              NEW_TAG="$DOCKER_REGISTRY/$IMAGE:$VERSION"
+              docker tag "$IMAGE:$VERSION" "$NEW_TAG"
+              docker push "$NEW_TAG"
+            done
+          fi
+
       - name: "Download Build Config from last successful build"
-        uses: dawidd6/action-download-artifact@v2.14.0
+        uses: dawidd6/action-download-artifact@v2.14.1
         id: download_last_build_config
         if: matrix.config.should-run == 'false' && needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID != 'null'
         with:
@@ -593,8 +628,8 @@ jobs:
           DATETIME: ${{ env.DATETIME }}
           IMAGE: keptn/${{ matrix.config.artifact }}
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
-          REGISTRY_NAME: "https://registry.hub.docker.com"
           CONTENT_TYPE: "application/vnd.docker.distribution.manifest.v2+json"
+          RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
         run: |
           # Fetch last image datetime from build config
           LAST_DATETIME=$(grep 'DATETIME' "./last-build-config/build-config.env" | cut -d '=' -f2)
@@ -604,6 +639,11 @@ jobs:
           if docker pull "${IMAGE}:${VERSION}.${LAST_DATETIME}" -q; then
             OLD_IMAGE="${IMAGE}:${VERSION}.${LAST_DATETIME}"
           elif docker pull "${IMAGE}:${VERSION}" -q; then
+            OLD_IMAGE="${IMAGE}:${VERSION}"
+          else
+            # No previous image was found, need to build from scratch
+            echo "No previous image was found, building new image"
+            docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
             OLD_IMAGE="${IMAGE}:${VERSION}"
           fi
 
@@ -619,7 +659,16 @@ jobs:
           docker push "${NEW_TAG1}" && docker push "${NEW_TAG2}"
 
           report="* Retagged unchanged image ${IMAGE} with ${NEW_TAG1} and ${NEW_TAG2} (Source: ${DOCKER_FOLDER})"
-          echo "DOCKER_BUILD_REPORT=${report}" >> $GITHUB_ENV
+          echo "DOCKER_BUILD_REPORT=$report" >> "$GITHUB_ENV"
+
+          if [[ $RELEASE_BUILD == 'true' ]]; then
+            DOCKER_REGISTRIES=('ghcr.io' 'quay.io')
+            for DOCKER_REGISTRY in "${DOCKER_REGISTRIES[@]}"; do
+              NEW_TAG="$DOCKER_REGISTRY/${IMAGE}:${VERSION}"
+              docker tag "${OLD_IMAGE}" "${NEW_TAG}"
+              docker push "${NEW_TAG}"
+            done
+          fi
 
       - name: Report Docker Build to PR
         if: always() && (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.full_name == github.repository)

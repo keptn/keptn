@@ -8,4 +8,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Run ShellCheck
-      uses: ludeeus/action-shellcheck@master
+      uses: ludeeus/action-shellcheck@1.1.0

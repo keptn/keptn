@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'ktb-project-settings-git',
@@ -7,6 +7,8 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
   styleUrls: ['./ktb-project-settings-git.component.scss']
 })
 export class KtbProjectSettingsGitComponent implements OnInit {
+
+  private originalGitData: GitData | undefined;
 
   @Input()
   public isGitUpstreamInProgress = false;
@@ -16,15 +18,14 @@ export class KtbProjectSettingsGitComponent implements OnInit {
 
   @Input()
   set gitData(gitData: GitData) {
-    this.gitUrlControl.setValue(gitData.remoteURI || '');
-    this.gitUrlControl.markAsUntouched();
-    this.gitUrlControl.markAsPristine();
-    this.gitUserControl.setValue(gitData.gitUser || '');
-    this.gitUserControl.markAsUntouched();
-    this.gitUserControl.markAsPristine();
-    this.gitTokenControl.setValue('');
-    this.gitTokenControl.markAsUntouched();
-    this.gitTokenControl.markAsPristine();
+    if (!this.originalGitData && gitData.remoteURI && gitData.gitUser) {
+      this.originalGitData = {
+        remoteURI: gitData.remoteURI,
+        gitUser: gitData.gitUser
+      };
+    }
+
+    this.resetForm(gitData);
   }
 
   @Output()
@@ -51,11 +52,40 @@ export class KtbProjectSettingsGitComponent implements OnInit {
   }
 
   public setGitUpstream() {
-    this.gitUpstreamSubmit.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
+    this.gitUpstreamSubmit.emit({
+      remoteURI: this.gitUrlControl.value,
+      gitUser: this.gitUserControl.value,
+      gitToken: this.gitTokenControl.value
+    });
   }
 
   public onGitUpstreamFormChange() {
-    this.gitDataChanged.emit({remoteURI: this.gitUrlControl.value, gitUser: this.gitUserControl.value, gitToken: this.gitTokenControl.value});
+    this.gitDataChanged.emit({
+      remoteURI: this.gitUrlControl.value,
+      gitUser: this.gitUserControl.value,
+      gitToken: this.gitTokenControl.value,
+      gitFormValid: !this.isButtonDisabled()
+    });
+  }
+
+  public isButtonDisabled(): boolean {
+    return this.gitUpstreamForm.invalid || !this.gitUpstreamForm.dirty || this.isGitUpstreamInProgress;
+  }
+
+  public reset() {
+    this.resetForm(this.originalGitData);
+  }
+
+  private resetForm(gitData: GitData | undefined): void {
+    this.gitUrlControl.setValue(gitData?.remoteURI || '');
+    this.gitUrlControl.markAsUntouched();
+    this.gitUrlControl.markAsPristine();
+    this.gitUserControl.setValue(gitData?.gitUser || '');
+    this.gitUserControl.markAsUntouched();
+    this.gitUserControl.markAsPristine();
+    this.gitTokenControl.setValue('');
+    this.gitTokenControl.markAsUntouched();
+    this.gitTokenControl.markAsPristine();
   }
 
 }
@@ -64,4 +94,5 @@ export interface GitData {
   remoteURI?: string;
   gitUser?: string;
   gitToken?: string;
+  gitFormValid?: boolean;
 }

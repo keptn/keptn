@@ -2,6 +2,7 @@ package go_tests
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2"
@@ -266,8 +267,10 @@ func StringArr(el ...string) []string {
 
 func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *models.EventContext, timeout time.Duration, desiredStates []string) {
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
-	require.Eventually(t, func() bool {
+	require.Eventuallyf(t, func() bool {
 		states, _, err := GetState(projectName)
+		statesStr, _ := json.MarshalIndent(states, "", "  ")
+		t.Logf("got states:\n %s", statesStr)
 		if err != nil {
 			return false
 		}
@@ -277,7 +280,7 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 			}
 		}
 		return false
-	}, timeout, 10*time.Second)
+	}, timeout, 10*time.Second, GetDiagnostics("shipyard-controller"))
 }
 
 func doesSequenceHaveOneOfTheDesiredStates(state scmodels.SequenceState, context *models.EventContext, desiredStates []string) bool {
@@ -298,4 +301,38 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func GetDiagnostics(service string) string {
+	outputBuilder := strings.Builder{}
+	getLogsCmd := fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s", GetKeptnNameSpaceFromEnv(), service, service)
+
+	outputBuilder.WriteString(fmt.Sprintf("Logs of  of %s: \n\n", service))
+	logOutput, err := ExecuteCommand(getLogsCmd)
+	if err != nil {
+		outputBuilder.WriteString(err.Error())
+	}
+
+	outputBuilder.WriteString(logOutput)
+	outputBuilder.WriteString("\n-------------------------\n")
+	getLogsCmd = fmt.Sprintf("kubectl logs -n %s deployment/%s -c %s --previous", GetKeptnNameSpaceFromEnv(), service, service)
+
+	outputBuilder.WriteString(fmt.Sprintf("Logs of crashed instances of %s: \n\n", service))
+	logOutput, err = ExecuteCommand(getLogsCmd)
+	if err != nil {
+		outputBuilder.WriteString(err.Error())
+	}
+
+	outputBuilder.WriteString(logOutput)
+	outputBuilder.WriteString("\n-------------------------\n")
+
+	describeDeploymentCmd := fmt.Sprintf("kubectl -n %s describe deployment %s", GetKeptnNameSpaceFromEnv(), service)
+	outputBuilder.WriteString(fmt.Sprintf("Description of Deployment %s", service))
+	describeDeploymentOutput, err := ExecuteCommand(describeDeploymentCmd)
+	if err != nil {
+		outputBuilder.WriteString(err.Error())
+	}
+	outputBuilder.WriteString(describeDeploymentOutput)
+
+	return outputBuilder.String()
 }
