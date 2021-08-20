@@ -21,39 +21,39 @@ func Unlock() {
 
 // LockProject
 func LockProject(project string) {
+	Lock()
 	if projectLocks[project] == nil {
-		Lock()
 		projectLocks[project] = &sync.Mutex{}
-		Unlock()
 	}
+	Unlock()
 	projectLocks[project].Lock()
 }
 
 func UnlockProject(project string) {
+	Lock()
 	if projectLocks[project] == nil {
-		Lock()
 		projectLocks[project] = &sync.Mutex{}
-		Unlock()
 	}
+	Unlock()
 	projectLocks[project].Unlock()
 }
 
 func LockServiceInStageOfProject(project, stage, service string) {
 	lockKey := fmt.Sprintf("%s.%s.%s", project, stage, service)
+	Lock()
 	if projectLocks[lockKey] == nil {
-		Lock()
 		projectLocks[lockKey] = &sync.Mutex{}
-		Unlock()
 	}
+	Unlock()
 	projectLocks[lockKey].Lock()
 }
 
 func UnlockServiceInStageOfProject(project, stage, service string) {
 	lockKey := fmt.Sprintf("%s.%s.%s", project, stage, service)
+	Lock()
 	if projectLocks[lockKey] == nil {
-		Lock()
 		projectLocks[lockKey] = &sync.Mutex{}
-		Unlock()
 	}
+	Unlock()
 	projectLocks[lockKey].Unlock()
 }
