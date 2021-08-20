@@ -1,4 +1,4 @@
-import {DynamicEnvironment} from './environment.dynamic';
+import { DynamicEnvironment } from './environment.dynamic';
 
 class Environment extends DynamicEnvironment {
 
@@ -7,11 +7,13 @@ class Environment extends DynamicEnvironment {
   public logoInvertedUrl?: string;
   public production: boolean;
   public appConfigUrl: string;
+  public baseUrl: string;
 
   constructor() {
     super();
     this.production = false;
     this.appConfigUrl = 'assets/default-branding/app-config.json';
+    this.baseUrl = '/';
   }
 }
 
