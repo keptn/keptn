@@ -14,7 +14,6 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
       imports: [
         AppModule
       ],
-      declarations: [KtbModifyUniformSubscriptionComponent],
       providers: [
         {
           provide: ActivatedRoute, useValue: {
@@ -25,11 +24,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
           }
         }
       ]
-    })
-      .compileComponents();
-  });
-
-  beforeEach(() => {
+    }).compileComponents();
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
