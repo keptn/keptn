@@ -25,6 +25,8 @@ func NewSequenceStateMaterializedView(stateRepo db.SequenceStateRepo) *SequenceS
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
 	if err != nil {
 		log.Errorf("could not determine stage/sequence name: %s", err.Error())
@@ -56,6 +58,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -65,6 +69,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -84,6 +90,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.E
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -96,6 +104,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -114,6 +124,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 }
 
 func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -126,6 +138,8 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -135,6 +149,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -144,6 +160,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) 
 }
 
 func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventScope) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	if pause.Stage == "" {
 		smv.updateOverallSequenceState(pause, models.SequencePaused)
 	} else {
@@ -152,6 +170,8 @@ func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventSco
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceResumed(resume models.EventScope) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	if resume.Stage == "" {
 		smv.updateOverallSequenceState(resume, models.SequenceStartedState)
 	} else {
