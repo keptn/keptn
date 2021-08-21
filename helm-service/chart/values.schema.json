@@ -1,6 +1,50 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
+  "definitions": {
+    "dnsSubdomainName": {
+      "pattern": "^([a-z0-9]|[a-z0-9][a-z0-9-.]{0,251}[a-z0-9])$"
+    },
+    "hostname": {
+      "pattern": "^(([a-z0-9]|[a-z0-9][a-z0-9-.]{0,251}[a-z0-9])(:[0-9]+)?)$"
+    },
+    "image": {
+      "properties": {
+        "registry": {
+          "$ref": "#/definitions/hostname"
+        },
+        "repository": {
+          "pattern": "^[a-z0-9][a-z0-9-./]{2,96}$"
+        },
+        "pullPolicy": {
+          "enum": [
+            "IfNotPresent",
+            "Always"
+          ]
+        },
+        "pullSecrets": {
+          "$ref": "#/definitions/pullSecrets"
+        }
+      }
+    },
+    "pullSecrets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/dnsSubdomainName"
+      }
+    }
+  },
   "properties": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {
+          "$ref": "#/definitions/pullSecrets"
+        },
+        "registry": {
+          "$ref": "#/definitions/hostname"
+        }
+      }
+    },
     "remoteControlPlane": {
       "type": "object",
       "required": [
@@ -29,7 +73,7 @@
             ],
             "properties": {
               "hostname": {
-                "pattern": "^([a-z0-9][a-z0-9-.]{2,63})(:[0-9]+)?$"
+                "$ref": "#/definitions/hostname"
               },
               "protocol": {
                 "enum": [
@@ -55,17 +99,7 @@
       ],
       "properties": {
         "image": {
-          "properties": {
-            "repository": {
-              "pattern": "^([a-z0-9][a-z0-9-.]{2,63})(:[0-9]+)?([a-z0-9-./]{1,128})$"
-            },
-            "pullPolicy": {
-              "enum": [
-                "IfNotPresent",
-                "Always"
-              ]
-            }
-          }
+          "$ref": "#/definitions/image"
         },
         "service": {
           "properties": {
@@ -83,17 +117,7 @@
       ],
       "properties": {
         "image": {
-          "properties": {
-            "repository": {
-              "pattern": "^([a-z0-9][a-z0-9-.]{2,63})(:[0-9]+)?([a-z0-9-./]{1,128})$"
-            },
-            "pullPolicy": {
-              "enum": [
-                "IfNotPresent",
-                "Always"
-              ]
-            }
-          }
+          "$ref": "#/definitions/image"
         },
         "stageFilter": {
           "pattern": "^$|[A-Za-z0-9-.]{2,63}$"
