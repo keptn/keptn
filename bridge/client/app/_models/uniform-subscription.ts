@@ -8,7 +8,6 @@ export class UniformSubscription implements us {
   public id?: string;
   public filter!: { projects: string[] | null; stages: string[] | null; services: string[] | null };
   public event = '';
-  public expanded = false;
   public parameters: { key: string, value: string, visible: boolean }[] = [];
   private _filter?: DtFilterArray[];
 
@@ -41,7 +40,7 @@ export class UniformSubscription implements us {
   }
 
   public get reduced(): Partial<UniformSubscription> {
-    const {expanded, _filter, ...subscription} = this;
+    const {_filter, ...subscription} = this;
     return subscription;
   }
 
