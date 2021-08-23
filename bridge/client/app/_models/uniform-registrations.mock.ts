@@ -35,7 +35,7 @@ const services: ur[] = [
     id: 'keptn-uniform-helm-service-cc9da31fa4c9f5e58985149029c598c4',
     metadata: {
       deplyomentname: 'helm-service',
-      distributorversion: '0.8.3',
+      distributorversion: '0.9.0',
       hostname: 'gke_research_us-central1-c_prod-customer-A',
       integrationversion: 'helm-service:0.8.3',
       kubernetesmetadata: {
