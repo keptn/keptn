@@ -7,6 +7,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 	"net/http"
 	"os"
 	"testing"
@@ -58,7 +59,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	resp, err := ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
 
 	require.Nil(t, err)
-	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	require.Equal(t, http.StatusCreated, resp.Response().StatusCode)
 
 	registrationResponse := &models.RegisterResponse{}
 	err = resp.ToJSON(registrationResponse)
@@ -174,7 +175,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 	resp, err = ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration)
 
 	require.Nil(t, err)
-	require.Equal(t, http.StatusOK, resp.Response().StatusCode)
+	require.Equal(t, http.StatusCreated, resp.Response().StatusCode)
 
 	// check again if it has been created correctly
 	resp, err = ApiGETRequest("/controlPlane/v1/uniform/registration?id=" + registrationResponse.ID)
@@ -238,28 +239,38 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
-	//testUniformIntegration(t, func() {
-	//	// install echo integration
-	//	_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
-	//	require.Nil(t, err)
-	//
-	//	// get the image of the distributor of the build being tested
-	//	currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-	//	require.Nil(t, err)
-	//
-	//	// make sure the echo service uses the correct distributor image
-	//	err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-	//	require.Nil(t, err)
-	//
-	//	apiEndpoint, apiToken, err := GetApiCredentials()
-	//	require.Nil(t, err)
-	//
-	//	// TODO set env vars of distributor to configure remote exec plane
-	//
-	//}, func() {
-	//	err := KubeCtlDeleteFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
-	//	require.Nil(t, err)
-	//})
+	testUniformIntegration(t, func() {
+		// install echo integration
+		_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		require.Nil(t, err)
+
+		// get the image of the distributor of the build being tested
+		currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+		require.Nil(t, err)
+
+		// make sure the echo service uses the correct distributor image
+		err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
+		require.Nil(t, err)
+
+		apiToken, apiEndpoint, err := GetApiCredentials()
+		require.Nil(t, err)
+
+		keptnEndpointEV := v1.EnvVar{
+			Name:  "KEPTN_API_ENDPOINT",
+			Value: apiEndpoint,
+		}
+		keptnAPITokenEV := v1.EnvVar{
+			Name:  "KEPTN_API_TOKEN",
+			Value: apiToken,
+		}
+
+		err = SetEnvVarsOfDeployment("echo-service", "distributor", []v1.EnvVar{keptnEndpointEV, keptnAPITokenEV})
+		require.Nil(t, err)
+
+	}, func() {
+		err := KubeCtlDeleteFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		require.Nil(t, err)
+	})
 }
 
 func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), cleanupIntegrationFunc func()) {

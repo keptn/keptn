@@ -16,6 +16,7 @@ import (
 	"github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
@@ -318,6 +319,31 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	for index, container := range depl.Spec.Template.Spec.Containers {
+		if "distributor" == container.Name {
+			for _, e := range envVars {
+				depl.Spec.Template.Spec.Containers[index].Env = append(depl.Spec.Template.Spec.Containers[index].Env, e)
+			}
+		}
+	}
+
+	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
