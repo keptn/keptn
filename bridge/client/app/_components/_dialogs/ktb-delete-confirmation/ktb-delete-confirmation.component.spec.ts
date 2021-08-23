@@ -1,6 +1,7 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { KtbDeleteConfirmationComponent } from './ktb-delete-confirmation.component';
 import { AppModule } from '../../../app.module';
+import { TestUtils } from '../../../_utils/test.utils';
 
 describe('KtbDeleteConfirmationComponent', () => {
   let component: KtbDeleteConfirmationComponent;
@@ -27,13 +28,13 @@ describe('KtbDeleteConfirmationComponent', () => {
     component.name = 'My item';
     component.type = type;
     component.dialogState = 'confirm';
-    updateDialog();
+    TestUtils.updateDialog(fixture);
 
     // when
     const spyEmit = jest.spyOn(component.confirmClicked, 'emit');
     const deleteButton: HTMLElement | null = document.querySelector('dt-confirmation-dialog-state[name=confirm] button[uitestid=dialogDeleteButton]');
     deleteButton?.click();
-    updateDialog();
+    TestUtils.updateDialog(fixture);
 
     // then
     expect(component.dialogState).toEqual('deleting');
@@ -49,10 +50,10 @@ describe('KtbDeleteConfirmationComponent', () => {
 
     // when
     component.dialogState = 'success';
-    updateDialog();
+    TestUtils.updateDialog(fixture);
     expect(document.querySelector('dt-confirmation-dialog-state[name=success]')?.textContent?.trim()).toEqual('Subscription deleted successfully!');
     tick(2010);
-    updateDialog();
+    TestUtils.updateDialog(fixture);
 
     // then
     expect(component.dialogState).toBeNull();
@@ -65,7 +66,7 @@ describe('KtbDeleteConfirmationComponent', () => {
     component.name = 'My item';
     component.type = 'subscription';
     component.dialogState = 'success';
-    updateDialog();
+    TestUtils.updateDialog(fixture);
 
     // when
     tick(1000);
@@ -81,26 +82,17 @@ describe('KtbDeleteConfirmationComponent', () => {
     component.name = 'My item';
     component.type = 'subscription';
     component.dialogState = 'confirm';
-    updateDialog();
+    TestUtils.updateDialog(fixture);
     // when
     const cancelButton: HTMLElement | null = document.querySelector('dt-confirmation-dialog-state[name=confirm] button[uitestid=dialogCancelButton]');
     cancelButton?.click();
 
     // then
     expect(component.dialogState).toBeNull();
-    updateDialog();
+    TestUtils.updateDialog(fixture);
     isDialogClosed();
     flush();
   }));
-
-  /**
-   * dt-confirmation-dialog has a really strange behavior. This function is used to update the dialog according to its state
-   */
-  function updateDialog() {
-    fixture.detectChanges();
-    tick();
-    fixture.detectChanges();
-  }
 
   function isDialogClosed() {
     for (const state of Array.from(document.querySelectorAll('dt-confirmation-dialog-state'))) {

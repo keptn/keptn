@@ -1,6 +1,6 @@
 <dt-confirmation-dialog [state]="dialogState" aria-label="Delete {{type}} confirmation">
   <dt-confirmation-dialog-state name="confirm">
-    <h2 *ngIf="deleteMessage" class="error mt-0" [textContent]="deleteMessage"></h2>
+    <h2 *ngIf="deleteMessage" uitestid="dialogWarningMessage" class="error mt-0" [textContent]="deleteMessage"></h2>
     <p>Are you sure you want to delete "<span [textContent]="name"></span>"?</p>
     <dt-confirmation-dialog-actions>
       <button dt-button uitestid="dialogDeleteButton" (click)="deleteAction()">Delete</button>

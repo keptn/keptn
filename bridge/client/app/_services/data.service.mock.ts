@@ -42,8 +42,7 @@ export class DataServiceMock extends DataService {
     if (beforeTime) {
       sequences = SequencesData.slice(project.sequences.length, project.sequences.length + this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE);
       totalCount = sequences.length;
-    }
-    else {
+    } else {
       totalCount = SequencesData.length;
       sequences = SequencesData.slice(0, this.DEFAULT_SEQUENCE_PAGE_SIZE);
     }
@@ -65,7 +64,7 @@ export class DataServiceMock extends DataService {
     return this._projects.pipe(
       map(projects => {
         return projects?.find(project => project.projectName === projectName);
-    }));
+      }));
   }
 
   public deleteProject(projectName: string): Observable<object> {
@@ -101,6 +100,10 @@ export class DataServiceMock extends DataService {
 
   public getUniformRegistrationLogs(): Observable<UniformRegistrationLog[]> {
     return of(UniformRegistrationLogsMock);
+  }
+
+  public deleteSubscription(integrationId: string, subscriptionId: string): Observable<object> {
+    return of({});
   }
 
   private copyObject<T>(data: T): T {

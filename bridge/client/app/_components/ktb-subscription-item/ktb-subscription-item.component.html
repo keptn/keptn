@@ -10,18 +10,18 @@
   <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
   <div>
     <ng-container *ngIf="subscription.id, else oldSubscription">
-      <button dt-icon-button variant="nested" title="Edit" (click)="editSubscription(subscription)">
+      <button dt-icon-button variant="nested" uitestid="subscriptionEditButton" title="Edit" (click)="editSubscription(subscription)">
         <dt-icon name="edit1"></dt-icon>
       </button>
-      <button dt-icon-button variant="nested" title="Delete" (click)="triggerDeleteSubscription(subscription)">
+      <button dt-icon-button variant="nested" uitestid="subscriptionDeleteButton" title="Delete" (click)="triggerDeleteSubscription(subscription)">
         <dt-icon name="delete"></dt-icon>
       </button>
     </ng-container>
     <ng-template #oldSubscription>
-      <button dt-icon-button variant="nested" class="disabled" [dtOverlay]="updateDistributor">
+      <button dt-icon-button variant="nested" uitestid="subscriptionEditButton" class="disabled" [dtOverlay]="updateDistributor">
         <dt-icon name="edit1"></dt-icon>
       </button>
-      <button dt-icon-button variant="nested" class="disabled" [dtOverlay]="updateDistributor">
+      <button dt-icon-button variant="nested" uitestid="subscriptionDeleteButton" class="disabled" [dtOverlay]="updateDistributor">
         <dt-icon name="delete"></dt-icon>
       </button>
     </ng-template>
