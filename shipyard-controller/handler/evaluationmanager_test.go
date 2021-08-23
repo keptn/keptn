@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"context"
 	"errors"
+	"testing"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	keptnfake "github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
@@ -10,7 +13,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestEvaluationManager_CreateEvaluation(t *testing.T) {
@@ -138,7 +140,7 @@ func TestEvaluationManager_CreateEvaluation(t *testing.T) {
 				t.Error(err.Error())
 			}
 
-			gotContext, gotErr := em.CreateEvaluation(tt.args.project, tt.args.stage, tt.args.service, tt.args.params)
+			gotContext, gotErr := em.CreateEvaluation(context.TODO(), tt.args.project, tt.args.stage, tt.args.service, tt.args.params)
 
 			if tt.wantErr != nil {
 				if gotErr == nil {

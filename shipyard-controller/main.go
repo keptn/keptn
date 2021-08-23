@@ -2,6 +2,11 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/go-utils/pkg/common/osutils"
@@ -15,12 +20,17 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
-	"strconv"
-	"time"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // @title Control Plane API
@@ -51,8 +61,22 @@ const envVarLogsTTLDefault = "120h" // 5 days
 const envVarUniformTTLDefault = "1m"
 const envVarTaskStartedWaitDurationDefault = "10m"
 
+const (
+	serviceName = "shipyard-controller"
+)
+
+var tracer trace.Tracer
+
 func main() {
 	log.SetLevel(log.InfoLevel)
+
+	tracer = otel.Tracer(serviceName + "-main")
+	tp := InitTracer(serviceName, "http://simplest-collector-headless.observability:14268/api/traces")
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Errorf("Error shutting down tracer provider: %v", err)
+		}
+	}()
 
 	if osutils.GetAndCompareOSEnv("GIN_MODE", "release") {
 		// disable GIN request logging in release mode
@@ -121,6 +145,7 @@ func main() {
 	sequenceDispatcher.Run(context.Background())
 
 	engine := gin.Default()
+	engine.Use(otelgin.Middleware("shipyard-controller-api"))
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
@@ -293,4 +318,21 @@ func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
 		}
 	}
 	return duration
+}
+
+func InitTracer(serviceName, jaegerEndpoint string) *tracesdk.TracerProvider {
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(jaegerEndpoint)))
+	if err != nil {
+		log.Fatalf("failed to initialize stdouttrace export pipeline: %v", err)
+	}
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(serviceName),
+		)),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
 }

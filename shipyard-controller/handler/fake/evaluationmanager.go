@@ -4,6 +4,7 @@
 package fake
 
 import (
+	"context"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
 	"sync"
@@ -15,7 +16,7 @@ import (
 //
 // 		// make and configure a mocked handler.IEvaluationManager
 // 		mockedIEvaluationManager := &IEvaluationManagerMock{
-// 			CreateEvaluationFunc: func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
+// 			CreateEvaluationFunc: func(ctx context.Context, project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
 // 				panic("mock out the CreateEvaluation method")
 // 			},
 // 		}
@@ -26,12 +27,14 @@ import (
 // 	}
 type IEvaluationManagerMock struct {
 	// CreateEvaluationFunc mocks the CreateEvaluation method.
-	CreateEvaluationFunc func(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error)
+	CreateEvaluationFunc func(ctx context.Context, project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error)
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateEvaluation holds details about calls to the CreateEvaluation method.
 		CreateEvaluation []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Project is the project argument value.
 			Project string
 			// Stage is the stage argument value.
@@ -46,16 +49,18 @@ type IEvaluationManagerMock struct {
 }
 
 // CreateEvaluation calls CreateEvaluationFunc.
-func (mock *IEvaluationManagerMock) CreateEvaluation(project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
+func (mock *IEvaluationManagerMock) CreateEvaluation(ctx context.Context, project string, stage string, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
 	if mock.CreateEvaluationFunc == nil {
 		panic("IEvaluationManagerMock.CreateEvaluationFunc: method is nil but IEvaluationManager.CreateEvaluation was just called")
 	}
 	callInfo := struct {
+		Ctx     context.Context
 		Project string
 		Stage   string
 		Service string
 		Params  *operations.CreateEvaluationParams
 	}{
+		Ctx:     ctx,
 		Project: project,
 		Stage:   stage,
 		Service: service,
@@ -64,19 +69,21 @@ func (mock *IEvaluationManagerMock) CreateEvaluation(project string, stage strin
 	mock.lockCreateEvaluation.Lock()
 	mock.calls.CreateEvaluation = append(mock.calls.CreateEvaluation, callInfo)
 	mock.lockCreateEvaluation.Unlock()
-	return mock.CreateEvaluationFunc(project, stage, service, params)
+	return mock.CreateEvaluationFunc(ctx, project, stage, service, params)
 }
 
 // CreateEvaluationCalls gets all the calls that were made to CreateEvaluation.
 // Check the length with:
 //     len(mockedIEvaluationManager.CreateEvaluationCalls())
 func (mock *IEvaluationManagerMock) CreateEvaluationCalls() []struct {
+	Ctx     context.Context
 	Project string
 	Stage   string
 	Service string
 	Params  *operations.CreateEvaluationParams
 } {
 	var calls []struct {
+		Ctx     context.Context
 		Project string
 		Stage   string
 		Service string

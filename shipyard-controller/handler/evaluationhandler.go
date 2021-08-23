@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"net/http"
 )
 
 type IEvaluationHandler interface {
@@ -49,7 +50,7 @@ func (eh *EvaluationHandler) CreateEvaluation(c *gin.Context) {
 		return
 	}
 
-	evaluationContext, err := eh.EvaluationManager.CreateEvaluation(project, stage, service, evaluation)
+	evaluationContext, err := eh.EvaluationManager.CreateEvaluation(c.Request.Context(), project, stage, service, evaluation)
 	if err != nil {
 		c.JSON(getHTTPStatusForError(err.Code), err)
 		return

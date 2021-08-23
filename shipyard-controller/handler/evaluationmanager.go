@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"context"
+	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
@@ -10,7 +14,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"time"
 )
 
 const userFriendlyTimeFormat = "2006-01-02T15:04:05"
@@ -23,7 +26,7 @@ const (
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/evaluationmanager.go . IEvaluationManager
 type IEvaluationManager interface {
-	CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error)
+	CreateEvaluation(ctx context.Context, project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error)
 }
 
 type EvaluationManager struct {
@@ -39,7 +42,7 @@ func NewEvaluationManager(eventSender keptn.EventSender, serviceAPI db.ServicesD
 
 }
 
-func (em *EvaluationManager) CreateEvaluation(project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
+func (em *EvaluationManager) CreateEvaluation(ctx context.Context, project, stage, service string, params *operations.CreateEvaluationParams) (*operations.CreateEvaluationResponse, *models.Error) {
 	_, err := em.ServiceAPI.GetService(project, stage, service)
 	if err != nil {
 		return nil, &models.Error{
@@ -96,7 +99,17 @@ func (em *EvaluationManager) CreateEvaluation(project, stage, service string, pa
 			Message: common.Stringp(err.Error()),
 		}
 	}
-	if err := em.EventSender.SendEvent(ce); err != nil {
+
+	// TODO: Should we add a target property also to type keptn.EventSender to avoid the conversion here?
+	var target string
+	if httpEventSender, ok := em.EventSender.(*keptnv2.HTTPEventSender); ok {
+		target = httpEventSender.EventsEndpoint
+	}
+
+	ctx = cloudevents.ContextWithTarget(ctx, target)
+	ctx = cloudevents.WithEncodingStructured(ctx)
+
+	if err := em.EventSender.Send(ctx, ce); err != nil {
 		return nil, &models.Error{
 			Code:    evaluationErrSendEventFailed,
 			Message: common.Stringp(err.Error()),
