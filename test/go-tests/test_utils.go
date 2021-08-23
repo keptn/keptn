@@ -333,7 +333,20 @@ func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars
 	for index, container := range depl.Spec.Template.Spec.Containers {
 		if "distributor" == container.Name {
 			for _, e := range envVars {
-				depl.Spec.Template.Spec.Containers[index].Env = append(depl.Spec.Template.Spec.Containers[index].Env, e)
+				replaced := false
+				for ii, existingEnvVar := range depl.Spec.Template.Spec.Containers[index].Env {
+					// if we find an already existing env war with the same name, we need to replace it
+					if existingEnvVar.Name == e.Name {
+						depl.Spec.Template.Spec.Containers[index].Env[ii] = e
+						replaced = true
+						break
+					}
+				}
+				// if we did not replace an env var, we need to append it
+				if !replaced {
+					depl.Spec.Template.Spec.Containers[index].Env = append(depl.Spec.Template.Spec.Containers[index].Env, e)
+					replaced = false
+				}
 			}
 		}
 	}

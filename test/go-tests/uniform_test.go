@@ -32,6 +32,8 @@ spec:
           tasks:
             - name: "echo"`
 
+const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/c119c7cf7c33fcac7345f4860436211916fa47b3/deploy/service-with-fixed-node-name-env.yaml"
+
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
 func Test_UniformRegistration_TestAPI(t *testing.T) {
@@ -217,7 +219,7 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
@@ -231,7 +233,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
 		require.Nil(t, err)
 	}, func() {
-		err := KubeCtlDeleteFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
 	})
 }
@@ -241,7 +243,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
 	testUniformIntegration(t, func() {
 		// install echo integration
-		_, err := KubeCtlApplyFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
 
 		// get the image of the distributor of the build being tested
@@ -268,7 +270,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		require.Nil(t, err)
 
 	}, func() {
-		err := KubeCtlDeleteFromURL("https://raw.githubusercontent.com/keptn-sandbox/echo-service/3d0c1ab33daf0806643de9c773d16cfa0c181d90/deploy/service.yaml")
+		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
 	})
 }
