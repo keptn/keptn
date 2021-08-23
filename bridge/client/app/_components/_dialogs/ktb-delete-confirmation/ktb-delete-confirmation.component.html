@@ -3,8 +3,8 @@
     <h2 *ngIf="deleteMessage" class="error mt-0" [textContent]="deleteMessage"></h2>
     <p>Are you sure you want to delete "<span [textContent]="name"></span>"?</p>
     <dt-confirmation-dialog-actions>
-      <button dt-button (click)="deleteAction()">Delete</button>
-      <button dt-button variant="secondary" (click)="closeDialog()">Cancel</button>
+      <button dt-button uitestid="dialogDeleteButton" (click)="deleteAction()">Delete</button>
+      <button dt-button variant="secondary" uitestid="dialogCancelButton" (click)="closeDialog()">Cancel</button>
     </dt-confirmation-dialog-actions>
   </dt-confirmation-dialog-state>
   <dt-confirmation-dialog-state name="deleting">
