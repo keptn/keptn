@@ -40,6 +40,11 @@ export class UniformSubscription implements us {
     return !this.filter.projects?.length;
   }
 
+  public get reduced(): Partial<UniformSubscription> {
+    const {expanded, _filter, ...subscription} = this;
+    return subscription;
+  }
+
   public setIsGlobal(status: boolean, projectName: string) {
     if (status) {
       this.filter.projects = [];

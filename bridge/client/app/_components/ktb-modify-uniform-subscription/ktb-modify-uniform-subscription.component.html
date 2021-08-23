@@ -34,7 +34,7 @@
         </div>
 
         <div fxLayout="row">
-          <button class="mr-2" [disabled]="!subscriptionForm.valid" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
+          <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!subscriptionForm.valid" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
             <dt-loading-spinner *ngIf="updating" aria-label="Setting Git upstream URL"></dt-loading-spinner>
             {{editMode ? 'Update' : 'Create'}} subscription
           </button>

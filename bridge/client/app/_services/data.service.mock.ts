@@ -15,6 +15,7 @@ import { UniformRegistrationLog } from '../../../server/interfaces/uniform-regis
 import { UniformRegistrationLogsMock } from '../_models/uniform-registrations-logs.mock';
 import { SequencesData } from './_mockData/sequences.mock';
 import { UniformRegistration } from '../_models/uniform-registration';
+import { UniformSubscription } from '../_models/uniform-subscription';
 
 @Injectable({
   providedIn: 'root'
@@ -103,6 +104,18 @@ export class DataServiceMock extends DataService {
   }
 
   public deleteSubscription(integrationId: string, subscriptionId: string): Observable<object> {
+    return of({});
+  }
+
+  public getTaskNames(projectName: string): Observable<string[]> {
+    return of(['approval', 'deployment', 'test']);
+  }
+
+  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+    return of({});
+  }
+
+  public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
     return of({});
   }
 

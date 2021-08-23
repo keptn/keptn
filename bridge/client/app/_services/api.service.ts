@@ -155,12 +155,12 @@ export class ApiService {
     return this.http.get<UniformSubscription>(url);
   }
 
-  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+  public updateUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>): Observable<object> {
     const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscription.id}`;
     return this.http.put(url, subscription);
   }
 
-  public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+  public createUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>): Observable<object> {
     const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`;
     return this.http.post(url, subscription);
   }

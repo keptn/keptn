@@ -133,11 +133,11 @@ export class DataService {
   }
 
   public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
-    return this.apiService.updateUniformSubscription(integrationId, subscription);
+    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced);
   }
 
   public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
-    return this.apiService.createUniformSubscription(integrationId, subscription);
+    return this.apiService.createUniformSubscription(integrationId, subscription.reduced);
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {

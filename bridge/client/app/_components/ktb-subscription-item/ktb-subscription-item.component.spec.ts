@@ -2,7 +2,7 @@ import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { KtbSubscriptionItemComponent } from './ktb-subscription-item.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppModule } from '../../app.module';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 import { DataService } from '../../_services/data.service';
@@ -57,8 +57,8 @@ describe('KtbSubscriptionItemComponent', () => {
     component.subscription = subscription;
     component.integrationId = 'myIntegrationId';
     fixture.detectChanges();
-    // @ts-ignore
-    const routeChange = jest.spyOn(component.router, 'navigate');
+    const router = TestBed.inject(Router);
+    const routeChange = jest.spyOn(router, 'navigate');
     const subscriptionDeleted = jest.spyOn(component.subscriptionDeleted, 'emit');
 
     // when
@@ -119,8 +119,8 @@ describe('KtbSubscriptionItemComponent', () => {
     component.subscription = subscription;
     component.integrationId = 'myIntegrationId';
     fixture.detectChanges();
-    // @ts-ignore
-    const routeChange = jest.spyOn(component.router, 'navigate');
+    const router = TestBed.inject(Router);
+    const routeChange = jest.spyOn(router, 'navigate');
 
     // when
     fixture.nativeElement.querySelector('button[title=Edit]').click();
