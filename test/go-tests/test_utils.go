@@ -2,7 +2,6 @@ package go_tests
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudevents/sdk-go/v2"
@@ -269,8 +268,6 @@ func VerifySequenceEndsUpInState(t *testing.T, projectName string, context *mode
 	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
 	require.Eventuallyf(t, func() bool {
 		states, _, err := GetState(projectName)
-		statesStr, _ := json.MarshalIndent(states, "", "  ")
-		t.Logf("got states:\n %s", statesStr)
 		if err != nil {
 			return false
 		}

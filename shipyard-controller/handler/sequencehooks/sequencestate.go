@@ -8,24 +8,25 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
 
 const eventScopeErrorMessage = "could not determine event scope of event"
 const sequenceStateRetrievalErrorMsg = "could not fetch sequence state for keptnContext %s: %s"
 
-// prefix for the sequence state locks
-const stateLockPrefix = "states:"
-
 type SequenceStateMaterializedView struct {
 	SequenceStateRepo db.SequenceStateRepo
+	mutex             *sync.Mutex
 }
 
 func NewSequenceStateMaterializedView(stateRepo db.SequenceStateRepo) *SequenceStateMaterializedView {
-	return &SequenceStateMaterializedView{SequenceStateRepo: stateRepo}
+	return &SequenceStateMaterializedView{SequenceStateRepo: stateRepo, mutex: &sync.Mutex{}}
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	_, sequenceName, _, err := keptnv2.ParseSequenceEventType(*event.Type)
 	if err != nil {
 		log.Errorf("could not determine stage/sequence name: %s", err.Error())
@@ -37,9 +38,6 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 		log.Errorf("could not determine event scope: %s", err.Error())
 		return
 	}
-
-	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
-	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 
 	state := models.SequenceState{
 		Name:           sequenceName,
@@ -60,6 +58,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event models.Event
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -69,6 +69,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceStarted(event models.Event) 
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -88,6 +90,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event models.E
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -100,6 +104,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -118,6 +124,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event models.Ev
 }
 
 func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	state, err := smv.updateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -130,6 +138,8 @@ func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event models.Eve
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -139,6 +149,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceFinished(event models.Event)
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.WithError(err).Errorf(eventScopeErrorMessage)
@@ -148,6 +160,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTimeout(event models.Event) 
 }
 
 func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventScope) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	if pause.Stage == "" {
 		smv.updateOverallSequenceState(pause, models.SequencePaused)
 	} else {
@@ -156,6 +170,8 @@ func (smv *SequenceStateMaterializedView) OnSequencePaused(pause models.EventSco
 }
 
 func (smv *SequenceStateMaterializedView) OnSequenceResumed(resume models.EventScope) {
+	smv.mutex.Lock()
+	defer smv.mutex.Unlock()
 	if resume.Stage == "" {
 		smv.updateOverallSequenceState(resume, models.SequenceStartedState)
 	} else {
@@ -192,8 +208,6 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 		return
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
-	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	state.State = status
 	if err := smv.SequenceStateRepo.UpdateSequenceState(*state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -201,8 +215,6 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 }
 
 func (smv *SequenceStateMaterializedView) updateSequenceStateInStage(eventScope models.EventScope, status string) {
-	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
-	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	state, err := smv.findSequenceState(eventScope.Project, eventScope.KeptnContext)
 	if err != nil {
 		log.Errorf(sequenceStateRetrievalErrorMsg, eventScope.KeptnContext, err.Error())
@@ -269,8 +281,6 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event models
 		return models.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())
 	}
 
-	common.LockProject(stateLockPrefix + eventScope.KeptnContext)
-	defer common.UnlockProject(stateLockPrefix + eventScope.KeptnContext)
 	states, err := smv.SequenceStateRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project:      eventScope.Project,
