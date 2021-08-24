@@ -8,6 +8,7 @@ import { ServiceMock } from '../../_models/service.mock';
 describe('KtbServicesListComponent', () => {
   let component: KtbServicesListComponent;
   let fixture: ComponentFixture<KtbServicesListComponent>;
+  let service: Service;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -19,6 +20,7 @@ describe('KtbServicesListComponent', () => {
 
     fixture = TestBed.createComponent(KtbServicesListComponent);
     component = fixture.componentInstance;
+    service = Service.fromJSON(ServiceMock);
     fixture.detectChanges();
   });
 
@@ -26,10 +28,7 @@ describe('KtbServicesListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should return a image string (<image>:<version>)', () => {
-    // given
-    const service = Service.fromJSON(ServiceMock);
-
+  it('should return an image string (<image>:<version>)', () => {
     // when
     const imageString = component.getImageText(service);
 
@@ -37,9 +36,8 @@ describe('KtbServicesListComponent', () => {
     expect(imageString).toEqual('mongo:4.2.2');
   });
 
-  it('should return a image string (<image>) when no version is set', () => {
+  it('should return an image string (<image>) when no version is set', () => {
     // given
-    const service = Service.fromJSON(ServiceMock);
     service.deployedImage = 'docker.io/mongo';
 
     // when
@@ -51,7 +49,6 @@ describe('KtbServicesListComponent', () => {
 
   it('should return an empty string when Service.deployedImage is not set', () => {
     // given
-    const service = Service.fromJSON(ServiceMock);
     service.deployedImage = undefined;
 
     // when
@@ -63,7 +60,6 @@ describe('KtbServicesListComponent', () => {
 
   it('should display the service name and the deployed image', () => {
     // given
-    const service = Service.fromJSON(ServiceMock);
     component.services = [service];
     fixture.detectChanges();
 
@@ -77,7 +73,6 @@ describe('KtbServicesListComponent', () => {
 
   it('should return a link to the service', () => {
     // given
-    const service = Service.fromJSON(ServiceMock);
     service.stage = 'dev';
 
     // when
