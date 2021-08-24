@@ -1,13 +1,8 @@
-import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
-  Component,
-  Input,
-  ViewEncapsulation
-} from '@angular/core';
-import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Service} from '../../_models/service';
-import {DateUtil} from '../../_utils/date.utils';
-import {DataService} from '../../_services/data.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewEncapsulation } from '@angular/core';
+import { DtTableDataSource } from '@dynatrace/barista-components/table';
+import { Service } from '../../_models/service';
+import { DateUtil } from '../../_utils/date.utils';
+import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
 
 const DEFAULT_PAGE_SIZE = 3;
@@ -17,7 +12,7 @@ const DEFAULT_PAGE_SIZE = 3;
   templateUrl: './ktb-services-list.component.html',
   styleUrls: ['./ktb-services-list.component.scss'],
   host: {
-    class: 'ktb-services-list'
+    class: 'ktb-services-list',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
@@ -33,6 +28,7 @@ export class KtbServicesListComponent {
   get services(): Service[] {
     return this._services;
   }
+
   set services(value: Service[]) {
     if (this._services !== value) {
       this._services = value;
@@ -43,6 +39,7 @@ export class KtbServicesListComponent {
   get pageSize(): number {
     return this._pageSize;
   }
+
   set pageSize(value: number) {
     if (this._pageSize !== value) {
       this._pageSize = value;
@@ -54,7 +51,8 @@ export class KtbServicesListComponent {
     return DEFAULT_PAGE_SIZE;
   }
 
-  constructor(public dataService: DataService, public dateUtil: DateUtil, private _changeDetectorRef: ChangeDetectorRef) { }
+  constructor(public dataService: DataService, public dateUtil: DateUtil, private _changeDetectorRef: ChangeDetectorRef) {
+  }
 
   updateDataSource() {
     this.services.sort(this.compare());
@@ -66,11 +64,9 @@ export class KtbServicesListComponent {
     return (a: Service, b: Service) => {
       if (!a.latestSequence) {
         return 1;
-      }
-      else if (!b.latestSequence) {
+      } else if (!b.latestSequence) {
         return -1;
-      }
-      else {
+      } else {
         return new Date(b.latestSequence.time).getTime() - new Date(a.latestSequence.time).getTime();
       }
     };
@@ -92,4 +88,15 @@ export class KtbServicesListComponent {
     return ['sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 
+  getImageText(service: Service) {
+    if (!service.deployedImage) {
+      return '';
+    }
+
+    let text = service.getShortImageName();
+    if (service.getImageVersion()) {
+      text += ':' + service.getImageVersion();
+    }
+    return text;
+  }
 }
