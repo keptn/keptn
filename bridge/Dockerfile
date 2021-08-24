@@ -31,6 +31,13 @@ RUN npm run build && \
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM node:14-alpine3.14 as bridgeProduction
+LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
+    org.opencontainers.image.url = "https://keptn.sh" \
+    org.opencontainers.image.title="Keptn Bridge" \
+    org.opencontainers.image.vendor="Keptn" \
+    org.opencontainers.image.documentation="https://keptn.sh/docs/" \
+    org.opencontainers.image.licenses="Apache-2.0"
+
 
 EXPOSE 3000
 

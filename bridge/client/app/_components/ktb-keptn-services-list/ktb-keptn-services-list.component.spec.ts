@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbKeptnServicesListComponent } from './ktb-keptn-services-list.component';
 import { AppModule } from '../../app.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -13,8 +13,8 @@ describe('KtbKeptnServicesListComponent', () => {
   let component: KtbKeptnServicesListComponent;
   let fixture: ComponentFixture<KtbKeptnServicesListComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -26,20 +26,18 @@ describe('KtbKeptnServicesListComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: of(convertToParamMap({
-              projectName: 'sockshop'
-            }))
-          }
-        }
-      ]
-    })
-      .compileComponents()
-      .then(() => {
-        localStorage.setItem('keptn_integration_dates', '');
-        fixture = TestBed.createComponent(KtbKeptnServicesListComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
-  }));
+              projectName: 'sockshop',
+            })),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    localStorage.setItem('keptn_integration_dates', '');
+    fixture = TestBed.createComponent(KtbKeptnServicesListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -57,7 +55,7 @@ describe('KtbKeptnServicesListComponent', () => {
 
     // then
     expect(indicator).toBeTruthy();
-    expect(indicator.innerText).toEqual('10');
+    expect(indicator.textContent).toEqual('10');
   });
 
   it('should not show error event indicator', () => {
@@ -74,7 +72,7 @@ describe('KtbKeptnServicesListComponent', () => {
   it('should remove error event indicator on selection change', () => {
     // given
     const dataService = TestBed.inject(DataService);
-    const spySave = spyOn(dataService, 'setUniformDate');
+    const spySave = jest.spyOn(dataService, 'setUniformDate');
     const firstRow = fixture.nativeElement.querySelector('dt-row');
     const secondRow = fixture.nativeElement.querySelector('dt-row:nth-of-type(2)');
     const firstCell = firstRow.querySelector('dt-cell');
@@ -86,7 +84,8 @@ describe('KtbKeptnServicesListComponent', () => {
     const registration = component.selectedUniformRegistration;
     expect(indicator).toBeTruthy();
     expect(registration?.unreadEventsCount).toEqual(10);
-    expect(spySave).toHaveBeenCalledOnceWith(UniformRegistrationsMock[0].id, UniformRegistrationLogsMock[0].time);
+    expect(spySave).toHaveBeenCalledTimes(1);
+    expect(spySave).toHaveBeenCalledWith(UniformRegistrationsMock[0].id, UniformRegistrationLogsMock[0].time);
 
     secondRow.click();
     fixture.detectChanges();
@@ -103,11 +102,6 @@ describe('KtbKeptnServicesListComponent', () => {
 
     const logs = fixture.nativeElement.querySelector('ktb-uniform-registration-logs');
     expect(logs).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('h3').innerText).toEqual('ansible-service');
+    expect(fixture.nativeElement.querySelector('h3').textContent).toEqual('ansible-service');
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

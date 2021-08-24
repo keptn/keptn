@@ -3,10 +3,11 @@ import {Component, OnInit} from '@angular/core';
 import {filter, take} from 'rxjs/operators';
 import {DataService} from './_services/data.service';
 
+// tslint:disable-next-line:no-any
 declare var dT_: any;
 
 @Component({
-  selector: 'app-root',
+  selector: 'ktb-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

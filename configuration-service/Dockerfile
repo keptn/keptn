@@ -35,6 +35,13 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.14
+LABEL org.opencontainers.image.source = "https://github.com/keptn/keptn" \
+    org.opencontainers.image.url = "https://keptn.sh" \
+    org.opencontainers.image.title="Keptn Configuration Service" \
+    org.opencontainers.image.vendor="Keptn" \
+    org.opencontainers.image.documentation="https://keptn.sh/docs/" \
+    org.opencontainers.image.licenses="Apache-2.0"
+
 
 ENV env=production
 

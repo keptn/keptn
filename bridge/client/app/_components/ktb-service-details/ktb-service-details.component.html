@@ -1,13 +1,12 @@
-<ng-container *ngIf="deployment" uitestid="keptn-service-details-deployment">
-  <dt-loading-distractor *ngIf="!deployment.sequence, else details">Loading …</dt-loading-distractor>
-  <ng-template #details>
+<ng-container *ngIf="deploymentInfo as deploymentInfo" uitestid="keptn-service-details-deploymentInfo.deployment">
+  <ng-container *ngIf="deploymentInfo.deployment.sequence as sequence">
     <dt-info-group class="mb-2">
       <dt-info-group-title>
         <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
           <div fxLayout="row" fxLayoutAlign="start center" class="service-title mt-1 mb-1">
-            <span class="bold" [textContent]="deployment.sequence?.getShortImageName() || deployment.service"></span>&nbsp;
-            <dt-tag-list aria-label="deployment-labels" uitestid="keptn-service-details-deploymentTags">
-              <dt-tag *ngFor="let label of (deployment.sequence?.getLastTrace()?.getFinishedEvent()?.labels || deployment.sequence?.labels) | keyvalue">
+            <span class="bold" [textContent]="sequence?.getShortImageName() || deploymentInfo.deployment.service"></span>&nbsp;
+            <dt-tag-list aria-label="deploymentInfo.deployment-labels" uitestid="keptn-service-details-deploymentInfo.deploymentTags">
+              <dt-tag *ngFor="let label of (sequence?.getLastTrace()?.getFinishedEvent()?.labels || sequence?.labels) | keyvalue">
                 <p *ngIf="!isUrl(label.value)" ><span [textContent]="label.key"></span>:&nbsp;<span [textContent]="label.value"></span></p>
                 <a *ngIf="isUrl(label.value)" [href]="label.value" target="_blank" [textContent]="label.key"></a>
               </dt-tag>
@@ -16,27 +15,27 @@
         </div>
       </dt-info-group-title>
     </dt-info-group>
-    <ktb-deployment-timeline [deployment]="deployment" [(selectedStage)]="selectedStage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
-    <ng-container *ngIf="selectedStage">
-      <ktb-sequence-list [shkeptncontext]="deployment.shkeptncontext" [sequences]="deployment.sequence?.getTracesOfStage(selectedStage) || []" [stage]="selectedStage" [remediations]="deployment?.getStage(selectedStage)?.remediations || []"></ktb-sequence-list>
-      <button *ngIf="deployment.getStage(selectedStage)?.remediations?.length" class="mt-1" dt-button variant="secondary" (click)="showRemediationConfigDialog()">
+    <ktb-deployment-timeline [deployment]="deploymentInfo.deployment" [(selectedStage)]="deploymentInfo.stage" (selectedStageChange)="selectStage($event)"></ktb-deployment-timeline>
+    <ng-container *ngIf="deploymentInfo.stage">
+      <ktb-sequence-list [shkeptncontext]="deploymentInfo.deployment.shkeptncontext" [sequences]="sequence?.getTracesOfStage(deploymentInfo.stage) || []" [stage]="deploymentInfo.stage" [remediations]="deploymentInfo.deployment?.getStage(deploymentInfo.stage)?.remediations || []"></ktb-sequence-list>
+      <button *ngIf="deploymentInfo.deployment.getStage(deploymentInfo.stage)?.remediations?.length" class="mt-1" dt-button variant="secondary" (click)="showRemediationConfigDialog()">
         <dt-icon name="services"></dt-icon>
         Show remediation config
       </button>
-      <div class="mt-3" [class]="{'animation-pulse': selectedStage}" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.sequence?.getPendingApproval(selectedStage)">
-        <ktb-event-item [event]="deployment.sequence?.getPendingApproval(selectedStage)">
+      <div class="mt-3" [class]="{'animation-pulse': deploymentInfo.stage}" fxLayout="column" fxLayoutGap="15px" *ngIf="sequence?.getPendingApproval(deploymentInfo.stage)">
+        <ktb-event-item [event]="sequence?.getPendingApproval(deploymentInfo.stage)">
         </ktb-event-item>
       </div>
 
-      <div *ngIf="!deployment.sequence?.getEvaluation(selectedStage)" fxLayout="row" fxLayoutAlign="start start" class="mt-2">
+      <div *ngIf="!sequence?.getEvaluation(deploymentInfo.stage)" fxLayout="row" fxLayoutAlign="start start" class="mt-2">
         <dt-icon class="event-icon info mr-1" name="information"></dt-icon>
         <div fxLayout="column">
           <span>No evaluation performed during the sequence execution.</span>
-          <span>To perform an evaluation, add the <code>evaluation</code> task to the <code>delivery</code> sequence of the <code [textContent]="selectedStage"></code> stage in the Shipyard for this project.</span>
+          <span>To perform an evaluation, add the <code>evaluation</code> task to the <code>delivery</code> sequence of the <code [textContent]="deploymentInfo.stage"></code> stage in the Shipyard for this project.</span>
         </div>
       </div>
 
-      <div class="mt-3" fxLayout="column" fxLayoutGap="15px" *ngIf="deployment.getEvaluation(selectedStage) as evaluationEvent">
+      <div class="mt-3" fxLayout="column" fxLayoutGap="15px" *ngIf="deploymentInfo.deployment.getEvaluation(deploymentInfo.stage) as evaluationEvent">
         <ktb-event-item [showChartLink]="true" [event]="evaluationEvent" *ngIf="evaluationEvent.isFinished()" [showTime]="false" [showLabels]="false">
           <ktb-event-item-detail>
             <ktb-evaluation-details [evaluationData]="evaluationEvent.getFinishedEvent()" [isInvalidated]="evaluationEvent.isInvalidated()"></ktb-evaluation-details>
@@ -54,5 +53,8 @@
         <button dt-button class="ml-2" (click)="closeRemediationConfigDialog()">Close</button>
       </div>
     </ng-template>
-  </ng-template>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="isLoading">
+  <dt-loading-distractor>Loading …</dt-loading-distractor>
 </ng-container>

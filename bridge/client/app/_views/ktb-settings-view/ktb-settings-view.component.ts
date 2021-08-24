@@ -6,7 +6,7 @@ import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { GitData } from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
+import { GitData, KtbProjectSettingsGitComponent } from '../../_components/ktb-project-settings-git/ktb-project-settings-git.component';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
 import { NotificationsService } from '../../_services/notifications.service';
@@ -26,6 +26,10 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
   @ViewChild('deleteProjectDialog')
   private deleteProjectDialog?: TemplateRef<MatDialog>;
 
+  @ViewChild(KtbProjectSettingsGitComponent)
+  private gitSettingsSection?: KtbProjectSettingsGitComponent;
+
+  public unsavedDialogState: string | null = null;
   public projectName?: string;
   public projectDeletionData?: DeleteData;
   public isCreateMode = false;
@@ -78,6 +82,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       filter((project: Project | undefined): project is Project => !!project)
     ).subscribe(project => {
       if (project.projectName !== this.projectName) {
+        this.unsavedDialogState = null;
         this.projectName = project.projectName;
 
         this.gitData = {
@@ -96,6 +101,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     ).subscribe((queryParams) => {
       if (queryParams.created) {
+        this.unsavedDialogState = null;
         this.notificationsService.addNotification(NotificationType.Success, TemplateRenderedNotifications.CREATE_PROJECT, undefined, true, {
           projectName: this.projectName,
           routerLink: `/project/${this.projectName}/service`
@@ -123,6 +129,16 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     this.gitData.remoteURI = gitData.remoteURI;
     this.gitData.gitUser = gitData.gitUser;
     this.gitData.gitToken = gitData.gitToken;
+    this.gitData.gitFormValid = gitData.gitFormValid;
+    if (gitData.gitFormValid) {
+      this.unsavedDialogState = 'unsaved';
+    } else {
+      this.unsavedDialogState = null;
+    }
+  }
+
+  public updateShipyardFile(shipyardFile: File | undefined): void {
+    this.shipyardFile = shipyardFile;
   }
 
   public setGitUpstream(): void {
@@ -133,7 +149,7 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
         .subscribe(() => {
           this.isGitUpstreamInProgress = false;
           this.gitData.gitToken = '';
-          this.gitData = {... this.gitData};
+          this.gitData = {...this.gitData};
           this.notificationsService.addNotification(NotificationType.Success, 'The Git upstream was changed successfully.', 5000);
         }, (err) => {
           console.log(err);
@@ -141,13 +157,6 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
           this.notificationsService.addNotification(NotificationType.Error, `<div class="long-note align-left p-3">The Git upstream could not be changed:<br/><span class="small">${err.error}</span></div>`);
         });
     }
-  }
-
-  public isGitFormValid(): boolean {
-    if (!this.gitData.remoteURI && !this.gitData.gitUser && !this.gitData.gitToken) {
-      return true;
-    }
-    return !!(this.gitData.remoteURI?.length && this.gitData.gitUser?.length && this.gitData.gitToken?.length);
   }
 
   public createProject(): void {
@@ -177,14 +186,18 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     this.eventService.deletionProgressEvent.next({isInProgress: true});
 
     this.dataService.projects
-      .pipe(take(1))
-      .subscribe(() => {
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        take(1)
+      ).subscribe(() => {
         this.router.navigate(['/', 'dashboard']);
       });
 
     this.dataService.deleteProject(projectName)
-      .pipe(take(1))
-      .subscribe(() => {
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        take(1)
+      ).subscribe(() => {
         this.dataService.loadProjects();
         this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
       }, (err) => {
@@ -195,5 +208,15 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
           result: DeleteResult.ERROR
         });
       });
+  }
+
+  public reset(): void {
+    this.gitSettingsSection?.reset();
+    this.unsavedDialogState = null;
+  }
+
+  public saveAll(): void {
+    this.setGitUpstream();
+    this.unsavedDialogState = null;
   }
 }

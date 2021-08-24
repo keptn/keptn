@@ -16,36 +16,36 @@ describe('EventService', () => {
   });
 
   it('should have a Subject deletionTriggeredEvent open', () => {
-    expect(service.deletionTriggeredEvent.closed).toBeFalse();
+    expect(service.deletionTriggeredEvent.closed).toEqual(false);
   });
 
   it('should have a Subject deletionProgressEvent open', () => {
-    expect(service.deletionProgressEvent.closed).toBeFalse();
+    expect(service.deletionProgressEvent.closed).toEqual(false);
   });
 
   it('should deletionTriggeredEvent have been called with next value', () => {
     // given
     const data = {name: 'sockshop', type: DeleteType.PROJECT};
-    const spy = spyOn(service.deletionTriggeredEvent, 'next');
+    const spy = jest.spyOn(service.deletionTriggeredEvent, 'next');
 
     // when
     service.deletionTriggeredEvent.next(data);
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy.calls.mostRecent().args[0]).toEqual(data);
+    expect(spy).toHaveBeenCalledWith(data);
   });
 
   it('should deletionProgressEvent have been called with next value', () => {
     // given
     const data = {isInProgress: false, result: DeleteResult.ERROR, error: 'Error'};
-    const spy = spyOn(service.deletionProgressEvent, 'next');
+    const spy = jest.spyOn(service.deletionProgressEvent, 'next');
 
     // when
     service.deletionProgressEvent.next(data);
 
     // then
     expect(spy).toHaveBeenCalled();
-    expect(spy.calls.mostRecent().args[0]).toEqual(data);
+    expect(spy).toHaveBeenCalledWith(data);
   });
 });

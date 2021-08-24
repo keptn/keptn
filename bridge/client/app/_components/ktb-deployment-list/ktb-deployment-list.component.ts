@@ -14,7 +14,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {combineLatest, Subject} from 'rxjs';
 import {DataService} from '../../_services/data.service';
 import {DtTableDataSource} from '@dynatrace/barista-components/table';
-import {Deployment} from '../../_models/deployment';
+import { Deployment, DeploymentSelection } from '../../_models/deployment';
 import {Location} from '@angular/common';
 
 @Component({
@@ -27,13 +27,12 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   private _service?: Service;
   private projectName?: string;
   private readonly unsubscribe$ = new Subject<void>();
-  public _selectedDeployment?: Deployment;
+  public _selectedDeploymentInfo?: DeploymentSelection;
   public dataSource = new DtTableDataSource<Deployment>();
   public loading = false;
   public DeploymentClass = Deployment;
 
-  @Output() selectedDeploymentChange: EventEmitter<Deployment> = new EventEmitter();
-  @Output() selectedStageChange: EventEmitter<string> = new EventEmitter();
+  @Output() selectedDeploymentInfoChange: EventEmitter<DeploymentSelection> = new EventEmitter();
 
   @Input()
   get service(): Service | undefined {
@@ -47,12 +46,12 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
     }
   }
   @Input()
-  get selectedDeployment(): Deployment | undefined {
-    return this._selectedDeployment;
+  get selectedDeploymentInfo(): DeploymentSelection | undefined {
+    return this._selectedDeploymentInfo;
   }
-  set selectedDeployment(deployment: Deployment | undefined) {
-    if (this._selectedDeployment !== deployment) {
-      this._selectedDeployment = deployment;
+  set selectedDeploymentInfo(deployment: DeploymentSelection | undefined) {
+    if (this._selectedDeploymentInfo !== deployment) {
+      this._selectedDeploymentInfo = deployment;
       this._changeDetectorRef.markForCheck();
     }
   }
@@ -89,12 +88,12 @@ export class KtbDeploymentListComponent implements OnInit, OnDestroy {
   }
 
   public selectDeployment(deployment: Deployment, stageName?: string): void {
-    if (this.selectedDeployment?.shkeptncontext !== deployment.shkeptncontext || stageName) {
-      this.selectedDeployment = deployment;
-      this.selectedDeploymentChange.emit(this.selectedDeployment);
-      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', deployment.service, 'context', deployment.shkeptncontext, ...(stageName ? ['stage', stageName] : [])]);
+    if (this.selectedDeploymentInfo?.deployment.shkeptncontext !== deployment.shkeptncontext || stageName) {
+      stageName ??= deployment.stages[deployment.stages.length - 1].stageName;
+      const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'service', deployment.service, 'context', deployment.shkeptncontext, 'stage', stageName]);
       this.location.go(routeUrl.toString());
-      this.selectedStageChange.emit(stageName || deployment.stages[deployment.stages.length - 1].stageName);
+      this.selectedDeploymentInfo = {deployment, stage: stageName};
+      this.selectedDeploymentInfoChange.emit(this.selectedDeploymentInfo);
       this._changeDetectorRef.markForCheck();
     }
   }

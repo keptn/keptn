@@ -1,8 +1,8 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbRootEventsListComponent } from './ktb-root-events-list.component';
-import {KtbEventsListComponent} from '../ktb-events-list/ktb-events-list.component';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {AppModule} from '../../app.module';
+import { KtbEventsListComponent } from '../ktb-events-list/ktb-events-list.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
 import { ActivatedRoute } from '@angular/router';
@@ -16,8 +16,8 @@ describe('KtbEventsListComponent', () => {
   const projectName = 'sockshop';
   let project: Project;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [],
       imports: [
         AppModule,
@@ -26,31 +26,29 @@ describe('KtbEventsListComponent', () => {
       providers: [
         {
           provide: DataService,
-          useClass: DataServiceMock
+          useClass: DataServiceMock,
         },
         {
           provide: ActivatedRoute,
           useValue: {
             data: of({}),
             params: of({projectName}),
-            queryParams: of({})
-          }
-        }
-      ]
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbRootEventsListComponent);
-        component = fixture.componentInstance;
-        dataService = fixture.debugElement.injector.get(DataService);
-        dataService.loadProjects(); // reset project.sequences
-        // @ts-ignore
-        dataService.getProject(projectName).subscribe((pr: Project) => {
-          project = pr;
-          fixture.detectChanges();
-        });
-      });
-  }));
+            queryParams: of({}),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbRootEventsListComponent);
+    component = fixture.componentInstance;
+    dataService = fixture.debugElement.injector.get(DataService);
+    dataService.loadProjects(); // reset project.sequences
+    // @ts-ignore
+    dataService.getProject(projectName).subscribe((pr: Project) => {
+      project = pr;
+      fixture.detectChanges();
+    });
+  });
 
   it('should create root-events-list component', () => {
     expect(component).toBeTruthy();
@@ -117,13 +115,13 @@ describe('KtbEventsListComponent', () => {
 
     // then
     const selectedTile = getSequenceTile(selectedSequenceIndex);
-    expect(selectedTile).toHaveClass('ktb-tile-selected');
+    expect(selectedTile.getAttribute('class')).toContain('ktb-tile-selected');
   });
 
   it('should select sequence', () => {
     // given
     const selectedSequenceIndex = 5;
-    const changeEvent = spyOn(component.selectedEventChange, 'emit');
+    const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
     dataService.loadSequences(project);
     component.events = project.sequences;
     fixture.detectChanges();
@@ -135,7 +133,7 @@ describe('KtbEventsListComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(targetSequence).toHaveClass('ktb-tile-selected');
+    expect(targetSequence.getAttribute('class')).toContain('ktb-tile-selected');
     expect(component.selectedEvent).toEqual(eventData.sequence);
     expect(changeEvent).toHaveBeenCalledWith(eventData);
   });
@@ -143,7 +141,7 @@ describe('KtbEventsListComponent', () => {
   it('should select sequence with stage', () => {
     // given
     const selectedSequenceIndex = 8;
-    const changeEvent = spyOn(component.selectedEventChange, 'emit');
+    const changeEvent = jest.spyOn(component.selectedEventChange, 'emit');
     dataService.loadSequences(project);
     component.events = project.sequences;
     fixture.detectChanges();
@@ -152,20 +150,15 @@ describe('KtbEventsListComponent', () => {
     const targetSequence = getSequenceTile(selectedSequenceIndex);
     const stageBadges = targetSequence.querySelectorAll('ktb-stage-badge');
     const targetStage = stageBadges[0];
-    const stageName = targetStage.querySelector('dt-tag').innerText;
+    const stageName = targetStage.querySelector('dt-tag').textContent;
     targetStage.click();
     fixture.detectChanges();
 
     // then
     expect(stageBadges.length).toEqual(2);
-    expect(targetSequence).toHaveClass('ktb-tile-selected');
+    expect(targetSequence.getAttribute('class')).toContain('ktb-tile-selected');
     expect(changeEvent).toHaveBeenCalledWith({sequence: project.sequences[selectedSequenceIndex], stage: stageName});
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 
   function getSequenceTile(index: number) {
     return fixture.nativeElement.querySelector(`ktb-selectable-tile[uitestid="keptn-root-events-list-${project.sequences[index].shkeptncontext}"]`);

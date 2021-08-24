@@ -1,57 +1,44 @@
-import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
-
-import {KtbNotificationBarComponent} from './ktb-notification-bar.component';
-import {Component} from "@angular/core";
-import {By} from "@angular/platform-browser";
-import {NotificationsService} from "../../_services/notifications.service";
-import {NotificationType} from "../../_models/notification";
-import {DtIconModule} from "@dynatrace/barista-components/icon";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {AppModule} from "../../app.module";
-import {KtbMarkdownComponent} from "../ktb-markdown/ktb-markdown.component";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { KtbNotificationBarComponent } from './ktb-notification-bar.component';
+import { By } from '@angular/platform-browser';
+import { NotificationsService } from '../../_services/notifications.service';
+import { NotificationType } from '../../_models/notification';
+import { DtIconModule } from '@dynatrace/barista-components/icon';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { AppModule } from '../../app.module';
 
 describe('KtbNotificationBarComponent', () => {
   let service: NotificationsService;
-  let component: SimpleKtbNotificationBarComponent;
-  let fixture: ComponentFixture<SimpleKtbNotificationBarComponent>;
+  let component: KtbNotificationBarComponent;
+  let fixture: ComponentFixture<KtbNotificationBarComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        SimpleKtbNotificationBarComponent,
-        KtbNotificationBarComponent,
-      ],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
+        AppModule,
         HttpClientTestingModule,
         DtIconModule,
         DtIconModule.forRoot({
           svgIconLocation: `/assets/icons/{{name}}.svg`,
         }),
       ],
-      providers: [NotificationsService]
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(SimpleKtbNotificationBarComponent);
-      component = fixture.componentInstance;
-      service = TestBed.get(NotificationsService);
-      fixture.detectChanges();
-    });
-  }));
+      providers: [NotificationsService],
+    }).compileComponents();
 
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
+    fixture = TestBed.createComponent(KtbNotificationBarComponent);
+    component = fixture.componentInstance;
+    service = TestBed.inject(NotificationsService);
+    fixture.detectChanges();
+  });
 
   it('should add and remove notifications', () => {
     let notifications = fixture.debugElement.queryAll(By.css('.page-note'));
     expect(notifications.length).toBe(0);
 
-    service.addNotification(NotificationType.Info, "Information");
-    service.addNotification(NotificationType.Success, "Success");
-    service.addNotification(NotificationType.Warning, "Warning");
-    service.addNotification(NotificationType.Error, "Error");
+    service.addNotification(NotificationType.Info, 'Information');
+    service.addNotification(NotificationType.Success, 'Success');
+    service.addNotification(NotificationType.Warning, 'Warning');
+    service.addNotification(NotificationType.Error, 'Error');
     fixture.detectChanges();
 
     notifications = fixture.debugElement.queryAll(By.css('.page-note'));
@@ -64,9 +51,3 @@ describe('KtbNotificationBarComponent', () => {
     expect(notifications[3].nativeElement.classList).toContain('error-note');
   });
 });
-
-/** Simple component for testing the KtbNotificationBarComponent */
-@Component({
-  template: `<ktb-notification-bar></ktb-notification-bar>`,
-})
-class SimpleKtbNotificationBarComponent {}

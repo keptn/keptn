@@ -3,12 +3,10 @@
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "types": [
-      "jasmine",
-      "node"
+      "jest"
     ]
   },
   "files": [
-    "client/test.ts",
     "client/polyfills.ts"
   ],
   "include": [

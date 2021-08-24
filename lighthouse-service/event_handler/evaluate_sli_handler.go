@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -157,17 +156,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(shkeptncontext string, 
 	eh.KeptnHandler.Logger.Debug("Evaluation result: " + string(evaluationResult.Result))
 
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
-
-	// #1289: check if test execution that preceded the evaluation was successful or failed
-	testsFinishedEvent, _ := eh.getPreviousTestExecutionResult(e)
-	if testsFinishedEvent != nil {
-		if testsFinishedEvent.Result == keptnv2.ResultFailed {
-			eh.KeptnHandler.Logger.Debug("Setting evaluation result to 'fail' because of failed preceding test execution")
-			evaluationResult.Result = keptnv2.ResultFailed
-			evaluationResult.Status = keptnv2.StatusErrored
-			evaluationResult.Message = "Setting evaluation result to 'fail' because of failed preceding test execution"
-		}
-	}
 
 	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), eh.KeptnHandler, evaluationResult)
 }
@@ -613,32 +601,4 @@ func (eh *EvaluateSLIHandler) getPreviousEvaluations(e *keptnv2.GetSLIFinishedEv
 	}
 
 	return evaluationDoneEvents, eventIDs, nil
-}
-
-func (eh *EvaluateSLIHandler) getPreviousTestExecutionResult(e *keptnv2.GetSLIFinishedEventData) (*keptnv2.TestFinishedEventData, error) {
-	events, _ := eh.KeptnHandler.EventHandler.GetEvents(&keptnapi.EventFilter{
-		Project:      e.Project,
-		Stage:        e.Stage,
-		Service:      e.Service,
-		EventType:    keptnv2.GetFinishedEventType(keptnv2.TestTaskName),
-		KeptnContext: eh.KeptnHandler.KeptnContext,
-	})
-	if events == nil || len(events) == 0 {
-		msg := "Could not retrieve test.finished event for context " + eh.KeptnHandler.KeptnContext
-		eh.KeptnHandler.Logger.Error(msg)
-		return nil, errors.New(msg)
-	}
-
-	testsFinishedEvent := &keptnv2.TestFinishedEventData{}
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Squash: true,
-		Result: testsFinishedEvent,
-	})
-	err = decoder.Decode(events[0].Data)
-	if err != nil {
-		eh.KeptnHandler.Logger.Error("Cannot decode approval.triggered event: " + err.Error())
-		return nil, err
-	}
-
-	return testsFinishedEvent, nil
 }

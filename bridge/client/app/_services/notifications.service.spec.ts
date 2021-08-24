@@ -1,20 +1,24 @@
 import { TestBed } from '@angular/core/testing';
-
 import { NotificationsService } from './notifications.service';
-import {AppModule} from "../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import { AppModule } from '../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('NotificationsService', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    declarations: [],
-    imports: [
-      AppModule,
-      HttpClientTestingModule,
-    ]
-  }));
+  let service: NotificationsService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [
+        AppModule,
+        HttpClientTestingModule,
+      ],
+    });
+
+    service = TestBed.inject(NotificationsService);
+  });
 
   it('should be created', () => {
-    const service: NotificationsService = TestBed.get(NotificationsService);
     expect(service).toBeTruthy();
   });
 });
