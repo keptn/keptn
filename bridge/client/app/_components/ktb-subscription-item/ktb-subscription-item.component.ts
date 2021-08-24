@@ -1,13 +1,10 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {Subscription} from '../../_models/subscription';
-import {map, switchMap, takeUntil} from 'rxjs/operators';
+import {UniformSubscription} from '../../_models/uniform-subscription';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import {DataService} from '../../_services/data.service';
 import {ActivatedRoute} from '@angular/router';
 import {Project} from '../../_models/project';
-import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import {Subject} from 'rxjs';
-import {ProjectMock} from '../../_models/project.mock';
-import { DtAutoComplete } from '../../_models/dt-filter';
 
 @Component({
   selector: 'ktb-subscription-item[subscription]',
@@ -16,16 +13,18 @@ import { DtAutoComplete } from '../../_models/dt-filter';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
-  private _subscription?: Subscription;
+  private _subscription?: UniformSubscription;
+  public project?: Project;
   public tasks: string[] = [];
-  public _dataSource = new DtFilterFieldDefaultDataSource();
   private readonly unsubscribe$ = new Subject<void>();
 
+  @Input() name?: string;
+
   @Input()
-  get subscription(): Subscription | undefined {
+  get subscription(): UniformSubscription | undefined {
     return this._subscription;
   }
-  set subscription(subscription: Subscription | undefined) {
+  set subscription(subscription: UniformSubscription | undefined) {
     if (this._subscription !== subscription) {
       this._subscription = subscription;
       this.changeDetectorRef.markForCheck();
@@ -42,51 +41,16 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
         this.tasks = ['all', ...tasks];
       });
 
-    this.route.params
+    this.route.paramMap
       .pipe(
-        map(params => params.projectName),
+        map(params => params.get('projectName')),
+        filter((projectName: string | null): projectName is string => !!projectName ),
         switchMap(projectName => this.dataService.getProject(projectName)),
+        filter((project: Project | undefined): project is Project => !!project),
         takeUntil(this.unsubscribe$)
       ).subscribe(project => {
-        if (project) {
-          this.updateDataSource(project);
-        }
+        this.project = project;
       });
-  }
-
-  public updateDataSource(project: Project) {
-    project = ProjectMock;
-    this._dataSource.data = {
-      autocomplete: [
-        {
-          name: 'Stages',
-          autocomplete: project.stages.map(stage => {
-            return {
-              name: stage.stageName
-            };
-          })
-        },
-        {
-          name: 'Services',
-          autocomplete: project.getServices().map(service => {
-            return {
-              name: service.serviceName
-            };
-          })
-        }
-      ]
-    };
-  }
-
-  // tslint:disable-next-line:no-any
-  filterChanged(subscription: Subscription, event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
-    event = event as DtFilterFieldChangeEvent<DtAutoComplete>;
-    const result = event.filters.reduce((filters: {Stages: string[], Services: string[]}, filter) => {
-      filters[filter[0].name as 'Stages' | 'Services'].push(filter[1].name);
-      return filters;
-    }, {Stages: [], Services: []});
-    subscription.services = result.Services;
-    subscription.stages = result.Stages;
   }
 
   ngOnDestroy(): void {

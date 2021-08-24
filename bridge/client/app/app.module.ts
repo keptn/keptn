@@ -109,6 +109,7 @@ import { KtbDangerZoneComponent } from './_components/ktb-danger-zone/ktb-danger
 import { KtbDeletionDialogComponent } from './_components/_dialogs/ktb-deletion-dialog/ktb-deletion-dialog.component';
 import { EventService } from './_services/event.service';
 import { ToType } from './_pipes/to-type';
+import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.component';
 import { ToDatePipe } from './_pipes/to-date.pipe';
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
@@ -184,6 +185,7 @@ export function init_app(appLoadService: AppInitService) {
     KtbDangerZoneComponent,
     KtbDeletionDialogComponent,
     ToType,
+    KtbUniformSubscriptionsComponent,
     ToDatePipe,
   ],
   imports: [

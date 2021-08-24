@@ -47,3 +47,7 @@
 .active {
   background-color: $yellow-100 !important;
 }
+
+dt-row[disabled=true] {
+  color: $gray-400;
+}

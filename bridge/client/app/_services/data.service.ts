@@ -9,7 +9,6 @@ import { ApiService } from './api.service';
 import moment from 'moment';
 import { Deployment } from '../_models/deployment';
 import { Sequence } from '../_models/sequence';
-import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
 import { UniformRegistrationLog } from '../../../server/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { Root } from '../_models/root';
@@ -19,6 +18,7 @@ import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { DeploymentStage } from '../_models/deployment-stage';
+import { UniformRegistration } from '../_models/uniform-registration';
 
 @Injectable({
   providedIn: 'root'
@@ -131,7 +131,9 @@ export class DataService {
   }
 
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    return this.apiService.getUniformRegistrations(this._uniformDates);
+    return this.apiService.getUniformRegistrations(this._uniformDates).pipe(
+      map(uniformRegistrations => uniformRegistrations.map(registration => UniformRegistration.fromJSON(registration)))
+    );
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {

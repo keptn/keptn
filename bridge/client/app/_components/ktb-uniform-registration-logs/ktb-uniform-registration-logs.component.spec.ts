@@ -27,7 +27,7 @@ describe('KtbUniformRegistrationLogsComponent', () => {
     component.logs = [];
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.uniform-registration-error-log')).toBeFalsy();
-    expect(fixture.nativeElement.textContent.trim()).toEqual('No logs for this integration available');
+    expect(fixture.nativeElement.textContent.trim()).toEqual('No events for this integration available');
   });
 
   it('should have 10 logs', () => {

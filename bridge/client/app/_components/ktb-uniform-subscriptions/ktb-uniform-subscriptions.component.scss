@@ -1,0 +1,11 @@
+::ng-deep .subscription-list {
+  display: table;
+
+  > ktb-subscription-item {
+    display: table-row;
+
+    > * {
+      display: table-cell;
+    }
+  }
+}

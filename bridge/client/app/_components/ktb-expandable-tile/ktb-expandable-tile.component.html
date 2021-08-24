@@ -1,11 +1,12 @@
 <div class="ktb-expandable-tile-container">
-  <div class="ktb-expandable-tile-header" (click)="toggle()">
+  <div class="ktb-expandable-tile-header" (click)="toggle()" [class.header-left]="alignment === 'left'">
+    <button *ngIf="alignment === 'left'" class="show-more-left" dt-show-more [showLess]="expanded"></button>
     <ng-content
       select="
     ktb-expandable-tile-header,
     [ktb-expandable-tile-header],
     [ktbTileHeader]"></ng-content>
-    <button class="show-more" dt-show-more [disabled]="disabled" [showLess]="!disabled && expanded"></button>
+    <button *ngIf="alignment === 'right'" class="show-more-right" dt-show-more [disabled]="disabled" [showLess]="!disabled && expanded"></button>
   </div>
   <div class="ktb-expandable-tile-content">
     <dt-expandable-panel [disabled]="disabled" [expanded]="!disabled && expanded">
