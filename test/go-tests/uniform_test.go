@@ -246,6 +246,9 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
 
+		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
+		require.Nil(t, err)
+
 		// get the image of the distributor of the build being tested
 		currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
 		require.Nil(t, err)
