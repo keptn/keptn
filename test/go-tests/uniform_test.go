@@ -225,13 +225,6 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
-		//// get the image of the distributor of the build being tested
-		//currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-		//require.Nil(t, err)
-		//
-		//// make sure the echo service uses the correct distributor image
-		//err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-		//require.Nil(t, err)
 	}, func() {
 		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
@@ -248,14 +241,6 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
-
-		//// get the image of the distributor of the build being tested
-		//currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-		//require.Nil(t, err)
-		//
-		//// make sure the echo service uses the correct distributor image
-		//err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-		//require.Nil(t, err)
 
 		apiToken, apiEndpoint, err := GetApiCredentials()
 		require.Nil(t, err)
@@ -300,7 +285,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	configureIntegrationFunc()
 
 	// wait a little bit and restart the echo-service to make sure it's not affected by a previous version that unsubscribes itself before being shut down
-	<-time.After(10 * time.Second)
+	<-time.After(20 * time.Second)
 	err = RestartPod("echo-service")
 	require.Nil(t, err)
 
