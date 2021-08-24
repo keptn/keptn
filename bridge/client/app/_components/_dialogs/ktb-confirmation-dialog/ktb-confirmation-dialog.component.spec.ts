@@ -2,8 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbConfirmationDialogComponent } from './ktb-confirmation-dialog.component';
 import { AppModule } from '../../../app.module';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { DeleteType } from '../../../_interfaces/delete';
-
 
 describe('KtbDeletionDialogComponent', () => {
   let component: KtbConfirmationDialogComponent;
@@ -21,17 +19,13 @@ describe('KtbDeletionDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbConfirmationDialogComponent],
       imports: [AppModule, MatDialogModule],
       providers: [
         {provide: MAT_DIALOG_DATA, useValue: dialogData},
         {provide: MatDialogRef, useValue: dialogRefMock}
-      ]
-    })
-      .compileComponents();
-  });
+      ],
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbConfirmationDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -9,14 +9,11 @@ describe('KtbSequenceStateListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbSequenceControlsComponent],
       imports: [
         AppModule,
       ],
     }).compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbSequenceControlsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
