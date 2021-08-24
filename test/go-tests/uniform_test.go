@@ -246,14 +246,19 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		_, err := KubeCtlApplyFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
 
+
 		// get the image of the distributor of the build being tested
+		fmt.Println("Getting image version of distributor used in shipyard controller")
 		currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
 		require.Nil(t, err)
 
+
 		// make sure the echo service uses the correct distributor image
+		fmt.Println("Replace distributor version in echo service")
 		err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
 		require.Nil(t, err)
 
+		fmt.Println("Getting api endpoint and token of control plane")
 		apiToken, apiEndpoint, err := GetApiCredentials()
 		require.Nil(t, err)
 
@@ -266,6 +271,7 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 			Value: apiToken,
 		}
 
+		fmt.Println("Setting environment variables for distributor to query data via HTTP")
 		err = SetEnvVarsOfDeployment("echo-service", "distributor", []v1.EnvVar{keptnEndpointEV, keptnAPITokenEV})
 		require.Nil(t, err)
 
