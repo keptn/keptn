@@ -7,6 +7,7 @@ import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
 import { UniformRegistration } from '../../_models/uniform-registration';
 import { Location } from '@angular/common';
+import { UniformSubscription } from '../../_models/uniform-subscription';
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -144,7 +145,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
 
   public formatSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string | undefined {
     const subscriptions = uniformRegistration.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
-      if (subscription.project === projectName || !subscription.project) {
+      if (subscription.hasProject(projectName, true)) {
         accSubscriptions.push(subscription.formattedEvent);
       }
       return accSubscriptions;

@@ -24,8 +24,6 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   @Input() name?: string;
   @Input() integrationId?: string;
 
-  @Input() name?: string;
-
   @Input()
   get subscription(): UniformSubscription | undefined {
     return this._subscription;

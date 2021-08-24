@@ -45,7 +45,7 @@ describe('KtbUniformSubscriptionsComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelector('.disabled[uitestid=addSubscriptionButton]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('disabled')).not.toBeNull();
   });
 
   it('should enable "Add subscription"', () => {
@@ -54,7 +54,7 @@ describe('KtbUniformSubscriptionsComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('class').includes('disabled')).toEqual(false);
+    expect(fixture.nativeElement.querySelector('*[uitestid=addSubscriptionButton]').getAttribute('disabled')).toBeNull();
   });
 
   it('should delete subscription', () => {

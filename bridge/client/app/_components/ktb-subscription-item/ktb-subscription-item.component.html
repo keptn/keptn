@@ -9,7 +9,7 @@
   <span class="bold pr-2">for services:</span>
   <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
   <div>
-    <ng-container *ngIf="false, else oldSubscription">
+    <ng-container *ngIf="subscription.id, else oldSubscription">
       <button dt-icon-button variant="nested" uitestid="subscriptionEditButton" title="Edit" (click)="editSubscription(subscription)">
         <dt-icon name="edit1"></dt-icon>
       </button>
