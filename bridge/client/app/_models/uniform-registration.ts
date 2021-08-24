@@ -3,6 +3,8 @@ import { UniformSubscription } from './uniform-subscription';
 import semver from 'semver/preload';
 
 
+const preventSubscriptionUpdate = ['approval-service', 'remediation-service', 'lighthouse-service'];
+
 export class UniformRegistration extends ur {
   public subscriptions: UniformSubscription[] = [];
   public unreadEventsCount!: number;
@@ -33,5 +35,9 @@ export class UniformRegistration extends ur {
 
   public canEditSubscriptions(): boolean {
     return !!(semver.valid(this.metadata.distributorversion) && semver.gte(this.metadata.distributorversion, '0.9.0'));
+  }
+
+  public isChangeable(): boolean {
+    return !preventSubscriptionUpdate.includes(this.name);
   }
 }
