@@ -11,9 +11,6 @@ import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
 import { Sequence } from '../../_models/sequence';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
-import { SequenceStateControl } from '../../../../shared/models/sequence';
-import { KtbConfirmationDialogComponent } from '../../_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'ktb-sequence-view',
@@ -79,7 +76,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   public _seqFilters: any[] = [];
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute,
-              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number, public dialog: MatDialog) {
+              public dateUtil: DateUtil, private router: Router, private location: Location, @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number) {
 
     if (this.initialDelayMillis === 0) {
       this._sequenceTimerInterval = 0;
