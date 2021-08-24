@@ -32,7 +32,7 @@ spec:
           tasks:
             - name: "echo"`
 
-const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/c119c7cf7c33fcac7345f4860436211916fa47b3/deploy/service-with-fixed-node-name-env.yaml"
+const echoServiceK8SManifests = "https://raw.githubusercontent.com/keptn-sandbox/echo-service/1b5249c3a1bd2e47a94dc0aa3b8a4af98a3d14a5/deploy/service-with-fixed-node-name-env.yaml"
 
 // Test_UniformRegistration_TestAPI directly tests the API for (un)registering Keptn integrations
 // to the Keptn control plane
@@ -225,13 +225,13 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
-		// get the image of the distributor of the build being tested
-		currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-		require.Nil(t, err)
-
-		// make sure the echo service uses the correct distributor image
-		err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-		require.Nil(t, err)
+		//// get the image of the distributor of the build being tested
+		//currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+		//require.Nil(t, err)
+		//
+		//// make sure the echo service uses the correct distributor image
+		//err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
+		//require.Nil(t, err)
 	}, func() {
 		err := KubeCtlDeleteFromURL(echoServiceK8SManifests)
 		require.Nil(t, err)
@@ -249,13 +249,13 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *t
 		err = keptnkubeutils.WaitForDeploymentToBeRolledOut(false, "echo-service", GetKeptnNameSpaceFromEnv())
 		require.Nil(t, err)
 
-		// get the image of the distributor of the build being tested
-		currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
-		require.Nil(t, err)
-
-		// make sure the echo service uses the correct distributor image
-		err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
-		require.Nil(t, err)
+		//// get the image of the distributor of the build being tested
+		//currentDistributorImage, err := GetImageOfDeploymentContainer("shipyard-controller", "distributor")
+		//require.Nil(t, err)
+		//
+		//// make sure the echo service uses the correct distributor image
+		//err = SetImageOfDeploymentContainer("echo-service", "distributor", currentDistributorImage)
+		//require.Nil(t, err)
 
 		apiToken, apiEndpoint, err := GetApiCredentials()
 		require.Nil(t, err)
