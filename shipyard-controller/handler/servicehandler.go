@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -23,7 +22,7 @@ type IServiceHandler interface {
 
 type ServiceHandler struct {
 	serviceManager IServiceManager
-	EventSender    keptncommon.EventSender
+	EventSender    common.EventSender
 }
 
 // CreateService godoc
@@ -221,7 +220,7 @@ func (sh *ServiceHandler) GetServices(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func NewServiceHandler(serviceManager IServiceManager, eventSender keptncommon.EventSender) IServiceHandler {
+func NewServiceHandler(serviceManager IServiceManager, eventSender common.EventSender) IServiceHandler {
 	return &ServiceHandler{
 		serviceManager: serviceManager,
 		EventSender:    eventSender,

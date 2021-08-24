@@ -5,28 +5,39 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/distributor/pkg/config"
+	logger "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 )
 
-type ControlPlane struct {
-	sync.Mutex
-	uniformHandler  *api.UniformHandler
-	currentID       string
-	integrationData models.Integration
+type IControlPlane interface {
+	Ping() (*models.Integration, error)
+	Register() (string, error)
+	Unregister() error
 }
 
-func NewControlPlane(uniformHandler *api.UniformHandler, integrationData models.Integration) *ControlPlane {
+type ControlPlane struct {
+	sync.Mutex
+	uniformHandler *api.UniformHandler
+	connectionType config.ConnectionType
+	currentID      string
+}
+
+func NewControlPlane(uniformHandler *api.UniformHandler, connectionType config.ConnectionType) *ControlPlane {
 	return &ControlPlane{
-		uniformHandler:  uniformHandler,
-		integrationData: integrationData,
+		uniformHandler: uniformHandler,
+		connectionType: connectionType,
 	}
+}
+
+func (c *ControlPlane) Ping() (*models.Integration, error) {
+	return c.uniformHandler.Ping(c.currentID)
 }
 
 func (c *ControlPlane) Register() (string, error) {
 	c.Lock()
 	defer c.Unlock()
-	id, err := c.uniformHandler.RegisterIntegration(c.integrationData)
+	id, err := c.uniformHandler.RegisterIntegration(c.createRegistrationData())
 	if err != nil {
 		return "", err
 	}
@@ -48,40 +59,74 @@ func (c *ControlPlane) Unregister() error {
 	return nil
 }
 
-func CreateRegistrationData(connectionType config.ConnectionType, env config.EnvConfig) models.Integration {
-	var topics []string
-	if env.PubSubTopic == "" {
-		topics = []string{}
-	} else {
-		topics = strings.Split(env.PubSubTopic, ",")
-	}
+func (c *ControlPlane) createRegistrationData() models.Integration {
 
 	var location string
-	if env.Location == "" {
-		location = config.ConnectionTypeToLocation[connectionType]
+	if config.Global.Location == "" {
+		location = config.ConnectionTypeToLocation[c.connectionType]
 	} else {
-		location = env.Location
+		location = config.Global.Location
 	}
+
+	var stageFilter []string
+	if config.Global.StageFilter == "" {
+		stageFilter = []string{}
+	} else {
+		stageFilter = strings.Split(config.Global.StageFilter, ",")
+	}
+
+	var serviceFilter []string
+	if config.Global.ServiceFilter == "" {
+		serviceFilter = []string{}
+	} else {
+		serviceFilter = strings.Split(config.Global.ServiceFilter, ",")
+	}
+
+	var projectFilter []string
+	if config.Global.ProjectFilter == "" {
+		projectFilter = []string{}
+	} else {
+		projectFilter = strings.Split(config.Global.ProjectFilter, ",")
+	}
+
+	if config.Global.K8sNodeName == "" {
+		logger.Warn("K8S_NODE_NAME is not set. Using default value: 'keptn-node'")
+		config.Global.K8sNodeName = "keptn-node"
+	}
+
+	//create subscription
+	topics := []string{}
+	if config.Global.PubSubTopic == "" {
+		topics = []string{}
+	} else {
+		topics = strings.Split(config.Global.PubSubTopic, ",")
+	}
+	var subscriptions []models.EventSubscription
+	for _, t := range topics {
+		ts := models.EventSubscription{
+			Event: t,
+			Filter: models.EventSubscriptionFilter{
+				Projects: projectFilter,
+				Stages:   stageFilter,
+				Services: serviceFilter,
+			},
+		}
+		subscriptions = append(subscriptions, ts)
+	}
+
 	return models.Integration{
-		Name: env.K8sDeploymentName,
+		Name: config.Global.K8sDeploymentName,
 		MetaData: models.MetaData{
-			Hostname:           env.K8sNodeName,
-			IntegrationVersion: env.Version,
-			DistributorVersion: env.DistributorVersion,
+			Hostname:           config.Global.K8sNodeName,
+			IntegrationVersion: config.Global.Version,
+			DistributorVersion: config.Global.DistributorVersion,
 			Location:           location,
 			KubernetesMetaData: models.KubernetesMetaData{
-				Namespace:      env.K8sNamespace,
-				PodName:        env.K8sPodName,
-				DeploymentName: env.K8sDeploymentName,
+				Namespace:      config.Global.K8sNamespace,
+				PodName:        config.Global.K8sPodName,
+				DeploymentName: config.Global.K8sDeploymentName,
 			},
 		},
-		Subscription: models.Subscription{
-			Topics: topics,
-			Filter: models.SubscriptionFilter{
-				Project: env.ProjectFilter,
-				Stage:   env.StageFilter,
-				Service: env.ServiceFilter,
-			},
-		},
+		Subscriptions: subscriptions,
 	}
 }

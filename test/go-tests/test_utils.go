@@ -15,6 +15,8 @@ import (
 	"github.com/keptn/kubernetes-utils/pkg"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"strings"
@@ -143,6 +145,22 @@ func ApiPOSTRequest(path string, payload interface{}) (*req.Resp, error) {
 	authHeader := getAuthHeader(apiToken)
 
 	r, err := req.Post(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+func ApiPUTRequest(path string, payload interface{}) (*req.Resp, error) {
+	apiToken, keptnAPIURL, err := GetApiCredentials()
+	if err != nil {
+		return nil, err
+	}
+
+	authHeader := getAuthHeader(apiToken)
+
+	r, err := req.Put(keptnAPIURL+path, authHeader, req.BodyJSON(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -298,6 +316,87 @@ func GetState(projectName string) (*scmodels.SequenceStates, *req.Resp, error) {
 	err = resp.ToJSON(states)
 
 	return states, resp, err
+}
+
+func SetEnvVarsOfDeployment(deploymentName string, containerName string, envVars []v1.EnvVar) error {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	for index, container := range depl.Spec.Template.Spec.Containers {
+		if "distributor" == container.Name {
+			for _, e := range envVars {
+				replaced := false
+				for ii, existingEnvVar := range depl.Spec.Template.Spec.Containers[index].Env {
+					// if we find an already existing env war with the same name, we need to replace it
+					if existingEnvVar.Name == e.Name {
+						depl.Spec.Template.Spec.Containers[index].Env[ii] = e
+						replaced = true
+						break
+					}
+				}
+				// if we did not replace an env var, we need to append it
+				if !replaced {
+					depl.Spec.Template.Spec.Containers[index].Env = append(depl.Spec.Template.Spec.Containers[index].Env, e)
+					replaced = false
+				}
+			}
+		}
+	}
+
+	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
+}
+
+func GetImageOfDeploymentContainer(deploymentName, containerName string) (string, error) {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return "", err
+	}
+	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	for _, container := range depl.Spec.Template.Spec.Containers {
+		if containerName == container.Name {
+			return container.Image, nil
+		}
+	}
+	return "", fmt.Errorf("container %s not found in deployment %s", containerName, deploymentName)
+}
+
+func SetImageOfDeploymentContainer(deploymentName, containerName, image string) error {
+	clientset, err := keptnkubeutils.GetClientset(false)
+	if err != nil {
+		return err
+	}
+
+	depl, err := clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	for index, container := range depl.Spec.Template.Spec.Containers {
+		if containerName == container.Name {
+			depl.Spec.Template.Spec.Containers[index].Image = image
+			depl.Spec.Template.Spec.Containers[index].ImagePullPolicy = "Always"
+		}
+	}
+	_, err = clientset.AppsV1().Deployments(GetKeptnNameSpaceFromEnv()).Update(context.TODO(), depl, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	return keptnkubeutils.WaitForDeploymentToBeRolledOut(false, deploymentName, GetKeptnNameSpaceFromEnv())
 }
 
 func GetDiagnostics(service string) string {

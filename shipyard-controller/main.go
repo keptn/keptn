@@ -187,8 +187,7 @@ func main() {
 		log.WithError(err).Error("could not setup TTL index for uniform repo entries")
 	}
 
-	uniformManager := handler.NewUniformIntegrationManager(uniformRepo)
-	uniformHandler := handler.NewUniformIntegrationHandler(uniformManager)
+	uniformHandler := handler.NewUniformIntegrationHandler(uniformRepo)
 	uniformController := controller.NewUniformIntegrationController(uniformHandler)
 	uniformController.Inject(apiV1)
 
@@ -293,6 +292,5 @@ func getDurationFromEnvVar(envVar, fallbackValue string) time.Duration {
 			return time.Duration(0)
 		}
 	}
-
 	return duration
 }
