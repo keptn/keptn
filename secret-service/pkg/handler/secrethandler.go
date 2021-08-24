@@ -44,6 +44,10 @@ func (s SecretHandler) CreateSecret(c *gin.Context) {
 		return
 	}
 
+	if secret.Scope == "" {
+		secret.Scope = model.DefaultSecretScope
+	}
+
 	err := s.SecretBackend.CreateSecret(secret)
 	if err != nil {
 		if err == backend.ErrSecretAlreadyExists {

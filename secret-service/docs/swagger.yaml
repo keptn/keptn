@@ -25,20 +25,20 @@ definitions:
       name:
         type: string
       scope:
+        description: Scope determines the scope of the secret (default="keptn-default")
         type: string
     required:
     - name
-    - scope
     type: object
   model.SecretMetadata:
     properties:
       name:
         type: string
       scope:
+        description: Scope determines the scope of the secret (default="keptn-default")
         type: string
     required:
     - name
-    - scope
     type: object
 info:
   contact:
