@@ -18,11 +18,9 @@ export class UniformRegistration extends ur {
       let status;
       if (!a.project) {
         status = -1;
-      }
-      else if (!b.project) {
+      } else if (!b.project) {
         status = 1;
-      }
-      else {
+      } else {
         status = a.event.localeCompare(b.event);
       }
       return status;
@@ -32,15 +30,5 @@ export class UniformRegistration extends ur {
 
   public hasSubscriptions(projectName: string): boolean {
     return this.subscriptions.some(subscription => subscription.project === projectName || !subscription.project);
-  }
-
-  public formatSubscriptions(projectName: string): string | undefined {
-    const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
-      if (subscription.project === projectName || !subscription.project) {
-        accSubscriptions.push(subscription.event);
-      }
-      return accSubscriptions;
-    }, []);
-    return subscriptions.length !== 0 ? subscriptions.join('<br/>') : undefined;
   }
 }

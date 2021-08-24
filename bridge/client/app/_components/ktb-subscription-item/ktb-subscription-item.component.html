@@ -1,13 +1,11 @@
 <ng-container *ngIf="project && subscription as subscription">
-  <input class="item" placeholder="Subscription name" dtInput [(ngModel)]="name" required [readonly]="true">
-  <div class="mt-1">
-    <span class="bold pl-3 pr-2">subscribes to:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.event"></span>
-    <span class="bold pr-2">in project:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.project || 'all'"></span>
-    <span class="bold pr-2">in stages:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('stages') || 'all'"></span>
-    <span class="bold pr-2">for services:</span>
-    <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
-  </div>
+  <span class="pl-3 pr-4" [textContent]="name"></span>
+  <span class="bold pl-3 pr-2">subscribes to:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.event"></span>
+  <span class="bold pr-2">in projects:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('projects') || 'all'"></span>
+  <span class="bold pr-2">in stages:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('stages') || 'all'"></span>
+  <span class="bold pr-2">for services:</span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
 </ng-container>

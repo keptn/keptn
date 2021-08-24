@@ -7,7 +7,7 @@ export class UniformSubscription implements us {
   public name!: string;
   public event!: string;
   public expanded = false;
-  public parameters: {key: string, value: string, visible: boolean}[] = [];
+  public parameters: { key: string, value: string, visible: boolean }[] = [];
   private _filter?: DtFilterArray[];
 
   public static fromJSON(data: unknown): UniformSubscription {
@@ -45,7 +45,7 @@ export class UniformSubscription implements us {
         ] as DtFilterArray;
       }) ?? [],
       ...this.filter.services?.map(service => {
-        return [
+          return [
             data.autocomplete[0],
             {name: service}
           ] as DtFilterArray;
@@ -61,7 +61,7 @@ export class UniformSubscription implements us {
   // tslint:disable-next-line:no-any
   public filterChanged(event: DtFilterFieldChangeEvent<any>) { // can't set another type because of "is not assignable to..."
     event = event as DtFilterFieldChangeEvent<DtAutoComplete>;
-    const result = event.filters.reduce((filters: {Stage: string[], Service: string[]}, filter) => {
+    const result = event.filters.reduce((filters: { Stage: string[], Service: string[] }, filter) => {
       filters[filter[0].name as 'Stage' | 'Service'].push(filter[1].name);
       return filters;
     }, {Stage: [], Service: []});
@@ -69,7 +69,7 @@ export class UniformSubscription implements us {
     this.filter.stages = result.Stage;
   }
 
-  public formatFilter(key: 'services' | 'stages'): string {
+  public formatFilter(key: 'services' | 'stages' | 'projects'): string {
     return this.filter[key]?.join(', ') || 'all';
   }
 }

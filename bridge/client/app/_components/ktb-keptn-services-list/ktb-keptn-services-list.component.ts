@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
 import { UniformRegistration } from '../../_models/uniform-registration';
+import { UniformSubscription } from '../../_models/uniform-subscription';
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -17,7 +18,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   private selectedUniformRegistrationId$ = new Subject<string>();
   private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
   public UniformRegistrationClass = UniformRegistration;
-
+  public isLoadingUniformRegistrations = true;
   public uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
   public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
@@ -51,6 +52,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
 
     this.dataService.getUniformRegistrations()
       .subscribe((uniformRegistrations) => {
+        this.isLoadingUniformRegistrations = false;
         this.uniformRegistrations.data = uniformRegistrations;
       });
   }
@@ -59,8 +61,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     let status = 0;
     if (a.time.valueOf() > b.time.valueOf()) {
       status = -1;
-    }
-    else if (a.time.valueOf() < b.time.valueOf()) {
+    } else if (a.time.valueOf() < b.time.valueOf()) {
       status = 1;
     }
     return status;
@@ -123,5 +124,15 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       return -result;
     }
     return result;
+  }
+
+  public formatSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string | undefined {
+    const subscriptions = uniformRegistration.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
+      if (subscription.project === projectName || !subscription.project) {
+        accSubscriptions.push(subscription.event);
+      }
+      return accSubscriptions;
+    }, []);
+    return subscriptions.length !== 0 ? subscriptions.join('<br/>') : undefined;
   }
 }
