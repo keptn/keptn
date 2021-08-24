@@ -209,7 +209,7 @@ export class DataService {
 
   public async getTasks(projectName: string): Promise<string[]> {
     const shipyard = await this.getShipyard(projectName);
-    const tasks: string[] = [];
+    const tasks: string[] = ['service.delete', 'service.create'];
     for (const stage of shipyard.spec.stages) {
       for (const sequence of stage.sequences) {
         for (const task of sequence.tasks) {

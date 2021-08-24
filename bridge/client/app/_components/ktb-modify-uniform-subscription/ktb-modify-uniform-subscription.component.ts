@@ -66,7 +66,7 @@ export class KtbModifyUniformSubscriptionComponent {
       }),
       tap(subscription => {
         this.taskControl.setValue(subscription.prefix);
-        this.taskSuffixControl.setValue(subscription.affix);
+        this.taskSuffixControl.setValue(subscription.suffix);
         this.isGlobalControl.setValue(subscription.isGlobal);
       }),
       take(1)

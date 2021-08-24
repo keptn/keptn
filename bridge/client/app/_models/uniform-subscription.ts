@@ -24,11 +24,11 @@ export class UniformSubscription implements us {
   }
 
   public get prefix(): string {
-    return this.eventContent.split('.')[0];
+    return this.eventContent.substring(0, this.eventContent.lastIndexOf('.'));
   }
 
-  public get affix(): string {
-    return this.eventContent.split('.')[1] ?? '';
+  public get suffix(): string {
+    return this.eventContent.split('.').pop() ?? '';
   }
 
   public get eventContent(): string {
