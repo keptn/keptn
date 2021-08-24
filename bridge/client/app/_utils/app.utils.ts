@@ -3,7 +3,7 @@ import { InjectionToken } from '@angular/core';
 
 export class AppUtils {
   public static createTimer(delay: number, dueTime: number): Observable<unknown> {
-    if (delay === 0) {
+    if (dueTime === 0) {
       return of(undefined);
     }
 
