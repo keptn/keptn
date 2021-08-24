@@ -71,7 +71,7 @@ shipyardController:
     tag: ""
   config:
     taskStartedWaitDuration: "10m"
-    uniformIntegrationTTL: "2m"
+    uniformIntegrationTTL: "48h"
 
 secretService:
   image:

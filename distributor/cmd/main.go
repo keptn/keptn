@@ -19,7 +19,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/go-utils/pkg/common/retry"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
@@ -32,25 +31,39 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
-var env config.EnvConfig
-
 func main() {
-	if err := envconfig.Process("", &env); err != nil {
+	if err := envconfig.Process("", &config.Global); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
 	go keptnapi.RunHealthEndpoint("10999")
-	os.Exit(_main(env))
+	os.Exit(_main(config.Global))
 }
 
 func _main(env config.EnvConfig) int {
-	context := createExecutionContext()
+	connectionType := config.GetPubSubConnectionType()
+	executionContext := createExecutionContext()
 	eventSender := setupEventSender()
 	httpClient := setupHTTPClient()
-	connectionType := config.GetPubSubConnectionType(env)
+
+	uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
+	controlPlane := controlplane.NewControlPlane(uniformHandler, connectionType)
+	uniformWatch := setupUniformWatch(controlPlane)
+	forwarder := events.NewForwarder(httpClient)
+
+	// Start event forwarder
+	logger.Info("Starting Event Forwarder")
+	go forwarder.Start(executionContext)
+
+	// Eventually start registration process
+	if shallRegister() {
+		id := uniformWatch.Start(executionContext)
+		uniformLogger := controlplane.NewEventUniformLog(id, uniformLogHandler)
+		uniformLogger.Start(executionContext, forwarder.EventChannel)
+	}
+
 	logger.Infof("Connection type: %s", connectionType)
 	if connectionType == config.ConnectionTypeHTTP {
 		err := env.ValidateKeptnAPIEndpointURL()
@@ -58,63 +71,16 @@ func _main(env config.EnvConfig) int {
 			logger.Fatalf("No valid URL configured for keptn api endpoint: %s", err)
 		}
 		logger.Info("Starting HTTP event poller")
-		httpEventPoller :=
-			events.NewPoller(env, eventSender, httpClient)
-		go httpEventPoller.Start(context)
+		httpEventPoller := events.NewPoller(env, eventSender, httpClient)
+		uniformWatch.RegisterListener(httpEventPoller)
+		go httpEventPoller.Start(executionContext)
 	} else {
-		logger.Info("Starting Nats event Receiver")
+		logger.Info("Starting NATS event Receiver")
 		natsEventReceiver := events.NewNATSEventReceiver(env, eventSender)
-		go natsEventReceiver.Start(context)
+		uniformWatch.RegisterListener(natsEventReceiver)
+		go natsEventReceiver.Start(executionContext)
 	}
-
-	logger.Info("Starting Event Forwarder")
-	forwarder := events.NewForwarder(env, httpClient)
-	go forwarder.Start(context)
-
-	if shallRegister(env) {
-		logger.Infof("Registering Keptn Intgration")
-		uniformHandler, uniformLogHandler := getUniformHandlers(connectionType)
-		controlPlane := controlplane.NewControlPlane(uniformHandler, controlplane.CreateRegistrationData(connectionType, env))
-		go func() {
-			retry.Retry(func() error {
-				id, err := controlPlane.Register()
-				if err != nil {
-					logger.Warnf("Unable to register to Keptn's control plane: %s", err.Error())
-					return err
-				}
-				logger.Infof("Registered Keptn Integration with id %s", id)
-
-				logHandler := uniformLogHandler
-				uniformLogger := controlplane.NewEventUniformLog(id, logHandler)
-				uniformLogger.Start(context, forwarder.EventChannel)
-				logger.Infof("Started UniformLogger for Keptn Integration")
-				return nil
-			})
-			for {
-				select {
-				case <-context.Done():
-					return
-				case <-time.After(config.GetRegistrationInterval(env)):
-					_, err := controlPlane.Register()
-					if err != nil {
-						logger.Warnf("Unable to (re)register to Keptn's control plane: %s", err.Error())
-					}
-				}
-			}
-		}()
-
-		defer func() {
-			err := controlPlane.Unregister()
-			if err != nil {
-				logger.Warnf("Unable to unregister from Keptn's control plane: %v", err)
-			} else {
-				logger.Infof("Unregistered Keptn Integration")
-			}
-		}()
-	}
-
-	context.Wg.Wait()
-
+	executionContext.Wg.Wait()
 	return 0
 }
 
@@ -137,36 +103,60 @@ func createExecutionContext() *events.ExecutionContext {
 	return &context
 }
 
-func shallRegister(env config.EnvConfig) bool {
-	if env.DisableRegistration {
+func shallRegister() bool {
+	if config.Global.DisableRegistration {
 		logger.Infof("Registration to Keptn's control plane disabled")
 		return false
 	}
 
-	if env.K8sNamespace == "" || env.K8sDeploymentName == "" {
+	if config.Global.K8sNamespace == "" || config.Global.K8sDeploymentName == "" {
 		logger.Warn("Skipping Registration because not all mandatory environment variables are set: K8S_NAMESPACE, K8S_DEPLOYMENT_NAME")
 		return false
 	}
+
+	if isOneOfFilteredServices(config.Global.K8sDeploymentName) {
+		logger.Infof("Skipping Registration because service name %s is actively filtered", config.Global.K8sDeploymentName)
+		return false
+	}
+
 	return true
+}
+
+func isOneOfFilteredServices(serviceName string) bool {
+	switch serviceName {
+	case
+		"statistics-service",
+		"api-service",
+		"mongodb-datastore",
+		"configuration-service",
+		"secret-service",
+		"shipyard-controller":
+		return true
+	}
+	return false
 }
 
 func getUniformHandlers(connectionType config.ConnectionType) (*keptnapi.UniformHandler, *keptnapi.LogHandler) {
 	if connectionType == config.ConnectionTypeHTTP {
 		scheme := "http" // default
-		parsed, _ := url.Parse(env.KeptnAPIEndpoint)
+		parsed, _ := url.Parse(config.Global.KeptnAPIEndpoint)
 		if parsed.Scheme != "" {
 			scheme = parsed.Scheme
 		}
-		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, scheme)
-		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(env.KeptnAPIEndpoint+"/controlPlane", env.KeptnAPIToken, "x-token", nil, scheme)
+		uniformHandler := keptnapi.NewAuthenticatedUniformHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
+		uniformLogHandler := keptnapi.NewAuthenticatedLogHandler(config.Global.KeptnAPIEndpoint+"/controlPlane", config.Global.KeptnAPIToken, "x-token", nil, scheme)
 		return uniformHandler, uniformLogHandler
 	}
 	return keptnapi.NewUniformHandler(config.DefaultShipyardControllerBaseURL), keptnapi.NewLogHandler(config.DefaultShipyardControllerBaseURL)
 }
 
+func setupUniformWatch(controlPlane *controlplane.ControlPlane) *events.UniformWatch {
+	return events.NewUniformWatch(controlPlane)
+}
+
 func setupHTTPClient() *http.Client {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !env.VerifySSL}, //nolint:gosec
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
 	}
 	client := &http.Client{Transport: tr}
 	return client

@@ -91,6 +91,16 @@ func Test_PollAndForwardEvents(t *testing.T) {
 			executionContext := NewExecutionContext(ctx, 1)
 			go poller.Start(executionContext)
 
+			poller.UpdateSubscriptions([]keptnmodels.EventSubscription{{
+				ID:    "id1",
+				Event: "sh.keptn.event.task.triggered",
+			},
+				{
+					ID:    "id2",
+					Event: "sh.keptn.event.task2.triggered",
+				}},
+			)
+
 			assert.Eventually(t, func() bool {
 				return len(tt.eventSender.(*keptnv2.TestSender).SentEvents) == 2
 			}, time.Second*time.Duration(5), time.Second)
