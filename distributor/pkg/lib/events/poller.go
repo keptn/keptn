@@ -23,22 +23,21 @@ type EventSender interface {
 
 // Poller polls events from the Keptn API and sends the events directly to the Keptn Service
 type Poller struct {
-	eventSender  EventSender
-	ceCache      *CloudEventsCache
-	env          config.EnvConfig
-	httpClient   *http.Client
-	eventMatcher *EventMatcher
+	eventSender          EventSender
+	ceCache              *CloudEventsCache
+	env                  config.EnvConfig
+	httpClient           *http.Client
+	eventMatcher         *EventMatcher
+	currentSubscriptions []keptnmodels.EventSubscription
 }
 
 func NewPoller(envConfig config.EnvConfig, eventSender EventSender, httpClient *http.Client) *Poller {
-	cache := NewCloudEventsCache()
-	eventMatcher := NewEventMatcherFromEnv(envConfig)
 	return &Poller{
 		eventSender:  eventSender,
-		ceCache:      cache,
+		ceCache:      NewCloudEventsCache(),
 		env:          envConfig,
 		httpClient:   httpClient,
-		eventMatcher: eventMatcher,
+		eventMatcher: NewEventMatcherFromEnv(envConfig),
 	}
 }
 
@@ -49,19 +48,17 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 	}
 
 	eventEndpoint := p.env.GetHTTPPollingEndpoint()
-	topics := strings.Split(p.env.PubSubTopic, ",")
+	apiToken := p.env.KeptnAPIToken
 
 	pollingInterval, err := strconv.ParseInt(p.env.HTTPPollingInterval, 10, 64)
 	if err != nil {
 		pollingInterval = config.DefaultPollingInterval
 	}
 
-	pollingTicker := time.NewTicker(time.Duration(pollingInterval) * time.Second)
-
 	for {
 		select {
-		case <-pollingTicker.C:
-			p.pollHTTPEventSource(eventEndpoint, p.env.KeptnAPIToken, topics)
+		case <-time.After(time.Duration(pollingInterval) * time.Second):
+			p.doPollEvents(eventEndpoint, apiToken)
 		case <-ctx.Done():
 			logger.Info("Terminating HTTP event poller")
 			ctx.Wg.Done()
@@ -70,19 +67,22 @@ func (p *Poller) Start(ctx *ExecutionContext) {
 	}
 }
 
-func (p *Poller) pollHTTPEventSource(endpoint string, token string, topics []string) {
+func (p *Poller) UpdateSubscriptions(subscriptions []keptnmodels.EventSubscription) {
+	p.currentSubscriptions = subscriptions
+}
+
+func (p *Poller) doPollEvents(endpoint, token string) {
 	logger.Infof("Polling events from: %s", endpoint)
-	for _, topic := range topics {
-		p.pollEventsForTopic(endpoint, token, topic)
+	for _, sub := range p.currentSubscriptions {
+		p.pollEventsForSubscription(sub, endpoint, token)
 	}
 }
 
-// pollEventsForTopic polls .triggered events from the Keptn api, and forwards them to the receiving service
-func (p *Poller) pollEventsForTopic(endpoint string, token string, topic string) {
-	logger.Infof("Retrieving events of type %s", topic)
-	events, err := p.getEventsFromEndpoint(endpoint, token, topic)
+func (p *Poller) pollEventsForSubscription(subscription keptnmodels.EventSubscription, endpoint, token string) {
+	logger.Infof("Retrieving events of type %s", subscription.Event)
+	events, err := p.getEventsFromEndpoint(endpoint, token, subscription.Event)
 	if err != nil {
-		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", topic, endpoint, err)
+		logger.Errorf("Could not retrieve events of type %s from endpoint %s: %v", subscription.Event, endpoint, err)
 	}
 	logger.Infof("Received %d new .triggered events", len(events))
 
@@ -91,7 +91,7 @@ func (p *Poller) pollEventsForTopic(endpoint string, token string, topic string)
 		event := *events[index]
 		logger.Infof("Check if event %s has already been sent", event.ID)
 
-		if p.ceCache.Contains(topic, event.ID) {
+		if p.ceCache.Contains(subscription.Event, event.ID) {
 			// Skip this event as it has already been sent
 			logger.Infof("CloudEvent with ID %s has already been sent", event.ID)
 			continue
@@ -118,20 +118,20 @@ func (p *Poller) pollEventsForTopic(endpoint string, token string, topic string)
 			// add to CloudEvents cache
 			p.ceCache.Add(*event.Type, event.ID)
 			go func() {
-				if err := p.sendEvent(*e); err != nil {
+				if err := p.sendEvent(*e, subscription); err != nil {
 					logger.Errorf("Sending CloudEvent with ID %s to %s failed: %s", event.ID, p.env.PubSubRecipient, err.Error())
 					// Sending failed, remove from CloudEvents cache
 					p.ceCache.Remove(*event.Type, event.ID)
 				}
-				logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", topic, p.ceCache.Length(topic))
+				logger.Infof("CloudEvent sent! Number of sent events for topic %s: %d", subscription.Event, p.ceCache.Length(subscription.Event))
 			}()
 		}
 	}
 
 	// clean up list of sent events to avoid memory leaks -> if an item that has been marked as already sent
 	// is not an open .triggered event anymore, it can be removed from the list
-	logger.Infof("Cleaning up list of sent events for topic %s", topic)
-	p.ceCache.Keep(topic, events)
+	logger.Infof("Cleaning up list of sent events for topic %s", subscription.Event)
+	p.ceCache.Keep(subscription.Event, events)
 }
 
 func (p *Poller) getEventsFromEndpoint(endpoint string, token string, topic string) ([]*keptnmodels.KeptnContextExtendedCE, error) {
@@ -196,8 +196,9 @@ func (p *Poller) getEventsFromEndpoint(endpoint string, token string, topic stri
 	return events, nil
 }
 
-func (p *Poller) sendEvent(event cloudevents.Event) error {
-	if !p.eventMatcher.Matches(event) {
+func (p *Poller) sendEvent(event cloudevents.Event, subscription keptnmodels.EventSubscription) error {
+	matcher := NewEventMatcherFromSubscription(subscription)
+	if !matcher.Matches(event) {
 		return nil
 	}
 

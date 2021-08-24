@@ -24,17 +24,21 @@ func KubeCtlApplyFromURL(url string, namespace ...string) (func() error, error) 
 	fmt.Println(result)
 
 	deleteFunc := func() error {
-		var ns = GetKeptnNameSpaceFromEnv()
-		if len(namespace) == 1 {
-			ns = namespace[0]
-		}
-		fmt.Printf("Executing: %s %s -n=%s -f=%s\n", kubectExecutable, "delete", ns, url)
-		result, err = keptnkubeutils.ExecuteCommand(kubectExecutable, []string{"delete", "-n=" + ns, "-f=" + url})
-		if err != nil {
-			return err
-		}
-		fmt.Println(result)
-		return nil
+		return KubeCtlDeleteFromURL(url, namespace...)
 	}
 	return deleteFunc, err
+}
+
+func KubeCtlDeleteFromURL(url string, namespace ...string) error {
+	var ns = GetKeptnNameSpaceFromEnv()
+	if len(namespace) == 1 {
+		ns = namespace[0]
+	}
+	fmt.Printf("Executing: %s %s -n=%s -f=%s\n", kubectExecutable, "delete", ns, url)
+	result, err := keptnkubeutils.ExecuteCommand(kubectExecutable, []string{"delete", "-n=" + ns, "-f=" + url})
+	if err != nil {
+		return err
+	}
+	fmt.Println(result)
+	return nil
 }
