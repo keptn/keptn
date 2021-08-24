@@ -3,7 +3,7 @@ module github.com/keptn/keptn/test/go-tests
 go 1.16
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.0
 	github.com/keptn/go-utils v0.8.5-0.20210817140649-aeaaeb74252c
