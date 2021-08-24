@@ -1,7 +1,7 @@
 <ng-container *ngIf="project && subscription as subscription">
   <span class="pl-3 pr-4" [textContent]="name"></span>
   <span class="bold pl-3 pr-2">subscribes to:</span>
-  <span class="mr-1 pr-3" [textContent]="subscription.event"></span>
+  <span class="mr-1 pr-3" [textContent]="subscription.formattedEvent"></span>
   <span class="bold pr-2">in projects:</span>
   <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('projects') || 'all'"></span>
   <span class="bold pr-2">in stages:</span>

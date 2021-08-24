@@ -44,6 +44,10 @@ export class UniformSubscription implements us {
     return subscription;
   }
 
+  public get formattedEvent(): string {
+    return this.event.replace('>', '*');
+  }
+
   public setIsGlobal(status: boolean, projectName: string) {
     if (status) {
       this.filter.projects = [];

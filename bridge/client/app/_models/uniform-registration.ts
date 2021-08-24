@@ -26,7 +26,7 @@ export class UniformRegistration extends ur {
   public formatSubscriptions(projectName: string): string | undefined {
     const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
       if (subscription.hasProject(projectName, true)) {
-        accSubscriptions.push(subscription.event);
+        accSubscriptions.push(subscription.formattedEvent);
       }
       return accSubscriptions;
     }, []);
