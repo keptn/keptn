@@ -12,7 +12,6 @@
             <dt-select formControlName="taskPrefix" class="mr-2 item" placeholder="Choose your task" aria-label="Choose your task">
               <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
             </dt-select>
-            <dt-error>Must not be empty</dt-error>
           </dt-form-field>
           <dt-form-field>
             <dt-label class="required">Task suffix</dt-label>
