@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { DataService } from '../../_services/data.service';
 import { Sequence } from '../../_models/sequence';
 import { SequenceStateControl } from '../../../../shared/models/sequence';
@@ -11,10 +11,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
   styleUrls: ['./ktb-sequence-controls.component.scss'],
   host: {
     class: 'ktb-sequence-controls'
-  },
-  encapsulation: ViewEncapsulation.None,
-  preserveWhitespaces: false,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  }
 })
 export class KtbSequenceControlsComponent {
 
@@ -42,7 +39,7 @@ export class KtbSequenceControlsComponent {
     }
   }
 
-  constructor(private dataService: DataService, public dialog: MatDialog) {
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, public dialog: MatDialog) {
   }
 
   triggerResumeSequence(sequence: Sequence): void {
