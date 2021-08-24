@@ -24,6 +24,8 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
   @Input() name?: string;
   @Input() integrationId?: string;
 
+  @Input() name?: string;
+
   @Input()
   get subscription(): UniformSubscription | undefined {
     return this._subscription;
@@ -69,6 +71,7 @@ export class KtbSubscriptionItemComponent implements OnInit, OnDestroy {
       });
     }
   }
+
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();

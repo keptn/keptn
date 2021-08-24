@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"sync"
 	"testing"
 	"time"
@@ -23,6 +24,59 @@ func RunServerWithOptions(opts *server.Options) *server.Server {
 	return natsserver.RunServer(opts)
 }
 
+func TestNatsConnectionHandler_UpdateSubscriptions(t *testing.T) {
+	natsServer := RunServerOnPort(TEST_PORT)
+	defer natsServer.Shutdown()
+
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", TEST_PORT)
+
+	natsPublisher, _ := nats.Connect(natsURL)
+	defer natsPublisher.Close()
+
+	messagesReceived := make(chan int)
+	nch := NewNatsConnectionHandler(natsURL)
+	nch.MessageHandler = func(m *nats.Msg) {
+		messagesReceived <- 1
+	}
+	err := nch.SubscribeToTopics([]string{"test-topic"})
+	require.Nil(t, err)
+
+	<-time.After(1 * time.Second)
+	natsPublisher.Publish("test-topic", []byte("hello"))
+
+	count := 0
+	select {
+	case count = <-messagesReceived:
+	case <-time.After(5 * time.Second):
+		t.Error("SubscribeToTopics(): timed out waiting for messages")
+	}
+	if count != 1 {
+		t.Error("SubscribeToTopics(): did not receive messages for subscribed topic")
+	}
+
+	nch.RemoveAllSubscriptions()
+
+	if len(nch.Subscriptions) != 0 {
+		t.Error("SubscribeToTopics(): did not clean up subscriptions")
+	}
+
+	nch.SubscribeToTopics([]string{"another-topic"})
+	require.Nil(t, err)
+
+	<-time.After(1 * time.Second)
+	natsPublisher.Publish("another-topic", []byte("hello"))
+	count = 0
+	select {
+	case count = <-messagesReceived:
+	case <-time.After(5 * time.Second):
+		t.Error("SubscribeToTopics(): timed out waiting for messages")
+	}
+	if count != 1 {
+		t.Error("SubscribeToTopics(): did not receive messages for subscribed topic")
+	}
+
+}
+
 func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 
 	natsServer := RunServerOnPort(TEST_PORT)
@@ -41,7 +95,6 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 		Topics         []string
 		NatsURL        string
 		MessageHandler func(m *nats.Msg)
-		uptimeTicker   *time.Ticker
 		mux            sync.Mutex
 	}
 	tests := []struct {
@@ -62,26 +115,9 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				MessageHandler: func(m *nats.Msg) {
 					messagesReceived <- 1
 				},
-				uptimeTicker: nil,
-				mux:          sync.Mutex{},
+				mux: sync.Mutex{},
 			},
 			wantErr:      false,
-			sendMessages: []string{"test-message"},
-		},
-		{
-			name: "Empty topic list",
-			fields: fields{
-				NatsConnection: nil,
-				Subscriptions:  nil,
-				Topics:         []string{},
-				NatsURL:        natsURL,
-				MessageHandler: func(m *nats.Msg) {
-					messagesReceived <- 1
-				},
-				uptimeTicker: nil,
-				mux:          sync.Mutex{},
-			},
-			wantErr:      true,
 			sendMessages: []string{"test-message"},
 		},
 		{
@@ -94,8 +130,7 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 				MessageHandler: func(m *nats.Msg) {
 					messagesReceived <- 1
 				},
-				uptimeTicker: nil,
-				mux:          sync.Mutex{},
+				mux: sync.Mutex{},
 			},
 			wantErr:      true,
 			sendMessages: []string{"test-message"},
@@ -106,13 +141,11 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 			nch := &NatsConnectionHandler{
 				NatsConnection: tt.fields.NatsConnection,
 				Subscriptions:  tt.fields.Subscriptions,
-				Topics:         tt.fields.Topics,
-				NatsURL:        tt.fields.NatsURL,
+				natsURL:        tt.fields.NatsURL,
 				MessageHandler: tt.fields.MessageHandler,
-				uptimeTicker:   tt.fields.uptimeTicker,
 				mux:            tt.fields.mux,
 			}
-			err := nch.SubscribeToTopics()
+			err := nch.SubscribeToTopics(tt.fields.Topics)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SubscribeToTopics() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -144,10 +177,6 @@ func TestNatsConnectionHandler_SubscribeToTopics(t *testing.T) {
 			}
 
 			nch.RemoveAllSubscriptions()
-
-			if !nch.NatsConnection.IsClosed() {
-				t.Error("SubscribeToTopics(): did not properly close NATS connection")
-			}
 
 			if len(nch.Subscriptions) != 0 {
 				t.Error("SubscribeToTopics(): did not clean up subscriptions")

@@ -94,7 +94,6 @@ export class UniformSubscription implements us {
     } else {
       this._filter = [];
     }
-
     return this._filter;
   }
 

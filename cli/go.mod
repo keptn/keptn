@@ -7,12 +7,10 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/docker/docker-credential-helpers v0.6.4
-	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.7
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/keptn/go-utils v0.8.5-0.20210803144604-68c987883536
+	github.com/keptn/go-utils v0.8.5-0.20210824101626-73671a14d0a9
 	github.com/keptn/kubernetes-utils v0.8.3
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-homedir v1.1.0
@@ -23,11 +21,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
-	k8s.io/api v0.21.3
-	k8s.io/apimachinery v0.21.3
-	k8s.io/cli-runtime v0.21.3
-	k8s.io/client-go v0.21.3
-	k8s.io/kubectl v0.21.3
+	k8s.io/api v0.22.1
+	k8s.io/apimachinery v0.22.1
+	k8s.io/cli-runtime v0.22.1
+	k8s.io/client-go v0.22.1
+	k8s.io/kubectl v0.22.1
 )
 
 // required as per https://github.com/helm/helm/issues/9354

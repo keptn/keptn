@@ -2,7 +2,6 @@ import { UniformRegistration as ur } from '../../../server/interfaces/uniform-re
 import { UniformSubscription } from './uniform-subscription';
 import semver from 'semver/preload';
 
-
 const preventSubscriptionUpdate = ['approval-service', 'remediation-service', 'lighthouse-service'];
 
 export class UniformRegistration extends ur {
@@ -21,16 +20,6 @@ export class UniformRegistration extends ur {
 
   public hasSubscriptions(projectName: string): boolean {
     return this.subscriptions.some(subscription => subscription.hasProject(projectName, true));
-  }
-
-  public formatSubscriptions(projectName: string): string | undefined {
-    const subscriptions = this.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
-      if (subscription.hasProject(projectName, true)) {
-        accSubscriptions.push(subscription.formattedEvent);
-      }
-      return accSubscriptions;
-    }, []);
-    return subscriptions.length !== 0 ? subscriptions.join('<br/>') : undefined;
   }
 
   public canEditSubscriptions(): boolean {

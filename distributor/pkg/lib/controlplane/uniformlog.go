@@ -28,7 +28,7 @@ func NewEventUniformLog(integrationID string, logHandler keptn.ILogHandler) *Eve
 }
 
 func (l *EventUniformLog) Start(ctx context.Context, eventChannel chan cloudevents.Event) {
-	logger.Info("Starting UniformLog")
+	logger.Infof("Starting UniformLog for Keptn service with integration ID %s", l.IntegrationID)
 	l.logHandler.Start(ctx)
 	go func() {
 		for {

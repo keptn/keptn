@@ -18,7 +18,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   private selectedUniformRegistrationId$ = new Subject<string>();
   private uniformRegistrationLogsSubject = new BehaviorSubject<UniformRegistrationLog[]>([]);
   public UniformRegistrationClass = UniformRegistration;
-
+  public isLoadingUniformRegistrations = true;
   public uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
   public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
@@ -62,6 +62,7 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
     combineLatest([registrations$, integrationId$])
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(([uniformRegistrations, integrationId]) => {
+        this.isLoadingUniformRegistrations = false;
         this.uniformRegistrations.data = uniformRegistrations;
         if (integrationId) {
           const selectedUniformRegistration = uniformRegistrations.find(uniformRegistration => uniformRegistration.id === integrationId);
@@ -139,5 +140,15 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       return -result;
     }
     return result;
+  }
+
+  public formatSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string | undefined {
+    const subscriptions = uniformRegistration.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
+      if (subscription.project === projectName || !subscription.project) {
+        accSubscriptions.push(subscription.formattedEvent);
+      }
+      return accSubscriptions;
+    }, []);
+    return subscriptions.length !== 0 ? subscriptions.join('<br/>') : undefined;
   }
 }

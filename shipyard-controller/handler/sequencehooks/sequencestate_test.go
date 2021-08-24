@@ -66,9 +66,7 @@ func TestSequenceStateMaterializedView_OnSequenceStarted(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			smv := &sequencehooks.SequenceStateMaterializedView{
-				SequenceStateRepo: tt.fields.SequenceStateRepo,
-			}
+			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 			smv.OnSequenceStarted(tt.args.event)
 
 			if tt.expectUpdateToBeCalled {
@@ -130,9 +128,7 @@ func TestSequenceStateMaterializedView_OnSequenceTimeOud(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			smv := &sequencehooks.SequenceStateMaterializedView{
-				SequenceStateRepo: tt.fields.SequenceStateRepo,
-			}
+			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 			smv.OnSequenceTimeout(tt.args.event)
 
 			if tt.expectUpdateToBeCalled {
@@ -275,9 +271,7 @@ func TestSequenceStateMaterializedView_OnSequenceFinished(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			smv := &sequencehooks.SequenceStateMaterializedView{
-				SequenceStateRepo: tt.fields.SequenceStateRepo,
-			}
+			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 			smv.OnSequenceFinished(tt.args.event)
 
 			if tt.expectUpdateToBeCalled {
@@ -432,9 +426,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskStarted(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			smv := &sequencehooks.SequenceStateMaterializedView{
-				SequenceStateRepo: tt.fields.SequenceStateRepo,
-			}
+			smv := sequencehooks.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 			smv.OnSequenceTaskStarted(tt.args.event)
 		})
 	}

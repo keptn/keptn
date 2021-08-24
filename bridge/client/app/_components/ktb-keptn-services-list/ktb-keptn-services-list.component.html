@@ -1,8 +1,8 @@
 <div fxFlexFill fxLayout="column" class="container" *ngIf="projectName as projectName">
   <div fxLayout="column" fxFlex="0 0 60%" class="overflow-y-scroll">
-    <dt-loading-spinner *ngIf="!uniformRegistrations.data"></dt-loading-spinner>
+    <dt-loading-spinner *ngIf="isLoadingUniformRegistrations"></dt-loading-spinner>
 
-    <div *ngIf="uniformRegistrations.data && uniformRegistrations.data.length === 0">
+    <div *ngIf="!isLoadingUniformRegistrations && uniformRegistrations.data && uniformRegistrations.data.length === 0">
       No integrations available.
     </div>
 
@@ -39,7 +39,7 @@
 
       <ng-container dtColumnDef="subscription" dtColumnAlign="text" dtColumnProportion="3">
         <dt-header-cell *dtHeaderCellDef>Active subscriptions</dt-header-cell>
-        <dt-cell *dtCellDef="let row" [innerHtml]="(row | toType : UniformRegistrationClass).formatSubscriptions(projectName) || 'n/a'"></dt-cell>
+        <dt-cell *dtCellDef="let row" [innerHtml]="formatSubscriptions(row | toType : UniformRegistrationClass, projectName) || 'n/a'"></dt-cell>
       </ng-container>
 
       <dt-header-row
@@ -80,6 +80,7 @@
         <ktb-uniform-subscriptions [uniformRegistration]="selectedUniformRegistration"></ktb-uniform-subscriptions>
       </ktb-expandable-tile>
 
+    <div class="pb-4">
       <ktb-expandable-tile [alignment]="'left'" [expanded]="true">
         <ktb-expandable-tile-header>
           <h3 class="mt-0 mb-0">Error events</h3>
@@ -94,6 +95,7 @@
                                          [logs]="logs"></ktb-uniform-registration-logs>
         </div>
       </ktb-expandable-tile>
+    </div>
     </ng-container>
   </div>
 </div>
