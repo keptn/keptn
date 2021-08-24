@@ -149,6 +149,9 @@ func Test_SequenceQueue(t *testing.T) {
 	}()
 	require.Nil(t, err)
 
+	// wait a bit to make sure the .triggered event is received by the new instance of the shipyard controller
+	<-time.After(10 * time.Second)
+
 	// trigger the first task sequence - this should time out
 	context = triggerSequence(t, projectName, serviceName, "staging", "delivery")
 	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.TimedOut})
@@ -170,6 +173,10 @@ func Test_SequenceQueue(t *testing.T) {
 	// increase the task timeout again
 	err = setShipyardControllerTaskTimeout(t, "20m")
 	require.Nil(t, err)
+
+	// wait a bit to make sure the .triggered event is received by the new instance of the shipyard controller
+	<-time.After(10 * time.Second)
+
 	t.Log("starting delivery-with-approval sequence")
 	context = triggerSequence(t, projectName, serviceName, "dev", "delivery-with-approval")
 	VerifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{scmodels.SequenceStartedState})

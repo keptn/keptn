@@ -8,6 +8,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"sync"
+	"time"
 )
 
 type SequenceMigrator struct {
@@ -26,6 +27,8 @@ func NewSequenceMigrator(eventRepo db.EventRepo, taskSequenceRepo db.SequenceSta
 
 func (sm *SequenceMigrator) Run() {
 	go func() {
+		// wait with migration to not interfere with .triggered events that are received right after the service has been started
+		<-time.After(30 * time.Second)
 		log.Info("Starting SequenceMigrator")
 		sm.MigrateSequences()
 	}()

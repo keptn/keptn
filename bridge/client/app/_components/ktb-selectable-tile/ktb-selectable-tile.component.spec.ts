@@ -1,79 +1,41 @@
-import { ComponentFixture, TestBed, fakeAsync, waitForAsync } from '@angular/core/testing';
-import {By} from "@angular/platform-browser";
-import {Component} from "@angular/core";
-
-import {KtbSelectableTileComponent} from './ktb-selectable-tile.component';
-import {AppModule} from "../../app.module";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {KtbRootEventsListComponent} from "../ktb-root-events-list/ktb-root-events-list.component";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { KtbSelectableTileComponent } from './ktb-selectable-tile.component';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbSelectableTileComponent', () => {
-  let component: SimpleKtbSelectableTileComponent;
-  let fixture: ComponentFixture<SimpleKtbSelectableTileComponent>;
+  let component: KtbSelectableTileComponent;
+  let fixture: ComponentFixture<KtbSelectableTileComponent>;
 
-  beforeEach(fakeAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        SimpleKtbSelectableTileComponent,
-        KtbSelectableTileComponent,
-      ],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-    .compileComponents()
-    .then(() => {
-      fixture = TestBed.createComponent(SimpleKtbSelectableTileComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-    });
-  }));
+    }).compileComponents();
 
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
+    fixture = TestBed.createComponent(KtbSelectableTileComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
   it('should add and remove the selected state', () => {
-    let selectableTileDebugElement = fixture.debugElement.query(By.directive(KtbSelectableTileComponent));
-    let selectableTileInstance = selectableTileDebugElement.componentInstance;
-    let selectableTileNativeElement = selectableTileDebugElement.nativeElement;
-    let testComponentInstance = fixture.debugElement.componentInstance;
+    const nativeElement = fixture.nativeElement;
 
-    expect(selectableTileInstance.selected).toBe(false);
-
-    testComponentInstance.isSelected = true;
+    component.selected = false;
     fixture.detectChanges();
+    expect(component.selected).toEqual(false);
+    expect(nativeElement.getAttribute('class')).not.toContain('ktb-tile-selected');
 
-    expect(selectableTileInstance.selected).toBe(true);
-    expect(selectableTileNativeElement.classList).toContain('ktb-tile-selected');
-
-    testComponentInstance.isSelected = false;
+    component.selected = true;
     fixture.detectChanges();
+    expect(component.selected).toEqual(true);
+    expect(nativeElement.getAttribute('class')).toContain('ktb-tile-selected');
 
-    expect(selectableTileInstance.selected).toBe(false);
-    expect(selectableTileNativeElement.classList).not.toContain('ktb-tile-selected');
+    component.selected = false;
+    fixture.detectChanges();
+    expect(component.selected).toEqual(false);
+    expect(nativeElement.getAttribute('class')).not.toContain('ktb-tile-selected');
   });
 });
-
-/** Simple component for testing the KtbSelectableTileComponent */
-@Component({
-  template: `
-    <div>
-      <ktb-selectable-tile
-        [error]="isError"
-        [success]="isSuccess"
-        [selected]="isSelected"
-        (click)="onTileClicked($event)">
-      </ktb-selectable-tile>
-    </div>
-  `,
-})
-class SimpleKtbSelectableTileComponent {
-  isError = false;
-  isSuccess = false;
-  isSelected = false;
-
-  onTileClicked: (event?: Event) => void = () => { this.isSelected = !this.isSelected; };
-}

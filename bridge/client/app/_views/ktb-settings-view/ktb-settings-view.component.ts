@@ -186,14 +186,18 @@ export class KtbSettingsViewComponent implements OnInit, OnDestroy {
     this.eventService.deletionProgressEvent.next({isInProgress: true});
 
     this.dataService.projects
-      .pipe(take(1))
-      .subscribe(() => {
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        take(1)
+      ).subscribe(() => {
         this.router.navigate(['/', 'dashboard']);
       });
 
     this.dataService.deleteProject(projectName)
-      .pipe(take(1))
-      .subscribe(() => {
+      .pipe(
+        takeUntil(this.unsubscribe$),
+        take(1)
+      ).subscribe(() => {
         this.dataService.loadProjects();
         this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
       }, (err) => {

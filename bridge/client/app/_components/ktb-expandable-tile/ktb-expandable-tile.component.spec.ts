@@ -1,9 +1,7 @@
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
-
-import {KtbExpandableTileComponent} from './ktb-expandable-tile.component';
-import {AppModule} from '../../app.module';
-import { KtbDangerZoneComponent } from '../ktb-danger-zone/ktb-danger-zone.component';
-import { DeleteType } from '../../_interfaces/delete';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { KtbExpandableTileComponent } from './ktb-expandable-tile.component';
+import { AppModule } from '../../app.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbExpandableTileComponent', () => {
   let component: KtbExpandableTileComponent;
@@ -11,13 +9,9 @@ describe('KtbExpandableTileComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KtbDangerZoneComponent],
-      imports: [AppModule],
-    })
-      .compileComponents();
-  });
+      imports: [AppModule, HttpClientTestingModule],
+    }).compileComponents();
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbExpandableTileComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -38,10 +32,9 @@ describe('KtbExpandableTileComponent', () => {
     fixture.detectChanges();
 
     // then
-    // expect(component).not.toHaveClass('ktb-tile-disabled');
-    expect(showMoreButton).not.toHaveClass('dt-show-more-disabled');
-    expect(showMoreButton.disabled).toBeFalse();
-    expect(expandablePanel).toHaveClass('dt-expandable-panel-opened');
+    expect(showMoreButton.getAttribute('class')).not.toContain('dt-show-more-disabled');
+    expect(expandablePanel.getAttribute('class')).toContain('dt-expandable-panel-opened');
+    expect(showMoreButton.disabled).toBe(false);
   });
 
   it('should not be expandable if disabled', () => {
@@ -57,13 +50,8 @@ describe('KtbExpandableTileComponent', () => {
 
     // then
     // expect(component).toHaveClass('ktb-tile-disabled');
-    expect(showMoreButton).toHaveClass('dt-show-more-disabled');
-    expect(showMoreButton.disabled).toBeTrue();
-    expect(expandablePanel).not.toHaveClass('dt-expandable-panel-opened');
+    expect(showMoreButton.getAttribute('class')).toContain('dt-show-more-disabled');
+    expect(expandablePanel.getAttribute('class')).not.toContain('dt-expandable-panel-opened');
+    expect(showMoreButton.disabled).toBe(true);
   });
-
-  afterEach(fakeAsync(() => {
-    fixture.destroy();
-    TestBed.resetTestingModule();
-  }));
 });

@@ -1,10 +1,11 @@
-import {Injectable} from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Observable, throwError} from 'rxjs';
 import {catchError, retryWhen} from 'rxjs/operators';
 import {genericRetryStrategy} from './http-generic-retry-strategy';
 import {DtToast} from '@dynatrace/barista-components/toast';
 import {Location} from '@angular/common';
+import { RETRY_ON_HTTP_ERROR } from '../_utils/app.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +14,16 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   private isReloading = false;
 
   constructor(private readonly toast: DtToast,
-              private readonly location: Location) {
+              private readonly location: Location,
+              @Inject(RETRY_ON_HTTP_ERROR) private hasRetry: boolean) {
   }
 
+  // tslint:disable-next-line:no-any
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const params = this.hasRetry ? undefined : {maxAttempts: 3, scalingDuration: 0, shouldRetry: () => false};
     return next.handle(request)
       .pipe(
-        retryWhen(genericRetryStrategy()),
+        retryWhen(genericRetryStrategy(params)),
         catchError((error: HttpErrorResponse) => {
 
           if (error.status === 401) {
