@@ -14,8 +14,7 @@ describe('KtbUniformSubscriptionsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KtbUniformSubscriptionsComponent ],
-      imports: [ AppModule, HttpClientTestingModule ],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
         {
@@ -23,7 +22,7 @@ describe('KtbUniformSubscriptionsComponent', () => {
           useValue: {
             data: of({}),
             params: of({}),
-            paramMap: of(convertToParamMap( {
+            paramMap: of(convertToParamMap({
               projectName: 'sockshop'
             })),
             queryParams: of({})
@@ -31,9 +30,6 @@ describe('KtbUniformSubscriptionsComponent', () => {
         }
       ]
     }).compileComponents();
-  });
-
-  beforeEach(() => {
     fixture = TestBed.createComponent(KtbUniformSubscriptionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
