@@ -1,16 +1,19 @@
 <ng-container *ngIf="projectName$ | async as projectName">
   <ng-container *ngIf="uniformRegistration as uniformRegistration">
-    <button dt-button uitestid="addSubscriptionButton" [routerLink]="['/project', projectName, 'uniform', 'services',  uniformRegistration.id, 'subscriptions', 'add']" class="mb-2" *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
+    <button dt-button uitestid="addSubscriptionButton" [routerLink]="['/project', projectName, 'uniform', 'services',  uniformRegistration.id, 'subscriptions', 'add']" class="mb-2"
+            *ngIf="uniformRegistration.canEditSubscriptions(), else disabledButton">
       <dt-icon name="plus-add"></dt-icon>
       Add subscription
     </button>
     <ng-template #disabledButton>
-      <button dt-button uitestid="addSubscriptionButton" class="mb-2 disabled" [dtOverlay]="updateDistributor">
-        <dt-icon name="plus-add"></dt-icon>
-        Add subscription
-      </button>
+      <div [dtOverlay]="updateDistributor" class="inline-block">
+        <button dt-button uitestid="addSubscriptionButton" class="mb-2" disabled>
+          <dt-icon name="plus-add"></dt-icon>
+          Add subscription
+        </button>
+      </div>
       <ng-template #updateDistributor>
-        Action denied. Please update your distributor to version 0.9.0 or higher
+        Please update your distributor to version 0.9.0 or higher for editing your subscriptions.
       </ng-template>
     </ng-template>
     <div class="subscription-list">

@@ -15,8 +15,8 @@ import { EventTypes } from '../../../../shared/interfaces/event-types';
   templateUrl: './ktb-modify-uniform-subscription.component.html',
 })
 export class KtbModifyUniformSubscriptionComponent {
-  private taskControl = new FormControl();
-  private taskSuffixControl = new FormControl();
+  private taskControl = new FormControl('', [Validators.required]);
+  private taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
   public data$: Observable<{ taskNames: string[], subscription: UniformSubscription, project: Project, integrationId: string }>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
@@ -46,7 +46,6 @@ export class KtbModifyUniformSubscriptionComponent {
     }];
 
   constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router) {
-    this.setValidation();
     const subscription$ = this.route.paramMap.pipe(
       map(paramMap => {
         return {
@@ -104,11 +103,6 @@ export class KtbModifyUniformSubscriptionComponent {
       project: project$,
       integrationId: integrationId$
     });
-  }
-
-  private setValidation(): void {
-    this.taskControl.setValidators([Validators.required]);
-    this.taskSuffixControl.setValidators([Validators.required]);
   }
 
   private updateDataSource(project: Project): void {

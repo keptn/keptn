@@ -9,7 +9,7 @@
   <span class="bold pr-2">for services:</span>
   <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
   <div>
-    <ng-container *ngIf="subscription.id, else oldSubscription">
+    <ng-container *ngIf="false, else oldSubscription">
       <button dt-icon-button variant="nested" uitestid="subscriptionEditButton" title="Edit" (click)="editSubscription(subscription)">
         <dt-icon name="edit1"></dt-icon>
       </button>
@@ -18,24 +18,28 @@
       </button>
     </ng-container>
     <ng-template #oldSubscription>
-      <button dt-icon-button variant="nested" uitestid="subscriptionEditButton" class="disabled" [dtOverlay]="updateDistributor">
-        <dt-icon name="edit1"></dt-icon>
-      </button>
-      <button dt-icon-button variant="nested" uitestid="subscriptionDeleteButton" class="disabled" [dtOverlay]="updateDistributor">
-        <dt-icon name="delete"></dt-icon>
-      </button>
+      <div class="inline-block" [dtOverlay]="updateDistributor">
+        <button dt-icon-button variant="nested" uitestid="subscriptionEditButton" class="disabled" disabled>
+          <dt-icon name="edit1"></dt-icon>
+        </button>
+      </div>
+      <div class="inline-block" [dtOverlay]="updateDistributor">
+        <button dt-icon-button variant="nested" uitestid="subscriptionDeleteButton" class="disabled" disabled [dtOverlay]="updateDistributor">
+          <dt-icon name="delete"></dt-icon>
+        </button>
+      </div>
     </ng-template>
   </div>
 
   <ktb-delete-confirmation
     type="subscription"
     [dialogState]="deleteState"
-    [deleteMessage]="subscription.isGlobal ? 'Deleting this subscription will affect all projects!' : undefined"
+    [deleteMessage]="subscription.isGlobal ? 'Deleting this subscription will affect all projects. Please be certain.' : undefined"
     [name]="name"
     (confirmClicked)="deleteSubscription()"
   ></ktb-delete-confirmation>
   <ng-template #updateDistributor>
-    Action denied. Please update your distributor to version 0.9.0 or higher
+    Please update your distributor to version 0.9.0 or higher for editing your subscriptions.
   </ng-template>
 </ng-container>
 
