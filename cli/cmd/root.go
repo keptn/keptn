@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var cfgFile string
@@ -32,7 +34,11 @@ func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 		Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			runVersionCheck(vChecker)
+			// Server version won't be available during `install`
+			// because the Server is not installed yet
+			if !isInstallSubCommand() {
+				runVersionCheck(vChecker)
+			}
 		},
 	}
 	return rootCmd
@@ -142,4 +148,20 @@ func runVersionCheck(vChecker *version.VersionChecker) {
 	if cliChecked || keptnChecked {
 		updateLastVersionCheck()
 	}
+}
+
+func isInstallSubCommand() bool {
+	for _, arg := range os.Args[1:] {
+		switch {
+		// skip flags
+		// e.g., keptn -q install
+		case strings.HasPrefix(arg, "-"):
+			continue
+		case arg == "install":
+			return true
+		default:
+			return false
+		}
+	}
+	return false
 }
