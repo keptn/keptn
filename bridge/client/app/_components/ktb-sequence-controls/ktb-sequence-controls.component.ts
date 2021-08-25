@@ -8,7 +8,6 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'ktb-sequence-controls',
   templateUrl: './ktb-sequence-controls.component.html',
-  styleUrls: ['./ktb-sequence-controls.component.scss'],
   host: {
     class: 'ktb-sequence-controls'
   }
