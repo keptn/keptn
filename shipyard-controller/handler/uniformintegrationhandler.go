@@ -37,7 +37,7 @@ func NewUniformIntegrationHandler(uniformRepo db.UniformRepo) *UniformIntegratio
 }
 
 // Register creates or updates a uniform integration
-// @Summary Register a uniform integration
+// @Summary BETA: Register a uniform integration
 // @Description Register a uniform integration
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -135,7 +135,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 }
 
 // Unregister deletes a uniform integration
-// @Summary Unregister a uniform integration
+// @Summary BETA: Unregister a uniform integration
 // @Description Unregister a uniform integration
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -157,7 +157,7 @@ func (rh *UniformIntegrationHandler) Unregister(c *gin.Context) {
 }
 
 // GetRegistrations Retrieve uniform integrations matching the provided filter
-// @Summary Retrieve uniform integrations matching the provided filter
+// @Summary BETA: Retrieve uniform integrations matching the provided filter
 // @Description Retrieve uniform integrations matching the provided filter
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -188,8 +188,8 @@ func (rh *UniformIntegrationHandler) GetRegistrations(c *gin.Context) {
 }
 
 // KeepAlive returns current registration data of an integration
-// @Summary Heartbeat for uniform integrations
-// @Description Heartbeat for uniform integrations
+// @Summary BETA: Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
+// @Description Endpoint for sending heartbeat messages sent from Keptn integrations to the control plane
 // @Tags Uniform
 // @Security ApiKeyAuth
 // @Accept json
@@ -217,7 +217,7 @@ func (rh *UniformIntegrationHandler) KeepAlive(c *gin.Context) {
 }
 
 // CreateSubscription creates a new subscription
-// @Summary  Create a new subscription
+// @Summary BETA: Create a new subscription
 // @Description  Create a new subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -257,7 +257,7 @@ func (rh *UniformIntegrationHandler) CreateSubscription(c *gin.Context) {
 }
 
 // UpdateSubscription updates or creates a subscription
-// @Summary  Update or create a subscription
+// @Summary BETA: Update or create a subscription
 // @Description Update or create a subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -297,7 +297,7 @@ func (rh *UniformIntegrationHandler) UpdateSubscription(c *gin.Context) {
 }
 
 // DeleteSubscription deletes a new subscription
-// @Summary  Delete a subscription
+// @Summary BETA: Delete a subscription
 // @Description  Delete a subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -324,7 +324,7 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 }
 
 // GetSubscription retrieves an already existing subscription
-// @Summary  Retrieve an already existing subscription
+// @Summary BETA: Retrieve an already existing subscription
 // @Description  Retrieve an already existing subscription
 // @Tags Uniform
 // @Security ApiKeyAuth
@@ -355,7 +355,7 @@ func (rh *UniformIntegrationHandler) GetSubscription(c *gin.Context) {
 }
 
 // GetSubscriptions retrieves all subscriptions of a uniform integration
-// @Summary  Retrieve all subscriptions of a uniform integration
+// @Summary BETA: Retrieve all subscriptions of a uniform integration
 // @Description  Retrieve all subscriptions of a uniform integration
 // @Tags Uniform
 // @Security ApiKeyAuth
