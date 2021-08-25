@@ -20,6 +20,7 @@ import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
+import { SequenceState } from '../../../shared/models/sequence';
 
 @Injectable({
   providedIn: 'root'
@@ -541,6 +542,14 @@ export class DataService {
         if (sequence) {
           this.loadTraces(sequence);
         }
+      });
+  }
+
+  public sendSequenceControl(sequence: Sequence, state: string): void {
+    sequence.setState(SequenceState.UNKNOWN);
+    this.apiService.sendSequenceControl(sequence.project, sequence.shkeptncontext, state)
+      .subscribe(() => {
+        this.updateSequence(sequence.project, sequence.shkeptncontext);
       });
   }
 

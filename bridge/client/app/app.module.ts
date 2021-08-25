@@ -110,7 +110,9 @@ import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delet
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
+import { KtbConfirmationDialogComponent } from './_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.component';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
+import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { environment } from '../environments/environment';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
 
@@ -182,6 +184,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbDragAndDropDirective,
     KtbDangerZoneComponent,
     KtbDeletionDialogComponent,
+    KtbConfirmationDialogComponent,
+    KtbSequenceControlsComponent,
     ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
@@ -241,6 +245,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
   ],
   entryComponents: [
     KtbDeletionDialogComponent,
+    KtbConfirmationDialogComponent,
   ],
   providers: [
     EventService,

@@ -48,7 +48,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
           {name: 'Active', value: 'started'},
           {name: 'Failed', value: 'failed'},
           {name: 'Succeeded', value: 'succeeded'},
-          {name: 'Waiting', value: 'waiting'},
+          {name: 'Waiting', value: 'waiting'}
         ],
       },
     ],
@@ -140,7 +140,7 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
     combineLatest([this.route.params, this.sequences$])
       .pipe(
         takeUntil(this.unsubscribe$),
-        takeWhile(([params]) => !this.currentSequence && params.shkeptncontext),
+        takeWhile( ([params]) => !this.currentSequence && params.shkeptncontext)
       )
       .subscribe(([params, sequences]: [Params, Sequence[]]) => {
         if (params.shkeptncontext) {
@@ -221,7 +221,10 @@ export class KtbSequenceViewComponent implements OnInit, OnDestroy {
   updateFilterDataSource(project: Project) {
     let filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Service');
     if (filterItem) {
-      filterItem.autocomplete = project.getServices().map(s => Object.assign({}, {name: s.serviceName, value: s.serviceName}));
+      filterItem.autocomplete = project.getServices().map(s => Object.assign({}, {
+        name: s.serviceName,
+        value: s.serviceName
+      }));
     }
     filterItem = this.filterFieldData.autocomplete.find(f => f.name === 'Stage');
     if (filterItem) {

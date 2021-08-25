@@ -363,4 +363,13 @@ export class ApiService {
       });
   }
 
+  public sendSequenceControl(project: string, keptnContext: string, state: string): Observable<unknown> {
+    const url = `${this._baseUrl}/controlPlane/v1/sequence/${project}/${keptnContext}/control`;
+
+    return this.http
+      .post<unknown>(url, {
+        state
+      });
+  }
+
 }

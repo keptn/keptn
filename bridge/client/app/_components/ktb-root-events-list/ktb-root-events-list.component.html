@@ -9,20 +9,25 @@
       <ktb-selectable-tile-header>
         <div class="container">
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-            <dt-icon *ngIf="!sequence.isLoading() || sequence.hasPendingApproval(); else showLoading" class="event-icon"
-                     [name]="sequence.getIcon()"
-                     [class.error]="sequence.isFaulty()"
-                     [class.highlight]="sequence.hasPendingApproval()"></dt-icon>
-            <ng-template #showLoading>
-              <button class="m-0 p-0" dt-button disabled variant="nested">
-                <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
-              </button>
-            </ng-template>
-            <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
-              <p class="m-0">
-                <span class="bold" [textContent]="sequence.name"></span>
-                of <span [textContent]="sequence.service"></span>&nbsp;<span [textContent]="sequence.getStatus()"></span>
-              </p>
+            <div fxFlex fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+              <dt-icon *ngIf="!sequence.isLoading() || sequence.hasPendingApproval(); else showLoading" class="event-icon"
+                       [name]="sequence.getIcon()"
+                       [class.error]="sequence.isFaulty()"
+                       [class.highlight]="sequence.hasPendingApproval()"></dt-icon>
+              <ng-template #showLoading>
+                <button class="m-0 p-0" dt-button disabled variant="nested">
+                  <dt-loading-spinner aria-label="Task is running..."></dt-loading-spinner>
+                </button>
+              </ng-template>
+              <div class="mt-1 mb-1" fxLayout="row" fxLayoutAlign="start center">
+                <p class="m-0">
+                  <span class="bold" [textContent]="sequence.name"></span>
+                  of <span [textContent]="sequence.service"></span>&nbsp;<span [textContent]="sequence.getStatus()"></span>
+                </p>
+              </div>
+            </div>
+            <div class="mb-2">
+              <ktb-sequence-controls [sequence]="sequence" [smallButtons]="true"></ktb-sequence-controls>
             </div>
           </div>
           <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" uitestid="keptn-root-events-list-stageDetails">

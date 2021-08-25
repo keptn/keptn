@@ -7,13 +7,13 @@ import {
   OnInit, Output,
   ViewEncapsulation
 } from '@angular/core';
-import {DateUtil} from '../../_utils/date.utils';
-import {filter, map, switchMap, takeUntil} from 'rxjs/operators';
-import {ActivatedRoute} from '@angular/router';
-import {DataService} from '../../_services/data.service';
-import {Subject} from 'rxjs';
-import {Project} from '../../_models/project';
-import {Sequence} from '../../_models/sequence';
+import { DateUtil } from '../../_utils/date.utils';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+import { DataService } from '../../_services/data.service';
+import { Subject } from 'rxjs';
+import { Project } from '../../_models/project';
+import { Sequence } from '../../_models/sequence';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -39,6 +39,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   get events(): Sequence[] {
     return this._events;
   }
+
   set events(value: Sequence[]) {
     if (this._events !== value) {
       this._events = value;
@@ -50,6 +51,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   get selectedEvent(): Sequence | undefined {
     return this._selectedEvent;
   }
+
   set selectedEvent(value: Sequence | undefined) {
     if (this._selectedEvent !== value) {
       this._selectedEvent = value;
@@ -58,7 +60,8 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
   }
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil,
-              private route: ActivatedRoute, private dataService: DataService) { }
+              private route: ActivatedRoute, private dataService: DataService) {
+  }
 
   ngOnInit() {
     this.route.params.pipe(
@@ -80,7 +83,7 @@ export class KtbRootEventsListComponent implements OnInit, OnDestroy {
 
   selectEvent(sequence: Sequence, stage?: string): void {
     this.selectedEvent = sequence;
-    this.selectedEventChange.emit({ sequence, stage });
+    this.selectedEventChange.emit({sequence, stage});
   }
 
   identifyEvent(index: number, item: Sequence): string | undefined {

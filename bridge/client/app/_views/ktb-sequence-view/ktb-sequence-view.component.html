@@ -14,13 +14,18 @@
       <div class="mt-2 mb-3">
         <dt-info-group>
           <dt-info-group-title>
-            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
-              <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
-                <p class="m-0">
-                  <span class="bold" [textContent]="currentSequence.name"></span>&nbsp;
-                  <span [textContent]="currentSequence.getStatus()"></span>
-                </p>
-                <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+            <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center">
+              <div fxFlex fxLayout="row" fxLayoutAlign="flex-start center" fxLayoutGap="15px">
+                <div class="mt-1 mb-1 sequence-title" fxLayout="row" fxLayoutAlign="start center">
+                  <p class="m-0">
+                    <span class="bold" [textContent]="currentSequence.name"></span>&nbsp;
+                    <span [textContent]="currentSequence.getStatus()"></span>
+                  </p>
+                  <button *ngIf="currentSequence.isFaulty()" dt-icon-button disabled variant="nested"><dt-icon name="criticalevent"></dt-icon></button>
+                </div>
+              </div>
+              <div>
+                <ktb-sequence-controls [sequence]="currentSequence"></ktb-sequence-controls>
               </div>
             </div>
           </dt-info-group-title>

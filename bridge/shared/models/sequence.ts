@@ -1,5 +1,4 @@
 import { EvaluationResult } from '../interfaces/evaluation-result';
-import { EventState } from './event-state';
 
 export type SequenceEvent = {
   id: string,
@@ -15,11 +14,20 @@ export type SequenceStage = {
   name: string,
 };
 
-enum sequenceState {
-  WAITING = 'waiting'
+export enum SequenceState {
+  TRIGGERED = 'triggered',
+  STARTED = 'started',
+  FINISHED = 'finished',
+  WAITING = 'waiting',
+  PAUSED = 'paused',
+  UNKNOWN = ''
 }
-export const SequenceState = {...sequenceState, ...EventState};
-export type SequenceStateType = sequenceState & EventState;
+
+export enum SequenceStateControl {
+  PAUSE = 'pause',
+  ABORT = 'abort',
+  RESUME = 'resume'
+}
 
 export class Sequence {
   name!: string;
@@ -27,7 +35,7 @@ export class Sequence {
   service!: string;
   shkeptncontext!: string;
   stages!: SequenceStage[];
-  state!: SequenceStateType;
+  state!: SequenceState;
   time!: string;
   problemTitle?: string;
 }
