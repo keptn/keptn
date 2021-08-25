@@ -23,9 +23,9 @@ require (
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
+	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	helm.sh/helm/v3 v3.6.1 // indirect
-	k8s.io/apimachinery v0.21.3
+	k8s.io/apimachinery v0.22.1
 	k8s.io/client-go v0.21.3
 )
