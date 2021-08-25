@@ -30,7 +30,7 @@ func newGetActionTriggeredEvent(filename string) cloudevents.Event {
 
 func Test_Receiving_GetActionTriggeredEvent_RemediationFromServiceLevel(t *testing.T) {
 
-	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler(), &keptnv2.GetActionTriggeredEventData{}))
+	fakeKeptn := fake.NewFakeKeptn("test-remediation-svc", sdk.WithHandler("sh.keptn.event.get-action.triggered", handler.NewGetActionEventHandler()))
 	fakeKeptn.Start()
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-0.json"))
 	fakeKeptn.NewEvent(newGetActionTriggeredEvent("test/events/get-action.triggered-1.json"))

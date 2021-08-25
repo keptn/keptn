@@ -20,13 +20,8 @@ github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
+github.com/keptn/go-utils v0.8.5-0.20210813063645-1bde8ec36705 h1:zPtUFSF8L9lpw187OsWnNAsiacEI5fYb19BYxsGXZSs=
 github.com/keptn/go-utils v0.8.5-0.20210813063645-1bde8ec36705/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
-github.com/keptn/go-utils v0.8.5 h1:/syiNfrn6zUBq0JZeZS6RQDvoaMpQqfXsO5a3XWMQaM=
-github.com/keptn/go-utils v0.8.5/go.mod h1:FiCd1Dzw6fLhg3hxD0lEfeGXSNVVPUn9EguTWKweyho=
-github.com/keptn/keptn/go-sdk v0.0.0-20210816124148-15b4241651d2 h1:zdVj0OrzSmIXtmQB8tGzdAKsloDbDeiSPQrGJaqWb8o=
-github.com/keptn/keptn/go-sdk v0.0.0-20210816124148-15b4241651d2/go.mod h1:71vjBVyqNyy8y1ckcx2S5j8G3U+NjXPqDUwq9Z+nQXk=
-github.com/keptn/keptn/go-sdk v0.0.0-20210818083100-134909b27212 h1:lFtM3kLG5mdKUDzcix14jYCcJGQRKl6NZJ5iLbwuUrE=
-github.com/keptn/keptn/go-sdk v0.0.0-20210818083100-134909b27212/go.mod h1:71vjBVyqNyy8y1ckcx2S5j8G3U+NjXPqDUwq9Z+nQXk=
 github.com/keptn/keptn/go-sdk v0.0.0-20210818094718-c0f42d254cf3 h1:JDu5uoj8y58/Y0ZIlDw84a7gUrkitpitx4pOcc9F/Dw=
 github.com/keptn/keptn/go-sdk v0.0.0-20210818094718-c0f42d254cf3/go.mod h1:71vjBVyqNyy8y1ckcx2S5j8G3U+NjXPqDUwq9Z+nQXk=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

@@ -13,14 +13,11 @@ const eventTypeWildcard = "*"
 const serviceName = "webhook-service"
 
 func main() {
-
 	kubeAPI, err := createKubeAPI()
 	if err != nil {
 		log.Fatalf("could not create kubernetes client: %s", err.Error())
 	}
-
 	secretReader := lib.NewK8sSecretReader(kubeAPI)
-
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, &lib.CmdCurlExecutor{}, secretReader)
 
 	log.Fatal(sdk.NewKeptn(
@@ -28,9 +25,6 @@ func main() {
 		sdk.WithHandler(
 			eventTypeWildcard,
 			taskHandler,
-			func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
-				return taskHandler.WebhookAvailableForEvent(keptnHandle, event)
-			},
 		),
 	).Start())
 }

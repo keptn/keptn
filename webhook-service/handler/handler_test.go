@@ -24,7 +24,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.project}} {{.env.mysecret}}"`
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithMultipleRequests = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -37,7 +37,7 @@ spec:
         - secretRef:
           name: mysecret
       requests:
-        - "curl http://localhost:8080 {{.project}} {{.env.mysecret}}"`
+        - "curl http://localhost:8080 {{.data.project}} {{.env.mysecret}}"`
 
 const webHookContentWithMissingTemplateData = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
@@ -68,7 +68,6 @@ func TestTaskHandler_Execute(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler,
-			map[string]interface{}{},
 		),
 	)
 
@@ -94,11 +93,13 @@ func TestTaskHandler_Execute(t *testing.T) {
 		return "success", nil
 	}
 
-	result, sdkErr := taskHandler.Execute(fakeKeptn, &keptnv2.EventData{
+	ev, _ := keptnv2.KeptnEvent(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "source", &keptnv2.EventData{
 		Project: "my-project",
 		Stage:   "my-stage",
 		Service: "my-service",
-	}, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	}).Build()
+
+	result, sdkErr := taskHandler.Execute(fakeKeptn, sdk.KeptnEvent(ev))
 
 	require.Nil(t, sdkErr)
 	require.NotNil(t, result)
@@ -119,7 +120,6 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler,
-			map[string]interface{}{},
 		),
 	)
 
@@ -145,11 +145,13 @@ func TestTaskHandler_Execute_WebhookCannotBeRetrieved(t *testing.T) {
 		return "success", nil
 	}
 
-	result, sdkErr := taskHandler.Execute(fakeKeptn, &keptnv2.EventData{
+	ev, _ := keptnv2.KeptnEvent(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "source", &keptnv2.EventData{
 		Project: "my-project",
 		Stage:   "my-stage",
 		Service: "my-service",
-	}, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	}).Build()
+
+	result, sdkErr := taskHandler.Execute(fakeKeptn, sdk.KeptnEvent(ev))
 
 	require.NotNil(t, sdkErr)
 	require.Nil(t, result)
@@ -175,7 +177,6 @@ func TestTaskHandler_CannotReadSecret(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler,
-			map[string]interface{}{},
 		),
 	)
 
@@ -201,11 +202,13 @@ func TestTaskHandler_CannotReadSecret(t *testing.T) {
 		return "success", nil
 	}
 
-	result, sdkErr := taskHandler.Execute(fakeKeptn, &keptnv2.EventData{
+	ev, _ := keptnv2.KeptnEvent(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "source", &keptnv2.EventData{
 		Project: "my-project",
 		Stage:   "my-stage",
 		Service: "my-service",
-	}, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	}).Build()
+
+	result, sdkErr := taskHandler.Execute(fakeKeptn, sdk.KeptnEvent(ev))
 
 	require.NotNil(t, sdkErr)
 	require.Nil(t, result)
@@ -231,7 +234,6 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 		sdk.WithHandler(
 			"*",
 			taskHandler,
-			map[string]interface{}{},
 		),
 	)
 
@@ -257,11 +259,13 @@ func TestTaskHandler_IncompleteDataForTemplate(t *testing.T) {
 		return "success", nil
 	}
 
-	result, sdkErr := taskHandler.Execute(fakeKeptn, &keptnv2.EventData{
+	ev, _ := keptnv2.KeptnEvent(keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "source", &keptnv2.EventData{
 		Project: "my-project",
 		Stage:   "my-stage",
 		Service: "my-service",
-	}, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName))
+	}).Build()
+
+	result, sdkErr := taskHandler.Execute(fakeKeptn, sdk.KeptnEvent(ev))
 
 	require.NotNil(t, sdkErr)
 	require.Nil(t, result)
