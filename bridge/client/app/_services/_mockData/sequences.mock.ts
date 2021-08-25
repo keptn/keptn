@@ -78,7 +78,7 @@ let SequencesData = [
     project: 'sockshop',
     time: '2021-07-28T11:38:00.783Z',
     shkeptncontext: '75dfd139-2dd3-41df-8dc1-0cb3426f4506',
-    state: 'finished',
+    state: 'paused',
     stages: [
       {
         name: 'dev',

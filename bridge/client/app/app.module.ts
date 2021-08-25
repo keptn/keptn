@@ -243,6 +243,7 @@ export function init_app(appLoadService: AppInitService) {
   ],
   entryComponents: [
     KtbDeletionDialogComponent,
+    KtbConfirmationDialogComponent,
   ],
   providers: [
     EventService,
