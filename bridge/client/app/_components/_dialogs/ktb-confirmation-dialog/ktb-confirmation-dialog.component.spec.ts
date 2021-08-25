@@ -2,10 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbConfirmationDialogComponent } from './ktb-confirmation-dialog.component';
 import { AppModule } from '../../../app.module';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { EventService } from '../../../_services/event.service';
-import { DeleteResult } from '../../../_interfaces/delete';
 
-describe('KtbDeletionDialogComponent', () => {
+describe('KtbConfirmationDialogComponent', () => {
   let component: KtbConfirmationDialogComponent;
   let fixture: ComponentFixture<KtbConfirmationDialogComponent>;
   const dialogData = {
