@@ -13,13 +13,11 @@ describe('KtbUniformViewComponent', () => {
         AppModule,
         HttpClientTestingModule,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(KtbUniformViewComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-      });
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(KtbUniformViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {

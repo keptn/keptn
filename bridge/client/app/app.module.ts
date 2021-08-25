@@ -112,10 +112,11 @@ import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
 import { environment } from '../environments/environment';
+import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
 
 registerLocaleData(localeEn, 'en');
 
-export function init_app(appLoadService: AppInitService) {
+export function init_app(appLoadService: AppInitService): () => Promise<unknown> {
   return () => appLoadService.init();
 }
 
@@ -184,6 +185,7 @@ export function init_app(appLoadService: AppInitService) {
     ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
+    KtbProjectSettingsComponent,
     KtbDeleteConfirmationComponent,
     KtbModifyUniformSubscriptionComponent,
   ],

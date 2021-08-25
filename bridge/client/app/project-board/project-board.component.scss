@@ -51,7 +51,7 @@
     }
   }
 
-  .dt-menu-item {
+  .main-nav .dt-menu-item {
     padding: 9px 10px 9px 9px !important;
     height: auto !important;
     cursor: pointer;
@@ -62,6 +62,7 @@
   button.dt-menu-item.dt-button-nested:disabled:hover {
     background: $gray-640;
     cursor: default;
+
     .dt-button-icon .dt-icon svg {
       fill: $gray-500;
     }
@@ -70,12 +71,12 @@
   button.dt-menu-item.dt-button-nested.active:not([disabled]),
   button.dt-menu-item.dt-button-nested:hover:not([disabled]),
   button.dt-menu-item.dt-button-nested:active:not([disabled]) {
-    background: $gray-700!important;
+    background: $gray-700 !important;
   }
 
   button.dt-menu-item.dt-button-nested .dt-button-icon .dt-icon svg,
   button.dt-menu-item.dt-button-nested:hover .dt-button-icon .dt-icon svg,
-  button.dt-menu-item.dt-button-nested:active .dt-button-icon .dt-icon svg{
+  button.dt-menu-item.dt-button-nested:active .dt-button-icon .dt-icon svg {
     fill: #ffffff;
   }
 

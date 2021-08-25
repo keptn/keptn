@@ -1,64 +1,16 @@
-<div fxFlexFill fxLayout="column">
-  <ktb-notification-bar></ktb-notification-bar>
-  <div class="container" fxFlex fxLayout="column">
-    <div [formGroup]="projectNameForm" *ngIf="isCreateMode" class="mb-3 settings-section">
-      <h2>Project name *</h2>
-      <dt-form-field>
-        <input type="text" formControlName="projectName" id="projectNameInput" (input)="unsavedDialogState = 'unsaved'"
-               required dtInput
-               placeholder="e.g. sockshop"/>
-        <dt-hint>Project name must start with a lower case letter. Allowed characters: lower case letters, numbers and
-          hyphens.
-        </dt-hint>
-        <dt-error>
-          <ng-container *ngIf="projectNameControl.hasError('required')">Must not be empty</ng-container>
-          <ng-container *ngIf="projectNameControl.hasError('projectName')">Project name already exists</ng-container>
-          <ng-container *ngIf="projectNameControl.hasError('pattern')">Project name must start with a lower case letter.
-            Allowed characters: lower case letters, numbers and
-            hyphens.
-          </ng-container>
-        </dt-error>
-      </dt-form-field>
-    </div>
-    <div class="mb-3 settings-section">
-      <ktb-project-settings-git
-        [isCreateMode]="isCreateMode"
-        [gitData]="gitData"
-        [isGitUpstreamInProgress]="isGitUpstreamInProgress"
-        (gitDataChanged)="updateGitData($event)"
-        (gitUpstreamSubmit)="setGitUpstream()"></ktb-project-settings-git>
-    </div>
-    <div class="mb-3 settings-section" *ngIf="isCreateMode">
-
-      <ktb-project-settings-shipyard (shipyardFileChanged)="updateShipyardFile($event)"
-                                     [isCreateMode]="isCreateMode"></ktb-project-settings-shipyard>
-
-    </div>
-    <div class="mt-3 settings-section settings-actions" *ngIf="isCreateMode">
-      <button
-        [disabled]="!shipyardFile || projectNameForm.invalid || !gitData.gitFormValid || isCreatingProjectInProgress"
-        (click)="createProject()"
-        dt-button>
-        <dt-loading-spinner *ngIf="isCreatingProjectInProgress" aria-label="Creating project"></dt-loading-spinner>
-        Create project
-      </button>
-      <div class="mt-2">
-        <span class="small">* fields are required</span>
-      </div>
-    </div>
-    <div [ngClass]="['mb-3', 'settings-section settings-section-bottom', unsavedDialogState ? 'notification-open' : '']" *ngIf="!isCreateMode">
-      <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
+<div fxFlexFill>
+  <div fxFlex fxLayout="row">
+    <dt-menu class="submenu" aria-label="Keptn Settings Submenu" fxFlex="0 0 200px">
+      <dt-menu-group label="Settings">
+        <button dtMenuItem variant="nested" aria-label="Open project settings" routerLinkActive="active" routerLink="project">
+          Project
+        </button>
+      </dt-menu-group>
+    </dt-menu>
+    <div fxFlex>
+      <router-outlet></router-outlet>
     </div>
   </div>
 </div>
 
-<dt-confirmation-dialog [state]="unsavedDialogState" aria-label="Dialog for notifying about unsaved data"
-                        *ngIf="!isCreateMode">
-  <dt-confirmation-dialog-state name="unsaved">
-    You have pending changes. Make sure to save your data before you continue.
-    <dt-confirmation-dialog-actions>
-      <button dt-button variant="secondary" (click)="reset()">Discard changes</button>
-      <button dt-button (click)="saveAll()">Save changes</button>
-    </dt-confirmation-dialog-actions>
-  </dt-confirmation-dialog-state>
-</dt-confirmation-dialog>
+
