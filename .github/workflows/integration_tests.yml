@@ -460,7 +460,7 @@ jobs:
         # do not run this test for the airgapped scenario
         if: env.RUN_AIRGAPPED_TEST != 'true'
         id: test_uniform_registration
-        timeout-minutes: 5
+        timeout-minutes: 10
         continue-on-error: true
         env:
           KEPTN_ENDPOINT: ${{ steps.authenticate_keptn_cli.outputs.KEPTN_ENDPOINT }}
