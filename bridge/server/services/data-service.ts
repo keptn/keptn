@@ -10,6 +10,8 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import { Approval } from '../interfaces/approval';
 import { ResultTypes } from '../../shared/models/result-types';
 import { UniformRegistration } from '../interfaces/uniform-registration';
+import Yaml from 'yaml';
+import { Shipyard } from '../interfaces/shipyard';
 
 export class DataService {
   private apiService: ApiService;
@@ -28,7 +30,7 @@ export class DataService {
     if (includeRemediation) {
       remediations = await this.getRemediations(projectName);
     }
-    const lastSequences: {[key: string]: Sequence} = {};
+    const lastSequences: { [key: string]: Sequence } = {};
     for (const stage of project.stages) {
       for (const service of stage.services) {
         const keptnContext = service.getLatestSequence(stage.stageName);
@@ -38,8 +40,7 @@ export class DataService {
             if (latestSequence) {
               lastSequences[service.serviceName] = latestSequence;
             }
-          }
-          catch (error) {
+          } catch (error) {
             console.error(error);
           }
         }
@@ -137,11 +138,9 @@ export class DataService {
           let state: EventState;
           if (finishedAction) {
             state = EventState.FINISHED;
-          }
-          else if (startedAction) {
+          } else if (startedAction) {
             state = EventState.STARTED;
-          }
-          else {
+          } else {
             state = EventState.TRIGGERED;
           }
 
@@ -163,8 +162,7 @@ export class DataService {
     try {
       const response = await this.apiService.getOpenTriggeredEvents(projectName, stageName, serviceName, EventTypes.APPROVAL_TRIGGERED);
       tracesTriggered = response.data.events ?? [];
-    }
-    catch { // status 500 if no events are found
+    } catch { // status 500 if no events are found
       tracesTriggered = [];
     }
     const approvals: Approval[] = [];
@@ -193,17 +191,44 @@ export class DataService {
     return status;
   }
 
-  public async getUniformRegistrations(uniformDates: {[key: string]: string}): Promise<UniformRegistration[]> {
+  public async getUniformRegistrations(uniformDates: { [key: string]: string }): Promise<UniformRegistration[]> {
     const response = await this.apiService.getUniformRegistrations();
     const registrations = response.data;
+    const currentDate = new Date().getTime();
+    const validRegistrations: UniformRegistration[] = [];
     for (const registration of registrations) {
-      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
-      registration.unreadEventsCount = logResponse.data.logs.length;
+      const diffMins = (currentDate - new Date(registration.metadata.lastseen).getTime()) / 60_000;
+      if (diffMins < 2) {
+        const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
+        registration.unreadEventsCount = logResponse.data.logs.length;
+        validRegistrations.push(registration);
+      }
     }
-    return registrations;
+    return validRegistrations;
   }
 
-  private buildRemediationEvent(stageName: string) {
+  public async getTasks(projectName: string): Promise<string[]> {
+    const shipyard = await this.getShipyard(projectName);
+    const tasks: string[] = ['service.delete', 'service.create'];
+    for (const stage of shipyard.spec.stages) {
+      for (const sequence of stage.sequences) {
+        for (const task of sequence.tasks) {
+          if (!tasks.includes(task.name)) {
+            tasks.push(task.name);
+          }
+        }
+      }
+    }
+    return tasks;
+  }
+
+  private async getShipyard(projectName: string): Promise<Shipyard> {
+    const response = await this.apiService.getShipyard(projectName);
+    const shipyard = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
+    return Yaml.parse(shipyard);
+  }
+
+  private buildRemediationEvent(stageName: string): string {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
   }
 }

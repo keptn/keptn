@@ -39,12 +39,9 @@ import { DtTopBarNavigationModule } from '@dynatrace/barista-components/top-bar-
 import { DtCopyToClipboardModule } from '@dynatrace/barista-components/copy-to-clipboard';
 import { DtToggleButtonGroupModule } from '@dynatrace/barista-components/toggle-button-group';
 import { DtQuickFilterModule } from '@dynatrace/barista-components/quick-filter';
-
 import { DtTileModule } from '@dynatrace/barista-components/tile';
 import { DtToastModule } from '@dynatrace/barista-components/toast';
-
 import { MomentModule } from 'ngx-moment';
-
 import { KtbEventsListComponent } from './_components/ktb-events-list/ktb-events-list.component';
 import { KtbExpandableTileComponent, KtbExpandableTileHeader } from './_components/ktb-expandable-tile/ktb-expandable-tile.component';
 import { KtbHorizontalSeparatorComponent, KtbHorizontalSeparatorTitle } from './_components/ktb-horizontal-separator/ktb-horizontal-separator.component';
@@ -65,11 +62,9 @@ import { KtbEvaluationInfoComponent } from './_components/ktb-evaluation-info/kt
 import { KtbEventItemComponent, KtbEventItemDetail } from './_components/ktb-event-item/ktb-event-item.component';
 import { KtbTaskItemComponent, KtbTaskItemDetail } from './_components/ktb-task-item/ktb-task-item.component';
 import { KtbSequenceTasksListComponent } from './_components/ktb-sequence-tasks-list/ktb-sequence-tasks-list.component';
-
 import { HttpErrorInterceptor } from './_interceptors/http-error-interceptor';
 import { HttpLoadingInterceptor } from './_interceptors/http-loading-interceptor';
 import { HttpDefaultInterceptor } from './_interceptors/http-default-interceptor';
-
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 import { AppHeaderComponent } from './app-header/app-header.component';
@@ -111,6 +106,8 @@ import { EventService } from './_services/event.service';
 import { ToType } from './_pipes/to-type';
 import { KtbUniformSubscriptionsComponent } from './_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.component';
 import { ToDatePipe } from './_pipes/to-date.pipe';
+import { KtbDeleteConfirmationComponent } from './_components/_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
+import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 import { DtThemingModule } from '@dynatrace/barista-components/theming';
 import { KtbSubscriptionItemComponent } from './_components/ktb-subscription-item/ktb-subscription-item.component';
 import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
@@ -187,6 +184,8 @@ export function init_app(appLoadService: AppInitService) {
     ToType,
     KtbUniformSubscriptionsComponent,
     ToDatePipe,
+    KtbDeleteConfirmationComponent,
+    KtbModifyUniformSubscriptionComponent,
   ],
   imports: [
     BrowserModule,
