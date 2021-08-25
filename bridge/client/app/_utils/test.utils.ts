@@ -1,3 +1,5 @@
+import { ComponentFixture, tick } from '@angular/core/testing';
+
 export class TestUtils {
   public static createNewDropEventWithFiles(files: File[]): DragEvent {
     const dataTransfer: DataTransfer = MockDataTransfer(files);
@@ -6,10 +8,14 @@ export class TestUtils {
       value: dataTransfer
     });
     Object.defineProperty(event.constructor.prototype, 'preventDefault', {
-      value: () => { return; }
+      value: () => {
+        return;
+      }
     });
     Object.defineProperty(event.constructor.prototype, 'stopPropagation', {
-      value: () => { return; }
+      value: () => {
+        return;
+      }
     });
     return event;
   }
@@ -28,6 +34,15 @@ export class TestUtils {
         dispatchEvent: jest.fn(),
       })),
     });
+  }
+
+  /**
+   * dt-confirmation-dialog has a really strange behavior. This function is used to update the dialog according to its state
+   */
+  public static updateDialog(fixture: ComponentFixture<unknown>) {
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
   }
 }
 

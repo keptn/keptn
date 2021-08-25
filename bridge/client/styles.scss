@@ -453,3 +453,17 @@ button.small-btn {
     border-color: $blue-400;
   }
 }
+
+.required-info::before {
+  color: $red-500;
+  content: '*';
+}
+
+.required::after {
+  color: $red-500;
+  content: '*';
+}
+
+.inline-block {
+  display: inline-block;
+}

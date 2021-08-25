@@ -13,6 +13,7 @@ import {KtbEnvironmentViewComponent} from './_views/ktb-environment-view/ktb-env
 import {KtbKeptnServicesListComponent} from "./_components/ktb-keptn-services-list/ktb-keptn-services-list.component";
 import {KtbSecretsListComponent} from "./_components/ktb-secrets-list/ktb-secrets-list.component";
 import {KtbCreateSecretFormComponent} from "./_components/ktb-create-secret-form/ktb-create-secret-form.component";
+import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always'
@@ -29,6 +30,9 @@ const routes: Routes = [
       {path: '', pathMatch: 'full', component: KtbEnvironmentViewComponent},
       {path: 'uniform', component: KtbUniformViewComponent, children: [
           {path: 'services', component: KtbKeptnServicesListComponent},
+          {path: 'services/:integrationId', component: KtbKeptnServicesListComponent},
+          {path: 'services/:integrationId/subscriptions/add', component: KtbModifyUniformSubscriptionComponent},
+          {path: 'services/:integrationId/subscriptions/:subscriptionId/edit', component: KtbModifyUniformSubscriptionComponent},
           {path: 'secrets', component: KtbSecretsListComponent},
           {path: 'secrets/add', component: KtbCreateSecretFormComponent},
           {path: '', pathMatch: 'full', redirectTo: 'services'}

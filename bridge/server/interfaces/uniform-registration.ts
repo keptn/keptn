@@ -14,7 +14,8 @@ export class UniformRegistration {
       podname: string
     },
     location: string,
-    status: string
+    status: string,
+    lastseen: string
   };
   unreadEventsCount?: number;
   name!: string;

@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Resource } from '../_models/resource';
+import { Resource } from '../../../shared/interfaces/resource';
 import { Stage } from '../_models/stage';
 import { ServiceResult } from '../_models/service-result';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../_models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { Metadata } from '../_models/metadata';
-import { TaskNames } from '../_models/task-names.mock';
 import { Deployment } from '../_models/deployment';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
@@ -20,6 +19,7 @@ import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { KeptnVersions } from '../_models/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
+import { UniformSubscription } from '../_models/uniform-subscription';
 
 @Injectable({
   providedIn: 'root'
@@ -53,12 +53,12 @@ export class ApiService {
     localStorage.setItem(this.ENVIRONMENT_FILTER_COOKIE, JSON.stringify(filter));
   }
 
-  public get uniformLogDates(): {[key: string]: string} {
+  public get uniformLogDates(): { [key: string]: string } {
     const data = localStorage.getItem(this.INTEGRATION_DATES);
     return data ? JSON.parse(data) : {};
   }
 
-  public set uniformLogDates(dates: {[key: string]: string}) {
+  public set uniformLogDates(dates: { [key: string]: string }) {
     localStorage.setItem(this.INTEGRATION_DATES, JSON.stringify(dates));
   }
 
@@ -145,9 +145,24 @@ export class ApiService {
       .get<ProjectResult>(url, {params});
   }
 
-  public getUniformRegistrations(uniformDates: {[key: string]: string}): Observable<UniformRegistration[]> {
+  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistration[]> {
     const url = `${this._baseUrl}/uniform/registration`;
     return this.http.post<UniformRegistration[]>(url, uniformDates);
+  }
+
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
+    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
+    return this.http.get<UniformSubscription>(url);
+  }
+
+  public updateUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscription.id}`;
+    return this.http.put(url, subscription);
+  }
+
+  public createUniformSubscription(integrationId: string, subscription: Partial<UniformSubscription>): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription`;
+    return this.http.post(url, subscription);
   }
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize: number = 100): Observable<UniformRegistrationLogResponse> {
@@ -155,7 +170,7 @@ export class ApiService {
     return this.http.get<UniformRegistrationLogResponse>(url);
   }
 
-  public hasUnreadUniformRegistrationLogs(uniformDates: {[key: string]: string}): Observable<boolean> {
+  public hasUnreadUniformRegistrationLogs(uniformDates: { [key: string]: string }): Observable<boolean> {
     const url = `${this._baseUrl}/hasUnreadUniformRegistrationLogs`;
     return this.http.post<boolean>(url, uniformDates);
   }
@@ -179,6 +194,11 @@ export class ApiService {
     return this.http.delete(url, {params});
   }
 
+  public deleteSubscription(integrationId: string, subscriptionId: string): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
+    return this.http.delete(url);
+  }
+
   public getMetadata(): Observable<Metadata> {
     return this.http.get<Metadata>(`${this._baseUrl}/v1/metadata`);
   }
@@ -197,7 +217,8 @@ export class ApiService {
   }
 
   public getTaskNames(projectName: string): Observable<string[]> {
-    return of(TaskNames);
+    const url = `${this._baseUrl}/project/${projectName}/tasks`;
+    return this.http.get<string[]>(url);
   }
 
   public getStages(projectName: string): Observable<Stage[]> {

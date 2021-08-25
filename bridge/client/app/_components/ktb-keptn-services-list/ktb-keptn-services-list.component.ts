@@ -1,11 +1,12 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, TemplateRef } from '@angular/core';
 import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { DataService } from '../../_services/data.service';
-import { ActivatedRoute } from '@angular/router';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../../../server/interfaces/uniform-registration-log';
 import { UniformRegistration } from '../../_models/uniform-registration';
+import { Location } from '@angular/common';
 import { UniformSubscription } from '../../_models/uniform-subscription';
 
 @Component({
@@ -23,15 +24,19 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
   public selectedUniformRegistration?: UniformRegistration;
   public uniformRegistrationLogs$: Observable<UniformRegistrationLog[]> = this.uniformRegistrationLogsSubject.asObservable();
   public isLoadingLogs = false;
-  public projectName$: Observable<string | null>;
+  public projectName?: string;
   public lastSeen?: Date;
 
   @Output() selectedUniformRegistrationChanged: EventEmitter<UniformRegistration> = new EventEmitter();
 
-  constructor(private dataService: DataService, private route: ActivatedRoute) {
-    this.projectName$ = this.route.paramMap.pipe(
-      map(paramMap => paramMap.get('projectName'))
-    );
+  constructor(private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) {
+    this.route.paramMap.pipe(
+      map(paramMap => paramMap.get('projectName')),
+      takeUntil(this.unsubscribe$),
+      filter((projectName: string | null): projectName is string => !!projectName)
+    ).subscribe(projectName => {
+      this.projectName = projectName;
+    });
   }
 
   ngOnInit(): void {
@@ -39,6 +44,8 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$),
       switchMap(uniformRegistrationId => {
         this.isLoadingLogs = true;
+        const routeUrl = this.router.createUrlTree(['/project', this.projectName, 'uniform', 'services', uniformRegistrationId]);
+        this.location.go(routeUrl.toString());
         return this.dataService.getUniformRegistrationLogs(uniformRegistrationId);
       })
     ).subscribe((uniformRegLogs) => {
@@ -50,10 +57,20 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
       this.uniformRegistrationLogsSubject.next(uniformRegLogs);
     });
 
-    this.dataService.getUniformRegistrations()
-      .subscribe((uniformRegistrations) => {
+    const registrations$ = this.dataService.getUniformRegistrations();
+    const integrationId$ = this.route.paramMap.pipe(map(paramMap => paramMap.get('integrationId')));
+
+    combineLatest([registrations$, integrationId$])
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(([uniformRegistrations, integrationId]) => {
         this.isLoadingUniformRegistrations = false;
         this.uniformRegistrations.data = uniformRegistrations;
+        if (integrationId) {
+          const selectedUniformRegistration = uniformRegistrations.find(uniformRegistration => uniformRegistration.id === integrationId);
+          if (selectedUniformRegistration) {
+            this.setSelectedUniformRegistration(selectedUniformRegistration);
+          }
+        }
       });
   }
 
@@ -128,8 +145,8 @@ export class KtbKeptnServicesListComponent implements OnInit, OnDestroy {
 
   public formatSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string | undefined {
     const subscriptions = uniformRegistration.subscriptions.reduce((accSubscriptions: string[], subscription: UniformSubscription) => {
-      if (subscription.project === projectName || !subscription.project) {
-        accSubscriptions.push(subscription.event);
+      if (subscription.hasProject(projectName, true)) {
+        accSubscriptions.push(subscription.formattedEvent);
       }
       return accSubscriptions;
     }, []);

@@ -6,4 +6,5 @@ export interface UniformSubscription {
     services: string[] | null
   };
   parameters?: {key: string, value: string, visible: boolean}[];
+  id?: string;
 }

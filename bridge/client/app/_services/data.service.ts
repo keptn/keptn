@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, forkJoin, from, Observable, Subject, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, Observable, of, Subject } from 'rxjs';
 import { map, mergeMap, switchMap, take, tap, toArray } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Stage } from '../_models/stage';
@@ -19,6 +19,7 @@ import { KeptnInfo } from '../_models/keptn-info';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
 import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
+import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
 
 @Injectable({
@@ -27,7 +28,6 @@ import { SequenceState } from '../../../shared/models/sequence';
 export class DataService {
 
   protected _projects = new BehaviorSubject<Project[] | undefined>(undefined);
-  protected _taskNames = new BehaviorSubject<string[]>([]);
   protected _sequences = new BehaviorSubject<Sequence[] | undefined>(undefined);
   protected _traces = new BehaviorSubject<Trace[] | undefined>(undefined);
   protected _openApprovals = new BehaviorSubject<Trace[]>([]);
@@ -38,7 +38,7 @@ export class DataService {
   protected _tracesLastUpdated: { [key: string]: Date } = {};
   protected _rootTracesLastUpdated: { [key: string]: Date } = {};
   protected _projectName: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  protected _uniformDates: {[key: string]: string} = this.apiService.uniformLogDates;
+  protected _uniformDates: { [key: string]: string } = this.apiService.uniformLogDates;
   protected _hasUnreadUniformRegistrationLogs = new BehaviorSubject<boolean>(false);
   protected readonly DEFAULT_SEQUENCE_PAGE_SIZE = 25;
   protected readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
@@ -52,16 +52,6 @@ export class DataService {
 
   get projects(): Observable<Project[] | undefined> {
     return this._projects.asObservable();
-  }
-
-  get taskNames(): Observable<string[]> {
-    return this._taskNames.asObservable();
-  }
-
-  get taskNamesTriggered(): Observable<string[]> {
-    return this._taskNames.pipe(
-      map(tasks => tasks.map(task => task + '.triggered'))
-    );
   }
 
   get sequences(): Observable<Sequence[] | undefined> {
@@ -137,6 +127,20 @@ export class DataService {
     );
   }
 
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
+    return this.apiService.getUniformSubscription(integrationId, subscriptionId).pipe(
+      map(uniformSubscription => UniformSubscription.fromJSON(uniformSubscription))
+    );
+  }
+
+  public updateUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced);
+  }
+
+  public createUniformSubscription(integrationId: string, subscription: UniformSubscription): Observable<object> {
+    return this.apiService.createUniformSubscription(integrationId, subscription.reduced);
+  }
+
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {
     return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize).pipe(
       map((response) => response.logs)
@@ -165,6 +169,10 @@ export class DataService {
 
   public deleteSecret(name: string, scope: string): Observable<object> {
     return this.apiService.deleteSecret(name, scope);
+  }
+
+  public deleteSubscription(integrationId: string, id: string): Observable<object> {
+    return this.apiService.deleteSubscription(integrationId, id);
   }
 
   public getRootsLastUpdated(project: Project): Date {
@@ -556,14 +564,11 @@ export class DataService {
       });
   }
 
-  public loadTaskNames(projectName: string): void {
-    this.apiService.getTaskNames(projectName)
+  public getTaskNames(projectName: string): Observable<string[]> {
+    return this.apiService.getTaskNames(projectName)
       .pipe(
         map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB)))
-      )
-      .subscribe(taskNames => {
-        this._taskNames.next(taskNames);
-      });
+      );
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {

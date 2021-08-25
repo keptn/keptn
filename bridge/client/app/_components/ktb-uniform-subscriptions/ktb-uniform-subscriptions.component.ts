@@ -3,6 +3,7 @@ import { UniformRegistration } from '../../_models/uniform-registration';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { UniformSubscription } from '../../_models/uniform-subscription';
 
 @Component({
   selector: 'ktb-uniform-subscriptions[uniformRegistration]',
@@ -30,4 +31,13 @@ export class KtbUniformSubscriptionsComponent {
     );
   }
 
+  public deleteSubscription(subscription: UniformSubscription): void {
+    if (this.uniformRegistration) {
+      const index = this.uniformRegistration.subscriptions.indexOf(subscription);
+      if (index >= 0) {
+        this.uniformRegistration.subscriptions.splice(index, 1);
+        this._changeDetectorRef.markForCheck();
+      }
+    }
+  }
 }

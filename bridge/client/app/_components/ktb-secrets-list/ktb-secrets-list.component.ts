@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Subject } from 'rxjs';
 import { Secret } from '../../_models/secret';
+import { DeleteDialogState } from '../_dialogs/ktb-delete-confirmation/ktb-delete-confirmation.component';
 
 @Component({
   selector: 'ktb-secrets-view',
@@ -13,14 +14,14 @@ import { Secret } from '../../_models/secret';
 export class KtbSecretsListComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-  private closeConfirmationDialogTimeout?: ReturnType<typeof setTimeout>;
-
   public tableEntries: DtTableDataSource<Secret> = new DtTableDataSource();
   public currentSecret?: Secret;
-
-  public deleteSecretDialogState: string | null = null;
+  public SecretClass = Secret;
+  public deleteSecretDialogState: DeleteDialogState = null;
+  public deleteState: DeleteDialogState = null;
 
   constructor(private dataService: DataService, private route: ActivatedRoute, private _changeDetectorRef: ChangeDetectorRef) {
+    this.deleteSecret.bind(this);
   }
 
   ngOnInit(): void {
@@ -32,36 +33,23 @@ export class KtbSecretsListComponent implements OnInit, OnDestroy {
 
   public triggerDeleteSecret(secret: Secret) {
     this.currentSecret = secret;
-    if (this.closeConfirmationDialogTimeout) {
-      clearTimeout(this.closeConfirmationDialogTimeout);
+    this.deleteState = 'confirm';
+  }
+
+  public deleteSecret(secret?: Secret) {
+    if (secret) {
+      this.dataService.deleteSecret(secret.name, secret.scope)
+        .subscribe((result) => {
+          this.deleteState = 'success';
+          const data: Secret[] = this.tableEntries.data;
+          data.splice(data.findIndex((s: Secret) => s.name === secret.name), 1);
+          this.tableEntries = new DtTableDataSource(data);
+        });
     }
-    this.deleteSecretDialogState = 'confirm';
-  }
-
-  public deleteSecret(secret: Secret) {
-    this.deleteSecretDialogState = 'deleting';
-    this.dataService.deleteSecret(secret.name, secret.scope)
-      .subscribe((result) => {
-        this.deleteSecretDialogState = 'success';
-        this.closeConfirmationDialogTimeout = setTimeout(() => {
-          this.closeConfirmationDialog();
-        }, 2000);
-
-        const data: Secret[] = this.tableEntries.data;
-        data.splice(data.findIndex((s: Secret) => s.name === secret.name), 1);
-        this.tableEntries = new DtTableDataSource(data);
-      });
-  }
-
-  closeConfirmationDialog() {
-    this.deleteSecretDialogState = null;
-  }
-
-  public toSecret(row: Secret): Secret {
-    return row;
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }
