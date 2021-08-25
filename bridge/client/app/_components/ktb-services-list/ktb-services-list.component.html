@@ -2,26 +2,6 @@
   <ng-container *ngIf="services && services.length > 0; else noService">
     <dt-table [dataSource]="dataSource">
 
-      <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
-        <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType : ServiceClass as service">
-            <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.openRemediations.length > 0" class="m-0 overflow-ellipsis">
-              <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext, else serviceContent">
-                <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
-              </a>
-              <ng-template #serviceContent>
-                <span [textContent]="service.getShortImageName() || service.serviceName" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: service.getShortImageName() || service.serviceName}}"></span>
-                <ng-container *ngIf="service.getImageVersion()">
-                  <br>
-                  <span [textContent]="service.getImageVersion()" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: service.getImageVersion()}}"></span>
-                </ng-container>
-              </ng-template>
-              <ng-template #overlay let-data><span [textContent]="data.text"></span></ng-template>
-            </p>
-          </ng-container>
-        </dt-cell>
-      </ng-container>
-
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : ServiceClass as service">
@@ -43,6 +23,23 @@
         </dt-cell>
       </ng-container>
 
+      <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
+        <dt-cell *dtCellDef="let row">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
+            <p [class.highlight]="service.getOpenApprovals().length > 0" [class.error]="service.openRemediations.length > 0" class="m-0 overflow-ellipsis">
+              <a [routerLink]="getServiceLink(service)" *ngIf="service.deploymentContext, else serviceContent">
+                <ng-container *ngTemplateOutlet="serviceContent"></ng-container>
+              </a>
+              <ng-template #serviceContent>
+                <span [textContent]="service.serviceName" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: service.serviceName}}"></span><br/>
+                <span [textContent]="getImageText(service)" [dtOverlay]="overlay" [dtOverlayConfig]="{data: {text: getImageText(service)}}"></span>
+              </ng-template>
+              <ng-template #overlay let-data><span [textContent]="data.text"></span></ng-template>
+            </p>
+          </ng-container>
+        </dt-cell>
+      </ng-container>
+
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="row | toType : ServiceClass as service">
@@ -54,7 +51,7 @@
         </dt-cell>
       </ng-container>
 
-      <dt-row *dtRowDef="let row; columns: ['serviceName', 'recentSequence', 'recentEvaluation']"></dt-row>
+      <dt-row *dtRowDef="let row; columns: ['recentSequence', 'serviceName', 'recentEvaluation']"></dt-row>
     </dt-table>
     <button *ngIf="services.length > DEFAULT_PAGE_SIZE" uitestid="keptn-services-list-showMoreServices" dt-show-more [showLess]="pageSize > DEFAULT_PAGE_SIZE" (click)="toggleAllServices()">Show all <span [textContent]="services.length"></span> services</button>
   </ng-container>

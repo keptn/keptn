@@ -16,7 +16,8 @@ const services: ur[] = [
         podname: 'ansible-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'active'
+      status: 'active',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'ansible-service',
     subscriptions:
@@ -34,7 +35,7 @@ const services: ur[] = [
     id: 'keptn-uniform-helm-service-cc9da31fa4c9f5e58985149029c598c4',
     metadata: {
       deplyomentname: 'helm-service',
-      distributorversion: '0.8.3',
+      distributorversion: '0.9.0',
       hostname: 'gke_research_us-central1-c_prod-customer-A',
       integrationversion: 'helm-service:0.8.3',
       kubernetesmetadata: {
@@ -43,17 +44,19 @@ const services: ur[] = [
         podname: 'helm-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'ansible-service',
     subscriptions:
       [{
         filter: {
           projects: [],
-          services: [],
-          stages: []
+          services: ['carts'],
+          stages: ['dev']
         },
-        event: 'sh.keptn.deployment.triggered'
+        event: 'sh.keptn.event.deployment.triggered',
+        id: 'myHelmSubscriptionId'
       }]
   },
   {
@@ -69,17 +72,19 @@ const services: ur[] = [
         podname: 'jmeter-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'jmeter-service',
     subscriptions:
       [{
         filter: {
-          projects: [],
-          services: [],
-          stages: []
+          projects: ['sockshop'],
+          services: ['carts'],
+          stages: ['dev']
         },
-        event: 'sh.keptn.test.triggered'
+        event: 'sh.keptn.event.test.triggered',
+        id: 'myJmeterSubscriptionId'
       }]
   },
   {
@@ -95,7 +100,8 @@ const services: ur[] = [
         podname: 'lighthouse-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'lighthouse-service',
     subscriptions:
@@ -105,7 +111,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        event: 'sh.keptn.evaluation.triggered'
+        event: 'sh.keptn.event.evaluation.triggered'
       }]
   },
   {
@@ -121,7 +127,8 @@ const services: ur[] = [
         podname: 'approval-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'lighthouse-service',
     subscriptions:
@@ -131,7 +138,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        event: 'sh.keptn.deployment.triggered'
+        event: 'sh.keptn.event.deployment.triggered'
       }]
   },
   {
@@ -147,7 +154,8 @@ const services: ur[] = [
         podname: 'remediation-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'remediation-service',
     subscriptions:
@@ -158,7 +166,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          event: 'sh.keptn.test.triggered'
+          event: 'sh.keptn.event.test.triggered'
         },
         {
           filter: {
@@ -166,7 +174,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          event: 'sh.keptn.evaluation.triggered'
+          event: 'sh.keptn.event.evaluation.triggered'
         },
         {
           filter: {
@@ -174,7 +182,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          event: 'sh.keptn.deployment.triggered'
+          event: 'sh.keptn.event.deployment.triggered'
         },
       ]
   },
@@ -191,7 +199,8 @@ const services: ur[] = [
         podname: 'jenkins-service-123456789'
       },
       location: 'Execution plane-B',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'jenkins-service',
     subscriptions:
@@ -201,7 +210,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        event: 'sh.keptn.deployment.triggered'
+        event: 'sh.keptn.event.deployment.triggered'
       }]
   },
   {
@@ -217,7 +226,8 @@ const services: ur[] = [
         podname: 'dynatrace-sli-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'dynatrace-sli-service',
     subscriptions:
@@ -227,7 +237,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        event: 'sh.keptn.evaluation.triggered'
+        event: 'sh.keptn.event.evaluation.triggered'
       }]
   },
   {
@@ -243,7 +253,8 @@ const services: ur[] = [
         podname: 'dynatrace-service-123456789'
       },
       location: 'Control plane',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'dynatrace-service',
     subscriptions:
@@ -253,7 +264,7 @@ const services: ur[] = [
           services: [],
           stages: []
         },
-        event: 'sh.keptn.evaluation.triggered'
+        event: 'sh.keptn.event.evaluation.triggered'
       }]
   },
   {
@@ -269,7 +280,8 @@ const services: ur[] = [
         podname: 'servicenow-service-123456789'
       },
       location: 'Execution plane-A',
-      status: 'healthy'
+      status: 'healthy',
+      lastseen: '2021-08-19T08:37:54.691Z'
     },
     name: 'servicenow-service',
     subscriptions:
@@ -280,7 +292,7 @@ const services: ur[] = [
             services: [],
             stages: []
           },
-          event: 'sh.keptn.deployment.triggered'
+          event: 'sh.keptn.event.deployment.triggered'
         }
       ]
   }

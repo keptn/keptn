@@ -44,6 +44,16 @@ func TestHandler_CreateSecret(t *testing.T) {
 			expectedHTTPStatus: http.StatusCreated,
 		},
 		{
+			name: "POST Create Secret without scope - SUCCESS",
+			fields: fields{
+				Backend: &fake.SecretBackendMock{
+					CreateSecretFunc: func(secret model.Secret) error { return nil },
+				},
+			},
+			request:            httptest.NewRequest("POST", "/secret", bytes.NewBuffer([]byte(`{"name":"my-secret","data":{"username":"keptn"}}`))),
+			expectedHTTPStatus: http.StatusCreated,
+		},
+		{
 			name: "POST Create Secret - Secret already exists",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{
@@ -71,16 +81,6 @@ func TestHandler_CreateSecret(t *testing.T) {
 				},
 			},
 			request:            httptest.NewRequest("POST", "/secret", bytes.NewBuffer([]byte(`SOME_WEIRD_INPUT`))),
-			expectedHTTPStatus: http.StatusBadRequest,
-		},
-		{
-			name: "POST Secret - missing scope",
-			fields: fields{
-				Backend: &fake.SecretBackendMock{
-					UpdateSecretFunc: func(secret model.Secret) error { return backend.ErrSecretNotFound },
-				},
-			},
-			request:            httptest.NewRequest("POST", "/secret", bytes.NewBuffer([]byte(`{"name":"my-secret","data":{"username":"keptn"}}`))),
 			expectedHTTPStatus: http.StatusBadRequest,
 		},
 		{
@@ -245,11 +245,11 @@ func TestHandler_Update(t *testing.T) {
 			name: "UPDATE Secret - missing scope",
 			fields: fields{
 				Backend: &fake.SecretBackendMock{
-					UpdateSecretFunc: func(secret model.Secret) error { return backend.ErrSecretNotFound },
+					UpdateSecretFunc: func(secret model.Secret) error { return nil },
 				},
 			},
 			request:            httptest.NewRequest("PUT", "/secret", bytes.NewBuffer([]byte(`{"name":"my-secret","data":{"username":"keptn"}}`))),
-			expectedHTTPStatus: http.StatusBadRequest,
+			expectedHTTPStatus: http.StatusOK,
 		},
 		{
 			name: "UPDATE Secret - missing name",

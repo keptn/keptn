@@ -7,10 +7,10 @@ import { DataService } from '../services/data-service';
 const router = Router();
 
 function apiRouter(params:
-                     {apiUrl: string, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string}
-                   ): Router {
+                     { apiUrl: string, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string }
+): Router {
   // fetch parameters for bridgeInfo endpoint
-  const { apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType } = params;
+  const {apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType} = params;
   const enableVersionCheckFeature = process.env.ENABLE_VERSION_CHECK !== 'false';
   const showApiToken = process.env.SHOW_API_TOKEN !== 'false';
   const bridgeVersion = process.env.VERSION;
@@ -32,7 +32,7 @@ function apiRouter(params:
       projectsPageSize,
       servicesPageSize,
       authType,
-      ... user && {user}
+      ...user && {user}
     };
 
     try {
@@ -91,30 +91,37 @@ function apiRouter(params:
       const projectName = req.params.projectName;
       const project = await dataService.getProject(projectName, req.query.remediation === 'true', req.query.approval === 'true');
       return res.json(project);
+    } catch (error) {
+      return next(error);
     }
-    catch (error) {
+  });
+
+  router.get('/project/:projectName/tasks', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const projectName = req.params.projectName;
+      const tasks = await dataService.getTasks(projectName);
+      return res.json(tasks);
+    } catch (error) {
       return next(error);
     }
   });
 
   router.post('/uniform/registration', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const uniformDates: {[key: string]: string} = req.body;
+      const uniformDates: { [key: string]: string } = req.body;
       const uniformRegistrations = await dataService.getUniformRegistrations(uniformDates);
       return res.json(uniformRegistrations);
-    }
-    catch (error) {
+    } catch (error) {
       return next(error);
     }
   });
 
   router.post('/hasUnreadUniformRegistrationLogs', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const uniformDates: {[key: string]: string} = req.body;
+      const uniformDates: { [key: string]: string } = req.body;
       const status = await dataService.hasUnreadUniformRegistrationLogs(uniformDates);
       res.json(status);
-    }
-    catch (error) {
+    } catch (error) {
       return next(error);
     }
   });
@@ -124,7 +131,7 @@ function apiRouter(params:
       const result = await axios({
         method: req.method as Method,
         url: `${apiUrl}${req.url}`,
-        ...req.method !== 'GET' && { data: req.body },
+        ...req.method !== 'GET' && {data: req.body},
         headers: {
           'x-token': apiToken,
           'Content-Type': 'application/json'

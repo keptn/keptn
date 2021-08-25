@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.1.0
 	github.com/cloudevents/sdk-go/v2 v2.4.1
-	github.com/gin-gonic/gin v1.7.2
+	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.5
 	github.com/google/uuid v1.3.0

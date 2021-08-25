@@ -1,5 +1,4 @@
-import { axios } from './axios-instance';
-import { AxiosResponse } from 'axios';
+import Axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Project } from '../models/project';
 import { ResultTypes } from '../../shared/models/result-types';
@@ -7,22 +6,30 @@ import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
 import { UniformRegistration } from '../interfaces/uniform-registration';
 import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
+import { Resource } from '../../shared/interfaces/resource';
+import https from 'https';
 
 export class ApiService {
-  private readonly defaultHeaders: object;
+  private readonly axios: AxiosInstance;
+
   constructor(private readonly baseUrl: string, private readonly apiToken: string) {
-    this.defaultHeaders = {
-      'x-token': apiToken,
-      'Content-Type': 'application/json'
-    };
+    this.axios = Axios.create({
+      // accepts self-signed ssl certificate
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+      }),
+      headers: {
+        'x-token': apiToken,
+        'Content-Type': 'application/json'
+      }
+    });
   }
 
 
   public getProject(projectName: string): Promise<AxiosResponse<Project>> {
-    return axios.get<Project>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`, {
-      headers: this.defaultHeaders
-    });
+    return this.axios.get<Project>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`);
   }
+
   public getSequences(projectName: string, pageSize: number, sequenceName?: string, state?: string,
                       fromTime?: string, beforeTime?: string, keptnContext?: string): Promise<AxiosResponse<SequenceResult>> {
     const params = {
@@ -34,7 +41,7 @@ export class ApiService {
       ...(keptnContext && {keptnContext})
     };
 
-    return axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, {params, headers: this.defaultHeaders});
+    return this.axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, {params});
   }
 
   public getTraces(eventType: string, pageSize: number, projectName: string, stageName: string, serviceName: string, keptnContext?: string, fromTime?: string): Promise<AxiosResponse<EventResult>> {
@@ -46,7 +53,7 @@ export class ApiService {
       limit: pageSize.toString(),
       ...keptnContext && {keptnContext}
     };
-    return axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params, headers: this.defaultHeaders});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
   }
 
   public getTracesWithResult(eventType: EventTypes, pageSize: number, projectName: string, stageName: string, serviceName: string, resultType: ResultTypes): Promise<AxiosResponse<EventResult>> {
@@ -55,7 +62,7 @@ export class ApiService {
       excludeInvalidated: 'true',
       limit: pageSize.toString()
     };
-    return axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {params, headers: this.defaultHeaders});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {params});
   }
 
   public getEvaluationResults(projectName: string, serviceName: string, stageName: string, pageSize: number, keptnContext?: string): Promise<AxiosResponse<EventResult>> {
@@ -65,7 +72,7 @@ export class ApiService {
       excludeInvalidated: 'true',
       limit: pageSize.toString()
     };
-    return axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {params, headers: this.defaultHeaders});
+    return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {params});
   }
 
   public getOpenTriggeredEvents(projectName: string, stageName: string, serviceName: string, eventType: EventTypes): Promise<AxiosResponse<EventResult>> {
@@ -74,11 +81,11 @@ export class ApiService {
       stage: stageName,
       service: serviceName,
     };
-    return axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, {params, headers: this.defaultHeaders});
+    return this.axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, {params});
   }
 
   public getUniformRegistrations(): Promise<AxiosResponse<UniformRegistration[]>> {
-    return axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`, {headers: this.defaultHeaders});
+    return this.axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`);
   }
 
   public getUniformRegistrationLogs(integrationId: string, fromTime?: string, pageSize = 100): Promise<AxiosResponse<UniformRegistrationLogResponse>> {
@@ -87,6 +94,10 @@ export class ApiService {
       ...fromTime && {fromTime: new Date(new Date(fromTime).getTime() + 1).toISOString()}, // > fromTime instead of >= fromTime
       pageSize: pageSize.toString()
     };
-    return axios.get<UniformRegistrationLogResponse>(`${this.baseUrl}/controlPlane/v1/log`, {params, headers: this.defaultHeaders});
+    return this.axios.get<UniformRegistrationLogResponse>(`${this.baseUrl}/controlPlane/v1/log`, {params});
+  }
+
+  public getShipyard(projectName: string): Promise<AxiosResponse<Resource>> {
+    return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
   }
 }
