@@ -6,7 +6,7 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.9.0 // indirect
-	github.com/go-openapi/errors v0.19.9
+	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/loads v0.20.2
 	github.com/go-openapi/runtime v0.19.30
 	github.com/go-openapi/spec v0.20.3
