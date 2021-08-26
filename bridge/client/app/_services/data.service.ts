@@ -98,7 +98,7 @@ export class DataService {
     this._projectName.next(projectName);
   }
 
-  public setUniformDate(integrationId: string, lastSeen?: string) {
+  public setUniformDate(integrationId: string, lastSeen?: string): void {
     this._uniformDates[integrationId] = lastSeen || new Date().toISOString();
     this.apiService.uniformLogDates = this._uniformDates;
   }
@@ -234,8 +234,7 @@ export class DataService {
       const projects = this._projects.getValue();
       const existingProject = projects?.find(p => p.projectName === project.projectName);
       if (existingProject) {
-        const {sequences, ...copyProject} = project;
-        Object.assign(existingProject, copyProject);
+        Object.assign(existingProject, project.reduced);
         this._projects.next(projects);
       }
     }, err => {
@@ -264,8 +263,7 @@ export class DataService {
       projects = projects.map(project => {
         const existingProject = existingProjects?.find(p => p.projectName === project.projectName);
         if (existingProject) {
-          const {sequences, ...copyProject} = project;
-          return Object.assign(existingProject, copyProject);
+          return Object.assign(existingProject, project.reduced);
         } else {
           return project;
         }
@@ -417,7 +415,7 @@ export class DataService {
   }
 
   protected allSequencesLoaded(sequences: number, totalCount: number, fromTime?: Date, beforeTime?: Date): boolean {
-    return !!fromTime && !beforeTime && sequences >= totalCount
+    return !fromTime && !beforeTime && sequences >= totalCount
       || !!beforeTime && !fromTime && totalCount < this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE;
   }
 
