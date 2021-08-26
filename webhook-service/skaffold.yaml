@@ -1,0 +1,12 @@
+apiVersion: skaffold/v2beta10
+kind: Config
+build:
+  artifacts:
+    - image: keptn/webhook-service
+      docker:
+        dockerfile: Dockerfile
+deploy:
+  kubectl:
+    defaultNamespace: keptn
+    manifests:
+      - deploy/service.yaml

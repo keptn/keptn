@@ -27,44 +27,54 @@ spec:
     spec:
       serviceAccountName: keptn-default
       containers:
-      - name: webhook-service
-        image: keptn/webhook-service:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "1Gi"
-            cpu: "200m"
-        env:
-          - name: EVENTBROKER
-            value: 'http://event-broker/keptn'
-          - name: CONFIGURATION_SERVICE
-            value: 'http://configuration-service:8080'
-          - name: ENVIRONMENT
-            value: 'production'
-      - name: distributor
-        image: keptn/distributor:0.8.7
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 8080
-        resources:
-          requests:
-            memory: "16Mi"
-            cpu: "25m"
-          limits:
-            memory: "32Mi"
-            cpu: "100m"
-        env:
-          - name: PUBSUB_URL
-            value: 'nats://keptn-nats-cluster'
-          - name: PUBSUB_TOPIC
-            value: 'sh.keptn.event.>'
-          - name: PUBSUB_RECIPIENT
-            value: '127.0.0.1'
+        - name: webhook-service
+          image: keptn/webhook-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "200m"
+          env:
+            - name: EVENTBROKER
+              value: 'http://event-broker/keptn'
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+            - name: ENVIRONMENT
+              value: 'production'
+        - name: distributor
+          image: keptn/distributor:0.8.8-dev.202108250723
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "25m"
+            limits:
+              memory: "32Mi"
+              cpu: "100m"
+          env:
+            - name: PUBSUB_URL
+              value: 'nats://keptn-nats-cluster'
+            - name: PUBSUB_TOPIC
+              value: 'sh.keptn.event.>'
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: K8S_DEPLOYMENT_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: 'metadata.labels[''app.kubernetes.io/name'']'
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
 ---
 apiVersion: v1
 kind: Service
@@ -78,9 +88,9 @@ metadata:
     app.kubernetes.io/component: control-plane
 spec:
   ports:
-  - port: 8080
-    targetPort: 8080
-    protocol: TCP
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
   selector:
     app.kubernetes.io/name: webhook-service
     app.kubernetes.io/instance: keptn
