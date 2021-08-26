@@ -81,7 +81,7 @@ export class KtbModifyUniformSubscriptionComponent {
     integrationId$.pipe(
       switchMap(integrationId => this.dataService.getIsUniformRegistrationControlPlane(integrationId)),
     ).subscribe(isControlPlane => {
-      if (isControlPlane) {
+      if (!isControlPlane) {
         this.suffixes = [
           {
             value: 'triggered',

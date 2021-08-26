@@ -12,26 +12,26 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
   let fixture: ComponentFixture<KtbModifyUniformSubscriptionComponent>;
-  const paramMap: BehaviorSubject<ParamMap> = new BehaviorSubject<ParamMap>(convertToParamMap({}));
+  let paramMap: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
-    paramMap.next(convertToParamMap({
+    paramMap = new BehaviorSubject<ParamMap>(convertToParamMap({
       projectName: 'sockshop',
-      integrationId: UniformRegistrationsMock[0].id
+      integrationId: UniformRegistrationsMock[0].id,
     }));
     await TestBed.configureTestingModule({
       imports: [
         AppModule,
-        HttpClientTestingModule
+        HttpClientTestingModule,
       ],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
         {
           provide: ActivatedRoute, useValue: {
-            paramMap: paramMap.asObservable()
-          }
-        }
-      ]
+            paramMap: paramMap.asObservable(),
+          },
+        },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
     component = fixture.componentInstance;
@@ -144,22 +144,59 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
         filter: {
           projects: [],
           services: [],
-          stages: []
-        }
+          stages: [],
+        },
       }));
     expect(routerSpy).toHaveBeenCalledWith(['/', 'project', 'sockshop', 'uniform', 'services', UniformRegistrationsMock[1].id]);
     expect(fixture.nativeElement.querySelector('button[uitestid=updateSubscriptionButton]').textContent.trim()).toEqual('Create subscription');
   });
 
+  it('should only have triggered suffix', () => {
+    // given
+    setSubscription(6, 0);
+    fixture.detectChanges();
+
+    expect(component.suffixes).toEqual([{displayValue: 'triggered', value: 'triggered'}]);
+  });
+
+  it('should show all suffixes', () => {
+    // given
+    setSubscription(3);
+    fixture.detectChanges();
+
+    expect(component.suffixes).toEqual([
+      {
+        value: '>',
+        displayValue: '*',
+      },
+      {
+        value: 'triggered',
+        displayValue: 'triggered',
+      },
+      {
+        value: 'started',
+        displayValue: 'started',
+      },
+      {
+        value: 'finished',
+        displayValue: 'finished',
+      }]);
+  });
+
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
     const dataService = TestBed.inject(DataService);
-    const subscription = subscriptionIndex !== undefined ? UniformRegistrationsMock[integrationIndex].subscriptions[subscriptionIndex] : new UniformSubscription('sockshop');
+    const uniformRegistration = UniformRegistrationsMock[integrationIndex];
+    const subscription = subscriptionIndex !== undefined ? uniformRegistration.subscriptions[subscriptionIndex] : new UniformSubscription('sockshop');
     dataService.getUniformSubscription = jest.fn().mockReturnValue(of(subscription));
+    dataService.getIsUniformRegistrationControlPlane = jest.fn().mockReturnValue(of(uniformRegistration.metadata.location === 'control-plane'));
     paramMap.next(convertToParamMap({
       projectName: 'sockshop',
-      integrationId: UniformRegistrationsMock[integrationIndex].id,
-      subscriptionId: subscription.id
+      integrationId: uniformRegistration.id,
+      subscriptionId: subscription.id,
     }));
+    // set it again because of paramMap change
+    fixture = TestBed.createComponent(KtbModifyUniformSubscriptionComponent);
+    component = fixture.componentInstance;
     return subscription;
   }
 });
