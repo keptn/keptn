@@ -34,13 +34,16 @@ export class KtbDeleteConfirmationComponent {
   @Input() name?: string;
   @Input() deleteMessage?: string;
   @Output() confirmClicked: EventEmitter<void> = new EventEmitter<void>();
+  @Output() dialogStateChange: EventEmitter<DeleteDialogState> = new EventEmitter<DeleteDialogState>();
 
-  public closeDialog() {
+  public closeDialog(): void {
     this.dialogState = null;
+    this.dialogStateChange.emit(this.dialogState);
   }
 
-  public deleteAction() {
+  public deleteAction(): void {
     this.dialogState = 'deleting';
+    this.dialogStateChange.emit(this.dialogState);
     this.confirmClicked.emit();
   }
 }

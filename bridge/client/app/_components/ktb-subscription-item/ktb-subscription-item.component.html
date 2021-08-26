@@ -33,7 +33,7 @@
 
   <ktb-delete-confirmation
     type="subscription"
-    [dialogState]="deleteState"
+    [(dialogState)]="deleteState"
     [deleteMessage]="subscription.isGlobal ? 'Deleting this subscription will affect all projects. Please be certain.' : undefined"
     [name]="name"
     (confirmClicked)="deleteSubscription()"
