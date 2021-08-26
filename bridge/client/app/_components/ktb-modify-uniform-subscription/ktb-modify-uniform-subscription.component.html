@@ -16,7 +16,7 @@
           <dt-form-field>
             <dt-label class="required">Task suffix</dt-label>
             <dt-select formControlName="taskSuffix" class="mr-2 item" placeholder="Choose your task suffix" aria-label="Choose your task suffix">
-              <dt-option *ngFor="let affix of affixes" [value]="affix.value" [textContent]="affix.displayValue"></dt-option>
+              <dt-option *ngFor="let affix of suffixes" [value]="affix.value" [textContent]="affix.displayValue"></dt-option>
             </dt-select>
           </dt-form-field>
         </div>
