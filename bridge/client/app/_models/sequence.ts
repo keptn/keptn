@@ -9,7 +9,7 @@ import { DtIconType } from '@dynatrace/barista-icons';
 
 export class Sequence extends sq {
   stages!: (SequenceStage &
-     {
+    {
       latestEvaluationTrace?: Trace,
       actions?: RemediationAction[]
     })[]
@@ -71,7 +71,7 @@ export class Sequence extends sq {
 
   public hasPendingApproval(stageName?: string): boolean {
     return stageName ?
-        this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_STARTED
+      this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || this.getStage(stageName)?.latestEvent?.type === EventTypes.APPROVAL_STARTED
       : this.stages.some(stage => stage.latestEvent?.type === EventTypes.APPROVAL_TRIGGERED || stage.latestEvent?.type === EventTypes.APPROVAL_STARTED);
   }
 
@@ -83,15 +83,15 @@ export class Sequence extends sq {
       } else {
         status = 'succeeded';
       }
-    }
-    else if (this.state === SequenceState.TRIGGERED) {
+    } else if (this.state === SequenceState.TRIGGERED) {
       status = 'started';
     }
     return status;
   }
 
   public isLoading(stageName?: string): boolean {
-    return stageName ? this.state === SequenceState.TRIGGERED && !this.isFinished(stageName) : this.state === SequenceState.TRIGGERED;
+    const isStarted = this.state === SequenceState.TRIGGERED || this.state === SequenceState.STARTED;
+    return isStarted && (!stageName || !this.isFinished(stageName));
   }
 
   public isSuccessful(stageName?: string): boolean {
@@ -118,7 +118,7 @@ export class Sequence extends sq {
     return this.state === SequenceState.UNKNOWN;
   }
 
-  public getLatestEvent(): {id: string, time: string, type: string} | undefined {
+  public getLatestEvent(): { id: string, time: string, type: string } | undefined {
     return this.stages[this.stages.length - 1]?.latestEvent;
   }
 
