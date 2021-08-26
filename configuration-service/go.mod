@@ -14,9 +14,10 @@ require (
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/martian v2.1.0+incompatible
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210824101626-73671a14d0a9
-	github.com/keptn/kubernetes-utils v0.8.3
+	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/kubernetes-utils v0.8.4-0.20210826125405-ca408a280abd
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.6.0
@@ -25,7 +26,6 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	helm.sh/helm/v3 v3.6.1 // indirect
 	k8s.io/apimachinery v0.21.3
 	k8s.io/client-go v0.21.3
 )
