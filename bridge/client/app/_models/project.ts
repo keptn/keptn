@@ -23,11 +23,17 @@ export class Project extends pj {
     return project;
   }
 
+  // returns a project without default values
+  get reduced(): Partial<Project> {
+    const {sequences, allSequencesLoaded, ...copyProject} = this;
+    return copyProject;
+  }
+
   getServices(stageName?: string): Service[] {
     if (!stageName) {
       if (!this.services) {
         let services: Service[] = [];
-        for (const currentStage of this.stages){
+        for (const currentStage of this.stages) {
           services = services.concat(
             currentStage.services.filter(s => !services.some(ss => ss.serviceName === s.serviceName))
           );
@@ -35,8 +41,7 @@ export class Project extends pj {
         this.services = services;
       }
       return this.services;
-    }
-    else {
+    } else {
       return this.stages.find(s => s.stageName === stageName)?.services ?? [];
     }
   }
@@ -63,15 +68,14 @@ export class Project extends pj {
     if (service) {
       if (stage) {
         currentService = this.getServices(stage.stageName)?.find(s => s.serviceName === service.serviceName);
-      }
-      else {
+      } else {
         currentService = this.getService(service.serviceName);
       }
     }
     return currentService?.deploymentInformation;
   }
 
-  getLatestDeploymentTraceOfSequence(service: Service | undefined, stage?: Stage): Trace | undefined{
+  getLatestDeploymentTraceOfSequence(service: Service | undefined, stage?: Stage): Trace | undefined {
     const currentService = service ? this.getService(service.serviceName) : undefined;
 
     return currentService?.sequences
@@ -128,7 +132,7 @@ export class Project extends pj {
       if (service?.deploymentContext &&
         (!lastService
           || service.deploymentTime && lastService.deploymentTime
-            && moment.unix(service.deploymentTime).isAfter(moment.unix(lastService.deploymentTime)))) {
+          && moment.unix(service.deploymentTime).isAfter(moment.unix(lastService.deploymentTime)))) {
         lastService = service;
       }
     });
@@ -137,7 +141,7 @@ export class Project extends pj {
 
   public getStages(parent: string[] | null): Stage[] {
     return this.stages.filter(s => (
-      parent && s.parentStages?.every((element, i) => element === parent[i]))
+        parent && s.parentStages?.every((element, i) => element === parent[i]))
       || (!parent && !s.parentStages));
   }
 
