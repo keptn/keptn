@@ -1,0 +1,40 @@
+# Official list of Keptn maintainers.
+#
+# Names added to this file should be in the following format:
+#     Individual's Name, @githubhandle, Affiliation
+
+# The different levels of membership are outlined here
+# https://github.com/keptn/community/blob/master/COMMUNITY_MEMBERSHIP.md
+# Before adding yourself to the list below, please have a look at this document.
+
+#
+# Please keep the below list sorted in ascending order.
+#
+
+# Maintainers
+
+Alois Reitbauer, @AloisReitbauer, Dynatrace
+Andreas Grabner, @grabnerandi, Dynatrace
+Bernd Warmuth, @warber, Dynatrace
+Christian Kreuzberger, @christian-kreuzberger-dtx, Dynatrace
+Elisabeth Lang, @laneli, Dynatrace
+Ermin Muratovic, @ermin-muratovic, Dynatrace
+Florian Bacher, @bacherfl, Dynatrace
+Johannes Bräuer, @johannes-b, Dynatrace
+Jürgen Etzlstorfer, @jetzlstorer, Dynatrace
+Klaus Strießnig, @kirdock, Dynatrace
+Moritz Wiesinger, @mowies, Dynatrace
+
+
+# Approvers
+
+Andreas Grimmer, @agrimmer, Dynatrace
+Christian Heckelmann, @checkelmann, ERT / Dynatrace
+
+# Members
+
+Arthur Pitman, @arthurpitman, Dynatrace
+Gabriel Tanner, @tannergabriel, Dynatrace
+Giovanni Liva, @thisthat, Dynatrace
+Kavindu Dodanduwa, @kavindu-dodan, Dynatrace
+Thomas Schütz, @thschue, Dynatrace
