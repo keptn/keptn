@@ -20,6 +20,7 @@ Christian Kreuzberger, @christian-kreuzberger-dtx, Dynatrace
 Elisabeth Lang, @laneli, Dynatrace
 Ermin Muratovic, @ermin-muratovic, Dynatrace
 Florian Bacher, @bacherfl, Dynatrace
+Giovanni Liva, @thisthat, Dynatrace
 Johannes Bräuer, @johannes-b, Dynatrace
 Jürgen Etzlstorfer, @jetzlstorer, Dynatrace
 Klaus Strießnig, @kirdock, Dynatrace
@@ -35,6 +36,5 @@ Christian Heckelmann, @checkelmann, ERT / Dynatrace
 
 Arthur Pitman, @arthurpitman, Dynatrace
 Gabriel Tanner, @tannergabriel, Dynatrace
-Giovanni Liva, @thisthat, Dynatrace
 Kavindu Dodanduwa, @kavindu-dodan, Dynatrace
 Thomas Schütz, @thschue, Dynatrace
