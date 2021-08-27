@@ -5,7 +5,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -91,7 +90,6 @@ func NewKeptn(source string, opts ...KeptnOption) *Keptn {
 }
 
 func (k *Keptn) Start() error {
-	go api.RunHealthEndpoint("10998")
 	ctx := context.Background()
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	return k.EventReceiver.StartReceiver(ctx, k.gotEvent)

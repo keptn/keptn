@@ -30,27 +30,18 @@ func NewTaskHandler(templateEngine lib.ITemplateEngine, curlExecutor lib.ICurlEx
 }
 
 func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
-	eventData := &keptnv2.EventData{}
-	if err := keptnv2.Decode(event.Data, eventData); err != nil {
-		return nil, sdkError("could not decode incoming event payload", err)
+	nedc, err := lib.NewEventDataModifier(event)
+	if err != nil {
+		return nil, sdkError("could not parse incoming event", err)
 	}
-
-	eventDataMap := map[string]interface{}{}
-	// apply the EventData attributes to the result
-	if err := keptnv2.Decode(event, &eventDataMap); err != nil {
-		return nil, sdkError("could not apply attributes from incoming event", err)
-	}
-
-	resource, err := th.getWebHookConfigResource(keptnHandler, eventData)
+	resource, err := th.getWebHookConfigResource(keptnHandler, nedc.Project(), nedc.Stage(), nedc.Service())
 	if err != nil {
 		return nil, sdkError("could not find webhook config", err)
 	}
-
 	whConfig, err := keptnv2.DecodeWebHookConfigYAML([]byte(resource.ResourceContent))
 	if err != nil {
 		return nil, sdkError("could not decode webhook config", err)
 	}
-
 	responses := []string{}
 	for _, webhook := range whConfig.Spec.Webhooks {
 		if webhook.Type == *event.Type {
@@ -62,14 +53,13 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 				}
 				secretEnvVars[secretRef.Name] = secretValue
 			}
-			eventDataMap["env"] = secretEnvVars
+			nedc.Add("env", secretEnvVars)
 			for _, req := range webhook.Requests {
 				// parse the data from the event, together with the secret env vars
-				parsedCurlCommand, err := th.templateEngine.ParseTemplate(eventDataMap, req)
+				parsedCurlCommand, err := th.templateEngine.ParseTemplate(nedc.Get(), req)
 				if err != nil {
 					return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
 				}
-
 				// perform the request
 				response, err := th.curlExecutor.Curl(parsedCurlCommand)
 				if err != nil {
@@ -79,12 +69,11 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 			}
 		}
 	}
-
-	eventDataMap[*event.Type] = map[string]interface{}{
+	nedc.Add(*event.Type, map[string]interface{}{
 		"responses": responses,
-	}
+	})
 
-	return eventDataMap, nil
+	return nedc.Get(), nil
 }
 
 func sdkError(msg string, err error) *sdk.Error {
@@ -96,21 +85,21 @@ func sdkError(msg string, err error) *sdk.Error {
 	}
 }
 
-func (th *TaskHandler) getWebHookConfigResource(keptnHandler sdk.IKeptn, eventData *keptnv2.EventData) (*models.Resource, error) {
+func (th *TaskHandler) getWebHookConfigResource(keptnHandler sdk.IKeptn, project, stage, service string) (*models.Resource, error) {
 	// first try to retrieve the webhook config at the service level
-	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(eventData.Project, eventData.Stage, eventData.Service, webhookConfigFileName)
+	resource, err := keptnHandler.GetResourceHandler().GetServiceResource(project, stage, service, webhookConfigFileName)
 	if err == nil && resource != nil {
 		return resource, nil
 	}
 
 	// if we didn't find a config in the service directory, look at the stage
-	resource, err = keptnHandler.GetResourceHandler().GetStageResource(eventData.Project, eventData.Stage, webhookConfigFileName)
+	resource, err = keptnHandler.GetResourceHandler().GetStageResource(project, stage, webhookConfigFileName)
 	if err == nil && resource != nil {
 		return resource, nil
 	}
 
 	// finally, look at project level
-	resource, err = keptnHandler.GetResourceHandler().GetProjectResource(eventData.Project, webhookConfigFileName)
+	resource, err = keptnHandler.GetResourceHandler().GetProjectResource(project, webhookConfigFileName)
 	if err == nil && resource != nil {
 		return resource, nil
 	}

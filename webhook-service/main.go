@@ -1,6 +1,7 @@
 package main
 
 import (
+	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/handler"
 	"github.com/keptn/keptn/webhook-service/lib"
@@ -20,6 +21,7 @@ func main() {
 	secretReader := lib.NewK8sSecretReader(kubeAPI)
 	taskHandler := handler.NewTaskHandler(&lib.TemplateEngine{}, &lib.CmdCurlExecutor{}, secretReader)
 
+	go api.RunHealthEndpoint("10998")
 	log.Fatal(sdk.NewKeptn(
 		serviceName,
 		sdk.WithHandler(
