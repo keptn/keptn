@@ -445,7 +445,7 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		return err
 	}
 
-	// fetching cached shipyard file from project repo (materialized view)
+	// fetching cached shipyard file from project repo
 	shipyard, err := common.GetShipyard(eventScope.Project)
 	if err != nil {
 		msg := "could not retrieve shipyard: " + err.Error()
