@@ -14,9 +14,12 @@ require (
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
 	github.com/google/martian v2.1.0+incompatible
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210824101626-73671a14d0a9
-	github.com/keptn/kubernetes-utils v0.8.3
+	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/kubernetes-utils v0.9.0
+	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/otiai10/copy v1.6.0

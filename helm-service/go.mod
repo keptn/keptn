@@ -5,12 +5,16 @@ go 1.16
 require (
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.8.5-0.20210824101626-73671a14d0a9
-	github.com/keptn/kubernetes-utils v0.8.3
+	github.com/keptn/go-utils v0.8.5
+	github.com/keptn/kubernetes-utils v0.9.0
 	github.com/kinbiko/jsonassert v1.0.2
+	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
