@@ -593,6 +593,19 @@ jobs:
           DOCKER_FOLDER: ${{ matrix.config.working-dir }}
           RELEASE_BUILD: ${{ needs.prepare_ci_run.outputs.RELEASE_BUILD }}
         run: |
+          # check if the service contains a dependency to go-sdk and update it to the current revision that lies in the same directory
+          if [[ -f "${DOCKER_FOLDER}/go.mod" ]]; then
+            echo "Checking if ${DOCKER_FOLDER}/go.mod contains go-sdk"
+            grep "github.com/keptn/keptn/go-sdk" ${DOCKER_FOLDER}/go.mod
+            if [[ $? -eq 0 ]]; then
+              GO_SDK_TARGET=$(git rev-parse HEAD)
+              echo "Yes, updating go-sdk now..."
+              cd ${DOCKER_FOLDER}
+              # fetch the desired version (this will update go.mod and go.sum)
+              go get "github.com/keptn/keptn/go-sdk@${GO_SDK_TARGET}"
+              cd ..
+            fi
+          fi
           docker build "${DOCKER_FOLDER}" -t "${IMAGE}:${VERSION}.${DATETIME}" -t "${IMAGE}:${VERSION}" --build-arg version="${VERSION}"
           docker push "${IMAGE}:${VERSION}.${DATETIME}" && docker push "${IMAGE}:${VERSION}"
 
