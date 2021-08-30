@@ -5,16 +5,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/distributor/pkg/config"
-	logger "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/distributor/pkg/config"
+	logger "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Forwarder receives events directly from the Keptn Service and forwards them to the Keptn API
@@ -22,21 +26,28 @@ type Forwarder struct {
 	EventChannel      chan cloudevents.Event
 	httpClient        *http.Client
 	pubSubConnections map[string]*cenats.Sender
+	tracer            trace.Tracer
 }
 
 func NewForwarder(httpClient *http.Client) *Forwarder {
+	tp := otel.GetTracerProvider()
+	t := tp.Tracer(
+		"github.com/keptn/keptn/distributor/forwarder",
+		trace.WithInstrumentationVersion("1.0.0"), // TODO: Get the package version from somewhere?
+	)
 	return &Forwarder{
 		httpClient:        httpClient,
 		EventChannel:      make(chan cloudevents.Event),
 		pubSubConnections: map[string]*cenats.Sender{},
+		tracer:            t,
 	}
 }
 
 func (f *Forwarder) Start(ctx *ExecutionContext) error {
 	serverURL := fmt.Sprintf("localhost:%d", config.Global.APIProxyPort)
 	mux := http.NewServeMux()
-	mux.Handle(config.Global.EventForwardingPath, http.HandlerFunc(f.handleEvent))
-	mux.Handle(config.Global.APIProxyPath, http.HandlerFunc(f.apiProxyHandler))
+	mux.Handle(config.Global.EventForwardingPath, otelhttp.NewHandler(http.HandlerFunc(f.handleEvent), "forwarder-receiver"))
+	mux.Handle(config.Global.APIProxyPath, otelhttp.NewHandler(http.HandlerFunc(f.apiProxyHandler), "forwarder-apiproxyhandler"))
 
 	svr := &http.Server{
 		Addr:    serverURL,
@@ -63,6 +74,8 @@ func (f *Forwarder) Start(ctx *ExecutionContext) error {
 }
 
 func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
+	// If the request contains the traceparent, propagation will work correctly.
+	// The server is instrumented and the OTel auto-instrumentation will start a new Span for this incoming request
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		logger.Errorf("Failed to read body from request: %v", err)
@@ -77,7 +90,7 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = f.forwardEvent(*event)
+	err = f.forwardEvent(req.Context(), *event)
 	if err != nil {
 		logger.Errorf("Failed to forward CloudEvent: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +98,7 @@ func (f *Forwarder) handleEvent(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
+func (f *Forwarder) forwardEvent(ctx context.Context, event cloudevents.Event) error {
 	logger.Infof("Received CloudEvent with ID %s - Forwarding to Keptn API\n", event.ID())
 	go func() {
 		f.EventChannel <- event
@@ -96,27 +109,39 @@ func (f *Forwarder) forwardEvent(event cloudevents.Event) error {
 	}
 	if config.Global.KeptnAPIEndpoint == "" {
 		logger.Error("No external API endpoint defined. Forwarding directly to NATS server")
-		return f.forwardEventToNATSServer(event)
+		return f.forwardEventToNATSServer(ctx, event)
 	}
-	return f.forwardEventToAPI(event)
+	return f.forwardEventToAPI(ctx, event)
 }
 
-func (f *Forwarder) forwardEventToNATSServer(event cloudevents.Event) error {
-	pubSubConnection, err := f.createPubSubConnection(event.Context.GetType())
+func (f *Forwarder) forwardEventToNATSServer(ctx context.Context, event cloudevents.Event) error {
+	topic := event.Context.GetType()
+	pubSubConnection, err := f.createPubSubConnection(topic)
 	if err != nil {
 		return err
 	}
 
+	// TODO: Check the span name here
+	// this here would be distributor.nats.sh.keptn.event.hardening.delivery.triggered sent
+	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#conventions
+	ctx, span := f.tracer.Start(ctx, fmt.Sprintf("distributor.nats.%s send", topic), trace.WithSpanKind(trace.SpanKindProducer))
+	defer span.End()
+
+	InjectDistributedTracingExtension(ctx, event)
+
+	// TODO: Should we instrument the call to NATS via this client? Not sure if it's possible like the HTTP sender..
 	c, err := cloudevents.NewClient(pubSubConnection)
 	if err != nil {
 		logger.Errorf("Failed to create client, %v\n", err)
+		span.RecordError(err)
 		return err
 	}
 
-	cloudevents.WithEncodingStructured(context.Background())
+	cloudevents.WithEncodingStructured(ctx)
 
-	if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
+	if result := c.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		logger.Errorf("Failed to send: %v\n", err)
+		span.RecordError(err)
 	} else {
 		logger.Infof("Sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
 	}
@@ -124,14 +149,19 @@ func (f *Forwarder) forwardEventToNATSServer(event cloudevents.Event) error {
 	return nil
 }
 
-func (f *Forwarder) forwardEventToAPI(event cloudevents.Event) error {
+func (f *Forwarder) forwardEventToAPI(ctx context.Context, event cloudevents.Event) error {
 	logger.Infof("Keptn API endpoint: %s", config.Global.KeptnAPIEndpoint)
+
+	ctx, span := f.tracer.Start(ctx, fmt.Sprintf("distributor.api.%s send", event.Context.GetType()), trace.WithSpanKind(trace.SpanKindProducer))
+	defer span.End()
+
+	InjectDistributedTracingExtension(ctx, event)
 
 	payload, err := event.MarshalJSON()
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", config.Global.KeptnAPIEndpoint+"/v1/event", bytes.NewBuffer(payload))
+	req, err := http.NewRequestWithContext(ctx, "POST", config.Global.KeptnAPIEndpoint+"/v1/event", bytes.NewBuffer(payload))
 	if err != nil {
 		return err
 	}
@@ -143,6 +173,7 @@ func (f *Forwarder) forwardEventToAPI(event cloudevents.Event) error {
 		req.Header.Add("x-token", config.Global.KeptnAPIToken)
 	}
 
+	// This httpClient is already auto-instrumented with OTel
 	resp, err := f.httpClient.Do(req)
 	if err != nil {
 		logger.Errorf("Could not send event to API endpoint: %v", err)
@@ -188,6 +219,8 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		path = req.URL.Path
 	}
 
+	ctx := req.Context()
+
 	logger.Infof("Incoming request: host=%s, path=%s, URL=%s", req.URL.Host, path, req.URL.String())
 
 	proxyScheme, proxyHost, proxyPath := config.Global.GetProxyHost(path)
@@ -198,7 +231,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	forwardReq, err := http.NewRequest(req.Method, req.URL.String(), req.Body)
+	forwardReq, err := http.NewRequestWithContext(ctx, req.Method, req.URL.String(), req.Body)
 	if err != nil {
 		logger.Errorf("Unable to create request to be forwarded: %v", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -224,6 +257,7 @@ func (f *Forwarder) apiProxyHandler(rw http.ResponseWriter, req *http.Request) {
 		forwardReq.Header.Add("x-token", config.Global.KeptnAPIToken)
 	}
 
+	// This httpClient is already auto-instrumented with OTel
 	client := f.httpClient
 	resp, err := client.Do(forwardReq)
 	if err != nil {

@@ -2,17 +2,21 @@ package events
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
-	"os"
-	"strings"
-	"time"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
-// EventReceiver is responsible for receive and process events from Keptn
+// EventReceiver is responsible for receiving and processing events from Keptn
 type EventReceiver interface {
 	Start(ctx *ExecutionContext)
 }
@@ -26,6 +30,7 @@ type NATSEventReceiver struct {
 	eventMatcher          *EventMatcher
 	natsConnectionHandler *NatsConnectionHandler
 	currentSubscriptions  []models.EventSubscription
+	tracer                trace.Tracer
 }
 
 func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEventReceiver {
@@ -33,12 +38,19 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 	eventMatcher := NewEventMatcherFromEnv(env)
 	nch := NewNatsConnectionHandler(env.PubSubURL)
 
+	tp := otel.GetTracerProvider()
+	t := tp.Tracer(
+		"github.com/keptn/keptn/distributor/natseventreceiver",
+		trace.WithInstrumentationVersion("1.0.0"), // TODO: Get the package version from somewhere?
+	)
+
 	return &NATSEventReceiver{
 		env:                   env,
 		eventSender:           eventSender,
 		closeChan:             make(chan bool),
 		eventMatcher:          eventMatcher,
 		natsConnectionHandler: nch,
+		tracer:                t,
 	}
 
 }
@@ -98,6 +110,7 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 	go func() {
 		logger.Infof("Received a message for topic [%s]\n", m.Subject)
 		e, err := DecodeCloudEvent(m.Data)
+
 		if e != nil && err == nil {
 			var subscriptionForTopic *models.EventSubscription
 			for _, subscription := range n.currentSubscriptions {
@@ -106,16 +119,22 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 					break
 				}
 			}
-			err = n.sendEvent(*e, subscriptionForTopic)
+
+			ctx := ExtractDistributedTracingExtension(context.Background(), *e)
+			ctx, span := n.tracer.Start(ctx, fmt.Sprintf("distributor.nats.%s receive", e.Context.GetType()), trace.WithSpanKind(trace.SpanKindConsumer))
+			defer span.End()
+
+			err = n.sendEvent(ctx, *e, subscriptionForTopic)
 			if err != nil {
 				logger.Errorf("Could not send CloudEvent: %v", err)
+				span.RecordError(err)
 			}
 		}
 	}()
 }
 
 // TODO: remove duplication of this method (poller.go)
-func (n *NATSEventReceiver) sendEvent(event cloudevents.Event, subscription *models.EventSubscription) error {
+func (n *NATSEventReceiver) sendEvent(ctx context.Context, event cloudevents.Event, subscription *models.EventSubscription) error {
 	if subscription != nil {
 		matcher := NewEventMatcherFromSubscription(*subscription)
 		if !matcher.Matches(event) {
@@ -125,13 +144,21 @@ func (n *NATSEventReceiver) sendEvent(event cloudevents.Event, subscription *mod
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	topic := event.Context.GetType()
+
+	// Here the distributor acts as a consumer
+	ctx, span := n.tracer.Start(ctx, fmt.Sprintf("distributor.nats.%s send", topic), trace.WithSpanKind(trace.SpanKindConsumer))
+	defer span.End()
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	ctx = cloudevents.ContextWithTarget(ctx, n.env.GetPubSubRecipientURL())
 	ctx = cloudevents.WithEncodingStructured(ctx)
 	defer cancel()
 
+	// The eventSender here is already auto-instrumented with OTel http
 	if err := n.eventSender.Send(ctx, event); err != nil {
 		logger.WithError(err).Error("Unable to send event")
+		span.RecordError(err)
 		return err
 	}
 	logger.Infof("sent event %s", event.ID())

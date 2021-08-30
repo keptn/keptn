@@ -16,6 +16,14 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
@@ -24,20 +32,37 @@ import (
 	"github.com/keptn/keptn/distributor/pkg/lib/controlplane"
 	"github.com/keptn/keptn/distributor/pkg/lib/events"
 	logger "github.com/sirupsen/logrus"
-	"log"
-	"net/http"
-	"net/url"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"go.opentelemetry.io/otel/trace"
 )
+
+const (
+	// TODO: Can we find out which keptn service is together in the same pod? shipyard-distributor for ex?
+	serviceName = "distributor"
+)
+
+var tracer trace.Tracer
 
 func main() {
 	if err := envconfig.Process("", &config.Global); err != nil {
 		logger.Errorf("Failed to process env var: %v", err)
 		os.Exit(1)
 	}
+
+	tracer = otel.Tracer(serviceName + "-main")
+	tp := InitTracer(serviceName, "http://simplest-collector-headless.observability:14268/api/traces")
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			logger.Errorf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
 	go keptnapi.RunHealthEndpoint("10999")
 	os.Exit(_main(config.Global))
 }
@@ -158,16 +183,18 @@ func setupHTTPClient() *http.Client {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: !config.Global.VerifySSL}, //nolint:gosec
 	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{Transport: otelhttp.NewTransport(tr)}
 	return client
 }
 
 func setupCEClient() cloudevents.Client {
-	p, err := cloudevents.NewHTTP()
+	p, err := cloudevents.NewHTTP(cloudevents.WithRoundTripper(otelhttp.NewTransport(http.DefaultTransport)))
 	if err != nil {
 		log.Fatalf("failed to create protocol: %s", err.Error())
 	}
 
+	// Here we don't want to use the ObservabilityService. We create the spans upon sending events
+	// manually in order to have better control of it
 	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
 	if err != nil {
 		log.Fatalf("failed to create client, %v", err)
@@ -180,4 +207,21 @@ func setupEventSender() events.EventSender {
 	return &keptnv2.HTTPEventSender{
 		Client: ceClient,
 	}
+}
+
+func InitTracer(serviceName, jaegerEndpoint string) *tracesdk.TracerProvider {
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(jaegerEndpoint)))
+	if err != nil {
+		log.Fatalf("failed to initialize stdouttrace export pipeline: %v", err)
+	}
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(serviceName),
+		)),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp
 }
