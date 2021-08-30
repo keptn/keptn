@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subject } from 'rxjs';
 import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -19,7 +12,7 @@ import { Location } from '@angular/common';
   templateUrl: './ktb-service-view.component.html',
   styleUrls: ['./ktb-service-view.component.scss'],
   host: {
-    class: 'ktb-service-view'
+    class: 'ktb-service-view',
   },
   encapsulation: ViewEncapsulation.None,
   preserveWhitespaces: false,
@@ -32,11 +25,12 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
   public selectedDeploymentInfo?: DeploymentSelection;
   public isQualityGatesOnly = false;
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, private location: Location) { }
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService, private route: ActivatedRoute, private router: Router, public location: Location) {
+  }
 
   ngOnInit() {
     this.dataService.isQualityGatesOnly.pipe(
-      takeUntil(this.unsubscribe$)
+      takeUntil(this.unsubscribe$),
     ).subscribe(isQualityGatesOnly => {
       this.isQualityGatesOnly = isQualityGatesOnly;
     });
@@ -53,8 +47,8 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
     const project$ = params$.pipe(
       switchMap(params => this.dataService.getProject(params.projectName)),
       filter((project: Project | undefined): project is Project => !!project),
-      takeUntil(this.unsubscribe$)
-      );
+      takeUntil(this.unsubscribe$),
+    );
 
     params$.pipe(take(1)).subscribe(params => {
       this.serviceName = params.serviceName;
@@ -105,15 +99,13 @@ export class KtbServiceViewComponent implements OnInit, OnDestroy {
       let stage;
       if (paramStage) {
         stage = paramStage;
-      }
-      else {
+      } else {
         stage = selectedDeployment.stages[selectedDeployment.stages.length - 1].stageName;
         const routeUrl = this.router.createUrlTree(['/project', projectName, 'service', selectedDeployment.service, 'context', selectedDeployment.shkeptncontext, 'stage', stage]);
         this.location.go(routeUrl.toString());
       }
       this.selectedDeploymentInfo = {deployment: selectedDeployment, stage};
-    }
-    else {
+    } else {
       this.selectedDeploymentInfo = undefined;
     }
   }

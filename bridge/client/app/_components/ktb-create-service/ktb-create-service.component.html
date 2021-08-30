@@ -21,11 +21,11 @@
           </dt-error>
         </dt-form-field>
         <div fxLayout="row">
-          <button dt-button uitestid="createServiceButton" type="submit" class="mr-2" [disabled]="!formGroup.valid" (click)="createService(projectName)">
+          <button dt-button uitestid="createServiceButton" type="submit" class="mr-2" [disabled]="!formGroup.valid || isCreating" (click)="createService(projectName)">
             <dt-loading-spinner *ngIf="isCreating" aria-label="Creating service"></dt-loading-spinner>
             Create service
           </button>
-          <button dt-button variant="secondary" type="reset" routerLink="../">Cancel</button>
+          <button dt-button variant="secondary" type="reset" (click)="cancel()">Cancel</button>
         </div>
       </div>
     </form>
