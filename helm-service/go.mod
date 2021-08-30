@@ -14,7 +14,6 @@ require (
 	github.com/keptn/go-utils v0.8.5
 	github.com/keptn/kubernetes-utils v0.9.0
 	github.com/kinbiko/jsonassert v1.0.2
-	github.com/lightstep/tracecontext.go v0.0.0-20181129014701-1757c391b1ac // indirect
 	github.com/stretchr/testify v1.7.0
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.6.3
