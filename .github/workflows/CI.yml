@@ -598,7 +598,7 @@ jobs:
             echo "Checking if ${DOCKER_FOLDER}/go.mod contains go-sdk"
             grep "github.com/keptn/keptn/go-sdk" ${DOCKER_FOLDER}/go.mod
             if [[ $? -eq 0 ]]; then
-              GO_SDK_TARGET=$(git rev-parse HEAD)
+              GO_SDK_TARGET=$VERSION
               echo "Yes, updating go-sdk now..."
               cd ${DOCKER_FOLDER}
               # fetch the desired version (this will update go.mod and go.sum)
