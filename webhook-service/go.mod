@@ -13,4 +13,4 @@ require (
 	k8s.io/client-go v0.22.0
 )
 
-replace github.com/keptn/keptn/go-sdk => ../go-sdk
+//replace github.com/keptn/keptn/go-sdk => ../go-sdk
