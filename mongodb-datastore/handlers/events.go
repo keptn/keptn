@@ -280,7 +280,7 @@ func storeRootEvent(logger *keptncommon.Logger, collectionName string, ctx conte
 		}
 	}
 
-	logger.Error("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
+	logger.Info("Root event for KeptnContext " + event.Shkeptncontext + " already exists in collection")
 	return nil
 }
 
