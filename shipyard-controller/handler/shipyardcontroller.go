@@ -494,11 +494,19 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 		}, taskSequenceName, event.ID)
 	}
 
+	// check if the sequence is available in the given stage
+	_, err = sc.getTaskSequenceInStage(eventScope.Stage, taskSequenceName, shipyard)
+	if err != nil {
+		// return an error if no task sequence is available
+		return err
+	}
+
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, event, common.TriggeredEvent); err != nil {
 		log.Infof("could not store event that triggered task sequence: %s", err.Error())
 	}
 
 	eventScope.Stage = stageName
+
 	// dispatch the task sequence
 	sc.onSequenceTriggered(event)
 	if sc.sequenceDispatcher != nil {
