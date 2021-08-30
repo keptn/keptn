@@ -12,7 +12,6 @@ import { Deployment } from '../_models/deployment';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { Project } from '../_models/project';
-import { UniformRegistration } from '../../../server/interfaces/uniform-registration';
 import { UniformRegistrationLogResponse } from '../../../server/interfaces/uniform-registration-log';
 import { Secret } from '../_models/secret';
 import { KeptnInfoResult } from '../_models/keptn-info-result';
@@ -20,6 +19,7 @@ import { KeptnVersions } from '../_models/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
+import { UniformRegistration } from '../_models/uniform-registration';
 
 @Injectable({
   providedIn: 'root',
@@ -155,6 +155,11 @@ export class ApiService {
   public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistration[]> {
     const url = `${this._baseUrl}/uniform/registration`;
     return this.http.post<UniformRegistration[]>(url, uniformDates);
+  }
+
+  public getIsUniformRegistrationControlPlane(integrationId: string): Observable<boolean> {
+    const url = `${this._baseUrl}/uniform/registration/${integrationId}/isControlPlane`;
+    return this.http.get<boolean>(url);
   }
 
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {

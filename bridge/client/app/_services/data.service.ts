@@ -131,6 +131,10 @@ export class DataService {
     );
   }
 
+  public getIsUniformRegistrationControlPlane(integrationId: string): Observable<boolean> {
+    return this.apiService.getIsUniformRegistrationControlPlane(integrationId);
+  }
+
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
     return this.apiService.getUniformSubscription(integrationId, subscriptionId).pipe(
       map(uniformSubscription => UniformSubscription.fromJSON(uniformSubscription)),
