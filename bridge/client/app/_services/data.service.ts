@@ -23,7 +23,7 @@ import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataService {
 
@@ -109,7 +109,7 @@ export class DataService {
 
   public getProject(projectName: string): Observable<Project | undefined> {
     return this.projects.pipe(
-      map(projects => projects?.find(project => project.projectName === projectName))
+      map(projects => projects?.find(project => project.projectName === projectName)),
     );
   }
 
@@ -121,15 +121,19 @@ export class DataService {
     return this.apiService.createProject(projectName, shipyard, gitRemoteUrl, gitToken, gitUser);
   }
 
+  public createService(projectName: string, serviceName: string): Observable<object> {
+    return this.apiService.createService(projectName, serviceName);
+  }
+
   public getUniformRegistrations(): Observable<UniformRegistration[]> {
     return this.apiService.getUniformRegistrations(this._uniformDates).pipe(
-      map(uniformRegistrations => uniformRegistrations.map(registration => UniformRegistration.fromJSON(registration)))
+      map(uniformRegistrations => uniformRegistrations.map(registration => UniformRegistration.fromJSON(registration))),
     );
   }
 
   public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
     return this.apiService.getUniformSubscription(integrationId, subscriptionId).pipe(
-      map(uniformSubscription => UniformSubscription.fromJSON(uniformSubscription))
+      map(uniformSubscription => UniformSubscription.fromJSON(uniformSubscription)),
     );
   }
 
@@ -143,7 +147,7 @@ export class DataService {
 
   public getUniformRegistrationLogs(uniformRegistrationId: string, pageSize?: number): Observable<UniformRegistrationLog[]> {
     return this.apiService.getUniformRegistrationLogs(uniformRegistrationId, pageSize).pipe(
-      map((response) => response.logs)
+      map((response) => response.logs),
     );
   }
 
@@ -157,13 +161,13 @@ export class DataService {
     return this.apiService.getSecrets()
       .pipe(
         map(res => res.Secrets),
-        map(secrets => secrets.map(secret => Secret.fromJSON(secret)))
+        map(secrets => secrets.map(secret => Secret.fromJSON(secret))),
       );
   }
 
   public addSecret(secret: Secret): Observable<object> {
     return this.apiService.addSecret(Object.assign({}, secret, {
-      data: secret.data.reduce((result, item) => Object.assign(result, {[item.key]: item.value}), {})
+      data: secret.data.reduce((result, item) => Object.assign(result, {[item.key]: item.value}), {}),
     }));
   }
 
@@ -196,7 +200,7 @@ export class DataService {
       forkJoin({
         availableVersions: bridgeInfo.enableVersionCheckFeature ? this.apiService.getAvailableVersions() : of(undefined),
         versionCheckEnabled: of(this.apiService.isVersionCheckEnabled()),
-        metadata: this.apiService.getMetadata()
+        metadata: this.apiService.getMetadata(),
       }).subscribe((result) => {
         const keptnInfo: KeptnInfo = {...result, bridgeInfo: {...bridgeInfo}};
         if (keptnInfo.bridgeInfo.showApiToken) {
@@ -229,7 +233,7 @@ export class DataService {
   public loadProject(projectName: string): void {
     this.apiService.getProject(projectName)
       .pipe(
-        map(project => Project.fromJSON(project))
+        map(project => Project.fromJSON(project)),
       ).subscribe((project: Project) => {
       const projects = this._projects.getValue();
       const existingProject = projects?.find(p => p.projectName === project.projectName);
@@ -256,8 +260,8 @@ export class DataService {
       .pipe(
         map(result => result.projects),
         map(projects =>
-          projects.map(project => Project.fromJSON(project))
-        )
+          projects.map(project => Project.fromJSON(project)),
+        ),
       ).subscribe((projects: Project[]) => {
       const existingProjects = this._projects.getValue();
       projects = projects.map(project => {
@@ -330,7 +334,7 @@ export class DataService {
                       map(resource => {
                         stage.config = atob(resource.resourceContent);
                         return stage;
-                      })
+                      }),
                     );
                   }
                   result = forkJoin([_root, _resourceContent]).pipe(switchMap(() => of(deployment)));
@@ -349,9 +353,9 @@ export class DataService {
               }
             }
             return deployments;
-          })
-        )
-      )
+          }),
+        ),
+      ),
     ).subscribe((deployments: Deployment[]) => {
       this._changedDeployments.next(deployments);
     });
@@ -423,8 +427,8 @@ export class DataService {
     return this.apiService.getRoots(projectName, 1, undefined, undefined, undefined, shkeptncontext).pipe(
       map(response => response.body?.events || []),
       switchMap(roots => this.rootMapper(roots).pipe(
-        map(sequences => sequences.pop())
-      ))
+        map(sequences => sequences.pop()),
+      )),
     );
   }
 
@@ -437,7 +441,7 @@ export class DataService {
       map(response => response.body?.states || []),
       map(sequences => sequences.map(sequence => Sequence.fromJSON(sequence)).shift()),
       switchMap(sequence => sequence ? this.sequenceMapper([sequence]) : []),
-      map(sequences => sequences.shift())
+      map(sequences => sequences.shift()),
     );
   }
 
@@ -473,7 +477,7 @@ export class DataService {
           return response.body;
         }),
         map(result => result?.events || []),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+        map(traces => traces.map(trace => Trace.fromJSON(trace))),
       )
       .subscribe((traces: Trace[]) => {
         sequence.traces = Trace.traceMapper([...traces || [], ...sequence.traces || []]);
@@ -494,7 +498,7 @@ export class DataService {
       .pipe(
         map(response => response.body),
         map(result => result?.events || []),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)))
+        map(traces => traces.map(trace => Trace.fromJSON(trace))),
       )
       .subscribe((traces: Trace[]) => {
         this._traces.next(traces);
@@ -511,13 +515,13 @@ export class DataService {
       this.apiService.getEvaluationResults(event.data.project, event.data.service, event.data.stage, fromTime?.toISOString())
         .pipe(
           map(result => result.events || []),
-          map(traces => traces.map(trace => Trace.fromJSON(trace)))
+          map(traces => traces.map(trace => Trace.fromJSON(trace))),
         )
         .subscribe((traces: Trace[]) => {
           this._evaluationResults.next({
             type: 'evaluationHistory',
             triggerEvent: event,
-            traces
+            traces,
           });
         });
     }
@@ -527,7 +531,7 @@ export class DataService {
     return this.apiService.getEvaluationResult(shkeptncontext)
       .pipe(
         map(result => result.events || []),
-        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(() => true))
+        map(traces => traces.map(trace => Trace.fromJSON(trace)).find(() => true)),
       );
   }
 
@@ -557,7 +561,7 @@ export class DataService {
       .subscribe(() => {
         this._evaluationResults.next({
           type: 'invalidateEvaluation',
-          triggerEvent: evaluation
+          triggerEvent: evaluation,
         });
       });
   }
@@ -565,7 +569,7 @@ export class DataService {
   public getTaskNames(projectName: string): Observable<string[]> {
     return this.apiService.getTaskNames(projectName)
       .pipe(
-        map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB)))
+        map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))),
       );
   }
 
@@ -584,9 +588,9 @@ export class DataService {
               map(traces => {
                 sequence.traces = traces;
                 return sequence;
-              })
+              }),
             );
-        }
+        },
       ),
       toArray(),
     );
@@ -606,12 +610,12 @@ export class DataService {
             .pipe(
               map(result => result.body?.events || []),
               map(Trace.traceMapper),
-              map(traces => ({...root, traces}))
+              map(traces => ({...root, traces})),
             );
-        }
+        },
       ),
       toArray(),
-      map(rs => rs.map(root => Root.fromJSON(root)))
+      map(rs => rs.map(root => Root.fromJSON(root))),
     );
   }
 }

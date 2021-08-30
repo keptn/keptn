@@ -22,7 +22,7 @@ import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
 
@@ -121,7 +121,14 @@ export class ApiService {
       gitToken,
       gitUser,
       name: projectName,
-      shipyard
+      shipyard,
+    });
+  }
+
+  public createService(projectName: string, serviceName: string): Observable<object> {
+    const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/service`;
+    return this.http.post<object>(url, {
+      serviceName,
     });
   }
 
@@ -129,7 +136,7 @@ export class ApiService {
     const url = `${this._baseUrl}/project/${projectName}`;
     const params = {
       approval: 'true',
-      remediation: 'true'
+      remediation: 'true',
     };
     return this.http
       .get<Project>(url, {params});
@@ -139,7 +146,7 @@ export class ApiService {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     const params = {
       disableUpstreamSync: 'true',
-      ...pageSize && {pageSize: pageSize.toString()}
+      ...pageSize && {pageSize: pageSize.toString()},
     };
     return this.http
       .get<ProjectResult>(url, {params});
@@ -189,7 +196,7 @@ export class ApiService {
     const url = `${this._baseUrl}/secrets/v1/secret`;
     const params = {
       name,
-      scope
+      scope,
     };
     return this.http.delete(url, {params});
   }
@@ -230,7 +237,7 @@ export class ApiService {
   public getServices(projectName: string, stageName: string, pageSize: number): Observable<ServiceResult> {
     const url = `${this._baseUrl}/controlPlane/v1/project/${projectName}/stage/${stageName}/service`;
     const params = {
-      pageSize: pageSize.toString()
+      pageSize: pageSize.toString(),
     };
     return this.http
       .get<ServiceResult>(url, {params});
@@ -249,7 +256,7 @@ export class ApiService {
       ...(state && {state}),
       ...(fromTime && {fromTime}),
       ...(beforeTime && {beforeTime}),
-      ...(keptnContext && {keptnContext})
+      ...(keptnContext && {keptnContext}),
     };
 
     return this.http
@@ -279,7 +286,7 @@ export class ApiService {
       pageSize: '100',
       keptnContext,
       ...projectName && {project: projectName},
-      ...fromTime && {fromTime}
+      ...fromTime && {fromTime},
     };
 
     return this.http
@@ -296,7 +303,7 @@ export class ApiService {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}`,
       excludeInvalidated: 'true',
       limit: '50',
-      ...fromTime && {fromTime}
+      ...fromTime && {fromTime},
     };
     return this.http
       .get<EventResult>(url, {params});
@@ -306,7 +313,7 @@ export class ApiService {
     const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
     const params = {
       filter: `shkeptncontext:${shkeptncontext}`,
-      limit: '1'
+      limit: '1',
     };
     return this.http
       .get<EventResult>(url, {params});
@@ -318,7 +325,7 @@ export class ApiService {
       gitRemoteURL: gitUrl,
       gitToken,
       gitUser,
-      name: projectName
+      name: projectName,
     });
   }
 
@@ -338,8 +345,8 @@ export class ApiService {
           labels: approval.data.labels,
           message: approval.data.message,
           result: approve ? ApprovalStates.APPROVED : ApprovalStates.DECLINED,
-          status: 'succeeded'
-        }
+          status: 'succeeded',
+        },
       });
   }
 
@@ -357,9 +364,9 @@ export class ApiService {
           stage: evaluation.data.stage,
           service: evaluation.data.service,
           evaluation: {
-            reason
-          }
-        }
+            reason,
+          },
+        },
       });
   }
 
@@ -368,7 +375,7 @@ export class ApiService {
 
     return this.http
       .post<unknown>(url, {
-        state
+        state,
       });
   }
 

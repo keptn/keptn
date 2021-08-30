@@ -1,9 +1,9 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Notification, NotificationType } from '../_models/notification';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationsService {
 
@@ -36,5 +36,9 @@ export class NotificationsService {
 
   removeNotification(notification: Notification) {
     this._notifications.next(this._notifications.getValue().filter(n => n !== notification));
+  }
+
+  public clearNotifications(): void {
+    this._notifications.next([]);
   }
 }

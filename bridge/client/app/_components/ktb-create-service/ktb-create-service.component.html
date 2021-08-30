@@ -1,0 +1,36 @@
+<div fxLayout="column">
+  <div class="container settings-section">
+    <h2>Create service</h2>
+    <form [formGroup]="formGroup" class="mb-3" *ngIf="projectName">
+      <div fxLayout="column" fxLayoutGap="10px">
+        <dt-form-field>
+          <dt-label class="required">Service name</dt-label>
+          <input type="text" formControlName="serviceName"
+                 dtInput
+                 placeholder="e.g. carts"/>
+          <dt-hint>Service name must start with a lower case letter. Allowed characters: lower case letters, numbers and
+            hyphens.
+          </dt-hint>
+          <dt-error>
+            <ng-container *ngIf="serviceNameControl.hasError('required')">Must not be empty</ng-container>
+            <ng-container *ngIf="serviceNameControl.hasError('duplicate')">Service name already exists</ng-container>
+            <ng-container *ngIf="serviceNameControl.hasError('pattern')">Service name must start with a lower case letter.
+              Allowed characters: lower case letters, numbers and
+              hyphens.
+            </ng-container>
+          </dt-error>
+        </dt-form-field>
+        <div fxLayout="row">
+          <button dt-button uitestid="createServiceButton" type="submit" class="mr-2" [disabled]="!formGroup.valid" (click)="createService(projectName)">
+            <dt-loading-spinner *ngIf="isCreating" aria-label="Creating service"></dt-loading-spinner>
+            Create service
+          </button>
+          <button dt-button variant="secondary" type="reset" routerLink="../">Cancel</button>
+        </div>
+      </div>
+    </form>
+    <div class="mt-2 required-info">
+      fields are required
+    </div>
+  </div>
+</div>

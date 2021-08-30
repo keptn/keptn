@@ -28,8 +28,9 @@ describe('KtbSettingsViewComponent', () => {
 
     // then
     expect(menuItems).toBeTruthy();
-    expect(menuItems.length).toEqual(1);
+    expect(menuItems.length).toEqual(2);
     expect(menuItems[0].nativeElement.textContent.trim()).toEqual('Project');
+    expect(menuItems[1].nativeElement.textContent.trim()).toEqual('Services');
   });
 });
 

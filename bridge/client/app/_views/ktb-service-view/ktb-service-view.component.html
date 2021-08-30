@@ -4,8 +4,9 @@
 
       <div>
         <dt-info-group>
-          <dt-info-group-title>
+          <dt-info-group-title fxLayout="row" fxLayoutAlign="space-between center">
             <p class="mb-0"><span [textContent]="project.getServices().length"></span> Services</p>
+            <button dt-button variant="secondary" [routerLink]="['/', 'project', project.projectName, 'settings', 'services', 'create']">Create service</button>
           </dt-info-group-title>
         </dt-info-group>
       </div>

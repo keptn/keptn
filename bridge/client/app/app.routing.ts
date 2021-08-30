@@ -15,6 +15,9 @@ import { KtbSecretsListComponent } from './_components/ktb-secrets-list/ktb-secr
 import { KtbCreateSecretFormComponent } from './_components/ktb-create-secret-form/ktb-create-secret-form.component';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
 import { KtbModifyUniformSubscriptionComponent } from './_components/ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
+import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
+import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
+import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -46,6 +49,12 @@ const routes: Routes = [
       {
         path: 'settings', component: KtbSettingsViewComponent, children: [
           {path: 'project', component: KtbProjectSettingsComponent, data: {isCreateMode: false}},
+          {
+            path: 'services', component: KtbServiceSettingsComponent, children: [
+              {path: 'create', component: KtbCreateServiceComponent},
+              {path: '', pathMatch: 'full', component: KtbServiceSettingsOverviewComponent},
+            ],
+          },
           {path: '', pathMatch: 'full', redirectTo: 'project'},
         ],
       },
