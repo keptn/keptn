@@ -35,7 +35,9 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public isGitUpstreamInProgress = false;
   public isCreatingProjectInProgress = false;
   public shipyardFile?: File;
-  public gitData: GitData = {};
+  public gitData: GitData = {
+    gitFormValid: true,
+  };
   public projectNameControl = new FormControl('');
   public projectNameForm = new FormGroup({
     projectName: this.projectNameControl,
