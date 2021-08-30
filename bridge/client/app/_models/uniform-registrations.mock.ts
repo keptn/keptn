@@ -1,5 +1,6 @@
 import { UniformRegistration as ur } from '../../../server/interfaces/uniform-registration';
 import { UniformRegistration } from './uniform-registration';
+import { UniformRegistrationLocations } from '../../../shared/interfaces/uniform-registration-locations';
 
 
 const services: ur[] = [
@@ -99,7 +100,7 @@ const services: ur[] = [
         namespace: 'keptn',
         podname: 'lighthouse-service-123456789',
       },
-      location: 'control-plane',
+      location: UniformRegistrationLocations.CONTROL_PLANE,
       status: 'healthy',
       lastseen: '2021-08-19T08:37:54.691Z',
     },
@@ -126,7 +127,7 @@ const services: ur[] = [
         namespace: 'keptn',
         podname: 'approval-service-123456789',
       },
-      location: 'control-plane',
+      location: UniformRegistrationLocations.CONTROL_PLANE,
       status: 'healthy',
       lastseen: '2021-08-19T08:37:54.691Z',
     },
@@ -153,7 +154,7 @@ const services: ur[] = [
         namespace: 'keptn',
         podname: 'remediation-service-123456789',
       },
-      location: 'control-plane',
+      location: UniformRegistrationLocations.CONTROL_PLANE,
       status: 'healthy',
       lastseen: '2021-08-19T08:37:54.691Z',
     },
@@ -225,7 +226,7 @@ const services: ur[] = [
         namespace: 'keptn',
         podname: 'dynatrace-sli-service-123456789',
       },
-      location: 'control-plane',
+      location: UniformRegistrationLocations.CONTROL_PLANE,
       status: 'healthy',
       lastseen: '2021-08-19T08:37:54.691Z',
     },
@@ -252,7 +253,7 @@ const services: ur[] = [
         namespace: 'keptn',
         podname: 'dynatrace-service-123456789',
       },
-      location: 'control-plane',
+      location: UniformRegistrationLocations.CONTROL_PLANE,
       status: 'healthy',
       lastseen: '2021-08-19T08:37:54.691Z',
     },

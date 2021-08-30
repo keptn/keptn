@@ -12,6 +12,7 @@ import { ResultTypes } from '../../shared/models/result-types';
 import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
+import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 
 export class DataService {
   private apiService: ApiService;
@@ -210,7 +211,8 @@ export class DataService {
   public async getIsUniformRegistrationControlPlane(integrationId: string): Promise<boolean> {
     const response = await this.apiService.getUniformRegistrations(integrationId);
     const uniformRegistration = response.data.shift();
-    return uniformRegistration?.metadata.location === 'control-plane';
+
+    return uniformRegistration?.metadata.location === UniformRegistrationLocations.CONTROL_PLANE;
   }
 
   public async getTasks(projectName: string): Promise<string[]> {
