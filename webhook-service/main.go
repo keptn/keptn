@@ -27,6 +27,9 @@ func main() {
 		sdk.WithHandler(
 			eventTypeWildcard,
 			taskHandler,
+			func(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
+				return taskHandler.WebhookAvailableForEvent(keptnHandle, event)
+			},
 		),
 	).Start())
 }

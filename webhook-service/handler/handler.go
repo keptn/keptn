@@ -7,6 +7,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"github.com/keptn/keptn/webhook-service/lib"
+	log "github.com/sirupsen/logrus"
 )
 
 const webhookConfigFileName = "webhook.yaml"
@@ -74,6 +75,20 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	})
 
 	return nedc.Get(), nil
+}
+
+func (th *TaskHandler) WebhookAvailableForEvent(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
+	eventData := &keptnv2.EventData{}
+	if err := keptnv2.Decode(event.Data, eventData); err != nil {
+		log.WithError(err).Errorf("could not decode event")
+		return false
+	}
+	resource, err := th.getWebHookConfigResource(keptnHandle, eventData.Project, eventData.Stage, eventData.Service)
+	if err != nil || resource == nil {
+		log.Infof("no webhook available for %s event", *event.Type)
+		return false
+	}
+	return true
 }
 
 func sdkError(msg string, err error) *sdk.Error {
