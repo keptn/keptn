@@ -31,8 +31,8 @@ spec:
   webhooks:
     - type: "sh.keptn.event.mytask.triggered"
       requests:
-        - "curl http://shipyard-controller/v1/project/{{.data.project}}"
-        - "curl http://shipyard-controller/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
+        - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}"
+        - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
 func Test_Webhook(t *testing.T) {
 	projectName := "webhooks"
@@ -84,6 +84,6 @@ func Test_Webhook(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.NotNil(t, decodedEvent["mytask"])
+	require.NotNil(t, decodedEvent["sh.keptn.event.mytask.triggered"])
 
 }

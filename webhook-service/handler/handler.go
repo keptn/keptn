@@ -70,11 +70,16 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 			}
 		}
 	}
-	nedc.Add(*event.Type, map[string]interface{}{
-		"responses": responses,
-	})
 
-	return nedc.Get(), nil
+	return map[string]interface{}{
+		"project": nedc.Project(),
+		"stage":   nedc.Stage(),
+		"service": nedc.Service(),
+		"labels":  nedc.Labels(),
+		*event.Type: map[string]interface{}{
+			"responses": responses,
+		},
+	}, nil
 }
 
 func (th *TaskHandler) WebhookAvailableForEvent(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {

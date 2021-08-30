@@ -40,6 +40,14 @@ func (e *EventDataModifier) Service() string {
 	return e.eventData.Service
 }
 
+func (e *EventDataModifier) Labels() interface{} {
+	return e.eventData.Labels
+}
+
 func (e *EventDataModifier) Add(key string, value interface{}) {
 	e.eventDataMap[key] = value
+}
+
+func (e *EventDataModifier) Remove(key string) {
+	delete(e.eventDataMap, key)
 }
