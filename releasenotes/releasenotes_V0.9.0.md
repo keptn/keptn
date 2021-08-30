@@ -1,12 +1,12 @@
 # Release Notes 0.9.0
 
-Keptn 0.9.0 gives you more control over sequence executions and allows creating/deleting a Keptn project in the Bridge. 
+Keptn 0.9.0 gives you more control over sequence executions and allows creating/deleting a Keptn project in the Bridge.
 
 ---
 
 **Key announcements:**
 
-:tada: *Advanced sequences handling*: Keptn core provides new capabilities for handling a task sequence execution:  
+:tada: *Advanced sequences handling*: Keptn core provides new capabilities for handling a task sequence execution:
 
   * *Controls for sequence executions*: Controls for `pausing`, `resuming`, and `aborting` a task sequence have been implemented. These controls can be used either by the CLI or directly in the Bridge.
 
@@ -16,7 +16,9 @@ Keptn 0.9.0 gives you more control over sequence executions and allows creating/
 
 :pick: *Hardening Keptn Core / Bridge*: Hardening of Keptn core components has been conducted concerning resource optimization and enhancing readiness probes. Besides, refactoring in the Bridge was performed in order to reliably deal with custom sequences and tasks.
 
-:apple: *MacOS M1 Support*: For all Apple users, the Keptn CLI is now ready for your new MacOS M1.  
+:apple: *MacOS M1 Support*: For all Apple users, the Keptn CLI is now ready for your new MacOS M1.
+
+:ship: *Docker Registries*: Release images are now also on quay.io and ghcr.io
 
 ---
 
@@ -35,6 +37,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 <p>
 
 - Reduce K8s resource limits/requests of Keptn core services [3018](https://github.com/keptn/keptn/issues/3018)
+- Host Keptn Release Docker Images on multiple container registries/repositories [3314](https://github.com/keptn/keptn/issues/3314)
 - Enhance readiness probes of Keptn core services [4518](https://github.com/keptn/keptn/issues/4518)
 - Create a list of dependencies of Keptn Core [4409](https://github.com/keptn/keptn/issues/4409)
 - Migrate old sequences to materialized view [4140](https://github.com/keptn/keptn/issues/4140)
@@ -49,6 +52,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 
 - Provide description for `From` and `To` on GET `/api/statistics/v1` endpoint [3921](https://github.com/keptn/keptn/issues/3921)
 - Add parameter `keptnContext` for `/sequence` endpoint [4433](https://github.com/keptn/keptn/issues/4433)
+- Extend Uniform to support subscription management [4437](https://github.com/keptn/keptn/issues/4437)
 - Remove the `/config/bridge/` endpoint [4589](https://github.com/keptn/keptn/issues/4589)
 - Introduce rate limiation on `/auth` endpoint: 429 responses contain information on whether token was valid or not [4906](https://github.com/keptn/keptn/issues/4906)
 
@@ -60,12 +64,16 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 
 - Support of MacOS M1/Apple Silicon Build [3987](https://github.com/keptn/keptn/issues/3987)
 - Commands for pausing/resuming/aborting task sequences [3785](https://github.com/keptn/keptn/issues/3785)
+- Adapt output for configure bridge command [4435](https://github.com/keptn/keptn/issues/4435)
 
 </p>
 </details>
 
 <details><summary>Keptn Core</summary>
 <p>
+
+- *secret-service*:
+  - Provide default scope when creating secrets [4281](https://github.com/keptn/keptn/issues/4281)
 
 - *approval-service*:
   - Excluded open approvals from task timeout [4620](https://github.com/keptn/keptn/issues/4620)
@@ -74,7 +82,7 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - *distributor*:
   - Allow setting environment details sent by the distributor [4590](https://github.com/keptn/keptn/issues/4590)
 
-- *helm-service & jmeter-service*: 
+- *helm-service & jmeter-service*:
   - Cleanup of README.md and Manifests for jmeter-service/helm-service [4503](https://github.com/keptn/keptn/issues/4503)
   - jmeter-service/helm-service are missing timestamp in tag [4403](https://github.com/keptn/keptn/issues/4403)
   - *Fixed:* Installing jmeter-service/helm-service from a registry with a non-default port does not work [4422](https://github.com/keptn/keptn/issues/4422)
@@ -85,12 +93,13 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
 - *remediation-service*:
   - Improve error messages for remediation-services [4412](https://github.com/keptn/keptn/issues/4412)
 
-- *shipyard-controller*: 
+- *shipyard-controller*:
   - Handle sequences sequentially per stage [3776](https://github.com/keptn/keptn/issues/3776)
   - Termination of orphaned tasks [3778](https://github.com/keptn/keptn/issues/3778)
   - *Fixed:* Run into errors when using an image object for a configuration change [4384](https://github.com/keptn/keptn/issues/4384)
   - *Fixed:* Panics with out of range error [4772](https://github.com/keptn/keptn/issues/4772)
   - *Fixed:* Crashes when receiving event for non-existent project [4797](https://github.com/keptn/keptn/issues/4797)
+  - *Fixed:* Race condition in sequence state [4969](https://github.com/keptn/keptn/issues/4969)
 
 </p>
 </details>
@@ -105,12 +114,12 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Text inside "View Evaluation" is cropped [4760](https://github.com/keptn/keptn/issues/4760)
   - Indicate errors happening in integrations [4381](https://github.com/keptn/keptn/issues/4381)
   - Show service name at sequence tile [4653](https://github.com/keptn/keptn/issues/4653)
-  - Show action name and description for a remediation action [4410](https://github.com/keptn/keptn/issues/4410) 
-  - Rename `Error logs` to `Error events` [4426](https://github.com/keptn/keptn/issues/4426) 
+  - Show action name and description for a remediation action [4410](https://github.com/keptn/keptn/issues/4410)
+  - Rename `Error logs` to `Error events` [4426](https://github.com/keptn/keptn/issues/4426)
   - Delete project via Bridge [4379](https://github.com/keptn/keptn/issues/4379) 
-  - Show recent task sequences on project level [2506](https://github.com/keptn/keptn/issues/2506) 
+  - Show recent task sequences on project level [2506](https://github.com/keptn/keptn/issues/2506)
   - Create project with shipyard [4493](https://github.com/keptn/keptn/issues/4493) 
-  - Show waiting status of successive sequence executions [3777](https://github.com/keptn/keptn/issues/3777) 
+  - Show waiting status of successive sequence executions [3777](https://github.com/keptn/keptn/issues/3777)
   - Improve layout of configuring Git upstream repository [4623](https://github.com/keptn/keptn/issues/4623)
   - Show alt text / tooltip for icon buttons [3803](https://github.com/keptn/keptn/issues/3803)
   - Display comparison value and absolute/relative delta of SLI [4305](https://github.com/keptn/keptn/issues/4305)
@@ -120,12 +129,18 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Better UX to show which sequence is currently selected [3976](https://github.com/keptn/keptn/issues/3976)
   - Project does not reflect current status after creating a service [4170](https://github.com/keptn/keptn/issues/4170)
   - Add `X-Frame-Options` header to Bridge responses [4257](https://github.com/keptn/keptn/issues/4257)
+  - Show subscriptions of integrations [4436](https://github.com/keptn/keptn/issues/4436)
+  - Adding / Deleting / Updating subscription [4572](https://github.com/keptn/keptn/issues/4572)
+  - Add service name for running sequences on the stage tile [4733](https://github.com/keptn/keptn/issues/4733)
+  - Introduce settings navigation [4501](https://github.com/keptn/keptn/issues/4501)
+  - Controls for pausing/resuming/aborting task sequences [3798](https://github.com/keptn/keptn/issues/3798)
 
-- *Refactoring:* 
+- *Refactoring:*
   - Add null-check to tsconfig [4628](https://github.com/keptn/keptn/issues/4628)
   - Update Bridge server to TS and ESM [4443](https://github.com/keptn/keptn/issues/4443)
   - Refactor Angular router usage [4022](https://github.com/keptn/keptn/issues/4022)
   - Refactor observables inside of router parameter subscription [4188](https://github.com/keptn/keptn/issues/4188)
+  - Migrate testing framework to Jest [4841](https://github.com/keptn/keptn/issues/4841)
 
 - *Fixes:*
   - *OAuth:* Regenerating the session cookie after login [4947](https://github.com/keptn/keptn/issues/4947)
