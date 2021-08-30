@@ -192,7 +192,8 @@ Implemented **Keptn spec** version: [0.2.3](https://github.com/keptn/spec/tree/0
   - Vague error message when setting Git upstream [4399](https://github.com/keptn/keptn/issues/4399)
   - Response time degradation in configuration-service when using a Git upstream (e.g., GitHub) [4066](https://github.com/keptn/keptn/issues/4066)
   - Prometheus self-healing example based on response time does not work [3439](https://github.com/keptn/keptn/issues/3439)
-
+  - Registrations might lose their current subscription if they are scheduled in a different node [4437](https://github.com/keptn/keptn/issues/4437)
+  - If a stage cannot be found, the sequence needs to be stopped manually [4791](https://github.com/keptn/keptn/issues/4791)
 </p>
 </details>
 
