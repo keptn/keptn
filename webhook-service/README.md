@@ -69,3 +69,23 @@ As shown in the example above, the webhook.yaml file allows referencing secrets 
 Keptn control plane. Those secrets can then be used in the `curl` commands that should be executed for a certain task, using the `{{.env.<secret>}}` placeholder.
 In addition to secrets, properties from incoming events, such as e.g. `{{.data.project}}`, `{{.shkeptncontext}}` etc. can be referenced using the template syntax.
 Note that the execution of the defined requests will fail if any of the referenced values is not available.
+
+### Enabling webhooks for a project, stage or service
+
+If the same `webhook.yaml` file should be used across all stages and services within a project, the `webhook.yaml` file can be added as a project - resource:
+
+```
+keptn add-resource --project=my-project --resource=webhook.yaml
+```
+
+If a `webhook.yaml` should be used only for a certain stage, the optional `stage` parameter can be added to the `add-resource` command:
+
+```
+keptn add-resource --project=my-project --stage=my-stage --resource=webhook.yaml
+```
+
+Finally, if only a specific service should make use of the `webhook.yaml`, the `service` parameter has to be passed to the `add-resource` command:
+
+```
+keptn add-resource --project=my-project --stage=my-stage --service=my-service --resource=webhook.yaml
+```
