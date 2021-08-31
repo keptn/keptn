@@ -99,6 +99,7 @@ func Test_Webhook(t *testing.T) {
 
 	require.Nil(t, err)
 
+	// check if the requests have been executed and yielded some results
 	require.NotNil(t, decodedEvent["sh.keptn.event.mytask.triggered"])
 
 }
