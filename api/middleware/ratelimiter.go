@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"github.com/benbjohnson/clock"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 	"net"
 	"net/http"
@@ -56,7 +55,6 @@ func (r *RateLimiter) Apply(w http.ResponseWriter, req *http.Request, handler ht
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	ipAddress := getRemoteIP(req)
-	log.Infof("IP address: %s", ipAddress)
 	limiter := r.getIPBucket(ipAddress)
 	if limiter.Allow() == false {
 		http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
@@ -99,12 +97,10 @@ func (r *RateLimiter) cleanIPBuckets() {
 func getRemoteIP(r *http.Request) string {
 	// first, check 'x-real-ip'
 	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
-		log.Infof("using real-ip")
 		return realIP
 	}
 	// then, check 'x-forwarded-for' header
 	if forwardedFor := r.Header.Get("X-Forwarded-For"); forwardedFor != "" {
-		log.Infof("using x-forwarded-for: %s", forwardedFor)
 		split := strings.Split(forwardedFor, ",")
 		if len(split) > 0 {
 			return strings.TrimSpace(split[0])
@@ -112,7 +108,6 @@ func getRemoteIP(r *http.Request) string {
 	}
 	// finally, try to use RemoteAddr
 	if r.RemoteAddr != "" {
-		log.Infof("using remote address")
 		s := extractIPFromRemoteAddress(r.RemoteAddr)
 		if s != "" {
 			return s
