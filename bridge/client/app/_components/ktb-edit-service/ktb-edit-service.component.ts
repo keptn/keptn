@@ -12,6 +12,7 @@ import { NotificationType } from '../../_models/notification';
 @Component({
   selector: 'ktb-edit-service',
   templateUrl: './ktb-edit-service.component.html',
+  styleUrls: ['./ktb-edit-service.component.scss'],
 })
 export class KtbEditServiceComponent implements OnDestroy {
   public serviceName?: string;

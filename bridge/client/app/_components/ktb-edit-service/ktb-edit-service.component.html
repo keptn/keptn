@@ -1,4 +1,6 @@
-<div *ngIf="serviceName" class="container">
-  <h2>Edit service {{serviceName}}</h2>
-  <ktb-danger-zone [data]="getServiceDeletionData(serviceName)"></ktb-danger-zone>
+<div *ngIf="serviceName" fxFlexFill class="container">
+  <div fxLayoutAlign="space-between stretch" fxLayout="column" class="settings-section full-height">
+    <h2>Edit service {{serviceName}}</h2>
+    <ktb-danger-zone [data]="getServiceDeletionData(serviceName)"></ktb-danger-zone>
+  </div>
 </div>
