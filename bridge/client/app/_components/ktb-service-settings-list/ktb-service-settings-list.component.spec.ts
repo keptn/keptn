@@ -5,6 +5,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { DataService } from '../../_services/data.service';
 import { DataServiceMock } from '../../_services/data.service.mock';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('KtbServiceSettingsListComponent', () => {
   let component: KtbServiceSettingsListComponent;
@@ -12,7 +13,7 @@ describe('KtbServiceSettingsListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, HttpClientTestingModule],
       providers: [
         {provide: DataService, useClass: DataServiceMock},
         {
