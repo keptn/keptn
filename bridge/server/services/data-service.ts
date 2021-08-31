@@ -12,6 +12,7 @@ import { ResultTypes } from '../../shared/models/result-types';
 import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
+import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 
 export class DataService {
   private apiService: ApiService;
@@ -93,7 +94,7 @@ export class DataService {
       const trace = Trace.fromJSON(traceData);
       deploymentInformation = {
         deploymentUrl: trace.getDeploymentUrl(),
-        image: trace.getShortImageName()
+        image: trace.getShortImageName(),
       };
     }
     return deploymentInformation;
@@ -171,7 +172,7 @@ export class DataService {
       const evaluationTrace = await this.getTrace(trace.shkeptncontext, projectName, stageName, serviceName, EventTypes.EVALUATION_FINISHED);
       approvals.push({
         evaluationTrace,
-        trace
+        trace,
       });
     }
     return approvals;
@@ -207,9 +208,16 @@ export class DataService {
     return validRegistrations;
   }
 
+  public async getIsUniformRegistrationControlPlane(integrationId: string): Promise<boolean> {
+    const response = await this.apiService.getUniformRegistrations(integrationId);
+    const uniformRegistration = response.data.shift();
+
+    return uniformRegistration?.metadata.location === UniformRegistrationLocations.CONTROL_PLANE;
+  }
+
   public async getTasks(projectName: string): Promise<string[]> {
     const shipyard = await this.getShipyard(projectName);
-    const tasks: string[] = ['service.delete', 'service.create'];
+    const tasks: string[] = ['service.delete', 'service.create', 'evaluation'];
     for (const stage of shipyard.spec.stages) {
       for (const sequence of stage.sequences) {
         for (const task of sequence.tasks) {

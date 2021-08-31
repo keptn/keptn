@@ -16,12 +16,12 @@ export class ApiService {
     this.axios = Axios.create({
       // accepts self-signed ssl certificate
       httpsAgent: new https.Agent({
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
       }),
       headers: {
         'x-token': apiToken,
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
   }
 
@@ -38,7 +38,7 @@ export class ApiService {
       ...(state && {state}),
       ...(fromTime && {fromTime}),
       ...(beforeTime && {beforeTime}),
-      ...(keptnContext && {keptnContext})
+      ...(keptnContext && {keptnContext}),
     };
 
     return this.axios.get<SequenceResult>(`${this.baseUrl}/controlPlane/v1/sequence/${projectName}`, {params});
@@ -51,7 +51,7 @@ export class ApiService {
       stage: stageName,
       type: eventType,
       limit: pageSize.toString(),
-      ...keptnContext && {keptnContext}
+      ...keptnContext && {keptnContext},
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event`, {params});
   }
@@ -60,7 +60,7 @@ export class ApiService {
     const params = {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName} AND data.result:${resultType}`,
       excludeInvalidated: 'true',
-      limit: pageSize.toString()
+      limit: pageSize.toString(),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${eventType}`, {params});
   }
@@ -70,7 +70,7 @@ export class ApiService {
     const params = {
       filter: `data.project:${projectName} AND data.service:${serviceName} AND data.stage:${stageName}${contextString}`,
       excludeInvalidated: 'true',
-      limit: pageSize.toString()
+      limit: pageSize.toString(),
     };
     return this.axios.get<EventResult>(`${this.baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`, {params});
   }
@@ -84,15 +84,19 @@ export class ApiService {
     return this.axios.get<EventResult>(`${this.baseUrl}/controlPlane/v1/event/triggered/${eventType}`, {params});
   }
 
-  public getUniformRegistrations(): Promise<AxiosResponse<UniformRegistration[]>> {
-    return this.axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`);
+  public getUniformRegistrations(integrationId?: string): Promise<AxiosResponse<UniformRegistration[]>> {
+    return this.axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`, {
+      params: {
+        ...integrationId && {id: integrationId},
+      },
+    });
   }
 
   public getUniformRegistrationLogs(integrationId: string, fromTime?: string, pageSize = 100): Promise<AxiosResponse<UniformRegistrationLogResponse>> {
     const params = {
       integrationId,
       ...fromTime && {fromTime: new Date(new Date(fromTime).getTime() + 1).toISOString()}, // > fromTime instead of >= fromTime
-      pageSize: pageSize.toString()
+      pageSize: pageSize.toString(),
     };
     return this.axios.get<UniformRegistrationLogResponse>(`${this.baseUrl}/controlPlane/v1/log`, {params});
   }

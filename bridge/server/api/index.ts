@@ -7,7 +7,7 @@ import { DataService } from '../services/data-service';
 const router = Router();
 
 function apiRouter(params:
-                     { apiUrl: string, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string }
+                     { apiUrl: string, apiToken: string, cliDownloadLink: string, integrationsPageLink: string, authType: string },
 ): Router {
   // fetch parameters for bridgeInfo endpoint
   const {apiUrl, apiToken, cliDownloadLink, integrationsPageLink, authType} = params;
@@ -32,7 +32,7 @@ function apiRouter(params:
       projectsPageSize,
       servicesPageSize,
       authType,
-      ...user && {user}
+      ...user && {user},
     };
 
     try {
@@ -61,8 +61,8 @@ function apiRouter(params:
         method: req.method as Method,
         url: `${apiUrl}${req.url}`,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
       return res.json(result.data);
     } catch (err) {
@@ -77,8 +77,8 @@ function apiRouter(params:
         url: `https://get.keptn.sh/version.json`,
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': `keptn/bridge:${process.env.VERSION}`
-        }
+          'User-Agent': `keptn/bridge:${process.env.VERSION}`,
+        },
       });
       return res.json(result.data);
     } catch (err) {
@@ -116,6 +116,15 @@ function apiRouter(params:
     }
   });
 
+  router.get('/uniform/registration/:integrationId/isControlPlane', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const isControlPlane = await dataService.getIsUniformRegistrationControlPlane(req.params.integrationId);
+      return res.json(isControlPlane);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.post('/hasUnreadUniformRegistrationLogs', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const uniformDates: { [key: string]: string } = req.body;
@@ -134,8 +143,8 @@ function apiRouter(params:
         ...req.method !== 'GET' && {data: req.body},
         headers: {
           'x-token': apiToken,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       return res.json(result.data);
