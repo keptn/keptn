@@ -40,12 +40,10 @@ spec:
               memory: "1Gi"
               cpu: "200m"
           env:
-            - name: EVENTBROKER
-              value: 'http://event-broker/keptn'
-            - name: CONFIGURATION_SERVICE
-              value: 'http://configuration-service:8080'
-            - name: ENVIRONMENT
-              value: 'production'
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
         - name: distributor
           image: keptn/distributor:0.8.8-dev.202108250723
           imagePullPolicy: Always
