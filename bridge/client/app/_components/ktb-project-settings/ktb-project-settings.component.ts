@@ -9,7 +9,7 @@ import { DataService } from '../../_services/data.service';
 import { DtToast } from '@dynatrace/barista-components/toast';
 import { NotificationsService } from '../../_services/notifications.service';
 import { EventService } from '../../_services/event.service';
-import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { Project } from '../../_models/project';
 import { FormUtils } from '../../_utils/form.utils';
 import { NotificationType, TemplateRenderedNotifications } from '../../_models/notification';
@@ -187,10 +187,10 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
   public deleteProject(projectName: string): void {
     this.eventService.deletionProgressEvent.next({isInProgress: true});
 
-    this.dataService.projects
+    this.dataService.projectExists(projectName)
       .pipe(
         takeUntil(this.unsubscribe$),
-        take(1),
+        filter(status => status === false),
       ).subscribe(() => {
       this.router.navigate(['/', 'dashboard']);
     });
@@ -198,7 +198,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     this.dataService.deleteProject(projectName)
       .pipe(
         takeUntil(this.unsubscribe$),
-        take(1),
       ).subscribe(() => {
       this.dataService.loadProjects();
       this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
