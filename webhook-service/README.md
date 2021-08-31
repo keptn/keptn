@@ -19,12 +19,12 @@ spec:
   webhooks:
     - type: "sh.keptn.event.mytask.triggered"
       envFrom: 
-        - name: "secret-key"
+        - name: "secretKey"
           secretRef:
             name: "my-k8s-secret"
             key: "my-key"
       requests:
-        - "curl --header 'x-token: {{.env.secret-key}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
+        - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"
 ```
 
