@@ -105,3 +105,8 @@ approvalService:
   image:
     repository: docker.io/keptn/approval-service
     tag: ""
+
+webhookService:
+  image:
+    repository: docker.io/keptn/webhook-service
+    tag: ""
