@@ -951,7 +951,7 @@ spec:
     spec:
       securityContext:
         fsGroup: 65532
-      serviceAccountName: keptn-default
+      serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
           image: {{ .Values.webhookService.image.repository }}:{{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
@@ -975,6 +975,11 @@ spec:
             limits:
               memory: "64Mi"
               cpu: "100m"
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532

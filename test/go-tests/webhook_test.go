@@ -30,8 +30,13 @@ metadata:
 spec:
   webhooks:
     - type: "sh.keptn.event.mytask.triggered"
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
       requests:
-        - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}"
+        - "curl --header 'x-token: {{.env.secretKey}}' http://shipyard-controller:8080/v1/project/{{.data.project}}"
         - "curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}"`
 
 func Test_Webhook(t *testing.T) {
@@ -53,6 +58,16 @@ func Test_Webhook(t *testing.T) {
 
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
+
+	// create a secret that should be referenced in the webhook
+	_, err = ApiPOSTRequest("/secrets/v1/secret", map[string]interface{}{
+		"name": "my-webhook-k8s-secret",
+		//		"scope": "keptn-default-scope",
+		"data": map[string]string{
+			"my-key": "my-value",
+		},
+	})
+	require.Nil(t, err)
 
 	// now, let's add an webhook.yaml file to our service
 	webhookFilePath, err := CreateTmpFile("webhook.yaml", webhookYaml)
