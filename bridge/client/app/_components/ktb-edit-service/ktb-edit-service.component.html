@@ -1,0 +1,4 @@
+<div *ngIf="serviceName" class="container">
+  <h2>Edit service {{serviceName}}</h2>
+  <ktb-danger-zone [data]="getServiceDeletionData(serviceName)"></ktb-danger-zone>
+</div>
