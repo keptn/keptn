@@ -1,6 +1,9 @@
 import {AbstractControl, ValidatorFn} from '@angular/forms';
 
 export class FormUtils {
+
+  public static URL_PATTERN = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+
   public static projectNameExistsValidator(projectNames: string[]): ValidatorFn {
     return (control: AbstractControl): { projectName: {value: boolean }} | null => {
       const project = projectNames.includes(control.value);
