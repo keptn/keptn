@@ -694,7 +694,7 @@ jobs:
 
       - name: Cleanup GKE cluster
         if: always() && env.CLOUD_PROVIDER == 'GKE' # we always need to cleanup GKE clusters
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
           GKE_VERSION: ${{ matrix.PLATFORM_VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
