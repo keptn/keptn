@@ -19,6 +19,9 @@ spec:
   stages:
     - name: "dev"
       sequences:
+        - name: "othersequence"
+          tasks:
+            - name: "othertask"
         - name: "mysequence"
           tasks:
             - name: "mytask"`
@@ -29,6 +32,14 @@ metadata:
   name: webhook-configuration
 spec:
   webhooks:
+    - type: "sh.keptn.event.othertask.triggered"
+      envFrom: 
+        - name: "secretKey"
+          secretRef:
+            name: "my-webhook-k8s-secret"
+            key: "my-key"
+      requests:
+        - "curl http://shipyard-controller:8080/v1/project{{.unknownKey}}"
     - type: "sh.keptn.event.mytask.triggered"
       envFrom: 
         - name: "secretKey"
@@ -101,5 +112,30 @@ func Test_Webhook(t *testing.T) {
 
 	// check if the requests have been executed and yielded some results
 	require.NotNil(t, decodedEvent["sh.keptn.event.mytask.triggered"])
+
+	// Now, trigger another sequence that tries to execute a webhook with a reference to an unknown variable - this should fail
+	sequencename = "othersequence"
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContextID, _ = TriggerSequence(projectName, serviceName, stageName, sequencename, nil)
+
+	require.Eventually(t, func() bool {
+		taskFinishedEvent, err = GetLatestEventOfType(keptnContextID, projectName, stageName, keptnv2.GetFinishedEventType("othertask"))
+		if err != nil || taskFinishedEvent == nil {
+			return false
+		}
+		return true
+	}, 30*time.Second, 3*time.Second)
+
+	require.NotNil(t, taskFinishedEvent)
+
+	decodedEvent = map[string]interface{}{}
+
+	err = keptnv2.EventDataAs(*taskFinishedEvent, &decodedEvent)
+
+	require.Nil(t, err)
+
+	// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
+	require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
+	require.Nil(t, decodedEvent["sh.keptn.event.othertask.triggered"])
 
 }
