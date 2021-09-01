@@ -180,7 +180,7 @@ export class DataService {
 
   public async hasUnreadUniformRegistrationLogs(uniformDates: { [key: string]: string }): Promise<boolean> {
     const response = await this.apiService.getUniformRegistrations();
-    const registrations = response.data;
+    const registrations = await this.getValidRegistrations(response.data);
     let status = false;
     for (let i = 0; i < registrations.length && !status; ++i) {
       const registration = registrations[i];
@@ -194,14 +194,20 @@ export class DataService {
 
   public async getUniformRegistrations(uniformDates: { [key: string]: string }): Promise<UniformRegistration[]> {
     const response = await this.apiService.getUniformRegistrations();
-    const registrations = response.data;
+    const registrations = await this.getValidRegistrations(response.data);
+    for (const registration of registrations) {
+      const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
+      registration.unreadEventsCount = logResponse.data.logs.length;
+    }
+    return registrations;
+  }
+
+  private async getValidRegistrations(registrations: UniformRegistration[]): Promise<UniformRegistration[]> {
     const currentDate = new Date().getTime();
     const validRegistrations: UniformRegistration[] = [];
     for (const registration of registrations) {
       const diffMins = (currentDate - new Date(registration.metadata.lastseen).getTime()) / 60_000;
       if (diffMins < 2) {
-        const logResponse = await this.apiService.getUniformRegistrationLogs(registration.id, uniformDates[registration.id]);
-        registration.unreadEventsCount = logResponse.data.logs.length;
         validRegistrations.push(registration);
       }
     }
