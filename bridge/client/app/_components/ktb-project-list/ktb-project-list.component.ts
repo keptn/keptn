@@ -20,7 +20,4 @@ export class KtbProjectListComponent {
       this._projects = value;
     }
   }
-
-  constructor() {
-  }
 }
