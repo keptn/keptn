@@ -958,13 +958,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 10998
             initialDelaySeconds: 10
             periodSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
