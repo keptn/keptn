@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { Project } from '../../_models/project';
 import { filter, takeUntil } from 'rxjs/operators';
 import { DataService } from '../../_services/data.service';
@@ -10,7 +10,6 @@ import { KeptnInfo } from '../../_models/keptn-info';
   selector: 'ktb-project-tile',
   templateUrl: './ktb-project-tile.component.html',
   styleUrls: ['./ktb-project-tile.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KtbProjectTileComponent implements OnDestroy {
 
@@ -22,22 +21,21 @@ export class KtbProjectTileComponent implements OnDestroy {
   get project(): Project | undefined {
     return this._project;
   }
+
   set project(value: Project | undefined) {
     if (this._project !== value) {
       this._project = value;
-      this._changeDetectorRef.markForCheck();
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {
+  constructor(private dataService: DataService) {
     this.dataService.keptnInfo
       .pipe(
         takeUntil(this.unsubscribe$),
-        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo)
+        filter((keptnInfo: KeptnInfo | undefined): keptnInfo is KeptnInfo => !!keptnInfo),
       ).subscribe(keptnInfo => {
-        this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
-        this._changeDetectorRef.markForCheck();
-      });
+      this.supportedShipyardVersion = (keptnInfo.metadata as Metadata)?.shipyardversion;
+    });
   }
 
   ngOnDestroy(): void {
