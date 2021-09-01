@@ -47,18 +47,9 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 				return nil, sdkErr
 			}
 			nedc.Add("env", secretEnvVars)
-			for _, req := range webhook.Requests {
-				// parse the data from the event, together with the secret env vars
-				parsedCurlCommand, err := th.templateEngine.ParseTemplate(nedc.Get(), req)
-				if err != nil {
-					return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
-				}
-				// perform the request
-				response, err := th.curlExecutor.Curl(parsedCurlCommand)
-				if err != nil {
-					return nil, sdkError(fmt.Sprintf("could not execute request '%s'", req), err)
-				}
-				responses = append(responses, response)
+			responses, sdkErr = th.performWebhookRequests(webhook, nedc, responses)
+			if sdkErr != nil {
+				return nil, sdkErr
 			}
 		}
 	}
@@ -72,6 +63,23 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 			"responses": responses,
 		},
 	}, nil
+}
+
+func (th *TaskHandler) performWebhookRequests(webhook keptnv2.Webhook, nedc *lib.EventDataModifier, responses []string) ([]string, *sdk.Error) {
+	for _, req := range webhook.Requests {
+		// parse the data from the event, together with the secret env vars
+		parsedCurlCommand, err := th.templateEngine.ParseTemplate(nedc.Get(), req)
+		if err != nil {
+			return nil, sdkError(fmt.Sprintf("could not parse request '%s'", req), err)
+		}
+		// perform the request
+		response, err := th.curlExecutor.Curl(parsedCurlCommand)
+		if err != nil {
+			return nil, sdkError(fmt.Sprintf("could not execute request '%s'", req), err)
+		}
+		responses = append(responses, response)
+	}
+	return responses, nil
 }
 
 func (th *TaskHandler) gatherSecretEnvVars(webhook keptnv2.Webhook) (map[string]string, *sdk.Error) {
