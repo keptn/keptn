@@ -45,7 +45,7 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
         - name: distributor
-          image: keptn/distributor:0.8.8-dev.202108250723
+          image: keptn/distributor:0.8.8-dev
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

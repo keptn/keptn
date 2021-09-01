@@ -35,24 +35,16 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	if err != nil {
 		return nil, sdkError("could not parse incoming event", err)
 	}
-	resource, err := th.getWebHookConfigResource(keptnHandler, nedc.Project(), nedc.Stage(), nedc.Service())
-	if err != nil {
-		return nil, sdkError("could not find webhook config", err)
-	}
-	whConfig, err := keptnv2.DecodeWebHookConfigYAML([]byte(resource.ResourceContent))
-	if err != nil {
-		return nil, sdkError("could not decode webhook config", err)
+	whConfig, sdkErr := th.retrieveWebhookConfig(keptnHandler, nedc)
+	if sdkErr != nil {
+		return nil, sdkErr
 	}
 	responses := []string{}
 	for _, webhook := range whConfig.Spec.Webhooks {
 		if webhook.Type == *event.Type {
-			secretEnvVars := map[string]string{}
-			for _, secretRef := range webhook.EnvFrom {
-				secretValue, err := th.secretReader.ReadSecret(secretRef.SecretRef.Name, secretRef.SecretRef.Key)
-				if err != nil {
-					return nil, sdkError(fmt.Sprintf("could not read secret %s.%s", secretRef.SecretRef.Name, secretRef.SecretRef.Key), err)
-				}
-				secretEnvVars[secretRef.Name] = secretValue
+			secretEnvVars, sdkErr := th.gatherSecretEnvVars(webhook)
+			if sdkErr != nil {
+				return nil, sdkErr
 			}
 			nedc.Add("env", secretEnvVars)
 			for _, req := range webhook.Requests {
@@ -80,6 +72,30 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 			"responses": responses,
 		},
 	}, nil
+}
+
+func (th *TaskHandler) gatherSecretEnvVars(webhook keptnv2.Webhook) (map[string]string, *sdk.Error) {
+	secretEnvVars := map[string]string{}
+	for _, secretRef := range webhook.EnvFrom {
+		secretValue, err := th.secretReader.ReadSecret(secretRef.SecretRef.Name, secretRef.SecretRef.Key)
+		if err != nil {
+			return nil, sdkError(fmt.Sprintf("could not read secret %s.%s", secretRef.SecretRef.Name, secretRef.SecretRef.Key), err)
+		}
+		secretEnvVars[secretRef.Name] = secretValue
+	}
+	return secretEnvVars, nil
+}
+
+func (th *TaskHandler) retrieveWebhookConfig(keptnHandler sdk.IKeptn, nedc *lib.EventDataModifier) (*keptnv2.WebHookConfig, *sdk.Error) {
+	resource, err := th.getWebHookConfigResource(keptnHandler, nedc.Project(), nedc.Stage(), nedc.Service())
+	if err != nil {
+		return nil, sdkError("could not find webhook config", err)
+	}
+	whConfig, err := keptnv2.DecodeWebHookConfigYAML([]byte(resource.ResourceContent))
+	if err != nil {
+		return nil, sdkError("could not decode webhook config", err)
+	}
+	return whConfig, nil
 }
 
 func (th *TaskHandler) WebhookAvailableForEvent(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
