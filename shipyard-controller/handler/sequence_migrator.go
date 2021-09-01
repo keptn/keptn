@@ -55,11 +55,12 @@ func (sm *SequenceMigrator) MigrateSequences() {
 
 func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sync.WaitGroup) {
 	pageSize := int64(50)
-
+	nextPageKey := int64(0)
 	for {
 		rootEvents, err := sm.eventRepo.GetRootEvents(models.GetRootEventParams{
-			Project:  projectName,
-			PageSize: pageSize,
+			NextPageKey: nextPageKey,
+			Project:     projectName,
+			PageSize:    pageSize,
 		})
 		if err != nil {
 			log.WithError(err).Errorf("could not retrieve root events of project %s", projectName)
@@ -76,6 +77,7 @@ func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sy
 		if rootEvents.NextPageKey == 0 {
 			break
 		}
+		nextPageKey = rootEvents.NextPageKey
 	}
 	wg.Done()
 }
