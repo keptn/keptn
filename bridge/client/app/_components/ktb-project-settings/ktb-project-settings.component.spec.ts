@@ -160,6 +160,10 @@ describe('KtbProjectSettingsComponent', () => {
     // when
     const router = TestBed.inject(Router);
     const routeSpy = jest.spyOn(router, 'navigate');
+    dataService.loadProjects = jest.fn().mockImplementation(() => {
+      // @ts-ignore
+      dataService._projects.next(dataService._projects.getValue().filter(project => project.projectName !== 'sockshop'));
+    });
     component.deleteProject('sockshop');
 
     // then
