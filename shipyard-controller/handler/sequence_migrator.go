@@ -47,19 +47,20 @@ func (sm *SequenceMigrator) MigrateSequences() {
 	for _, project := range projects {
 		// migrate sequences of projects in parallel
 		log.Infof("migrating sequences of project %s", project.ProjectName)
-		go sm.migrateSequencesOfProject(project.ProjectName, wg)
+		sm.migrateSequencesOfProject(project.ProjectName, wg)
+		log.Infof("finished migration of sequences of project %s", project.ProjectName)
 	}
 	wg.Wait()
 }
 
 func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sync.WaitGroup) {
 	pageSize := int64(50)
-
+	nextPageKey := int64(0)
 	for {
-		log.Infof("getting root events of project %s", projectName)
 		rootEvents, err := sm.eventRepo.GetRootEvents(models.GetRootEventParams{
-			Project:  projectName,
-			PageSize: pageSize,
+			NextPageKey: nextPageKey,
+			Project:     projectName,
+			PageSize:    pageSize,
 		})
 		if err != nil {
 			log.WithError(err).Errorf("could not retrieve root events of project %s", projectName)
@@ -76,13 +77,18 @@ func (sm *SequenceMigrator) migrateSequencesOfProject(projectName string, wg *sy
 		if rootEvents.NextPageKey == 0 {
 			break
 		}
+		nextPageKey = rootEvents.NextPageKey
 	}
 	wg.Done()
 }
 
 func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models.Event) error {
+	eventScope, err := models.NewEventScope(rootEvent)
+	if err != nil {
+		// if no event scope can be determined, there is no need to try to migrate it as a sequence
+		return nil
+	}
 	// first, check if there is already a task sequence for this context
-	log.Infof("checking if root event for shkeptncontext %s already has a task sequence state in the collection", rootEvent.Shkeptncontext)
 	sequence, err := sm.taskSequenceRepo.FindSequenceStates(models.StateFilter{
 		GetSequenceStateParams: models.GetSequenceStateParams{
 			Project:      projectName,
@@ -94,15 +100,10 @@ func (sm *SequenceMigrator) migrateSequence(projectName string, rootEvent models
 	}
 	if len(sequence.States) > 0 {
 		// sequence exists already, no need to migrate it anymore
-		log.Infof("sequence with shkeptncontext %s already present", rootEvent.Shkeptncontext)
 		return nil
 	}
 
 	log.Infof("sequence of shkeptncontext %s not stored in collection yet. starting migration", rootEvent.Shkeptncontext)
-	eventScope, err := models.NewEventScope(rootEvent)
-	if err != nil {
-		return fmt.Errorf("could not determine scope of task sequence: %s", err.Error())
-	}
 
 	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(*rootEvent.Type)
 	if err != nil {
