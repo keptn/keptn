@@ -196,19 +196,17 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy {
     });
 
     this.dataService.deleteProject(projectName)
-      .pipe(
-        takeUntil(this.unsubscribe$),
-      ).subscribe(() => {
-      this.dataService.loadProjects();
-      this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
-    }, (err) => {
-      const deletionError = 'Project could not be deleted: ' + err.message;
-      this.eventService.deletionProgressEvent.next({
-        error: deletionError,
-        isInProgress: false,
-        result: DeleteResult.ERROR,
+      .subscribe(() => {
+        this.dataService.loadProjects();
+        this.eventService.deletionProgressEvent.next({isInProgress: false, result: DeleteResult.SUCCESS});
+      }, (err) => {
+        const deletionError = 'Project could not be deleted: ' + err.message;
+        this.eventService.deletionProgressEvent.next({
+          error: deletionError,
+          isInProgress: false,
+          result: DeleteResult.ERROR,
+        });
       });
-    });
   }
 
   public reset(): void {
