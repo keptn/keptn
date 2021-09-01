@@ -1,11 +1,11 @@
 mongodb:
   enabled: true
   host: mongodb:27017
-  user: null
-  password: null
-  adminPassword: null
+  user:
+  password:
+  adminPassword:
 
-prefixPath: ""
+prefixPath: ''
 
 keptnSpecVersion: latest
 
@@ -21,92 +21,105 @@ apiGatewayNginx:
   port: 80
   nodePort: 31090
   image:
-    repository: docker.io/nginxinc/nginx-unprivileged
+    registry: docker.io
+    repository: nginxinc/nginx-unprivileged
     tag: 1.19.4-alpine
 
 remediationService:
   image:
-    repository: docker.io/keptn/remediation-service
-    tag: ""
+    registry: docker.io
+    repository: keptn/remediation-service
+    tag: ''
 
 apiService:
   image:
-    repository: docker.io/keptn/api
-    tag: ""
+    registry: docker.io
+    repository: keptn/api
+    tag: ''
   config:
-    maxAuthRequestsPerSecond: "1.0"
-    maxAuthRequestBurst: "2"
+    maxAuthRequestsPerSecond: '1.0'
+    maxAuthRequestBurst: '2'
 
 bridge:
   image:
-    repository: docker.io/keptn/bridge2
-    tag: ""
-  cliDownloadLink: null
-  integrationsPageLink: null
+    registry: docker.io
+    repository: keptn/bridge2
+    tag: ''
+  cliDownloadLink:
+  integrationsPageLink:
   secret:
     enabled: true
   versionCheck:
     enabled: true
   showApiToken:
     enabled: true
-  installationType: null
-  lookAndFeelUrl: null
+  installationType:
+  lookAndFeelUrl:
   oauth:
     enabled: false
-    discovery: ""
+    discovery: ''
     secureCookie: false
-    trustProxy: ""
+    trustProxy: ''
 
 distributor:
   metadata:
     hostname:
     namespace:
   image:
-    repository: docker.io/keptn/distributor
-    tag: ""
+    registry: docker.io
+    repository: keptn/distributor
+    tag: ''
 
 shipyardController:
   image:
-    repository: docker.io/keptn/shipyard-controller
-    tag: ""
+    registry: docker.io
+    repository: keptn/shipyard-controller
+    tag: ''
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
 
 secretService:
   image:
-    repository: docker.io/keptn/secret-service
-    tag: ""
+    registry: docker.io
+    repository: keptn/secret-service
+    tag: ''
 
 configurationService:
   image:
-    repository: docker.io/keptn/configuration-service
-    tag: ""
+    registry: docker.io
+    repository: keptn/configuration-service
+    tag: ''
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
-  storageClass: null
+  storageClass:
 
 mongodbDatastore:
   image:
-    repository: docker.io/keptn/mongodb-datastore
-    tag: ""
+    registry: docker.io
+    repository: keptn/mongodb-datastore
+    tag: ''
 
 lighthouseService:
   image:
-    repository: docker.io/keptn/lighthouse-service
-    tag: ""
+    registry: docker.io
+    repository: keptn/lighthouse-service
+    tag: ''
 
 statisticsService:
   image:
-    repository: docker.io/keptn/statistics-service
-    tag: ""
+    registry: docker.io
+    repository: keptn/statistics-service
+    tag: ''
 
 approvalService:
   image:
-    repository: docker.io/keptn/approval-service
-    tag: ""
+    registry: docker.io
+    repository: keptn/approval-service
+    tag: ''
 
-webhookService:
+alpine:
   image:
-    repository: docker.io/keptn/webhook-service
-    tag: ""
+    registry: docker.io
+    repository: alpine
+    tag: '3.13'
