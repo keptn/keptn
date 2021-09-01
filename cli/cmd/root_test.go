@@ -3,16 +3,17 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/cli/pkg/version"
-	"github.com/mattn/go-shellwords"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	keptnapimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/cli/pkg/version"
+	"github.com/mattn/go-shellwords"
+	"github.com/spf13/cobra"
 )
 
 const unexpectedErrMsg = "unexpected error, got '%v'"
@@ -70,7 +71,7 @@ func executeActionCommandC(cmd string) (string, error) {
 		},
 	}
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-		runVersionCheck(vChecker)
+		runVersionCheck(vChecker, os.Args)
 	}
 
 	rootCmd.SetOut(buf)
@@ -177,7 +178,9 @@ func Test_runVersionCheck(t *testing.T) {
 		metadataStatus   int
 		metadataResponse keptnapimodels.Metadata
 		cliVersion       string
+		osArgs           []string
 		wantOutput       string
+		doNotWantOutput  string
 	}{
 		{
 			name:           "get version",
@@ -193,6 +196,13 @@ func Test_runVersionCheck(t *testing.T) {
 			cliVersion:     "0.8.0",
 			metadataStatus: http.StatusInternalServerError,
 			wantOutput:     "* Warning: could not check Keptn server version: received invalid response from Keptn API\n",
+		},
+		{
+			name:            "skip version check for 'install'",
+			cliVersion:      "0.8.0",
+			metadataStatus:  http.StatusServiceUnavailable,
+			osArgs:          []string{"keptn", "install"},
+			doNotWantOutput: "* Warning: could not check Keptn server version: Error connecting to server:",
 		},
 	}
 	for _, tt := range tests {
@@ -214,14 +224,18 @@ func Test_runVersionCheck(t *testing.T) {
 					VersionURL: ts.URL,
 				},
 			}
-			runVersionCheck(vChecker)
+			runVersionCheck(vChecker, tt.osArgs)
 
 			// reset version
 			Version = ""
 
 			out := r.revertStdErr()
-			if !strings.Contains(out, tt.wantOutput) {
+			if tt.wantOutput != "" && !strings.Contains(out, tt.wantOutput) {
 				t.Errorf("unexpected output: '%s', expected '%s'", out, tt.wantOutput)
+			}
+
+			if tt.doNotWantOutput != "" && strings.Contains(out, tt.doNotWantOutput) {
+				t.Errorf("unexpected output: '%s', output should not contain '%s'", out, tt.doNotWantOutput)
 			}
 		})
 	}
