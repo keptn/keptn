@@ -40,7 +40,7 @@ func (sm *serviceManager) GetAllStages(projectName string) ([]*models.ExpandedSt
 		return nil, err
 	}
 	if project == nil {
-		return nil, errProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 
 	return project.Stages, nil
@@ -53,7 +53,7 @@ func (sm *serviceManager) GetService(projectName, stageName, serviceName string)
 		return nil, err
 	}
 	if project == nil {
-		return nil, errProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 
 	for _, stg := range project.Stages {
@@ -63,10 +63,10 @@ func (sm *serviceManager) GetService(projectName, stageName, serviceName string)
 					return svc, nil
 				}
 			}
-			return nil, errServiceNotFound
+			return nil, ErrServiceNotFound
 		}
 	}
-	return nil, errStageNotFound
+	return nil, ErrStageNotFound
 }
 
 func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*models.ExpandedService, error) {
@@ -75,7 +75,7 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*mode
 		return nil, err
 	}
 	if project == nil {
-		return nil, errProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 
 	for _, stg := range project.Stages {
@@ -83,7 +83,7 @@ func (sm *serviceManager) GetAllServices(projectName, stageName string) ([]*mode
 			return stg.Services, nil
 		}
 	}
-	return nil, errStageNotFound
+	return nil, ErrStageNotFound
 }
 
 func (sm *serviceManager) CreateService(projectName string, params *operations.CreateServiceParams) error {
@@ -106,7 +106,7 @@ func (sm *serviceManager) CreateService(projectName string, params *operations.C
 		service, _ := sm.GetService(projectName, stage.StageName, *params.ServiceName)
 		if service != nil {
 			log.Infof("Service %s already exists in project %s", *params.ServiceName, projectName)
-			return errServiceAlreadyExists
+			return ErrServiceAlreadyExists
 		}
 
 		log.Infof("Creating service %s in project %s", *params.ServiceName, projectName)

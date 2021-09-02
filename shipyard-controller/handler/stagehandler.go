@@ -52,7 +52,7 @@ func (sh *StageHandler) GetAllStages(c *gin.Context) {
 
 	allStages, err := sh.StageManager.GetAllStages(params.ProjectName)
 	if err != nil {
-		if err == errProjectNotFound {
+		if err == ErrProjectNotFound {
 			SetNotFoundErrorResponse(err, c)
 			return
 		}
@@ -103,11 +103,11 @@ func (sh *StageHandler) GetStage(c *gin.Context) {
 
 	stage, err := sh.StageManager.GetStage(projectName, stageName)
 	if err != nil {
-		if err == errProjectNotFound {
+		if err == ErrProjectNotFound {
 			SetNotFoundErrorResponse(err, c)
 			return
 		}
-		if err == errStageNotFound {
+		if err == ErrStageNotFound {
 			SetNotFoundErrorResponse(err, c)
 		}
 
