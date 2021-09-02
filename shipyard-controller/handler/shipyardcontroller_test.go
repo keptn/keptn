@@ -188,7 +188,9 @@ func Test_eventManager_GetTriggeredEventsOfProject(t *testing.T) {
 		{
 			name: "Get triggered events for project",
 			fields: fields{
-				projectRepo: nil,
+				projectRepo: &db_mock.ProjectRepoMock{GetProjectFunc: func(projectName string) (*models.ExpandedProject, error) {
+					return &models.ExpandedProject{ProjectName: projectName}, nil
+				}},
 				triggeredEventRepo: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]models.Event, error) {
 						return []models.Event{fake.GetTestTriggeredEvent()}, nil
