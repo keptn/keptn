@@ -375,8 +375,8 @@ func Test_eventManager_handleStartedEvent(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("handleStartedEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if tt.wantErrNoMatchingEvent && (err != errNoMatchingEvent) {
-				t.Errorf("handleStartedEvent() expected errNoMatchingEvent but got %v", err)
+			if tt.wantErrNoMatchingEvent && (err != ErrNoMatchingEvent) {
+				t.Errorf("handleStartedEvent() expected ErrNoMatchingEvent but got %v", err)
 			}
 		})
 	}
