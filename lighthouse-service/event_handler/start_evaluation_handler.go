@@ -78,14 +78,14 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(keptnContext string, e *k
 		var message string
 		if err == ErrServiceNotFound {
 			message = "error retrieving SLO file: service " + e.Service + " not found"
-			eh.KeptnHandler.Logger.Error(message)
 		} else if err == ErrStageNotFound {
 			message = "error retrieving SLO file: stage " + e.Stage + " not found"
-			eh.KeptnHandler.Logger.Error(message)
 		} else if err == ErrProjectNotFound {
 			message = "error retrieving SLO file: project " + e.Project + " not found"
-			eh.KeptnHandler.Logger.Error(message)
+		} else {
+			message = fmt.Sprintf("error retrieving SLO file: %s", err.Error())
 		}
+		eh.KeptnHandler.Logger.Error(message)
 		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message)
 	} else if err != nil && err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
