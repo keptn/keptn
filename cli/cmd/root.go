@@ -34,7 +34,7 @@ func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 		Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			runVersionCheck(vChecker, os.Args)
+			runVersionCheck(vChecker, os.Args[1:])
 		},
 	}
 	return rootCmd
@@ -113,10 +113,10 @@ func (s *options) appendIfNotEmpty(newOption string) {
 	}
 }
 
-func runVersionCheck(vChecker *version.VersionChecker, osArgs []string) {
+func runVersionCheck(vChecker *version.VersionChecker, flags []string) {
 	// Server version won't be available during `install`
 	// because the Server is not installed yet
-	if isInstallSubCommand(osArgs) {
+	if isInstallSubCommand(flags) {
 		return
 	}
 
@@ -152,8 +152,8 @@ func runVersionCheck(vChecker *version.VersionChecker, osArgs []string) {
 	}
 }
 
-func isInstallSubCommand(osArgs []string) bool {
-	for _, arg := range osArgs[1:] {
+func isInstallSubCommand(flags []string) bool {
+	for _, arg := range flags {
 		switch {
 		// skip flags
 		// e.g., keptn -q install
