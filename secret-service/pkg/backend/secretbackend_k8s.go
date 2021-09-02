@@ -144,6 +144,11 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 				keys = append(keys, key)
 			}
 		}
+		for key, _ := range secretItem.Data {
+			if key != "" {
+				keys = append(keys, key)
+			}
+		}
 		result = append(result, model.GetSecretResponseItem{
 			SecretMetadata: model.SecretMetadata{
 				Name: secretItem.Name,
