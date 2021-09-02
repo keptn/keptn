@@ -21,7 +21,8 @@ func (ce *CmdCurlExecutor) Curl(curlCmd string) (string, error) {
 	if cmdArr[0] != "curl" {
 		return "", errors.New("only curl commands are allowed to be executed")
 	}
-	cmd := exec.Command(cmdArr[0], cmdArr[1:]...)
+
+	cmd := exec.Command("/bin/sh", "-c", curlCmd)
 
 	output, err := cmd.Output()
 	return string(output), err
