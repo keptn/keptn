@@ -128,7 +128,7 @@ func Test_executeJMeter(t *testing.T) {
 					ResourceURI: &res,
 				})
 			}
-			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tt.args.resultsDir, tt.args.url, tt.args.LTN, tt.args.funcValidation, tt.args.logger)
+			got, err := executeJMeter(tt.args.testInfo, tt.args.workload, tt.args.resultsDir, tt.args.url, tt.args.LTN, tt.args.funcValidation, tt.args.logger, false)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("executeJMeter() error = %v, wantErr %v", err, tt.wantErr)
 				return
