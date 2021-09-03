@@ -426,7 +426,8 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 			want: `{
           "secrets": [
             {
-              "name": "my-secret"
+              "name": "my-secret",
+              "keys": null
             }
           ]
         }`,
@@ -452,7 +453,8 @@ func TestSecretCmdHandler_GetSecrets(t *testing.T) {
 				outputFormat: "yaml",
 			},
 			want: `secrets:
-    - name: my-secret`,
+    - name: my-secret
+      keys: []`,
 			wantErr: false,
 		},
 		{
