@@ -3,6 +3,7 @@ import { Method } from 'axios';
 import { currentPrincipal } from '../user/session';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
+import { WebhookConfig } from '../../shared/interfaces/webhook-config';
 
 const router = Router();
 
@@ -111,6 +112,25 @@ function apiRouter(params:
       const uniformDates: { [key: string]: string } = req.body;
       const uniformRegistrations = await dataService.getUniformRegistrations(uniformDates);
       return res.json(uniformRegistrations);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get('/uniform/registration/webhook-service/config', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const webhookConfig = await dataService.getWebhookConfig(req.query.projectName?.toString(), req.query.stageName?.toString(), req.query.serviceName?.toString());
+      return res.json(webhookConfig);
+    } catch (error) {
+      return next(error);
+    }
+  })
+
+  router.post('/uniform/registration/webhook-service/config', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const webhookConfig: WebhookConfig = req.body.config;
+      const result = await dataService.saveWebhookConfig(webhookConfig);
+      return res.json(result);
     } catch (error) {
       return next(error);
     }

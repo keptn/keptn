@@ -8,6 +8,7 @@ import { UniformRegistration } from '../interfaces/uniform-registration';
 import { UniformRegistrationLogResponse } from '../interfaces/uniform-registration-log';
 import { Resource } from '../../shared/interfaces/resource';
 import https from 'https';
+import { ProjectResult } from '../interfaces/project-result';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -25,6 +26,9 @@ export class ApiService {
     });
   }
 
+  public getProjects(): Promise<AxiosResponse<ProjectResult>> {
+    return this.axios.get<ProjectResult>(`${this.baseUrl}/controlPlane/v1/project`);
+  }
 
   public getProject(projectName: string): Promise<AxiosResponse<Project>> {
     return this.axios.get<Project>(`${this.baseUrl}/controlPlane/v1/project/${projectName}`);
@@ -104,4 +108,47 @@ export class ApiService {
   public getShipyard(projectName: string): Promise<AxiosResponse<Resource>> {
     return this.axios.get<Resource>(`${this.baseUrl}/configuration-service/v1/project/${projectName}/resource/shipyard.yaml`);
   }
+
+  public getWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
+    if (serviceName) {
+      url += `/service/${serviceName}`;
+    }
+    url += `/resource/webhook.yaml`;
+
+    return this.axios.get<Resource>(url);
+  }
+
+  public deleteWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
+    if (serviceName) {
+      url += `/service/${serviceName}`;
+    }
+    url += `/resource/webhook.yaml`;
+
+    return this.axios.delete<Resource>(url);
+  }
+
+  public saveWebhookConfig(content: string, projectName: string, stageName?: string, serviceName?: string): Promise<AxiosResponse<Resource>> {
+    let url = `${this.baseUrl}/configuration-service/v1/project/${projectName}`;
+    if (stageName) {
+      url += `/stage/${stageName}`;
+    }
+    if (serviceName) {
+      url += `/service/${serviceName}`;
+    }
+    url += `/resource/webhook.yaml`;
+
+    return this.axios.put<Resource>(url, {
+      resourceURI: 'webhook.yaml',
+      resourceContent: new Buffer(content).toString('base64'),
+    });
+  }
+
 }

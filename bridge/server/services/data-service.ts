@@ -13,6 +13,8 @@ import { UniformRegistration } from '../interfaces/uniform-registration';
 import Yaml from 'yaml';
 import { Shipyard } from '../interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
+import { WebhookConfig } from '../models/webhook-config';
+import { CURLParser } from 'parse-curl-js';
 
 export class DataService {
   private apiService: ApiService;
@@ -21,6 +23,12 @@ export class DataService {
 
   constructor(apiUrl: string, apiToken: string) {
     this.apiService = new ApiService(apiUrl, apiToken);
+  }
+
+  public async getProjects(): Promise<Project[]> {
+    const response = await this.apiService.getProjects();
+    const projects = response.data.projects.map(project => Project.fromJSON(project));
+    return projects;
   }
 
   public async getProject(projectName: string, includeRemediation: boolean, includeApproval: boolean): Promise<Project> {
@@ -234,6 +242,103 @@ export class DataService {
     const response = await this.apiService.getShipyard(projectName);
     const shipyard = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
     return Yaml.parse(shipyard);
+  }
+
+  public async getWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
+    const response = await this.apiService.getWebhookConfig(projectName, stageName, serviceName);
+    const webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
+    const webhookConfigYaml = Yaml.parse(webhookConfigFile);
+    const webhookCurlCommand = new CURLParser(webhookConfigYaml?.spec?.webhooks[0]?.requests[0]).parse();
+    const webhookConfig: WebhookConfig = new WebhookConfig();
+    webhookConfig.method = webhookCurlCommand.method;
+    webhookConfig.url = webhookCurlCommand.url;
+    webhookConfig.payload = JSON.stringify(webhookCurlCommand.body.data);
+    for (const [name, value] of Object.entries(webhookCurlCommand.headers)) {
+      webhookConfig.header?.push({
+        name,
+        value
+      });
+    }
+    return webhookConfig;
+  }
+
+  public async saveWebhookConfig(webhookConfig: WebhookConfig): Promise<boolean> {
+    const projects: string[] = webhookConfig.filter?.projects?.length ? webhookConfig.filter?.projects : (await this.getProjects()).map(project => project.projectName);
+    const stages: string[] | null = webhookConfig.filter?.stages;
+    const services: string[] | null = webhookConfig.filter?.services;
+
+    const prevProjects: string[] = webhookConfig.prevFilter?.projects?.length ? webhookConfig.prevFilter?.projects : (await this.getProjects()).map(project => project.projectName);
+    const prevStages: string[] | null | undefined = webhookConfig.prevFilter?.stages;
+    const prevServices: string[] | null | undefined = webhookConfig.prevFilter?.services;
+
+    for (const project of prevProjects) {
+      try {
+        if (prevServices?.length == 0 && prevStages?.length == 0) {
+          await this.apiService.deleteWebhookConfig(project);
+        } else if (prevServices?.length == 0) {
+          for (const stage of prevStages || []) {
+            await this.apiService.deleteWebhookConfig(project, stage);
+          }
+        } else if (prevStages?.length == 0) {
+          for (const service of prevServices || []) {
+            await this.apiService.deleteWebhookConfig(project, undefined, service);
+          }
+        } else {
+          for (const stage of prevStages || []) {
+            for (const service of prevServices || []) {
+              await this.apiService.deleteWebhookConfig(project, stage, service);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    console.log('saveWebhookConfig for', projects, stages, services);
+    for (const project of projects) {
+      let params = '';
+      for (const header of webhookConfig?.header||[]) {
+        params += `--header '${header.name}: ${header.value}' `;
+      }
+      params += `--request ${webhookConfig.method} `;
+      if (webhookConfig.proxy) {
+        params += `--proxy ${webhookConfig.proxy} `;
+      }
+      if (webhookConfig.payload) {
+        params += `--data '${webhookConfig.payload.replace((/  |\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
+      }
+
+      const webhookYamlTemplate = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "${webhookConfig.type}"
+      requests:
+        - "curl ${params}${webhookConfig.url}"`;
+
+      if(services?.length == 0 && stages?.length == 0) {
+        await this.apiService.saveWebhookConfig(webhookYamlTemplate, project);
+      } else if(services?.length == 0) {
+        for (const stage of stages||[]) {
+          await this.apiService.saveWebhookConfig(webhookYamlTemplate, project, stage);
+        }
+      } else if(stages?.length == 0) {
+        for (const service of services||[]) {
+          await this.apiService.saveWebhookConfig(webhookYamlTemplate, project, undefined, service);
+        }
+      } else {
+        for (const stage of stages||[]) {
+          for (const service of services||[]) {
+            await this.apiService.saveWebhookConfig(webhookYamlTemplate, project, stage, service);
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   private buildRemediationEvent(stageName: string): string {

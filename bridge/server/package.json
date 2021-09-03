@@ -23,6 +23,7 @@
     "helmet": "^4.6.0",
     "memorystore": "^1.6.6",
     "morgan": "^1.10.0",
+    "parse-curl-js": "^1.0.3",
     "pug": "^3.0.2",
     "yaml": "^1.10.2"
   },
