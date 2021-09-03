@@ -18,12 +18,12 @@ import (
 
 // GetProjectProjectNameStageStageNameResourceHandlerFunc get list of stage resources
 func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String("Stage does not exist")})
+		return stage_resource.NewGetProjectProjectNameStageStageNameResourceNotFound().WithPayload(&models.Error{Code: 404, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
 	logger.Debug("Checking out " + params.StageName + " branch")
@@ -41,7 +41,7 @@ func GetProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc get the specified resource
 func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.GetProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
@@ -92,12 +92,12 @@ func GetProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // PostProjectProjectNameStageStageNameResourceHandlerFunc creates list of new resources in a stage
 func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PostProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+		return stage_resource.NewPostProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
@@ -134,12 +134,12 @@ func PostProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resour
 
 // PutProjectProjectNameStageStageNameResourceHandlerFunc updates list of stage resources
 func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
@@ -151,7 +151,7 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
+		return stage_resource.NewPutProjectProjectNameStageStageNameResourceBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
 	for _, res := range params.Resources.Resources {
@@ -176,12 +176,12 @@ func PutProjectProjectNameStageStageNameResourceHandlerFunc(params stage_resourc
 
 // PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc updates the specified stage resource
 func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.PutProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
@@ -192,7 +192,7 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
-		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
+		return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
 	filePath := projectConfigPath + "/" + params.ResourceURI
@@ -214,12 +214,12 @@ func PutProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params st
 
 // DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc deletes the specified stage resource
 func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params stage_resource.DeleteProjectProjectNameStageStageNameResourceResourceURIParams) middleware.Responder {
-	logger := keptncommon.NewLogger("", "", "configuration-service")
+	logger := keptncommon.NewLogger("", "", common.ConfigurationServiceName)
 	common.LockProject(params.ProjectName)
 	defer common.UnlockProject(params.ProjectName)
 
 	if !common.StageExists(params.ProjectName, params.StageName, false) {
-		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Stage does not exist")})
+		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.StageDoesNotExistErrorMsg)})
 	}
 
 	projectConfigPath := config.ConfigDir + "/" + params.ProjectName
@@ -230,7 +230,7 @@ func DeleteProjectProjectNameStageStageNameResourceResourceURIHandlerFunc(params
 	if err != nil {
 		logger.Error(fmt.Sprintf("Could not check out %s branch for project %s", params.StageName, params.ProjectName))
 		logger.Error(err.Error())
-		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String("Could not check out branch")})
+		return stage_resource.NewDeleteProjectProjectNameStageStageNameResourceResourceURIBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(common.CannotCheckOutBranchErrorMsg)})
 	}
 
 	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
