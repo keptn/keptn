@@ -115,6 +115,7 @@ import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils
 import { KtbSequenceControlsComponent } from './_components/ktb-sequence-controls/ktb-sequence-controls.component';
 import { environment } from '../environments/environment';
 import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/ktb-project-settings.component';
+import { KtbWebhookSettingsComponent } from './_components/ktb-webhook-settings/ktb-webhook-settings.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -192,6 +193,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbProjectSettingsComponent,
     KtbDeleteConfirmationComponent,
     KtbModifyUniformSubscriptionComponent,
+    KtbWebhookSettingsComponent,
   ],
   imports: [
     BrowserModule,

@@ -31,7 +31,7 @@
             clearAllLabel="Clear all"
           ></dt-filter-field>
         </div>
-
+        <ktb-webhook-settings #webhookSettings *ngIf="isWebhookService()" [project]="data.project" [subscription]="data.subscription"></ktb-webhook-settings>
         <div fxLayout="row">
           <button class="mr-2" uitestid="updateSubscriptionButton" [disabled]="!subscriptionForm.valid" (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription)" dt-button>
             <dt-loading-spinner *ngIf="updating" aria-label="{{editMode ? 'Updating' : 'Creating'}} subscription"></dt-loading-spinner>

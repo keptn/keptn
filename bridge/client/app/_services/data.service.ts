@@ -21,6 +21,7 @@ import { DeploymentStage } from '../_models/deployment-stage';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceState } from '../../../shared/models/sequence';
+import { WebhookConfig } from '../_models/webhook-config';
 
 @Injectable({
   providedIn: 'root',
@@ -571,6 +572,14 @@ export class DataService {
       .pipe(
         map(taskNames => taskNames.sort((taskA, taskB) => taskA.localeCompare(taskB))),
       );
+  }
+
+  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
+    return this.apiService.saveWebhookConfig(config);
+  }
+
+  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    return this.apiService.getWebhookConfig(projectName, stageName, serviceName);
   }
 
   private sequenceMapper(sequences: Sequence[]): Observable<Sequence[]> {

@@ -1,4 +1,4 @@
-#git-upstream-form {
+#webhook-config-form {
   > div:first-of-type {
     min-width: calc(100% - 170px);
     &.full-width {
@@ -9,4 +9,8 @@
       width: 50%;
     }
   }
+}
+
+.resize-textarea {
+  resize: vertical;
 }

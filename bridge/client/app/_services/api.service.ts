@@ -20,6 +20,7 @@ import { EventResult } from '../_interfaces/event-result';
 import { ProjectResult } from '../_interfaces/project-result';
 import { UniformSubscription } from '../_models/uniform-subscription';
 import { UniformRegistration } from '../_models/uniform-registration';
+import { WebhookConfig } from '../_models/webhook-config';
 
 @Injectable({
   providedIn: 'root',
@@ -374,6 +375,26 @@ export class ApiService {
     return this.http
       .post<unknown>(url, {
         state,
+      });
+  }
+
+  public getWebhookConfig(projectName: string, stageName?: string, serviceName?: string): Observable<WebhookConfig> {
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config`;
+    const params = {
+      projectName,
+      ...stageName && {stageName},
+      ...serviceName && {serviceName},
+    };
+    return this.http
+      .get<WebhookConfig>(url, {params});
+  }
+
+  public saveWebhookConfig(config: WebhookConfig): Observable<unknown> {
+    const url = `${this._baseUrl}/uniform/registration/webhook-service/config`;
+
+    return this.http
+      .post<unknown>(url, {
+        config
       });
   }
 
