@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const webhookConfigFileName = "webhook.yaml"
+const webhookConfigFileName = "webhook/webhook.yaml"
 
 type SecretEnv struct {
 	Env map[string]string
@@ -54,15 +54,25 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		}
 	}
 
-	return map[string]interface{}{
-		"project": nedc.Project(),
-		"stage":   nedc.Stage(),
-		"service": nedc.Service(),
-		"labels":  nedc.Labels(),
-		*event.Type: map[string]interface{}{
-			"responses": responses,
-		},
-	}, nil
+	// check if the incoming event was a task.triggered event
+	// only in this case, the result should be sent back to Keptn in the form of a .finished event
+	if keptnv2.IsTaskEventType(*event.Type) {
+		taskName, _, err := keptnv2.ParseTaskEventType(*event.Type)
+		if err != nil {
+			return nil, sdkError(fmt.Sprintf("could not derive task name from event type %s", *event.Type), err)
+		}
+		return map[string]interface{}{
+			"project": nedc.Project(),
+			"stage":   nedc.Stage(),
+			"service": nedc.Service(),
+			"labels":  nedc.Labels(),
+			taskName: map[string]interface{}{
+				"responses": responses,
+			},
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func (th *TaskHandler) performWebhookRequests(webhook keptnv2.Webhook, nedc *lib.EventDataModifier, responses []string) ([]string, *sdk.Error) {

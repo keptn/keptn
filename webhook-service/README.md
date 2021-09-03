@@ -6,7 +6,7 @@ The **webhook service** is used to define webhooks - in the form of `curl` comma
 
 ## Configuring webhooks
 
-To configure a webhook for a certain task within a sequence, a `webhook.yaml` file needs to be present in the 
+To configure a webhook for a certain task within a sequence, a `webhook/webhook.yaml` file needs to be present in the 
 configuration repository of the project/stage/service that should make use of the webhook. This file can be uploaded using the `keptn add-resource` command, 
 or by using the `/resource` APIs of the `configuration-service`. An example for a webhook.yaml file is as follows:
 
@@ -36,7 +36,7 @@ curl --header 'x-token: {{.env.secret-key}}' http://shipyard-controller:8080/v1/
 curl http://shipyard-controller:8080/v1/project/{{.data.project}}/stage/{{.data.stage}}
 ```
 
-the responses of those requests will be stored in the `data["sh.keptn.event.mytask.triggered"].responses` property of the correlating 
+the responses of those requests will be stored in the `data.mytask.responses` property of the correlating 
 `sh.keptn.event.mytask.finished` event that will be sent by the webhook service once the two requests have been finished:
 
 ```
@@ -46,7 +46,7 @@ the responses of those requests will be stored in the `data["sh.keptn.event.myta
     "project": "webhooks",
     "result": "pass",
     "service": "myservice",
-    "sh.keptn.event.mytask.triggered": {
+    "mytask": {
       "responses": [
         "{\"projects\":[]}",
         "{\"services\":[]}"
@@ -75,17 +75,17 @@ Note that the execution of the defined requests will fail if any of the referenc
 If the same `webhook.yaml` file should be used across all stages and services within a project, the `webhook.yaml` file can be added as a project - resource:
 
 ```
-keptn add-resource --project=my-project --resource=webhook.yaml
+keptn add-resource --project=my-project --resource=webhook.yaml --resourceUri=webhook/webhook.yaml
 ```
 
 If a `webhook.yaml` should be used only for a certain stage, the optional `stage` parameter can be added to the `add-resource` command:
 
 ```
-keptn add-resource --project=my-project --stage=my-stage --resource=webhook.yaml
+keptn add-resource --project=my-project --stage=my-stage --resource=webhook.yaml --resourceUri=webhook/webhook.yaml
 ```
 
 Finally, if only a specific service should make use of the `webhook.yaml`, the `service` parameter has to be passed to the `add-resource` command:
 
 ```
-keptn add-resource --project=my-project --stage=my-stage --service=my-service --resource=webhook.yaml
+keptn add-resource --project=my-project --stage=my-stage --service=my-service --resource=webhook.yaml --resourceUri=webhook/webhook.yaml
 ```

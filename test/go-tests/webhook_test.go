@@ -86,7 +86,7 @@ func Test_Webhook(t *testing.T) {
 	defer os.Remove(webhookFilePath)
 
 	t.Log("Adding webhook.yaml to our service")
-	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
+	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --service=%s --resource=%s --resourceUri=webhook/webhook.yaml --all-stages", projectName, serviceName, webhookFilePath))
 
 	require.Nil(t, err)
 
@@ -111,7 +111,7 @@ func Test_Webhook(t *testing.T) {
 	require.Nil(t, err)
 
 	// check if the requests have been executed and yielded some results
-	require.NotNil(t, decodedEvent["sh.keptn.event.mytask.triggered"])
+	require.NotNil(t, decodedEvent["mytask"])
 
 	// Now, trigger another sequence that tries to execute a webhook with a reference to an unknown variable - this should fail
 	sequencename = "othersequence"
@@ -136,6 +136,6 @@ func Test_Webhook(t *testing.T) {
 
 	// check the result - this time it should be set to fail because an unknown Key was referenced in the webhook
 	require.Equal(t, string(keptnv2.ResultFailed), decodedEvent["result"])
-	require.Nil(t, decodedEvent["sh.keptn.event.othertask.triggered"])
+	require.Nil(t, decodedEvent["othertask"])
 
 }
