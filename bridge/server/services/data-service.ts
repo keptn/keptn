@@ -244,10 +244,30 @@ export class DataService {
   }
 
   public async getWebhookConfig(projectName?: string, stageName?: string, serviceName?: string): Promise<WebhookConfig> {
-    const response = await this.apiService.getWebhookConfig(projectName, stageName, serviceName);
-    const webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
-    const webhookConfigYaml = Yaml.parse(webhookConfigFile);
-    const webhookCurlCommand = new CURLParser(webhookConfigYaml?.spec?.webhooks[0]?.requests[0]).parse();
+    let response;
+    try {
+      response = await this.apiService.getWebhookConfig(projectName, stageName, serviceName);
+    } catch (error) {
+      console.error(error.message);
+      throw Error(error);
+    }
+
+    let webhookConfigFile;
+    let webhookConfigYaml;
+    try {
+      webhookConfigFile = Buffer.from(response.data.resourceContent, 'base64').toString('utf-8');
+      webhookConfigYaml = Yaml.parse(webhookConfigFile);
+    } catch (error) {
+      throw Error('Could not parse webhook.yaml');
+    }
+
+    let webhookCurlCommand;
+    try {
+      webhookCurlCommand = new CURLParser(webhookConfigYaml?.spec?.webhooks[0]?.requests[0]).parse();
+    } catch (error) {
+      throw Error('Could not parse curl command');
+    }
+
     const webhookConfig: WebhookConfig = new WebhookConfig();
     webhookConfig.method = webhookCurlCommand.method;
     webhookConfig.url = webhookCurlCommand.url;
@@ -273,7 +293,12 @@ export class DataService {
 
       for (const stage of stages || []) {
         for (const service of services || []) {
-          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage, service);
+          try {
+            await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage, service);
+          } catch (error) {
+            console.error(error.message);
+            throw Error(error);
+          }
         }
       }
     }
@@ -315,14 +340,14 @@ spec:
     const prevServices: string[] | undefined[]  = webhookConfig.prevFilter?.services?.length ? webhookConfig.prevFilter?.services : [undefined];
 
     for (const project of prevProjects) {
-      try {
-        for (const stage of prevStages || []) {
-          for (const service of prevServices || []) {
+      for (const stage of prevStages || []) {
+        for (const service of prevServices || []) {
+          try {
             await this.apiService.deleteWebhookConfig(project, stage, service);
+          } catch (error) {
+            console.error(error.message);
           }
         }
-      } catch (error) {
-        console.error(error);
       }
     }
   }
