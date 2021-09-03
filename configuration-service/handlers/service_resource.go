@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/keptn/configuration-service/restapi/operations/stage_resource"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -133,8 +134,51 @@ func GetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHan
 // DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc deletes the specified resource
 func DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIHandlerFunc(
 	params service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIParams) middleware.Responder {
-	return middleware.NotImplemented(
-		"operation service_resource.DeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURI has not yet been implemented")
+	logger := keptncommon.NewLogger("", "", "configuration-service")
+
+	common.LockProject(params.ProjectName)
+	defer common.UnlockProject(params.ProjectName)
+
+	if !common.ServiceExists(params.ProjectName, params.StageName, params.ServiceName, false) {
+		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(404).
+			WithPayload(&models.Error{Code: 404, Message: swag.String("Service not found")})
+	}
+
+	logger.Debug("Checking out " + params.StageName + " branch")
+	err := common.CheckoutBranch(params.ProjectName, params.StageName, false)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not check out %s branch of project %s", params.StageName, params.ProjectName))
+		logger.Error(err.Error())
+		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not check out branch")})
+	}
+
+	serviceConfigPath := config.ConfigDir + "/" + params.ProjectName + "/" + params.ServiceName
+	unescapedResourceName, err := url.QueryUnescape(params.ResourceURI)
+	if err != nil {
+		return service_resource.NewGetProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).
+			WithPayload(&models.Error{Code: 500, Message: swag.String("Could not unescape resource name")})
+	}
+	serviceResourcePath := serviceConfigPath + "/" + unescapedResourceName
+
+	err = common.DeleteFile(serviceResourcePath)
+	if err != nil {
+		logger.Error(err.Error())
+		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String("Could not delete file")})
+	}
+
+	logger.Debug("Staging Changes")
+	err = common.StageAndCommitAll(params.ProjectName, "Updated resource: "+params.ResourceURI, true)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Could not commit to %s branch for project %s", params.StageName, params.ProjectName))
+		logger.Error(err.Error())
+		return service_resource.NewDeleteProjectProjectNameStageStageNameServiceServiceNameResourceResourceURIDefault(500).WithPayload(&models.Error{Code: 400, Message: swag.String("Could not commit changes")})
+	}
+	logger.Debug("Successfully updated resource: " + params.ResourceURI)
+
+	metadata := common.GetResourceMetadata(params.ProjectName)
+	metadata.Branch = params.StageName
+	return stage_resource.NewPutProjectProjectNameStageStageNameResourceResourceURICreated().WithPayload(metadata)
 }
 
 // PostProjectProjectNameStageStageNameServiceServiceNameResourceHandlerFunc creates a new resource
