@@ -27,8 +27,7 @@ export class DataService {
 
   public async getProjects(): Promise<Project[]> {
     const response = await this.apiService.getProjects();
-    const projects = response.data.projects.map(project => Project.fromJSON(project));
-    return projects;
+    return response.data.projects.map(project => Project.fromJSON(project));
   }
 
   public async getProject(projectName: string, includeRemediation: boolean, includeApproval: boolean): Promise<Project> {
@@ -267,35 +266,8 @@ export class DataService {
     const stages: string[] | null = webhookConfig.filter?.stages;
     const services: string[] | null = webhookConfig.filter?.services;
 
-    const prevProjects: string[] = webhookConfig.prevFilter?.projects?.length ? webhookConfig.prevFilter?.projects : (await this.getProjects()).map(project => project.projectName);
-    const prevStages: string[] | null | undefined = webhookConfig.prevFilter?.stages;
-    const prevServices: string[] | null | undefined = webhookConfig.prevFilter?.services;
+    await this.deleteWebhookConfig(webhookConfig);
 
-    for (const project of prevProjects) {
-      try {
-        if (prevServices?.length == 0 && prevStages?.length == 0) {
-          await this.apiService.deleteWebhookConfig(project);
-        } else if (prevServices?.length == 0) {
-          for (const stage of prevStages || []) {
-            await this.apiService.deleteWebhookConfig(project, stage);
-          }
-        } else if (prevStages?.length == 0) {
-          for (const service of prevServices || []) {
-            await this.apiService.deleteWebhookConfig(project, undefined, service);
-          }
-        } else {
-          for (const stage of prevStages || []) {
-            for (const service of prevServices || []) {
-              await this.apiService.deleteWebhookConfig(project, stage, service);
-            }
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    console.log('saveWebhookConfig for', projects, stages, services);
     for (const project of projects) {
       let params = '';
       for (const header of webhookConfig?.header||[]) {
@@ -343,5 +315,35 @@ spec:
 
   private buildRemediationEvent(stageName: string): string {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
+  }
+
+  private async deleteWebhookConfig(webhookConfig: WebhookConfig): Promise<void> {
+    const prevProjects: string[] = webhookConfig.prevFilter?.projects?.length ? webhookConfig.prevFilter?.projects : (await this.getProjects()).map(project => project.projectName);
+    const prevStages: string[] | null | undefined = webhookConfig.prevFilter?.stages;
+    const prevServices: string[] | null | undefined = webhookConfig.prevFilter?.services;
+
+    for (const project of prevProjects) {
+      try {
+        if (prevServices?.length == 0 && prevStages?.length == 0) {
+          await this.apiService.deleteWebhookConfig(project);
+        } else if (prevServices?.length == 0) {
+          for (const stage of prevStages || []) {
+            await this.apiService.deleteWebhookConfig(project, stage);
+          }
+        } else if (prevStages?.length == 0) {
+          for (const service of prevServices || []) {
+            await this.apiService.deleteWebhookConfig(project, undefined, service);
+          }
+        } else {
+          for (const stage of prevStages || []) {
+            for (const service of prevServices || []) {
+              await this.apiService.deleteWebhookConfig(project, stage, service);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 }
