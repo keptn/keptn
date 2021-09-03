@@ -141,12 +141,12 @@ func (k K8sSecretBackend) GetSecrets() ([]model.GetSecretResponseItem, error) {
 		keys := []string{}
 		for key, _ := range secretItem.StringData {
 			if key != "" {
-				keys = append(keys, key)
+				keys = insert(keys, key)
 			}
 		}
 		for key, _ := range secretItem.Data {
 			if key != "" {
-				keys = append(keys, key)
+				keys = insert(keys, key)
 			}
 		}
 		result = append(result, model.GetSecretResponseItem{
@@ -232,6 +232,16 @@ func remove(s []string, r string) []string {
 			return append(s[:i], s[i+1:]...)
 		}
 	}
+	return s
+}
+
+func insert(s []string, i string) []string {
+	for _, val := range s {
+		if val == i {
+			return s
+		}
+	}
+	s = append(s, i)
 	return s
 }
 
