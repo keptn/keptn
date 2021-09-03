@@ -269,42 +269,22 @@ export class DataService {
     await this.deleteWebhookConfig(webhookConfig);
 
     for (const project of projects) {
-      let params = '';
-      for (const header of webhookConfig?.header||[]) {
-        params += `--header '${header.name}: ${header.value}' `;
-      }
-      params += `--request ${webhookConfig.method} `;
-      if (webhookConfig.proxy) {
-        params += `--proxy ${webhookConfig.proxy} `;
-      }
-      if (webhookConfig.payload) {
-        params += `--data '${webhookConfig.payload.replace((/  |\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
-      }
+      const webhookConfigYaml = this.generateWebhookConfigYaml(webhookConfig)
 
-      const webhookYamlTemplate = `apiVersion: webhookconfig.keptn.sh/v1alpha1
-kind: WebhookConfig
-metadata:
-  name: webhook-configuration
-spec:
-  webhooks:
-    - type: "${webhookConfig.type}"
-      requests:
-        - "curl ${params}${webhookConfig.url}"`;
-
-      if(services?.length == 0 && stages?.length == 0) {
-        await this.apiService.saveWebhookConfig(webhookYamlTemplate, project);
-      } else if(services?.length == 0) {
-        for (const stage of stages||[]) {
-          await this.apiService.saveWebhookConfig(webhookYamlTemplate, project, stage);
+      if (services?.length == 0 && stages?.length == 0) {
+        await this.apiService.saveWebhookConfig(webhookConfigYaml, project);
+      } else if (services?.length == 0) {
+        for (const stage of stages || []) {
+          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage);
         }
-      } else if(stages?.length == 0) {
-        for (const service of services||[]) {
-          await this.apiService.saveWebhookConfig(webhookYamlTemplate, project, undefined, service);
+      } else if (stages?.length == 0) {
+        for (const service of services || []) {
+          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, undefined, service);
         }
       } else {
-        for (const stage of stages||[]) {
-          for (const service of services||[]) {
-            await this.apiService.saveWebhookConfig(webhookYamlTemplate, project, stage, service);
+        for (const stage of stages || []) {
+          for (const service of services || []) {
+            await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage, service);
           }
         }
       }
@@ -315,6 +295,32 @@ spec:
 
   private buildRemediationEvent(stageName: string): string {
     return `sh.keptn.event.${stageName}.${SequenceTypes.REMEDIATION}.${EventState.TRIGGERED}`;
+  }
+
+  private generateWebhookConfigYaml(webhookConfig: WebhookConfig): string {
+    let params = '';
+    for (const header of webhookConfig?.header || []) {
+      params += `--header '${header.name}: ${header.value}' `;
+    }
+    params += `--request ${webhookConfig.method} `;
+    if (webhookConfig.proxy) {
+      params += `--proxy ${webhookConfig.proxy} `;
+    }
+    if (webhookConfig.payload) {
+      params += `--data '${webhookConfig.payload.replace((/  |\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
+    }
+
+    const webhookConfigYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "${webhookConfig.type}"
+      requests:
+        - "curl ${params}${webhookConfig.url}"`;
+
+    return webhookConfigYaml;
   }
 
   private async deleteWebhookConfig(webhookConfig: WebhookConfig): Promise<void> {
