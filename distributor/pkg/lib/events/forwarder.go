@@ -13,11 +13,13 @@ import (
 
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	logger "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -33,7 +35,7 @@ func NewForwarder(httpClient *http.Client) *Forwarder {
 	tp := otel.GetTracerProvider()
 	t := tp.Tracer(
 		"github.com/keptn/keptn/distributor/forwarder",
-		trace.WithInstrumentationVersion("1.0.0"), // TODO: Get the package version from somewhere?
+		trace.WithInstrumentationVersion(config.Global.DistributorVersion),
 	)
 	return &Forwarder{
 		httpClient:        httpClient,
@@ -124,16 +126,17 @@ func (f *Forwarder) forwardEventToNATSServer(ctx context.Context, event cloudeve
 	// TODO: Check the span name here
 	// this here would be distributor.nats.sh.keptn.event.hardening.delivery.triggered sent
 	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#conventions
-	ctx, span := f.tracer.Start(ctx, fmt.Sprintf("distributor.nats.%s send", topic), trace.WithSpanKind(trace.SpanKindProducer))
+	ctx, span := f.tracer.Start(ctx, fmt.Sprintf("forwarder.nats.%s send", topic), trace.WithSpanKind(trace.SpanKindProducer))
 	defer span.End()
 
-	InjectDistributedTracingExtension(ctx, event)
+	keptnObs.InjectDistributedTracingExtension(ctx, event)
 
 	// TODO: Should we instrument the call to NATS via this client? Not sure if it's possible like the HTTP sender..
 	c, err := cloudevents.NewClient(pubSubConnection)
 	if err != nil {
 		logger.Errorf("Failed to create client, %v\n", err)
 		span.RecordError(err)
+		span.SetStatus(codes.Error, "Failed to create client")
 		return err
 	}
 
@@ -142,6 +145,7 @@ func (f *Forwarder) forwardEventToNATSServer(ctx context.Context, event cloudeve
 	if result := c.Send(ctx, event); cloudevents.IsUndelivered(result) {
 		logger.Errorf("Failed to send: %v\n", err)
 		span.RecordError(err)
+		span.SetStatus(codes.Error, "Failed to forward the event to NATS")
 	} else {
 		logger.Infof("Sent: %s, accepted: %t", event.ID(), cloudevents.IsACK(result))
 	}
@@ -152,10 +156,10 @@ func (f *Forwarder) forwardEventToNATSServer(ctx context.Context, event cloudeve
 func (f *Forwarder) forwardEventToAPI(ctx context.Context, event cloudevents.Event) error {
 	logger.Infof("Keptn API endpoint: %s", config.Global.KeptnAPIEndpoint)
 
-	ctx, span := f.tracer.Start(ctx, fmt.Sprintf("distributor.api.%s send", event.Context.GetType()), trace.WithSpanKind(trace.SpanKindProducer))
+	ctx, span := f.tracer.Start(ctx, fmt.Sprintf("forwarder.api.%s send", event.Context.GetType()), trace.WithSpanKind(trace.SpanKindProducer))
 	defer span.End()
 
-	InjectDistributedTracingExtension(ctx, event)
+	keptnObs.InjectDistributedTracingExtension(ctx, event)
 
 	payload, err := event.MarshalJSON()
 	if err != nil {
@@ -177,6 +181,8 @@ func (f *Forwarder) forwardEventToAPI(ctx context.Context, event cloudevents.Eve
 	resp, err := f.httpClient.Do(req)
 	if err != nil {
 		logger.Errorf("Could not send event to API endpoint: %v", err)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "Could not send event to API endpoint")
 		return err
 	}
 	defer resp.Body.Close()
@@ -188,6 +194,7 @@ func (f *Forwarder) forwardEventToAPI(ctx context.Context, event cloudevents.Eve
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logger.Errorf("Could not decode response: %v", err)
+		span.RecordError(err)
 		return err
 	}
 

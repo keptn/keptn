@@ -39,15 +39,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
 )
-
-const (
-	// TODO: Can we find out which keptn service is together in the same pod? shipyard-distributor for ex?
-	serviceName = "distributor"
-)
-
-var tracer trace.Tracer
 
 func main() {
 	if err := envconfig.Process("", &config.Global); err != nil {
@@ -55,8 +47,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	tracer = otel.Tracer(serviceName + "-main")
-	tp := InitTracer(serviceName, "http://simplest-collector-headless.observability:14268/api/traces")
+	tp := InitTracer(config.Global)
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			logger.Errorf("Error shutting down tracer provider: %v", err)
@@ -209,8 +200,18 @@ func setupEventSender() events.EventSender {
 	}
 }
 
-func InitTracer(serviceName, jaegerEndpoint string) *tracesdk.TracerProvider {
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(jaegerEndpoint)))
+func InitTracer(env config.EnvConfig) *tracesdk.TracerProvider {
+
+	collectorEndpoint := "http://simplest-collector-headless.observability:14268/api/traces"
+
+	deploymentName := ""
+	if env.K8sDeploymentName != "" {
+		deploymentName = env.K8sDeploymentName + "-"
+	}
+
+	serviceName := deploymentName + "distributor"
+
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(collectorEndpoint)))
 	if err != nil {
 		log.Fatalf("failed to initialize stdouttrace export pipeline: %v", err)
 	}

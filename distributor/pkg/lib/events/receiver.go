@@ -9,10 +9,12 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	"github.com/keptn/keptn/distributor/pkg/config"
 	"github.com/nats-io/nats.go"
 	logger "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -41,7 +43,7 @@ func NewNATSEventReceiver(env config.EnvConfig, eventSender EventSender) *NATSEv
 	tp := otel.GetTracerProvider()
 	t := tp.Tracer(
 		"github.com/keptn/keptn/distributor/natseventreceiver",
-		trace.WithInstrumentationVersion("1.0.0"), // TODO: Get the package version from somewhere?
+		trace.WithInstrumentationVersion(config.Global.DistributorVersion),
 	)
 
 	return &NATSEventReceiver{
@@ -120,14 +122,15 @@ func (n *NATSEventReceiver) handleMessage(m *nats.Msg) {
 				}
 			}
 
-			ctx := ExtractDistributedTracingExtension(context.Background(), *e)
-			ctx, span := n.tracer.Start(ctx, fmt.Sprintf("distributor.nats.%s receive", e.Context.GetType()), trace.WithSpanKind(trace.SpanKindConsumer))
+			ctx := keptnObs.ExtractDistributedTracingExtension(context.Background(), *e)
+			ctx, span := n.tracer.Start(ctx, fmt.Sprintf("receiver.nats.%s process", e.Context.GetType()), trace.WithSpanKind(trace.SpanKindConsumer))
 			defer span.End()
 
 			err = n.sendEvent(ctx, *e, subscriptionForTopic)
 			if err != nil {
 				logger.Errorf("Could not send CloudEvent: %v", err)
 				span.RecordError(err)
+				span.SetStatus(codes.Error, "Could not send CloudEvent")
 			}
 		}
 	}()
@@ -147,7 +150,7 @@ func (n *NATSEventReceiver) sendEvent(ctx context.Context, event cloudevents.Eve
 	topic := event.Context.GetType()
 
 	// Here the distributor acts as a consumer
-	ctx, span := n.tracer.Start(ctx, fmt.Sprintf("distributor.nats.%s send", topic), trace.WithSpanKind(trace.SpanKindConsumer))
+	ctx, span := n.tracer.Start(ctx, fmt.Sprintf("receiver.nats.%s send", topic), trace.WithSpanKind(trace.SpanKindConsumer))
 	defer span.End()
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -159,6 +162,7 @@ func (n *NATSEventReceiver) sendEvent(ctx context.Context, event cloudevents.Eve
 	if err := n.eventSender.Send(ctx, event); err != nil {
 		logger.WithError(err).Error("Unable to send event")
 		span.RecordError(err)
+		span.SetStatus(codes.Error, "Unable to send event")
 		return err
 	}
 	logger.Infof("sent event %s", event.ID())
