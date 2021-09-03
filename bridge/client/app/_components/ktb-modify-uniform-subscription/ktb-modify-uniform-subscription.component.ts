@@ -34,7 +34,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   });
   private webhookSettings?: KtbWebhookSettingsComponent;
   public uniformRegistration?: UniformRegistration;
-  public readonly suffixes: { value: string, displayValue: string }[] = [
+  public suffixes: { value: string, displayValue: string }[] = [
     {
       value: '>',
       displayValue: '*',
