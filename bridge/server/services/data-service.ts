@@ -310,7 +310,7 @@ export class DataService {
       params += `--data '${webhookConfig.payload.replace((/  |\r\n|\n|\r/gm), '').replace((/"/g), '\\"')}' `;
     }
 
-    const webhookConfigYaml = `apiVersion: webhookconfig.keptn.sh/v1alpha1
+    return `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
   name: webhook-configuration
@@ -319,8 +319,6 @@ spec:
     - type: "${webhookConfig.type}"
       requests:
         - "curl ${params}${webhookConfig.url}"`;
-
-    return webhookConfigYaml;
   }
 
   private async deleteWebhookConfig(webhookConfig: WebhookConfig): Promise<void> {
