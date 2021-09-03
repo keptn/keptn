@@ -263,29 +263,17 @@ export class DataService {
 
   public async saveWebhookConfig(webhookConfig: WebhookConfig): Promise<boolean> {
     const projects: string[] = webhookConfig.filter?.projects?.length ? webhookConfig.filter?.projects : (await this.getProjects()).map(project => project.projectName);
-    const stages: string[] | null = webhookConfig.filter?.stages;
-    const services: string[] | null = webhookConfig.filter?.services;
+    const stages: string[] | undefined[] = webhookConfig.filter?.stages?.length ? webhookConfig.filter?.stages : [undefined];
+    const services: string[] | undefined[]  = webhookConfig.filter?.services?.length ? webhookConfig.filter?.services : [undefined];
 
     await this.deleteWebhookConfig(webhookConfig);
 
     for (const project of projects) {
       const webhookConfigYaml = this.generateWebhookConfigYaml(webhookConfig)
 
-      if (services?.length == 0 && stages?.length == 0) {
-        await this.apiService.saveWebhookConfig(webhookConfigYaml, project);
-      } else if (services?.length == 0) {
-        for (const stage of stages || []) {
-          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage);
-        }
-      } else if (stages?.length == 0) {
+      for (const stage of stages || []) {
         for (const service of services || []) {
-          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, undefined, service);
-        }
-      } else {
-        for (const stage of stages || []) {
-          for (const service of services || []) {
-            await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage, service);
-          }
+          await this.apiService.saveWebhookConfig(webhookConfigYaml, project, stage, service);
         }
       }
     }
@@ -323,26 +311,14 @@ spec:
 
   private async deleteWebhookConfig(webhookConfig: WebhookConfig): Promise<void> {
     const prevProjects: string[] = webhookConfig.prevFilter?.projects?.length ? webhookConfig.prevFilter?.projects : (await this.getProjects()).map(project => project.projectName);
-    const prevStages: string[] | null | undefined = webhookConfig.prevFilter?.stages;
-    const prevServices: string[] | null | undefined = webhookConfig.prevFilter?.services;
+    const prevStages: string[] | undefined[] = webhookConfig.prevFilter?.stages?.length ? webhookConfig.prevFilter?.stages : [undefined];
+    const prevServices: string[] | undefined[]  = webhookConfig.prevFilter?.services?.length ? webhookConfig.prevFilter?.services : [undefined];
 
     for (const project of prevProjects) {
       try {
-        if (prevServices?.length == 0 && prevStages?.length == 0) {
-          await this.apiService.deleteWebhookConfig(project);
-        } else if (prevServices?.length == 0) {
-          for (const stage of prevStages || []) {
-            await this.apiService.deleteWebhookConfig(project, stage);
-          }
-        } else if (prevStages?.length == 0) {
+        for (const stage of prevStages || []) {
           for (const service of prevServices || []) {
-            await this.apiService.deleteWebhookConfig(project, undefined, service);
-          }
-        } else {
-          for (const stage of prevStages || []) {
-            for (const service of prevServices || []) {
-              await this.apiService.deleteWebhookConfig(project, stage, service);
-            }
+            await this.apiService.deleteWebhookConfig(project, stage, service);
           }
         }
       } catch (error) {
