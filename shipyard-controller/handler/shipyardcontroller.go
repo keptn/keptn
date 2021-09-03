@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -14,7 +16,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"time"
 )
 
 const maxRepoReadRetries = 5
@@ -428,10 +429,11 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 	}
 
 	// eventScope contains all properties (project, stage, service) that are needed to determine the current state within a task sequence
-	// if those are not present the next action can not be determined
+	// if those are not present the next action can not be determined. It also contains the traceparent in case the incoming event has it.
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		log.Error("Could not determine eventScope of event: " + err.Error())
+		// TODO: Mark the current span as error? Or create a new one?
 		return err
 	}
 	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, printObject(event))
@@ -1086,7 +1088,9 @@ func (sc *shipyardController) sendTaskTriggeredEvent(eventScope *models.EventSco
 	// make sure the 'message' property from the previous event is set to ""
 	eventPayload["message"] = ""
 
-	event := common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload)
+	// inject the traceparent into the event so it is stored in the db
+	event := common.CreateEventWithPayloadAndTraceParent(
+		eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(task.Name), eventPayload, eventScope.TraceParent, eventScope.TraceState)
 
 	storeEvent := &models.Event{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {

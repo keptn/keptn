@@ -3,17 +3,19 @@ package common
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/Masterminds/semver/v3"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/extensions"
 	"github.com/google/uuid"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"gopkg.in/yaml.v3"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 )
 
 const defaultKeptnNamespace = "keptn"
@@ -172,6 +174,19 @@ func CreateEventWithPayload(keptnContext, triggeredID, eventType string, payload
 	}
 	event.SetTime(time.Now().UTC())
 	event.SetData(cloudevents.ApplicationJSON, payload)
+	return event
+}
+
+func CreateEventWithPayloadAndTraceParent(keptnContext, triggeredID, eventType string, payload interface{}, traceParent, traceState string) cloudevents.Event {
+	event := CreateEventWithPayload(keptnContext, triggeredID, eventType, payload)
+
+	dext := extensions.DistributedTracingExtension{
+		TraceParent: traceParent,
+		TraceState:  traceState,
+	}
+
+	dext.AddTracingAttributes(&event)
+
 	return event
 }
 

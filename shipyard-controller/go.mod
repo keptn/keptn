@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/benbjohnson/clock v1.1.0
-	github.com/cloudevents/sdk-go/v2 v2.4.1
+	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-test/deep v1.0.5
@@ -27,3 +27,6 @@ require (
 	k8s.io/apimachinery v0.22.1
 	k8s.io/client-go v0.22.1
 )
+
+replace github.com/keptn/go-utils => github.com/dynatrace-oss-contrib/go-utils v0.8.5-0.20210902083938-166ac7f851b4
+

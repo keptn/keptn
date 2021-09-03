@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	keptnmodels "github.com/keptn/go-utils/pkg/api/models"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/keptn/keptn/shipyard-controller/operations"
-	"net/http"
 )
 
 type IEventHandler interface {
@@ -114,6 +116,16 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 		SetBadRequestErrorResponse(err, c, invalidRequestFormatMsg)
 		return
 	}
+
+	// TODO: make this simpler?
+	// grab the current tracestate and put it inside the event
+	// it is later persisted and picked up by the eventdispatcher which then reads it
+	tc := keptnObs.NewCloudEventTraceContext()
+	carrier := keptnObs.NewCloudEventCarrier()
+	tc.Inject(c.Request.Context(), carrier)
+
+	event.TraceParent = carrier.Extension.TraceParent
+	event.TraceState = carrier.Extension.TraceState
 
 	err := eh.ShipyardController.HandleIncomingEvent(*event, false)
 	if err != nil {

@@ -3,15 +3,17 @@ package handler
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnObs "github.com/keptn/go-utils/pkg/common/observability"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 var errOtherActiveSequencesRunning = errors.New("other sequences are currently running in the same stage for the same service")
@@ -200,7 +202,17 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return errOtherActiveSequencesRunning
 	}
 
-	return e.eventSender.SendEvent(event.Event)
+	var target string
+	if httpEventSender, ok := e.eventSender.(*keptnv2.HTTPEventSender); ok {
+		target = httpEventSender.EventsEndpoint
+	}
+
+	// extracts the tracecontext from the event and adds it to the new context
+	ctx := keptnObs.ExtractDistributedTracingExtension(context.Background(), event.Event)
+	ctx = cloudevents.ContextWithTarget(ctx, target)
+	ctx = cloudevents.WithEncodingStructured(ctx)
+
+	return e.eventSender.Send(ctx, event.Event)
 }
 
 func (e *EventDispatcher) isCurrentEventBlockedByOtherTasks(eventScope models.EventScope, runningSequencesInStage []models.TaskSequenceEvent, queuedEvent models.DispatcherEvent) bool {

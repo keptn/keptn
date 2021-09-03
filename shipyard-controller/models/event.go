@@ -60,6 +60,12 @@ type Event struct {
 	// type
 	// Required: true
 	Type *string `json:"type"`
+
+	// traceparent
+	TraceParent string `json:"traceparent,omitempty"`
+
+	// tracestate
+	TraceState string `json:"tracestate,omitempty"`
 }
 
 // ConvertToEvent returns an instance of models.Event, based on the provided input struct
