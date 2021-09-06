@@ -463,6 +463,8 @@ func (sc *shipyardController) handleTriggeredEvent(event models.Event) error {
 				Message: msg,
 			},
 			KeptnContext: event.Shkeptncontext,
+			TraceParent:  eventScope.TraceParent,
+			TraceState:   eventScope.TraceState,
 		}, taskSequenceName, event.ID)
 	}
 
@@ -842,6 +844,8 @@ func (sc *shipyardController) triggerNextTaskSequences(eventScope *models.EventS
 				Service: eventScope.Service,
 			},
 			KeptnContext: eventScope.KeptnContext,
+			TraceParent:  eventScope.TraceParent,
+			TraceState:   eventScope.TraceState,
 		}
 
 		err := sc.sendTaskSequenceTriggeredEvent(newScope, sequence.Sequence.Name, inputEvent, eventHistory)
@@ -1005,9 +1009,11 @@ func (sc *shipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 
 	var event cloudevents.Event
 	if mergedPayload != nil {
-		event = common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), mergedPayload)
+		event = common.CreateEventWithPayloadAndTraceParent(
+			eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), mergedPayload, eventScope.TraceParent, eventScope.TraceState)
 	} else {
-		event = common.CreateEventWithPayload(eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), inputEvent)
+		event = common.CreateEventWithPayloadAndTraceParent(
+			eventScope.KeptnContext, "", keptnv2.GetTriggeredEventType(eventType), inputEvent, eventScope.TraceParent, eventScope.TraceState)
 	}
 
 	toEvent, err := models.ConvertToEvent(event)
@@ -1049,7 +1055,10 @@ func (sc *shipyardController) getMergedPayloadForSequenceTriggeredEvent(inputEve
 func (sc *shipyardController) sendTaskSequenceFinishedEvent(eventScope *models.EventScope, taskSequenceName, triggeredID string) error {
 	eventType := eventScope.Stage + "." + taskSequenceName
 
-	event := common.CreateEventWithPayload(eventScope.KeptnContext, triggeredID, keptnv2.GetFinishedEventType(eventType), eventScope.EventData)
+	event := common.CreateEventWithPayloadAndTraceParent(
+		eventScope.KeptnContext, triggeredID, keptnv2.GetFinishedEventType(eventType),
+		eventScope.EventData, eventScope.TraceParent, eventScope.TraceState,
+	)
 
 	if toEvent, err := models.ConvertToEvent(event); err == nil {
 		sc.onSubSequenceFinished(*toEvent)

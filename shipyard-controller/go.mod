@@ -28,5 +28,4 @@ require (
 	k8s.io/client-go v0.22.1
 )
 
-replace github.com/keptn/go-utils => github.com/dynatrace-oss-contrib/go-utils v0.8.5-0.20210902083938-166ac7f851b4
-
+replace github.com/keptn/go-utils => github.com/dynatrace-oss-contrib/go-utils v0.9.1-0.20210906144951-cd85cfcb4eb2

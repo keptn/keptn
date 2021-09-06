@@ -68,7 +68,9 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 	}
 
 	if skipQueue {
-		return e.eventSender.SendEvent(event.Event)
+		// extracts the tracecontext from the event and adds it to the new context
+		ctx := e.contextWithSpanFromEvent(event.Event)
+		return e.eventSender.Send(ctx, event.Event)
 	}
 	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
 		// try to send event immediately
@@ -202,16 +204,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return errOtherActiveSequencesRunning
 	}
 
-	var target string
-	if httpEventSender, ok := e.eventSender.(*keptnv2.HTTPEventSender); ok {
-		target = httpEventSender.EventsEndpoint
-	}
-
-	// extracts the tracecontext from the event and adds it to the new context
-	ctx := keptnObs.ExtractDistributedTracingExtension(context.Background(), event.Event)
-	ctx = cloudevents.ContextWithTarget(ctx, target)
-	ctx = cloudevents.WithEncodingStructured(ctx)
-
+	ctx := e.contextWithSpanFromEvent(event.Event)
 	return e.eventSender.Send(ctx, event.Event)
 }
 
@@ -280,4 +273,17 @@ func removeSequencesOfSameContext(keptnContext string, sequenceTasks []models.Ta
 		}
 	}
 	return result
+}
+
+func (e *EventDispatcher) contextWithSpanFromEvent(event cloudevents.Event) context.Context {
+	httpEventSender, ok := e.eventSender.(*keptnv2.HTTPEventSender)
+
+	if !ok {
+		log.Fatal("Could not get the HTTPEventSender from the dispatcher")
+	}
+
+	// extracts the tracecontext from the event and adds it to the new context
+	ctx := keptnObs.ExtractDistributedTracingExtension(context.Background(), event)
+	ctx = cloudevents.ContextWithTarget(ctx, httpEventSender.EventsEndpoint)
+	return cloudevents.WithEncodingStructured(ctx)
 }

@@ -101,12 +101,15 @@ func (em *EvaluationManager) CreateEvaluation(ctx context.Context, project, stag
 	}
 
 	// TODO: Should we add a target property also to type keptn.EventSender to avoid the conversion here?
-	var target string
-	if httpEventSender, ok := em.EventSender.(*keptnv2.HTTPEventSender); ok {
-		target = httpEventSender.EventsEndpoint
+	httpEventSender, ok := em.EventSender.(*keptnv2.HTTPEventSender)
+	if !ok {
+		return nil, &models.Error{
+			Code:    evaluationErrSendEventFailed,
+			Message: strutils.Stringp("Could not get the events endpoint"),
+		}
 	}
 
-	ctx = cloudevents.ContextWithTarget(ctx, target)
+	ctx = cloudevents.ContextWithTarget(ctx, httpEventSender.EventsEndpoint)
 	ctx = cloudevents.WithEncodingStructured(ctx)
 
 	if err := em.EventSender.Send(ctx, ce); err != nil {

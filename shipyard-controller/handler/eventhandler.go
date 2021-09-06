@@ -117,8 +117,10 @@ func (eh *EventHandler) HandleEvent(c *gin.Context) {
 		return
 	}
 
-	// TODO: make this simpler?
-	// grab the current tracestate and put it inside the event
+	// TODO: Make this simpler?
+	// go-utils has methods for this already (InjectDistributedTracingExtension), but they require a cloudevents.Event type
+
+	// grab the current tracecontext and put it inside the event
 	// it is later persisted and picked up by the eventdispatcher which then reads it
 	tc := keptnObs.NewCloudEventTraceContext()
 	carrier := keptnObs.NewCloudEventCarrier()
