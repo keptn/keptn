@@ -69,7 +69,7 @@ describe('KtbProjectSettingsComponent', () => {
     component.projectNameControl.setValue('sockshop');
 
     // then
-    expect(component.projectNameControl.hasError('projectName')).toBe(true);
+    expect(component.projectNameControl.hasError('duplicate')).toBe(true);
   });
 
   it('should navigate to created project', async () => {
