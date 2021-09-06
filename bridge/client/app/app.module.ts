@@ -118,6 +118,8 @@ import { KtbProjectSettingsComponent } from './_components/ktb-project-settings/
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-create-service.component';
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
+import { KtbServiceSettingsListComponent } from './_components/ktb-service-settings-list/ktb-service-settings-list.component';
+import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -198,6 +200,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbServiceSettingsComponent,
     KtbCreateServiceComponent,
     KtbServiceSettingsOverviewComponent,
+    KtbServiceSettingsListComponent,
+    KtbEditServiceComponent,
   ],
   imports: [
     BrowserModule,
