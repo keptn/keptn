@@ -1,38 +1,25 @@
 <h2>Webhook configuration</h2>
-<form class="mb-2 w-100" [formGroup]="webhookConfigForm" id="webhook-config-form" *ngIf="!loading, else loadingTemplate">
-  <div class="mb-1" fxFill fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field>
-      <dt-label>Request Method *</dt-label>
+<form class="mb-2" [formGroup]="webhookConfigForm" id="webhook-config-form" *ngIf="!loading, else loadingTemplate">
+  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-form-field fxFlex="160px">
+      <dt-label class="required">Request Method</dt-label>
       <dt-select formControlName="method" class="mr-2 item" placeholder="Choose method" aria-label="Choose method" required>
         <dt-option *ngFor="let method of webhookMethods" [value]="method" [textContent]="method"></dt-option>
       </dt-select>
       <dt-error *ngIf="getFormControl('method')?.errors?.required">Method must not be empty</dt-error>
     </dt-form-field>
-    <dt-form-field>
-      <dt-label>URL *</dt-label>
-      <input formControlName="url" type="url" required dtInput placeholder="URL" />
+    <dt-form-field fxFlex="calc(100% - 175px)">
+      <dt-label class="required">URL</dt-label>
+      <input formControlName="url" type="url" required dtInput placeholder="URL"/>
       <dt-error *ngIf="getFormControl('url')?.errors?.required">URL must not be empty</dt-error>
       <dt-error *ngIf="getFormControl('url')?.errors?.pattern">URL must be a valid url</dt-error>
-    </dt-form-field>
-  </div>
-  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field>
-      <dt-label>Proxy (optional)</dt-label>
-      <input formControlName="proxy" type="url" dtInput placeholder="Proxy" />
-      <dt-error *ngIf="getFormControl('proxy')?.errors?.pattern">Proxy must be a valid url</dt-error>
-    </dt-form-field>
-  </div>
-  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
-    <dt-form-field>
-      <dt-label>Custom payload</dt-label>
-      <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
-      <dt-error>Payload must not be empty</dt-error>
     </dt-form-field>
   </div>
   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
     <p>Custom headers</p>
     <button type="button" dt-button variant="secondary" aria-label="Add key-value pair" title="Add Header" (click)="addHeader()">
-      <dt-icon name="addrowonbottom"></dt-icon> Add custom header
+      <dt-icon name="addrowonbottom"></dt-icon>
+      Add custom header
     </button>
   </div>
   <div formArrayName="header">
@@ -40,13 +27,13 @@
       <form [formGroup]="headerGroup">
         <div class="mb-1" fxLayout="row" fxLayoutAlign="start end" fxLayoutGap="15px">
           <dt-form-field>
-            <dt-label>Name *</dt-label>
-            <input formControlName="name" type="text" required dtInput placeholder="e.g. Content-Type" autocomplete="false" />
+            <dt-label class="required">Name</dt-label>
+            <input formControlName="name" type="text" required dtInput placeholder="e.g. Content-Type" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
           <dt-form-field>
-            <dt-label>Value *</dt-label>
-            <input formControlName="value" type="text" required dtInput placeholder="e.g. application/json" autocomplete="false" />
+            <dt-label class="required">Value</dt-label>
+            <input formControlName="value" type="text" required dtInput placeholder="e.g. application/json" autocomplete="false"/>
             <dt-error>Must not be empty</dt-error>
           </dt-form-field>
           <button type="button" dt-icon-button variant="nested" aria-label="Remove Header" title="Remove Header" (click)="removeHeader(i)">
@@ -55,6 +42,20 @@
         </div>
       </form>
     </ng-container>
+  </div>
+  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-form-field>
+      <dt-label>Custom payload</dt-label>
+      <textarea class="resize-textarea" formControlName="payload" dtInput cols="60" rows="5"></textarea>
+      <dt-error>Payload must not be empty</dt-error>
+    </dt-form-field>
+  </div>
+  <div class="mb-1" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="15px">
+    <dt-form-field>
+      <dt-label>Proxy (optional)</dt-label>
+      <input formControlName="proxy" type="url" dtInput placeholder="Proxy"/>
+      <dt-error *ngIf="getFormControl('proxy')?.errors?.pattern">Proxy must be a valid url</dt-error>
+    </dt-form-field>
   </div>
 </form>
 <ng-template #loadingTemplate>
