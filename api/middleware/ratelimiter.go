@@ -95,12 +95,9 @@ func (r *RateLimiter) cleanIPBuckets() {
 }
 
 func getRemoteIP(r *http.Request) string {
-	// first, try to use RemoteAddr
-	if r.RemoteAddr != "" {
-		s := extractIPFromRemoteAddress(r.RemoteAddr)
-		if s != "" {
-			return s
-		}
+	// first, check 'x-real-ip'
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		return realIP
 	}
 	// then, check 'x-forwarded-for' header
 	if forwardedFor := r.Header.Get("X-Forwarded-For"); forwardedFor != "" {
@@ -109,10 +106,14 @@ func getRemoteIP(r *http.Request) string {
 			return strings.TrimSpace(split[0])
 		}
 	}
-	// finally, check 'x-real-ip'
-	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
-		return realIP
+	// finally, try to use RemoteAddr
+	if r.RemoteAddr != "" {
+		s := extractIPFromRemoteAddress(r.RemoteAddr)
+		if s != "" {
+			return s
+		}
 	}
+
 	return ""
 }
 

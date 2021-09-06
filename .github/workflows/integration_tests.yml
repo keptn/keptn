@@ -872,7 +872,7 @@ jobs:
         # Only run if not on master branch and we have a PR number
         # Also, only run in original repo and not on forks since the github token secret is not accessible in that case
         if: always() && github.event.inputs.branch != 'master' && steps.find_pr_for_build.outputs.number && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: marocchino/sticky-pull-request-comment@v2.1.0
+        uses: marocchino/sticky-pull-request-comment@v2.1.1
         with:
           path: integration-tests-failed.md
           recreate: true

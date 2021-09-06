@@ -61,3 +61,17 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the proper mongodb image name
+*/}}
+{{- define "mongodb.image" -}}
+{{- include "keptn.images.image" (dict "imageRoot" .Values.image "context" .) -}}
+{{- end -}}
+
+{{/*
+Return the proper Docker Image Registry Secret Names
+*/}}
+{{- define "mongodb.imagePullSecrets" -}}
+{{- include "keptn.images.renderPullSecrets" (dict "images" (list .Values.image) "context" .) -}}
+{{- end -}}
