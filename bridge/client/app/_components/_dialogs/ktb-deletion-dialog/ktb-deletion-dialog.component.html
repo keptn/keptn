@@ -15,7 +15,7 @@
              [placeholder]="data.name"/>
     </dt-form-field>
   </div>
-  <button dt-button class="danger-button" (click)="deleteProject()" [disabled]="deletionConfirmationForm.invalid">
+  <button dt-button class="danger-button" (click)="deleteConfirm()" [disabled]="deletionConfirmationForm.invalid || (isDeleteProjectInProgress$ | async)">
     I understand the consequences, delete this {{data.type}}
     <dt-loading-spinner *ngIf="isDeleteProjectInProgress$ | async"></dt-loading-spinner>
   </button>

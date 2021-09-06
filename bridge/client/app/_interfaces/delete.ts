@@ -1,5 +1,6 @@
 export enum DeleteType {
-  PROJECT = 'project'
+  PROJECT = 'project',
+  SERVICE = 'service'
 }
 
 export enum DeleteResult {

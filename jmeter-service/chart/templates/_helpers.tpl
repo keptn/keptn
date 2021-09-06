@@ -61,3 +61,90 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the proper image name
+{{ dict "imageRoot" .Values.path.to.the.image "context" $ | include "jmeter-service.images.image" }}
+*/}}
+{{- define "jmeter-service.images.image" -}}
+{{- $global := .context.Values.global -}}
+{{- $registryName := .imageRoot.registry -}}
+{{- $repositoryName := .imageRoot.repository -}}
+{{- $tag := default .context.Chart.AppVersion .imageRoot.tag | toString -}}
+{{- if $global }}
+    {{- if $global.imageRegistry }}
+     {{- $registryName = $global.imageRegistry -}}
+    {{- end -}}
+{{- end -}}
+{{- if $registryName }}
+{{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper Docker Image Registry Secret Names evaluating values as templates
+{{ list .Values.path.to.the.image1 .Values.path.to.the.image2 | dict "context" $ "images" | include "jmeter-service.images.renderPullSecrets" }}
+*/}}
+{{- define "jmeter-service.images.renderPullSecrets" -}}
+  {{- $pullSecrets := list }}
+  {{- $context := .context }}
+
+  {{- if $context.Values.global }}
+    {{- range $context.Values.global.imagePullSecrets -}}
+      {{- $pullSecrets = dict "value" . "context" $context | include "jmeter-service.tplvalues.render" | append $pullSecrets -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{- range .images -}}
+    {{- range .pullSecrets -}}
+      {{- $pullSecrets = dict "value" . "context" $context | include "jmeter-service.tplvalues.render" | append $pullSecrets -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{- if empty $pullSecrets | not -}}
+imagePullSecrets:
+    {{- range $pullSecrets }}
+- name: {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{/*
+Renders a value that contains template.
+Usage:
+{{ dict "value" .Values.path.to.the.Value "context" $ | include "jmeter-service.tplvalues.render" }}
+*/}}
+{{- define "jmeter-service.tplvalues.render" -}}
+    {{- if typeIs "string" .value }}
+        {{- tpl .value .context }}
+    {{- else }}
+        {{- tpl (toYaml .value) .context }}
+    {{- end }}
+{{- end }}
+
+{{/*
+Return the image name.
+Usage:
+{{ dict "space" .Values.imageNameSpace "context" $ | include "jmeter-service.image.name" }}
+*/}}
+{{- define "jmeter-service.image.name" }}
+{{- dict "imageRoot" .space.image "context" .context | include "jmeter-service.images.image" }}
+{{- end }}
+
+{{/*
+Return the proper Docker Image Registry Secret Names.
+Usage:
+{{ list .Values.imageNameSpace0 .Values.imageNameSpace1 | dict "context" $ "indent" $number "bases" | "jmeter-service.image.pullSecrets" }}
+*/}}
+{{- define "jmeter-service.image.pullSecrets" }}
+{{- $images := list }}
+{{- range .bases }}
+  {{- $images = append $images .image }}
+{{- end }}
+{{- $content := dict "images" $images "context" .context | include "jmeter-service.images.renderPullSecrets" }}
+{{- if $content }}
+  {{- nindent .indent $content }}
+{{- end }}
+{{- end }}

@@ -25,24 +25,24 @@ export class KtbModifyUniformSubscriptionComponent {
   public subscriptionForm = new FormGroup({
     taskPrefix: this.taskControl,
     taskSuffix: this.taskSuffixControl,
-    isGlobal: this.isGlobalControl
+    isGlobal: this.isGlobalControl,
   });
-  public readonly affixes: { value: string, displayValue: string }[] = [
+  public suffixes: { value: string, displayValue: string }[] = [
     {
       value: '>',
-      displayValue: '*'
+      displayValue: '*',
     },
     {
       value: 'triggered',
-      displayValue: 'triggered'
+      displayValue: 'triggered',
     },
     {
       value: 'started',
-      displayValue: 'started'
+      displayValue: 'started',
     },
     {
       value: 'finished',
-      displayValue: 'finished'
+      displayValue: 'finished',
     }];
 
   constructor(private route: ActivatedRoute, private dataService: DataService, private router: Router) {
@@ -51,7 +51,7 @@ export class KtbModifyUniformSubscriptionComponent {
         return {
           integrationId: paramMap.get('integrationId'),
           subscriptionId: paramMap.get('subscriptionId'),
-          projectName: paramMap.get('projectName')
+          projectName: paramMap.get('projectName'),
         };
       }),
       filter((params): params is  { integrationId: string, subscriptionId: string | null, projectName: string } => !!(params.integrationId && params.projectName)),
@@ -68,40 +68,53 @@ export class KtbModifyUniformSubscriptionComponent {
         this.taskSuffixControl.setValue(subscription.suffix);
         this.isGlobalControl.setValue(subscription.isGlobal);
       }),
-      take(1)
+      take(1),
     );
 
     const integrationId$ = this.route.paramMap
       .pipe(
         map(paramMap => paramMap.get('integrationId')),
         filter((integrationId: string | null): integrationId is string => !!integrationId),
-        take(1)
+        take(1),
       );
+
+    integrationId$.pipe(
+      switchMap(integrationId => this.dataService.getIsUniformRegistrationControlPlane(integrationId)),
+    ).subscribe(isControlPlane => {
+      if (!isControlPlane) {
+        this.suffixes = [
+          {
+            value: 'triggered',
+            displayValue: 'triggered',
+          },
+        ];
+      }
+    });
 
     const projectName$ = this.route.paramMap
       .pipe(
         map(paramMap => paramMap.get('projectName')),
-        filter((projectName: string | null): projectName is string => !!projectName)
+        filter((projectName: string | null): projectName is string => !!projectName),
       );
 
     const taskNames$ = projectName$
       .pipe(
         switchMap(projectName => this.dataService.getTaskNames(projectName)),
-        take(1)
+        take(1),
       );
     const project$ = projectName$
       .pipe(
         switchMap(projectName => this.dataService.getProject(projectName)),
         filter((project?: Project): project is Project => !!project),
         tap(project => this.updateDataSource(project)),
-        take(1)
+        take(1),
       );
 
     this.data$ = forkJoin({
       taskNames: taskNames$,
       subscription: subscription$,
       project: project$,
-      integrationId: integrationId$
+      integrationId: integrationId$,
     });
   }
 
@@ -112,19 +125,19 @@ export class KtbModifyUniformSubscriptionComponent {
           name: 'Stage',
           autocomplete: project.stages.map(stage => {
             return {
-              name: stage.stageName
+              name: stage.stageName,
             };
-          })
+          }),
         },
         {
           name: 'Service',
           autocomplete: project.getServices().map(service => {
             return {
-              name: service.serviceName
+              name: service.serviceName,
             };
-          })
-        }
-      ]
+          }),
+        },
+      ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;
   }
 
