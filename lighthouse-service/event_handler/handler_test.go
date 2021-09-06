@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -18,9 +19,16 @@ func TestNewEventHandler(t *testing.T) {
 	incomingEvent.SetID("my-id")
 	incomingEvent.SetSource("my-source")
 
+	httpSender, err := keptnv2.NewHTTPEventSender("")
+	if err != nil {
+		t.Error("no event sender")
+	}
+	httpSender.Context = context.Background()
+
 	serviceName := "lighthouse-service"
 	keptnHandler, _ := keptnv2.NewKeptn(&incomingEvent, keptncommon.KeptnOpts{
 		LoggingOptions: &keptncommon.LoggingOpts{ServiceName: &serviceName},
+		EventSender:    *httpSender,
 	})
 
 	type args struct {
@@ -92,7 +100,7 @@ func TestNewEventHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.event.SetType(tt.eventType)
 			os.Setenv("CONFIGURATION_SERVICE", configurationServiceURL)
-			got, err := NewEventHandler(tt.args.event, tt.args.logger)
+			got, err := NewEventHandler(context.Background(), tt.args.event, tt.args.logger)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return
