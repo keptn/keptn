@@ -36,7 +36,8 @@ describe('KtbServiceSettingsOverviewComponent', () => {
 
   it('should show create button', () => {
     // given
-    const creatButton = fixture.debugElement.query(By.css('button'));
-    expect(creatButton).toBeTruthy();
+    const createButton = fixture.debugElement.query(By.css('button'));
+    expect(createButton).toBeTruthy();
+    expect(createButton.nativeElement.textContent).toEqual('Create service');
   });
 });
